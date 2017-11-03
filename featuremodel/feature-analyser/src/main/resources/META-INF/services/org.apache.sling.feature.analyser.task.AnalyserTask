@@ -1,0 +1,5 @@
+org.apache.sling.feature.analyser.task.impl.CheckBundleExportsImports
+org.apache.sling.feature.analyser.task.impl.CheckBundlesForInitialContent
+org.apache.sling.feature.analyser.task.impl.CheckBundlesForResources
+org.apache.sling.feature.analyser.task.impl.CheckRequirementsCapabilities
+
