@@ -1,4 +1,4 @@
-# Prototype for a new Provisioning Model - Configuration Model for OSGi based applications
+# Prototype for a new Provisioning / Configuration Model for OSGi based applications
 
 The current model to describe OSGi applications is based on Apache Sling's provisioning model (see https://sling.apache.org/documentation/development/slingstart.html)
 
@@ -116,11 +116,9 @@ A feature itself has no special support for environments (prod, test, dev). In p
 
 # Bundles and start levels
 
-For bundles there is no default start level - a default start level is not defined in the OSGi spec. And in addition, it is a little bit confusing when looking at the model when there is a list of artifacts without a start level. Which start level do these have? Its better to be explicit.
+Each bundle needs to be explicitly assigned to a start level. There is no default start level as a default start level is not defined in the OSGi spec. In addition, it is a little bit confusing when looking at the model when there is a list of bundles without a start level. Which start level do these have? It is better to be explicit.
 
-In the current PoC, a bundle needs to be explicitely assigned to a start level. This seems to be only working if you know all the features in advance and how they are structured. On the other hand there needs to be a way to define the start order of bundles within a feature. Therefore we can use the start level information as an ordering information for the bundles within a feature. Bundles within the same start level are started in any order.
-
-Proposal: We use the format as it is today, but interpret the start level value different: instead of directly mapping it to a start level in the OSGi framework, it defines just the startup order of bundles within a feature. Features are then started in respect of their dependency information. Even if a feature has no requirement with respect to start ordering of their bundles, it has to define a start level (to act as a container for the bundles). It can use any positive number, suggested is to use "1"
+However as soon as you have more than one feature and especially if these are authored by different authors, start level handling becomes more tricky. Assigning correct OSGi start levels in such scenarios would require to know all features upfront. Therefore this start level information is interpret as follows: instead of directly mapping it to a start level in the OSGi framework, it defines just the startup order of bundles within a feature. Features are then started in respect of their dependency information. Even if a feature has no requirement with respect to start ordering of their bundles, it has to define a start level (to act as a container for the bundles). It can use any positive number, suggested is to use "1". Bundles within the same start level are started in any order.
 
 # Configurations belonging to Bundles
 
