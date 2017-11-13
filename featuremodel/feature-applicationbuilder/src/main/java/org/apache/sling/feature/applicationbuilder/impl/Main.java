@@ -188,7 +188,7 @@ public class Main {
     }
 
     private static Application buildApplication(final Application app) {
-        app.getBundles().add(1, new org.apache.sling.feature.Artifact(ArtifactId.fromMvnId("org.apache.sling/org.apache.sling.launchpad.api/1.2.0")));
+        app.getBundles().add(1, new org.apache.sling.feature.Artifact(ArtifactId.parse("org.apache.sling/org.apache.sling.launchpad.api/1.2.0")));
         // sling.properties (TODO)
         if ( propsFile == null ) {
             app.getFrameworkProperties().put("org.osgi.framework.bootdelegation", "sun.*,com.sun.*");
