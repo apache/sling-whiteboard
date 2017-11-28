@@ -205,8 +205,6 @@ public class ArtifactId implements Comparable<ArtifactId> {
         sb.append(this.groupId);
         sb.append(':');
         sb.append(this.artifactId);
-        sb.append(':');
-        sb.append(version);
         if ( this.classifier != null || !"jar".equals(this.type)) {
             sb.append(':');
             sb.append(this.type);
@@ -215,6 +213,8 @@ public class ArtifactId implements Comparable<ArtifactId> {
                 sb.append(this.classifier);
             }
         }
+        sb.append(':');
+        sb.append(version);
         return sb.toString();
     }
 
