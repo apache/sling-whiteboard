@@ -271,7 +271,8 @@ public class Main {
 
         for(final Feature feature : model.getFeatures() ) {
             final String idString;
-            if ( feature.getName() != null ) {
+            // use a default name if not present or not usable as a Maven artifactId ( starts with ':') 
+            if ( feature.getName() != null && !feature.isSpecial() ) {
                 if ( feature.getVersion() != null ) {
                     idString = "generated/" + feature.getName() + "/" + feature.getVersion();
                 } else {
@@ -280,7 +281,7 @@ public class Main {
             } else {
                 idString = "generated/feature/1.0.0";
             }
-            final org.apache.sling.feature.Feature f = new org.apache.sling.feature.Feature(ArtifactId.fromMvnId(idString));
+            final org.apache.sling.feature.Feature f = new org.apache.sling.feature.Feature(ArtifactId.parse(idString));
             features.add(f);
 
             buildFromFeature(feature, f.getBundles(), f.getConfigurations(), f.getExtensions(), f.getFrameworkProperties());
@@ -297,7 +298,7 @@ public class Main {
         }
 
         // hard coded dependency to launchpad api
-        app.getBundles().add(1, new org.apache.sling.feature.Artifact(ArtifactId.fromMvnId("org.apache.sling/org.apache.sling.launchpad.api/1.2.0")));
+        app.getBundles().add(1, new org.apache.sling.feature.Artifact(ArtifactId.parse("org.apache.sling/org.apache.sling.launchpad.api/1.2.0")));
         // sling.properties (TODO)
         if ( propsFile == null ) {
             app.getFrameworkProperties().put("org.osgi.framework.bootdelegation", "sun.*,com.sun.*");
