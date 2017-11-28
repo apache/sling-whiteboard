@@ -141,4 +141,9 @@ public class ArtifactIdTest {
         assertEquals("zip", id.getType());
         assertEquals("foo", id.getClassifier());
     }
+
+    @Test public void testClassifierAndTypeToMvnId() {
+        final ArtifactId id = new ArtifactId("group.a", "artifact.b", "1.0", "foo", "zip");
+        assertEquals("group.a:artifact.b:zip:foo:1.0", id.toMvnId());
+    }
 }
