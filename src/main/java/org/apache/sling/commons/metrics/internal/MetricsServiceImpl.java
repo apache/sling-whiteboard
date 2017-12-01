@@ -61,6 +61,11 @@ public class MetricsServiceImpl implements MetricsService {
 
     private JmxReporter reporter;
 
+    /*  WARNING: if any OSGi configuration parameters are added to this class
+     *  we’ll need to handle the service restart case to prevent service
+     *  references retrieved using MetricsServiceFactory from becoming
+     *  stale. See discussion in SLING-6702.
+     */
     @Activate
     private void activate(BundleContext context, Map<String, Object> config) {
         enableJMXReporter();
