@@ -28,7 +28,7 @@
 
     <artifactId>org.apache.sling.commons.metrics</artifactId>
     <packaging>bundle</packaging>
-    <version>1.2.3-SNAPSHOT</version>
+    <version>1.2.4</version>
 
     <name>Apache Sling Metrics</name>
     <description>
@@ -45,7 +45,8 @@
         <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-commons-metrics.git</connection>
         <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-commons-metrics.git</developerConnection>
         <url>https://gitbox.apache.org/repos/asf?p=sling-org-apache-sling-commons-metrics.git</url>
-    </scm>
+      <tag>org.apache.sling.commons.metrics-1.2.4</tag>
+  </scm>
 
     <build>
         <plugins>
