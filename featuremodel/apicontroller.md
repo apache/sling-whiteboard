@@ -18,7 +18,7 @@ Without any further information, API is globally visible by default. However, fo
 A feature can have an additional extension JSON named regions:
 
     "regions" : {
-        "region" : "platform" // name of the region,
+        "region" : "platform", // name of the region
         "global-exports" : [
             "org.apache.sling.resource.api.*"
         ],

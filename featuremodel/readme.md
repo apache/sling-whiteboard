@@ -1,3 +1,28 @@
+# An Introduction to the Feature Model
+
+Typical OSGi applications are assembled out of bundles and configured through both, OSGi configurations and framework properties. Depending on the nature of the application, there might be additional artifact types involved.
+
+While bundles already provide a good way to define rather small, coherent modules, there is often a need to distribute or provision a set of such bundles together with some configuration. OSGi Deployment Admin and OSGi subsystems are two ways of trying to solve this issue. The feature model of Apache Karaf and the provisioning model of Apache Sling are two other approaches.
+
+The goal of this proposal is to define a common way of describing such features and how features are combined to either create higher level features or an OSGi applications.
+
+# Requirements
+
+The feature model should at least meet the following requirements:
+
+* A feature model must have a unique identifier
+* A feature model must have a version
+* The feature model should be described through a text format which is easily consumable by both humans and machines
+* It must be possible to list the bundles belonging to the feature
+* It must be possible to list the OSGi configurations for this features
+* It must be possible to associate an OSGi configuration with a bundle within a features
+* It must be possible to define framework properties
+* The feature model must be extensible to allow other (proprietary) Artifacts
+* The feature model must describe how several features are aggregated to build a higher level feature
+* The feature model must describe how several features are aggregated to build an application
+* A feature must be able to specify additional requirements and capabilities that extend the requirements and capabilities from the contained artifacts.
+* More...
+
 # Prototype for a new Provisioning / Configuration Model for OSGi based applications
 
 The current model to describe OSGi applications is based on Apache Sling's provisioning model (see https://sling.apache.org/documentation/development/slingstart.html)
