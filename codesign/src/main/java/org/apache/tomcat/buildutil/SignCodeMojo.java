@@ -130,7 +130,7 @@ public class SignCodeMojo extends AbstractMojo {
     private boolean includeProjectArtifact;
     
     /**
-     * Use <tt>Java TEST signing Sha256</tt> for testing and <tt>Java signing Sha256</tt> for prod 
+     * Use <tt>Java TEST Signing Sha256</tt> for testing and <tt>Java Signing Sha256</tt> for prod 
      */
     @Parameter(required = true)
     private String signingService;
