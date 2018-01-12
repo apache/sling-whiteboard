@@ -1,0 +1,17 @@
+{
+	"jcr:primaryType": "app:Page",
+	"reallyExceedinglyLongPropertyNameThatIsGreaterThan16bytes":"workswell",
+	"jcr:content": {
+		"jcr:primaryType": "app:PageContent",
+		"jcr:title": "English"
+	},
+	"testpage1": {
+		"jcr:primaryType": "app:Page",
+		"jcr:content": {
+			"jcr:primaryType": "app:PageContent",
+			"jcr:title": "English",
+			"foo": ["foo", "dog"],
+			"bar": ["\uD83D\uDD122u7G5DT0uPXQ1606a+NERe9EVtuH6PR31MO7FjN4NZw+KKc=", "\uD83D\uDD12zCjPz1RunLoYCpuJa+NERSbI0/XQUmrofL8ybD0+nCD1IWU="]
+		}
+	}
+}

@@ -1,0 +1,17 @@
+{
+	"jcr:primaryType": "app:Page",
+	"reallyExceedinglyLongPropertyNameThatIsGreaterThan16bytes":"workswell",
+	"jcr:content": {
+		"jcr:primaryType": "app:PageContent",
+		"jcr:title": "English"
+	},
+	"testpage1": {
+		"jcr:primaryType": "app:Page",
+		"jcr:content": {
+			"jcr:primaryType": "app:PageContent",
+			"jcr:title": "English",
+			"foo": ["foo", "dog"],
+			"bar": ["|Zm9v", "|ZG9n"]
+		}
+	}
+}

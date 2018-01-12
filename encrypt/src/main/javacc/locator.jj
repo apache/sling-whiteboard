@@ -1,0 +1,333 @@
+/*
+ * Copyright 2016 Jason E Bailey
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+options
+{
+  STATIC = false;
+  UNICODE_INPUT = true;
+}
+
+PARSER_BEGIN(Parser)
+package com.sas.sling.resource.parser;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import com.sas.sling.resource.parser.node.*;
+import com.sas.sling.resource.parser.predicates.*;
+
+public final class Parser
+{
+  private NodesFactory factory = new NodesFactory();
+
+}
+
+PARSER_END(Parser)
+
+SKIP :
+{
+  " "
+| "\t"
+}
+
+TOKEN :
+{
+  < #ALPHA : [ "a"-"z", "A"-"Z" ] >
+| < #ESCAPED_CHAR : "\\" ~[ ] >
+| < #DOT: "." >
+| < #PLUS: "+" >
+| < #MINUS: "-" >
+| < #DIGIT: [ "0"-"9" ] >
+| < #EXP: ["e","E"] ( < PLUS > | < MINUS > )? >
+}
+
+TOKEN :
+{
+  < UNRESERVED_STR : (~[ "\"", "'", "(", ")", ",", "=", "<", ">", " ", "[", "]","+","-",".","0"-"9" ])+ >
+| < SINGLE_QUOTED_STR :
+    (
+      "'"
+      (
+        < ESCAPED_CHAR >
+      | ~[ "'", "\\" ]
+      )*
+      "'"
+    ) >
+| < DOUBLE_QUOTED_STR :
+    (
+      "\""
+      (
+        < ESCAPED_CHAR >
+      | ~[ "\"", "\\" ]
+      )*
+      "\""
+    ) >
+}
+
+TOKEN :
+{
+  < AND :
+    (
+      " && "
+    | " and "
+    ) >
+| < OR :
+    (
+      " || "
+    | " or "
+    ) >
+| < NULL : " null" >
+| < TRUE : " true" >
+| < FALSE : " false" >
+| < LPAREN : "(" >
+| < RPAREN : ")" >
+| < LBRACKET : "[" >
+| < RBRACKET : "]" >
+| < COMMA : "," >
+| < COMP :
+    (
+      ">"
+    | "<"
+    | "="
+    | "!"
+    | " in"
+    | " is"
+    | " less"
+    | " greater"
+    | " than"
+    | " like"
+    | " not"
+    | " contains"
+    | " any"
+    | " in"
+    )+ >
+}
+
+
+TOKEN: {
+        < NUMBER:  <INTEGER> | <INTEGER> <FRACTIONAL_DIGITS> | <INTEGER> <EXPONENT> | <INTEGER> <FRACTIONAL_DIGITS> <EXPONENT> >
+    |   < INTEGER: (<MINUS>)? ( <DIGITS> ) > //support leading zeros
+    |   < FRACTIONAL_DIGITS: <DOT> <DIGITS> >
+    |   < EXPONENT: <EXP> <DIGITS> >
+    |   < DIGITS: ( <DIGIT> )+ >
+}
+
+Node Input() :
+{
+  final Node node;
+}
+{
+  node = Or() < EOF >
+  {
+    return node;
+  }
+}
+
+Node Or() :
+{
+  final List < Node > nodes = new ArrayList < Node > (3);
+  Node node;
+}
+{
+  node = And()
+  {
+    nodes.add(node);
+  }
+  (
+    < OR > node = And()
+    {
+      nodes.add(node);
+    }
+  )*
+  {
+    return nodes.size() != 1 ? factory.createOrNode(nodes) : nodes.get(0);
+  }
+}
+
+Node And() :
+{
+  final List < Node > nodes = new ArrayList < Node > (3);
+  Node node;
+}
+{
+  node = Constraint()
+  {
+    nodes.add(node);
+  }
+  (
+    < AND > node = Constraint()
+    {
+      nodes.add(node);
+    }
+  )*
+  {
+    return nodes.size() != 1 ? factory.createAndNode(nodes) : nodes.get(0);
+  }
+}
+
+Node Constraint() :
+{
+  final Node node;
+}
+{
+  (
+    node = Group()
+  | node = Comparison()
+  )
+  {
+    return node;
+  }
+}
+
+Node Group() :
+{
+  final Node node;
+}
+{
+  < LPAREN > node = Or() < RPAREN >
+  {
+    return node;
+  }
+}
+
+Node Comparison() :
+{
+  Node leftValue;
+  Token op;
+  Node rightValue;
+}
+{
+  leftValue = Argument()
+  op = < COMP >
+  rightValue = Argument()
+  {
+    String comparison = op.image;
+    Optional<ComparisonOperator> oper = ComparisonOperator.getSimpleOperator(comparison);
+    if (!oper.isPresent()) {
+      throw new TokenMgrError("'" + comparison + "' is not a valid comparison", TokenMgrError.LEXICAL_ERROR);
+    }
+    return factory.createComparisonNode(oper.get(), leftValue, rightValue);
+  }
+}
+
+
+String Operator() :
+{}
+{
+  < COMP >
+  {
+    return token.image;
+  }
+}
+
+List < Node > Arguments() :
+{
+  Object value = new ArrayList();
+}
+{
+  (
+    < LPAREN > [ value = CommaSepArguments() ] < RPAREN >
+  )
+  {
+    return (List) value;
+  }
+| 
+  value = Argument()
+  {
+    return Arrays.asList((Node) value);
+  }
+}
+
+List < Node > CommaSepArguments() :
+{
+  final List < Node > list = new ArrayList < Node > (3);
+  Node arg;
+}
+{
+  arg = Argument()
+  {
+    list.add(arg);
+  }
+  (
+    < COMMA > 
+    arg = Argument()
+    {
+      list.add(arg);
+    }
+  )*
+  {
+    return list;
+  }
+}
+
+Node Argument() :
+{
+  Node selector = null;
+}
+{
+  (
+    selector = Literal()
+  | selector = Property()
+  | selector = Function()
+  )
+  {
+    return selector;
+  }
+}
+
+Node Function() :
+{
+  Node selector = null;
+  List < Node > children = null;
+}
+{
+  < UNRESERVED_STR >
+  {
+    selector = factory.createArgument(token.kind, token.image);
+  }
+  children = Arguments()
+  {
+    return factory.createFunction(selector, children);
+  }
+}
+
+Node Literal() :
+{
+}
+{
+  (
+    < DOUBLE_QUOTED_STR >
+  | < SINGLE_QUOTED_STR >
+  | < NUMBER >
+  | < NULL >
+  | < TRUE >
+  | < FALSE >
+  )
+  {
+    return factory.createArgument(token.kind, token.image);
+  }
+}
+
+Node Property() :
+{
+  Token string = null;
+}
+{
+  < LBRACKET > string = < UNRESERVED_STR > < RBRACKET >
+  {
+    return factory.createPropertySelector(string.image);
+  }
+}
