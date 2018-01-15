@@ -93,19 +93,19 @@ public class SignCodeMojo extends AbstractMojo {
     /**
      * The username of the API user
      */
-    @Parameter(required = true)
+    @Parameter(required = true, defaultValue="${codesign.userName}")
     private String userName;
     
     /**
      * The password of the API user
      */
-    @Parameter(required = true)
+    @Parameter(required = true, defaultValue="${codesign.password}")
     private String password;
     
     /**
      * The partner code, initially sent via an email to you titled 'Your Secure App Service API username'
      */
-    @Parameter(required = true)
+    @Parameter(required = true, defaultValue="${codesign.partnerCode}")
     private String partnerCode;
     
     @Parameter(defaultValue = "${project.name}")
@@ -114,10 +114,10 @@ public class SignCodeMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project.version}")
     private String applicationVersion;
 
-    @Parameter(required = true)
+    @Parameter(required = true, defaultValue="${codesign.keyStorePassword}")
     private String keyStorePassword;
     
-    @Parameter(required = true)
+    @Parameter(required = true, defaultValue="${codesign.keyStore}")
     private String keyStore;
     
     @Parameter
@@ -132,7 +132,7 @@ public class SignCodeMojo extends AbstractMojo {
     /**
      * Use <tt>Java TEST Signing Sha256</tt> for testing and <tt>Java Signing Sha256</tt> for prod 
      */
-    @Parameter(required = true)
+    @Parameter(required = true, defaultValue="${codesign.signingService}")
     private String signingService;
 
 
@@ -218,7 +218,7 @@ public class SignCodeMojo extends AbstractMojo {
         SOAPConnectionFactory soapConnectionFactory = SOAPConnectionFactory.newInstance();
         SOAPConnection connection = soapConnectionFactory.createConnection();
 
-        log("Sending singing request to server and waiting for response");
+        log("Sending signing request to server and waiting for response");
         SOAPMessage response = connection.call(message, SIGNING_SERVICE_URL);
 
         if ( getLog().isDebugEnabled()) {
