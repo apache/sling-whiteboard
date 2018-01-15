@@ -57,6 +57,26 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 // file copied and adapted from http://svn.apache.org/viewvc/tomcat/trunk/java/org/apache/tomcat/buildutil/SignCode.java?revision=1789744&view=co
+/**
+ * The <tt>SignMojo</tt> executs a signing operation against the Symantec Secure App Service
+ * 
+ * <p>It uses the SOAP API to send the artifacts for signing and download them.</p>
+ * 
+ * <p>The recommended usage of the plugin is to define the sensitive parameters in a profile
+ * in the <tt>settings.xml</tt> file:
+ * 
+ * <ol>
+ *   <li>codesign.userName</li>
+ *   <li>codesign.password</li>
+ *   <li>codesign.partnerCode</li>
+ *   <li>codesign.keyStore</li>
+ *   <li>codesign.keyStorePassword</li>
+ * </ol>
+ * </p>
+ * 
+ * <p>Following that, the plugin configuration can be done in the pom.xml file for non-sensitive parameters.</p>
+ * 
+ */
 @Mojo(
         name = "sign",
         defaultPhase = LifecyclePhase.PACKAGE,
@@ -114,20 +134,26 @@ public class SignCodeMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project.version}")
     private String applicationVersion;
 
-    @Parameter(required = true, defaultValue="${codesign.keyStorePassword}")
-    private String keyStorePassword;
-    
     @Parameter(required = true, defaultValue="${codesign.keyStore}")
     private String keyStore;
     
+    @Parameter(required = true, defaultValue="${codesign.keyStorePassword}")
+    private String keyStorePassword;
+    
+    /**
+     * Allows definition of additional artifacts to sign
+     */
     @Parameter
     private FileSet[] artifactSets;
+
+    /**
+     * When set to true the project's primary artifact will be added to the list of files to sign
+     */
+    @Parameter
+    private boolean includeProjectArtifact;
     
     @Parameter(property="codesign.sslDebug")
     private boolean sslDebug;
-    
-    @Parameter
-    private boolean includeProjectArtifact;
     
     /**
      * Use <tt>Java TEST Signing Sha256</tt> for testing and <tt>Java Signing Sha256</tt> for prod 
@@ -139,7 +165,6 @@ public class SignCodeMojo extends AbstractMojo {
     @Override
     public void execute() throws MojoExecutionException {
     	
-    	// TODO - do we want configurable files to sign?
     	List<File> filesToSign = new ArrayList<>();
     	
     	if ( includeProjectArtifact )
@@ -158,8 +183,10 @@ public class SignCodeMojo extends AbstractMojo {
     		}
     	}
     	
-    	if ( filesToSign.isEmpty() ) 
+    	if ( filesToSign.isEmpty() ) { 
     		getLog().info("No files to sign, skipping");
+    		return;
+    	}
     	
     	for ( File toSign : filesToSign )
     		getLog().info("Would sign " + toSign);
@@ -167,8 +194,9 @@ public class SignCodeMojo extends AbstractMojo {
         // Set up the TLS client
         System.setProperty("javax.net.ssl.keyStore", keyStore);
         System.setProperty("javax.net.ssl.keyStorePassword", keyStorePassword);
+        String oldSslDebug = null;
     	if ( sslDebug ) {
-    	    System.setProperty("javax.net.debug","all");
+    	    oldSslDebug = System.setProperty("javax.net.debug","all");
     	}
     	
         try {
@@ -176,6 +204,10 @@ public class SignCodeMojo extends AbstractMojo {
             downloadSignedFiles(filesToSign, signingSetID);
         } catch (SOAPException | IOException e) {
             throw new MojoExecutionException("Signing failed : " + e.getMessage(), e);
+        } finally {
+            if ( sslDebug ) {
+                System.setProperty("javax.net.debug", oldSslDebug);
+            }
         }
     }
 
