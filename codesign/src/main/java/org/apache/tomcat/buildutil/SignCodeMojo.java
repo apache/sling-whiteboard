@@ -206,7 +206,11 @@ public class SignCodeMojo extends AbstractMojo {
             throw new MojoExecutionException("Signing failed : " + e.getMessage(), e);
         } finally {
             if ( sslDebug ) {
-                System.setProperty("javax.net.debug", oldSslDebug);
+                if ( oldSslDebug != null ) {
+                    System.setProperty("javax.net.debug", oldSslDebug);
+                } else {
+                    System.clearProperty("javax.net.debug");
+                }
             }
         }
     }
