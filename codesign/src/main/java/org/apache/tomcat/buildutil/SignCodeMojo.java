@@ -273,6 +273,7 @@ public class SignCodeMojo extends AbstractMojo {
 
         String signingSetID = null;
         String signingSetStatus = null;
+        StringBuilder errors = new StringBuilder();
 
         for (int i = 0; i < returnNodes.getLength(); i++) {
             Node returnNode = returnNodes.item(i);
@@ -280,15 +281,40 @@ public class SignCodeMojo extends AbstractMojo {
                 signingSetID = returnNode.getTextContent();
             } else if (returnNode.getLocalName().equals("signingSetStatus")) {
                 signingSetStatus = returnNode.getTextContent();
+            } else if (returnNode.getLocalName().equals("result") ) {
+                final NodeList returnChildNodes = returnNode.getChildNodes();
+                for (int j = 0; j < returnChildNodes.getLength(); j++ ) {
+                    if ( returnChildNodes.item(j).getLocalName().equals("errors") ) {
+                        extractErrors(returnChildNodes.item(j), errors);
+                    }
+                }
             }
         }
 
         if (!signingService.contains("TEST") && !"SIGNED".equals(signingSetStatus) ||
                 signingService.contains("TEST") && !"INITIALIZED".equals(signingSetStatus) ) {
-            throw new BuildException("Signing failed. Status was: " + signingSetStatus);
+            throw new BuildException("Signing failed. Status was: " + signingSetStatus + " . Reported errors: " + errors + ".");
         }
 
         return signingSetID;
+    }
+
+
+    private void extractErrors(Node errorsNode, StringBuilder errors) {
+        
+        for (int i = 0 ; i < errorsNode.getChildNodes().getLength(); i++) {
+            Node errorNode = errorsNode.getChildNodes().item(i);
+            final NodeList errorChildNodes = errorNode.getChildNodes();
+            for ( int j = 0; j < errorChildNodes.getLength(); j++) {
+                Node item = errorChildNodes.item(j);
+                if ( item.getLocalName().equals("errorMessage") ) {
+                    if ( errors.length() > 0 ) {
+                        errors.append(" ,");
+                    }
+                    errors.append(item.getTextContent());
+                }
+            }
+        }
     }
 
     // pass-through method to make it easier to copy/paste code from tomcat's ant mojos
