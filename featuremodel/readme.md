@@ -1,10 +1,13 @@
 # An Introduction to the Feature Model
 
-Typical OSGi applications are assembled out of bundles and configured through both, OSGi configurations and framework properties. Depending on the nature of the application, there might be additional artifact types involved.
+Typical OSGi applications are assembled out of bundles and configured through both, OSGi configurations and framework properties (though these less frequently used than OSGi configurations). Depending on the nature of the application, there might be additional artifact types involved.
 
 While bundles already provide a good way to define rather small, coherent modules, there is often a need to distribute or provision a set of such bundles together with some configuration. OSGi Deployment Admin and OSGi subsystems are two ways of trying to solve this issue. The feature model of Apache Karaf and the provisioning model of Apache Sling are two other approaches.
 
-The goal of this proposal is to define a common way of describing such features and how features are combined to either create higher level features or an OSGi applications.
+The goals of this proposal are:
+
+* Defining a common mechanism to describe such features.
+* Describe a common algorithm to combine features to either create higher level features or an OSGi applications.
 
 # Requirements
 
@@ -13,59 +16,17 @@ The feature model should at least meet the following requirements:
 * A feature model must have a unique identifier
 * A feature model must have a version
 * The feature model should be described through a text format which is easily consumable by both humans and machines
-* It must be possible to list the bundles belonging to the feature
+* It must be possible to list the bundles belonging to the feature. The bundle definition is complete, meaning it also contains the version or exact artifact.
 * It must be possible to list the OSGi configurations for this features
 * It must be possible to associate an OSGi configuration with a bundle within a features
 * It must be possible to define framework properties
 * The feature model must be extensible to allow other (proprietary) Artifacts
+* A feature must be able to extend other features.
 * The feature model must describe how several features are aggregated to build a higher level feature
 * The feature model must describe how several features are aggregated to build an application
 * A feature must be able to specify additional requirements and capabilities that extend the requirements and capabilities from the contained artifacts.
-* More...
-
-# Prototype for a new Provisioning / Configuration Model for OSGi based applications
-
-The current model to describe OSGi applications is based on Apache Sling's provisioning model (see https://sling.apache.org/documentation/development/slingstart.html)
-
-## Short description of Sling's provisioning model:
-
-* Text based file format, defining features (several in a single file)
-* A feature can have a name and version (both optional)
-* A feature consists of sections, well defined ones like the run modes and user defined sections
-* A run mode has artifacts (with start levels), configurations and settings (framework properties)
-* Variables can be used throughout a feature
-* Inheritance is supported on a feature base through artifacts
-* Configuration merging is possible
-
-## Advantages of the provisioning model
-
-* Well known by Sling developers, has been introduced some years ago. Some tooling around it
-* Very concise, especially for defining artifacts
-* Extensible, custom sections can be added, e.g used by Sling for repoinit, subsystem definitions, content package definitions
-* Easy diff
-* Special API with semantics related to the prov model (not a general purpose config API)
-
-## Disadvantages of the provisioning model
-
-* Single file can contain more than one feature
-* Custom DSL - no standard format (like JSON)
-* Inheritance and custom artifacts (content packages) are mixed with bundles, which makes processing and understanding more complicated
-* Adding additional info to artifacts looks strange
-* Two formats for configurations and now there is an official JSON based format defined through OSGi R7
-* Strange object relationship between feature and run modes
-* API (object relation) differs from text file (to make the text format easier)
-* Tooling only available as maven plugins, not separate usable
-* Run mode handling is complicating the feature files and processing of those
-* Tightly coupled with the way Sling's launchpad works, therefore no independent OSGi format
-
-# Design Criteria for a model
-
-* A feature is a separate file with a required name and version
-* A feature can include other features
-* No support for run modes in the model - run modes can be modeled through separate features
-* OSGi JSON format for configurations
-* Support for standard OSGi artifacts as well as custom artifacts (like content packages)
-* Support OSGi requirements and capabilities for dependency handling
+* A feature should be describable through a single file.
+* Multiple features must be described in multiple files-
 
 # Prototype
 
@@ -88,6 +49,10 @@ A model file describes a feature. A feature consists of:
   * A set of content packages described through maven coordinates
     * Additional metadata like a hash etc. (optional)
     * Configurations (optional)
+
+Notes for users of Apache Sling's provisioning model:
+
+* No support for run modes in the model - run modes can be modeled through separate features
 
 # Feature Identity
 
@@ -255,7 +220,7 @@ To avoid this, a feature might contain an additional section, named "reqscaps" (
         }
 
 
-# Provisioning Applications
+# Appendix A : Provisioning Applications
 
 An application jar can contain a set of features (including the listed artifacts).
 
@@ -283,3 +248,38 @@ An optional application configuration further defines the possibilites:
 
 Such a configuration is required for an application, at least one feature needs to be listed in either the features or the options section.
 All features listed in the features section will be added to the application, the ones listed in options are optional and depending on the settings and user input will either be added or left out. In addition all available features of an application will be used to make the application runnable (resolvable).
+
+# Appendix B : Apache Sling's Provisioning Model
+
+The documentation for Apache Sling's provisioning model can be found here: https://sling.apache.org/documentation/development/slingstart.html
+
+## Short description of Sling's provisioning model:
+
+* Text based file format, defining features (several in a single file)
+* A feature can have a name and version (both optional)
+* A feature consists of sections, well defined ones like the run modes and user defined sections
+* A run mode has artifacts (with start levels), configurations and settings (framework properties)
+* Variables can be used throughout a feature
+* Inheritance is supported on a feature base through artifacts
+* Configuration merging is possible
+
+## Advantages of the provisioning model
+
+* Well known by Sling developers, has been introduced some years ago. Some tooling around it
+* Very concise, especially for defining artifacts
+* Extensible, custom sections can be added, e.g used by Sling for repoinit, subsystem definitions, content package definitions
+* Easy diff
+* Special API with semantics related to the prov model (not a general purpose config API)
+
+## Disadvantages of the provisioning model
+
+* Single file can contain more than one feature
+* Custom DSL - no standard format (like JSON)
+* Inheritance and custom artifacts (content packages) are mixed with bundles, which makes processing and understanding more complicated
+* Adding additional info to artifacts looks strange
+* Two formats for configurations and now there is an official JSON based format defined through OSGi R7
+* Strange object relationship between feature and run modes
+* API (object relation) differs from text file (to make the text format easier)
+* Tooling only available as maven plugins, not separate usable
+* Run mode handling is complicating the feature files and processing of those
+* Tightly coupled with the way Sling's launchpad works, therefore no independent OSGi format
