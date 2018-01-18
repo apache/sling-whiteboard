@@ -18,60 +18,117 @@ package org.apache.sling.feature;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.NoSuchElementException;
 import java.util.TreeMap;
 
 /**
- * Bundles groups bundle {@code Artifact}s by start level.
+ * Bundles groups a list of bundles {@code Artifact} and provides a means
+ * to sort them based on start order.
  */
-public class Bundles implements Iterable<Map.Entry<Integer, Artifact>> {
+public class Bundles implements Iterable<Artifact> {
 
-    /** Map of bundles grouped by start level */
-    private final Map<Integer, List<Artifact>> startLevelMap = new TreeMap<>();
+    /** The list of bundles. */
+    private final List<Artifact> bundles = new ArrayList<>();
 
     /**
-     * Get the map of all bundles sorted by start level. The map is sorted
-     * and iterating over the keys is done in start level order.
-     * @return The map of bundles. The map is unmodifiable.
+     * Get the start order of a bundle.
+     * @param bundle The bundle
+     * @return The start order, if no start order is defined, {@code 0} is returned.
      */
-    public Map<Integer, List<Artifact>> getBundlesByStartLevel() {
-        return Collections.unmodifiableMap(this.startLevelMap);
+    public static int getStartOrder(final Artifact bundle) {
+        final String order = bundle.getMetadata().get(Artifact.KEY_START_ORDER);
+        final int startOrder;
+        if ( order != null ) {
+            startOrder = Integer.parseInt(order);
+        } else {
+            startOrder = 0;
+        }
+
+        return startOrder;
     }
 
     /**
-     * Add an artifact in the given start level.
-     * @param startLevel The start level
+     * Get the map of all bundles sorted by start order. The map is sorted
+     * and iterating over the keys is done in start level order.
+     * @return The map of bundles. The map is unmodifiable.
+     */
+    public Map<Integer, List<Artifact>> getBundlesByStartOrder() {
+        final Map<Integer, List<Artifact>> startOrderMap = new TreeMap<>(new Comparator<Integer>() {
+
+            @Override
+            public int compare(final Integer o1, final Integer o2) {
+                if ( o1 == o2 ) {
+                    return 0;
+                }
+                if ( o1 == 0 ) {
+                    return 1;
+                }
+                if ( o2 == 0 ) {
+                    return -1;
+                }
+                return o1-o2;
+            }
+        });
+
+        for(final Artifact bundle : this.bundles) {
+            final int startOrder = getStartOrder(bundle);
+            List<Artifact> list = startOrderMap.get(startOrder);
+            if ( list == null ) {
+                list = new ArrayList<>();
+                startOrderMap.put(startOrder, list);
+            }
+            list.add(bundle);
+        }
+        return Collections.unmodifiableMap(startOrderMap);
+    }
+
+    public List<Map.Entry<Integer, Artifact>> getAllBundles() {
+        final List<Map.Entry<Integer, Artifact>> list = new ArrayList<>();
+        for(final Artifact a : this) {
+            list.add(new Map.Entry<Integer, Artifact>() {
+
+                @Override
+                public Artifact setValue(Artifact value) {
+                    return null;
+                }
+
+                @Override
+                public Artifact getValue() {
+                    // TODO Auto-generated method stub
+                    return a;
+                }
+
+                @Override
+                public Integer getKey() {
+                    return getStartOrder(a);
+                }
+            });
+        }
+        return list;
+    }
+
+    /**
+     * Add an artifact as a bundle.
      * @param bundle The bundle
      */
-    public void add(final int startLevel, final Artifact bundle) {
-        List<Artifact> list = this.startLevelMap.get(startLevel);
-        if ( list == null ) {
-            list = new ArrayList<>();
-            this.startLevelMap.put(startLevel, list);
-        }
-        list.add(bundle);
+    public void add(final Artifact bundle) {
+        this.bundles.add(bundle);
     }
 
     /**
      * Remove the exact artifact.
-     * All start levels are searched for such an artifact. The first one found is removed.
+     * All start orders are searched for such an artifact. The first one found is removed.
      * @param id The artifact id
      * @return {@code true} if the artifact has been removed
      */
     public boolean removeExact(final ArtifactId id) {
-        for(final Map.Entry<Integer, List<Artifact>> entry : this.startLevelMap.entrySet()) {
-            for(final Artifact artifact : entry.getValue()) {
-                if ( artifact.getId().equals(id)) {
-                    entry.getValue().remove(artifact);
-                    if ( entry.getValue().isEmpty() ) {
-                        this.startLevelMap.remove(entry.getKey());
-                    }
-                    return true;
-                }
+        for(final Artifact artifact : this.bundles) {
+            if ( artifact.getId().equals(id)) {
+                this.bundles.remove(artifact);
+                return true;
             }
         }
         return false;
@@ -79,50 +136,46 @@ public class Bundles implements Iterable<Map.Entry<Integer, Artifact>> {
 
     /**
      * Remove the same artifact, neglecting the version.
-     * All start levels are searched for such an artifact. The first one found is removed.
+     * All start orders are searched for such an artifact. The first one found is removed.
      * @param id The artifact id
      * @return {@code true} if the artifact has been removed
      */
     public boolean removeSame(final ArtifactId id) {
-        for(final Map.Entry<Integer, List<Artifact>> entry : this.startLevelMap.entrySet()) {
-            for(final Artifact artifact : entry.getValue()) {
-                if ( artifact.getId().isSame(id)) {
-                    entry.getValue().remove(artifact);
-                    if ( entry.getValue().isEmpty() ) {
-                        this.startLevelMap.remove(entry.getKey());
-                    }
-                    return true;
-                }
+        for(final Artifact artifact : this.bundles) {
+            if ( artifact.getId().isSame(id)) {
+                this.bundles.remove(artifact);
+                return true;
             }
         }
         return false;
     }
 
     /**
-     * Clear the bundles map.
+     * Clear the bundles list.
      */
     public void clear() {
-        this.startLevelMap.clear();
+        this.bundles.clear();
     }
 
     /**
-     * Get start level and artifact for the given id, neglecting the version
+     * Get start order and artifact for the given id, neglecting the version
      * @param id The artifact id
-     * @return A map entry with start level and artifact, {@code null} otherwise
+     * @return A map entry with start order and artifact, {@code null} otherwise
      */
     public Map.Entry<Integer, Artifact> getSame(final ArtifactId id) {
-        for(final Map.Entry<Integer, Artifact> entry : this) {
-            if ( entry.getValue().getId().isSame(id)) {
+        for(final Artifact bundle : this) {
+            if ( bundle.getId().isSame(id)) {
+                final int startOrder = getStartOrder(bundle);
                 return new Map.Entry<Integer, Artifact>() {
 
                     @Override
                     public Integer getKey() {
-                        return entry.getKey();
+                        return startOrder;
                     }
 
                     @Override
                     public Artifact getValue() {
-                        return entry.getValue();
+                        return bundle;
                     }
 
                     @Override
@@ -141,8 +194,8 @@ public class Bundles implements Iterable<Map.Entry<Integer, Artifact>> {
      * @return {@code true} if the artifact exists
      */
     public boolean containsExact(final ArtifactId id) {
-        for(final Map.Entry<Integer, Artifact> entry : this) {
-            if ( entry.getValue().getId().equals(id)) {
+        for(final Artifact entry : this) {
+            if ( entry.getId().equals(id)) {
                 return true;
             }
         }
@@ -155,8 +208,8 @@ public class Bundles implements Iterable<Map.Entry<Integer, Artifact>> {
      * @return {@code true} if the artifact exists
      */
     public boolean containsSame(final ArtifactId id) {
-        for(final Map.Entry<Integer, Artifact> entry : this) {
-            if ( entry.getValue().getId().isSame(id)) {
+        for(final Artifact entry : this) {
+            if ( entry.getId().isSame(id)) {
                 return true;
             }
         }
@@ -167,74 +220,12 @@ public class Bundles implements Iterable<Map.Entry<Integer, Artifact>> {
      * Iterate over all bundles
      */
     @Override
-    public Iterator<Map.Entry<Integer, Artifact>> iterator() {
-        final Iterator<Map.Entry<Integer, List<Artifact>>> mainIter = this.startLevelMap.entrySet().iterator();
-        return new Iterator<Map.Entry<Integer,Artifact>>() {
-
-            private Map.Entry<Integer, Artifact> next = seek();
-
-            private Integer level;
-
-            private Iterator<Artifact> innerIter;
-
-            private Map.Entry<Integer, Artifact> seek() {
-                Map.Entry<Integer, Artifact> entry = null;
-                while ( this.innerIter != null || mainIter.hasNext() ) {
-                    if ( innerIter != null ) {
-                        if ( innerIter.hasNext() ) {
-                            final Artifact a = innerIter.next();
-                            final Integer l = this.level;
-                            entry = new Map.Entry<Integer, Artifact>() {
-
-                                @Override
-                                public Integer getKey() {
-                                    return l;
-                                }
-
-                                @Override
-                                public Artifact getValue() {
-                                    return a;
-                                }
-
-                                @Override
-                                public Artifact setValue(Artifact value) {
-                                    throw new UnsupportedOperationException();
-                                }
-                            };
-                            break;
-                        } else {
-                            innerIter = null;
-                        }
-                    } else {
-                        final Map.Entry<Integer, List<Artifact>> e = mainIter.next();
-                        this.level = e.getKey();
-                        this.innerIter = e.getValue().iterator();
-                    }
-                }
-                return entry;
-            }
-
-            @Override
-            public boolean hasNext() {
-                return this.next != null;
-            }
-
-            @Override
-            public Entry<Integer, Artifact> next() {
-                final Entry<Integer, Artifact> result = next;
-                if ( result == null ) {
-                    throw new NoSuchElementException();
-                }
-                this.next = seek();
-                return result;
-            }
-
-        };
+    public Iterator<Artifact> iterator() {
+        return Collections.unmodifiableList(this.bundles).iterator();
     }
 
     @Override
     public String toString() {
-        return "Bundles [" + this.startLevelMap
-                + "]";
+        return "Bundles " + this.bundles;
     }
 }

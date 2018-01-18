@@ -26,6 +26,7 @@ import java.util.Map;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Bundles;
+import org.apache.sling.feature.BundlesTest;
 import org.apache.sling.feature.process.BuilderUtil.ArtifactMerge;
 import org.junit.Test;
 
@@ -33,9 +34,28 @@ public class BuilderUtilTest {
 
     private List<Map.Entry<Integer, Artifact>> getBundles(final Bundles f) {
         final List<Map.Entry<Integer, Artifact>> result = new ArrayList<>();
-        for(final Map.Entry<Integer, Artifact> entry : f) {
-            result.add(entry);
+        for(final Map.Entry<Integer, List<Artifact>> entry : f.getBundlesByStartOrder().entrySet()) {
+            for(final Artifact artifact : entry.getValue()) {
+                result.add(new Map.Entry<Integer, Artifact>() {
+
+                    @Override
+                    public Integer getKey() {
+                        return entry.getKey();
+                    }
+
+                    @Override
+                    public Artifact getValue() {
+                        return artifact;
+                    }
+
+                    @Override
+                    public Artifact setValue(Artifact value) {
+                        return null;
+                    }
+                });
+            }
         }
+
         return result;
     }
 
@@ -53,14 +73,14 @@ public class BuilderUtilTest {
     @Test public void testMergeBundlesWithAlgHighest() {
         final Bundles target = new Bundles();
 
-        target.add(1, new Artifact(ArtifactId.parse("g/a/1.0")));
-        target.add(2, new Artifact(ArtifactId.parse("g/b/2.0")));
-        target.add(3, new Artifact(ArtifactId.parse("g/c/2.5")));
+        target.add(BundlesTest.createBundle("g/a/1.0", 1));
+        target.add(BundlesTest.createBundle("g/b/2.0", 2));
+        target.add(BundlesTest.createBundle("g/c/2.5", 3));
 
         final Bundles source = new Bundles();
-        source.add(1, new Artifact(ArtifactId.parse("g/a/1.1")));
-        source.add(2, new Artifact(ArtifactId.parse("g/b/1.9")));
-        source.add(3, new Artifact(ArtifactId.parse("g/c/2.5")));
+        source.add(BundlesTest.createBundle("g/a/1.1", 1));
+        source.add(BundlesTest.createBundle("g/b/1.9", 2));
+        source.add(BundlesTest.createBundle("g/c/2.5", 3));
 
         BuilderUtil.mergeBundles(target, source, ArtifactMerge.HIGHEST);
 
@@ -74,14 +94,14 @@ public class BuilderUtilTest {
     @Test public void testMergeBundlesWithAlgLatest() {
         final Bundles target = new Bundles();
 
-        target.add(1, new Artifact(ArtifactId.parse("g/a/1.0")));
-        target.add(2, new Artifact(ArtifactId.parse("g/b/2.0")));
-        target.add(3, new Artifact(ArtifactId.parse("g/c/2.5")));
+        target.add(BundlesTest.createBundle("g/a/1.0", 1));
+        target.add(BundlesTest.createBundle("g/b/2.0", 2));
+        target.add(BundlesTest.createBundle("g/c/2.5", 3));
 
         final Bundles source = new Bundles();
-        source.add(1, new Artifact(ArtifactId.parse("g/a/1.1")));
-        source.add(2, new Artifact(ArtifactId.parse("g/b/1.9")));
-        source.add(3, new Artifact(ArtifactId.parse("g/c/2.5")));
+        source.add(BundlesTest.createBundle("g/a/1.1", 1));
+        source.add(BundlesTest.createBundle("g/b/1.9", 2));
+        source.add(BundlesTest.createBundle("g/c/2.5", 3));
 
         BuilderUtil.mergeBundles(target, source, ArtifactMerge.LATEST);
 
@@ -95,10 +115,10 @@ public class BuilderUtilTest {
     @Test public void testMergeBundlesDifferentStartlevel() {
         final Bundles target = new Bundles();
 
-        target.add(1, new Artifact(ArtifactId.parse("g/a/1.0")));
+        target.add(BundlesTest.createBundle("g/a/1.0", 1));
 
         final Bundles source = new Bundles();
-        source.add(2, new Artifact(ArtifactId.parse("g/a/1.1")));
+        source.add(BundlesTest.createBundle("g/a/1.1", 2));
 
         BuilderUtil.mergeBundles(target, source, ArtifactMerge.LATEST);
 
@@ -110,14 +130,14 @@ public class BuilderUtilTest {
     @Test public void testMergeBundles() {
         final Bundles target = new Bundles();
 
-        target.add(1, new Artifact(ArtifactId.parse("g/a/1.0")));
-        target.add(2, new Artifact(ArtifactId.parse("g/b/2.0")));
-        target.add(3, new Artifact(ArtifactId.parse("g/c/2.5")));
+        target.add(BundlesTest.createBundle("g/a/1.0", 1));
+        target.add(BundlesTest.createBundle("g/b/2.0", 2));
+        target.add(BundlesTest.createBundle("g/c/2.5", 3));
 
         final Bundles source = new Bundles();
-        source.add(1, new Artifact(ArtifactId.parse("g/d/1.1")));
-        source.add(2, new Artifact(ArtifactId.parse("g/e/1.9")));
-        source.add(3, new Artifact(ArtifactId.parse("g/f/2.5")));
+        source.add(BundlesTest.createBundle("g/d/1.1", 1));
+        source.add(BundlesTest.createBundle("g/e/1.9", 2));
+        source.add(BundlesTest.createBundle("g/f/2.5", 3));
 
         BuilderUtil.mergeBundles(target, source, ArtifactMerge.LATEST);
 

@@ -18,6 +18,7 @@ package org.apache.sling.feature;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
@@ -27,19 +28,28 @@ public class BundlesTest {
     @Test
     public void testIterator() {
         final Bundles bundles = new Bundles();
-        bundles.add(1, new Artifact(ArtifactId.parse("1/a/1")));
-        bundles.add(5, new Artifact(ArtifactId.parse("5/a/5")));
-        bundles.add(5, new Artifact(ArtifactId.parse("5/b/6")));
-        bundles.add(2, new Artifact(ArtifactId.parse("2/b/2")));
-        bundles.add(2, new Artifact(ArtifactId.parse("2/a/3")));
-        bundles.add(4, new Artifact(ArtifactId.parse("4/x/4")));
+        bundles.add(createBundle("1/a/1", 1));
+        bundles.add(createBundle("5/a/5", 5));
+        bundles.add(createBundle("5/b/6", 5));
+        bundles.add(createBundle("2/b/2", 2));
+        bundles.add(createBundle("2/a/3", 2));
+        bundles.add(createBundle("4/x/4", 4));
 
         int index = 1;
-        for(final Map.Entry<Integer, Artifact> entry : bundles) {
-            assertEquals(entry.getKey().toString(), entry.getValue().getId().getGroupId());
-            assertEquals(index, entry.getValue().getId().getOSGiVersion().getMajor());
-            index++;
+        for(final Map.Entry<Integer, List<Artifact>> entry : bundles.getBundlesByStartOrder().entrySet()) {
+            for(final Artifact a : entry.getValue()) {
+                assertEquals(entry.getKey().toString(), a.getId().getGroupId());
+                assertEquals(index, a.getId().getOSGiVersion().getMajor());
+                index++;
+            }
         }
         assertEquals(7, index);
+    }
+
+    public static Artifact createBundle(final String id, final int startOrder) {
+        final Artifact a = new Artifact(ArtifactId.parse(id));
+        a.getMetadata().put(Artifact.KEY_START_ORDER, String.valueOf(startOrder));
+
+        return a;
     }
 }

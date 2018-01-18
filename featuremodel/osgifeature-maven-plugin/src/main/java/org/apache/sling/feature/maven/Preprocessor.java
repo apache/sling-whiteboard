@@ -16,6 +16,16 @@
  */
 package org.apache.sling.feature.maven;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.apache.maven.model.Dependency;
 import org.apache.maven.project.MavenProject;
 import org.apache.sling.feature.Artifact;
@@ -29,16 +39,6 @@ import org.apache.sling.feature.process.FeatureProvider;
 import org.apache.sling.feature.support.FeatureUtil;
 import org.apache.sling.feature.support.json.FeatureJSONReader;
 import org.codehaus.plexus.logging.Logger;
-
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * The processor processes all feature projects.
@@ -116,7 +116,8 @@ public class Preprocessor {
                         info.project.getVersion(),
                         null,
                         "jar"));
-                feature.getBundles().add(Integer.valueOf(config.getJarStartLevel()), jar);
+                jar.getMetadata().put(Artifact.KEY_START_ORDER, String.valueOf(config.getJarStartLevel()));
+                feature.getBundles().add(jar);
             }
         }
 
@@ -295,7 +296,7 @@ public class Preprocessor {
             final ProjectInfo info,
             final Feature assembledFeature,
             final String scope) {
-        for(final Map.Entry<Integer, org.apache.sling.feature.Artifact> entry : assembledFeature.getBundles()) {
+        for(final Map.Entry<Integer, org.apache.sling.feature.Artifact> entry : assembledFeature.getBundles().getAllBundles()) {
             final ArtifactId a = entry.getValue().getId();
             if ( a.getGroupId().equals(info.project.getGroupId())
                  && a.getArtifactId().equals(info.project.getArtifactId())

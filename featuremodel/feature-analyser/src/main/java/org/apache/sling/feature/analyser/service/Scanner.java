@@ -130,7 +130,7 @@ public class Scanner {
      */
     private void getBundleInfos(final Bundles bundles, final ContainerDescriptor desc)
     throws IOException {
-        for(final Map.Entry<Integer, List<Artifact>> entry : bundles.getBundlesByStartLevel().entrySet()) {
+        for(final Map.Entry<Integer, List<Artifact>> entry : bundles.getBundlesByStartOrder().entrySet()) {
             for(final Artifact bundle : entry.getValue() ) {
                 final BundleDescriptor bundleDesc = scan(bundle, entry.getKey());
                 desc.getBundleDescriptors().add(bundleDesc);

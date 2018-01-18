@@ -17,17 +17,8 @@
 package org.apache.sling.feature.applicationbuilder.impl;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.cli.CommandLine;
@@ -38,19 +29,10 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.sling.feature.Application;
 import org.apache.sling.feature.ArtifactId;
-import org.apache.sling.feature.Bundles;
-import org.apache.sling.feature.Configurations;
-import org.apache.sling.feature.Extension;
-import org.apache.sling.feature.ExtensionType;
-import org.apache.sling.feature.Extensions;
-import org.apache.sling.feature.KeyValueMap;
-import org.apache.sling.feature.support.ArtifactHandler;
 import org.apache.sling.feature.support.ArtifactManager;
 import org.apache.sling.feature.support.ArtifactManagerConfig;
 import org.apache.sling.feature.support.FeatureUtil;
-import org.apache.sling.feature.support.json.ApplicationJSONReader;
 import org.apache.sling.feature.support.json.ApplicationJSONWriter;
-import org.apache.sling.feature.support.json.FeatureJSONWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -188,7 +170,9 @@ public class Main {
     }
 
     private static Application buildApplication(final Application app) {
-        app.getBundles().add(1, new org.apache.sling.feature.Artifact(ArtifactId.parse("org.apache.sling/org.apache.sling.launchpad.api/1.2.0")));
+        final org.apache.sling.feature.Artifact a = new org.apache.sling.feature.Artifact(ArtifactId.parse("org.apache.sling/org.apache.sling.launchpad.api/1.2.0"));
+        a.getMetadata().put(org.apache.sling.feature.Artifact.KEY_START_ORDER, "1");
+        app.getBundles().add(a);
         // sling.properties (TODO)
         if ( propsFile == null ) {
             app.getFrameworkProperties().put("org.osgi.framework.bootdelegation", "sun.*,com.sun.*");

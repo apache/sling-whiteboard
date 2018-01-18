@@ -122,7 +122,10 @@ abstract class JSONReaderBase {
                     if ( container.containsSame(a.getId()) ) {
                         throw new IOException(exceptionPrefix + "Duplicate bundle " + a.getId().toMvnId());
                     }
-                    container.add(startLevel, a);
+                    if ( startLevel != 0 ) {
+                        a.getMetadata().put(Artifact.KEY_START_ORDER, startLevelVal);
+                    }
+                    container.add(a);
                 }
             }
         }

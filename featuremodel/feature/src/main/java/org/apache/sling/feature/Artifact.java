@@ -25,6 +25,9 @@ package org.apache.sling.feature;
  */
 public class Artifact implements Comparable<Artifact> {
 
+    /** This key might be used by bundles to define the start order. */
+    public static final String KEY_START_ORDER = "start-order";
+
     /** The artifact id. */
     private final ArtifactId id;
 

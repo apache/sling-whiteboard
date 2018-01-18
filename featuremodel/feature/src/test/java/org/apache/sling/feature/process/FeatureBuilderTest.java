@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.BundlesTest;
 import org.apache.sling.feature.Capability;
 import org.apache.sling.feature.Configuration;
 import org.apache.sling.feature.Extension;
@@ -46,11 +47,11 @@ public class FeatureBuilderTest {
         f1.getFrameworkProperties().put("foo", "2");
         f1.getFrameworkProperties().put("bar", "X");
 
-        f1.getBundles().add(3, new Artifact(ArtifactId.parse("org.apache.sling/foo-bar/4.5.6")));
-        f1.getBundles().add(5, new Artifact(ArtifactId.parse("group/testnewversion_low/2")));
-        f1.getBundles().add(5, new Artifact(ArtifactId.parse("group/testnewversion_high/2")));
-        f1.getBundles().add(5, new Artifact(ArtifactId.parse("group/testnewstartlevel/1")));
-        f1.getBundles().add(5, new Artifact(ArtifactId.parse("group/testnewstartlevelandversion/1")));
+        f1.getBundles().add(BundlesTest.createBundle("org.apache.sling/foo-bar/4.5.6", 3));
+        f1.getBundles().add(BundlesTest.createBundle("group/testnewversion_low/2", 5));
+        f1.getBundles().add(BundlesTest.createBundle("group/testnewversion_high/2", 5));
+        f1.getBundles().add(BundlesTest.createBundle("group/testnewstartlevel/1", 5));
+        f1.getBundles().add(BundlesTest.createBundle("group/testnewstartlevelandversion/1", 5));
 
         final Configuration c1 = new Configuration("org.apache.sling.foo");
         c1.getProperties().put("prop", "value");
@@ -69,9 +70,28 @@ public class FeatureBuilderTest {
 
     private List<Map.Entry<Integer, Artifact>> getBundles(final Feature f) {
         final List<Map.Entry<Integer, Artifact>> result = new ArrayList<>();
-        for(final Map.Entry<Integer, Artifact> entry : f.getBundles()) {
-            result.add(entry);
+        for(final Map.Entry<Integer, List<Artifact>> entry : f.getBundles().getBundlesByStartOrder().entrySet()) {
+            for(final Artifact artifact : entry.getValue()) {
+                result.add(new Map.Entry<Integer, Artifact>() {
+
+                    @Override
+                    public Integer getKey() {
+                        return entry.getKey();
+                    }
+
+                    @Override
+                    public Artifact getValue() {
+                        return artifact;
+                    }
+
+                    @Override
+                    public Artifact setValue(Artifact value) {
+                        return null;
+                    }
+                });
+            }
         }
+
         return result;
     }
 
@@ -194,11 +214,12 @@ public class FeatureBuilderTest {
         base.getFrameworkProperties().put("org.apache.felix.scr.directory", "launchpad/scr");
 
         final Artifact a1 = new Artifact(ArtifactId.parse("org.apache.sling/oak-server/1.0.0"));
+        a1.getMetadata().put(Artifact.KEY_START_ORDER, "1");
         a1.getMetadata().put("hash", "4632463464363646436");
-        base.getBundles().add(1, a1);
-        base.getBundles().add(1,  new Artifact(ArtifactId.parse("org.apache.sling/application-bundle/2.0.0")));
-        base.getBundles().add(1,  new Artifact(ArtifactId.parse("org.apache.sling/another-bundle/2.1.0")));
-        base.getBundles().add(2,  new Artifact(ArtifactId.parse("org.apache.sling/foo-xyz/1.2.3")));
+        base.getBundles().add(a1);
+        base.getBundles().add(BundlesTest.createBundle("org.apache.sling/application-bundle/2.0.0", 1));
+        base.getBundles().add(BundlesTest.createBundle("org.apache.sling/another-bundle/2.1.0", 1));
+        base.getBundles().add(BundlesTest.createBundle("org.apache.sling/foo-xyz/1.2.3", 2));
 
         final Configuration co1 = new Configuration("my.pid");
         co1.getProperties().put("foo", 5L);
@@ -237,15 +258,16 @@ public class FeatureBuilderTest {
         base.getFrameworkProperties().put("org.apache.felix.scr.directory", "launchpad/scr");
 
         final Artifact a1 = new Artifact(ArtifactId.parse("org.apache.sling/oak-server/1.0.0"));
+        a1.getMetadata().put(Artifact.KEY_START_ORDER, "1");
         a1.getMetadata().put("hash", "4632463464363646436");
-        base.getBundles().add(1, a1);
-        base.getBundles().add(1,  new Artifact(ArtifactId.parse("org.apache.sling/application-bundle/2.0.0")));
-        base.getBundles().add(1,  new Artifact(ArtifactId.parse("org.apache.sling/another-bundle/2.1.0")));
-        base.getBundles().add(2,  new Artifact(ArtifactId.parse("org.apache.sling/foo-xyz/1.2.3")));
-        base.getBundles().add(5,  new Artifact(ArtifactId.parse("group/testnewversion_low/1")));
-        base.getBundles().add(5,  new Artifact(ArtifactId.parse("group/testnewversion_high/5")));
-        base.getBundles().add(10,  new Artifact(ArtifactId.parse("group/testnewstartlevel/1")));
-        base.getBundles().add(10,  new Artifact(ArtifactId.parse("group/testnewstartlevelandversion/2")));
+        base.getBundles().add(a1);
+        base.getBundles().add(BundlesTest.createBundle("org.apache.sling/application-bundle/2.0.0", 1));
+        base.getBundles().add(BundlesTest.createBundle("org.apache.sling/another-bundle/2.1.0", 1));
+        base.getBundles().add(BundlesTest.createBundle("org.apache.sling/foo-xyz/1.2.3", 2));
+        base.getBundles().add(BundlesTest.createBundle("group/testnewversion_low/1", 5));
+        base.getBundles().add(BundlesTest.createBundle("group/testnewversion_high/5", 5));
+        base.getBundles().add(BundlesTest.createBundle("group/testnewstartlevel/1", 10));
+        base.getBundles().add(BundlesTest.createBundle("group/testnewstartlevelandversion/2", 10));
 
         final Configuration co1 = new Configuration("my.pid");
         co1.getProperties().put("foo", 5L);
@@ -263,7 +285,7 @@ public class FeatureBuilderTest {
         final Feature result = base.copy();
         result.getIncludes().remove(0);
         result.getFrameworkProperties().put("bar", "X");
-        result.getBundles().add(3,  new Artifact(ArtifactId.parse("org.apache.sling/foo-bar/4.5.6")));
+        result.getBundles().add(BundlesTest.createBundle("org.apache.sling/foo-bar/4.5.6", 3));
         final Configuration co3 = new Configuration("org.apache.sling.foo");
         co3.getProperties().put("prop", "value");
         result.getConfigurations().add(co3);

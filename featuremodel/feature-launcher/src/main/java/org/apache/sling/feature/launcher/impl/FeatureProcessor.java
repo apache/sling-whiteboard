@@ -85,7 +85,7 @@ public class FeatureProcessor {
     public static void prepareLauncher(final LauncherConfig config,
             final ArtifactManager artifactManager,
             final Application app) throws Exception {
-        for(final Map.Entry<Integer, List<Artifact>> entry : app.getBundles().getBundlesByStartLevel().entrySet()) {
+        for(final Map.Entry<Integer, List<Artifact>> entry : app.getBundles().getBundlesByStartOrder().entrySet()) {
             for(final Artifact a : entry.getValue()) {
                 final ArtifactHandler handler = artifactManager.getArtifactHandler(":" + a.getId().toMvnPath());
                 final File artifactFile = handler.getFile();

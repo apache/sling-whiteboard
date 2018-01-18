@@ -19,7 +19,6 @@ package org.apache.sling.feature;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Map;
 
 /**
  * A feature consists of
@@ -305,11 +304,11 @@ public class Feature implements Comparable<Feature> {
         result.setAssembled(this.isAssembled());
 
         // bundles
-        for(final Map.Entry<Integer, Artifact> entry : this.getBundles()) {
-            final Artifact c = new Artifact(entry.getValue().getId());
-            c.getMetadata().putAll(entry.getValue().getMetadata());
+        for(final Artifact b : this.getBundles()) {
+            final Artifact c = new Artifact(b.getId());
+            c.getMetadata().putAll(b.getMetadata());
 
-            result.getBundles().add(entry.getKey(), c);
+            result.getBundles().add(c);
         }
 
         // configurations

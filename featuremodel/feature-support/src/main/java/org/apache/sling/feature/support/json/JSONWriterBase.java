@@ -16,6 +16,16 @@
  */
 package org.apache.sling.feature.support.json;
 
+import java.io.StringReader;
+import java.lang.reflect.Array;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
+
+import javax.json.Json;
+import javax.json.JsonStructure;
+import javax.json.stream.JsonGenerator;
+
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.Bundles;
 import org.apache.sling.feature.Configuration;
@@ -23,15 +33,6 @@ import org.apache.sling.feature.Configurations;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.KeyValueMap;
-
-import javax.json.Json;
-import javax.json.JsonStructure;
-import javax.json.stream.JsonGenerator;
-import java.io.StringReader;
-import java.lang.reflect.Array;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -44,9 +45,9 @@ abstract class JSONWriterBase {
             final Bundles bundles,
             final Configurations allConfigs) {
         // bundles
-        if ( !bundles.getBundlesByStartLevel().isEmpty() ) {
+        if ( !bundles.getBundlesByStartOrder().isEmpty() ) {
             w.writeStartObject(JSONConstants.FEATURE_BUNDLES);
-            for(final Map.Entry<Integer, List<Artifact>> entry : bundles.getBundlesByStartLevel().entrySet()) {
+            for(final Map.Entry<Integer, List<Artifact>> entry : bundles.getBundlesByStartOrder().entrySet()) {
                 w.writeStartArray(String.valueOf(entry.getKey()));
 
                 for(final Artifact artifact : entry.getValue()) {

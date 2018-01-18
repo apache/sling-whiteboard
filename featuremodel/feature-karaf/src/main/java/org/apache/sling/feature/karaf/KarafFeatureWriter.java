@@ -16,16 +16,6 @@
  */
 package org.apache.sling.feature.karaf;
 
-import org.apache.sling.feature.Artifact;
-import org.apache.sling.feature.ArtifactId;
-import org.apache.sling.feature.Configuration;
-import org.apache.sling.feature.Configurations;
-import org.apache.sling.feature.Extension;
-import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.support.ArtifactHandler;
-import org.apache.sling.feature.support.ArtifactManager;
-import org.apache.sling.feature.support.ConfigurationUtil;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -40,6 +30,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import org.apache.sling.feature.Artifact;
+import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.Configuration;
+import org.apache.sling.feature.Configurations;
+import org.apache.sling.feature.Extension;
+import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.support.ArtifactHandler;
+import org.apache.sling.feature.support.ArtifactManager;
+import org.apache.sling.feature.support.ConfigurationUtil;
 
 
 /**
@@ -99,7 +99,7 @@ public class KarafFeatureWriter {
 
                 jos.closeEntry();
 
-                for(final Map.Entry<Integer, List<Artifact>> entry : feature.getBundles().getBundlesByStartLevel().entrySet()) {
+                for(final Map.Entry<Integer, List<Artifact>> entry : feature.getBundles().getBundlesByStartOrder().entrySet()) {
                     for(final Artifact artifact : entry.getValue()) {
                         final ArtifactHandler handler = artifactManager.getArtifactHandler(artifact.getId().toMvnUrl());
 
@@ -180,7 +180,7 @@ public class KarafFeatureWriter {
         }
 
         // bundles
-        for(final Map.Entry<Integer, List<Artifact>> entry : feature.getBundles().getBundlesByStartLevel().entrySet()) {
+        for(final Map.Entry<Integer, List<Artifact>> entry : feature.getBundles().getBundlesByStartOrder().entrySet()) {
             for(final Artifact artifact : entry.getValue()) {
                 w.print("     <bundle start-level=\"");
                 w.print(entry.getKey().toString());

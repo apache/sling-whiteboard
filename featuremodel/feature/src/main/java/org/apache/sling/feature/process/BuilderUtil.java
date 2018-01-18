@@ -53,7 +53,7 @@ class BuilderUtil {
     static void mergeBundles(final Bundles target,
             final Bundles source,
             final ArtifactMerge artifactMergeAlg) {
-        for(final Map.Entry<Integer, List<Artifact>> entry : source.getBundlesByStartLevel().entrySet()) {
+        for(final Map.Entry<Integer, List<Artifact>> entry : source.getBundlesByStartOrder().entrySet()) {
             for(final Artifact a : entry.getValue()) {
                 // version handling - use provided algorithm
                 boolean replace = true;
@@ -65,7 +65,7 @@ class BuilderUtil {
                 }
                 if ( replace ) {
                     target.removeSame(a.getId());
-                    target.add(entry.getKey(), a);
+                    target.add(a);
                 }
             }
         }

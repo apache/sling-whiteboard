@@ -28,7 +28,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -271,7 +270,7 @@ public class Main {
 
         for(final Feature feature : model.getFeatures() ) {
             final String idString;
-            // use a default name if not present or not usable as a Maven artifactId ( starts with ':') 
+            // use a default name if not present or not usable as a Maven artifactId ( starts with ':')
             if ( feature.getName() != null && !feature.isSpecial() ) {
                 if ( feature.getVersion() != null ) {
                     idString = "generated/" + feature.getName() + "/" + feature.getVersion();
@@ -298,7 +297,8 @@ public class Main {
         }
 
         // hard coded dependency to launchpad api
-        app.getBundles().add(1, new org.apache.sling.feature.Artifact(ArtifactId.parse("org.apache.sling/org.apache.sling.launchpad.api/1.2.0")));
+        final org.apache.sling.feature.Artifact a = new org.apache.sling.feature.Artifact(ArtifactId.parse("org.apache.sling/org.apache.sling.launchpad.api/1.2.0"));
+        a.getMetadata().put(org.apache.sling.feature.Artifact.KEY_START_ORDER, "1");
         // sling.properties (TODO)
         if ( propsFile == null ) {
             app.getFrameworkProperties().put("org.osgi.framework.bootdelegation", "sun.*,com.sun.*");
@@ -340,7 +340,8 @@ public class Main {
                             } else if ( startLevel == 0 ) {
                                 startLevel = 20;
                             }
-                            bundles.add(startLevel, newArtifact);
+                            newArtifact.getMetadata().put(org.apache.sling.feature.Artifact.KEY_START_ORDER, String.valueOf(startLevel));
+                            bundles.add(newArtifact);
                         }
                     }
                 }
@@ -655,7 +656,7 @@ public class Main {
         final Feature f = new Feature("application");
 
         // bundles
-        for(final Map.Entry<Integer, org.apache.sling.feature.Artifact> bundle : app.getBundles()) {
+        for(final Map.Entry<Integer, org.apache.sling.feature.Artifact> bundle : app.getBundles().getAllBundles()) {
             final ArtifactId id = bundle.getValue().getId();
             final Artifact newBundle = new Artifact(id.getGroupId(), id.getArtifactId(), id.getVersion(), id.getClassifier(), id.getType());
             for(final Map.Entry<String, String> prop : bundle.getValue().getMetadata()) {
