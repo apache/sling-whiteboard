@@ -25,7 +25,9 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -199,9 +201,11 @@ public class SignCodeMojo extends AbstractMojo {
     	    oldSslDebug = System.setProperty("javax.net.debug","all");
     	}
     	
+        SignedFiles signedFiles = new SignedFiles(filesToSign);
+    	
         try {
-            String signingSetID = makeSigningRequest(filesToSign);
-            downloadSignedFiles(filesToSign, signingSetID);
+            String signingSetID = makeSigningRequest(signedFiles);
+            downloadSignedFiles(signedFiles, signingSetID);
         } catch (SOAPException | IOException e) {
             throw new MojoExecutionException("Signing failed : " + e.getMessage(), e);
         } finally {
@@ -216,7 +220,7 @@ public class SignCodeMojo extends AbstractMojo {
     }
 
 
-    private String makeSigningRequest(List<File> filesToSign) throws SOAPException, IOException, MojoExecutionException {
+    private String makeSigningRequest(SignedFiles signedFiles) throws SOAPException, IOException, MojoExecutionException {
         log("Constructing the code signing request");
 
         SOAPMessage message = SOAP_MSG_FACTORY.createMessage();
@@ -240,15 +244,13 @@ public class SignCodeMojo extends AbstractMojo {
                 requestSigningRequest.addChildElement("signingServiceName", NS);
         signingServiceName.addTextNode(this.signingService);
 
-        List<String> fileNames = getFileNames(filesToSign);
-
         SOAPElement commaDelimitedFileNames =
                 requestSigningRequest.addChildElement("commaDelimitedFileNames", NS);
-        commaDelimitedFileNames.addTextNode(StringUtils.join(fileNames.iterator(), ","));
+        commaDelimitedFileNames.addTextNode(signedFiles.getCommaSeparatedUploadFileNames());
 
         SOAPElement application =
                 requestSigningRequest.addChildElement("application", NS);
-        application.addTextNode(getApplicationString(fileNames, filesToSign));
+        application.addTextNode(signedFiles.getApplicationString());
 
         // Send the message
         SOAPConnectionFactory soapConnectionFactory = SOAPConnectionFactory.newInstance();
@@ -332,7 +334,7 @@ public class SignCodeMojo extends AbstractMojo {
     	
     }
 
-    private void downloadSignedFiles(List<File> filesToSign, String id)
+    private void downloadSignedFiles(SignedFiles signedFiles, String id)
             throws SOAPException, IOException, BuildException {
 
         log("Downloading signed files. The signing set ID is: " + id);
@@ -387,7 +389,7 @@ public class SignCodeMojo extends AbstractMojo {
             throw new BuildException("Download failed. Result code was: " + result);
         }
 
-        extractFilesFromApplicationString(data, filesToSign);
+        signedFiles.extractFilesFromApplicationString(data);
     }
 
 
@@ -415,80 +417,92 @@ public class SignCodeMojo extends AbstractMojo {
     }
 
 
-    /**
-     * Signing service requires unique files names. Since files will be returned
-     * in order, use dummy names that we know are unique but retain the file
-     * extension since the signing service appears to use it to figure out what
-     * to sign and how to sign it.
-     */
-    private static List<String> getFileNames(List<File> filesToSign) {
-        List<String> result = new ArrayList<>(filesToSign.size());
-
-        for (int i = 0; i < filesToSign.size(); i++) {
-            File f = filesToSign.get(i);
-            String fileName = f.getName();
-            int extIndex = fileName.lastIndexOf('.');
-            String newName;
-            if (extIndex < 0) {
-                newName = Integer.toString(i);
-            } else {
-                newName = Integer.toString(i) + fileName.substring(extIndex);
-            }
-            result.add(newName);
-        }
-        return result;
-    }
-
 
     /**
-     * Zips the files, base 64 encodes the resulting zip and then returns the
-     * string. It would be far more efficient to stream this directly to the
-     * signing server but the files that need to be signed are relatively small
-     * and this simpler to write.
+     * Ensures that unique file names are sent to the signing service
+     * 
+     * <p>We can't rely on the order in which we set the file names in the signing request, since
+     * that is not preserved in the zipped response.</p>
+     * 
+     * <p>The file extension is kept since the signing service appears to use it to figure out what
+     * to sign and how to sign it.</p>
      *
-     * @param fileNames Modified names of files
-     * @param files     Files to be signed
      */
-    private static String getApplicationString(List<String> fileNames, List<File> files)
-            throws IOException {
-        // 16 MB should be more than enough for Tomcat
-        // TODO: Refactoring this entire class so it uses streaming rather than
-        //       buffering the entire set of files in memory would make it more
-        //       widely useful.
-        ByteArrayOutputStream baos = new ByteArrayOutputStream(16 * 1024 * 1024);
-        try (ZipOutputStream zos = new ZipOutputStream(baos)) {
-            byte[] buf = new byte[32 * 1024];
-            for (int i = 0; i < files.size(); i++) {
-                try (FileInputStream fis = new FileInputStream(files.get(i))) {
-                    ZipEntry zipEntry = new ZipEntry(fileNames.get(i));
-                    zos.putNextEntry(zipEntry);
-                    int numRead;
-                    while ( (numRead = fis.read(buf)) >= 0) {
-                        zos.write(buf, 0, numRead);
+    static class SignedFiles {
+        
+        private Map<String, File> fileNameMapping = new HashMap<>();
+        
+        public SignedFiles(List<File> filesToSign) {
+            for (int i = 0; i < filesToSign.size(); i++) {
+                File f = filesToSign.get(i);
+                String fileName = f.getName();
+                int extIndex = fileName.lastIndexOf('.');
+                String newName;
+                if (extIndex < 0) {
+                    newName = Integer.toString(i);
+                } else {
+                    newName = Integer.toString(i) + fileName.substring(extIndex);
+                }
+
+                fileNameMapping.put(newName, f);
+            }
+        }
+        
+        public String getCommaSeparatedUploadFileNames() {
+            
+            return StringUtils.join(fileNameMapping.keySet().iterator(), ",");
+        }
+
+        /**
+         * Zips the files, base 64 encodes the resulting zip and then returns the
+         * string. It would be far more efficient to stream this directly to the
+         * signing server but the files that need to be signed are relatively small
+         * and this simpler to write.
+         * 
+         * @throws IOException in case of any IO problems 
+         *
+         */
+        public String getApplicationString() throws IOException {
+
+            // 16 MB should be more than enough for Tomcat
+            // TODO: Refactoring this entire class so it uses streaming rather than
+            //       buffering the entire set of files in memory would make it more
+            //       widely useful.
+            ByteArrayOutputStream baos = new ByteArrayOutputStream(16 * 1024 * 1024);
+            try (ZipOutputStream zos = new ZipOutputStream(baos)) {
+                byte[] buf = new byte[32 * 1024];
+                for ( Map.Entry<String, File> entry : fileNameMapping.entrySet() ) {
+                    try (FileInputStream fis = new FileInputStream(entry.getValue())) {
+                        ZipEntry zipEntry = new ZipEntry(entry.getKey());
+                        zos.putNextEntry(zipEntry);
+                        int numRead;
+                        while ( (numRead = fis.read(buf)) >= 0) {
+                            zos.write(buf, 0, numRead);
+                        }
                     }
                 }
             }
+
+            return new String(Base64.encodeBase64(baos.toByteArray()), "UTF-8");
         }
 
-        return new String(Base64.encodeBase64(baos.toByteArray()), "UTF-8");
-    }
-
-
-    /**
-     * Removes base64 encoding, unzips the files and writes the new files over
-     * the top of the old ones.
-     */
-    private static void extractFilesFromApplicationString(String data, List<File> files)
-            throws IOException {
-        ByteArrayInputStream bais = new ByteArrayInputStream(Base64.decodeBase64(data.getBytes("UTF-8")));
-        try (ZipInputStream zis = new ZipInputStream(bais)) {
-            byte[] buf = new byte[32 * 1024];
-            for (int i = 0; i < files.size(); i ++) {
-                try (FileOutputStream fos = new FileOutputStream(files.get(i))) {
-                    zis.getNextEntry();
-                    int numRead;
-                    while ( (numRead = zis.read(buf)) >= 0) {
-                        fos.write(buf, 0 , numRead);
+        /**
+         * Removes base64 encoding, unzips the files and writes the new files over
+         * the top of the old ones.
+         */
+        public void extractFilesFromApplicationString(String data) throws IOException {
+            
+            ByteArrayInputStream bais = new ByteArrayInputStream(Base64.decodeBase64(data.getBytes("UTF-8")));
+            try (ZipInputStream zis = new ZipInputStream(bais)) {
+                byte[] buf = new byte[32 * 1024];
+                ZipEntry entry;
+                while ((entry = zis.getNextEntry()) != null) {
+                    File outFile = fileNameMapping.get(entry.getName());
+                    try (FileOutputStream fos = new FileOutputStream(outFile)) {
+                        int numRead;
+                        while ((numRead = zis.read(buf)) >= 0) {
+                            fos.write(buf, 0, numRead);
+                        }
                     }
                 }
             }
