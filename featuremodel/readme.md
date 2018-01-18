@@ -60,6 +60,8 @@ A feature has a unique id. Maven coordinates (https://maven.apache.org/pom.html#
 
 While group id, artifact id, version and the optional classifier can be freely choosen for a feature, the type/packaging is defined as "osgifeature".
 
+TBD: Is "osgifeature" a good type?
+
 # Maven Coordinates
 
 Maven coordinates are used to define the feature id and to refer to artifacts contained in the feature, e.g. bundles, content packages or other features. There are two supported ways to write down such a coordinate:
@@ -74,6 +76,27 @@ In some cases only the coordinates are specified as a string in one of the above
 In order to avoid a concept like "Require-Bundle" a feature does not explicitly declare dependencies to other features. These are declared by the required capabilities, either explicit or implicit. The implicit requirements are calculated by inspecting the contained bundles (and potentially other artifacts like content packages ).
 
 Once a feature is processed by tooling, the tooling might create a full list of requirements and capabilities and add this information in a special section to the final feature. This information can be used by tooling to validate an instance (see below) and avoids rescanning the binary artifacts. However this "cached" information is optional and tooling must work without it (which means it needs access to the binaries in that case). TBD the name and format of this information.
+
+# Feature Header
+
+The JSON feature object has the following properties:
+
+* *id* : The feature id as described above. Defining the type is optional, if it is not defined, it defaults to "osgifeature".
+* *title* : Optional title for the feature.
+* *description* : Optional long text description of the feature.
+* *vendor* : Optional vendor information.
+* *license* : Optional license information
+
+# Bundles
+
+The JSON feature object might contain a *bundles* property holding a JSON array with the bundles contained in this feature. The values in this array can either be a string holding the coordinates for the bundle or a JSON object if additional properties need to be specified. The JSON object supports the following properties:
+
+* *id* : The id of the bundle (maven coordinates). This property is required.
+* *start-order* : The value is an integer greater or equals to 1. This specifies the start order of the bundle. The start-order specifies the start order of the bundle in relation to other bundles in the feature. Bundles are started in ascending order and stopped in descending order according to the start-order directive values. Bundles with the same start-order value may be started and stopped in any order in relation to each other. There is no default value for start-order. If the start order
+is not specified then the bundle is started in any order.
+* *resolution* : The value is either "mandatory" or "optional". A mandatory bundle needs to be satisfied; an optional bundle does not need to be satisfied. The default value is mandatory.
+
+TBD: The implementation currently uses the map based configuration. It needs to change.
 
 # Includes
 
