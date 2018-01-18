@@ -317,8 +317,22 @@ abstract class JSONReaderBase {
                                 ext.setJSON(w.toString());
                             }
                             break;
-                case TEXT : checkType("Text Extension " + name, value, String.class);
-                            ext.setText(value.toString());
+                case TEXT : checkType("Text Extension " + name, value, String.class, List.class);
+                            if ( value instanceof String ) {
+                                // string
+                                ext.setText(value.toString());
+                            } else {
+                                // list (array of strings)
+                                @SuppressWarnings("unchecked")
+                                final List<Object> l = (List<Object>)value;
+                                final StringBuilder sb = new StringBuilder();
+                                for(final Object o : l) {
+                                    checkType("Text Extension " + name + ", value " + o, o, String.class);
+                                    sb.append(o.toString());
+                                    sb.append('\n');
+                                }
+                                ext.setText(sb.toString());
+                            }
                             break;
             }
 

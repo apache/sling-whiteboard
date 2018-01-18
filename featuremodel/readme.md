@@ -56,17 +56,22 @@ Notes for users of Apache Sling's provisioning model:
 
 # Feature Identity
 
-A feature is uniquely identified through maven coordinates, it has a group id, an artifact id and a version. In addition it might have a classifier.
+A feature has a unique id. Maven coordinates (https://maven.apache.org/pom.html#Maven_Coordinates) provide a well defined and accepted way of uniquely defining such an id. The coordinates include at least a group id, an artifact id, a version and a type/packaging. A classifier is optional.
 
-TBD We need to define a common type for such a feature. It could be "osgifeature" (but is this a good type? slingfeature, slingstart are taken, osgifeature might be too general)
+While group id, artifact id, version and the optional classifier can be freely choosen for a feature, the type/packaging is defined as "osgifeature".
 
-# Maven coordinates
+# Maven Coordinates
 
-Maven coordinates are used to describe artifacts, e.g. bundles, content packages or includes. In these cases either the short notation (as described here: https://maven.apache.org/pom.html#Maven_Coordinates) can be used or the long version as a JSON object with an id property.
+Maven coordinates are used to define the feature id and to refer to artifacts contained in the feature, e.g. bundles, content packages or other features. There are two supported ways to write down such a coordinate:
+
+* Using a colon as a separator for the parts: groupId:artifactId[:type[:classifier]]:version as defined in https://maven.apache.org/pom.html#Maven_Coordinates
+* Using a mvn URL: 'mvn:' group-id '/' artifact-id [ '/' [version] [ '/' [type] [ '/' classifier ] ] ] ]
+
+In some cases only the coordinates are specified as a string in one of the above mentioned formats. In other cases, the artifact is described through a JSON object. In that case, the *id* property holds the coordinates in one of the formats.
 
 # Requirements and Capabilities vs Dependencies
 
-In order to avoid a concept like "Require-Bundle" a feature does not explicitely declare dependencies to other features. These are declared by the required capabilities, either explicit or implicit. The implicit requirements are calculated by inspecting the contained bundles (and potentially other artifacts like content packages ).
+In order to avoid a concept like "Require-Bundle" a feature does not explicitly declare dependencies to other features. These are declared by the required capabilities, either explicit or implicit. The implicit requirements are calculated by inspecting the contained bundles (and potentially other artifacts like content packages ).
 
 Once a feature is processed by tooling, the tooling might create a full list of requirements and capabilities and add this information in a special section to the final feature. This information can be used by tooling to validate an instance (see below) and avoids rescanning the binary artifacts. However this "cached" information is optional and tooling must work without it (which means it needs access to the binaries in that case). TBD the name and format of this information.
 
