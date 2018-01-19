@@ -17,33 +17,29 @@
 
 package org.apache.sling.rtdx.demo.models;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.List;
 import org.apache.sling.rtdx.api.*;
-import java.util.Map;
-import org.osgi.service.component.annotations.Component;
 
-/** Temporary ResourceModelRegistry that provides a set of
- *  demo ResourceModels */
-@Component(service = ResourceModelRegistry.class,
-    property = {
-            "service.description=RTD-X Demo Model Registry",
-            "service.vendor=The Apache Software Foundation"
-    })
-public class DemoResourceModelRegistry implements ResourceModelRegistry {
+/** Demonstration ResourceModels - those should rather be provided
+ *  by YAML or other structured text files, ready dynamically
+ *  from bundle resources or the Sling content repository
+ */
+class DemoModels {
 
-    private final Map<String, ResourceModel> models = new HashMap<>();
-    
-    public DemoResourceModelRegistry() {
-        addModel(ResourceModel.BUILDER()
+    static Collection<ResourceModel> getModels() {
+        final List<ResourceModel> list = new ArrayList<>();
+        
+        list.add(ResourceModel.BUILDER()
                 .withName("rtdx/root")
                 .withDescription("RTD-X Root")
                 .withPostHereResourceType("rtdx/blog/home")
                 .build()
         );
         
-        addModel(ResourceModel.BUILDER()
+        list.add(ResourceModel.BUILDER()
                 .withName("rtdx/blog/home")
                 .withDescription("Homepage of a Blog")
                 .withPostHereResourceType("rtdx/blog/post")
@@ -52,7 +48,7 @@ public class DemoResourceModelRegistry implements ResourceModelRegistry {
                 .build()
         );
         
-        addModel(ResourceModel.BUILDER()
+        list.add(ResourceModel.BUILDER()
                 .withName("rtdx/blog/folder")
                 .withDescription("Folder for Blog Posts")
                 .withPostHereResourceType("rtdx/blog/post")
@@ -61,26 +57,13 @@ public class DemoResourceModelRegistry implements ResourceModelRegistry {
                 .build()
         );
         
-        addModel(ResourceModel.BUILDER()
+        list.add(ResourceModel.BUILDER()
                 .withName("rtdx/blog/post")
                 .withDescription("Blog Post")
                 .withProperty(new ResourceProperty("title", "Title", true, "rtdx:string"))
                 .withProperty(new ResourceProperty("text", "Text", true, "rtdx:richtext"))
                 .build()
         );
-    }
-    
-    private void addModel(ResourceModel m) {
-        models.put(m.getName(), m);
-    }
-    
-    @Override
-    public ResourceModel getModel(String resourceType) {
-        return models.get(resourceType);
-    }
-
-    @Override
-    public Collection<ResourceModel> getModels() {
-        return Collections.unmodifiableCollection(models.values());
+        return Collections.unmodifiableCollection(list);
     }
 }
