@@ -69,10 +69,10 @@ public class DefaultHtmlServlet extends SlingSafeMethodsServlet {
         response.setContentType("text/html");
         
         final PrintWriter w = response.getWriter();
-        w.println("<html><body>\n");
-        w.println("<em>TODO add navigation!</em>");
+        w.println("<html><body><div class='rtdx-page'>\n");
         
         final HtmlGenerator h = new HtmlGenerator(w);
+        h.generateNavigation(request, r);
         h.generateEditForm(r, m);
         w.println();
         
@@ -86,7 +86,7 @@ public class DefaultHtmlServlet extends SlingSafeMethodsServlet {
             w.println();
         }
         
-        w.println("\n</body></html>\n");
+        w.println("\n</div></body></html>\n");
         w.flush();
     }
 }

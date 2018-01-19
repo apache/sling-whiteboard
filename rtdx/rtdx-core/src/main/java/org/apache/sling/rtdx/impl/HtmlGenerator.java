@@ -18,6 +18,8 @@
 package org.apache.sling.rtdx.impl;
 
 import java.io.PrintWriter;
+import java.util.Iterator;
+import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.rtdx.api.*;
@@ -27,27 +29,76 @@ public class HtmlGenerator {
 
     private final PrintWriter w;
     
+    // TODO: pagination would be better...
+    public static final int MAX_NAV_CHILDREN = 20;
+    
     public HtmlGenerator(PrintWriter pw) {
         this.w = pw;
     }
     
+    public String addSelectorsAndExtension(SlingHttpServletRequest request, String path) {
+        final StringBuilder sb = new StringBuilder(path);
+        for(String selector : request.getRequestPathInfo().getSelectors()) {
+            sb.append(".").append(selector);
+        }
+        final String ext = request.getRequestPathInfo().getExtension();
+        if(ext != null && ext.length() > 0) {
+            sb.append(".").append(ext);
+        }
+        return sb.toString();
+    }
+    
+    public void generateNavigation(SlingHttpServletRequest request, Resource r) {
+        w.println("<div class='rtdx-navigation'>");
+        w.println("<h1>Navigate from " + r.getPath() + " (a " + r.getResourceType() + ")</h1>");
+        w.println("<ul>");
+        
+        if(r.getParent() != null) {
+            link("li", "..", addSelectorsAndExtension(request, r.getParent().getPath()));
+        }
+        
+        int availableLinks = MAX_NAV_CHILDREN;
+        final Iterator<Resource> it = r.getResourceResolver().listChildren(r);
+        while(it.hasNext()) {
+            if(availableLinks-- <= 0) {
+                w.println("<li><em>Stopping at " + MAX_NAV_CHILDREN + " links</em></li>");
+                break;
+            }
+            final Resource child = it.next();
+            link("li", child.getName(), addSelectorsAndExtension(request, child.getPath()));
+        }
+        w.println("</ul></div>");
+    }
+    
     public void generateEditForm(Resource r, ResourceModel m) {
-        form(m, 
+        if(m.getProperties().isEmpty()) {
+            w.println("<h1 class='rtdx-no-edit-form'>No Edit form: this Resource has no editable fields:" + r.getPath() + "</h1>");
+            return;
+        }
+        form(
+            m, 
             r.adaptTo(ValueMap.class), 
-            "Edit " + r.getPath() + " (" + m.getDescription() + ")", 
+            "Edit " + r.getPath() + " (" + m.getDescription() + ")",
+            "rtdx-edit-form",
             "", 
             null);
     }
     
     public void generateCreateForm(String parentPath, ResourceModel m) {
-        form(m, null, "Create a " + m.getDescription(), parentPath + "/*", "*");
+        form(
+            m, 
+            null, 
+            "Create a " + m.getDescription() + " here", 
+            "rtdx-create-form", 
+            parentPath + "/*", 
+            "*");
     }
     
-     public void form(ResourceModel m, ValueMap vm, String title, String actionPath, String redirectPath) {
+     public void form(ResourceModel m, ValueMap vm, String title, String cssClass, String actionPath, String redirectPath) {
         // TODO should use templates
         // TODO escape values
         w.println("<br/>");
-        w.println("<div class='rtdxCreateForm'>");
+        w.println("<div class='" + cssClass + "'>");
         w.println("<h1>" + title + "</h1>");
         w.println("<form method='POST' action='" + actionPath + "' enctype='multipart/form-data'>\n");
         hiddenField("sling:resourceType", m.getName());
@@ -78,5 +129,11 @@ public class HtmlGenerator {
         }
         w.print("/>");
         
+    }
+    
+    private void link(String enclosingElement, String text, String href) {
+        w.println("<" + enclosingElement + ">");
+        w.println("<a href='" + href + "'>" + text + "</a>");
+        w.println("</" + enclosingElement + ">");
     }
 }

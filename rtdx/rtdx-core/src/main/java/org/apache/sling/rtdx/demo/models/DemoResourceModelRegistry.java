@@ -54,7 +54,7 @@ public class DemoResourceModelRegistry implements ResourceModelRegistry {
         
         addModel(ResourceModel.BUILDER()
                 .withName("rtdx/blog/folder")
-                .withDescription("A Folder in a Blog")
+                .withDescription("Folder for Blog Posts")
                 .withPostHereResourceType("rtdx/blog/post")
                 .withProperty(new ResourceProperty("title", "Title", true, "rtdx:string"))
                 .build()
@@ -62,7 +62,7 @@ public class DemoResourceModelRegistry implements ResourceModelRegistry {
         
         addModel(ResourceModel.BUILDER()
                 .withName("rtdx/blog/post")
-                .withDescription("A Blog Post")
+                .withDescription("Blog Post")
                 .withProperty(new ResourceProperty("title", "Title", true, "rtdx:string"))
                 .withProperty(new ResourceProperty("text", "Text", true, "rtdx:richtext"))
                 .build()
