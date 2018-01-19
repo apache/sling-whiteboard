@@ -54,11 +54,10 @@ public class HtmlGenerator {
     
     public void generateNavigation(Resource r) {
         w.println("<div class='rtdx-navigation'><h2>Navigation</h2>");
-        w.println("<p>Navigate from " + ResponseUtil.escapeXml(r.getPath()) + " (a " + ResponseUtil.escapeXml(r.getResourceType()) + ")</p>");
         w.println("<ul>");
         
         if(r.getParent() != null) {
-            link("li", "..", addSelectorsAndExtension(request, r.getParent().getPath()));
+            link("li", ".. (parent Resource)", addSelectorsAndExtension(request, r.getParent().getPath()));
         }
         
         int availableLinks = MAX_NAV_CHILDREN;
@@ -76,7 +75,6 @@ public class HtmlGenerator {
     
     public void generateEditForm(Resource r, ResourceModel m) {
         if(m.getProperties().isEmpty()) {
-            w.println("<h2 class='rtdx-no-edit-form'>No Edit form: this Resource has no editable fields:" + ResponseUtil.escapeXml(r.getPath()) + "</h2>");
             return;
         }
         form(
@@ -94,7 +92,7 @@ public class HtmlGenerator {
         form(
             m, 
             null,
-            "Create child Resources",
+            null,
             "Create a " + m.getDescription() + " here", 
             "rtdx-create-form", 
             parentPath + "/*", 
@@ -107,7 +105,9 @@ public class HtmlGenerator {
         // TODO escape values
         w.println("<br/>");
         w.println("<div class='" + cssClass + "'>");
-        w.println("<h2>" + ResponseUtil.escapeXml(title) + "</h2>");
+        if(title != null) {
+            w.println("<h2>" + ResponseUtil.escapeXml(title) + "</h2>");
+        }
         w.println("<p>" + ResponseUtil.escapeXml(subtitle) + "</p>");
         w.println("<form method='POST' action='" + ResponseUtil.escapeXml(actionPath) + "' enctype='multipart/form-data'>\n");
         hiddenField("sling:resourceType", ResponseUtil.escapeXml(m.getName()));

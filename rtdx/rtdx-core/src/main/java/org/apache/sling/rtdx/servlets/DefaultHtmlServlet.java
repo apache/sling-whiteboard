@@ -66,13 +66,17 @@ public class DefaultHtmlServlet extends SlingSafeMethodsServlet {
         response.setContentType("text/html");
         
         final PrintWriter w = response.getWriter();
-        w.println("<html><body><div class='rtdx-page'><h1>RTD-X generated editing forms</h1><hr/>\n");
+        w.println("<html><body><div class='rtdx-page'>");
+        w.println("<h1>RTD-X generated editing forms<br/>for " + r.getPath() + "</h1><hr/>\n");
         
         final HtmlGenerator h = new HtmlGenerator(request, w);
         h.generateNavigation(r);
         h.generateEditForm(r, m);
         w.println();
-        
+
+        if(!m.getPostHereResourceTypes().isEmpty()) {
+            w.println("<h2>Create Child Resources</h2>");
+        }
         for(String rt : m.getPostHereResourceTypes()) {
             final ResourceModel em = registry.getModel(rt);
             if(em == null) {
