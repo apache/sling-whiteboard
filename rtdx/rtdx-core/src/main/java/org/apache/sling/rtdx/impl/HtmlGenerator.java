@@ -51,8 +51,8 @@ public class HtmlGenerator {
     }
     
     public void generateNavigation(Resource r) {
-        w.println("<div class='rtdx-navigation'>");
-        w.println("<h1>Navigate from " + r.getPath() + " (a " + r.getResourceType() + ")</h1>");
+        w.println("<div class='rtdx-navigation'><h2>Navigation</h2>");
+        w.println("<p>Navigate from " + r.getPath() + " (a " + r.getResourceType() + ")</p>");
         w.println("<ul>");
         
         if(r.getParent() != null) {
@@ -74,13 +74,14 @@ public class HtmlGenerator {
     
     public void generateEditForm(Resource r, ResourceModel m) {
         if(m.getProperties().isEmpty()) {
-            w.println("<h1 class='rtdx-no-edit-form'>No Edit form: this Resource has no editable fields:" + r.getPath() + "</h1>");
+            w.println("<h2 class='rtdx-no-edit-form'>No Edit form: this Resource has no editable fields:" + r.getPath() + "</h2>");
             return;
         }
         form(
             m, 
             r.adaptTo(ValueMap.class), 
-            "Edit " + r.getPath() + " (" + m.getDescription() + ")",
+            "Edit the current Resource",
+            r.getPath() + " (" + m.getDescription() + ")",
             "rtdx-edit-form",
             "", 
             addSelectorsAndExtension(request, r.getPath()),
@@ -90,7 +91,8 @@ public class HtmlGenerator {
     public void generateCreateForm(String parentPath, ResourceModel m) {
         form(
             m, 
-            null, 
+            null,
+            "Create child Resources",
             "Create a " + m.getDescription() + " here", 
             "rtdx-create-form", 
             parentPath + "/*", 
@@ -98,12 +100,13 @@ public class HtmlGenerator {
             RtdxConstants.RTDX_FORM_MARKER_PARAMETER);
     }
     
-     public void form(ResourceModel m, ValueMap vm, String title, String cssClass, String actionPath, String redirectPath, String formMarkerFieldName) {
+     public void form(ResourceModel m, ValueMap vm, String title, String subtitle, String cssClass, String actionPath, String redirectPath, String formMarkerFieldName) {
         // TODO should use templates
         // TODO escape values
         w.println("<br/>");
         w.println("<div class='" + cssClass + "'>");
-        w.println("<h1>" + title + "</h1>");
+        w.println("<h2>" + title + "</h2>");
+        w.println("<p>" + subtitle + "</p>");
         w.println("<form method='POST' action='" + actionPath + "' enctype='multipart/form-data'>\n");
         hiddenField("sling:resourceType", m.getName());
         if(redirectPath != null) {

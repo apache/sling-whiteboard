@@ -19,9 +19,6 @@ package org.apache.sling.rtdx.servlets;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
@@ -69,7 +66,7 @@ public class DefaultHtmlServlet extends SlingSafeMethodsServlet {
         response.setContentType("text/html");
         
         final PrintWriter w = response.getWriter();
-        w.println("<html><body><div class='rtdx-page'>\n");
+        w.println("<html><body><div class='rtdx-page'><h1>RTD-X generated editing forms</h1><hr/>\n");
         
         final HtmlGenerator h = new HtmlGenerator(request, w);
         h.generateNavigation(r);
