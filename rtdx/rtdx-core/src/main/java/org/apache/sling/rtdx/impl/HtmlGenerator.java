@@ -23,6 +23,8 @@ import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.rtdx.api.*;
+import org.apache.sling.api.request.ResponseUtil;
+
 
 /** Define a Property of a Resource: name, type, required etc */
 public class HtmlGenerator {
@@ -52,7 +54,7 @@ public class HtmlGenerator {
     
     public void generateNavigation(Resource r) {
         w.println("<div class='rtdx-navigation'><h2>Navigation</h2>");
-        w.println("<p>Navigate from " + r.getPath() + " (a " + r.getResourceType() + ")</p>");
+        w.println("<p>Navigate from " + ResponseUtil.escapeXml(r.getPath()) + " (a " + ResponseUtil.escapeXml(r.getResourceType()) + ")</p>");
         w.println("<ul>");
         
         if(r.getParent() != null) {
@@ -74,7 +76,7 @@ public class HtmlGenerator {
     
     public void generateEditForm(Resource r, ResourceModel m) {
         if(m.getProperties().isEmpty()) {
-            w.println("<h2 class='rtdx-no-edit-form'>No Edit form: this Resource has no editable fields:" + r.getPath() + "</h2>");
+            w.println("<h2 class='rtdx-no-edit-form'>No Edit form: this Resource has no editable fields:" + ResponseUtil.escapeXml(r.getPath()) + "</h2>");
             return;
         }
         form(
@@ -105,12 +107,12 @@ public class HtmlGenerator {
         // TODO escape values
         w.println("<br/>");
         w.println("<div class='" + cssClass + "'>");
-        w.println("<h2>" + title + "</h2>");
-        w.println("<p>" + subtitle + "</p>");
-        w.println("<form method='POST' action='" + actionPath + "' enctype='multipart/form-data'>\n");
-        hiddenField("sling:resourceType", m.getName());
+        w.println("<h2>" + ResponseUtil.escapeXml(title) + "</h2>");
+        w.println("<p>" + ResponseUtil.escapeXml(subtitle) + "</p>");
+        w.println("<form method='POST' action='" + ResponseUtil.escapeXml(actionPath) + "' enctype='multipart/form-data'>\n");
+        hiddenField("sling:resourceType", ResponseUtil.escapeXml(m.getName()));
         if(redirectPath != null) {
-            hiddenField(":redirect", redirectPath);
+            hiddenField(":redirect", ResponseUtil.escapeXml(redirectPath));
         }
         if(formMarkerFieldName != null) {
             hiddenField(formMarkerFieldName, "");
@@ -124,17 +126,17 @@ public class HtmlGenerator {
     }
     
    private void hiddenField(String name, String value) {
-        w.println("<input type='hidden' name='" + name + "' value='" + value + "'/>");
+        w.println("<input type='hidden' name='" + ResponseUtil.escapeXml(name) + "' value='" + ResponseUtil.escapeXml(value) + "'/>");
     }
     
     private void inputField(ResourceProperty p, ValueMap vm) {
-        w.println("<label for='" + p.getName() + "'>" + p.getLabel() + "</label>");
-        w.print("<input type='text' name='" + p.getName() + "'");
+        w.println("<label for='" + ResponseUtil.escapeXml(p.getName()) + "'>" + ResponseUtil.escapeXml(p.getLabel()) + "</label>");
+        w.print("<input type='text' name='" + ResponseUtil.escapeXml(p.getName()) + "'");
         if(vm != null) {
             final String value = vm.get(p.getName(), String.class);
             if(value != null) {
                 // TODO escape
-                w.print(" value='" + value + "'");
+                w.print(" value='" + ResponseUtil.escapeXml(value) + "'");
             }
         }
         w.print("/>");
@@ -143,7 +145,7 @@ public class HtmlGenerator {
     
     private void link(String enclosingElement, String text, String href) {
         w.println("<" + enclosingElement + ">");
-        w.println("<a href='" + href + "'>" + text + "</a>");
+        w.println("<a href='" + ResponseUtil.escapeXml(href) + "'>" + ResponseUtil.escapeXml(text) + "</a>");
         w.println("</" + enclosingElement + ">");
     }
 }
