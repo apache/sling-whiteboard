@@ -28,11 +28,13 @@ import org.apache.sling.rtdx.api.*;
 public class HtmlGenerator {
 
     private final PrintWriter w;
+    private final SlingHttpServletRequest request;
     
     // TODO: pagination would be better...
     public static final int MAX_NAV_CHILDREN = 20;
     
-    public HtmlGenerator(PrintWriter pw) {
+    public HtmlGenerator(SlingHttpServletRequest request, PrintWriter pw) {
+        this.request = request;
         this.w = pw;
     }
     
@@ -48,7 +50,7 @@ public class HtmlGenerator {
         return sb.toString();
     }
     
-    public void generateNavigation(SlingHttpServletRequest request, Resource r) {
+    public void generateNavigation(Resource r) {
         w.println("<div class='rtdx-navigation'>");
         w.println("<h1>Navigate from " + r.getPath() + " (a " + r.getResourceType() + ")</h1>");
         w.println("<ul>");
@@ -81,7 +83,7 @@ public class HtmlGenerator {
             "Edit " + r.getPath() + " (" + m.getDescription() + ")",
             "rtdx-edit-form",
             "", 
-            null);
+            addSelectorsAndExtension(request, r.getPath()));
     }
     
     public void generateCreateForm(String parentPath, ResourceModel m) {
@@ -118,13 +120,13 @@ public class HtmlGenerator {
     }
     
     private void inputField(ResourceProperty p, ValueMap vm) {
-        w.println("<label for'" + p.getName() + "'>" + p.getLabel() + "</>");
+        w.println("<label for='" + p.getName() + "'>" + p.getLabel() + "</label>");
         w.print("<input type='text' name='" + p.getName() + "'");
         if(vm != null) {
             final String value = vm.get(p.getName(), String.class);
             if(value != null) {
                 // TODO escape
-                w.print("value='" + value + "'");
+                w.print(" value='" + value + "'");
             }
         }
         w.print("/>");

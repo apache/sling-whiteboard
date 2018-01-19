@@ -71,8 +71,8 @@ public class DefaultHtmlServlet extends SlingSafeMethodsServlet {
         final PrintWriter w = response.getWriter();
         w.println("<html><body><div class='rtdx-page'>\n");
         
-        final HtmlGenerator h = new HtmlGenerator(w);
-        h.generateNavigation(request, r);
+        final HtmlGenerator h = new HtmlGenerator(request, w);
+        h.generateNavigation(r);
         h.generateEditForm(r, m);
         w.println();
         
