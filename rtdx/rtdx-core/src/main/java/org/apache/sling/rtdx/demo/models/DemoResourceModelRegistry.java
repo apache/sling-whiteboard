@@ -56,6 +56,7 @@ public class DemoResourceModelRegistry implements ResourceModelRegistry {
                 .withName("rtdx/blog/folder")
                 .withDescription("Folder for Blog Posts")
                 .withPostHereResourceType("rtdx/blog/post")
+                .withPostHereResourceType("rtdx/blog/folder")
                 .withProperty(new ResourceProperty("title", "Title", true, "rtdx:string"))
                 .build()
         );
