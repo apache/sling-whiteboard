@@ -656,13 +656,17 @@ public class Main {
         final Feature f = new Feature("application");
 
         // bundles
-        for(final Map.Entry<Integer, org.apache.sling.feature.Artifact> bundle : app.getBundles().getAllBundles()) {
-            final ArtifactId id = bundle.getValue().getId();
+        for(final org.apache.sling.feature.Artifact bundle : app.getBundles()) {
+            final ArtifactId id = bundle.getId();
             final Artifact newBundle = new Artifact(id.getGroupId(), id.getArtifactId(), id.getVersion(), id.getClassifier(), id.getType());
-            for(final Map.Entry<String, String> prop : bundle.getValue().getMetadata()) {
+            for(final Map.Entry<String, String> prop : bundle.getMetadata()) {
                 newBundle.getMetadata().put(prop.getKey(), prop.getValue());
             }
-            f.getOrCreateRunMode(null).getOrCreateArtifactGroup(bundle.getKey()).add(newBundle);
+            int startLevel = bundle.getStartOrder();
+            if ( startLevel == 0 ) {
+                startLevel = 20;
+            }
+            f.getOrCreateRunMode(null).getOrCreateArtifactGroup(startLevel).add(newBundle);
         }
 
         // configurations

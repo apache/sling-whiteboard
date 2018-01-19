@@ -34,25 +34,9 @@ public class Bundles implements Iterable<Artifact> {
     private final List<Artifact> bundles = new ArrayList<>();
 
     /**
-     * Get the start order of a bundle.
-     * @param bundle The bundle
-     * @return The start order, if no start order is defined, {@code 0} is returned.
-     */
-    public static int getStartOrder(final Artifact bundle) {
-        final String order = bundle.getMetadata().get(Artifact.KEY_START_ORDER);
-        final int startOrder;
-        if ( order != null ) {
-            startOrder = Integer.parseInt(order);
-        } else {
-            startOrder = 0;
-        }
-
-        return startOrder;
-    }
-
-    /**
      * Get the map of all bundles sorted by start order. The map is sorted
-     * and iterating over the keys is done in start level order.
+     * and iterating over the keys is done in start order. Bundles without a start
+     * order (having the value 0) are returned last.
      * @return The map of bundles. The map is unmodifiable.
      */
     public Map<Integer, List<Artifact>> getBundlesByStartOrder() {
@@ -74,7 +58,7 @@ public class Bundles implements Iterable<Artifact> {
         });
 
         for(final Artifact bundle : this.bundles) {
-            final int startOrder = getStartOrder(bundle);
+            final int startOrder = bundle.getStartOrder();
             List<Artifact> list = startOrderMap.get(startOrder);
             if ( list == null ) {
                 list = new ArrayList<>();
@@ -83,31 +67,6 @@ public class Bundles implements Iterable<Artifact> {
             list.add(bundle);
         }
         return Collections.unmodifiableMap(startOrderMap);
-    }
-
-    public List<Map.Entry<Integer, Artifact>> getAllBundles() {
-        final List<Map.Entry<Integer, Artifact>> list = new ArrayList<>();
-        for(final Artifact a : this) {
-            list.add(new Map.Entry<Integer, Artifact>() {
-
-                @Override
-                public Artifact setValue(Artifact value) {
-                    return null;
-                }
-
-                @Override
-                public Artifact getValue() {
-                    // TODO Auto-generated method stub
-                    return a;
-                }
-
-                @Override
-                public Integer getKey() {
-                    return getStartOrder(a);
-                }
-            });
-        }
-        return list;
     }
 
     /**
@@ -158,31 +117,14 @@ public class Bundles implements Iterable<Artifact> {
     }
 
     /**
-     * Get start order and artifact for the given id, neglecting the version
+     * Get the artifact for the given id, neglecting the version
      * @param id The artifact id
      * @return A map entry with start order and artifact, {@code null} otherwise
      */
-    public Map.Entry<Integer, Artifact> getSame(final ArtifactId id) {
-        for(final Artifact bundle : this) {
+    public Artifact getSame(final ArtifactId id) {
+        for(final Artifact bundle : this.bundles) {
             if ( bundle.getId().isSame(id)) {
-                final int startOrder = getStartOrder(bundle);
-                return new Map.Entry<Integer, Artifact>() {
-
-                    @Override
-                    public Integer getKey() {
-                        return startOrder;
-                    }
-
-                    @Override
-                    public Artifact getValue() {
-                        return bundle;
-                    }
-
-                    @Override
-                    public Artifact setValue(final Artifact value) {
-                        throw new IllegalStateException();
-                    }
-                };
+                return bundle;
             }
         }
         return null;
@@ -194,7 +136,7 @@ public class Bundles implements Iterable<Artifact> {
      * @return {@code true} if the artifact exists
      */
     public boolean containsExact(final ArtifactId id) {
-        for(final Artifact entry : this) {
+        for(final Artifact entry : this.bundles) {
             if ( entry.getId().equals(id)) {
                 return true;
             }
@@ -208,7 +150,7 @@ public class Bundles implements Iterable<Artifact> {
      * @return {@code true} if the artifact exists
      */
     public boolean containsSame(final ArtifactId id) {
-        for(final Artifact entry : this) {
+        for(final Artifact entry : this.bundles) {
             if ( entry.getId().isSame(id)) {
                 return true;
             }

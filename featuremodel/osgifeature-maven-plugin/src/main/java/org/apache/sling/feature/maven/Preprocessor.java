@@ -23,7 +23,6 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.maven.model.Dependency;
@@ -296,8 +295,8 @@ public class Preprocessor {
             final ProjectInfo info,
             final Feature assembledFeature,
             final String scope) {
-        for(final Map.Entry<Integer, org.apache.sling.feature.Artifact> entry : assembledFeature.getBundles().getAllBundles()) {
-            final ArtifactId a = entry.getValue().getId();
+        for(final org.apache.sling.feature.Artifact entry : assembledFeature.getBundles()) {
+            final ArtifactId a = entry.getId();
             if ( a.getGroupId().equals(info.project.getGroupId())
                  && a.getArtifactId().equals(info.project.getArtifactId())
                  && a.getVersion().equals(info.project.getVersion()) ) {

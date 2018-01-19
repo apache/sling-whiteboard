@@ -63,6 +63,47 @@ public class Artifact implements Comparable<Artifact> {
         return this.metadata;
     }
 
+    /**
+     * Get the start order of the artifact.
+     * This is a convenience method which gets the value for the property named
+     * {@code #KEY_START_ORDER} from the metadata.
+     * @return The start order, if no start order is defined, {@code 0} is returned.
+     * @throws NumberFormatException If the stored metadata is not a number
+     * @throws IllegalStateException If the stored metadata is a negative number
+     */
+    public int getStartOrder() {
+        final String order = this.getMetadata().get(Artifact.KEY_START_ORDER);
+        final int startOrder;
+        if ( order != null ) {
+            startOrder = Integer.parseInt(order);
+            if ( startOrder < 0 ) {
+                throw new IllegalStateException("Start order must be >= 0 but is " + order);
+            }
+        } else {
+            startOrder = 0;
+        }
+
+        return startOrder;
+    }
+
+    /**
+     * Set the start order of the artifact
+     * This is a convenience method which sets the value of the property named
+     * {@code #KEY_START_ORDER} from the metadata.
+     * @param startOrder The start order
+     * @throws IllegalArgumentException If the number is negative
+     */
+    public void setStartOrder(final int startOrder) {
+        if ( startOrder < 0 ) {
+            throw new IllegalArgumentException("Start order must be >= 0 but is " + startOrder);
+        }
+        if ( startOrder == 0 ) {
+            this.getMetadata().remove(KEY_START_ORDER);
+        } else {
+            this.getMetadata().put(KEY_START_ORDER, String.valueOf(startOrder));
+        }
+    }
+
     @Override
     public int compareTo(final Artifact o) {
         return this.id.compareTo(o.id);

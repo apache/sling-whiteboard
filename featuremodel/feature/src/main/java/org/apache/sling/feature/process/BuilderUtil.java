@@ -58,8 +58,8 @@ class BuilderUtil {
                 // version handling - use provided algorithm
                 boolean replace = true;
                 if ( artifactMergeAlg == ArtifactMerge.HIGHEST ) {
-                    final Map.Entry<Integer, Artifact> existing = target.getSame(a.getId());
-                    if ( existing != null && existing.getValue().getId().getOSGiVersion().compareTo(a.getId().getOSGiVersion()) > 0 ) {
+                    final Artifact existing = target.getSame(a.getId());
+                    if ( existing != null && existing.getId().getOSGiVersion().compareTo(a.getId().getOSGiVersion()) > 0 ) {
                         replace = false;
                     }
                 }
