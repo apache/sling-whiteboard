@@ -83,7 +83,8 @@ public class HtmlGenerator {
             "Edit " + r.getPath() + " (" + m.getDescription() + ")",
             "rtdx-edit-form",
             "", 
-            addSelectorsAndExtension(request, r.getPath()));
+            addSelectorsAndExtension(request, r.getPath()),
+            null);
     }
     
     public void generateCreateForm(String parentPath, ResourceModel m) {
@@ -93,10 +94,11 @@ public class HtmlGenerator {
             "Create a " + m.getDescription() + " here", 
             "rtdx-create-form", 
             parentPath + "/*", 
-            "*");
+            "*",
+            RtdxConstants.RTDX_FORM_MARKER_PARAMETER);
     }
     
-     public void form(ResourceModel m, ValueMap vm, String title, String cssClass, String actionPath, String redirectPath) {
+     public void form(ResourceModel m, ValueMap vm, String title, String cssClass, String actionPath, String redirectPath, String formMarkerFieldName) {
         // TODO should use templates
         // TODO escape values
         w.println("<br/>");
@@ -106,6 +108,9 @@ public class HtmlGenerator {
         hiddenField("sling:resourceType", m.getName());
         if(redirectPath != null) {
             hiddenField(":redirect", redirectPath);
+        }
+        if(formMarkerFieldName != null) {
+            hiddenField(formMarkerFieldName, "");
         }
         for(ResourceProperty p : m.getProperties()) {
             w.println("<br/>");
