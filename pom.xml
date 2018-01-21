@@ -28,7 +28,6 @@
     </parent>
 
     <artifactId>org.apache.sling.commons.metrics</artifactId>
-    <packaging>bundle</packaging>
     <version>1.2.5-SNAPSHOT</version>
 
     <name>Apache Sling Metrics</name>
@@ -52,39 +51,12 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <extensions>true</extensions>
-                <configuration>
-                    <instructions>
-                        <Bundle-DocURL>
-                            https://sling.apache.org/documentation/bundles/metrics.html
-                        </Bundle-DocURL>
-                        <DynamicImport-Package>
-                            javax.servlet,
-                            javax.servlet.http;version="[2.3,3)",
-                            org.apache.commons.io.output;version="[2.4.0,3)",
-                            org.apache.felix.inventory;version="[1.0.0,2)"
-                        </DynamicImport-Package>
-                        <Embed-Dependency>
-                             org.apache.felix.utils;inline=org/apache/felix/utils/json/JSONWriter**
-                        </Embed-Dependency>
-                    </instructions>
-                    <!-- Export SCR metadata to classpath to have them available in unit tests -->
-                    <exportScr>true</exportScr>
-                </configuration>
-                <executions>
-                    <!-- Configure extra execution of 'manifest' in process-classes phase to make sure SCR metadata is generated before unit test runs -->
-                    <execution>
-                        <id>scr-metadata</id>
-                        <goals>
-                            <goal>manifest</goal>
-                        </goals>
-                        <configuration>
-                            <supportIncrementalBuild>true</supportIncrementalBuild>
-                        </configuration>
-                    </execution>
-                </executions>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+              <groupId>biz.aQute.bnd</groupId>
+              <artifactId>bnd-baseline-maven-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -164,7 +136,7 @@
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.utils</artifactId>
             <version>1.9.0</version>
-            <optional>true</optional>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>

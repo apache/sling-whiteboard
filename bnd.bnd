@@ -1,0 +1,28 @@
+Bundle-Category: sling
+
+Bundle-Description: ${project.description}
+
+Bundle-DocURL: https://sling.apache.org/documentation/bundles/metrics.html
+
+Bundle-License: Apache License, Version 2.0
+
+Bundle-Vendor: The Apache Software Foundation
+
+DynamicImport-Package:\
+  javax.servlet,\
+  javax.servlet.http;version="[2.3,3)",\
+  org.apache.commons.io.output;version="[2.4.0,3)",\
+  org.apache.felix.inventory;version="[1.0.0,2)"
+
+-baseline: *
+
+-exportcontents: ${packages;VERSIONED}
+
+-includeresource:\
+  @org.apache.felix.utils-*.jar!/org/apache/felix/utils/json/JSONWriter**
+
+-removeheaders:\
+  Embed-Dependency,\
+  Embed-Transitive,\
+  Include-Resource,\
+  Private-Package
