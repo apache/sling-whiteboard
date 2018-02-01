@@ -105,28 +105,22 @@ abstract class JSONReaderBase {
             final Configurations configContainer) throws IOException {
         if ( map.containsKey(JSONConstants.FEATURE_BUNDLES)) {
             final Object bundlesObj = map.get(JSONConstants.FEATURE_BUNDLES);
-            checkType(JSONConstants.FEATURE_BUNDLES, bundlesObj, Map.class);
-            @SuppressWarnings("unchecked")
-            final Map<String, Object> bundles = (Map<String, Object>) bundlesObj;
-            for(final String startLevelVal : bundles.keySet()) {
-                int startLevel = -1;
+            checkType(JSONConstants.FEATURE_BUNDLES, bundlesObj, List.class);
+
+            final List<Artifact> list = new ArrayList<>();
+            readArtifacts(JSONConstants.FEATURE_BUNDLES, "bundle", list, bundlesObj, configContainer);
+
+            for(final Artifact a : list) {
+                if ( container.containsSame(a.getId()) ) {
+                    throw new IOException(exceptionPrefix + "Duplicate bundle " + a.getId().toMvnId());
+                }
                 try {
-                    startLevel = Integer.valueOf(startLevelVal);
-                } catch ( final NumberFormatException nfe) {
-                    throw new IOException(exceptionPrefix + "Illegal start level '" + startLevelVal + "'");
+                    // check start order
+                    a.getStartOrder();
+                } catch ( final IllegalArgumentException nfe) {
+                    throw new IOException(exceptionPrefix + "Illegal start order '" + a.getMetadata().get(Artifact.KEY_START_ORDER) + "'");
                 }
-                final Object val = bundles.get(startLevelVal);
-                final List<Artifact> list = new ArrayList<>();
-                readArtifacts("startLevel", "bundle", list, val, configContainer);
-                for(final Artifact a : list) {
-                    if ( container.containsSame(a.getId()) ) {
-                        throw new IOException(exceptionPrefix + "Duplicate bundle " + a.getId().toMvnId());
-                    }
-                    if ( startLevel != 0 ) {
-                        a.getMetadata().put(Artifact.KEY_START_ORDER, startLevelVal);
-                    }
-                    container.add(a);
-                }
+                container.add(a);
             }
         }
     }

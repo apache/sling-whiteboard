@@ -59,19 +59,25 @@
         "brave" : "something",
         "org.apache.felix.scr.directory" : "launchpad/scr"
     },
-    "bundles" : {
-      "1" : [
+    "bundles" :[
             {
               "id" : "org.apache.sling/oak-server/1.0.0",
-              "hash" : "4632463464363646436"
+              "hash" : "4632463464363646436",
+              "startOrder" : 1
             },
-            "org.apache.sling/application-bundle/2.0.0",
-            "org.apache.sling/another-bundle/2.1.0"
-          ],
-      "2" : [
-            "org.apache.sling/foo-xyz/1.2.3"
-          ]
-    },
+            {
+              "id" : "org.apache.sling/application-bundle/2.0.0",
+              "startOrder" : 1
+            },
+            {
+              "id" : "org.apache.sling/another-bundle/2.1.0",
+              "startOrder" : 1
+            },
+            {
+              "id" : "org.apache.sling/foo-xyz/1.2.3",
+              "startOrder" : 2
+            }
+    ],
     "configurations" : {
         "my.pid" : {
            "foo" : 5,

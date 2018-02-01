@@ -166,6 +166,14 @@ public class Bundles implements Iterable<Artifact> {
         return Collections.unmodifiableList(this.bundles).iterator();
     }
 
+    /**
+     * Check whether this container has bundles
+     * @return {@code true} if there are no bundles.
+     */
+    public boolean isEmpty() {
+        return this.bundles.isEmpty();
+    }
+
     @Override
     public String toString() {
         return "Bundles " + this.bundles;

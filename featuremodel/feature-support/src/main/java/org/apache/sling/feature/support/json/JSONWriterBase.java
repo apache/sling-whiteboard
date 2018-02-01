@@ -45,34 +45,30 @@ abstract class JSONWriterBase {
             final Bundles bundles,
             final Configurations allConfigs) {
         // bundles
-        if ( !bundles.getBundlesByStartOrder().isEmpty() ) {
-            w.writeStartObject(JSONConstants.FEATURE_BUNDLES);
-            for(final Map.Entry<Integer, List<Artifact>> entry : bundles.getBundlesByStartOrder().entrySet()) {
-                w.writeStartArray(String.valueOf(entry.getKey()));
+        if ( !bundles.isEmpty() ) {
+            w.writeStartArray(JSONConstants.FEATURE_BUNDLES);
 
-                for(final Artifact artifact : entry.getValue()) {
-                    final Configurations cfgs = new Configurations();
-                    for(final Configuration cfg : allConfigs) {
-                        final String artifactProp = (String)cfg.getProperties().get(Configuration.PROP_ARTIFACT);
-                        if (  artifact.getId().toMvnId().equals(artifactProp) ) {
-                            cfgs.add(cfg);
-                        }
-                    }
-                    if ( artifact.getMetadata().isEmpty() && cfgs.isEmpty() ) {
-                        w.write(artifact.getId().toMvnId());
-                    } else {
-                        w.writeStartObject();
-                        w.write(JSONConstants.ARTIFACT_ID, artifact.getId().toMvnId());
-
-                        for(final Map.Entry<String, String> me : artifact.getMetadata()) {
-                            w.write(me.getKey(), me.getValue());
-                        }
-
-                        writeConfigurations(w, cfgs);
-                        w.writeEnd();
+            for(final Artifact artifact : bundles) {
+                final Configurations cfgs = new Configurations();
+                for(final Configuration cfg : allConfigs) {
+                    final String artifactProp = (String)cfg.getProperties().get(Configuration.PROP_ARTIFACT);
+                    if (  artifact.getId().toMvnId().equals(artifactProp) ) {
+                        cfgs.add(cfg);
                     }
                 }
-                w.writeEnd();
+                if ( artifact.getMetadata().isEmpty() && cfgs.isEmpty() ) {
+                    w.write(artifact.getId().toMvnId());
+                } else {
+                    w.writeStartObject();
+                    w.write(JSONConstants.ARTIFACT_ID, artifact.getId().toMvnId());
+
+                    for(final Map.Entry<String, String> me : artifact.getMetadata()) {
+                        w.write(me.getKey(), me.getValue());
+                    }
+
+                    writeConfigurations(w, cfgs);
+                    w.writeEnd();
+                }
             }
 
             w.writeEnd();
