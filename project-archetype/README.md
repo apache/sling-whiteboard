@@ -47,8 +47,8 @@ how to build and deploy the entire project in one step.
 |slingModelSubPackage |Sub Package where Sling Models should be place in with no trailing dots|
 |slingHostName        |Host Name or IP Address of the server where Sling is hosted|
 |slingPort            |Port to which your Sling instance is bound to|
-|optionAll            |Determines if the project is created with an **all** package as single deployed unit (y/n)|
-|optionExample        |Determines if the examples are kept separate (s), merged into the regular modules (m) or deleted (d)|
+|optionAll            |Determines if the project is created with an **all** package or packaged inside the ui.apps mdoule (y/n)|
+|optionExample        |Determines if the example code is kept in separate modules (s), merged together into single modules (m) or example code is deleted (d)|
 
 #### Usage
 
@@ -69,6 +69,12 @@ Until this project is fully released in the public Maven Repo this is how to use
 #### Build and Install Integration Test
 
 There is a simple integration test setup with this archetype.
+This script will build both the Merged All and UI (ui.apps packaging) and install them on the
+local Sling instance. The resulting pages (from the example code) can be viewed here:
+
+* [All Home](http://localhost:8080/content/testContentAll/home.html)
+* [UI Home](http://localhost:8080/content/testContentUI/home.html)
+
 You can run this one using the attached Unix shell script:
 
     sh build.run.and.deploy.test.sh
