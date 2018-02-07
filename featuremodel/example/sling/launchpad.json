@@ -1,1 +1,8 @@
-{"id":"generated/launchpad/1.0.0","framework-properties":{"localIndexDir":"${sling.home}/repository/index","repository.home":"${sling.home}/repository","sling.run.mode.install.options":"oak_tar,oak_mongo"}}
+{
+    "id": "generated/launchpad/1.0.0",
+    "framework-properties": {
+        "localIndexDir": "${sling.home}/repository/index",
+        "repository.home": "${sling.home}/repository",
+        "sling.run.mode.install.options": "oak_tar,oak_mongo"
+    }
+}
