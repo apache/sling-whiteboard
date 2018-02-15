@@ -261,6 +261,6 @@ public class ResourceFilterTest {
 	private List<Resource> handle(String path, String filter) throws ParseException {
 		Resource resource = context.resourceResolver().getResource(path);
 		Predicate<Resource> f = new ResourceFilter(filter);
-		return ResourceStream.from(resource).stream().filter(f).collect(Collectors.toList());
+		return ResourceStream.from(resource).setChildSelector(f).stream().collect(Collectors.toList());
 	}
 }

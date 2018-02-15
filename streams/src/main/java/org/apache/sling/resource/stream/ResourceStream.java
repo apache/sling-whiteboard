@@ -19,6 +19,7 @@ import java.util.Objects;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -43,6 +44,10 @@ public class ResourceStream {
 	private long limit = 0;
 
 	private long startOfRange;
+	
+	private Predicate<Resource> branchSelector = resource -> true;
+
+	private Predicate<Resource> childSelector = resource -> true;
 
 	/**
 	 * Starting point to locate resources. resources of the start resource.
@@ -62,22 +67,6 @@ public class ResourceStream {
 	 */
 	private ResourceStream(Resource resource) {
 		this.resource = Objects.requireNonNull(resource);
-	}
-
-	/**
-	 * Rests the starting path for the query to be the provided path. This can be
-	 * used to limit the possible branching options beneath a resource tree, or to
-	 * use a parent the resource as the basis of permissions for another resource
-	 * structure
-	 * 
-	 * 
-	 * @param path
-	 *            set the internal resource to path
-	 * @return this locator
-	 */
-	public ResourceStream startingFrom(String path) {
-		this.resource = Objects.requireNonNull(resource.getResourceResolver().getResource(path));
-		return this;
 	}
 
 	/**
@@ -119,40 +108,83 @@ public class ResourceStream {
 		this.limit = limit;
 		return this;
 	}
+	
+
+	/**
+	 * Resets the starting path for the query to be the provided path. This can be
+	 * used to limit the possible branching options beneath a resource tree, or to
+	 * use a parent the resource as the basis of permissions for another resource
+	 * structure
+	 * 
+	 * 
+	 * @param path
+	 *            set the internal resource to path
+	 * @return this locator
+	 */
+	public ResourceStream startingFrom(String path) {
+		this.resource = Objects.requireNonNull(resource.getResourceResolver().getResource(path));
+		return this;
+	}
+	
+	/**
+	 * Sets the branch selector for the traversal process. 
+	 * 
+	 * @param path
+	 *            set the internal resource to path
+	 * @return this locator
+	 * @throws ParseException 
+	 */
+	public ResourceStream setBranchSelector(String branchSelector) throws ParseException {
+		return setBranchSelector(new ResourceFilter(branchSelector));
+	}
+	
+	/**
+	 * Sets the branch selector for the traversal process. 
+	 * 
+	 * @param path
+	 *            set the internal resource to path
+	 * @return this locator
+	 */
+	public ResourceStream setBranchSelector(Predicate<Resource> branchSelector) {
+		this.branchSelector = Objects.requireNonNull(branchSelector);
+		return this;
+	}
+	
+	/**
+	 * Sets the branch selector for the traversal process. 
+	 * 
+	 * @param path
+	 *            set the internal resource to path
+	 * @return this locator
+	 * @throws ParseException 
+	 */
+	public ResourceStream setChildSelector(String childSelector) throws ParseException {
+		return setChildSelector(new ResourceFilter(childSelector));
+	}
+	
+	/**
+	 * Sets a child selector which defines whether a given reosource should be part of the stream 
+	 * 
+	 * @param path
+	 *            set the internal resource to path
+	 * @return this locator
+	 */
+	public ResourceStream setChildSelector(Predicate<Resource> childSelector) {
+		this.childSelector = Objects.requireNonNull(childSelector);
+		return this;
+	}
 
 	/**
 	 * Provides a stream of resources starting from the initiator resource and
-	 * traversing through it's descendants The only fluent api check it performs is
-	 * of the traversal predicate.
+	 * traversing through it's descendants
 	 * 
 	 * @return self closing {@code Stream<Resource>} of unknown size.
 	 */
 	public Stream<Resource> stream() {
-		return stream(resource -> true);
-	}
-
-	/**
-	 * Provides a stream of resources starting from the initiator resource and
-	 * traversing through it's descendants The only fluent api check it performs is
-	 * of the traversal predicate.
-	 * 
-	 * @return self closing {@code Stream<Resource>} of unknown size.
-	 */
-	public Stream<Resource> stream(String branchSelector) throws ParseException {
-		return stream(new ResourceFilter(branchSelector));
-	}
-
-	/**
-	 * Provides a stream of resources starting from the initiator resource and
-	 * traversing through it's descendants The only fluent api check it performs is
-	 * of the traversal predicate.
-	 * 
-	 * @return self closing {@code Stream<Resource>} of unknown size.
-	 */
-	public Stream<Resource> stream(Predicate<Resource> branchSelector) {
 		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(new Iterator<Resource>() {
 
-			final LinkedList<Resource> resourcesToCheck = new LinkedList<>();
+			private final LinkedList<Resource> resourcesToCheck = new LinkedList<>();
+
 			final AtomicInteger index = new AtomicInteger(0);
 
 			{
@@ -186,7 +218,7 @@ public class ResourceStream {
 							resourcesToCheck.clear();
 						}
 					}
-				} while (startOfRange > 0);
+				} while (startOfRange > 0 || !childSelector.test(current));
 				return true;
 			}
 
@@ -197,4 +229,14 @@ public class ResourceStream {
 		}, Spliterator.ORDERED | Spliterator.IMMUTABLE), false);
 	}
 
+	/**
+	 * Sets a child selector which defines whether a given reosource should be part of the stream 
+	 * 
+	 * @param path
+	 *            set the internal resource to path
+	 * @return this locator
+	 */
+	public void forEach(Consumer<Resource> consumer) {
+		stream().forEach(consumer);
+	}
 }

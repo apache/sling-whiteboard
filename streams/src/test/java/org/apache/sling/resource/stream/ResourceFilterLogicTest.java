@@ -19,8 +19,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.resource.stream.ResourceFilter;
-import org.apache.sling.resource.stream.ResourceStream;
 import org.apache.sling.resource.stream.parser.ParseException;
 import org.apache.sling.testing.mock.sling.junit.SlingContext;
 import org.junit.Before;
@@ -63,6 +61,6 @@ public class ResourceFilterLogicTest {
 	
 	private List<Resource> handle(String path, String filter) throws ParseException {
 		Resource resource = context.resourceResolver().getResource(path);
-		return ResourceStream.from(resource).stream().filter(new ResourceFilter(filter)).collect(Collectors.toList());
+		return ResourceStream.from(resource).setChildSelector(filter).stream().collect(Collectors.toList());
 	}
 }
