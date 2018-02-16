@@ -11,34 +11,41 @@ The goals of this proposal are:
 
 # Requirements
 
+## Model Requirements
+
 The feature model should meet the following requirements:
-Comment(CZ) : We should reorder the Requirements
-* SFM010 - A feature model must have a unique identifier.
-* SFM020 - A feature model must have a version.
-* SFM030 - The feature model should be described through a text format which is easily consumable by both humans and machines, that can be edited with common editors and support text-based diff operations.
-* SFM040 - It must be possible to specify the bundles belonging to the feature, including version.
-* SFM050 - It must be possible to specify the bundles in a feature in terms of Maven coordinates. Comment(CZ) : I'm not sure we need to specify this here - or if we should say the same about the feature identifier.
-* SFM060 - It must be possible to specify the OSGi configurations for a feature.
-* SFM070 - Both normal OSGi configurations as well as factory configurations must be supported. The feature model must support all data types supported by the OSGi Configuration Admin specification.
-* SFM080 - The OSGi configuration resource format as defined in the OSGi Configurator Specification must be supported.
-* SFM090 - It must be possible to associate an OSGi configuration with a bundle within a feature. If the bundle is not resolved at runtime then the associated configuration also does not get installed.
-* SFM100 - The feature model must allow the specification of the order in which the bundles inside the feature are started. This should be relative to when the feature itself is started.
-* SFM110 - It must be possible to define whether a bundle is mandatory or optional.
-* SFM120 - It must be possible to define framework properties.
-* SFM130 - A feature must be able to extend other features.
-* SFM140 - A feature must be able to depend on other features. The feature model must be able to deal with circular dependencies. Comment(CZ) : This sounds like a require-feature directive. I guess this is not meant here.
-* SFM150 - The feature model must describe how several features are combined to build an application.
-* SFM160 - A feature must be describable through a single file.
-* SFM170 - Multiple features must be described in multiple files.
-* SFM180 - The feature model must be extensible to allow other artifacts than bundles.
-* SFM190 - The feature model must be extensible to allow other/additional content.
-* SFM200 - The feature model may support more than one text-based definition language where the language used can be easily inferred, for example from the file extension.
-* SFM210 - The feature model must support comments.
-* SFM220 - A feature must be able to specify additional requirements and capabilities that extend the requirements and capabilities from the contained artifacts.
-* SFM230 - The feature model must describe how several features are aggregated to build a higher level feature
-* SFM240 - When features are aggregated, either to create a higher level feature or an application, the feature model must be capable of only using the one with the highest version number.
-* SFM250 - When features are aggregated, either to create a higher level feature or an application, the feature model must be capable of including both versions side-by-side.
-* SFM260 - The feature model should provide support for long and multi-line values without creating files that become hard to handle.
+
+* SFM010 - The feature model should be described through a text format which is easily consumable by both humans and machines, that can be edited with common editors and support text-based diff operations.
+* SFM020 - A feature must be describable through a single file.
+* SFM030 - Multiple features must be described in multiple files.
+* SFM040 - The feature model language must support comments.
+* SFM050 - The feature model may support more than one text-based definition language where the language used can be easily inferred, for example from the file extension.
+* SFM060 - The feature model should provide support for long and multi-line values without creating files that become hard to handle.
+* SFM070 - A feature model must have a unique identifier.
+* SFM080 - A feature model must have a version.
+* SFM090 - A feature module must be referenceable through Apache Maven coordinates.
+* SFM100 - It must be possible to specify the bundles belonging to the feature, including version.
+* SFM110 - It must be possible to specify the bundles in a feature in terms of Apache Maven coordinates.
+* SFM120 - The feature model must allow the specification of the order in which the bundles inside the feature are started. This should be relative to when the feature itself is started.
+* SFM130 - It must be possible to define whether a bundle is mandatory or optional.
+* SFM140 - It must be possible to associate any additional metadata like a hash with a bundle.
+* SFM150 - It must be possible to specify the OSGi configurations for a feature.
+* SFM160 - Both normal OSGi configurations as well as factory configurations must be supported. The feature model must support all data types supported by the OSGi Configuration Admin specification.
+* SFM170 - The OSGi configuration resource format as defined in the OSGi Configurator Specification must be supported.
+* SFM180 - It must be possible to associate an OSGi configuration with a bundle within a feature. If the bundle is not resolved at runtime then the associated configuration also does not get installed.
+* SFM190 - It must be possible to define framework properties.
+* SFM200 - The feature model must be extensible to allow other artifacts than bundles.
+* SFM210 - It must be possible to specify the artifacts in a feature in terms of Apache Maven coordinates.
+* SFM220 - It must be possible to associate any additional metadata like a hash with an artifact.
+* SFM230 - It must be possible to define whether an artifact is mandatory or optional.
+* SFM240 - The feature model must be extensible to allow other/additional content.
+* SFM250 - A feature must be able to specify additional requirements and capabilities that extend the requirements and capabilities from the contained artifacts.
+* SFM260 - A feature must be able to extend other features.
+* SFM270 - A feature must be able to depend on other features through the requirements/capabilities model based on the feature contents. The feature model must be able to deal with circular dependencies. However, there must be now way of explicitly requiring a feature from another feature.
+* SFM280 - The feature model must describe how several features are aggregated to build a higher level feature
+* SFM290 - The feature model must describe how several features are combined to build an application.
+* SFM300 - When features are aggregated, either to create a higher level feature or an application, and a bundle/artifact is encountered with different versions, the feature model must be capable of only using the bundle/artifact with the highest version number.
+* SFM310 - When features are aggregated, either to create a higher level feature or an application, and a bundle/artifact is encountered with different versions, the feature model must be capable of including both versions side-by-side.
 
 ## Tooling
 The following requirements relate to tooling around the Feature Model.
