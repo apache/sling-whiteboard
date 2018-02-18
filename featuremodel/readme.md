@@ -11,22 +11,71 @@ The goals of this proposal are:
 
 # Requirements
 
-The feature model should at least meet the following requirements:
+## Model Requirements
 
-* A feature model must have a unique identifier
-* A feature model must have a version
-* The feature model should be described through a text format which is easily consumable by both humans and machines
-* It must be possible to list the bundles belonging to the feature. The bundle definition is complete, meaning it also contains the version or exact artifact.
-* It must be possible to list the OSGi configurations for this features
-* It must be possible to associate an OSGi configuration with a bundle within a features
-* It must be possible to define framework properties
-* The feature model must be extensible to allow other (proprietary) Artifacts
-* A feature must be able to extend other features.
-* The feature model must describe how several features are aggregated to build a higher level feature
-* The feature model must describe how several features are aggregated to build an application
-* A feature must be able to specify additional requirements and capabilities that extend the requirements and capabilities from the contained artifacts.
-* A feature should be describable through a single file.
-* Multiple features must be described in multiple files-
+The feature model should meet the following requirements:
+
+* SFM010 - The feature model should be described through a text format which is easily consumable by both humans and machines, that can be edited with common editors and support text-based diff operations.
+* SFM020 - A feature must be describable through a single file.
+* SFM030 - Multiple features must be described in multiple files.
+* SFM040 - The feature model language must support comments.
+* SFM050 - The feature model may support more than one text-based definition language where the language used can be easily inferred, for example from the file extension.
+* SFM060 - The feature model should provide support for long and multi-line values without creating files that become hard to handle.
+* SFM070 - A feature model must have a unique identifier.
+* SFM080 - A feature model must have a version.
+* SFM090 - A feature module must be referenceable through Apache Maven coordinates.
+* SFM100 - It must be possible to specify the bundles belonging to the feature, including version.
+* SFM110 - It must be possible to specify the bundles in a feature in terms of Apache Maven coordinates.
+* SFM120 - The feature model must allow the specification of the order in which the bundles inside the feature are started. This should be relative to when the feature itself is started.
+* SFM130 - It must be possible to define whether a bundle is mandatory or optional.
+* SFM140 - It must be possible to associate any additional metadata like a hash with a bundle.
+* SFM150 - It must be possible to specify the OSGi configurations for a feature.
+* SFM160 - Both normal OSGi configurations as well as factory configurations must be supported. The feature model must support all data types supported by the OSGi Configuration Admin specification.
+* SFM170 - The OSGi configuration resource format as defined in the OSGi Configurator Specification must be supported.
+* SFM180 - It must be possible to associate an OSGi configuration with a bundle within a feature. If the bundle is not resolved at runtime then the associated configuration also does not get installed.
+* SFM190 - It must be possible to define framework properties.
+* SFM200 - The feature model must be extensible to allow other artifacts than bundles.
+* SFM210 - It must be possible to specify the artifacts in a feature in terms of Apache Maven coordinates.
+* SFM220 - It must be possible to associate any additional metadata like a hash with an artifact.
+* SFM230 - It must be possible to define whether an artifact is mandatory or optional.
+* SFM240 - The feature model must be extensible to allow other/additional content.
+* SFM250 - A feature must be able to specify additional requirements and capabilities that extend the requirements and capabilities from the contained artifacts.
+* SFM260 - A feature must be able to extend other features.
+* SFM270 - A feature must be able to depend on other features through the requirements/capabilities model based on the feature contents. The feature model must be able to deal with circular dependencies. However, there must be now way of explicitly requiring a feature from another feature.
+* SFM280 - The feature model must describe how several features are aggregated to build a higher level feature
+* SFM290 - The feature model must describe how several features are combined to build an application.
+* SFM300 - When features are aggregated, either to create a higher level feature or an application, and a bundle/artifact is encountered with different versions, the feature model must be capable of only using the bundle/artifact with the highest version number.
+* SFM310 - When features are aggregated, either to create a higher level feature or an application, and a bundle/artifact is encountered with different versions, the feature model must be capable of including both versions side-by-side.
+
+## Tooling
+The following requirements relate to tooling around the Feature Model.
+General Comment (CZ) : Most of the requirements start with "The feature model must...", however these are not requirements for the feature model itself, but rather for some tooling. We need to rephrase, potentially regroup.
+
+* SFT010 - A maven tool must be provided that can create a Sling Launchpad from the feature model.
+* SFT020 - The feature model must allow minimal packaging of runtime artifacts for a feature based on one or more root features and including all their transitive dependencies, but no other artifacts.
+* SFT030 - The feature model must support variable substitution for its values at runtime. Comment(CZ) : What exactly does this mean? Substitution of what?
+* SFT040 - The feature model should allow the arbitrary text files to be written to the file system, to support configuration of components that use file-based configuration such as properties or XML files, such as web.xml. Comment(CZ) : Not sure what this actually means, how does web.xml play a role here?
+* SFT050 - The feature model must support runtime launching with one or more features.
+* SFT060 - The feature model must be able to compute the effective requirements of a feature by inspecting the feature's content and combining this with requirements specified on the feature itself.
+* SFT070 - The feature model must be able to compute the capabilities of a feature by inspecting the feature's content and directly specified capabilities.
+* SFT080 - The feature model must be able to find all features that provide the capabilities required by a given feature, from a set of available features.
+* SFT090 - Given one or more root features, the feature model must be able to compute the start order of all resulting features so that dependencies of features are started first.
+* SFT100 - It should be possible to dynamically install and uninstall features at runtime.
+
+### Containers
+These requirements
+
+* SFC010 - The feature model must support operation in a container environment such as Docker.
+* SFC020 - The feature model must support micro-services oriented target runtimes where a single micro service runs in its own container containing only the binaries required for that microservice.
+* SFC030 - It must be possible to add new features by placing additional files in a container's file system.
+* SFC040 - It must be possible to alter existing features by placing additional files in the file system. For example to uninstall or update a bundle provided by an existing feature or to alter a configuration set by an existing feature.
+* SFC050 - The feature model must enable the creation of container (Docker) images for a specified set of features.
+
+### Sling Specific
+
+* SFS010 - The feature model must support JCR Repository Initialization via the _repoinit_ language. See SFM190
+* SFS020 - The feature model must support features which contains repository content packages. See SFM180
+* SFS030 - The feature model should support all functionality previously provided by the Sling provisioning model.
 
 # Prototype
 

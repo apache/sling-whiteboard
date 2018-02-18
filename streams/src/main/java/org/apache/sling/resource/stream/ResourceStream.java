@@ -30,10 +30,8 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.resource.stream.parser.ParseException;
 
 /**
- * Base class from which a fluent api can be created or which can be defined
- * using the integrated query language.
- * 
- * Additionally provides the ability to stream child resources.
+ * Utility to create a Stream<Resource> of Resource objects from a managed
+ * traversal of a Resource tree
  *
  */
 public class ResourceStream {
@@ -45,15 +43,17 @@ public class ResourceStream {
 
 	private long startOfRange;
 	
+    // determine if a given child of a resource should be traversed 
 	private Predicate<Resource> branchSelector = resource -> true;
-
-	private Predicate<Resource> childSelector = resource -> true;
+	
+    // determine if a given resource should be added to the stream
+	private Predicate<Resource> resourceSelector = resource -> true;
 
 	/**
-	 * Starting point to locate resources. resources of the start resource.
+	 * Base resource for traversal
 	 * 
 	 * @param resource
-	 *            starting point for the traversal
+	 *            traversal starting point
 	 * @return new instance of ResourceQuery;
 	 */
 	public static ResourceStream from(@Nonnull Resource resource) {
@@ -70,15 +70,13 @@ public class ResourceStream {
 	}
 
 	/**
-	 * Sets the maximum number of items to be returned or processed. Starting from
+	 * Sets the maximum number of items to be returned. Starting from
 	 * the first matching resource. This method is mutually exclusive to the range
 	 * method
 	 * 
-	 * This performs the same form of limitation as a limit on a Stream
-	 * 
 	 * @param number
 	 *            maximum number of items to be returned
-	 * @return this locator
+	 * @return ResourceStream
 	 */
 	public ResourceStream limit(long number) {
 		if (number < 0) {
@@ -90,15 +88,13 @@ public class ResourceStream {
 	}
 
 	/**
-	 * Sets the maximum number of items to be returned or processed. Starting from
-	 * the nth identified resource as set by the startOfRange. This method is
+	 * Sets the maximum number of items to be returned. Starting from
+	 * the nth identified resource as defined by the startOfRange. This method is
 	 * mutually exclusive to the limit method
 	 * 
-	 * This can be achieved on a Stream by performing a a filter operation
-	 * 
-	 * @param startOfRange
-	 * @param limit
-	 * @return
+	 * @param startOfRange index of the first resource to be returned
+	 * @param limit maximum number of resources to be returned
+	 * @return ResourceStream
 	 */
 	public ResourceStream range(long startOfRange, long limit) {
 		if (startOfRange < 0 || limit < 0) {
@@ -108,69 +104,65 @@ public class ResourceStream {
 		this.limit = limit;
 		return this;
 	}
-	
 
 	/**
-	 * Resets the starting path for the query to be the provided path. This can be
-	 * used to limit the possible branching options beneath a resource tree, or to
-	 * use a parent the resource as the basis of permissions for another resource
-	 * structure
-	 * 
+	 * Resets the starting path for the tree traversal. 
 	 * 
 	 * @param path
 	 *            set the internal resource to path
-	 * @return this locator
+	 * @return ResourceStream
 	 */
 	public ResourceStream startingFrom(String path) {
 		this.resource = Objects.requireNonNull(resource.getResourceResolver().getResource(path));
 		return this;
 	}
-	
+
 	/**
-	 * Sets the branch selector for the traversal process. 
+	 * Predicate used to select child resources for traversal
 	 * 
-	 * @param path
-	 *            set the internal resource to path
-	 * @return this locator
-	 * @throws ParseException 
+	 * @param branchSelector
+	 *            resourceFilter script for traversal control
+	 * @return ResourceStream
+	 * @throws ParseException
 	 */
 	public ResourceStream setBranchSelector(String branchSelector) throws ParseException {
 		return setBranchSelector(new ResourceFilter(branchSelector));
 	}
-	
+
 	/**
-	 * Sets the branch selector for the traversal process. 
+	 * Predicate used to select child resources for traversal
 	 * 
-	 * @param path
-	 *            set the internal resource to path
-	 * @return this locator
+	 * @param branchSelector
+	 *            predicate for traversal control
+	 * @return ResourceStream
 	 */
 	public ResourceStream setBranchSelector(Predicate<Resource> branchSelector) {
 		this.branchSelector = Objects.requireNonNull(branchSelector);
 		return this;
 	}
-	
+
 	/**
-	 * Sets the branch selector for the traversal process. 
+	 * ResourceFilter script to identify Resource objects to add to the Stream<Resource>
 	 * 
-	 * @param path
-	 *            set the internal resource to path
-	 * @return this locator
-	 * @throws ParseException 
+	 * @param resourceSelector
+	 *            ResourceFilter script
+	 * @return ResourceStream
+	 * @throws ParseException
 	 */
-	public ResourceStream setChildSelector(String childSelector) throws ParseException {
-		return setChildSelector(new ResourceFilter(childSelector));
+	public ResourceStream setResourceSelector(String resourceSelector) throws ParseException {
+		return setResourceSelector(new ResourceFilter(resourceSelector));
 	}
-	
+
 	/**
-	 * Sets a child selector which defines whether a given reosource should be part of the stream 
+	 * Sets a resource selector which defines whether a given resource should be part
+	 * of the stream
 	 * 
-	 * @param path
-	 *            set the internal resource to path
-	 * @return this locator
+	 * @param resourceSelector
+	 *            identifies resource for Stream<Resource>
+	 * @return ResourceStream
 	 */
-	public ResourceStream setChildSelector(Predicate<Resource> childSelector) {
-		this.childSelector = Objects.requireNonNull(childSelector);
+	public ResourceStream setResourceSelector(Predicate<Resource> resourceSelector) {
+		this.resourceSelector = Objects.requireNonNull(resourceSelector);
 		return this;
 	}
 
@@ -218,7 +210,7 @@ public class ResourceStream {
 							resourcesToCheck.clear();
 						}
 					}
-				} while (startOfRange > 0 || !childSelector.test(current));
+				} while (startOfRange > 0 || !resourceSelector.test(current));
 				return true;
 			}
 
@@ -230,11 +222,9 @@ public class ResourceStream {
 	}
 
 	/**
-	 * Sets a child selector which defines whether a given reosource should be part of the stream 
+	 * Perform the consumer on each Resource in the defined Stream
 	 * 
-	 * @param path
-	 *            set the internal resource to path
-	 * @return this locator
+	 * @param consumer
 	 */
 	public void forEach(Consumer<Resource> consumer) {
 		stream().forEach(consumer);

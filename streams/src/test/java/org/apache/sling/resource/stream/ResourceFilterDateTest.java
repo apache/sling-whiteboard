@@ -43,7 +43,7 @@ public class ResourceFilterDateTest {
 		List<Resource> found = handle(START_PATH, query);
 		assertEquals(3, found.size());
 
-		query = "[jcr:content/created] < '2013-08-08T16:32:59.000'";
+		query = "[jcr:content/created] < 2013-08-08T16:32:59.000";
 		found = handle(START_PATH, query);
 		assertEquals(3, found.size());
 
@@ -95,6 +95,6 @@ public class ResourceFilterDateTest {
 	
 	private List<Resource> handle(String path, String filter) throws ParseException {
 		Resource resource = context.resourceResolver().getResource(path);
-		return ResourceStream.from(resource).setChildSelector(filter).stream().collect(Collectors.toList());
+		return ResourceStream.from(resource).setResourceSelector(filter).stream().collect(Collectors.toList());
 	}
 }
