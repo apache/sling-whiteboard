@@ -66,6 +66,7 @@ public final class FilterParser implements FilterParserConstants {
     case LPAREN:
       node = group();
       break;
+    case DATE:
     case NUMBER:
     case STRING:
     case NULL:
@@ -160,6 +161,7 @@ public final class FilterParser implements FilterParserConstants {
   Object value = new ArrayList();
     jj_consume_token(LPAREN);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case DATE:
     case NUMBER:
     case STRING:
     case NULL:
@@ -203,6 +205,7 @@ public final class FilterParser implements FilterParserConstants {
   final public Node argument() throws ParseException {
   Node selector = null;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case DATE:
     case NUMBER:
     case STRING:
     case NULL:
@@ -231,6 +234,7 @@ public final class FilterParser implements FilterParserConstants {
     functionName = token.image;
     jj_consume_token(LPAREN);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case DATE:
     case NUMBER:
     case STRING:
     case NULL:
@@ -261,6 +265,9 @@ public final class FilterParser implements FilterParserConstants {
       break;
     case BOOLEAN:
       jj_consume_token(BOOLEAN);
+      break;
+    case DATE:
+      jj_consume_token(DATE);
       break;
     default:
       jj_la1[8] = jj_gen;
@@ -294,10 +301,10 @@ public final class FilterParser implements FilterParserConstants {
       jj_la1_init_1();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x20000,0x10000,0x4c2100,0xff800000,0x442100,0x200000,0x442100,0x442100,0x442100,};
+      jj_la1_0 = new int[] {0x40000,0x20000,0x984300,0xff000000,0x884300,0x400000,0x884300,0x884300,0x884300,};
    }
    private static void jj_la1_init_1() {
-      jj_la1_1 = new int[] {0x0,0x0,0x60,0x1f,0x60,0x0,0x60,0x60,0x0,};
+      jj_la1_1 = new int[] {0x0,0x0,0xc0,0x3f,0xc0,0x0,0xc0,0xc0,0x0,};
    }
 
   /** Constructor with InputStream. */
@@ -414,7 +421,7 @@ public final class FilterParser implements FilterParserConstants {
   /** Generate ParseException. */
   public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[40];
+    boolean[] la1tokens = new boolean[41];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
@@ -431,7 +438,7 @@ public final class FilterParser implements FilterParserConstants {
         }
       }
     }
-    for (int i = 0; i < 40; i++) {
+    for (int i = 0; i < 41; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;

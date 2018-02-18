@@ -21,69 +21,71 @@ public interface FilterParserConstants {
   /** RegularExpression Id. */
   int EXP = 7;
   /** RegularExpression Id. */
-  int NUMBER = 8;
+  int DATE = 8;
   /** RegularExpression Id. */
-  int INTEGER = 9;
+  int NUMBER = 9;
   /** RegularExpression Id. */
-  int FRACTIONAL_DIGITS = 10;
+  int INTEGER = 10;
   /** RegularExpression Id. */
-  int EXPONENT = 11;
+  int FRACTIONAL_DIGITS = 11;
   /** RegularExpression Id. */
-  int DIGITS = 12;
+  int EXPONENT = 12;
   /** RegularExpression Id. */
-  int STRING = 13;
+  int DIGITS = 13;
   /** RegularExpression Id. */
-  int SQUOTE = 14;
+  int STRING = 14;
   /** RegularExpression Id. */
-  int DQUOTE = 15;
+  int SQUOTE = 15;
   /** RegularExpression Id. */
-  int AND = 16;
+  int DQUOTE = 16;
   /** RegularExpression Id. */
-  int OR = 17;
+  int AND = 17;
   /** RegularExpression Id. */
-  int NULL = 18;
+  int OR = 18;
   /** RegularExpression Id. */
-  int LPAREN = 19;
+  int NULL = 19;
   /** RegularExpression Id. */
-  int RPAREN = 20;
+  int LPAREN = 20;
   /** RegularExpression Id. */
-  int COMMA = 21;
+  int RPAREN = 21;
   /** RegularExpression Id. */
-  int BOOLEAN = 22;
+  int COMMA = 22;
   /** RegularExpression Id. */
-  int EQUAL = 23;
+  int BOOLEAN = 23;
   /** RegularExpression Id. */
-  int NOT_EQUAL = 24;
+  int EQUAL = 24;
   /** RegularExpression Id. */
-  int GREATER_THAN = 25;
+  int NOT_EQUAL = 25;
   /** RegularExpression Id. */
-  int GREATER_THAN_OR_EQUAL = 26;
+  int GREATER_THAN = 26;
   /** RegularExpression Id. */
-  int LESS_THAN = 27;
+  int GREATER_THAN_OR_EQUAL = 27;
   /** RegularExpression Id. */
-  int LESS_THAN_OR_EQUAL = 28;
+  int LESS_THAN = 28;
   /** RegularExpression Id. */
-  int LIKE = 29;
+  int LESS_THAN_OR_EQUAL = 29;
   /** RegularExpression Id. */
-  int LIKE_NOT = 30;
+  int LIKE = 30;
   /** RegularExpression Id. */
-  int CONTAINS = 31;
+  int LIKE_NOT = 31;
   /** RegularExpression Id. */
-  int CONTAINS_NOT = 32;
+  int CONTAINS = 32;
   /** RegularExpression Id. */
-  int CONTAINS_ANY = 33;
+  int CONTAINS_NOT = 33;
   /** RegularExpression Id. */
-  int CONTAINS_NOT_ANY = 34;
+  int CONTAINS_ANY = 34;
   /** RegularExpression Id. */
-  int IN = 35;
+  int CONTAINS_NOT_ANY = 35;
   /** RegularExpression Id. */
-  int NOT_IN = 36;
+  int IN = 36;
   /** RegularExpression Id. */
-  int FUNCTION_NAME = 37;
+  int NOT_IN = 37;
   /** RegularExpression Id. */
-  int PROPERTY = 38;
+  int FUNCTION_NAME = 38;
   /** RegularExpression Id. */
-  int UNKNOWN = 39;
+  int PROPERTY = 39;
+  /** RegularExpression Id. */
+  int UNKNOWN = 40;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -98,6 +100,7 @@ public interface FilterParserConstants {
     "\"-\"",
     "<DIGIT>",
     "<EXP>",
+    "<DATE>",
     "<NUMBER>",
     "<INTEGER>",
     "<FRACTIONAL_DIGITS>",

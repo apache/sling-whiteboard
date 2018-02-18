@@ -43,6 +43,7 @@ TOKEN :
 | < #MINUS: "-" >
 | < #DIGIT: [ "0"-"9" ] >
 | < #EXP: ["e","E"] ( < PLUS > | < MINUS > )? >
+| < DATE: <INTEGER> <INTEGER> <INTEGER> <INTEGER> <MINUS> ["0"-"2"] <INTEGER> <MINUS> ["0"-"3"] <DIGIT> (["t","T"] ["0"-"2"] <DIGIT> ":" ["0"-"5"] <DIGIT> ( ":" ["0"-"5"] <DIGIT> ("." <DIGIT>  <DIGIT>  <DIGIT>)? (["+","-"]["0"-"2"] <DIGIT> ":" ["0"-"5"] <DIGIT> )? )?  )? >
 | < NUMBER:  <INTEGER> | <INTEGER> <FRACTIONAL_DIGITS> | <INTEGER> <EXPONENT> | <INTEGER> <FRACTIONAL_DIGITS> <EXPONENT> >
 | < INTEGER: (<MINUS>)? ( <DIGITS> ) >
 | < FRACTIONAL_DIGITS: <DOT> <DIGITS> >
@@ -297,6 +298,7 @@ Node literal() :
   | < NUMBER >
   | < NULL >
   | < BOOLEAN >
+  | < DATE >
   )
   {
     return new Node(token.kind, token.image);

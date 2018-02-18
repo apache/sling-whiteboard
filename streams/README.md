@@ -10,9 +10,8 @@ Example of a stream.
 ```java
 ResourceStream
 	.from(resource)
-	.stream(
-		where(property("jcr:primaryType").is("cq:Page")))
-   .filter(
+	.setBranchSelector(where(property("jcr:primaryType").is("page")))
+	.setResourceSelector(
       aChildResource("jcr:content")
           .has(property("sling:resourceType")
 		    .isNot("sling/components/page/folder")));
@@ -23,8 +22,9 @@ same results using the filter script
 ```java
 ResourceStream
     .from(resource)
-    .stream("[jcr:primaryType] == 'cq:Page'")
-    .filter(new ResourceFilter("[jcr:content/sling:resourceType] != 'apps/components/page/folder'"));
+    .setBranchSelector("[jcr:primaryType] == 'cq:Page'")
+    .setResourceSelector("[jcr:content/sling:resourceType] != 'apps/components/page/folder'"))
+    .stream();
 ```
 
 
@@ -112,3 +112,13 @@ OOTB Functions are:
 | name  | none      | String  | Provides the name of the resource                              |
 | date  | 0 - 2     | Instant | First argument is string representation of the date, second argument is a standard Java DateFormat representation of the value. No argument returns the current time. |
 | path  | none		| String  | path of the tested resource        |
+
+## Optimizing Traversals
+Similar to indexing in a query there are strategies that you can do within a tree traversal so that traversals can be done in an efficient manner across a large number of resources. The following strategies will assist in traversal optimization.
+
+### Limit traversal paths
+In a naive implementation of a tree traversal the traversal occurs across all nodes in the tree regardless of the ability of the tree structure to support the nodes that are being looked for. An example of this is a tree of Page resources that have have a child node of jcr:content which contains a subtree of data to define the page structure. If the jcr:content node is not capable of having a child resource of type Page and the goal of the traversal is to identify Page resources that match a specific criteria then the traversal of the jcr:content node can not lead to additional matches. Using this knowledge of the resource structure, you can improve performance by adding a branch selector that prevents the traversal from proceeding down a non productive path
+  
+### Limit memory consumption
+The instantiation of a Resource object from the underlying ResourceResolver is a non trivial consumption of memory. When the focus of a tree traversal is obtaining information from thousands of Resources, an effective method is to extract the information as part of the stream processing or utilizing the forEach method of the ResourceStream object which allows the resource to be garbage collected in an efficient manner. 
+
