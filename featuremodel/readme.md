@@ -23,7 +23,7 @@ The feature model should meet the following requirements:
 * SFM060 - The feature model should provide support for long and multi-line values without creating files that become hard to handle.
 * SFM070 - A feature model must have a unique identifier.
 * SFM080 - A feature model must have a version.
-* SFM090 - A feature module must be referenceable through Apache Maven coordinates.
+* SFM090 - A feature model must be referenceable through Apache Maven coordinates.
 * SFM100 - It must be possible to specify the bundles belonging to the feature, including version.
 * SFM110 - It must be possible to specify the bundles in a feature in terms of Apache Maven coordinates.
 * SFM120 - The feature model must allow the specification of the order in which the bundles inside the feature are started. This should be relative to when the feature itself is started.
@@ -48,6 +48,8 @@ The feature model should meet the following requirements:
 * SFM310 - When features are aggregated, either to create a higher level feature or an application, and a bundle/artifact is encountered with different versions, the feature model must be capable of only using the bundle/artifact with the highest version number.
 * SFM320 - When features are aggregated, either to create a higher level feature or an application, and a bundle/artifact is encountered with different versions, the feature model must be capable of including both versions side-by-side.
 * SFM330 - When features are aggregated, either to create a higher level feature or an application, the resulting feature or application must be minimal meaning it must not contain additional or unneeded artifacts.
+* SFM340 - The feature model must support controlling of the exported API as described in https://github.com/apache/sling-whiteboard/blob/master/featuremodel/apicontroller.md
+* SFM350 - The feature model must support explicit ordering of features. It must be possible to provide this ordering in separate file.
 
 ## Tooling
 The following requirements relate to tooling around the Feature Model.
@@ -56,11 +58,17 @@ The following requirements relate to tooling around the Feature Model.
 * SFT010 - Tooling must support runtime launching with one or more features.
 * SFT020 - Tooling must be able to compute the effective requirements of a feature by inspecting the feature's content and combining this with requirements specified on the feature itself.
 * SFT030 - Tooling must be able to compute the capabilities of a feature by inspecting the feature's content and directly specified capabilities.
-* SFT040 - Given one or more root features, the feature model must be able to compute the start order of all resulting features so that dependencies of features are started first. Comment(CZ) : Is this tooling or feature model?
+* SFT040 - Given one or more root features, the feature model must be able to compute the start order of all resulting features so that dependencies of features are started first. 
+  * Comment(CZ) : Is this tooling or feature model?
+  * Comment(DB) : It could be either, but if there is support for explicit ordering of features (SFM350) then a tool could compute the ordering beforehand and place it in this file.
 * SFT050 - Tooling must be able to find all features that provide the capabilities required by a given feature, from a set of available features.
 * SFT060 - It should be possible to dynamically install and uninstall features at runtime.
-* SFT070 - The feature model must support variable substitution for its values at runtime. Comment(CZ) : What exactly does this mean? Substitution of what?
-* SFT080 - The feature model should allow the arbitrary text files to be written to the file system, to support configuration of components that use file-based configuration such as properties or XML files, such as web.xml. Comment(CZ) : Not sure what this actually means, how does web.xml play a role here?
+* SFT070 - The feature model must support variable substitution for its values at runtime. 
+  * Comment(CZ) : What exactly does this mean? Substitution of what?
+  * Comment(DB) : Like configuration values or bundle versions. Meaning that you can write something like ${db.user} instead of having to hardcode the user in the feature file. 
+* SFT080 - The feature model should allow the arbitrary text files to be written to the file system, to support configuration of components that use file-based configuration such as properties or XML files, such as web.xml. 
+  * Comment(CZ) : Not sure what this actually means, how does web.xml play a role here?
+  * Comment(DB) : Basically to configure entities that are not configured via OSGi configadmin. Web.xml is just an example. They might need a text file such as an xml file or some other file to exist in a given location to function. The idea would be that the feature model could write out this file. So it would not be a tooling requirement but rather a feature model runtime requirement. 
 
 ### Containers
 These requirements
@@ -73,8 +81,9 @@ These requirements
 
 ### Sling Specific
 
-* SFS010 - The feature model must support JCR Repository Initialization via the _repoinit_ language. See SFM190
-* SFS020 - The feature model must support features which contains repository content packages. See SFM180
+* SFS010 - The feature model must support JCR Repository Initialization via the _repoinit_ language.
+  * Comment(DB) : I guess the SFM0190 reference that was in this req is not valid any more? I don't see the relation to SFM190? Same for next requirement. 
+* SFS020 - The feature model must support features which contains repository content packages.
 * SFS030 - The feature model should support all functionality previously provided by the Sling provisioning model.
 * SFS040 - A (Maven) tool must be provided that can create a launchable Sling Starter application from the feature model.
 
