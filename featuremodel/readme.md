@@ -50,6 +50,7 @@ The feature model should meet the following requirements:
 * SFM330 - When features are aggregated, either to create a higher level feature or an application, the resulting feature or application must be minimal meaning it must not contain additional or unneeded artifacts.
 * SFM340 - The feature model must support controlling of the exported API as described in https://github.com/apache/sling-whiteboard/blob/master/featuremodel/apicontroller.md
 * SFM350 - The feature model must support explicit ordering of features. It must be possible to provide this ordering in separate file.
+* SFM360 - The feature model must support variables to be used throughout the model, avoiding the need to repeat the same value several times.
 
 ## Tooling
 The following requirements relate to tooling around the Feature Model.
@@ -63,12 +64,7 @@ The following requirements relate to tooling around the Feature Model.
   * Comment(DB) : It could be either, but if there is support for explicit ordering of features (SFM350) then a tool could compute the ordering beforehand and place it in this file.
 * SFT050 - Tooling must be able to find all features that provide the capabilities required by a given feature, from a set of available features.
 * SFT060 - It should be possible to dynamically install and uninstall features at runtime.
-* SFT070 - The feature model must support variable substitution for its values at runtime.
-  * Comment(CZ) : What exactly does this mean? Substitution of what?
-  * Comment(DB) : Like configuration values or bundle versions. Meaning that you can write something like ${db.user} instead of having to hardcode the user in the feature file.
-* SFT080 - The feature model should allow the arbitrary text files to be written to the file system, to support configuration of components that use file-based configuration such as properties or XML files, such as web.xml.
-  * Comment(CZ) : Not sure what this actually means, how does web.xml play a role here?
-  * Comment(DB) : Basically to configure entities that are not configured via OSGi configadmin. Web.xml is just an example. They might need a text file such as an xml file or some other file to exist in a given location to function. The idea would be that the feature model could write out this file. So it would not be a tooling requirement but rather a feature model runtime requirement.
+* SFT070 - The feature model must support substitution of variable values at launch time.
 
 ### Containers
 These requirements
