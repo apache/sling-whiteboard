@@ -51,6 +51,7 @@ The feature model should meet the following requirements:
 * SFM340 - The feature model must support controlling of the exported API as described in https://github.com/apache/sling-whiteboard/blob/master/featuremodel/apicontroller.md
 * SFM350 - The feature model must support explicit ordering of features. It must be possible to provide this ordering in separate file.
 * SFM360 - The feature model must support variables to be used throughout the model, avoiding the need to repeat the same value several times.
+* SFM370 - When features are aggregated, the ordering of the processing of those features needs to be predictable and stable.
 
 ## Tooling
 The following requirements relate to tooling around the Feature Model.
