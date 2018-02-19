@@ -49,7 +49,7 @@ The feature model should meet the following requirements:
 * SFM320 - When features are aggregated, either to create a higher level feature or an application, and a bundle/artifact is encountered with different versions, the feature model must be capable of including both versions side-by-side.
 * SFM330 - When features are aggregated, either to create a higher level feature or an application, the resulting feature or application must be minimal meaning it must not contain additional or unneeded artifacts.
 * SFM340 - The feature model must support controlling of the exported API as described in https://github.com/apache/sling-whiteboard/blob/master/featuremodel/apicontroller.md
-* SFM350 - The feature model must support explicit ordering of features. It must be possible to provide this ordering in separate file.
+* SFM350 - The feature model must calculate the startup order of bundles for an aggregated application respecting the dependencies between features and their contents.
 * SFM360 - The feature model must support variables to be used throughout the model, avoiding the need to repeat the same value several times.
 * SFM370 - When features are aggregated, the ordering of the processing of those features needs to be predictable and stable.
 
@@ -60,12 +60,11 @@ The following requirements relate to tooling around the Feature Model.
 * SFT010 - Tooling must support runtime launching with one or more features.
 * SFT020 - Tooling must be able to compute the effective requirements of a feature by inspecting the feature's content and combining this with requirements specified on the feature itself.
 * SFT030 - Tooling must be able to compute the capabilities of a feature by inspecting the feature's content and directly specified capabilities.
-* SFT040 - Given one or more root features, the feature model must be able to compute the start order of all resulting features so that dependencies of features are started first.
-  * Comment(CZ) : Is this tooling or feature model?
-  * Comment(DB) : It could be either, but if there is support for explicit ordering of features (SFM350) then a tool could compute the ordering beforehand and place it in this file.
+* SFT040 - Tooling must be able to introspect and potentially overriding the startup order bundles, for example by using an additional file.
 * SFT050 - Tooling must be able to find all features that provide the capabilities required by a given feature, from a set of available features.
 * SFT060 - It should be possible to dynamically install and uninstall features at runtime.
 * SFT070 - The feature model must support substitution of variable values at launch time.
+* SFT080 - When an application is started, the install and the startup order of bundles should be the same, ensuring that the bundles are shutdown in reverse order and started in the same order on next startup of the framework.
 
 ### Containers
 These requirements
