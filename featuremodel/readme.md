@@ -1,6 +1,6 @@
-# An Introduction to the Feature Model
+# An Introduction to the OSGi Feature Model
 
-Typical OSGi applications are assembled out of bundles and configured through both, OSGi configurations and framework properties (though these less frequently used than OSGi configurations). Depending on the nature of the application, there might be additional artifact types involved.
+Typical OSGi applications are assembled out of bundles and configured through both, OSGi configurations and framework properties (though these are less frequently used than OSGi configurations). Depending on the nature of the application, there might be additional artifact types involved.
 
 While bundles already provide a good way to define rather small, coherent modules, there is often a need to distribute or provision a set of such bundles together with some configuration. OSGi Deployment Admin and OSGi subsystems are two ways of trying to solve this issue. The feature model of Apache Karaf and the provisioning model of Apache Sling are two other approaches.
 
@@ -8,6 +8,8 @@ The goals of this proposal are:
 
 * Defining a common mechanism to describe such features.
 * Describe a common algorithm to combine features to either create higher level features or an OSGi applications.
+
+The model is a general purpose feature model and in no way tied to Apache Sling.
 
 # Requirements
 
