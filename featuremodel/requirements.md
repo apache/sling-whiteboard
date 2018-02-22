@@ -15,7 +15,7 @@ The model is a general purpose feature model and in no way tied to Apache Sling.
 
 ## Model Requirements
 
-The feature model should meet the following requirements:
+The feature model is about describing a feature, aggregating features to either build higher level features or an application. The model should meet the following requirements:
 
 * SFM010 - The feature model should be described through a text format which is easily consumable by both humans and machines, that can be edited with common editors and support text-based diff operations.
 * SFM020 - A feature must be describable through a single file.
@@ -58,23 +58,32 @@ The feature model should meet the following requirements:
 * SFM390 - The feature model must support adding or overwriting manifest headers for a bundle. For example to allow to change the bundle symbolic name or to add missing OSGi metadata to a plain jar file.
 * SFM400 - The feature model must support a textual representation for an application aggregated out of features. The format should be as similar as possible to the feature format.
 * SFM410 - It must be possible to specify the framework to launch an application as part of the application model.
+* SFM420 - When features are aggregated to either a higher level feature or an application, the resulting feature or application must still contain the variables.
+* SFM430 - The startup order of features and bundles must be part of the resulting aggregated application model.
 
-## Tooling
+## Analysis Requirements
 
-The following requirements relate to tooling around the Feature Model.
+* SFA010 - Tooling must be able to compute the effective requirements of a feature by inspecting the feature's content and combining this with requirements specified on the feature itself.
+* SFA020 - Tooling must be able to compute the capabilities of a feature by inspecting the feature's content and directly specified capabilities.
+* SFA030 - The feature model should support to store the results of SFA010 and SFA020 as port of the model, avoiding duplicate calculations.
 
+## Resolving Requirements
 
-* SFT010 - Tooling must support runtime launching with one or more features.
-* SFT020 - Tooling must be able to compute the effective requirements of a feature by inspecting the feature's content and combining this with requirements specified on the feature itself.
-* SFT030 - Tooling must be able to compute the capabilities of a feature by inspecting the feature's content and directly specified capabilities.
-* SFT040 - Tooling must be able to introspect and potentially overriding the startup order bundles, for example by using an additional file.
-* SFT050 - Tooling must be able to find all features that provide the capabilities required by a given feature, from a set of available features.
-* SFT060 - It should be possible to dynamically install and uninstall features at runtime.
-* SFT070 - The feature model must support substitution of variable values at launch time.
-* SFT080 - When an application is started, the install and the startup order of bundles should be the same, ensuring that the bundles are shutdown in reverse order and started in the same order on next startup of the framework.
+* SFR010 - Tooling must be able to find all features that provide the capabilities required by a given feature, from a set of available features.
 
-### Containers
-These requirements
+## Launching Requirements
+
+* SFL010 - Tooling must support creating an application model out of one or more features.
+* SFL020 - Tooling must support runtime launching of an application.
+* SFL030 - Tooling must be able to introspect and potentially override the startup order of bundles for an application.
+* SFL040 - Tooling must support substitution of variable values at launch time.
+* SFL050 - When an application is started, the install and the startup order of bundles should be the same, ensuring that the bundles are shutdown in reverse order and started in the same order on next startup of the framework.
+
+## Runtime Requirements
+
+* SFD010 - It should be possible to dynamically install and uninstall features at runtime.
+
+## Container Requirements
 
 * SFC010 - The feature model must support operation in a container environment such as Docker.
 * SFC020 - The feature model must support micro-services oriented target runtimes where a single micro service runs in its own container containing only the binaries required for that microservice.
@@ -82,7 +91,9 @@ These requirements
 * SFC040 - It must be possible to alter existing features by placing additional files in the file system. For example to uninstall or update a bundle provided by an existing feature or to alter a configuration set by an existing feature.
 * SFC050 - The feature model must enable the creation of container (Docker) images for a specified set of features.
 
-### Sling Specific
+## Sling Specific Requirements
+
+These requirements are important for Apache Sling in order to have a full replacement for the current provisioning model. Ideally, these requirements are already covered by the general requirements.
 
 * SFS010 - The feature model must support JCR Repository Initialization via the _repoinit_ language. See SFM240
 * SFS020 - The feature model must support features which contains repository content packages. See SFM200
