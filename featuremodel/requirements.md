@@ -4,7 +4,7 @@ Typical OSGi applications are assembled out of bundles and configured through bo
 
 While bundles already provide a good way to define rather small, coherent modules, there is often a need to distribute or provision a set of such bundles together with some configuration. OSGi Deployment Admin and OSGi subsystems are two ways of trying to solve this issue. The feature model of Apache Karaf and the provisioning model of Apache Sling are two other approaches.
 
-The goals of this proposal are:
+The established common term for such higher level modules is feature. The goals of this proposal are:
 
 * Defining a common mechanism to describe such features.
 * Describe a common algorithm to combine features to either create higher level features or an OSGi applications.
@@ -45,17 +45,22 @@ The feature model should meet the following requirements:
 * SFM260 - A feature must be able to specify additional requirements and capabilities that extend the requirements and capabilities from the contained artifacts.
 * SFM270 - A feature must be able to extend other features.
 * SFM280 - A feature must be able to depend on other features through the requirements/capabilities model based on the feature contents. The feature model must be able to deal with circular dependencies. However, there must be now way of explicitly requiring a feature from another feature.
-* SFM290 - The feature model must describe how several features are aggregated to build a higher level feature
-* SFM300 - The feature model must describe how several features are combined to build an application.
-* SFM310 - When features are aggregated, either to create a higher level feature or an application, and a bundle/artifact is encountered with different versions, the feature model must be capable of only using the bundle/artifact with the highest version number.
-* SFM320 - When features are aggregated, either to create a higher level feature or an application, and a bundle/artifact is encountered with different versions, the feature model must be capable of including both versions side-by-side.
+* SFM290 - The feature model must describe how several features are aggregated to build a higher level feature. This description must include all parts of the feature model (bundles, configurations, framework properties etc.). The description should be general for extension, which means it should describe how extensions are aggregated without requiring the model implementation to know the type of extension.
+* SFM300 - The feature model must describe how several features are combined to build an application. This description must include all parts of the feature model (bundles, configurations, framework properties etc.). The description should be general for extension, which means it should describe how extensions are aggregated without requiring the model implementation to know the type of extension.
+* SFM310 - When features are aggregated, either to create a higher level feature or an application, and a bundle/artifact is encountered with different versions, the feature model must be capable of only using the bundle/artifact with the highest version number. The detection is based on the artifact/bundle id, not the bundle symbolic name.
+* SFM320 - When features are aggregated, either to create a higher level feature or an application, and a bundle/artifact is encountered with different versions, the feature model must be capable of including both versions side-by-side. The detection is based on the artifact/bundle id, not the bundle symbolic name.
 * SFM330 - When features are aggregated, either to create a higher level feature or an application, the resulting feature or application must be minimal meaning it must not contain additional or unneeded artifacts.
 * SFM340 - The feature model must support controlling of the exported API as described in https://github.com/apache/sling-whiteboard/blob/master/featuremodel/apicontroller.md
 * SFM350 - The feature model must calculate the startup order of bundles for an aggregated application respecting the dependencies between features and their contents.
 * SFM360 - The feature model must support variables to be used throughout the model, avoiding the need to repeat the same value several times.
 * SFM370 - When features are aggregated, the ordering of the processing of those features needs to be predictable and stable.
+* SFM380 - The feature model must support adding or overwriting requirements and capabilities of a contained bundle or artifact. This is in oder to correct invalid metadata or to add missing metadata of the artifact.
+* SFM390 - The feature model must support adding or overwriting manifest headers for a bundle. For example to allow to change the bundle symbolic name or to add missing OSGi metadata to a plain jar file.
+* SFM400 - The feature model must support a textual representation for an application aggregated out of features. The format should be as similar as possible to the feature format.
+* SFM410 - It must be possible to specify the framework to launch an application as part of the application model.
 
 ## Tooling
+
 The following requirements relate to tooling around the Feature Model.
 
 
