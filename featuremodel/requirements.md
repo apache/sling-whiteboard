@@ -61,6 +61,7 @@ The feature model is about describing a feature, aggregating features to either 
 * SFM420 - When features are aggregated to either a higher level feature or an application, the resulting feature or application must still contain the variables.
 * SFM430 - The startup order of features and bundles must be part of the resulting aggregated application model.
 * SFM440 - The feature module should support the definition of updates to an existing feature - that is, it only describes the delta to a given feature.
+* SFM450 - The feature model must support additional, optional information about the feature like a human readable title, a description, vendor and licensing information.
 
 ## Analysis Requirements
 
@@ -86,7 +87,7 @@ The feature model is about describing a feature, aggregating features to either 
 
 ## Container Requirements
 
-These requirements are not directly related to the feature model itself, but rather running a feature based OSGi application within a container. 
+These requirements are not directly related to the feature model itself, but rather running a feature based OSGi application within a container.
 
 * SFC010 - The feature model must support operation in a container environment such as Docker.
 * SFC020 - The feature model must support micro-services oriented target runtimes where a single micro service runs in its own container containing only the binaries required for that microservice.
