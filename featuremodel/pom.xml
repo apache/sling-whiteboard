@@ -63,6 +63,7 @@
         <module>feature-analyser</module>
         <module>feature-launcher</module>
         <module>feature-support</module>	
+        <module>feature-resolver</module>
         <module>feature-applicationbuilder</module>
     </modules>
 

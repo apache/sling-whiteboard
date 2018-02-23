@@ -17,13 +17,15 @@
 package org.apache.sling.feature.scanner.impl;
 
 import java.io.IOException;
+import java.util.Collections;
 
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
-import org.apache.sling.feature.Requirement;
+import org.apache.sling.feature.OSGiRequirement;
 import org.apache.sling.feature.analyser.ContainerDescriptor;
 import org.apache.sling.feature.scanner.ExtensionScanner;
 import org.apache.sling.feature.support.ArtifactManager;
+import org.osgi.resource.Requirement;
 
 public class RepoInitScanner implements ExtensionScanner {
 
@@ -50,9 +52,8 @@ public class RepoInitScanner implements ExtensionScanner {
 
         final ContainerDescriptor cd = new ContainerDescriptor() {};
 
-        final Requirement req = new Requirement("osgi.implementation");
-        req.getDirectives().put("filter",
-                "(&(osgi.implementation=org.apache.sling.jcr.repoinit)(version>=1.0)(!(version>=2.0)))");
+        final Requirement req = new OSGiRequirement("osgi.implementation", Collections.emptyMap(),
+            Collections.singletonMap("filter", "(&(osgi.implementation=org.apache.sling.jcr.repoinit)(version>=1.0)(!(version>=2.0)))"));
         cd.getRequirements().add(req);
 
         cd.lock();

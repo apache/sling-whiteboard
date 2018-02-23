@@ -31,10 +31,10 @@ import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.process.ApplicationBuilder;
 import org.apache.sling.feature.process.BuilderContext;
 import org.apache.sling.feature.process.FeatureProvider;
+import org.apache.sling.feature.process.FeatureResolver;
 import org.apache.sling.feature.support.json.FeatureJSONReader;
 
 public class FeatureUtil {
-
     /**
      * Get an artifact id for the Apache Felix framework
      * @param version The version to use or {@code null} for the default version
@@ -211,13 +211,14 @@ public class FeatureUtil {
      * @param app The optional application to use as a base.
      * @param featureFiles The feature files.
      * @param artifactManager The artifact manager
+     * @param fr
      * @return The assembled application
      * @throws IOException If a feature can't be read or no feature is found.
      * @see #getFeatureFiles(File, String...)
      */
     public static Application assembleApplication(
             Application app,
-            final ArtifactManager artifactManager, final String... featureFiles)
+            final ArtifactManager artifactManager, FeatureResolver fr, final String... featureFiles)
     throws IOException {
         final List<Feature> features = new ArrayList<>();
         for(final String initFile : featureFiles) {
@@ -225,12 +226,12 @@ public class FeatureUtil {
             features.add(f);
         }
 
-        return assembleApplication(app, artifactManager, features.toArray(new Feature[0]));
+        return assembleApplication(app, artifactManager, fr, features.toArray(new Feature[0]));
     }
 
     public static Application assembleApplication(
             Application app,
-            final ArtifactManager artifactManager, final Feature... features)
+            final ArtifactManager artifactManager, FeatureResolver fr, final Feature... features)
     throws IOException {
         if ( features.length == 0 ) {
             throw new IOException("No features found.");
@@ -252,7 +253,7 @@ public class FeatureUtil {
                 }
                 return null;
             }
-        }), features);
+        }), fr, features);
 
         // check framework
         if ( app.getFramework() == null ) {

@@ -19,6 +19,7 @@ package org.apache.sling.feature.applicationbuilder.impl;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.stream.Stream;
 
 import org.apache.commons.cli.CommandLine;
@@ -29,6 +30,8 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.sling.feature.Application;
 import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.process.FeatureResolver;
+import org.apache.sling.feature.resolver.FrameworkResolver;
 import org.apache.sling.feature.support.ArtifactManager;
 import org.apache.sling.feature.support.ArtifactManagerConfig;
 import org.apache.sling.feature.support.FeatureUtil;
@@ -118,6 +121,10 @@ public class Main {
         return null;
     }
 
+    private static FeatureResolver getFeatureResolver(ArtifactManager am) {
+        return new FrameworkResolver(am, Collections.emptyMap());
+    }
+
     public static void main(final String[] args) {
         // setup logging
         System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "info");
@@ -131,11 +138,6 @@ public class Main {
         LOGGER.info("");
 
         parseArgs(args);
-
-        final ArtifactManagerConfig amConfig = new ArtifactManagerConfig();
-        if ( repoUrls != null ) {
-            amConfig.setRepositoryUrls(repoUrls.split(","));
-        }
 
         final ArtifactManager am = getArtifactManager();
 
@@ -160,11 +162,14 @@ public class Main {
             System.exit(1);
         }
 
-        try {
-            writeApplication(buildApplication(FeatureUtil.assembleApplication(null, am, files)), output == null ? "application.json" : output);
+        try (FeatureResolver fr = getFeatureResolver(am)) {
+            writeApplication(buildApplication(FeatureUtil.assembleApplication(null, am, fr, files)), output == null ? "application.json" : output);
 
         } catch ( final IOException ioe) {
             LOGGER.error("Unable to read feature/application files " + ioe.getMessage(), ioe);
+            System.exit(1);
+        } catch ( final Exception e) {
+            LOGGER.error("Problem generating application", e);
             System.exit(1);
         }
     }

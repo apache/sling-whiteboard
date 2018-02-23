@@ -39,13 +39,13 @@ import java.util.zip.ZipInputStream;
 import org.apache.sling.commons.osgi.ManifestHeader;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
-import org.apache.sling.feature.Capability;
 import org.apache.sling.feature.KeyValueMap;
 import org.apache.sling.feature.analyser.BundleDescriptor;
 import org.apache.sling.feature.scanner.FrameworkScanner;
 import org.apache.sling.feature.support.util.PackageInfo;
 import org.apache.sling.feature.support.util.SubstVarUtil;
 import org.osgi.framework.Constants;
+import org.osgi.resource.Capability;
 
 public class FelixFrameworkScanner implements FrameworkScanner {
 
