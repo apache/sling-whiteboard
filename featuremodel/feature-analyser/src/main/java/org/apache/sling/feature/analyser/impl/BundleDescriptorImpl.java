@@ -22,13 +22,13 @@ import java.util.Set;
 import java.util.jar.Manifest;
 
 import org.apache.sling.feature.Artifact;
-import org.apache.sling.feature.Capability;
-import org.apache.sling.feature.Requirement;
 import org.apache.sling.feature.analyser.BundleDescriptor;
 import org.apache.sling.feature.support.util.ManifestParser;
 import org.apache.sling.feature.support.util.ManifestUtil;
 import org.apache.sling.feature.support.util.PackageInfo;
 import org.osgi.framework.Constants;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
 
 /**
  * Information about a bundle

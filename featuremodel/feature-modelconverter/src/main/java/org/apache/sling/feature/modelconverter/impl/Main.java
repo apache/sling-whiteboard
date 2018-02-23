@@ -43,6 +43,8 @@ import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.Extensions;
 import org.apache.sling.feature.KeyValueMap;
+import org.apache.sling.feature.process.FeatureResolver;
+import org.apache.sling.feature.resolver.FrameworkResolver;
 import org.apache.sling.feature.support.ArtifactHandler;
 import org.apache.sling.feature.support.ArtifactManager;
 import org.apache.sling.feature.support.ArtifactManagerConfig;
@@ -165,6 +167,10 @@ public class Main {
         return null;
     }
 
+    private static FeatureResolver getFeatureResolver(ArtifactManager am) {
+        return new FrameworkResolver(am, Collections.emptyMap());
+    }
+
     public static void main(final String[] args) {
         // setup logging
         System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "info");
@@ -241,7 +247,7 @@ public class Main {
             if ( output == null ) {
                 output = createApp ? "application.txt" : "feature.txt";
             }
-            try {
+            try (FeatureResolver fr = getFeatureResolver(am)) {
                 if ( createApp ) {
                     // each file is an application
                     int index = 1;
@@ -253,13 +259,16 @@ public class Main {
                         index++;
                     }
                 } else {
-                    final Application app = FeatureUtil.assembleApplication(null, am, files.stream()
+                    final Application app = FeatureUtil.assembleApplication(null, am, fr, files.stream()
                             .map(File::getAbsolutePath)
                             .toArray(String[]::new));
                     convert(app, 0);
                 }
             } catch ( final IOException ioe) {
                 LOGGER.error("Unable to read feature/application files " + ioe.getMessage(), ioe);
+                System.exit(1);
+            } catch ( final Exception e) {
+                LOGGER.error("Problem generating application", e);
                 System.exit(1);
             }
         }

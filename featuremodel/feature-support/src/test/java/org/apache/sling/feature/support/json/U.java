@@ -16,10 +16,10 @@
  */
 package org.apache.sling.feature.support.json;
 
-import org.apache.sling.feature.Capability;
 import org.apache.sling.feature.Configuration;
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.Requirement;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
 
 import java.io.InputStreamReader;
 import java.io.Reader;

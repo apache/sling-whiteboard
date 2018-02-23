@@ -20,56 +20,25 @@
         <relativePath />
     </parent>
 
-    <artifactId>org.apache.sling.feature.launcher</artifactId>
+    <artifactId>org.apache.sling.feature.resolver</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-
-    <name>Apache Sling Feature Launcher</name>
+    <packaging>bundle</packaging>
+    
+    <name>Apache Sling Feature Resolver</name>
     <description>
-        A application launcher using Apache Sling Features
+        Resolver integration of the Feature Model
     </description>
 
     <properties>
         <sling.java.version>8</sling.java.version>
     </properties>
 
-    <scm>
-        <connection>scm:svn:http://svn.apache.org/repos/asf/sling/trunk/tooling/support/feature-launcher</connection>
-        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/sling/trunk/tooling/support/feature-launcher</developerConnection>
-        <url>http://svn.apache.org/viewvc/sling/trunk/tooling/support/feature-launcher</url>
-    </scm>
-
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                <execution>
-                    <id>unpack-dependencies</id>
-                    <phase>prepare-package</phase>
-                    <goals>
-                        <goal>unpack-dependencies</goal>
-                    </goals>
-                    <configuration>
-                        <excludes>META-INF/**</excludes>
-                        <outputDirectory>${project.build.directory}/classes</outputDirectory>
-                        <overWriteReleases>false</overWriteReleases>
-                        <overWriteSnapshots>true</overWriteSnapshots>
-                        <includeArtifactIds>org.apache.sling.feature,org.apache.sling.feature.support,org.apache.sling.commons.johnzon,org.apache.felix.converter,commons-cli,slf4j-api,slf4j-simple,osgi.core</includeArtifactIds>
-                    </configuration>
-                </execution>
-            </executions>
-            </plugin>
-                <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>org.apache.sling.feature.launcher.impl.Main</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <extensions>true</extensions>
             </plugin>
         </plugins>
     </build>
@@ -84,41 +53,31 @@
             <artifactId>slf4j-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
+            <groupId>org.apache.sling</groupId>
+            <artifactId>org.apache.sling.feature</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.sling</groupId>
-            <artifactId>org.apache.sling.feature</artifactId>
+            <artifactId>org.apache.sling.feature.analyser</artifactId>
             <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.sling</groupId>
-            <artifactId>org.apache.sling.feature.resolver</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.feature.support</artifactId>
             <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.apache.felix.converter</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-             <groupId>commons-cli</groupId>
-             <artifactId>commons-cli</artifactId>
-             <version>1.3.1</version>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.service.resolver</artifactId>
+            <version>1.0.1</version>
+            <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>org.apache.sling</groupId>
-            <artifactId>org.apache.sling.commons.johnzon</artifactId>
-            <version>1.0.0</version>
-        </dependency>
+
+        <!-- Testing -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -127,6 +86,12 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>2.8.9</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.framework</artifactId>
+            <version>5.6.10</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

@@ -16,18 +16,16 @@
  */
 package org.apache.sling.feature.support.json;
 
-import org.apache.sling.feature.Capability;
 import org.apache.sling.feature.Configuration;
 import org.apache.sling.feature.Feature;
 import org.junit.Test;
+import org.osgi.resource.Capability;
 
 import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
 
 public class FeatureJSONReaderTest {
 

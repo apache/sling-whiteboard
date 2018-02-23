@@ -1,0 +1,5 @@
+{
+    "id": "org.apache.sling.test.features/feature2/1.0.0",
+    "bundles": 
+        ["org.slf4j/slf4j-api/1.7.25"]
+}

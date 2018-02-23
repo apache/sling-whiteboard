@@ -19,15 +19,15 @@ package org.apache.sling.feature.support.util;
 import static junit.framework.TestCase.assertTrue;
 
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.Requirement;
 import org.apache.sling.feature.support.json.U;
 import org.junit.Test;
+import org.osgi.resource.Requirement;
 
 public class CapabilityMatcherTest {
     @Test public void testCapabilityMatching() throws Exception {
         Feature feature = U.readFeature("test");
         Requirement requirement = U.findRequirement(feature.getRequirements(), "osgi.contract");
         assertTrue(CapabilityMatcher.matches(U.findCapability(feature.getCapabilities(), "osgi.contract"),
-                SimpleFilter.parse((String) requirement.getDirectives().get("filter"))));
+                SimpleFilter.parse(requirement.getDirectives().get("filter"))));
     }
 }

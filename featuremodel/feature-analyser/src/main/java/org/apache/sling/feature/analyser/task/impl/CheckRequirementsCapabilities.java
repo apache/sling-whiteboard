@@ -23,12 +23,12 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-import org.apache.sling.feature.Requirement;
 import org.apache.sling.feature.analyser.ArtifactDescriptor;
 import org.apache.sling.feature.analyser.BundleDescriptor;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 import org.apache.sling.feature.support.util.CapabilityMatcher;
+import org.osgi.resource.Requirement;
 
 public class CheckRequirementsCapabilities implements AnalyserTask {
     private final String format = "Artifact %s:%s requires %s in start level %d but %s";

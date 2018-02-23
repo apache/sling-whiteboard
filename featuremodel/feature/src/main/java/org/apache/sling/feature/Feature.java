@@ -20,6 +20,9 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
+
 /**
  * A feature consists of
  * <ul>
@@ -296,17 +299,13 @@ public class Feature implements Comparable<Feature> {
 
         // requirements
         for(final Requirement r : this.getRequirements()) {
-            final Requirement c = new Requirement(r.getNamespace());
-            c.getAttributes().putAll(r.getAttributes());
-            c.getDirectives().putAll(r.getDirectives());
+            final Requirement c = new OSGiRequirement(r.getNamespace(), r.getAttributes(), r.getDirectives());
             result.getRequirements().add(c);
         }
 
         // capabilities
         for(final Capability r : this.getCapabilities()) {
-            final Capability c = new Capability(r.getNamespace());
-            c.getAttributes().putAll(r.getAttributes());
-            c.getDirectives().putAll(r.getDirectives());
+            final Capability c = new OSGiCapability(r.getNamespace(), r.getAttributes(), r.getDirectives());
             result.getCapabilities().add(c);
         }
 

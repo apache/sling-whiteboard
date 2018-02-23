@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -29,6 +30,8 @@ import org.apache.sling.feature.Configuration;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.launcher.impl.LauncherConfig.StartupMode;
+import org.apache.sling.feature.process.FeatureResolver;
+import org.apache.sling.feature.resolver.FrameworkResolver;
 import org.apache.sling.feature.support.ArtifactHandler;
 import org.apache.sling.feature.support.ArtifactManager;
 import org.apache.sling.feature.support.FeatureUtil;
@@ -46,7 +49,7 @@ public class FeatureProcessor {
     public static Application createApplication(final LauncherConfig config,
             final ArtifactManager artifactManager)
     throws IOException {
-        final Application app;
+        Application app = null;
         if ( config.getApplicationFile() != null ) {
             String absoluteArg = config.getApplicationFile();
             if ( absoluteArg.indexOf(":") < 2 ) {
@@ -59,7 +62,13 @@ public class FeatureProcessor {
             }
 
         } else {
-           app = FeatureUtil.assembleApplication(null, artifactManager, FeatureUtil.getFeatureFiles(config.getHomeDirectory(), config.getFeatureFiles()).toArray(new String[0]));
+            try (FeatureResolver resolver = new FrameworkResolver(artifactManager, Collections.emptyMap())) {
+                app = FeatureUtil.assembleApplication(null, artifactManager, resolver,
+                       FeatureUtil.getFeatureFiles(config.getHomeDirectory(), config.getFeatureFiles()).toArray(new String[0]));
+            } catch (Exception ex) {
+                Main.LOG().error("Error while assembling application: {}", ex.getMessage(), ex);
+                System.exit(1);
+            }
         }
 
         // write application back
