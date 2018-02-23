@@ -60,18 +60,24 @@ The feature model is about describing a feature, aggregating features to either 
 * SFM410 - It must be possible to specify the framework to launch an application as part of the application model.
 * SFM420 - When features are aggregated to either a higher level feature or an application, the resulting feature or application must still contain the variables.
 * SFM430 - The startup order of features and bundles must be part of the resulting aggregated application model.
-* SFM440 - The feature module should support the definition of updates to an existing feature - that is, it only describes the delta to a given feature.
-* SFM450 - The feature model must support additional, optional information about the feature like a human readable title, a description, vendor and licensing information.
+* SFM440 - The feature model must support additional, optional information about the feature like a human readable title, a description, vendor and licensing information.
 
 ## Analysis Requirements
 
 * SFA010 - Tooling must be able to compute the effective requirements of a feature by inspecting the feature's content and combining this with requirements specified on the feature itself.
 * SFA020 - Tooling must be able to compute the capabilities of a feature by inspecting the feature's content and directly specified capabilities.
-* SFA030 - The feature model should support to store the results of SFA010 and SFA020 as port of the model, avoiding duplicate calculations.
+* SFA030 - The feature model should support to store the results of SFA010 and SFA020 as part of the model, avoiding duplicate calculations.
 
 ## Resolving Requirements
 
 * SFR010 - Tooling must be able to find all features that provide the capabilities required by a given feature, from a set of available features.
+
+## Packaging requirements
+
+* SFP010 - Tooling must be able to convert a feature to an Apache Karaf Feature
+* SFP020 - Tooling must be able to convert a feature to an Apache Sling Provisioning Model Archive
+* SFP030 - Tooling must be able to convert a feature to an OSGi Subsystem
+* SFP040 - Tooling should be able to create diff packages between two versions of a features
 
 ## Launching Requirements
 
@@ -80,6 +86,8 @@ The feature model is about describing a feature, aggregating features to either 
 * SFL030 - Tooling must be able to introspect and potentially override the startup order of bundles for an application.
 * SFL040 - Tooling must support substitution of variable values at launch time.
 * SFL050 - When an application is started, the install and the startup order of bundles should be the same, ensuring that the bundles are shutdown in reverse order and started in the same order on next startup of the framework.
+* SFL060 - Tooling must support multiple versions of a feature and only select the highest version of a feature to launch the application.
+* SFL070 - Tooling must be able to differentiate between a feature and an update of a feature. An update should only be included in the application of the base feature is included.
 
 ## Runtime Requirements
 

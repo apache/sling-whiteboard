@@ -135,22 +135,6 @@ public class FeatureJSONReader extends JSONReaderBase {
         this.readRequirements(map);
         this.readIncludes(map);
 
-        if ( map.containsKey(JSONConstants.FEATURE_UPGRADEOF) ) {
-            final Object idObj = map.get(JSONConstants.FEATURE_UPGRADEOF);
-            checkType(JSONConstants.FEATURE_UPGRADEOF, idObj, String.class);
-            this.feature.setUpgradeOf(ArtifactId.parse(idObj.toString()));
-        }
-        if ( map.containsKey(JSONConstants.FEATURE_UPGRADES) ) {
-            final Object listObj = map.get(JSONConstants.FEATURE_UPGRADES);
-            checkType(JSONConstants.FEATURE_UPGRADES, listObj, List.class);
-            @SuppressWarnings("unchecked")
-            final List<Object> list = (List<Object>) listObj;
-            for(final Object element : list) {
-                checkType(JSONConstants.FEATURE_UPGRADES, element, String.class);
-                feature.getUpgrades().add(ArtifactId.parse(element.toString()));
-            }
-
-        }
         this.readExtensions(map,
                 JSONConstants.FEATURE_KNOWN_PROPERTIES,
                 this.feature.getExtensions(), this.feature.getConfigurations());

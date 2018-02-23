@@ -17,7 +17,6 @@
 package org.apache.sling.feature.process;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -48,91 +47,6 @@ public class FeatureBuilder {
         return internalAssemble(new ArrayList<>(), feature, context);
     }
 
-    /**
-     * Assemble the final feature and apply upgrades
-     *
-     * If the list of upgrades contains upgrade features not intended for the
-     * provided feature, this is not considered an error situation. But the
-     * provided upgrade is ignored.
-     *
-     * @param feature The feature to start
-     * @param upgrades The list of upgrades. If this is {@code null} or empty, this method
-     *     behaves like {@link #assemble(Feature, FeatureProvider)}.
-     * @param context The builder context
-     * @return The assembled feature.
-     * @throws IllegalArgumentException If feature or context is {@code null}
-     * @throws IllegalStateException If an included feature can't be provided
-     */
-    public static Feature assemble(final Feature feature,
-            final List<Feature> upgrades,
-            final BuilderContext context) {
-        if ( feature == null || context == null ) {
-            throw new IllegalArgumentException("Feature and/or context must not be null");
-        }
-
-        // check upgrades
-        List<Feature> useUpdates = null;
-        if ( upgrades != null && !upgrades.isEmpty() ) {
-            useUpdates = new ArrayList<>();
-            for(final Feature uf : upgrades) {
-                if ( !feature.getId().equals(uf.getUpgradeOf()) ) {
-                    continue;
-                }
-                boolean found = false;
-                for(final Feature i : useUpdates) {
-                    if ( i.getId().isSame(uf.getId()) ) {
-                        if ( uf.getId().getOSGiVersion().compareTo(i.getId().getOSGiVersion()) > 0 ) {
-                            useUpdates.remove(i);
-                        } else {
-                            found = true;
-                        }
-                        break;
-                    }
-                }
-                if ( !found ) {
-                    // we add a copy as we manipulate the upgrade below
-                    useUpdates.add(uf.copy());
-                }
-            }
-            Collections.sort(useUpdates);
-            if ( useUpdates.isEmpty() ) {
-                useUpdates = null;
-            }
-        }
-
-        // assemble feature without upgrades
-        final Feature assembledFeature = internalAssemble(new ArrayList<>(), feature, context);
-
-        // handle upgrades
-        if ( useUpdates != null ) {
-            for(final Feature uf : useUpdates) {
-                Include found = null;
-                for(final Include inc : uf.getIncludes() ) {
-                    if ( inc.getId().equals(assembledFeature.getId()) ) {
-                        found = inc;
-                        break;
-                    }
-                }
-                if ( found != null ) {
-                    uf.getIncludes().remove(found);
-
-                    // process include instructions
-                    include(assembledFeature, found);
-                }
-
-                // now assemble upgrade, but without considering the base
-                uf.setUpgradeOf(null);
-                assembledFeature.getUpgrades().add(uf.getId());
-                final Feature auf = assemble(uf, context);
-
-                // merge
-                merge(assembledFeature, auf, context);
-            }
-        }
-
-        return assembledFeature;
-    }
-
     private static Feature internalAssemble(final List<String> processedFeatures,
             final Feature feature,
             final BuilderContext context) {
@@ -145,30 +59,7 @@ public class FeatureBuilder {
         processedFeatures.add(feature.getId().toMvnId());
 
         // we copy the feature as we set the assembled flag on the result
-        final Feature result;
-
-        if ( feature.getUpgradeOf() != null ) {
-            Include found = null;
-            for(final Include inc : feature.getIncludes()) {
-                if ( inc.getId().equals(feature.getUpgradeOf()) ) {
-                    found = inc;
-                    break;
-                }
-            }
-
-            result = feature.copy(feature.getUpgradeOf());
-
-            // add base as the first include
-            if ( found == null ) {
-                result.getIncludes().add(0, new Include(feature.getUpgradeOf()));
-            } else {
-                result.getIncludes().remove(found);
-                result.getIncludes().add(0, found);
-            }
-            result.getUpgrades().add(feature.getId());
-        } else {
-            result = feature.copy();
-        }
+        final Feature result = feature.copy();
 
         if ( !result.getIncludes().isEmpty() ) {
 

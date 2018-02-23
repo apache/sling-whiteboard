@@ -65,14 +65,8 @@ public class Feature implements Comparable<Feature> {
     /** The optional license. */
     private volatile String license;
 
-    /** Is this an upgrade of another feature? */
-    private volatile ArtifactId upgradeOf;
-
     /** Flag indicating whether this is an assembled feature */
     private volatile boolean assembled = false;
-
-    /** Contained upgrades (this is usually only set for assembled features*/
-    private final List<ArtifactId> upgrades = new ArrayList<>();
 
     /**
      * Construct a new feature.
@@ -236,31 +230,6 @@ public class Feature implements Comparable<Feature> {
      */
     public void setLicense(final String license) {
         this.license = license;
-    }
-
-    /**
-     * Set the upgrade of information
-     * @param id The artifact id
-     */
-    public void setUpgradeOf(final ArtifactId id) {
-        this.upgradeOf = id;
-    }
-
-    /**
-     * Get the artifact id of the upgrade of information
-     * @return The artifact id or {@code null}
-     */
-    public ArtifactId getUpgradeOf() {
-        return this.upgradeOf;
-    }
-
-    /**
-     * Get the list of upgrades applied to this feature
-     * The returned object is modifiable.
-     * @return The list of upgrades
-     */
-    public List<ArtifactId> getUpgrades() {
-        return this.upgrades;
     }
 
     /**

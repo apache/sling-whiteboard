@@ -104,8 +104,6 @@ public class FeatureBuilderTest {
         assertEquals(expected.getDescription(), actuals.getDescription());
         assertEquals(expected.getVendor(), actuals.getVendor());
         assertEquals(expected.getLicense(), actuals.getLicense());
-        assertEquals(expected.getUpgradeOf(), actuals.getUpgradeOf());
-        assertEquals(expected.getUpgrades(), actuals.getUpgrades());
 
         // bundles
         final List<Map.Entry<Integer, Artifact>> expectedBundles = getBundles(expected);
