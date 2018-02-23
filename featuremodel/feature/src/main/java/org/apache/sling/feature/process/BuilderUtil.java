@@ -31,13 +31,13 @@ import javax.json.JsonValue.ValueType;
 import org.apache.sling.feature.Application;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.Bundles;
-import org.apache.sling.feature.Capability;
 import org.apache.sling.feature.Configuration;
 import org.apache.sling.feature.Configurations;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.KeyValueMap;
-import org.apache.sling.feature.Requirement;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
 
 /**
  * Utility methods for the builders

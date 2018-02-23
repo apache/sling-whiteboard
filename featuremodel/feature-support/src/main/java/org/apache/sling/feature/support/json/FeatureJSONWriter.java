@@ -16,24 +16,24 @@
  */
 package org.apache.sling.feature.support.json;
 
-import org.apache.sling.feature.ArtifactId;
-import org.apache.sling.feature.Capability;
-import org.apache.sling.feature.Configuration;
-import org.apache.sling.feature.Configurations;
-import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.Include;
-import org.apache.sling.feature.Requirement;
+import static org.apache.sling.feature.support.util.ManifestUtil.marshalAttribute;
+import static org.apache.sling.feature.support.util.ManifestUtil.marshalDirective;
 
-import javax.json.Json;
-import javax.json.stream.JsonGenerator;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.sling.feature.support.util.ManifestUtil.marshalAttribute;
-import static org.apache.sling.feature.support.util.ManifestUtil.marshalDirective;
+import javax.json.Json;
+import javax.json.stream.JsonGenerator;
 
+import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.Configuration;
+import org.apache.sling.feature.Configurations;
+import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.Include;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
 
 /**
  * Simple JSON writer for a feature
@@ -71,20 +71,6 @@ public class FeatureJSONWriter extends JSONWriterBase {
         writeProperty(w, JSONConstants.FEATURE_DESCRIPTION, feature.getDescription());
         writeProperty(w, JSONConstants.FEATURE_VENDOR, feature.getVendor());
         writeProperty(w, JSONConstants.FEATURE_LICENSE, feature.getLicense());
-
-        // upgradeOf
-        if ( feature.getUpgradeOf() != null ) {
-            writeProperty(w, JSONConstants.FEATURE_UPGRADEOF, feature.getUpgradeOf().toMvnId());
-        }
-
-        // upgrades
-        if ( !feature.getUpgrades().isEmpty() ) {
-            w.writeStartArray(JSONConstants.FEATURE_UPGRADES);
-            for(final ArtifactId id : feature.getUpgrades()) {
-                w.write(id.toMvnId());
-            }
-            w.writeEnd();
-        }
 
         // includes
         if ( !feature.getIncludes().isEmpty() ) {

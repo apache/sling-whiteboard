@@ -17,10 +17,7 @@
 package org.apache.sling.feature.process;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.sling.feature.Application;
 import org.apache.sling.feature.ArtifactId;
@@ -40,6 +37,7 @@ public class ApplicationBuilder {
      *
      * @param app The optional application to use as a base.
      * @param context The builder context
+     * @param resolver The Feature Resolver to use
      * @param featureIds The feature ids
      * @return The application
      * throws IllegalArgumentException If context or featureIds is {@code null}
@@ -47,6 +45,7 @@ public class ApplicationBuilder {
      */
     public static Application assemble(final Application app,
             final BuilderContext context,
+            final FeatureResolver resolver,
             final String... featureIds) {
         if ( featureIds == null || context == null ) {
             throw new IllegalArgumentException("Features and/or context must not be null");
@@ -61,18 +60,18 @@ public class ApplicationBuilder {
             }
             index++;
         }
-        return assemble(app, context, features);
+        return assemble(app, context, resolver, features);
     }
 
     /**
      * Assemble an application based on the provided features.
      *
-     * Upgrade features are only applied if the provided feature list
-     * contains the feature to be upgraded. Otherwise the upgrade feature
-     * is ignored.
+     * If the same feature is included more than once only the feature with
+     * the highest version is used. The others are ignored.
      *
      * @param app The optional application to use as a base.
      * @param context The builder context
+     * @param resolver The Feature Resolver to use
      * @param features The features
      * @return The application
      * throws IllegalArgumentException If context or featureIds is {@code null}
@@ -81,7 +80,7 @@ public class ApplicationBuilder {
     public static Application assemble(
             Application app,
             final BuilderContext context,
-            final Feature... features) {
+            final FeatureResolver resolver, final Feature... features) {
         if ( features == null || context == null ) {
             throw new IllegalArgumentException("Features and/or context must not be null");
         }
@@ -90,41 +89,37 @@ public class ApplicationBuilder {
             app = new Application();
         }
 
-        // detect upgrades and created sorted feature list
-        final Map<Feature, List<Feature>> upgrades = new HashMap<>();
-        final List<Feature> sortedFeatureList = new ArrayList<>();
+        // Created sorted feature list
+        // Remove duplicate features by selecting the one with the highest version
+        List<Feature> sortedFeatureList = new ArrayList<>();
         for(final Feature f : features) {
-            if ( f.getUpgradeOf() != null ) {
-                for(final Feature i : features) {
-                    if ( i.getId().equals(f.getUpgradeOf()) ) {
-                        List<Feature> u = upgrades.get(i);
-                        if ( u == null ) {
-                            u = new ArrayList<>();
-                            upgrades.put(i, u);
-                        }
-                        u.add(f);
-                        app.getFeatureIds().add(f.getId());
-                        break;
-                    }
+            Feature found = null;
+            for(final Feature s : sortedFeatureList) {
+                if ( s.getId().isSame(f.getId()) ) {
+                    found = s;
+                    break;
                 }
-            } else {
+            }
+            boolean add = true;
+            // feature with different version found
+            if ( found != null ) {
+                if ( f.getId().getOSGiVersion().compareTo(found.getId().getOSGiVersion()) <= 0 ) {
+                    // higher version already included
+                    add = false;
+                } else {
+                    // remove lower version, higher version will be added
+                    app.getFeatureIds().remove(found.getId());
+                    sortedFeatureList.remove(found);
+                }
+            }
+            if ( add ) {
                 app.getFeatureIds().add(f.getId());
                 sortedFeatureList.add(f);
             }
         }
 
-        // process upgrades first
-        for(final Map.Entry<Feature, List<Feature>> entry : upgrades.entrySet()) {
-            final Feature assembled = FeatureBuilder.assemble(entry.getKey(),
-                    entry.getValue(),
-                    context);
-            // update feature to assembled feature
-            sortedFeatureList.remove(entry.getKey());
-            sortedFeatureList.add(assembled);
-        }
-
-        // sort
-        Collections.sort(sortedFeatureList);
+        // order by dependency chain
+        sortedFeatureList = resolver.orderFeatures(sortedFeatureList);
 
         // assemble
         for(final Feature f : sortedFeatureList) {
@@ -132,11 +127,6 @@ public class ApplicationBuilder {
 
                 @Override
                 public Feature provide(final ArtifactId id) {
-                    for(final Feature f : upgrades.keySet()) {
-                        if ( f.getId().equals(id) ) {
-                            return f;
-                        }
-                    }
                     for(final Feature f : features) {
                         if ( f.getId().equals(id) ) {
                             return f;

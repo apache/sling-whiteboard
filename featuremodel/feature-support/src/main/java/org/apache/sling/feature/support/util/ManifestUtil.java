@@ -17,10 +17,10 @@
 package org.apache.sling.feature.support.util;
 
 import org.apache.sling.commons.osgi.ManifestHeader;
-import org.apache.sling.feature.Capability;
-import org.apache.sling.feature.Requirement;
 import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
 
 import java.io.File;
 import java.io.IOException;
@@ -105,11 +105,11 @@ public class ManifestUtil {
         unmarshal(key + "=" + value, Capability::getAttributes, sink);
     }
 
-    public static void unmarshalDirective(String key, Object value, BiConsumer<String, Object> sink) throws IOException {
+    public static void unmarshalDirective(String key, Object value, BiConsumer<String, String> sink) throws IOException {
         unmarshal(key + ":=" + value, Capability::getDirectives, sink);
     }
 
-    private static void unmarshal(String header, Function<Capability, Map<String, Object>> lookup, BiConsumer<String, Object> sink) throws IOException {
+    private static <T> void unmarshal(String header, Function<Capability, Map<String, T>> lookup, BiConsumer<String, T> sink) throws IOException {
         try {
             convertProvideCapabilities(
                     normalizeCapabilityClauses(parseStandardHeader("foo;" + header), "2"))

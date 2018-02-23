@@ -25,8 +25,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.jar.Manifest;
 
-import org.apache.sling.feature.Capability;
-import org.apache.sling.feature.Requirement;
+import org.apache.sling.feature.OSGiCapability;
+import org.apache.sling.feature.OSGiRequirement;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
@@ -34,6 +34,8 @@ import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.framework.wiring.BundleRevision;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
 
 public class ManifestParser
 {
@@ -104,7 +106,7 @@ public class ManifestParser
                 capList.add(bundleCap);
                 // A non-fragment bundle can choose to not have a host capability.
                 String attachment =
-                        (String) bundleCap.getDirectives().get(Constants.FRAGMENT_ATTACHMENT_DIRECTIVE);
+                        bundleCap.getDirectives().get(Constants.FRAGMENT_ATTACHMENT_DIRECTIVE);
                 attachment = (attachment == null)
                         ? Constants.FRAGMENT_ATTACHMENT_RESOLVETIME
                         : attachment;
@@ -114,9 +116,7 @@ public class ManifestParser
                             new HashMap<>(bundleCap.getAttributes());
                     Object value = hostAttrs.remove(BundleRevision.BUNDLE_NAMESPACE);
                     hostAttrs.put(BundleRevision.HOST_NAMESPACE, value);
-                    Capability cap = new Capability(BundleRevision.HOST_NAMESPACE);
-                    cap.getAttributes().putAll(hostAttrs);
-                    cap.getDirectives().putAll(bundleCap.getDirectives());
+                    Capability cap = new OSGiCapability(BundleRevision.HOST_NAMESPACE, hostAttrs, bundleCap.getDirectives());
                     capList.add(cap);
                 }
             }
@@ -197,9 +197,7 @@ public class ManifestParser
                             + "' namespace.");
                 }
 
-                Requirement req = new Requirement(path);
-                req.getAttributes().putAll(clause.m_attrs);
-                req.getDirectives().putAll(clause.m_dirs);
+                Requirement req = new OSGiRequirement(path, clause.m_attrs, clause.m_dirs);
                 // Create requirement and add to requirement list.
                 reqList.add(req);
             }
@@ -329,9 +327,7 @@ public class ManifestParser
                             + "' namespace.");
                 }
 
-                Capability capability = new Capability(path);
-                capability.getAttributes().putAll(clause.m_attrs);
-                capability.getDirectives().putAll(clause.m_dirs);
+                Capability capability = new OSGiCapability(path, clause.m_attrs, clause.m_dirs);
                 // Create package capability and add to capability list.
                 capList.add(capability);
             }
@@ -437,9 +433,7 @@ public class ManifestParser
             String symName = clauses.get(0).m_paths.get(0);
             clauses.get(0).m_attrs.put(BundleRevision.BUNDLE_NAMESPACE, symName);
             clauses.get(0).m_attrs.put(Constants.BUNDLE_VERSION_ATTRIBUTE, bundleVersion);
-            Capability cap = new Capability(BundleRevision.BUNDLE_NAMESPACE);
-            cap.getAttributes().putAll(clauses.get(0).m_attrs);
-            cap.getAttributes().putAll(clauses.get(0).m_dirs);
+            Capability cap = new OSGiCapability(BundleRevision.BUNDLE_NAMESPACE, clauses.get(0).m_attrs, clauses.get(0).m_dirs);
 
             return cap;
         }
@@ -486,15 +480,13 @@ public class ManifestParser
         if (bundleCap.getDirectives().get(Constants.SINGLETON_DIRECTIVE) != null)
         {
             dirs = Collections.singletonMap(IdentityNamespace.CAPABILITY_SINGLETON_DIRECTIVE,
-                    (String) bundleCap.getDirectives().get(Constants.SINGLETON_DIRECTIVE));
+                    bundleCap.getDirectives().get(Constants.SINGLETON_DIRECTIVE));
         }
         else
         {
             dirs = Collections.emptyMap();
         }
-        Capability cap = new Capability(IdentityNamespace.IDENTITY_NAMESPACE);
-        cap.getAttributes().putAll(attrs);
-        cap.getDirectives().putAll(dirs);
+        Capability cap = new OSGiCapability(IdentityNamespace.IDENTITY_NAMESPACE, attrs, dirs);
         return cap;
     }
 
@@ -565,9 +557,7 @@ public class ManifestParser
                         Constants.FILTER_DIRECTIVE,
                         sf.toString());
 
-                Requirement req = new Requirement(BundleRevision.HOST_NAMESPACE);
-                req.getAttributes().putAll(newAttrs);
-                req.getDirectives().putAll(newDirs);
+                Requirement req = new OSGiRequirement(BundleRevision.HOST_NAMESPACE, newAttrs, newDirs);
                 reqs.add(req);
             }
         }
@@ -686,8 +676,8 @@ public class ManifestParser
             }
 
             SimpleFilter sf = SimpleFilter.parse(reqFilter);
-            Requirement req = new Requirement(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE);
-            req.getDirectives().put(ExecutionEnvironmentNamespace.REQUIREMENT_FILTER_DIRECTIVE, reqFilter);
+            Requirement req = new OSGiRequirement(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE, Collections.emptyMap(),
+                    Collections.singletonMap(ExecutionEnvironmentNamespace.REQUIREMENT_FILTER_DIRECTIVE, reqFilter));
             return Collections.<Requirement>singletonList(req);
         }
     }
@@ -762,9 +752,7 @@ public class ManifestParser
                         Constants.FILTER_DIRECTIVE,
                         sf.toString());
 
-                Requirement req = new Requirement(BundleRevision.BUNDLE_NAMESPACE);
-                req.getAttributes().putAll(newAttrs);
-                req.getDirectives().putAll(newDirs);
+                Requirement req = new OSGiRequirement(BundleRevision.BUNDLE_NAMESPACE, newAttrs, newDirs);
                 reqList.add(req);
             }
         }

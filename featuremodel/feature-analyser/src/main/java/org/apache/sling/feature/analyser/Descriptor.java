@@ -20,9 +20,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.sling.feature.Capability;
-import org.apache.sling.feature.Requirement;
 import org.apache.sling.feature.support.util.PackageInfo;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
 
 /**
  * A descriptor holds information about requirements and capabilities

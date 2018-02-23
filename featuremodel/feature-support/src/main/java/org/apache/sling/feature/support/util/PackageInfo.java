@@ -44,10 +44,16 @@ public class PackageInfo implements Comparable<PackageInfo> {
     }
 
     public Version getPackageVersion() {
+        if (this.version == null)
+            return null;
+
         return new Version(this.version);
     }
 
     public VersionRange getPackageVersionRange() {
+        if (this.version == null)
+            return null;
+
         return new VersionRange(this.version);
     }
 

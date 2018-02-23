@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,10 +33,12 @@ import javax.json.JsonObject;
 
 import org.apache.felix.configurator.impl.json.JSONUtil;
 import org.apache.sling.feature.ArtifactId;
-import org.apache.sling.feature.Capability;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.Include;
-import org.apache.sling.feature.Requirement;
+import org.apache.sling.feature.OSGiCapability;
+import org.apache.sling.feature.OSGiRequirement;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
 
 /**
  * This class offers a method to read a {@code Feature} using a {@code Reader} instance.
@@ -135,22 +138,6 @@ public class FeatureJSONReader extends JSONReaderBase {
         this.readRequirements(map);
         this.readIncludes(map);
 
-        if ( map.containsKey(JSONConstants.FEATURE_UPGRADEOF) ) {
-            final Object idObj = map.get(JSONConstants.FEATURE_UPGRADEOF);
-            checkType(JSONConstants.FEATURE_UPGRADEOF, idObj, String.class);
-            this.feature.setUpgradeOf(ArtifactId.parse(idObj.toString()));
-        }
-        if ( map.containsKey(JSONConstants.FEATURE_UPGRADES) ) {
-            final Object listObj = map.get(JSONConstants.FEATURE_UPGRADES);
-            checkType(JSONConstants.FEATURE_UPGRADES, listObj, List.class);
-            @SuppressWarnings("unchecked")
-            final List<Object> list = (List<Object>) listObj;
-            for(final Object element : list) {
-                checkType(JSONConstants.FEATURE_UPGRADES, element, String.class);
-                feature.getUpgrades().add(ArtifactId.parse(element.toString()));
-            }
-
-        }
         this.readExtensions(map,
                 JSONConstants.FEATURE_KNOWN_PROPERTIES,
                 this.feature.getExtensions(), this.feature.getConfigurations());
@@ -271,22 +258,24 @@ public class FeatureJSONReader extends JSONReaderBase {
                 }
                 checkType("Requirement namespace", obj.get(JSONConstants.REQCAP_NAMESPACE), String.class);
 
-                final Requirement r = new Requirement(obj.get(JSONConstants.REQCAP_NAMESPACE).toString());
-                feature.getRequirements().add(r);
-
+                Map<String, Object> attrMap = new HashMap<>();
                 if ( obj.containsKey(JSONConstants.REQCAP_ATTRIBUTES) ) {
                     checkType("Requirement attributes", obj.get(JSONConstants.REQCAP_ATTRIBUTES), Map.class);
                     @SuppressWarnings("unchecked")
                     final Map<String, Object> attrs = (Map<String, Object>)obj.get(JSONConstants.REQCAP_ATTRIBUTES);
-                    attrs.forEach(rethrowBiConsumer((key, value) -> unmarshalAttribute(key, value, r.getAttributes()::put)));
+                    attrs.forEach(rethrowBiConsumer((key, value) -> unmarshalAttribute(key, value, attrMap::put)));
                 }
 
+                Map<String, String> dirMap = new HashMap<>();
                 if ( obj.containsKey(JSONConstants.REQCAP_DIRECTIVES) ) {
                     checkType("Requirement directives", obj.get(JSONConstants.REQCAP_DIRECTIVES), Map.class);
                     @SuppressWarnings("unchecked")
                     final Map<String, Object> dirs = (Map<String, Object>)obj.get(JSONConstants.REQCAP_DIRECTIVES);
-                    dirs.forEach(rethrowBiConsumer((key, value) -> unmarshalDirective(key, value, r.getDirectives()::put)));
+                    dirs.forEach(rethrowBiConsumer((key, value) -> unmarshalDirective(key, value, dirMap::put)));
                 }
+
+                final Requirement r = new OSGiRequirement(obj.get(JSONConstants.REQCAP_NAMESPACE).toString(), attrMap, dirMap);
+                feature.getRequirements().add(r);
             }
         }
     }
@@ -308,22 +297,24 @@ public class FeatureJSONReader extends JSONReaderBase {
                 }
                 checkType("Capability namespace", obj.get(JSONConstants.REQCAP_NAMESPACE), String.class);
 
-                final Capability c = new Capability(obj.get(JSONConstants.REQCAP_NAMESPACE).toString());
-                feature.getCapabilities().add(c);
-
+                Map<String, Object> attrMap = new HashMap<>();
                 if ( obj.containsKey(JSONConstants.REQCAP_ATTRIBUTES) ) {
                     checkType("Capability attributes", obj.get(JSONConstants.REQCAP_ATTRIBUTES), Map.class);
                     @SuppressWarnings("unchecked")
                     final Map<String, Object> attrs = (Map<String, Object>)obj.get(JSONConstants.REQCAP_ATTRIBUTES);
-                    attrs.forEach(rethrowBiConsumer((key, value) -> unmarshalAttribute(key, value, c.getAttributes()::put)));
+                    attrs.forEach(rethrowBiConsumer((key, value) -> unmarshalAttribute(key, value, attrMap::put)));
                 }
 
+                Map<String, String> dirMap = new HashMap<>();
                 if ( obj.containsKey(JSONConstants.REQCAP_DIRECTIVES) ) {
                     checkType("Capability directives", obj.get(JSONConstants.REQCAP_DIRECTIVES), Map.class);
                     @SuppressWarnings("unchecked")
                     final Map<String, Object> dirs = (Map<String, Object>) obj.get(JSONConstants.REQCAP_DIRECTIVES);
-                    dirs.forEach(rethrowBiConsumer((key, value) -> unmarshalDirective(key, value, c.getDirectives()::put)));
+                    dirs.forEach(rethrowBiConsumer((key, value) -> unmarshalDirective(key, value, dirMap::put)));
                 }
+
+                final Capability c = new OSGiCapability(obj.get(JSONConstants.REQCAP_NAMESPACE).toString(), attrMap, dirMap);
+                feature.getCapabilities().add(c);
             }
         }
     }

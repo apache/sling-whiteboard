@@ -20,6 +20,9 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
+
 /**
  * A feature consists of
  * <ul>
@@ -65,14 +68,8 @@ public class Feature implements Comparable<Feature> {
     /** The optional license. */
     private volatile String license;
 
-    /** Is this an upgrade of another feature? */
-    private volatile ArtifactId upgradeOf;
-
     /** Flag indicating whether this is an assembled feature */
     private volatile boolean assembled = false;
-
-    /** Contained upgrades (this is usually only set for assembled features*/
-    private final List<ArtifactId> upgrades = new ArrayList<>();
 
     /**
      * Construct a new feature.
@@ -239,31 +236,6 @@ public class Feature implements Comparable<Feature> {
     }
 
     /**
-     * Set the upgrade of information
-     * @param id The artifact id
-     */
-    public void setUpgradeOf(final ArtifactId id) {
-        this.upgradeOf = id;
-    }
-
-    /**
-     * Get the artifact id of the upgrade of information
-     * @return The artifact id or {@code null}
-     */
-    public ArtifactId getUpgradeOf() {
-        return this.upgradeOf;
-    }
-
-    /**
-     * Get the list of upgrades applied to this feature
-     * The returned object is modifiable.
-     * @return The list of upgrades
-     */
-    public List<ArtifactId> getUpgrades() {
-        return this.upgrades;
-    }
-
-    /**
      * Check whether the feature is already assembled
      * @return {@code true} if it is assembled, {@code false} if it needs to be assembled
      */
@@ -327,17 +299,13 @@ public class Feature implements Comparable<Feature> {
 
         // requirements
         for(final Requirement r : this.getRequirements()) {
-            final Requirement c = new Requirement(r.getNamespace());
-            c.getAttributes().putAll(r.getAttributes());
-            c.getDirectives().putAll(r.getDirectives());
+            final Requirement c = new OSGiRequirement(r.getNamespace(), r.getAttributes(), r.getDirectives());
             result.getRequirements().add(c);
         }
 
         // capabilities
         for(final Capability r : this.getCapabilities()) {
-            final Capability c = new Capability(r.getNamespace());
-            c.getAttributes().putAll(r.getAttributes());
-            c.getDirectives().putAll(r.getDirectives());
+            final Capability c = new OSGiCapability(r.getNamespace(), r.getAttributes(), r.getDirectives());
             result.getCapabilities().add(c);
         }
 
