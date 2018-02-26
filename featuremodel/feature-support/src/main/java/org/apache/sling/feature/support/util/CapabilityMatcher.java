@@ -1,27 +1,3 @@
-package org.apache.sling.feature.support.util;
-
-import org.osgi.framework.Constants;
-import org.osgi.framework.Version;
-import org.osgi.resource.Capability;
-import org.osgi.resource.Requirement;
-
-import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
-import static org.osgi.framework.Constants.RESOLUTION_DIRECTIVE;
-import static org.osgi.framework.Constants.RESOLUTION_OPTIONAL;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -38,6 +14,30 @@ import static org.osgi.framework.Constants.RESOLUTION_OPTIONAL;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sling.feature.support.util;
+
+import static org.osgi.framework.Constants.RESOLUTION_DIRECTIVE;
+import static org.osgi.framework.Constants.RESOLUTION_OPTIONAL;
+
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.osgi.framework.Constants;
+import org.osgi.framework.Version;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
+
 public class CapabilityMatcher
 {
     public static Set<Capability> match(Set<Capability> caps, final SimpleFilter sf)
@@ -541,7 +541,7 @@ public class CapabilityMatcher
             value = "";
         }
 
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
 
         int CHAR = 1;
         int DELIMITER = 2;

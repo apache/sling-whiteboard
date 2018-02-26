@@ -37,9 +37,7 @@ import org.osgi.framework.wiring.BundleRevision;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 
-public class ManifestParser
-{
-    private static final String BUNDLE_LICENSE_HEADER = "Bundle-License"; // No constant defined by OSGi...
+public class ManifestParser {
 
     private final Manifest m_headerMap;
     private volatile String m_bundleSymbolicName;
@@ -470,10 +468,10 @@ public class ManifestParser
             attrs.put(IdentityNamespace.CAPABILITY_DOCUMENTATION_ATTRIBUTE,
                     headerMap.getMainAttributes().getValue(Constants.BUNDLE_DOCURL));
         }
-        if (headerMap.getMainAttributes().getValue(BUNDLE_LICENSE_HEADER) != null)
+        if (headerMap.getMainAttributes().getValue(Constants.BUNDLE_LICENSE) != null)
         {
             attrs.put(IdentityNamespace.CAPABILITY_LICENSE_ATTRIBUTE,
-                    headerMap.getMainAttributes().getValue(BUNDLE_LICENSE_HEADER));
+                    headerMap.getMainAttributes().getValue(Constants.BUNDLE_LICENSE));
         }
 
         Map<String, String> dirs;
