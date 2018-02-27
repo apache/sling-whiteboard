@@ -24,7 +24,7 @@
     <parent>
         <groupId>org.apache</groupId>
         <artifactId>apache</artifactId>
-        <version>18</version>
+        <version>19</version>
     </parent>
 
     <groupId>org.apache.sling</groupId>
@@ -57,14 +57,14 @@
 
     <modules>
         <module>feature</module> 
-        <module>feature-karaf</module>
-        <module>feature-modelconverter</module>
-        <module>osgifeature-maven-plugin</module>
         <module>feature-analyser</module>
-        <module>feature-launcher</module>
-        <module>feature-support</module>	
-        <module>feature-resolver</module>
         <module>feature-applicationbuilder</module>
+        <module>feature-karaf</module>
+        <module>feature-launcher</module>
+        <module>feature-modelconverter</module>
+        <module>feature-resolver</module>
+        <module>feature-support</module>	
+        <module>osgifeature-maven-plugin</module>
     </modules>
 
 </project>

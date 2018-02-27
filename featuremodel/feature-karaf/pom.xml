@@ -17,7 +17,7 @@
     <parent>
         <groupId>org.apache.sling</groupId>
         <artifactId>sling</artifactId>
-        <version>32</version>
+        <version>33</version>
         <relativePath />
     </parent>
 
@@ -51,6 +51,18 @@
     </build>
     <dependencies>
         <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.annotation.versioning</artifactId>
+            <version>1.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>osgi.core</artifactId>
+            <version>6.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.feature</artifactId>
             <version>0.0.1-SNAPSHOT</version>
@@ -60,12 +72,6 @@
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.feature.support</artifactId>
             <version>0.0.1-SNAPSHOT</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>osgi.core</artifactId>
-            <version>6.0.0</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
