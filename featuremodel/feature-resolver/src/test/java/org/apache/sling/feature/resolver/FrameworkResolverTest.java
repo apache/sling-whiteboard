@@ -16,21 +16,19 @@
  */
 package org.apache.sling.feature.resolver;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.File;
 import java.io.FileReader;
 import java.net.URL;
-import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Map;
 
+import org.apache.sling.feature.BundleResource;
 import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.FeatureResource;
 import org.apache.sling.feature.process.FeatureResolver;
 import org.apache.sling.feature.support.ArtifactHandler;
 import org.apache.sling.feature.support.ArtifactManager;
@@ -40,6 +38,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.osgi.framework.Constants;
+
+import static org.junit.Assert.assertEquals;
 
 public class FrameworkResolverTest {
     private Path tempDir;
@@ -52,7 +52,7 @@ public class FrameworkResolverTest {
     @After
     public void tearDown() throws Exception {
         // Delete the temp dir again
-        Files.walk(tempDir, FileVisitOption.FOLLOW_LINKS)
+        Files.walk(tempDir)
             .sorted(Comparator.reverseOrder())
             .map(Path::toFile)
             .forEach(File::delete);
@@ -67,23 +67,35 @@ public class FrameworkResolverTest {
         ArtifactManager am = ArtifactManager.getArtifactManager(new ArtifactManagerConfig());
         try (FeatureResolver fr = new FrameworkResolver(am, getFrameworkProps())) {
             assertEquals(Collections.emptyList(),
-                    fr.orderFeatures(Collections.emptyList()));
+                    fr.orderResources(Collections.emptyList()));
         }
     }
 
     @Test
-    public void testOrderFeatures() throws Exception {
+    public void testOrderBundles() throws Exception {
         ArtifactManager am = ArtifactManager.getArtifactManager(new ArtifactManagerConfig());
 
         Feature f1 = readFeature("/feature1.json", am);
         Feature f2 = readFeature("/feature2.json", am);
         Feature f3 = readFeature("/feature3.json", am);
 
+        StringBuilder expected = new StringBuilder();
+        expected.append("slf4j.simple 1.7.25\n");
+        expected.append("slf4j.api 1.7.25\n");
+        expected.append("org.apache.sling.commons.logservice 1.0.6\n");
+        expected.append("org.apache.commons.io 2.6.0\n");
+        expected.append("org.apache.felix.http.servlet-api 1.1.2\n");
+
+        StringBuilder result = new StringBuilder();
         try (FeatureResolver fr = new FrameworkResolver(am, getFrameworkProps())) {
-            List<Feature> ordered = fr.orderFeatures(Arrays.asList(f1, f2, f3));
-            List<Feature> expected = Arrays.asList(f3, f2, f1);
-            assertEquals(expected, ordered);
+            for(FeatureResource ordered : fr.orderResources(Arrays.asList(f1, f2, f3))) {
+                if (ordered instanceof BundleResource) {
+                    BundleResource br = (BundleResource) ordered;
+                    result.append(br.getSymbolicName() + " " + br.getVersion() + "\n");
+                }
+            }
         }
+        assertEquals(expected.toString(), result.toString());
     }
 
     private Feature readFeature(final String res,

@@ -16,10 +16,6 @@
  */
 package org.apache.sling.feature.resolver.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collections;
@@ -31,6 +27,8 @@ import java.util.Set;
 
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.BundleResource;
+import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.OSGiCapability;
 import org.apache.sling.feature.OSGiRequirement;
 import org.apache.sling.feature.analyser.BundleDescriptor;
@@ -38,12 +36,18 @@ import org.apache.sling.feature.analyser.Descriptor;
 import org.apache.sling.feature.analyser.impl.BundleDescriptorImpl;
 import org.apache.sling.feature.support.util.PackageInfo;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 public class BundleResourceImplTest {
     @Test
@@ -64,7 +68,9 @@ public class BundleResourceImplTest {
         Requirement r1 = new OSGiRequirement("ns.1",
                 Collections.emptyMap(), Collections.singletonMap("mydir", "myvalue"));
         List<Requirement> reqList = Collections.singletonList(r1);
-        Resource res = new BundleResourceImpl(caps,
+        Artifact art = Mockito.mock(Artifact.class);
+        Feature feat = Mockito.mock(Feature.class);
+        BundleResource res = new BundleResourceImpl("a.b.c", "1.2.3", art, feat, caps,
                 Collections.singletonMap("ns.1", reqList));
 
         assertEquals(0, res.getCapabilities("nonexistent").size());
@@ -77,6 +83,11 @@ public class BundleResourceImplTest {
         assertTrue(mergedCaps.containsAll(capLst1));
         assertTrue(mergedCaps.containsAll(capLst2));
         assertEquals(reqList, res.getRequirements(null));
+
+        assertEquals("a.b.c", res.getSymbolicName());
+        assertEquals("1.2.3", res.getVersion());
+        assertSame(art, res.getArtifact());
+        assertSame(feat, res.getFeature());
     }
 
     @Test
@@ -96,7 +107,7 @@ public class BundleResourceImplTest {
         bd.getImportedPackages().add(im1);
         bd.getImportedPackages().add(im2);
 
-        Resource res = new BundleResourceImpl(bd);
+        Resource res = new BundleResourceImpl(bd, null);
         assertNotNull(
                 getCapAttribute(res, BundleNamespace.BUNDLE_NAMESPACE, BundleNamespace.BUNDLE_NAMESPACE));
         assertEquals(new Version("1.2.3"),
@@ -155,7 +166,7 @@ public class BundleResourceImplTest {
         Set<Requirement> reqs = new HashSet<>(Arrays.asList(req1, req2));
         BundleDescriptorImpl bd = new BundleDescriptorImpl(artifact, Collections.emptySet(), reqs, caps);
 
-        Resource res = new BundleResourceImpl(bd);
+        Resource res = new BundleResourceImpl(bd, null);
 
         assertEquals(caps, new HashSet<>(res.getCapabilities("org.example.cap1")));
         assertEquals(Collections.singleton(req1),

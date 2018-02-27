@@ -14,26 +14,23 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.sling.feature.process;
+package org.apache.sling.feature;
 
-import java.util.List;
-
-import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.FeatureResource;
+import org.osgi.resource.Resource;
 
 /**
- * A resolver that can perform operations on the feature model.
+ * A Resource that is associated with an Maven Artifact and belongs to a Feature.
  */
-public interface FeatureResolver extends AutoCloseable {
+public interface FeatureResource extends Resource {
     /**
-     * Order the resources in list of features by their dependency chain.
-     * Each feature and its components are resolved. Then all the resources
-     * in the feature are ordered so that each resource is placed before
-     * the requiring feature/resources in the result.
-     *
-     * @param features
-     *            The features to order.
-     * @return The ordered resources from the features.
+     * Obtain the associated (Maven) Artifact.
+     * @return The artifact for this Resource.
      */
-    List<FeatureResource> orderResources(List<Feature> features);
+    Artifact getArtifact();
+
+    /**
+     * Obtain the feature that contains this resource.
+     * @return The feature that contains the resource.
+     */
+    Feature getFeature();
 }

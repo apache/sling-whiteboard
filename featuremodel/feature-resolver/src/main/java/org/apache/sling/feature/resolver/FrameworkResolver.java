@@ -18,7 +18,6 @@ package org.apache.sling.feature.resolver;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,6 +30,7 @@ import java.util.Set;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.FeatureResource;
 import org.apache.sling.feature.analyser.BundleDescriptor;
 import org.apache.sling.feature.analyser.impl.BundleDescriptorImpl;
 import org.apache.sling.feature.process.FeatureResolver;
@@ -74,7 +74,7 @@ public class FrameworkResolver implements FeatureResolver {
             // Create a resource representing the framework
             BundleRevision br = framework.adapt(BundleRevision.class);
             List<Capability> caps = br.getCapabilities(PackageNamespace.PACKAGE_NAMESPACE);
-            frameworkResource = new BundleResourceImpl(
+            frameworkResource = new BundleResourceImpl(framework.getSymbolicName(), framework.getVersion().toString(), null, null,
                     Collections.singletonMap(PackageNamespace.PACKAGE_NAMESPACE, caps), Collections.emptyMap());
 
             int i=0;
@@ -101,7 +101,7 @@ public class FrameworkResolver implements FeatureResolver {
     }
 
     @Override
-    public List<Feature> orderFeatures(List<Feature> features) {
+    public List<FeatureResource> orderResources(List<Feature> features) {
         try {
             return internalOrderFeatures(features);
         } catch (Exception e) {
@@ -109,23 +109,25 @@ public class FrameworkResolver implements FeatureResolver {
         }
     }
 
-    public List<Feature> internalOrderFeatures(List<Feature> features) throws IOException {
-        Map<Resource, Feature> bundleMap = new HashMap<>();
+    public List<FeatureResource> internalOrderFeatures(List<Feature> features) throws IOException {
+        Map<FeatureResource, Feature> bundleMap = new HashMap<>();
+        Map<String, FeatureResource> bsnVerMap = new HashMap<>();
         for (Feature f : features) {
             for (Artifact b : f.getBundles()) {
                 BundleDescriptor bd = getBundleDescriptor(artifactManager, b);
-                Resource r = new BundleResourceImpl(bd);
+                FeatureResource r = new BundleResourceImpl(bd, f);
                 bundleMap.put(r, f);
+                bsnVerMap.put(bd.getBundleSymbolicName() + " " + bd.getBundleVersion(), r);
             }
         }
 
         Set<Resource> availableBundles = new HashSet<>(bundleMap.keySet());
         // Add these to the available features
         Artifact lpa = new Artifact(ArtifactId.parse("org.apache.sling/org.apache.sling.launchpad.api/1.2.0"));
-        availableBundles.add(new BundleResourceImpl(getBundleDescriptor(artifactManager, lpa)));
+        availableBundles.add(new BundleResourceImpl(getBundleDescriptor(artifactManager, lpa), null));
         availableBundles.add(frameworkResource);
 
-        List<Resource> orderedBundles = new LinkedList<>();
+        List<FeatureResource> orderedBundles = new LinkedList<>();
         try {
             for (Resource bundle : bundleMap.keySet()) {
                 if (orderedBundles.contains(bundle)) {
@@ -135,19 +137,20 @@ public class FrameworkResolver implements FeatureResolver {
                 Map<Resource, List<Wire>> deps = resolver.resolve(new ResolveContextImpl(bundle, availableBundles));
 
                 for (Map.Entry<Resource, List<Wire>> entry : deps.entrySet()) {
-                    Resource curBundle = entry.getKey();
-
-                    if (!bundleMap.containsKey(curBundle)) {
-                        // This is some synthesized bundle. Ignoring.
+                    Resource depBundle = entry.getKey();
+                    FeatureResource curBundle = getFeatureResource(depBundle, bsnVerMap);
+                    if (curBundle == null)
                         continue;
-                    }
 
                     if (!orderedBundles.contains(curBundle)) {
                         orderedBundles.add(curBundle);
                     }
 
                     for (Wire w : entry.getValue()) {
-                        Resource provBundle = w.getProvider();
+                        FeatureResource provBundle = getFeatureResource(w.getProvider(), bsnVerMap);
+                        if (provBundle == null)
+                            continue;
+
                         int curBundleIdx = orderedBundles.indexOf(curBundle);
                         int newBundleIdx = orderedBundles.indexOf(provBundle);
                         if (newBundleIdx >= 0) {
@@ -178,25 +181,29 @@ public class FrameworkResolver implements FeatureResolver {
                 int idx = getBundleIndex(orderedBundles, bsn); // TODO check for filter too
                 if (idx < i) {
                     // the fragment is after the host, and should be moved to be before the host
-                    Resource frag = orderedBundles.remove(i);
+                    FeatureResource frag = orderedBundles.remove(i);
                     orderedBundles.add(idx, frag);
                 }
             }
         }
 
-        List<Feature> orderedFeatures = new ArrayList<>();
-        for (Resource r : orderedBundles) {
-            Feature f = bundleMap.get(r);
-            if (f != null) {
-                if (!orderedFeatures.contains(f)) {
-                    orderedFeatures.add(f);
-                }
-            }
-        }
-        return orderedFeatures;
+        return orderedBundles;
     }
 
-    private static int getBundleIndex(List<Resource> bundles, String bundleSymbolicName) {
+    private FeatureResource getFeatureResource(Resource res, Map<String, FeatureResource> bsnVerMap) {
+        List<Capability> caps = res.getCapabilities(BundleNamespace.BUNDLE_NAMESPACE);
+        if (caps.size() == 0) {
+            return null;
+        }
+        Capability cap = caps.get(0);
+        Map<String, Object> attrs = cap.getAttributes();
+        Object bsn = attrs.get(BundleNamespace.BUNDLE_NAMESPACE);
+        Object ver = attrs.get(BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
+        String bsnVer = "" + bsn + " " + ver;
+        return bsnVerMap.get(bsnVer);
+    }
+
+    private static int getBundleIndex(List<FeatureResource> bundles, String bundleSymbolicName) {
         for (int i=0; i<bundles.size(); i++) {
             Resource b = bundles.get(i);
             if (bundleSymbolicName.equals(getBundleSymbolicName(b))) {

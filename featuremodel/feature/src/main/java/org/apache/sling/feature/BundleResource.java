@@ -14,26 +14,21 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.sling.feature.process;
-
-import java.util.List;
-
-import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.FeatureResource;
+package org.apache.sling.feature;
 
 /**
- * A resolver that can perform operations on the feature model.
+ * A Feature Resource that is an OSGi Bundle.
  */
-public interface FeatureResolver extends AutoCloseable {
+public interface BundleResource extends FeatureResource {
     /**
-     * Order the resources in list of features by their dependency chain.
-     * Each feature and its components are resolved. Then all the resources
-     * in the feature are ordered so that each resource is placed before
-     * the requiring feature/resources in the result.
-     *
-     * @param features
-     *            The features to order.
-     * @return The ordered resources from the features.
+     * Obtain the Symbolic Name for the bundle.
+     * @return The Symbolic Name.
      */
-    List<FeatureResource> orderResources(List<Feature> features);
+    String getSymbolicName();
+
+    /**
+     * Obtain the Version of the bundle.
+     * @return The Version.
+     */
+    String getVersion();
 }

@@ -14,22 +14,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.sling.feature.resolver.impl;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+package org.apache.sling.feature.analyser;
 
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.BundleResource;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.OSGiCapability;
 import org.apache.sling.feature.OSGiRequirement;
-import org.apache.sling.feature.analyser.BundleDescriptor;
 import org.apache.sling.feature.support.util.PackageInfo;
 import org.osgi.framework.Version;
 import org.osgi.framework.VersionRange;
@@ -39,10 +30,18 @@ import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 /**
- * Implementation of the OSGi Resource interface.
+ * Implementation of the OSGi Resource interface, used by the test
  */
-public class BundleResourceImpl implements BundleResource {
+public class TestBundleResourceImpl implements BundleResource {
     final Artifact artifact;
     final String bsn;
     final String version;
@@ -54,7 +53,7 @@ public class BundleResourceImpl implements BundleResource {
      * Create a resource based on a BundleDescriptor.
      * @param bd The BundleDescriptor to represent.
      */
-    public BundleResourceImpl(BundleDescriptor bd, Feature feat) {
+    public TestBundleResourceImpl(BundleDescriptor bd, Feature feat) {
         artifact = bd.getArtifact();
         bsn = bd.getBundleSymbolicName();
         version = bd.getBundleVersion();
@@ -126,7 +125,7 @@ public class BundleResourceImpl implements BundleResource {
         requirements = Collections.unmodifiableMap(reqs);
     }
 
-    public BundleResourceImpl(String sn, String ver, Artifact art, Feature feat, Map<String, List<Capability>> caps, Map<String, List<Requirement>> reqs) {
+    public TestBundleResourceImpl(String sn, String ver, Artifact art, Feature feat, Map<String, List<Capability>> caps, Map<String, List<Requirement>> reqs) {
         artifact = art;
         bsn = sn;
         version = ver;
@@ -200,7 +199,7 @@ public class BundleResourceImpl implements BundleResource {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        BundleResourceImpl other = (BundleResourceImpl) obj;
+        TestBundleResourceImpl other = (TestBundleResourceImpl) obj;
         if (artifact == null) {
             if (other.artifact != null)
                 return false;
