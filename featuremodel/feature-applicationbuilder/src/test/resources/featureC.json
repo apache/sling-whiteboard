@@ -1,0 +1,18 @@
+{
+    "id": "org.apache.sling.test.features/featureC/1.0.0",
+    "capabilities": [
+        {
+            "namespace": "org.foo.bar",
+            "attributes": {
+                "org.foo.bar": "toast",
+                "version:Version": "1.1"
+            }
+        }, {
+            "namespace": "osgi.wiring.package",
+            "attributes": {
+                "osgi.wiring.package": "org.slf4j.impl",
+                "version:Version": "1.7.1.test"
+            }
+        }
+    ]
+}
