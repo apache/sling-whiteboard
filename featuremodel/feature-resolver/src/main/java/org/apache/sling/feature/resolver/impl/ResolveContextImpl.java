@@ -16,12 +16,6 @@
  */
 package org.apache.sling.feature.resolver.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
 import org.osgi.framework.Filter;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
@@ -32,19 +26,25 @@ import org.osgi.resource.Wiring;
 import org.osgi.service.resolver.HostedCapability;
 import org.osgi.service.resolver.ResolveContext;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Implementation of the OSGi ResolveContext for use with the OSGi Resolver.
  */
 public class ResolveContextImpl extends ResolveContext {
     private final Resource bundle;
-    private final Collection<Resource> availableResources;
+    private final Collection<? extends Resource> availableResources;
 
     /**
      * Constructor.
      * @param mainResource The main resource to resolve.
      * @param available The available resources to provide dependencies.
      */
-    public ResolveContextImpl(Resource mainResource, Collection<Resource> available) {
+    public ResolveContextImpl(Resource mainResource, Collection<? extends Resource> available) {
         bundle = mainResource;
         availableResources = available;
     }

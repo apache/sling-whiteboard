@@ -16,12 +16,14 @@
  */
 package org.apache.sling.feature.process;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.sling.feature.Application;
+import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.FeatureResource;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Build an application based on features.
@@ -89,12 +91,11 @@ public class ApplicationBuilder {
             app = new Application();
         }
 
-        // Created sorted feature list
         // Remove duplicate features by selecting the one with the highest version
-        List<Feature> sortedFeatureList = new ArrayList<>();
+        final List<Feature> featureList = new ArrayList<>();
         for(final Feature f : features) {
             Feature found = null;
-            for(final Feature s : sortedFeatureList) {
+            for(final Feature s : featureList) {
                 if ( s.getId().isSame(f.getId()) ) {
                     found = s;
                     break;
@@ -108,21 +109,29 @@ public class ApplicationBuilder {
                     add = false;
                 } else {
                     // remove lower version, higher version will be added
-                    app.getFeatureIds().remove(found.getId());
-                    sortedFeatureList.remove(found);
+                    featureList.remove(found);
                 }
             }
             if ( add ) {
-                app.getFeatureIds().add(f.getId());
-                sortedFeatureList.add(f);
+                featureList.add(f);
             }
         }
 
         // order by dependency chain
-        sortedFeatureList = resolver.orderFeatures(sortedFeatureList);
+        final List<FeatureResource> sortedResources = resolver.orderResources(featureList);
+
+        final List<Feature> sortedFeatures = new ArrayList<>();
+        for (final FeatureResource fr : sortedResources) {
+            Feature f = fr.getFeature();
+            if (!sortedFeatures.contains(f)) {
+                sortedFeatures.add(f);
+            }
+        }
 
         // assemble
-        for(final Feature f : sortedFeatureList) {
+        int featureStartOrder = 5; // begin with start order a little higher than 0
+        for(final Feature f : sortedFeatures) {
+            app.getFeatureIds().add(f.getId());
             final Feature assembled = FeatureBuilder.assemble(f, context.clone(new FeatureProvider() {
 
                 @Override
@@ -135,6 +144,16 @@ public class ApplicationBuilder {
                     return context.getFeatureProvider().provide(id);
                 }
             }));
+
+            int globalStartOrder = featureStartOrder;
+            for (Artifact a : assembled.getBundles()) {
+                int so = a.getStartOrder() + featureStartOrder;
+                if (so > globalStartOrder)
+                    globalStartOrder = so;
+                a.setStartOrder(so);
+            }
+            // Next feature will have a higher start order than the previous
+            featureStartOrder = globalStartOrder + 1;
 
             merge(app, assembled);
         }

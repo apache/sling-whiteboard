@@ -1,0 +1,12 @@
+{
+    "id": "org.apache.sling.test.features/feature6/1.0.0",
+    "requirements": [
+        {
+            "namespace": "osgi.wiring.package",
+            "directives": {
+                "filter": "(&(osgi.wiring.package=org.slf4j)(version>=1.5.0)(!(version>=2.0.0)))"
+            }
+        }
+    ],
+    "bundles": ["commons-io/commons-io/2.6"]
+}
