@@ -17,6 +17,8 @@
 package org.apache.sling.feature.support.json;
 
 import org.apache.sling.feature.Configuration;
+import org.apache.sling.feature.Extension;
+import org.apache.sling.feature.Extensions;
 import org.apache.sling.feature.Feature;
 import org.junit.Test;
 import org.osgi.resource.Capability;
@@ -53,4 +55,19 @@ public class FeatureJSONReaderTest {
 
     }
 
+    @Test public void testReadRepoInitExtension() throws Exception {
+        Feature feature = U.readFeature("repoinit");
+        Extensions extensions = feature.getExtensions();
+        assertEquals(1, extensions.size());
+        Extension ext = extensions.iterator().next();
+        assertEquals("some repo init\ntext", ext.getText());
+    }
+
+    @Test public void testReadRepoInitExtensionArray() throws Exception {
+        Feature feature = U.readFeature("repoinit2");
+        Extensions extensions = feature.getExtensions();
+        assertEquals(1, extensions.size());
+        Extension ext = extensions.iterator().next();
+        assertEquals("some repo init\ntext\n", ext.getText());
+    }
 }
