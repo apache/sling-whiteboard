@@ -16,14 +16,16 @@
  */
 package org.apache.sling.feature.support.json;
 
+import org.apache.sling.feature.Configuration;
+
 import java.util.Arrays;
 import java.util.List;
-
-import org.apache.sling.feature.Configuration;
 
 public abstract class JSONConstants {
 
     public static final String FEATURE_ID = "id";
+
+    public static final String FEATURE_VARIABLES = "variables";
 
     public static final String FEATURE_BUNDLES = "bundles";
 
@@ -46,6 +48,7 @@ public abstract class JSONConstants {
     public static final String FEATURE_LICENSE = "license";
 
     public static final List<String> FEATURE_KNOWN_PROPERTIES = Arrays.asList(FEATURE_ID,
+            FEATURE_VARIABLES,
             FEATURE_BUNDLES,
             FEATURE_FRAMEWORK_PROPERTIES,
             FEATURE_CONFIGURATIONS,

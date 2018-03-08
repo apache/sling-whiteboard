@@ -1,0 +1,105 @@
+{
+    "id" : "org.apache.sling/test2/1.1",
+
+    "variables": {
+         "common.version": "1.2.3",
+         "contract.name": "JavaServlet",
+         "ab_config": "right!",
+         "c_config": "really?",
+         "includever": "9",
+         "ns": "contract",
+         "sling.gid": "org.apache.sling",
+         "something": "something",
+         "svc": "service"
+    },
+
+    "includes" : [
+         {
+             "id" : "${sling.gid}/sling/${includever}",
+             "removals" : {
+                 "configurations" : [
+                 ],
+                 "bundles" : [
+                 ],
+                 "framework-properties" : [
+                 ]
+             }
+         }
+    ],
+    "requirements" : [
+          {
+              "namespace" : "osgi.${ns}",
+              "directives" : {
+                  "filter" : "(&(osgi.contract=${contract.name})(&(version>=3.0)(!(version>=4.0))))"
+              }
+          }
+    ],
+    "capabilities" : [
+        {
+             "namespace" : "osgi.implementation",
+             "attributes" : {
+                   "osgi.implementation" : "osgi.http",
+                   "version:Version" : "1.1"
+             },
+             "directives" : {
+                  "uses" : "javax.servlet,javax.servlet.http,org.osgi.service.http.context,org.osgi.service.http.whiteboard"
+             }
+        },
+        {
+             "namespace" : "osgi.${svc}",
+             "attributes" : {
+                  "objectClass:List<String>" : "org.osgi.${svc}.http.runtime.HttpServiceRuntime"
+             },
+             "directives" : {
+                  "uses" : "org.osgi.${svc}.http.runtime,org.osgi.${svc}.http.runtime.dto"
+             }
+        },
+        {
+          "namespace" : "osgi.contract",
+          "attributes" : {
+            "osgi.contract" : "JavaServlet",
+            "osgi.implementation" : "osgi.http",
+            "version:Version" : "3.1"
+          },
+          "directives" : {
+            "uses" : "org.osgi.service.http.runtime,org.osgi.service.http.runtime.dto"
+          }
+        }
+    ],
+    "framework-properties" : {
+        "foo" : 1,
+        "brave" : "${something}",
+        "org.apache.felix.scr.directory" : "launchpad/scr"
+    },
+    "bundles" :[
+            {
+              "id" : "org.apache.sling/oak-server/1.0.0",
+              "hash" : "4632463464363646436",
+              "start-order" : 1
+            },
+            {
+              "id" : "org.apache.sling/application-bundle/2.0.0",
+              "start-order" : 1
+            },
+            {
+              "id" : "org.apache.sling/another-bundle/2.1.0",
+              "start-order" : 1
+            },
+            {
+              "id" : "org.apache.sling/foo-xyz/${common.version}",
+              "start-order" : 2
+            }
+    ],
+    "configurations" : {
+        "my.pid" : {
+           "foo" : 5,
+           "bar" : "test",
+           "number:Integer" : 7
+        },
+        "my.pid2" : {
+           "a.value" : "aa${ab_config}",
+           "b.value" : "${ab_config}bb",
+           "c.value" : "c${c_config}c"
+        }
+    }
+}

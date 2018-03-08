@@ -16,6 +16,20 @@
  */
 package org.apache.sling.feature.support.json;
 
+import org.apache.felix.configurator.impl.json.JSMin;
+import org.apache.felix.configurator.impl.json.JSONUtil;
+import org.apache.felix.configurator.impl.json.TypeConverter;
+import org.apache.felix.configurator.impl.model.Config;
+import org.apache.sling.feature.Artifact;
+import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.Bundles;
+import org.apache.sling.feature.Configuration;
+import org.apache.sling.feature.Configurations;
+import org.apache.sling.feature.Extension;
+import org.apache.sling.feature.ExtensionType;
+import org.apache.sling.feature.Extensions;
+import org.apache.sling.feature.KeyValueMap;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringWriter;
@@ -33,20 +47,6 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonStructure;
 import javax.json.JsonWriter;
-
-import org.apache.felix.configurator.impl.json.JSMin;
-import org.apache.felix.configurator.impl.json.JSONUtil;
-import org.apache.felix.configurator.impl.json.TypeConverter;
-import org.apache.felix.configurator.impl.model.Config;
-import org.apache.sling.feature.Artifact;
-import org.apache.sling.feature.ArtifactId;
-import org.apache.sling.feature.Bundles;
-import org.apache.sling.feature.Configuration;
-import org.apache.sling.feature.Configurations;
-import org.apache.sling.feature.Extension;
-import org.apache.sling.feature.ExtensionType;
-import org.apache.sling.feature.Extensions;
-import org.apache.sling.feature.KeyValueMap;
 
 /**
  * Common methods for JSON reading.
@@ -146,7 +146,7 @@ abstract class JSONReaderBase {
                     throw new IOException(exceptionPrefix + " " + artifactType + " is missing required artifact id");
                 }
                 checkType(artifactType + " " + JSONConstants.ARTIFACT_ID, bundleObj.get(JSONConstants.ARTIFACT_ID), String.class);
-                final ArtifactId id = ArtifactId.parse(bundleObj.get(JSONConstants.ARTIFACT_ID).toString());
+                final ArtifactId id = ArtifactId.parse(handleVars(bundleObj.get(JSONConstants.ARTIFACT_ID)).toString());
 
                 artifact = new Artifact(id);
                 for(final Map.Entry<String, Object> metadataEntry : bundleObj.entrySet()) {
@@ -164,6 +164,11 @@ abstract class JSONReaderBase {
             }
             artifacts.add(artifact);
         }
+    }
+
+    protected Object handleVars(Object val) {
+        // No variable substitution at this level, but subclasses can add this in
+        return val;
     }
 
     protected void addConfigurations(final Map<String, Object> map,
@@ -201,7 +206,7 @@ abstract class JSONReaderBase {
                     throw new IOException(exceptionPrefix + "Configuration must not define configurator property " + key);
                 }
                 final Object val = c.getProperties().get(key);
-                config.getProperties().put(key, val);
+                config.getProperties().put(key, handleVars(val));
             }
             if ( config.getProperties().get(Configuration.PROP_ARTIFACT) != null ) {
                 throw new IOException(exceptionPrefix + "Configuration must not define property " + Configuration.PROP_ARTIFACT);
@@ -241,7 +246,7 @@ abstract class JSONReaderBase {
                 if ( container.get(entry.getKey()) != null ) {
                     throw new IOException(this.exceptionPrefix + "Duplicate framework property " + entry.getKey());
                 }
-                container.put(entry.getKey(), entry.getValue().toString());
+                container.put(entry.getKey(), handleVars(entry.getValue()).toString());
             }
 
         }
