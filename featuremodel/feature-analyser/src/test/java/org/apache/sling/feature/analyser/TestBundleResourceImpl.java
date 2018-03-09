@@ -14,34 +14,34 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.sling.feature.resolver.impl;
+package org.apache.sling.feature.analyser;
 
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.FeatureResource;
 import org.apache.sling.feature.OSGiCapability;
 import org.apache.sling.feature.OSGiRequirement;
-import org.apache.sling.feature.analyser.BundleDescriptor;
 import org.apache.sling.feature.support.util.PackageInfo;
 import org.osgi.framework.Version;
 import org.osgi.framework.VersionRange;
 import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
-import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
- * Implementation of the OSGi Resource interface.
+ * Implementation of the OSGi Resource interface, used by the test
  */
-public class BundleResourceImpl extends AbstractResourceImpl implements FeatureResource {
+public class TestBundleResourceImpl implements FeatureResource {
     final Artifact artifact;
     final String bsn;
     final Version version;
@@ -53,7 +53,7 @@ public class BundleResourceImpl extends AbstractResourceImpl implements FeatureR
      * Create a resource based on a BundleDescriptor.
      * @param bd The BundleDescriptor to represent.
      */
-    public BundleResourceImpl(BundleDescriptor bd, Feature feat) {
+    public TestBundleResourceImpl(BundleDescriptor bd, Feature feat) {
         artifact = bd.getArtifact();
         bsn = bd.getBundleSymbolicName();
         version = bd.getArtifact().getId().getOSGiVersion();
@@ -75,24 +75,16 @@ public class BundleResourceImpl extends AbstractResourceImpl implements FeatureR
             Map<String, Object> attrs = new HashMap<>();
             attrs.put(PackageNamespace.PACKAGE_NAMESPACE, exported.getName());
             attrs.put(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE, exported.getPackageVersion());
-            attrs.put(PackageNamespace.CAPABILITY_BUNDLE_SYMBOLICNAME_ATTRIBUTE, bsn);
-            attrs.put(PackageNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version);
+            attrs.put(PackageNamespace.CAPABILITY_BUNDLE_SYMBOLICNAME_ATTRIBUTE, bd.getBundleSymbolicName());
+            attrs.put(PackageNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, new Version(bd.getBundleVersion()));
             pkgCaps.add(new OSGiCapability(this, PackageNamespace.PACKAGE_NAMESPACE, attrs, Collections.emptyMap()));
         }
         caps.put(PackageNamespace.PACKAGE_NAMESPACE, Collections.unmodifiableList(pkgCaps));
 
-        // Add the identity capability
-        Map<String, Object> idattrs = new HashMap<>();
-        idattrs.put(IdentityNamespace.IDENTITY_NAMESPACE, bsn);
-        idattrs.put(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, IdentityNamespace.TYPE_BUNDLE);
-        idattrs.put(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
-        OSGiCapability idCap = new OSGiCapability(this, IdentityNamespace.IDENTITY_NAMESPACE, idattrs, Collections.emptyMap());
-        caps.put(IdentityNamespace.IDENTITY_NAMESPACE, Collections.singletonList(idCap));
-
         // Add the bundle capability
         Map<String, Object> battrs = new HashMap<>();
-        battrs.put(BundleNamespace.BUNDLE_NAMESPACE, bsn);
-        battrs.put(BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version);
+        battrs.put(BundleNamespace.BUNDLE_NAMESPACE, bd.getBundleSymbolicName());
+        battrs.put(BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, new Version(bd.getBundleVersion()));
         OSGiCapability bundleCap = new OSGiCapability(this, BundleNamespace.BUNDLE_NAMESPACE, battrs, Collections.emptyMap());
         caps.put(BundleNamespace.BUNDLE_NAMESPACE, Collections.singletonList(bundleCap));
         capabilities = Collections.unmodifiableMap(caps);
@@ -133,19 +125,6 @@ public class BundleResourceImpl extends AbstractResourceImpl implements FeatureR
         requirements = Collections.unmodifiableMap(reqs);
     }
 
-    public BundleResourceImpl(String sn, String ver, Artifact art, Feature feat, Map<String, List<Capability>> caps, Map<String, List<Requirement>> reqs) {
-        this(sn, new Version(ver), art, feat, caps, reqs);
-    }
-
-    public BundleResourceImpl(String sn, Version ver, Artifact art, Feature feat, Map<String, List<Capability>> caps, Map<String, List<Requirement>> reqs) {
-        artifact = art;
-        bsn = sn;
-        version = ver;
-        feature = feat;
-        capabilities = caps;
-        requirements = reqs;
-    }
-
     @Override
     public Artifact getArtifact() {
         return artifact;
@@ -163,12 +142,26 @@ public class BundleResourceImpl extends AbstractResourceImpl implements FeatureR
 
     @Override
     public List<Capability> getCapabilities(String namespace) {
-        return super.getCapabilities(namespace, capabilities);
+        if (namespace == null) {
+            return capabilities.values().stream().flatMap(Collection::stream).collect(Collectors.toList());
+        }
+
+        List<Capability> caps = capabilities.get(namespace);
+        if (caps == null)
+            return Collections.emptyList();
+        return caps;
     }
 
     @Override
     public List<Requirement> getRequirements(String namespace) {
-        return super.getRequirements(namespace, requirements);
+        if (namespace == null) {
+            return requirements.values().stream().flatMap(Collection::stream).collect(Collectors.toList());
+        }
+
+        List<Requirement> reqs = requirements.get(namespace);
+        if (reqs == null)
+            return Collections.emptyList();
+        return reqs;
     }
 
     @Override
@@ -197,7 +190,7 @@ public class BundleResourceImpl extends AbstractResourceImpl implements FeatureR
             return false;
         if (getClass() != obj.getClass())
             return false;
-        BundleResourceImpl other = (BundleResourceImpl) obj;
+        TestBundleResourceImpl other = (TestBundleResourceImpl) obj;
         if (artifact == null) {
             if (other.artifact != null)
                 return false;
@@ -233,6 +226,6 @@ public class BundleResourceImpl extends AbstractResourceImpl implements FeatureR
 
     @Override
     public String toString() {
-        return "BundleResourceImpl [bsn=" + bsn + ", version=" + version + "]";
+        return "BundleResourceImpl [" + bsn + " " + version + "]";
     }
 }

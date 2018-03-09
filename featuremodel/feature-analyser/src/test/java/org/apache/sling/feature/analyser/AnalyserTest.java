@@ -17,7 +17,10 @@
 package org.apache.sling.feature.analyser;
 
 import org.apache.sling.feature.Application;
+import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.FeatureResource;
+import org.apache.sling.feature.analyser.impl.BundleDescriptorImpl;
 import org.apache.sling.feature.analyser.service.Analyser;
 import org.apache.sling.feature.analyser.service.Scanner;
 import org.apache.sling.feature.process.FeatureResolver;
@@ -27,8 +30,11 @@ import org.apache.sling.feature.support.FeatureUtil;
 import org.apache.sling.feature.support.json.FeatureJSONReader;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.List;
 
 import static junit.framework.TestCase.fail;
@@ -78,8 +84,31 @@ public class AnalyserTest {
             }
 
             @Override
-            public List<Feature> orderFeatures(List<Feature> features) {
-                return features;
+            public List<FeatureResource> orderResources(List<Feature> features) {
+                try {
+                    // Just return the resources in the same order as they are listed in the features
+                    List<FeatureResource> l = new ArrayList<>();
+
+                    for (Feature f : features) {
+                        for (Artifact a : f.getBundles()) {
+                            BundleDescriptor bd = getBundleDescriptor(ArtifactManager.getArtifactManager(new ArtifactManagerConfig()), a);
+                            l.add(new TestBundleResourceImpl(bd, f));
+                        }
+                    }
+
+                    return l;
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            private BundleDescriptor getBundleDescriptor(ArtifactManager artifactManager, Artifact b) throws IOException {
+                final File file = artifactManager.getArtifactHandler(b.getId().toMvnUrl()).getFile();
+                if ( file == null ) {
+                    throw new IOException("Unable to find file for " + b.getId());
+                }
+
+                return new BundleDescriptorImpl(b, file, -1);
             }
         };
     }

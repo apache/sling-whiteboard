@@ -1,9 +1,21 @@
 {
-    "id" : "org.apache.sling/test-feature/1.1",
+    "id" : "org.apache.sling/test2/1.1",
+
+    "variables": {
+         "common.version": "1.2.3",
+         "contract.name": "JavaServlet",
+         "ab_config": "right!",
+         "c_config": "really?",
+         "includever": "9",
+         "ns": "contract",
+         "sling.gid": "org.apache.sling",
+         "something": "something",
+         "svc": "service"
+    },
 
     "includes" : [
          {
-             "id" : "org.apache.sling/sling/9",
+             "id" : "${sling.gid}/sling/${includever}",
              "removals" : {
                  "configurations" : [
                  ],
@@ -16,9 +28,9 @@
     ],
     "requirements" : [
           {
-              "namespace" : "osgi.contract",
+              "namespace" : "osgi.${ns}",
               "directives" : {
-                  "filter" : "(&(osgi.contract=JavaServlet)(&(version>=3.0)(!(version>=4.0))))"
+                  "filter" : "(&(osgi.contract=${contract.name})(&(version>=3.0)(!(version>=4.0))))"
               }
           }
     ],
@@ -34,12 +46,12 @@
              }
         },
         {
-             "namespace" : "osgi.service",
+             "namespace" : "osgi.${svc}",
              "attributes" : {
-                  "objectClass:List<String>" : "org.osgi.service.http.runtime.HttpServiceRuntime"
+                  "objectClass:List<String>" : "org.osgi.${svc}.http.runtime.HttpServiceRuntime"
              },
              "directives" : {
-                  "uses" : "org.osgi.service.http.runtime,org.osgi.service.http.runtime.dto"
+                  "uses" : "org.osgi.${svc}.http.runtime,org.osgi.${svc}.http.runtime.dto"
              }
         },
         {
@@ -56,7 +68,7 @@
     ],
     "framework-properties" : {
         "foo" : 1,
-        "brave" : "something",
+        "brave" : "${something}",
         "org.apache.felix.scr.directory" : "launchpad/scr"
     },
     "bundles" :[
@@ -74,9 +86,10 @@
               "start-order" : 1
             },
             {
-              "id" : "org.apache.sling/foo-xyz/1.2.3",
+              "id" : "org.apache.sling/foo-xyz/${common.version}",
               "start-order" : 2
-            }
+            },
+            "org.apache.sling/bar-xyz/${common.version}"
     ],
     "configurations" : {
         "my.pid" : {
@@ -84,8 +97,10 @@
            "bar" : "test",
            "number:Integer" : 7
         },
-        "my.factory.pid~name" : {
-           "a.value" : "yeah"
+        "my.pid2" : {
+           "a.value" : "aa${ab_config}",
+           "b.value" : "${ab_config}bb",
+           "c.value" : "c${c_config}c"
         }
     }
 }

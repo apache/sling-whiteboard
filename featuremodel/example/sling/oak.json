@@ -3,35 +3,35 @@
     "bundles": [
         {
             "id": "org.apache.felix/org.apache.felix.jaas/1.0.2",
-            "startOrder" : 10
+            "start-order" : 10
         },
         {
             "id": "org.apache.jackrabbit/oak-blob/1.6.4",
-            "startOrder" : 15
+            "start-order" : 15
         },
         {
             "id": "org.apache.jackrabbit/oak-commons/1.6.4",
-            "startOrder" : 15
+            "start-order" : 15
         },
         {
             "id": "org.apache.jackrabbit/oak-core/1.6.4",
-            "startOrder" : 15
+            "start-order" : 15
         },
         {
             "id": "org.apache.jackrabbit/oak-jcr/1.6.4", 
-            "startOrder" : 15
+            "start-order" : 15
         },
         {
             "id": "org.apache.jackrabbit/oak-lucene/1.6.4",
-            "startOrder" : 15
+            "start-order" : 15
         },
         {
             "id": "org.apache.jackrabbit/oak-segment-tar/1.6.4",
-            "startOrder" : 15
+            "start-order" : 15
         },
         {
             "id": "org.apache.sling/org.apache.sling.jcr.oak.server/1.1.4",
-            "startOrder" : 16
+            "start-order" : 16
         }
     ],
     "configurations": {

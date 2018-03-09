@@ -16,11 +16,6 @@
  */
 package org.apache.sling.feature.resolver.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -40,10 +35,15 @@ import org.osgi.resource.Resource;
 import org.osgi.service.resolver.HostedCapability;
 import org.osgi.service.resolver.ResolveContext;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 public class ResolveContextImplTest {
     @Test
     public void testMandatory() {
-        Resource mainRes = new BundleResourceImpl(Collections.emptyMap(), Collections.emptyMap());
+        Resource mainRes = new BundleResourceImpl("a", "1", null, null, Collections.emptyMap(), Collections.emptyMap());
         List<Resource> available = Arrays.asList();
         ResolveContext ctx = new ResolveContextImpl(mainRes, available);
 
@@ -57,7 +57,7 @@ public class ResolveContextImplTest {
         Resource res3 = exportBundle("org.foo", "1.0.0.TESTING");
         Resource res4 = exportBundle("org.foo", "1.9");
 
-        Resource mainRes = new BundleResourceImpl(Collections.emptyMap(), Collections.emptyMap());
+        Resource mainRes = new BundleResourceImpl("b", "2", null, null, Collections.emptyMap(), Collections.emptyMap());
         List<Resource> available = Arrays.asList(res1, res2, res3, res4);
         ResolveContext ctx = new ResolveContextImpl(mainRes, available);
 
@@ -79,7 +79,7 @@ public class ResolveContextImplTest {
         attrs.put(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE, new Version(version));
         Capability cap = new OSGiCapability(PackageNamespace.PACKAGE_NAMESPACE,
                 attrs, Collections.emptyMap());
-        return new BundleResourceImpl(
+        return new BundleResourceImpl("c", "3", null, null,
                 Collections.singletonMap(PackageNamespace.PACKAGE_NAMESPACE,
                         Collections.singletonList(cap)),
                 Collections.emptyMap());

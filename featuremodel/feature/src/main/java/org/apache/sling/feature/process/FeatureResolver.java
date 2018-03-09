@@ -19,20 +19,21 @@ package org.apache.sling.feature.process;
 import java.util.List;
 
 import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.FeatureResource;
 
 /**
  * A resolver that can perform operations on the feature model.
  */
 public interface FeatureResolver extends AutoCloseable {
     /**
-     * Order the features by their dependency chain. Each feature and its
-     * components are resolved and each other feature providing the capabilities
-     * needed by the feature is placed before the requiring feature in the
-     * result.
+     * Order the resources in list of features by their dependency chain.
+     * Each feature and its components are resolved. Then all the resources
+     * in the feature are ordered so that each resource is placed before
+     * the requiring feature/resources in the result.
      *
      * @param features
      *            The features to order.
-     * @return The ordered features.
+     * @return The ordered resources from the features.
      */
-    List<Feature> orderFeatures(List<Feature> features);
+    List<FeatureResource> orderResources(List<Feature> features);
 }
