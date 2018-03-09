@@ -46,6 +46,8 @@ import static org.apache.sling.feature.support.util.ManifestUtil.unmarshalDirect
  * This class offers a method to read a {@code Feature} using a {@code Reader} instance.
  */
 public class FeatureJSONReader extends JSONReaderBase {
+    // The pattern that variables in Feature JSON follow
+    private static final Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\{[a-zA-Z0-9.-_]+\\}");
 
     /**
      * Read a new feature from the reader
@@ -160,8 +162,7 @@ public class FeatureJSONReader extends JSONReaderBase {
 
         String textWithVars = (String) value;
 
-        Pattern p = Pattern.compile("\\$\\{[a-zA-Z0-9.-_]+\\}");
-        Matcher m = p.matcher(textWithVars.toString());
+        Matcher m = VARIABLE_PATTERN.matcher(textWithVars.toString());
         StringBuffer sb = new StringBuffer();
         while (m.find()) {
             String var = m.group();

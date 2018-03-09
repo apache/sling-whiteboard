@@ -105,6 +105,8 @@ public class FeatureJSONReaderTest {
         Bundles bundles = feature.getBundles();
         ArtifactId id = new ArtifactId("org.apache.sling", "foo-xyz", "1.2.3", null, null);
         assertTrue(bundles.containsExact(id));
+        ArtifactId id2 = new ArtifactId("org.apache.sling", "bar-xyz", "1.2.3", null, null);
+        assertTrue(bundles.containsExact(id2));
 
         Configurations configurations = feature.getConfigurations();
         Configuration config = configurations.getConfiguration("my.pid2");

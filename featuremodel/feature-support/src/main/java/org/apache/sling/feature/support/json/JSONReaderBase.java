@@ -138,7 +138,7 @@ abstract class JSONReaderBase {
             final Artifact artifact;
             checkType(artifactType, entry, Map.class, String.class);
             if ( entry instanceof String ) {
-                artifact = new Artifact(ArtifactId.parse(entry.toString()));
+                artifact = new Artifact(ArtifactId.parse(handleVars(entry).toString()));
             } else {
                 @SuppressWarnings("unchecked")
                 final Map<String, Object> bundleObj = (Map<String, Object>) entry;
