@@ -28,7 +28,7 @@ public class KeyValueMap
     implements Iterable<Map.Entry<String, String>> {
 
     /** The map holding the actual key value pairs. */
-    private final Map<String, String> properties = new TreeMap<>();
+    private final Map<String, Object> properties = new TreeMap<>();
 
     /**
      * Get an item from the map.
@@ -36,6 +36,14 @@ public class KeyValueMap
      * @return The item or {@code null}.
      */
     public String get(final String key) {
+        Object val = this.properties.get(key);
+        if (val instanceof String) {
+            return (String) val;
+        }
+        return null;
+    }
+
+    public Object getObject(final String key) {
         return this.properties.get(key);
     }
 
@@ -44,7 +52,7 @@ public class KeyValueMap
      * @param key The key of the item.
      * @param value The value
      */
-    public void put(final String key, final String value) {
+    public void put(final String key, final Object value) {
         this.properties.put(key, value);
     }
 
@@ -53,7 +61,7 @@ public class KeyValueMap
      * @param key The key of the item.
      * @return The previously stored value for the key or {@code null}.
      */
-    public String remove(final String key) {
+    public Object remove(final String key) {
         return this.properties.remove(key);
     }
 
@@ -67,7 +75,14 @@ public class KeyValueMap
 
     @Override
     public Iterator<Entry<String, String>> iterator() {
-        return this.properties.entrySet().iterator();
+        // TODO hack
+        Map<String, String> copied = new TreeMap<>();
+        for (Entry<String, Object> entry : properties.entrySet()) {
+            if (entry.getValue() instanceof String) {
+                copied.put(entry.getKey(), (String) entry.getValue());
+            }
+        }
+        return copied.entrySet().iterator();
     }
 
     /**

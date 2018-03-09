@@ -29,6 +29,7 @@ import org.apache.sling.feature.resolver.impl.ResolveContextImpl;
 import org.apache.sling.feature.support.ArtifactManager;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
+import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
@@ -48,16 +49,42 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.Set;
 
 public class FrameworkResolver implements FeatureResolver {
     private final ArtifactManager artifactManager;
     private final Resolver resolver;
     private final FeatureResource frameworkResource;
     private final Framework framework;
+    private String tempDirToBeDeleted = null;
+
+    public FrameworkResolver(ArtifactManager am) {
+        this(am, getTempDirProps());
+
+        // Since we create the temp dir, the close() method needs to delete it.
+        tempDirToBeDeleted = framework.getBundleContext().getProperty(Constants.FRAMEWORK_STORAGE);
+    }
+
+    private static Map<String, String> getTempDirProps() {
+        try {
+            String temp = Files.createTempDirectory("frameworkresolver").toFile().getAbsolutePath();
+            return Collections.singletonMap(Constants.FRAMEWORK_STORAGE, temp);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public FrameworkResolver(ArtifactManager am, Map<String, String> frameworkProperties) {
         artifactManager = am;
@@ -101,6 +128,13 @@ public class FrameworkResolver implements FeatureResolver {
     @Override
     public void close() throws Exception {
         framework.stop();
+
+        if (tempDirToBeDeleted != null) {
+            Files.walk(Paths.get(tempDirToBeDeleted))
+                .sorted(Comparator.reverseOrder())
+                .map(Path::toFile)
+                .forEach(File::delete);
+        }
     }
 
     @Override

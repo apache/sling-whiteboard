@@ -16,15 +16,6 @@
  */
 package org.apache.sling.feature.support;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
 import org.apache.sling.feature.Application;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
@@ -33,6 +24,15 @@ import org.apache.sling.feature.process.BuilderContext;
 import org.apache.sling.feature.process.FeatureProvider;
 import org.apache.sling.feature.process.FeatureResolver;
 import org.apache.sling.feature.support.json.FeatureJSONReader;
+
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 public class FeatureUtil {
     /**
@@ -272,7 +272,7 @@ public class FeatureUtil {
      * @return The read feature
      * @throws IOException If reading fails
      */
-    private static Feature getFeature(final String file,
+    public static Feature getFeature(final String file,
             final ArtifactManager artifactManager)
     throws IOException {
         final ArtifactHandler featureArtifact = artifactManager.getArtifactHandler(file);

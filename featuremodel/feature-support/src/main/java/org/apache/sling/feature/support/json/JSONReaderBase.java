@@ -159,7 +159,8 @@ abstract class JSONReaderBase {
                 }
                 if ( bundleObj.containsKey(JSONConstants.FEATURE_CONFIGURATIONS) ) {
                     checkType(artifactType + " configurations", bundleObj.get(JSONConstants.FEATURE_CONFIGURATIONS), Map.class);
-                    addConfigurations(bundleObj, artifact, container);
+                    List<Configuration> bundleConfigs = addConfigurations(bundleObj, artifact, container);
+                    artifact.getMetadata().put(JSONConstants.FEATURE_CONFIGURATIONS, bundleConfigs);
                 }
             }
             artifacts.add(artifact);
@@ -171,7 +172,7 @@ abstract class JSONReaderBase {
         return val;
     }
 
-    protected void addConfigurations(final Map<String, Object> map,
+    protected List<Configuration> addConfigurations(final Map<String, Object> map,
             final Artifact artifact,
             final Configurations container) throws IOException {
         final JSONUtil.Report report = new JSONUtil.Report();
@@ -191,6 +192,8 @@ abstract class JSONReaderBase {
             }
             throw new IOException(builder.toString());
         }
+
+        List<Configuration> newConfigs = new ArrayList<>();
         for(final Config c : configs) {
             final int pos = c.getPid().indexOf('~');
             final Configuration config;
@@ -220,8 +223,9 @@ abstract class JSONReaderBase {
                 }
             }
             container.add(config);
+            newConfigs.add(config);
         }
-
+        return newConfigs;
     }
 
 
