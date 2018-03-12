@@ -36,6 +36,7 @@ import org.osgi.framework.Constants;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URL;
@@ -44,6 +45,12 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Map;
+
+import javax.json.Json;
+import javax.json.JsonStructure;
+import javax.json.JsonWriter;
+import javax.json.JsonWriterFactory;
+import javax.json.stream.JsonGenerator;
 
 import static org.junit.Assert.assertEquals;
 
@@ -80,16 +87,21 @@ public class ApplicationBuilderTest {
 
         try (FeatureResolver fr = new FrameworkResolver(am, getFrameworkProps())) {
             Application app = ApplicationBuilder.assemble(null, bc, fr, features);
-            String genApp = writeApplication(app);
+            String actualJSON = writeApplication(app);
 
-            String expected = "{\"features\":["
+            String expectedJSON = "{\"features\":["
                     + "\"org.apache.sling.test.features:featureB:1.0.0\","
                     + "\"org.apache.sling.test.features:featureA:1.0.0\"],"
                 + "\"bundles\":["
-                    + "{\"id\":\"commons-io:commons-io:2.6\",\"start-order\":\"10\"},"
-                    + "{\"id\":\"org.apache.felix:org.apache.felix.http.servlet-api:1.1.2\",\"start-order\":\"15\"},"
-                    + "{\"id\":\"commons-fileupload:commons-fileupload:1.3.3\",\"start-order\":\"16\"}]}";
-            assertEquals(expected, genApp);
+                    + "{\"id\":\"commons-io:commons-io:2.6\",\"start-level\":\"10\",\"start-order\":\"10\"},"
+                    + "{\"id\":\"org.apache.felix:org.apache.felix.http.servlet-api:1.1.2\",\"start-level\":\"15\",\"start-order\":\"15\"},"
+                    + "{\"id\":\"commons-fileupload:commons-fileupload:1.3.3\",\"start-level\":\"16\",\"start-order\":\"16\"}]}";
+
+            StringWriter expectedWriter = new StringWriter();
+            StringWriter actualWriter = new StringWriter();
+
+            canonicalize(expectedJSON, expectedWriter, actualJSON, actualWriter);
+            assertEquals(expectedWriter.toString(), actualWriter.toString());
         }
     }
 
@@ -112,15 +124,28 @@ public class ApplicationBuilderTest {
             String expected = "{\"features\":["
                     + "\"org.apache.sling.test.features:featureC:1.0.0\","
                     + "\"org.apache.sling.test.features:featureD:1.0.0\"],"
-                    + "\"bundles\":[{\"id\":\"org.slf4j:slf4j-api:1.7.25\",\"start-order\":\"6\"}]}";
-            assertEquals(expected, genApp);
+                    + "\"bundles\":[{\"id\":\"org.slf4j:slf4j-api:1.7.25\",\"start-level\":\"6\",\"start-order\":\"6\"}]}";
+
+            StringWriter expectedWriter = new StringWriter();
+            StringWriter actualWriter = new StringWriter();
+            canonicalize(expected, expectedWriter, genApp, actualWriter);
+
+            assertEquals(expectedWriter.toString(), actualWriter.toString());
         }
     }
 
-    private static String writeApplication(Application app) throws Exception {
-        Writer writer = new StringWriter();
-        ApplicationJSONWriter.write(writer, app);
-        return writer.toString();
+    // Turn JSON into pretty-formatted canoncical JSON that should be comparable using String compare
+    private void canonicalize(String expected, StringWriter expectedWriter, String actual, StringWriter actualWriter) {
+        JsonStructure es = Json.createReader(new StringReader(expected)).read();
+        JsonStructure ea = Json.createReader(new StringReader(actual)).read();
+
+        JsonWriterFactory writerFactory = Json.createWriterFactory(
+                Collections.singletonMap(JsonGenerator.PRETTY_PRINTING, true));
+        JsonWriter w = writerFactory.createWriter(expectedWriter);
+        w.write(es);
+
+        JsonWriter w2 = writerFactory.createWriter(actualWriter);
+        w2.write(ea);
     }
 
     private Feature readFeature(final String res,
@@ -133,6 +158,12 @@ public class ApplicationBuilderTest {
             final Feature f = FeatureJSONReader.read(r, featureArtifact.getUrl());
             return f;
         }
+    }
+
+    private static String writeApplication(Application app) throws Exception {
+        Writer writer = new StringWriter();
+        ApplicationJSONWriter.write(writer, app);
+        return writer.toString();
     }
 
     private static class TestFeatureProvider implements FeatureProvider {
