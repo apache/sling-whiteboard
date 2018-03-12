@@ -461,6 +461,9 @@ public class ProvisioningToFeature {
                 out = out.substring(0, lastDot) + "_" + String.valueOf(index) + out.substring(lastDot);
             }
         }
+
+        LOGGER.info("to file {}", out);
+
         final File file = new File(out);
         try ( final FileWriter writer = new FileWriter(file)) {
             FeatureJSONWriter.write(writer, f);
