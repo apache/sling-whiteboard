@@ -28,17 +28,20 @@ import static org.junit.Assert.assertEquals;
 public class FeatureJSONWriterTest {
 
     @Test public void testRead() throws Exception {
-        final Feature feature = U.readFeature("test");
-        final Feature readFeature;
+        final Feature f = U.readFeature("test");
+        final Feature rf;
         try ( final StringWriter writer = new StringWriter() ) {
-            FeatureJSONWriter.write(writer, feature);
+            FeatureJSONWriter.write(writer, f);
             try ( final StringReader reader = new StringReader(writer.toString()) ) {
-                readFeature = FeatureJSONReader.read(reader, null);
+                rf = FeatureJSONReader.read(reader, null);
             }
         }
-        assertEquals(feature.getId(), readFeature.getId());
+        assertEquals(f.getId(), rf.getId());
+        assertEquals("org.apache.sling:test-feature:1.1", rf.getId().toMvnId());
+        assertEquals("The feature description", rf.getDescription());
+
         assertEquals(Arrays.asList("org.osgi.service.http.runtime.HttpServiceRuntime"),
-                U.findCapability(readFeature.getCapabilities(), "osgi.service").getAttributes().get("objectClass"));
+                U.findCapability(rf.getCapabilities(), "osgi.service").getAttributes().get("objectClass"));
     }
 
 }

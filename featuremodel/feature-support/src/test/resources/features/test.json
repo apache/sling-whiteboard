@@ -1,5 +1,6 @@
 {
     "id" : "org.apache.sling/test-feature/1.1",
+    "description": "The feature description",
 
     "includes" : [
          {

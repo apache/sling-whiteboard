@@ -16,17 +16,6 @@
  */
 package org.apache.sling.feature.support.json;
 
-import static org.apache.sling.feature.support.util.ManifestUtil.marshalAttribute;
-import static org.apache.sling.feature.support.util.ManifestUtil.marshalDirective;
-
-import java.io.IOException;
-import java.io.Writer;
-import java.util.List;
-import java.util.Map;
-
-import javax.json.Json;
-import javax.json.stream.JsonGenerator;
-
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Configuration;
 import org.apache.sling.feature.Configurations;
@@ -34,6 +23,22 @@ import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.Include;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
+
+import java.io.IOException;
+import java.io.Writer;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonWriter;
+import javax.json.JsonWriterFactory;
+import javax.json.stream.JsonGenerator;
+
+import static org.apache.sling.feature.support.util.ManifestUtil.marshalAttribute;
+import static org.apache.sling.feature.support.util.ManifestUtil.marshalDirective;
 
 /**
  * Simple JSON writer for a feature
@@ -53,130 +58,128 @@ public class FeatureJSONWriter extends JSONWriterBase {
         w.writeFeature(writer, feature);
     }
 
-    private void writeProperty(final JsonGenerator w, final String key, final String value) {
+    private void writeProperty(final JsonObjectBuilder ob, final String key, final String value) {
         if ( value != null ) {
-            w.write(key, value);
+            ob.add(key, value);
         }
     }
 
     private void writeFeature(final Writer writer, final Feature feature)
     throws IOException {
-        final JsonGenerator w = Json.createGenerator(writer);
-        w.writeStartObject();
-
-        w.write(JSONConstants.FEATURE_ID, feature.getId().toMvnId());
+        JsonObjectBuilder ob = Json.createObjectBuilder();
+        ob.add(JSONConstants.FEATURE_ID, feature.getId().toMvnId());
 
         // title, description, vendor, license
-        writeProperty(w, JSONConstants.FEATURE_TITLE, feature.getTitle());
-        writeProperty(w, JSONConstants.FEATURE_DESCRIPTION, feature.getDescription());
-        writeProperty(w, JSONConstants.FEATURE_VENDOR, feature.getVendor());
-        writeProperty(w, JSONConstants.FEATURE_LICENSE, feature.getLicense());
+        writeProperty(ob, JSONConstants.FEATURE_TITLE, feature.getTitle());
+        writeProperty(ob, JSONConstants.FEATURE_DESCRIPTION, feature.getDescription());
+        writeProperty(ob, JSONConstants.FEATURE_VENDOR, feature.getVendor());
+        writeProperty(ob, JSONConstants.FEATURE_LICENSE, feature.getLicense());
 
         // includes
         if ( !feature.getIncludes().isEmpty() ) {
-            w.writeStartArray(JSONConstants.FEATURE_INCLUDES);
-
+            JsonArrayBuilder incArray = Json.createArrayBuilder();
             for(final Include inc : feature.getIncludes()) {
                 if ( inc.getArtifactExtensionRemovals().isEmpty()
                      && inc.getBundleRemovals().isEmpty()
                      && inc.getConfigurationRemovals().isEmpty()
                      && inc.getFrameworkPropertiesRemovals().isEmpty() ) {
-                    w.write(inc.getId().toMvnId());
+                    incArray.add(inc.getId().toMvnId());
                 } else {
-                    w.writeStartObject();
-                    w.write(JSONConstants.ARTIFACT_ID, inc.getId().toMvnId());
-                    w.writeStartObject(JSONConstants.INCLUDE_REMOVALS);
+                    JsonObjectBuilder includeObj = Json.createObjectBuilder();
+                    includeObj.add(JSONConstants.ARTIFACT_ID, inc.getId().toMvnId());
+
+                    JsonObjectBuilder removalsObj = Json.createObjectBuilder();
                     if ( !inc.getArtifactExtensionRemovals().isEmpty()
                          || inc.getExtensionRemovals().isEmpty() ) {
-                        w.writeStartArray(JSONConstants.INCLUDE_EXTENSION_REMOVALS);
+                        JsonArrayBuilder extRemovals = Json.createArrayBuilder();
                         for(final String id : inc.getExtensionRemovals()) {
-                            w.write(id);
+                            extRemovals.add(id);
                         }
                         for(final Map.Entry<String, List<ArtifactId>> entry : inc.getArtifactExtensionRemovals().entrySet()) {
-                            w.writeStartObject(entry.getKey());
-                            w.writeStartArray();
+                            JsonArrayBuilder ab = Json.createArrayBuilder();
                             for(final ArtifactId id : entry.getValue()) {
-                                w.write(id.toMvnId());
+                                ab.add(id.toMvnId());
                             }
-                            w.writeEnd();
-                            w.writeEnd();
+                            extRemovals.add(Json.createObjectBuilder().add(entry.getKey(),
+                                    ab.build()).build());
                         }
-                        w.writeEnd();
+                        removalsObj.add(JSONConstants.INCLUDE_EXTENSION_REMOVALS, extRemovals.build());
                     }
                     if ( !inc.getConfigurationRemovals().isEmpty() ) {
-                        w.writeStartArray(JSONConstants.FEATURE_CONFIGURATIONS);
+                        JsonArrayBuilder cfgRemovals = Json.createArrayBuilder();
                         for(final String val : inc.getConfigurationRemovals()) {
-                            w.write(val);
+                            cfgRemovals.add(val);
                         }
-                        w.writeEnd();
+                        removalsObj.add(JSONConstants.FEATURE_CONFIGURATIONS, cfgRemovals.build());
                     }
                     if ( !inc.getBundleRemovals().isEmpty() ) {
-                        w.writeStartArray(JSONConstants.FEATURE_BUNDLES);
+                        JsonArrayBuilder bundleRemovals = Json.createArrayBuilder();
                         for(final ArtifactId val : inc.getBundleRemovals()) {
-                            w.write(val.toMvnId());
+                            bundleRemovals.add(val.toMvnId());
                         }
-                        w.writeEnd();
+                        removalsObj.add(JSONConstants.FEATURE_BUNDLES, bundleRemovals.build());
                     }
                     if ( !inc.getFrameworkPropertiesRemovals().isEmpty() ) {
-                        w.writeStartArray(JSONConstants.FEATURE_FRAMEWORK_PROPERTIES);
+                        JsonArrayBuilder propRemovals = Json.createArrayBuilder();
                         for(final String val : inc.getFrameworkPropertiesRemovals()) {
-                            w.write(val);
+                            propRemovals.add(val);
                         }
-                        w.writeEnd();
+                        removalsObj.add(JSONConstants.FEATURE_FRAMEWORK_PROPERTIES, propRemovals.build());
                     }
-                    w.writeEnd();
-                    w.writeEnd();
+                    includeObj.add(JSONConstants.INCLUDE_REMOVALS, removalsObj.build());
+
+                    incArray.add(includeObj.build());
                 }
             }
-            w.writeEnd();
+            ob.add(JSONConstants.FEATURE_INCLUDES, incArray.build());
         }
 
         // requirements
         if ( !feature.getRequirements().isEmpty() ) {
-            w.writeStartArray(JSONConstants.FEATURE_REQUIREMENTS);
+            JsonArrayBuilder requirements = Json.createArrayBuilder();
 
             for(final Requirement req : feature.getRequirements()) {
-                w.writeStartObject();
-                w.write(JSONConstants.REQCAP_NAMESPACE, req.getNamespace());
+                JsonObjectBuilder requirementObj = Json.createObjectBuilder();
+                requirementObj.add(JSONConstants.REQCAP_NAMESPACE, req.getNamespace());
                 if ( !req.getAttributes().isEmpty() ) {
-                    w.writeStartObject(JSONConstants.REQCAP_ATTRIBUTES);
-                    req.getAttributes().forEach((key, value) -> marshalAttribute(key, value, w::write));
-                    w.writeEnd();
+                    JsonObjectBuilder attrObj = Json.createObjectBuilder();
+                    req.getAttributes().forEach((key, value) -> marshalAttribute(key, value, attrObj::add));
+                    requirementObj.add(JSONConstants.REQCAP_ATTRIBUTES, attrObj.build());
                 }
                 if ( !req.getDirectives().isEmpty() ) {
-                    w.writeStartObject(JSONConstants.REQCAP_DIRECTIVES);
-                    req.getDirectives().forEach((key, value) -> marshalDirective(key, value, w::write));
-                    w.writeEnd();
+                    JsonObjectBuilder reqObj = Json.createObjectBuilder();
+                    req.getDirectives().forEach((key, value) -> marshalDirective(key, value, reqObj::add));
+                    requirementObj.add(JSONConstants.REQCAP_DIRECTIVES, reqObj.build());
                 }
-                w.writeEnd();
+                requirements.add(requirementObj.build());
             }
-            w.writeEnd();
+            ob.add(JSONConstants.FEATURE_REQUIREMENTS, requirements.build());
         }
 
         // capabilities
         if ( !feature.getCapabilities().isEmpty() ) {
-            w.writeStartArray(JSONConstants.FEATURE_CAPABILITIES);
+            JsonArrayBuilder capabilities = Json.createArrayBuilder();
 
             for(final Capability cap : feature.getCapabilities()) {
-                w.writeStartObject();
-                w.write(JSONConstants.REQCAP_NAMESPACE, cap.getNamespace());
+                JsonObjectBuilder capabilityObj = Json.createObjectBuilder();
+                capabilityObj.add(JSONConstants.REQCAP_NAMESPACE, cap.getNamespace());
                 if ( !cap.getAttributes().isEmpty() ) {
-                    w.writeStartObject(JSONConstants.REQCAP_ATTRIBUTES);
-                    cap.getAttributes().forEach((key, value) -> marshalAttribute(key, value, w::write));
-                    w.writeEnd();
+                    JsonObjectBuilder attrObj = Json.createObjectBuilder();
+                    cap.getAttributes().forEach((key, value) -> marshalAttribute(key, value, attrObj::add));
+                    capabilityObj.add(JSONConstants.REQCAP_ATTRIBUTES, attrObj.build());
                 }
                 if ( !cap.getDirectives().isEmpty() ) {
-                    w.writeStartObject(JSONConstants.REQCAP_DIRECTIVES);
-                    cap.getDirectives().forEach((key, value) -> marshalDirective(key, value, w::write));
-                    w.writeEnd();
+                    JsonObjectBuilder reqObj = Json.createObjectBuilder();
+                    cap.getDirectives().forEach((key, value) -> marshalDirective(key, value, reqObj::add));
+                    capabilityObj.add(JSONConstants.REQCAP_DIRECTIVES, reqObj.build());
                 }
-                w.writeEnd();
+                capabilities.add(capabilityObj.build());
             }
-            w.writeEnd();
+            ob.add(JSONConstants.FEATURE_CAPABILITIES, capabilities.build());
         }
 
         // bundles
-        writeBundles(w, feature.getBundles(), feature.getConfigurations());
+        writeBundles(ob, feature.getBundles(), feature.getConfigurations());
 
         // configurations
         final Configurations cfgs = new Configurations();
@@ -186,15 +189,18 @@ public class FeatureJSONWriter extends JSONWriterBase {
                 cfgs.add(cfg);
             }
         }
-        writeConfigurations(w, cfgs);
+        writeConfigurations(ob, cfgs);
 
         // framework properties
-        writeFrameworkProperties(w, feature.getFrameworkProperties());
+        writeFrameworkProperties(ob, feature.getFrameworkProperties());
 
         // extensions
-        writeExtensions(w, feature.getExtensions(), feature.getConfigurations());
+        writeExtensions(ob, feature.getExtensions(), feature.getConfigurations());
 
-        w.writeEnd();
-        w.flush();
+        JsonWriterFactory writerFactory = Json.createWriterFactory(
+                Collections.singletonMap(JsonGenerator.PRETTY_PRINTING, true));
+        JsonWriter jw = writerFactory.createWriter(writer);
+        jw.writeObject(ob.build());
+        jw.close();
     }
 }

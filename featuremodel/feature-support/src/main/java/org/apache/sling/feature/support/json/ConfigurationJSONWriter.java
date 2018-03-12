@@ -18,10 +18,15 @@ package org.apache.sling.feature.support.json;
 
 import org.apache.sling.feature.Configurations;
 
-import javax.json.Json;
-import javax.json.stream.JsonGenerator;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Collections;
+
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonWriter;
+import javax.json.JsonWriterFactory;
+import javax.json.stream.JsonGenerator;
 
 
 /**
@@ -44,12 +49,16 @@ public class ConfigurationJSONWriter extends JSONWriterBase {
 
     private void writeConfigurations(final Writer writer, final Configurations configs)
     throws IOException {
-        final JsonGenerator w = Json.createGenerator(writer);
-        w.writeStartObject();
+        JsonObjectBuilder ob = Json.createObjectBuilder();
 
-        writeConfigurationsMap(w, configs);
+        // TODO is this correct?
+        ob.add(JSONConstants.FEATURE_CONFIGURATIONS,
+                writeConfigurationsMap(configs));
 
-        w.writeEnd();
-        w.flush();
+        JsonWriterFactory writerFactory = Json.createWriterFactory(
+                Collections.singletonMap(JsonGenerator.PRETTY_PRINTING, true));
+        JsonWriter jw = writerFactory.createWriter(writer);
+        jw.writeObject(ob.build());
+        jw.close();
     }
 }
