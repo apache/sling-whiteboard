@@ -61,6 +61,8 @@ The feature model is about describing a feature, aggregating features to either 
 * SFM420 - When features are aggregated to either a higher level feature or an application, the resulting feature or application must still contain the variables.
 * SFM430 - The startup order of features and bundles must be part of the resulting aggregated application model.
 * SFM440 - The feature model must support additional, optional information about the feature like a human readable title, a description, vendor and licensing information.
+* SFM450 - The feature model must use a versioned descriptor format so that if the format evolves in the future users can state in feature model files what version they are written for.
+* SFM460 - The feature model should provide an externally accessible API for reading and writing feature files.
 
 ## Analysis Requirements
 
@@ -82,9 +84,14 @@ The feature model is about describing a feature, aggregating features to either 
 ## Launching Requirements
 
 * SFL010 - Tooling must support creating an application model out of one or more features.
+* SFL012 - Tooling must provide a way to add new features to an existing application.
+* SFL015 - Tooling should be able to annotate the application model by stating for each element what its origin is.
+* SFL017 - Tooling must be able to provide a dependency tree of a feature or application model.
 * SFL020 - Tooling must support runtime launching of an application.
 * SFL030 - Tooling must be able to introspect and potentially override the startup order of bundles for an application.
+* SFL035 - Tooling should support overriding certain values, for example a bundle version, in an application model at launch time.
 * SFL040 - Tooling must support substitution of variable values at launch time.
+* SFL045 - If a variable name is not specified the and does not have a default in the feature model, the launching process must not proceed.
 * SFL050 - When an application is started, the install and the startup order of bundles should be the same, ensuring that the bundles are shutdown in reverse order and started in the same order on next startup of the framework.
 * SFL060 - Tooling must support multiple versions of a feature and only select the highest version of a feature to launch the application.
 * SFL070 - Tooling must be able to differentiate between a feature and an update of a feature. An update should only be included in the application of the base feature is included.
