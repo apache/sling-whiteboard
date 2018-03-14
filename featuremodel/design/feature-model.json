@@ -4,11 +4,11 @@
 	"id": "org.apache.sling:my.app:feature:optional:1.0",
 	
 	"# variables used in includes, requirements, capabilities and bundles sections":
-	"# are substituted at build time. Configuration and framework properties at launch time."
+	"# are substituted at build time. Configuration and framework properties at launch time.",
 	"variables": {
 	    "cfgvar": "somedefault",
 	    "xyz-ver": "1.2.3",
-	    
+
 	    "#": "When converting to provisioning model, if you need a special name",
 	    "provisioning.model.name": ":boot"
 	},
@@ -73,9 +73,10 @@
 		},
 		{
 		    "id": "org.apache.sling:another-bundle:2.1.0",
+		    
 		    "#": "OSGi start level is also supported",
 		    "start-level": 20,
-		    "run-modes": "oak-tar",
+		    "run-modes": ["oak-tar"],
 		    
 		    "configurations": {
 		        "#": "This configuration only gets applied when this bundle is resolved",
