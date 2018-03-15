@@ -45,6 +45,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/** Converter that converts the feature model to the provisioning model.
+ */
 public class FeatureToProvisioning {
     private static Logger LOGGER = LoggerFactory.getLogger(FeatureToProvisioning.class);
 

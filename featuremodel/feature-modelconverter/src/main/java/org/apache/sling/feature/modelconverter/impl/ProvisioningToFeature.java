@@ -59,6 +59,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/** Converter that converts the provisioning model to the feature model.
+ */
 public class ProvisioningToFeature {
     private static Logger LOGGER = LoggerFactory.getLogger(ProvisioningToFeature.class);
 
