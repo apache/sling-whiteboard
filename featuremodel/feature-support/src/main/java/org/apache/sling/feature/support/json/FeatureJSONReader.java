@@ -121,6 +121,8 @@ public class FeatureJSONReader extends JSONReaderBase {
         final JsonObject json = Json.createReader(new StringReader(minify(reader))).readObject();
         final Map<String, Object> map = getJsonMap(json);
 
+        checkModelVersion(map);
+
         final ArtifactId fId;
         if ( !map.containsKey(JSONConstants.FEATURE_ID) ) {
             if ( this.providedId == null ) {
@@ -156,6 +158,16 @@ public class FeatureJSONReader extends JSONReaderBase {
                 this.feature.getExtensions(), this.feature.getConfigurations());
 
         return feature;
+    }
+
+    private void checkModelVersion(final Map<String, Object> map) throws IOException {
+        String modelVersion = getProperty(map, JSONConstants.FEATURE_MODEL_VERSION);
+        if (modelVersion == null) {
+            modelVersion = "1";
+        }
+        if (!"1".equals(modelVersion)) {
+            throw new IOException("Unsupported model version: " + modelVersion);
+        }
     }
 
     @Override
