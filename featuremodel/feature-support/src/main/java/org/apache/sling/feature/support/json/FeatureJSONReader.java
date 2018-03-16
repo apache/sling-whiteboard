@@ -16,7 +16,6 @@
  */
 package org.apache.sling.feature.support.json;
 
-import org.apache.felix.configurator.impl.json.JSONUtil;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.Include;
@@ -97,6 +96,7 @@ public class FeatureJSONReader extends JSONReaderBase {
     /** The variables from the JSON. */
     private Map<String, String> variables;
 
+    /** The current reading phase. */
     private final Phase phase;
 
     /**
@@ -119,9 +119,7 @@ public class FeatureJSONReader extends JSONReaderBase {
     private Feature readFeature(final Reader reader)
     throws IOException {
         final JsonObject json = Json.createReader(new StringReader(minify(reader))).readObject();
-
-        @SuppressWarnings("unchecked")
-        final Map<String, Object> map = (Map<String, Object>) JSONUtil.getValue(json);
+        final Map<String, Object> map = getJsonMap(json);
 
         final ArtifactId fId;
         if ( !map.containsKey(JSONConstants.FEATURE_ID) ) {
@@ -159,8 +157,6 @@ public class FeatureJSONReader extends JSONReaderBase {
 
         return feature;
     }
-
-
 
     @Override
     protected Object handleResolveVars(Object val) {

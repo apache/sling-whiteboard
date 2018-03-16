@@ -36,14 +36,18 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonStructure;
 import javax.json.JsonWriter;
@@ -81,6 +85,43 @@ abstract class JSONReaderBase {
             contents = out.toString();
         }
         return contents;
+    }
+
+    /** Get the JSON object as a map, removing all comments that start with a '#' character
+     */
+    protected Map<String, Object> getJsonMap(JsonObject json) {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> m = (Map<String, Object>) JSONUtil.getValue(json);
+
+        removeComments(m);
+        return m;
+    }
+
+    private void removeComments(Map<String, Object> m) {
+        for(Iterator<Map.Entry<String, Object>> it = m.entrySet().iterator(); it.hasNext(); ) {
+            Entry<String, ?> entry = it.next();
+            if (entry.getKey().startsWith("#")) {
+                it.remove();
+            } else if (entry.getValue() instanceof Map) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> embedded = (Map<String, Object>) entry.getValue();
+                removeComments(embedded);
+            } else if (entry.getValue() instanceof Collection) {
+                Collection<?> embedded = (Collection<?>) entry.getValue();
+                removeComments(embedded);
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void removeComments(Collection<?> embedded) {
+        for (Object el : embedded) {
+            if (el instanceof Collection) {
+                removeComments((Collection<?>) el);
+            } else if (el instanceof Map) {
+                removeComments((Map<String, Object>) el);
+            }
+        }
     }
 
     protected String getProperty(final Map<String, Object> map, final String key) throws IOException {

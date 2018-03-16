@@ -34,11 +34,13 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Dictionary;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -135,6 +137,8 @@ public class FeatureJSONReaderTest {
         assertEquals("Requirement substitution should not happen at launch time",
                 "(&(osgi.contract=${contract.name})(&(version>=3.0)(!(version>=4.0))))",
                 req.getDirectives().get("filter"));
+        assertEquals("There should be 1 directive, comments should be ignored",
+                1, req.getDirectives().size());
 
         List<Capability> caps = feature.getCapabilities();
         Capability cap = null;
@@ -147,13 +151,26 @@ public class FeatureJSONReaderTest {
         assertEquals("Capability substitution should not happen at launch time",
                 Collections.singletonList("org.osgi.${svc}.http.runtime.HttpServiceRuntime"),
                 cap.getAttributes().get("objectClass"));
+        assertEquals("There should be 1 attribute, comments should be ignored",
+                1, cap.getAttributes().size());
 
         KeyValueMap fwProps = feature.getFrameworkProperties();
         assertEquals("something", fwProps.get("brave"));
+        assertEquals("There should be 3 framework properties, comments not included",
+                3, fwProps.size());
 
         Configurations configurations = feature.getConfigurations();
-        Configuration config = configurations.getConfiguration("my.pid2");
-        Dictionary<String, Object> props = config.getProperties();
+        assertEquals("There should be 2 configurations, comments not included",
+                2, configurations.size());
+
+        Configuration config1 = configurations.getConfiguration("my.pid2");
+        for (Enumeration<?> en = config1.getProperties().elements(); en.hasMoreElements(); ) {
+            assertFalse("The comment should not show up in the configuration",
+                "comment".equals(en.nextElement()));
+        }
+
+        Configuration config2 = configurations.getConfiguration("my.pid2");
+        Dictionary<String, Object> props = config2.getProperties();
         assertEquals("aaright!", props.get("a.value"));
         assertEquals("right!bb", props.get("b.value"));
         assertEquals("creally?c", props.get("c.value"));
