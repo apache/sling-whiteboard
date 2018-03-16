@@ -24,6 +24,7 @@ import org.apache.sling.feature.process.BuilderContext;
 import org.apache.sling.feature.process.FeatureProvider;
 import org.apache.sling.feature.process.FeatureResolver;
 import org.apache.sling.feature.support.json.FeatureJSONReader;
+import org.apache.sling.feature.support.json.FeatureJSONReader.Phase;
 
 import java.io.File;
 import java.io.FileReader;
@@ -244,7 +245,7 @@ public class FeatureUtil {
                 try {
                     final ArtifactHandler handler = artifactManager.getArtifactHandler("mvn:" + id.toMvnPath());
                     try (final FileReader r = new FileReader(handler.getFile())) {
-                        final Feature f = FeatureJSONReader.read(r, handler.getUrl());
+                        final Feature f = FeatureJSONReader.read(r, handler.getUrl(), Phase.RESOLVE);
                         return f;
                     }
 
@@ -278,7 +279,7 @@ public class FeatureUtil {
         final ArtifactHandler featureArtifact = artifactManager.getArtifactHandler(file);
 
         try (final FileReader r = new FileReader(featureArtifact.getFile())) {
-            final Feature f = FeatureJSONReader.read(r, featureArtifact.getUrl());
+            final Feature f = FeatureJSONReader.read(r, featureArtifact.getUrl(), Phase.RESOLVE);
             return f;
         }
     }

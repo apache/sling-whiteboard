@@ -18,6 +18,7 @@ package org.apache.sling.feature.support.json;
 
 import org.apache.sling.feature.Configuration;
 import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.support.json.FeatureJSONReader.Phase;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 
@@ -30,11 +31,16 @@ import static org.junit.Assert.fail;
 /** Test utilities */
 public class U {
 
-    /** Read the feature from the provided resource */
+    /** Read the feature from the provided resource
+     */
     public static Feature readFeature(final String name) throws Exception {
+        return readFeature(name, Phase.RESOLVE);
+    }
+
+    public static Feature readFeature(final String name, final Phase phase) throws Exception {
         try ( final Reader reader = new InputStreamReader(U.class.getResourceAsStream("/features/" + name + ".json"),
                 "UTF-8") ) {
-            return FeatureJSONReader.read(reader, name);
+            return FeatureJSONReader.read(reader, name, phase);
         }
     }
 

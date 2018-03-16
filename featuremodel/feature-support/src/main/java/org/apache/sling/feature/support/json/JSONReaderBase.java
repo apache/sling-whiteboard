@@ -138,7 +138,7 @@ abstract class JSONReaderBase {
             final Artifact artifact;
             checkType(artifactType, entry, Map.class, String.class);
             if ( entry instanceof String ) {
-                artifact = new Artifact(ArtifactId.parse(handleVars(entry).toString()));
+                artifact = new Artifact(ArtifactId.parse(handleResolveVars(entry).toString()));
             } else {
                 @SuppressWarnings("unchecked")
                 final Map<String, Object> bundleObj = (Map<String, Object>) entry;
@@ -146,7 +146,7 @@ abstract class JSONReaderBase {
                     throw new IOException(exceptionPrefix + " " + artifactType + " is missing required artifact id");
                 }
                 checkType(artifactType + " " + JSONConstants.ARTIFACT_ID, bundleObj.get(JSONConstants.ARTIFACT_ID), String.class);
-                final ArtifactId id = ArtifactId.parse(handleVars(bundleObj.get(JSONConstants.ARTIFACT_ID)).toString());
+                final ArtifactId id = ArtifactId.parse(handleResolveVars(bundleObj.get(JSONConstants.ARTIFACT_ID)).toString());
 
                 artifact = new Artifact(id);
                 for(final Map.Entry<String, Object> metadataEntry : bundleObj.entrySet()) {
@@ -167,7 +167,23 @@ abstract class JSONReaderBase {
         }
     }
 
-    protected Object handleVars(Object val) {
+    /** Substitutes variables that need to be specified before the resolver executes.
+     * These are variables in features, artifacts (such as bundles), requirements
+     * and capabilities.
+     * @param val The value that may contain a variable.
+     * @return The value with the variable substitiuted.
+     */
+    protected Object handleResolveVars(Object val) {
+        // No variable substitution at this level, but subclasses can add this in
+        return val;
+    }
+
+    /** Substitutes variables that need to be substituted at launch time.
+     * These are all variables that are not needed by the resolver.
+     * @param val The value that may contain a variable.
+     * @return The value with the variable substitiuted.
+     */
+    protected Object handleLaunchVars(Object val) {
         // No variable substitution at this level, but subclasses can add this in
         return val;
     }
@@ -209,7 +225,7 @@ abstract class JSONReaderBase {
                     throw new IOException(exceptionPrefix + "Configuration must not define configurator property " + key);
                 }
                 final Object val = c.getProperties().get(key);
-                config.getProperties().put(key, handleVars(val));
+                config.getProperties().put(key, handleLaunchVars(val));
             }
             if ( config.getProperties().get(Configuration.PROP_ARTIFACT) != null ) {
                 throw new IOException(exceptionPrefix + "Configuration must not define property " + Configuration.PROP_ARTIFACT);
@@ -250,7 +266,7 @@ abstract class JSONReaderBase {
                 if ( container.get(entry.getKey()) != null ) {
                     throw new IOException(this.exceptionPrefix + "Duplicate framework property " + entry.getKey());
                 }
-                container.put(entry.getKey(), handleVars(entry.getValue()).toString());
+                container.put(entry.getKey(), handleLaunchVars(entry.getValue()).toString());
             }
 
         }
