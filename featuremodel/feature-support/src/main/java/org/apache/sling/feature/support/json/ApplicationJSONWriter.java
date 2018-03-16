@@ -21,11 +21,16 @@ import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Configuration;
 import org.apache.sling.feature.Configurations;
 
-import javax.json.Json;
-import javax.json.stream.JsonGenerator;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Collections;
 
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonWriter;
+import javax.json.JsonWriterFactory;
+import javax.json.stream.JsonGenerator;
 
 /**
  * Simple JSON writer for an application
@@ -47,25 +52,25 @@ public class ApplicationJSONWriter extends JSONWriterBase {
 
    private void writeApp(final Writer writer, final Application app)
     throws IOException {
-        final JsonGenerator w = Json.createGenerator(writer);
-        w.writeStartObject();
+       JsonObjectBuilder ob = Json.createObjectBuilder();
 
         // framework
         if ( app.getFramework() != null ) {
-            w.write(JSONConstants.APP_FRAMEWORK, app.getFramework().toMvnId());
+            ob.add(JSONConstants.APP_FRAMEWORK, app.getFramework().toMvnId());
         }
 
         // features
         if ( !app.getFeatureIds().isEmpty() ) {
-            w.writeStartArray(JSONConstants.APP_FEATURES);
+            JsonArrayBuilder featuresArr = Json.createArrayBuilder();
+
             for(final ArtifactId id : app.getFeatureIds()) {
-                w.write(id.toMvnId());
+                featuresArr.add(id.toMvnId());
             }
-            w.writeEnd();
+            ob.add(JSONConstants.APP_FEATURES, featuresArr.build());
         }
 
         // bundles
-        writeBundles(w, app.getBundles(), app.getConfigurations());
+        writeBundles(ob, app.getBundles(), app.getConfigurations());
 
         // configurations
         final Configurations cfgs = new Configurations();
@@ -75,15 +80,18 @@ public class ApplicationJSONWriter extends JSONWriterBase {
                 cfgs.add(cfg);
             }
         }
-        writeConfigurations(w, cfgs);
+        writeConfigurations(ob, cfgs);
 
         // framework properties
-        writeFrameworkProperties(w, app.getFrameworkProperties());
+        writeFrameworkProperties(ob, app.getFrameworkProperties());
 
         // extensions
-        writeExtensions(w, app.getExtensions(), app.getConfigurations());
+        writeExtensions(ob, app.getExtensions(), app.getConfigurations());
 
-        w.writeEnd();
-        w.flush();
+        JsonWriterFactory writerFactory = Json.createWriterFactory(
+                Collections.singletonMap(JsonGenerator.PRETTY_PRINTING, true));
+        JsonWriter jw = writerFactory.createWriter(writer);
+        jw.writeObject(ob.build());
+        jw.close();
     }
 }

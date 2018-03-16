@@ -23,6 +23,7 @@ import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.FeatureResource;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -117,15 +118,21 @@ public class ApplicationBuilder {
             }
         }
 
-        // order by dependency chain
-        final List<FeatureResource> sortedResources = resolver.orderResources(featureList);
+        final List<Feature> sortedFeatures;
+        if (resolver != null) {
+            // order by dependency chain
+            final List<FeatureResource> sortedResources = resolver.orderResources(featureList);
 
-        final List<Feature> sortedFeatures = new ArrayList<>();
-        for (final FeatureResource fr : sortedResources) {
-            Feature f = fr.getFeature();
-            if (!sortedFeatures.contains(f)) {
-                sortedFeatures.add(f);
+            sortedFeatures = new ArrayList<>();
+            for (final FeatureResource fr : sortedResources) {
+                Feature f = fr.getFeature();
+                if (!sortedFeatures.contains(f)) {
+                    sortedFeatures.add(f);
+                }
             }
+        } else {
+            sortedFeatures = featureList;
+            Collections.sort(sortedFeatures);
         }
 
         // assemble

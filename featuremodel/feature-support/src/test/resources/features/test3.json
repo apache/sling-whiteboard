@@ -1,6 +1,7 @@
 {
-    "model-version": "1",
-    "id" : "org.apache.sling/test2/1.1",
+    "#": "A comment",
+    "# array": ["array", "comment"],
+    "id": "org.apache.sling/test2/1.1",
 
     "variables": {
          "common.version": "1.2.3",
@@ -11,17 +12,20 @@
          "ns": "contract",
          "sling.gid": "org.apache.sling",
          "something": "something",
-         "svc": "service"
+         "svc": "service",
+         "refvar": "${refvar}"
     },
 
     "includes" : [
          {
-             "id" : "${sling.gid}/sling/${includever}",
+             "#": "comment",
+             "id" : "${sling.gid}/sling/10",
              "removals" : {
                  "configurations" : [
                  ],
                  "bundles" : [
                  ],
+                 "#": "comment",
                  "framework-properties" : [
                  ]
              }
@@ -30,13 +34,16 @@
     "requirements" : [
           {
               "namespace" : "osgi.${ns}",
+              "#": "comment",
               "directives" : {
+                  "#": "comment",
                   "filter" : "(&(osgi.contract=${contract.name})(&(version>=3.0)(!(version>=4.0))))"
               }
           }
     ],
     "capabilities" : [
         {
+             "#": "comment",
              "namespace" : "osgi.implementation",
              "attributes" : {
                    "osgi.implementation" : "osgi.http",
@@ -49,6 +56,7 @@
         {
              "namespace" : "osgi.${svc}",
              "attributes" : {
+                  "#": "comment",
                   "objectClass:List<String>" : "org.osgi.${svc}.http.runtime.HttpServiceRuntime"
              },
              "directives" : {
@@ -68,6 +76,8 @@
         }
     ],
     "framework-properties" : {
+        "# one": "comment",
+        "# two": "comment",
         "foo" : 1,
         "brave" : "${something}",
         "org.apache.felix.scr.directory" : "launchpad/scr"
@@ -76,7 +86,8 @@
             {
               "id" : "org.apache.sling/oak-server/1.0.0",
               "hash" : "4632463464363646436",
-              "start-order" : 1
+              "start-order" : 1,
+              "#": "comment"
             },
             {
               "id" : "org.apache.sling/application-bundle/2.0.0",
@@ -85,15 +96,12 @@
             {
               "id" : "org.apache.sling/another-bundle/2.1.0",
               "start-order" : 1
-            },
-            {
-              "id" : "org.apache.sling/foo-xyz/${common.version}",
-              "start-order" : 2
-            },
-            "org.apache.sling/bar-xyz/${common.version}"
+            }
     ],
     "configurations" : {
+        "#": "comment",
         "my.pid" : {
+           "#": "comment",
            "foo" : 5,
            "bar" : "test",
            "number:Integer" : 7
@@ -101,7 +109,8 @@
         "my.pid2" : {
            "a.value" : "aa${ab_config}",
            "b.value" : "${ab_config}bb",
-           "c.value" : "c${c_config}c"
+           "c.value" : "c${c_config}c",
+           "refvar": "${refvar}"
         }
     }
 }

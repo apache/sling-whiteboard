@@ -25,6 +25,7 @@ import org.apache.sling.feature.Extensions;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.Include;
 import org.apache.sling.feature.KeyValueMap;
+import org.apache.sling.feature.support.json.FeatureJSONReader.Phase;
 import org.junit.Test;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
@@ -33,11 +34,13 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Dictionary;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -69,7 +72,7 @@ public class FeatureJSONReaderTest {
 
     }
 
-    @Test public void testReadWithVariables() throws Exception {
+    @Test public void testReadWithVariablesResolve() throws Exception {
         final Feature feature = U.readFeature("test2");
 
         List<Include> includes = feature.getIncludes();
@@ -100,7 +103,8 @@ public class FeatureJSONReaderTest {
         //        cap.getDirectives().get("uses"));
 
         KeyValueMap fwProps = feature.getFrameworkProperties();
-        assertEquals("something", fwProps.get("brave"));
+        assertEquals("Framework property substitution should not happen at resolve time",
+                "${something}", fwProps.get("brave"));
 
         Bundles bundles = feature.getBundles();
         ArtifactId id = new ArtifactId("org.apache.sling", "foo-xyz", "1.2.3", null, null);
@@ -111,9 +115,67 @@ public class FeatureJSONReaderTest {
         Configurations configurations = feature.getConfigurations();
         Configuration config = configurations.getConfiguration("my.pid2");
         Dictionary<String, Object> props = config.getProperties();
+        assertEquals("Configuration substitution should not happen at resolve time",
+                "aa${ab_config}", props.get("a.value"));
+        assertEquals("${ab_config}bb", props.get("b.value"));
+        assertEquals("c${c_config}c", props.get("c.value"));
+    }
+
+    @Test public void testReadWithVariablesLaunch() throws Exception {
+        final Feature feature = U.readFeature("test3", Phase.LAUNCH);
+
+        List<Include> includes = feature.getIncludes();
+        assertEquals(1, includes.size());
+        Include include = includes.get(0);
+        assertEquals("Include substitution should not happen at launch time",
+                "${sling.gid}:sling:10", include.getId().toMvnId());
+
+        List<Requirement> reqs = feature.getRequirements();
+        Requirement req = reqs.get(0);
+        assertEquals("Requirement substitution should not happen at launch time",
+                "osgi.${ns}", req.getNamespace());
+        assertEquals("Requirement substitution should not happen at launch time",
+                "(&(osgi.contract=${contract.name})(&(version>=3.0)(!(version>=4.0))))",
+                req.getDirectives().get("filter"));
+        assertEquals("There should be 1 directive, comments should be ignored",
+                1, req.getDirectives().size());
+
+        List<Capability> caps = feature.getCapabilities();
+        Capability cap = null;
+        for (Capability c : caps) {
+            if ("osgi.${svc}".equals(c.getNamespace())) {
+                cap = c;
+                break;
+            }
+        }
+        assertEquals("Capability substitution should not happen at launch time",
+                Collections.singletonList("org.osgi.${svc}.http.runtime.HttpServiceRuntime"),
+                cap.getAttributes().get("objectClass"));
+        assertEquals("There should be 1 attribute, comments should be ignored",
+                1, cap.getAttributes().size());
+
+        KeyValueMap fwProps = feature.getFrameworkProperties();
+        assertEquals("something", fwProps.get("brave"));
+        assertEquals("There should be 3 framework properties, comments not included",
+                3, fwProps.size());
+
+        Configurations configurations = feature.getConfigurations();
+        assertEquals("There should be 2 configurations, comments not included",
+                2, configurations.size());
+
+        Configuration config1 = configurations.getConfiguration("my.pid2");
+        for (Enumeration<?> en = config1.getProperties().elements(); en.hasMoreElements(); ) {
+            assertFalse("The comment should not show up in the configuration",
+                "comment".equals(en.nextElement()));
+        }
+
+        Configuration config2 = configurations.getConfiguration("my.pid2");
+        Dictionary<String, Object> props = config2.getProperties();
         assertEquals("aaright!", props.get("a.value"));
         assertEquals("right!bb", props.get("b.value"));
         assertEquals("creally?c", props.get("c.value"));
+        assertEquals("The variable definition looks like a variable definition, this escaping mechanism should work",
+                "${refvar}", props.get("refvar"));
     }
 
     @Test public void testReadRepoInitExtension() throws Exception {
@@ -133,18 +195,18 @@ public class FeatureJSONReaderTest {
     }
 
     @Test public void testHandleVars() throws Exception {
-        FeatureJSONReader reader = new FeatureJSONReader(null, null);
+        FeatureJSONReader reader = new FeatureJSONReader(null, null, Phase.LAUNCH);
         Map<String, Object> vars = new HashMap<>();
         vars.put("var1", "bar");
         vars.put("varvariable", "${myvar}");
         vars.put("var.2", "2");
         setPrivateField(reader, "variables", vars);
 
-        assertEquals("foobarfoo", reader.handleVars("foo${var1}foo"));
-        assertEquals("barbarbar", reader.handleVars("${var1}${var1}${var1}"));
-        assertEquals("${}test${myvar}2", reader.handleVars("${}test${varvariable}${var.2}"));
+        assertEquals("foobarfoo", reader.handleLaunchVars("foo${var1}foo"));
+        assertEquals("barbarbar", reader.handleLaunchVars("${var1}${var1}${var1}"));
+        assertEquals("${}test${myvar}2", reader.handleLaunchVars("${}test${varvariable}${var.2}"));
         try {
-            reader.handleVars("${undefined}");
+            reader.handleLaunchVars("${undefined}");
             fail("Should throw an exception on the undefined variable");
         } catch (IllegalStateException ise) {
             // good

@@ -16,16 +16,6 @@
  */
 package org.apache.sling.feature.support.json;
 
-import java.io.StringReader;
-import java.lang.reflect.Array;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
-
-import javax.json.Json;
-import javax.json.JsonStructure;
-import javax.json.stream.JsonGenerator;
-
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.Bundles;
 import org.apache.sling.feature.Configuration;
@@ -34,19 +24,29 @@ import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.KeyValueMap;
 
+import java.io.StringReader;
+import java.lang.reflect.Array;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
+
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonStructure;
+
 
 /**
  * Common functionality for writing JSON
  */
 abstract class JSONWriterBase {
-
-
-    protected void writeBundles(final JsonGenerator w,
+    protected void writeBundles(final JsonObjectBuilder ob,
             final Bundles bundles,
             final Configurations allConfigs) {
         // bundles
         if ( !bundles.isEmpty() ) {
-            w.writeStartArray(JSONConstants.FEATURE_BUNDLES);
+            JsonArrayBuilder bundleArray = Json.createArrayBuilder();
 
             for(final Artifact artifact : bundles) {
                 final Configurations cfgs = new Configurations();
@@ -56,37 +56,45 @@ abstract class JSONWriterBase {
                         cfgs.add(cfg);
                     }
                 }
-                if ( artifact.getMetadata().isEmpty() && cfgs.isEmpty() ) {
-                    w.write(artifact.getId().toMvnId());
+                KeyValueMap md = artifact.getMetadata();
+                if ( md.isEmpty() && cfgs.isEmpty() ) {
+                    bundleArray.add(artifact.getId().toMvnId());
                 } else {
-                    w.writeStartObject();
-                    w.write(JSONConstants.ARTIFACT_ID, artifact.getId().toMvnId());
+                    JsonObjectBuilder bundleObj = Json.createObjectBuilder();
+                    bundleObj.add(JSONConstants.ARTIFACT_ID, artifact.getId().toMvnId());
 
-                    for(final Map.Entry<String, String> me : artifact.getMetadata()) {
-                        w.write(me.getKey(), me.getValue());
+                    if (md.get("start-level") == null) {
+                        String so = md.get("start-order");
+                        if (so != null) {
+                            md.put("start-level", so);
+                        }
                     }
 
-                    writeConfigurations(w, cfgs);
-                    w.writeEnd();
+                    Object runmodes = md.remove("runmodes");
+                    if (runmodes instanceof String) {
+                        md.put("run-modes", runmodes);
+                    }
+
+                    for(final Map.Entry<String, String> me : md) {
+                        bundleObj.add(me.getKey(), me.getValue());
+                    }
+
+                    bundleArray.add(bundleObj.build());
                 }
             }
-
-            w.writeEnd();
+            ob.add(JSONConstants.FEATURE_BUNDLES, bundleArray.build());
         }
     }
 
     /**
      * Write the list of configurations into a "configurations" element
-     * @param w The json generator
+     * @param ob The json generator
      * @param cfgs The list of configurations
      */
-    protected void writeConfigurations(final JsonGenerator w, final Configurations cfgs) {
+    protected void writeConfigurations(final JsonObjectBuilder ob, final Configurations cfgs) {
         if ( !cfgs.isEmpty() ) {
-            w.writeStartObject(JSONConstants.FEATURE_CONFIGURATIONS);
-
-            writeConfigurationsMap(w, cfgs);
-
-            w.writeEnd();
+            ob.add(JSONConstants.FEATURE_CONFIGURATIONS,
+                    writeConfigurationsMap(cfgs));
         }
     }
 
@@ -94,8 +102,10 @@ abstract class JSONWriterBase {
      * Write the list of configurations into a "configurations" element
      * @param w The json generator
      * @param cfgs The list of configurations
+     * @return
      */
-    protected void writeConfigurationsMap(final JsonGenerator w, final Configurations cfgs) {
+    protected JsonObject writeConfigurationsMap(final Configurations cfgs) {
+        JsonObjectBuilder configObj = Json.createObjectBuilder();
         for(final Configuration cfg : cfgs) {
             final String key;
             if ( cfg.isFactoryConfiguration() ) {
@@ -103,7 +113,7 @@ abstract class JSONWriterBase {
             } else {
                 key = cfg.getPid();
             }
-            w.writeStartObject(key);
+            JsonObjectBuilder cfgValObj = Json.createObjectBuilder();
 
             final Enumeration<String> e = cfg.getProperties().keys();
             while ( e.hasMoreElements() ) {
@@ -137,58 +147,57 @@ abstract class JSONWriterBase {
                 }
 
                 if ( val.getClass().isArray() ) {
-                    w.writeStartArray(name);
+                    JsonArrayBuilder ab = Json.createArrayBuilder();
                     for(int i=0; i<Array.getLength(val);i++ ) {
                         final Object obj = Array.get(val, i);
                         if ( typePostFix == null ) {
                             if ( obj instanceof String ) {
-                                w.write((String)obj);
+                                ab.add((String)obj);
                             } else if ( obj instanceof Boolean ) {
-                                w.write((Boolean)obj);
+                                ab.add((Boolean)obj);
                             } else if ( obj instanceof Long ) {
-                                w.write((Long)obj);
+                                ab.add((Long)obj);
                             } else if ( obj instanceof Double ) {
-                                w.write((Double)obj);
+                                ab.add((Double)obj);
                             }
                         } else {
-                            w.write(obj.toString());
+                            ab.add(obj.toString());
                         }
                     }
-                    w.writeEnd();
+                    cfgValObj.add(name, ab.build());
                 } else {
                     if ( typePostFix == null ) {
                         if ( val instanceof String ) {
-                            w.write(name, (String)val);
+                            cfgValObj.add(name, (String)val);
                         } else if ( val instanceof Boolean ) {
-                            w.write(name, (Boolean)val);
+                            cfgValObj.add(name, (Boolean)val);
                         } else if ( val instanceof Long ) {
-                            w.write(name, (Long)val);
+                            cfgValObj.add(name, (Long)val);
                         } else if ( val instanceof Double ) {
-                            w.write(name, (Double)val);
+                            cfgValObj.add(name, (Double)val);
                         }
                     } else {
-                        w.write(name + typePostFix, val.toString());
+                        cfgValObj.add(name + typePostFix, val.toString());
                     }
                 }
             }
-
-            w.writeEnd();
+            configObj.add(key, cfgValObj.build());
         }
+        return configObj.build();
     }
 
-    protected void writeFrameworkProperties(final JsonGenerator w, final KeyValueMap props) {
+    protected void writeFrameworkProperties(final JsonObjectBuilder ob, final KeyValueMap props) {
         // framework properties
         if ( !props.isEmpty() ) {
-            w.writeStartObject(JSONConstants.FEATURE_FRAMEWORK_PROPERTIES);
-
+            JsonObjectBuilder propsObj = Json.createObjectBuilder();
             for(final Map.Entry<String, String> entry : props) {
-                w.write(entry.getKey(), entry.getValue());
+                propsObj.add(entry.getKey(), entry.getValue());
             }
-            w.writeEnd();
+            ob.add(JSONConstants.FEATURE_FRAMEWORK_PROPERTIES, propsObj.build());
         }
     }
 
-    protected void writeExtensions(final JsonGenerator w,
+    protected void writeExtensions(final JsonObjectBuilder ob,
             final List<Extension> extensions,
             final Configurations allConfigs) {
         for(final Extension ext : extensions) {
@@ -198,11 +207,11 @@ abstract class JSONWriterBase {
                 try ( final StringReader reader = new StringReader(ext.getJSON()) ) {
                     struct = Json.createReader(reader).read();
                 }
-                w.write(key, struct);
+                ob.add(key, struct);
             } else if ( ext.getType() == ExtensionType.TEXT ) {
-                w.write(key, ext.getText());
+                ob.add(key, ext.getText());
             } else {
-                w.writeStartArray(key);
+                JsonArrayBuilder extensionArr = Json.createArrayBuilder();
                 for(final Artifact artifact : ext.getArtifacts()) {
                     final Configurations artifactCfgs = new Configurations();
                     for(final Configuration cfg : allConfigs) {
@@ -212,20 +221,20 @@ abstract class JSONWriterBase {
                         }
                     }
                     if ( artifact.getMetadata().isEmpty() && artifactCfgs.isEmpty() ) {
-                        w.write(artifact.getId().toMvnId());
+                        extensionArr.add(artifact.getId().toMvnId());
                     } else {
-                        w.writeStartObject();
-                        w.write(JSONConstants.ARTIFACT_ID, artifact.getId().toMvnId());
+                        JsonObjectBuilder extObj = Json.createObjectBuilder();
+                        extObj.add(JSONConstants.ARTIFACT_ID, artifact.getId().toMvnId());
 
                         for(final Map.Entry<String, String> me : artifact.getMetadata()) {
-                            w.write(me.getKey(), me.getValue());
+                            extObj.add(me.getKey(), me.getValue());
                         }
 
-                        writeConfigurations(w, artifactCfgs);
-                        w.writeEnd();
+                        writeConfigurations(ob, artifactCfgs);
+                        extensionArr.add(extObj.build());
                     }
                 }
-                w.writeEnd();
+                ob.add(key, extensionArr.build());
             }
         }
     }

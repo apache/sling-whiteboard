@@ -1,0 +1,107 @@
+{
+    "#": "A key that starts with a hash is a comment",
+
+    "id": "org.apache.sling:my.app:feature:optional:1.0",
+
+    "# variables used in includes, requirements, capabilities and bundles sections":
+    "# are substituted at build time. Configuration and framework properties at launch time.",
+    "variables": {
+        "cfgvar": "somedefault",
+        "xyz-ver": "1.2.3",
+
+        "#": "When converting to provisioning model, if you need a special name",
+        "provisioning.model.name": ":boot"
+    },
+
+    "includes": [
+        {
+            "id": "org.apache.sling:sling:9",
+            "removals": {
+                "configurations": [],
+                "bundles": [],
+                "framework-properties": []
+            }
+        }
+    ],
+    "requirements": [
+        {
+            "namespace": "osgi.contract",
+            "directives": {
+                "filter": "(&(osgi.contract=JavaServlet)(version=3.1))"
+            }
+        }
+    ],
+    "capabilities": [
+        {
+            "namespace": "osgi.implementation",
+            "attributes": {
+                "osgi.implementation": "osgi.http",
+                "version:Version": "1.1"
+            },
+            "directives": {
+                "uses": "javax.servlet,javax.servlet.http,org.osgi.service.http.context,org.osgi.service.http.whiteboard"
+            }
+        },
+        {
+            "namespace": "osgi.service",
+            "attributes": {
+                "objectClass:List<String>": "org.osgi.service.http.runtime.HttpServiceRuntime"
+            },
+            "directives": {
+                "uses": "org.osgi.service.http.runtime,org.osgi.service.http.runtime.dto"
+            }
+        }
+    ],
+
+    "framework-properties": {
+        "foo": 1,
+        "org.osgi.framework.storage": "${tempdir}",
+        "org.apache.felix.scr.directory": "launchpad/scr"
+    },
+
+    "bundles": [
+        {
+            "id": "org.apache.sling:security-server:2.2.0",
+            "hash": "4632463464363646436",
+
+            "#": "This is the relative start order inside the feature",
+            "start-order": 5
+        },
+        {
+            "id": "org.apache.sling:application-bundle:2.0.0",
+            "start-order": 10
+        },
+        {
+            "id": "org.apache.sling:another-bundle:2.1.0",
+
+            "#": "OSGi start level is also supported",
+            "start-level": 20,
+            "run-modes": ["oak-tar"],
+
+            "configurations": {
+                "#": "This configuration only gets applied when this bundle is resolved",
+                "org.apache.sling.somepid": {
+                    "dbuser": "${dbuser}",
+                    "dbpass": "${dbpass}"
+                }
+            }
+        },
+        "org.apache.sling:foo-xyz:${xyz-ver}"
+    ],
+
+    "configurations": {
+        "my.pid": {
+            "foo": 5,
+            "bar": "${cfgvar}",
+
+            "# The tempdir variable is not specified at the variables section.":
+            "# It needs to be provided at launch, otherwise the launch will stop.",
+            "tempdir": "${tempdir}",
+
+            "number:Integer": 7
+        },
+        "my.factory.pid~name": {
+           "a.value":"yeah"
+        }
+    }
+}

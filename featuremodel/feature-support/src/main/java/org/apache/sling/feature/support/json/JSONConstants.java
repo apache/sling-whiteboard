@@ -47,7 +47,10 @@ public abstract class JSONConstants {
 
     public static final String FEATURE_LICENSE = "license";
 
+    public static final String FEATURE_MODEL_VERSION = "model-version";
+
     public static final List<String> FEATURE_KNOWN_PROPERTIES = Arrays.asList(FEATURE_ID,
+            FEATURE_MODEL_VERSION,
             FEATURE_VARIABLES,
             FEATURE_BUNDLES,
             FEATURE_FRAMEWORK_PROPERTIES,

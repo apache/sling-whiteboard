@@ -16,12 +16,6 @@
  */
 package org.apache.sling.feature.applicationbuilder.impl;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.stream.Stream;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -38,6 +32,12 @@ import org.apache.sling.feature.support.FeatureUtil;
 import org.apache.sling.feature.support.json.ApplicationJSONWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.stream.Stream;
 
 public class Main {
 
@@ -190,7 +190,7 @@ public class Main {
     }
 
     private static void writeApplication(final Application app, final String out) {
-        LOGGER.info("Writing application...");
+        LOGGER.info("Writing application: " + out);
         final File file = new File(out);
         try ( final FileWriter writer = new FileWriter(file)) {
             ApplicationJSONWriter.write(writer, app);

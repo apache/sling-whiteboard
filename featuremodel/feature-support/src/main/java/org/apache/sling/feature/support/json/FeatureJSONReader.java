@@ -16,7 +16,6 @@
  */
 package org.apache.sling.feature.support.json;
 
-import org.apache.felix.configurator.impl.json.JSONUtil;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.Include;
@@ -46,6 +45,8 @@ import static org.apache.sling.feature.support.util.ManifestUtil.unmarshalDirect
  * This class offers a method to read a {@code Feature} using a {@code Reader} instance.
  */
 public class FeatureJSONReader extends JSONReaderBase {
+    public enum Phase { RESOLVE, LAUNCH }
+
     // The pattern that variables in Feature JSON follow
     private static final Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\{[a-zA-Z0-9.-_]+\\}");
 
@@ -58,9 +59,9 @@ public class FeatureJSONReader extends JSONReaderBase {
      * @return The read feature
      * @throws IOException If an IO errors occurs or the JSON is invalid.
      */
-    public static Feature read(final Reader reader, final String location)
+    public static Feature read(final Reader reader, final String location, final Phase phase)
     throws IOException {
-        return read(reader, null, location);
+        return read(reader, null, location, phase);
     }
 
     /**
@@ -75,10 +76,11 @@ public class FeatureJSONReader extends JSONReaderBase {
      */
     public static Feature read(final Reader reader,
             final ArtifactId providedId,
-            final String location)
+            final String location,
+            final Phase phase)
     throws IOException {
         try {
-            final FeatureJSONReader mr = new FeatureJSONReader(providedId, location);
+            final FeatureJSONReader mr = new FeatureJSONReader(providedId, location, phase);
             return mr.readFeature(reader);
         } catch (final IllegalStateException | IllegalArgumentException e) {
             throw new IOException(e);
@@ -94,14 +96,18 @@ public class FeatureJSONReader extends JSONReaderBase {
     /** The variables from the JSON. */
     private Map<String, String> variables;
 
+    /** The current reading phase. */
+    private final Phase phase;
+
     /**
      * Private constructor
      * @param pId Optional id
      * @param location Optional location
      */
-    FeatureJSONReader(final ArtifactId pId, final String location) {
+    FeatureJSONReader(final ArtifactId pId, final String location, final Phase phase) {
         super(location);
         this.providedId = pId;
+        this.phase = phase;
     }
 
     /**
@@ -113,9 +119,9 @@ public class FeatureJSONReader extends JSONReaderBase {
     private Feature readFeature(final Reader reader)
     throws IOException {
         final JsonObject json = Json.createReader(new StringReader(minify(reader))).readObject();
+        final Map<String, Object> map = getJsonMap(json);
 
-        @SuppressWarnings("unchecked")
-        final Map<String, Object> map = (Map<String, Object>) JSONUtil.getValue(json);
+        checkModelVersion(map);
 
         final ArtifactId fId;
         if ( !map.containsKey(JSONConstants.FEATURE_ID) ) {
@@ -154,8 +160,34 @@ public class FeatureJSONReader extends JSONReaderBase {
         return feature;
     }
 
+    private void checkModelVersion(final Map<String, Object> map) throws IOException {
+        String modelVersion = getProperty(map, JSONConstants.FEATURE_MODEL_VERSION);
+        if (modelVersion == null) {
+            modelVersion = "1";
+        }
+        if (!"1".equals(modelVersion)) {
+            throw new IOException("Unsupported model version: " + modelVersion);
+        }
+    }
+
     @Override
-    protected Object handleVars(Object value) {
+    protected Object handleResolveVars(Object val) {
+        if (phase == Phase.RESOLVE) {
+            return handleVars(val);
+        } else {
+            return val;
+        }
+    }
+
+    @Override
+    protected Object handleLaunchVars(Object val) {
+        if (phase == Phase.LAUNCH) {
+            return handleVars(val);
+        }
+        return val;
+    }
+
+    private Object handleVars(Object value) {
         if (!(value instanceof String)) {
             return value;
         }
@@ -221,7 +253,7 @@ public class FeatureJSONReader extends JSONReaderBase {
                         throw new IOException(exceptionPrefix + " include is missing required artifact id");
                     }
                     checkType("Include " + JSONConstants.ARTIFACT_ID, obj.get(JSONConstants.ARTIFACT_ID), String.class);
-                    final ArtifactId id = ArtifactId.parse(handleVars(obj.get(JSONConstants.ARTIFACT_ID)).toString());
+                    final ArtifactId id = ArtifactId.parse(handleResolveVars(obj.get(JSONConstants.ARTIFACT_ID)).toString());
                     include = new Include(id);
 
                     if ( obj.containsKey(JSONConstants.INCLUDE_REMOVALS) ) {
@@ -319,7 +351,7 @@ public class FeatureJSONReader extends JSONReaderBase {
                     checkType("Requirement attributes", obj.get(JSONConstants.REQCAP_ATTRIBUTES), Map.class);
                     @SuppressWarnings("unchecked")
                     final Map<String, Object> attrs = (Map<String, Object>)obj.get(JSONConstants.REQCAP_ATTRIBUTES);
-                    attrs.forEach(rethrowBiConsumer((key, value) -> unmarshalAttribute(key, handleVars(value), attrMap::put)));
+                    attrs.forEach(rethrowBiConsumer((key, value) -> unmarshalAttribute(key, handleResolveVars(value), attrMap::put)));
                 }
 
                 Map<String, String> dirMap = new HashMap<>();
@@ -327,10 +359,10 @@ public class FeatureJSONReader extends JSONReaderBase {
                     checkType("Requirement directives", obj.get(JSONConstants.REQCAP_DIRECTIVES), Map.class);
                     @SuppressWarnings("unchecked")
                     final Map<String, Object> dirs = (Map<String, Object>)obj.get(JSONConstants.REQCAP_DIRECTIVES);
-                    dirs.forEach(rethrowBiConsumer((key, value) -> unmarshalDirective(key, handleVars(value), dirMap::put)));
+                    dirs.forEach(rethrowBiConsumer((key, value) -> unmarshalDirective(key, handleResolveVars(value), dirMap::put)));
                 }
 
-                final Requirement r = new OSGiRequirement(handleVars(obj.get(JSONConstants.REQCAP_NAMESPACE)).toString(), attrMap, dirMap);
+                final Requirement r = new OSGiRequirement(handleResolveVars(obj.get(JSONConstants.REQCAP_NAMESPACE)).toString(), attrMap, dirMap);
                 feature.getRequirements().add(r);
             }
         }
@@ -358,7 +390,7 @@ public class FeatureJSONReader extends JSONReaderBase {
                     checkType("Capability attributes", obj.get(JSONConstants.REQCAP_ATTRIBUTES), Map.class);
                     @SuppressWarnings("unchecked")
                     final Map<String, Object> attrs = (Map<String, Object>)obj.get(JSONConstants.REQCAP_ATTRIBUTES);
-                    attrs.forEach(rethrowBiConsumer((key, value) -> unmarshalAttribute(key, handleVars(value), attrMap::put)));
+                    attrs.forEach(rethrowBiConsumer((key, value) -> unmarshalAttribute(key, handleResolveVars(value), attrMap::put)));
                 }
 
                 Map<String, String> dirMap = new HashMap<>();
@@ -366,10 +398,10 @@ public class FeatureJSONReader extends JSONReaderBase {
                     checkType("Capability directives", obj.get(JSONConstants.REQCAP_DIRECTIVES), Map.class);
                     @SuppressWarnings("unchecked")
                     final Map<String, Object> dirs = (Map<String, Object>) obj.get(JSONConstants.REQCAP_DIRECTIVES);
-                    dirs.forEach(rethrowBiConsumer((key, value) -> unmarshalDirective(key, handleVars(value), dirMap::put)));
+                    dirs.forEach(rethrowBiConsumer((key, value) -> unmarshalDirective(key, handleResolveVars(value), dirMap::put)));
                 }
 
-                final Capability c = new OSGiCapability(handleVars(obj.get(JSONConstants.REQCAP_NAMESPACE)).toString(), attrMap, dirMap);
+                final Capability c = new OSGiCapability(handleResolveVars(obj.get(JSONConstants.REQCAP_NAMESPACE)).toString(), attrMap, dirMap);
                 feature.getCapabilities().add(c);
             }
         }
