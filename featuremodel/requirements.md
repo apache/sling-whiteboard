@@ -62,6 +62,9 @@ The feature model is about describing a feature, aggregating features to either 
 * SFM430 - The startup order of features and bundles must be part of the resulting aggregated application model.
 * SFM440 - The feature model must support additional, optional information about the feature like a human readable title, a description, vendor and licensing information.
 * SFM450 - The feature model must use a versioned descriptor format so that if the format evolves in the future users can state in feature model files what version they are written for.
+
+## API Requirements
+
 * SFM460 - The feature model should provide an externally accessible API for reading and writing feature files.
 
 ## Analysis Requirements
