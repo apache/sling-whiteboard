@@ -96,10 +96,6 @@ The feature model is about describing a feature, aggregating features to either 
 * SFL060 - Tooling must support multiple versions of a feature and only select the highest version of a feature to launch the application.
 * SFL070 - Tooling must be able to differentiate between a feature and an update of a feature. An update should only be included in the application of the base feature is included.
 
-## Runtime Requirements
-
-* SFD010 - It should be possible to dynamically install and uninstall features at runtime.
-
 ## Container Requirements
 
 These requirements are not directly related to the feature model itself, but rather running a feature based OSGi application within a container.
