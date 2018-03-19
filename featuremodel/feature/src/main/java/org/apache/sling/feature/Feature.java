@@ -16,12 +16,12 @@
  */
 package org.apache.sling.feature;
 
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
+
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-
-import org.osgi.resource.Capability;
-import org.osgi.resource.Requirement;
 
 /**
  * A feature consists of
@@ -52,6 +52,8 @@ public class Feature implements Comparable<Feature> {
     private final List<Include> includes = new ArrayList<>();
 
     private final Extensions extensions = new Extensions();
+
+    private final KeyValueMap variables = new KeyValueMap();
 
     /** The optional location. */
     private volatile String location;
@@ -204,6 +206,14 @@ public class Feature implements Comparable<Feature> {
     }
 
     /**
+     * Obtain the variables of the feature
+     * @return The variables
+     */
+    public KeyValueMap getVariables() {
+        return this.variables;
+    }
+
+    /**
      * Get the vendor
      * @return The vendor or {@code null}
      */
@@ -274,6 +284,9 @@ public class Feature implements Comparable<Feature> {
         result.setVendor(this.getVendor());
         result.setLicense(this.getLicense());
         result.setAssembled(this.isAssembled());
+
+        // variables
+        result.getVariables().putAll(this.getVariables());
 
         // bundles
         for(final Artifact b : this.getBundles()) {

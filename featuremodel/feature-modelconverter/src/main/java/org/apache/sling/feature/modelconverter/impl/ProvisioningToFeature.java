@@ -199,7 +199,7 @@ public class ProvisioningToFeature {
     /**
      * Read the provisioning model
      */
-    private static Model readProvisioningModel(final File file)
+    static Model readProvisioningModel(final File file)
     throws IOException {
         try (final FileReader is = new FileReader(file)) {
             final Model m = ModelReader.read(is, file.getAbsolutePath());

@@ -19,6 +19,7 @@ package org.apache.sling.feature.support.json;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.Include;
+import org.apache.sling.feature.KeyValueMap;
 import org.apache.sling.feature.OSGiCapability;
 import org.apache.sling.feature.OSGiRequirement;
 import org.osgi.resource.Capability;
@@ -143,8 +144,7 @@ public class FeatureJSONReader extends JSONReaderBase {
         this.feature.setVendor(getProperty(map, JSONConstants.FEATURE_VENDOR));
         this.feature.setLicense(getProperty(map, JSONConstants.FEATURE_LICENSE));
 
-        this.variables = this.readVariables(map);
-
+        this.readVariables(map, feature.getVariables());
         this.readBundles(map, feature.getBundles(), feature.getConfigurations());
         this.readFrameworkProperties(map, feature.getFrameworkProperties());
         this.readConfigurations(map, feature.getConfigurations());
@@ -213,8 +213,8 @@ public class FeatureJSONReader extends JSONReaderBase {
         return sb.toString();
     }
 
-    private Map<String, String> readVariables(Map<String, Object> map) throws IOException {
-        Map<String, String> varMap = new HashMap<>();
+    private void readVariables(Map<String, Object> map, KeyValueMap kvMap) throws IOException {
+        variables = new HashMap<>();
 
         if (map.containsKey(JSONConstants.FEATURE_VARIABLES)) {
             final Object variablesObj = map.get(JSONConstants.FEATURE_VARIABLES);
@@ -224,13 +224,16 @@ public class FeatureJSONReader extends JSONReaderBase {
             final Map<String, Object> vars = (Map<String, Object>) variablesObj;
             for (final Map.Entry<String, Object> entry : vars.entrySet()) {
                 checkType("variable value", entry.getValue(), String.class, Boolean.class, Number.class);
-                if (varMap.get(entry.getKey()) != null) {
-                    throw new IOException(this.exceptionPrefix + "Duplicate variable " + entry.getKey());
+
+                String key = entry.getKey();
+                if (kvMap.get(key) != null) {
+                    throw new IOException(this.exceptionPrefix + "Duplicate variable " + key);
                 }
-                varMap.put(entry.getKey(), "" + entry.getValue());
+                String value = "" + entry.getValue();
+                kvMap.put(key, value);
+                variables.put(key, value);
             }
         }
-        return varMap;
     }
 
     private void readIncludes(final Map<String, Object> map) throws IOException {
