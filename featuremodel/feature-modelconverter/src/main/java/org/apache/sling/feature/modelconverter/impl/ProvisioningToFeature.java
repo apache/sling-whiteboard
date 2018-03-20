@@ -104,24 +104,22 @@ public class ProvisioningToFeature {
         Model model = null;
         for(final File initFile : files) {
             try {
-                model = processModel(model, initFile, includeModelInfo);
+                model = processModel(model, initFile, includeModelInfo,
+                    new ResolverOptions().variableResolver(new VariableResolver() {
+                        @Override
+                        public String resolve(final Feature feature, final String name) {
+                            // Keep variables as-is in the model
+                            return "${" + name + "}";
+                        }
+                    })
+                );
             } catch ( final IOException iae) {
                 LOGGER.error("Unable to read provisioning model {} : {}", initFile, iae.getMessage(), iae);
                 System.exit(1);
             }
         }
 
-        final Model effectiveModel = ModelUtility.getEffectiveModel(model, new ResolverOptions().variableResolver(new VariableResolver() {
-
-            @Override
-            public String resolve(Feature feature, String name) {
-                if ( "sling.home".equals(name) ) {
-                    return "${sling.home}";
-                }
-                return feature.getVariables().get(name);
-            }
-        }));
-        final Map<Traceable, String> errors = ModelUtility.validate(effectiveModel);
+        final Map<Traceable, String> errors = ModelUtility.validate(model);
         if ( errors != null ) {
             LOGGER.error("Invalid assembled provisioning model.");
             for(final Map.Entry<Traceable, String> entry : errors.entrySet()) {
@@ -129,11 +127,11 @@ public class ProvisioningToFeature {
             }
             System.exit(1);
         }
-        final Set<String> modes = calculateRunModes(effectiveModel, runModes);
+        final Set<String> modes = calculateRunModes(model, runModes);
 
-        removeInactiveFeaturesAndRunModes(effectiveModel, modes);
+        removeInactiveFeaturesAndRunModes(model, modes);
 
-        return effectiveModel;
+        return model;
     }
 
     /**
@@ -145,19 +143,22 @@ public class ProvisioningToFeature {
      * @throws IOException If reading fails
      */
     private static Model processModel(Model model,
-            final File modelFile, boolean includeModelInfo) throws IOException {
+            File modelFile, boolean includeModelInfo) throws IOException {
+        return processModel(model, modelFile, includeModelInfo,
+            new ResolverOptions().variableResolver(new VariableResolver() {
+                @Override
+                public String resolve(final Feature feature, final String name) {
+                    return name;
+                }
+            })
+        );
+    }
+
+    private static Model processModel(Model model,
+            File modelFile, boolean includeModelInfo, ResolverOptions options) throws IOException {
         LOGGER.info("- reading model {}", modelFile);
 
         final Model nextModel = readProvisioningModel(modelFile);
-        // resolve references to other models
-        final ResolverOptions options = new ResolverOptions().variableResolver(new VariableResolver() {
-
-            @Override
-            public String resolve(final Feature feature, final String name) {
-                return name;
-            }
-        });
-
 
         final Model effectiveModel = ModelUtility.getEffectiveModel(nextModel, options);
         for(final Feature feature : effectiveModel.getFeatures()) {
@@ -210,11 +211,10 @@ public class ProvisioningToFeature {
     /**
      * Read the provisioning model
      */
-    public static Model readProvisioningModel(final File file)
+    private static Model readProvisioningModel(final File file)
     throws IOException {
         try (final FileReader is = new FileReader(file)) {
-            final Model m = ModelReader.read(is, file.getAbsolutePath());
-            return m;
+            return ModelReader.read(is, file.getAbsolutePath());
         }
     }
 
@@ -393,14 +393,14 @@ public class ProvisioningToFeature {
                             cpExtension.getArtifacts().add(newArtifact);
                         } else {
                             int startLevel = group.getStartLevel();
-                            if ( ModelConstants.FEATURE_BOOT.equals(feature.getName()) ) {
-                                startLevel = 1;
-                            } else if ( startLevel == 0 ) {
-                                startLevel = 20;
+                            if ( startLevel == 0) {
+                                if ( ModelConstants.FEATURE_BOOT.equals(feature.getName()) ) {
+                                    startLevel = 1;
+                                } else if ( startLevel == 0 ) {
+                                    startLevel = 20;
+                                }
                             }
-
-                            // TODO this is probably not correct
-                            // newArtifact.getMetadata().put(org.apache.sling.feature.Artifact.KEY_START_ORDER, String.valueOf(startLevel));
+                            newArtifact.getMetadata().put("start-level", String.valueOf(startLevel));
 
                             bundles.add(newArtifact);
                         }

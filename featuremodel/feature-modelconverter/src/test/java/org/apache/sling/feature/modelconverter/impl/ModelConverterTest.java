@@ -16,8 +16,12 @@
  */
 package org.apache.sling.feature.modelconverter.impl;
 
+import org.apache.sling.feature.Bundles;
+import org.apache.sling.feature.Configurations;
 import org.apache.sling.feature.support.ArtifactManager;
 import org.apache.sling.feature.support.ArtifactManagerConfig;
+import org.apache.sling.feature.support.FeatureUtil;
+import org.apache.sling.feature.support.json.FeatureJSONReader.SubstituteVariables;
 import org.apache.sling.provisioning.model.Artifact;
 import org.apache.sling.provisioning.model.ArtifactGroup;
 import org.apache.sling.provisioning.model.Configuration;
@@ -27,11 +31,13 @@ import org.apache.sling.provisioning.model.Model;
 import org.apache.sling.provisioning.model.ModelConstants;
 import org.apache.sling.provisioning.model.RunMode;
 import org.apache.sling.provisioning.model.Section;
+import org.apache.sling.provisioning.model.io.ModelReader;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -43,6 +49,7 @@ import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -76,10 +83,10 @@ public class ModelConverterTest {
         testConvertToProvisioningModel("/boot.json", "/boot.txt");
     }
 
-    /* @Test
+    @Test
     public void testBootToFeature() throws Exception {
         testConvertToFeature("/boot.txt", "/boot.json");
-    } */
+    }
 
     @Test
     public void testOak() throws Exception {
@@ -90,7 +97,13 @@ public class ModelConverterTest {
         File inFile = new File(getClass().getResource(originalProvModel).toURI());
         File outFile = new File(tempDir.toFile(), expectedJSON + ".generated");
 
-        ProvisioningToFeature.convert(inFile, outFile.getAbsolutePath());
+        String outPath = outFile.getAbsolutePath();
+        ProvisioningToFeature.convert(inFile, outPath);
+
+        String expectedFile = new File(getClass().getResource(expectedJSON).toURI()).getAbsolutePath();
+        org.apache.sling.feature.Feature expected = FeatureUtil.getFeature(expectedFile, artifactManager, SubstituteVariables.NONE);
+        org.apache.sling.feature.Feature actual = FeatureUtil.getFeature(outPath, artifactManager, SubstituteVariables.NONE);
+        assertFeaturesEqual(expected, actual);
     }
 
     public void testConvertToProvisioningModel(String originalJSON, String expectedProvModel) throws URISyntaxException, IOException {
@@ -101,9 +114,61 @@ public class ModelConverterTest {
                 artifactManager);
 
         File expectedFile = new File(getClass().getResource(expectedProvModel).toURI());
-        Model expected = ProvisioningToFeature.readProvisioningModel(expectedFile);
-        Model actual = ProvisioningToFeature.readProvisioningModel(outFile);
+        Model expected = readProvisioningModel(expectedFile);
+        Model actual = readProvisioningModel(outFile);
         assertModelsEqual(expected, actual);
+    }
+
+    private static Model readProvisioningModel(File modelFile) throws IOException {
+        try (final FileReader is = new FileReader(modelFile)) {
+            return ModelReader.read(is, modelFile.getAbsolutePath());
+        }
+    }
+
+    private void assertFeaturesEqual(org.apache.sling.feature.Feature expected, org.apache.sling.feature.Feature actual) {
+        assertEquals(expected.getTitle(), actual.getTitle());
+        assertEquals(expected.getDescription(), actual.getDescription());
+        assertEquals(expected.getVendor(), actual.getVendor());
+        assertEquals(expected.getLicense(), actual.getLicense());
+
+        assertFeatureKVMapEquals(expected.getVariables(), actual.getVariables());
+        assertBundlesEqual(expected.getBundles(), actual.getBundles());
+        assertConfigurationsEqual(expected.getConfigurations(), actual.getConfigurations());
+        assertFeatureKVMapEquals(expected.getFrameworkProperties(), actual.getFrameworkProperties());
+
+        // Ignore caps and reqs, includes and extensions here since they cannot come from the prov model.
+    }
+
+    private void assertBundlesEqual(Bundles expected, Bundles actual) {
+        for (Iterator<org.apache.sling.feature.Artifact> it = expected.iterator(); it.hasNext(); ) {
+            org.apache.sling.feature.Artifact ex = it.next();
+
+            boolean found = false;
+            for (Iterator<org.apache.sling.feature.Artifact> it2 = actual.iterator(); it2.hasNext(); ) {
+                org.apache.sling.feature.Artifact ac = it2.next();
+                if (ac.getId().equals(ex.getId())) {
+                    found = true;
+                    assertFeatureKVMapEquals(ex.getMetadata(), ac.getMetadata());
+                }
+            }
+            assertTrue(found);
+        }
+    }
+
+    private void assertConfigurationsEqual(Configurations expected, Configurations actual) {
+        for (Iterator<org.apache.sling.feature.Configuration> it = expected.iterator(); it.hasNext(); ) {
+            org.apache.sling.feature.Configuration ex = it.next();
+
+            boolean found = false;
+            for (Iterator<org.apache.sling.feature.Configuration> it2 = actual.iterator(); it2.hasNext(); ) {
+                org.apache.sling.feature.Configuration ac = it2.next();
+                if (ac.getPid().equals(ex.getPid())) {
+                    found = true;
+                    assertEquals(ex.getProperties(), ac.getProperties());
+                }
+            }
+            assertTrue(found);
+        }
     }
 
     private void assertModelsEqual(Model expected, Model actual) {
@@ -189,6 +254,15 @@ public class ModelConverterTest {
                 }
                 found = true;
 
+                if (cfg1.getFactoryPid() == null) {
+                    if (cfg2.getFactoryPid() != null)
+                        return false;
+                } else {
+                    if (!cfg1.getFactoryPid().equals(cfg2.getFactoryPid())) {
+                        return false;
+                    }
+                }
+
                 Map<String, Object> m1 = cfgMap(cfg1.getProperties());
                 Map<String, Object> m2 = cfgMap(cfg2.getProperties());
                 if (!m1.equals(m2)) {
@@ -240,6 +314,16 @@ public class ModelConverterTest {
         return m;
     }
 
+    private Map<String, String> featureKvToMap(org.apache.sling.feature.KeyValueMap kvm) {
+        Map<String, String> m = new HashMap<>();
+
+        for (Map.Entry<String, String> entry : kvm) {
+            m.put(entry.getKey(), entry.getValue());
+        }
+
+        return m;
+    }
+
     private boolean artifactGroupsEquals(String featureName, ArtifactGroup g1, ArtifactGroup g2) {
         int sl1 = effectiveStartLevel(featureName, g1.getStartLevel());
         int sl2 = effectiveStartLevel(featureName, g2.getStartLevel());
@@ -274,6 +358,11 @@ public class ModelConverterTest {
 
     private void assertKVMapEquals(KeyValueMap<String> expected, KeyValueMap<String> actual) {
         assertEquals(kvToMap(expected), kvToMap(actual));
+    }
+
+    private void assertFeatureKVMapEquals(org.apache.sling.feature.KeyValueMap expected,
+            org.apache.sling.feature.KeyValueMap actual) {
+        assertEquals(featureKvToMap(expected), featureKvToMap(actual));
     }
 
     private void assertSectionsEqual(List<Section> expected, List<Section> actual) {
