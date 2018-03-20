@@ -29,7 +29,7 @@ import org.apache.sling.feature.support.ArtifactManager;
 import org.apache.sling.feature.support.ArtifactManagerConfig;
 import org.apache.sling.feature.support.json.ApplicationJSONWriter;
 import org.apache.sling.feature.support.json.FeatureJSONReader;
-import org.apache.sling.feature.support.json.FeatureJSONReader.Phase;
+import org.apache.sling.feature.support.json.FeatureJSONReader.SubstituteVariables;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -156,7 +156,7 @@ public class ApplicationBuilderTest {
         final ArtifactHandler featureArtifact = artifactManager.getArtifactHandler(file);
 
         try (final FileReader r = new FileReader(featureArtifact.getFile())) {
-            final Feature f = FeatureJSONReader.read(r, featureArtifact.getUrl(), Phase.RESOLVE);
+            final Feature f = FeatureJSONReader.read(r, featureArtifact.getUrl(), SubstituteVariables.RESOLVE);
             return f;
         }
     }

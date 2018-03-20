@@ -24,6 +24,7 @@ import org.apache.sling.provisioning.model.Configuration;
 import org.apache.sling.provisioning.model.Feature;
 import org.apache.sling.provisioning.model.KeyValueMap;
 import org.apache.sling.provisioning.model.Model;
+import org.apache.sling.provisioning.model.ModelConstants;
 import org.apache.sling.provisioning.model.RunMode;
 import org.apache.sling.provisioning.model.Section;
 import org.junit.After;
@@ -31,17 +32,23 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Dictionary;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class ModelConverterTest {
@@ -66,13 +73,22 @@ public class ModelConverterTest {
 
     @Test
     public void testBoot() throws Exception {
-        File inFile = new File(getClass().getResource("/boot.json").toURI());
-        File outFile = new File(tempDir.toFile(), "/boot.generated.txt");
+        testConvertToProvisioningModel("/boot.json", "/boot.txt");
+    }
+
+    @Test
+    public void testOak() throws Exception {
+        testConvertToProvisioningModel("/oak.json", "/oak.txt");
+    }
+
+    private void testConvertToProvisioningModel(String originalJSON, String expectedProvModel) throws URISyntaxException, IOException {
+        File inFile = new File(getClass().getResource(originalJSON).toURI());
+        File outFile = new File(tempDir.toFile(), expectedProvModel + ".generated");
 
         FeatureToProvisioning.convert(inFile, outFile.getAbsolutePath(),
                 artifactManager);
 
-        File expectedFile = new File(getClass().getResource("/boot.txt").toURI());
+        File expectedFile = new File(getClass().getResource(expectedProvModel).toURI());
         Model expected = ProvisioningToFeature.readProvisioningModel(expectedFile);
         Model actual = ProvisioningToFeature.readProvisioningModel(outFile);
         assertModelsEqual(expected, actual);
@@ -117,6 +133,9 @@ public class ModelConverterTest {
             if (rm2.getNames() != null)
                 return false;
         } else {
+            if (rm2.getNames() == null)
+                return false;
+
             HashSet<String> names1 = new HashSet<>(Arrays.asList(rm1.getNames()));
             HashSet<String> names2 = new HashSet<>(Arrays.asList(rm2.getNames()));
 
@@ -150,15 +169,53 @@ public class ModelConverterTest {
 
         for (int i=0; i < configs1.size(); i++) {
             Configuration cfg1 = configs1.get(i);
-            Configuration cfg2 = configs2.get(i);
-            if (!cfg1.getProperties().equals(cfg2.getProperties()))
-                return false;
+
+            boolean found = false;
+            for (Configuration cfg2 : configs2) {
+                if (!cfg2.getPid().equals(cfg1.getPid())) {
+                    continue;
+                }
+                found = true;
+
+                Map<String, Object> m1 = cfgMap(cfg1.getProperties());
+                Map<String, Object> m2 = cfgMap(cfg2.getProperties());
+                if (!m1.equals(m2)) {
+                    return false;
+                }
+                break;
+            }
+            assertTrue("Configuration with PID " + cfg1.getPid() + " not found", found);
         }
 
         Map<String, String> m1 = kvToMap(rm1.getSettings());
         Map<String, String> m2 = kvToMap(rm2.getSettings());
 
         return m1.equals(m2);
+    }
+
+    private Map<String, Object> cfgMap(Dictionary<String, Object> properties) {
+        Map<String, Object> m = new HashMap<>();
+        for (Enumeration<String> e = properties.keys(); e.hasMoreElements(); ) {
+            String key = e.nextElement();
+            Object value = properties.get(key);
+            if (ModelConstants.CFG_UNPROCESSED.equals(key) && value instanceof String) {
+                String val = (String) value;
+                // Collapse line continuation characters
+                val = val.replaceAll("[\\\\]\\r?\\n", "");
+                for (String line : val.split("\\r?\\n")) {
+
+                    String[] kv = line.trim().split("=");
+                    if (kv.length >= 2) {
+                        String v = kv[1].trim().replaceAll("[" +Pattern.quote("[") + "]\\s+[\"]", "[\"");
+                        v = v.replaceAll("[\"][,]\\s*[]]","\"]");
+                        m.put(kv[0].trim(), v.trim());
+                    }
+                }
+            } else {
+                m.put(key, value);
+            }
+        }
+        return m;
     }
 
     private Map<String, String> kvToMap(KeyValueMap<String> kvm) {
@@ -191,10 +248,7 @@ public class ModelConverterTest {
     }
 
     private void assertKVMapEquals(KeyValueMap<String> expected, KeyValueMap<String> actual) {
-        assertEquals(expected.size(), actual.size());
-        for (Map.Entry<String, String> entry : expected) {
-            assertEquals(entry.getValue(), actual.get(entry.getKey()));
-        }
+        assertEquals(kvToMap(expected), kvToMap(actual));
     }
 
     private void assertSectionsEqual(List<Section> expected, List<Section> actual) {

@@ -16,11 +16,11 @@
  */
 package org.apache.sling.feature;
 
+import org.osgi.framework.Version;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import org.osgi.framework.Version;
 
 /**
  * An artifact identifier.
@@ -67,7 +67,7 @@ public class ArtifactId implements Comparable<ArtifactId> {
         this.groupId = groupId;
         this.artifactId = artifactId;
         this.version = version;
-        this.getOSGiVersion();
+
         if ( "bundle".equals(type) || type == null || type.isEmpty() ) {
             this.type = "jar";
         } else {

@@ -31,6 +31,8 @@ import java.util.List;
  * </ul>
  */
 public class Application {
+    /** The variables of this application. */
+    private final KeyValueMap variables = new KeyValueMap();
 
     /** Container for bundles. */
     private final Bundles bundles = new Bundles();
@@ -107,6 +109,15 @@ public class Application {
      */
     public void setFramework(final ArtifactId framework) {
         this.framework = framework;
+    }
+
+    /**
+     * Get the variables
+     * The map is modifiable
+     * @return The map of variables
+     */
+    public KeyValueMap getVariables() {
+        return this.variables;
     }
 
     @Override

@@ -28,7 +28,7 @@ import org.apache.sling.feature.support.ArtifactManager;
 import org.apache.sling.feature.support.ArtifactManagerConfig;
 import org.apache.sling.feature.support.FeatureUtil;
 import org.apache.sling.feature.support.json.FeatureJSONReader;
-import org.apache.sling.feature.support.json.FeatureJSONReader.Phase;
+import org.apache.sling.feature.support.json.FeatureJSONReader.SubstituteVariables;
 import org.junit.Test;
 
 import java.io.File;
@@ -47,7 +47,7 @@ public class AnalyserTest {
         final Analyser analyser = new Analyser(scanner);
         try ( final Reader reader = new InputStreamReader(AnalyserTest.class.getResourceAsStream("/feature_complete.json"),
                 "UTF-8") ) {
-            Feature feature = FeatureJSONReader.read(reader, "feature", Phase.RESOLVE);
+            Feature feature = FeatureJSONReader.read(reader, "feature", SubstituteVariables.RESOLVE);
 
             Application app = FeatureUtil.assembleApplication(null, ArtifactManager.getArtifactManager(new ArtifactManagerConfig()),
                     getTestResolver(), feature);
@@ -62,7 +62,7 @@ public class AnalyserTest {
         final Analyser analyser = new Analyser(scanner);
         try ( final Reader reader = new InputStreamReader(AnalyserTest.class.getResourceAsStream("/feature_incomplete.json"),
                 "UTF-8") ) {
-            Feature feature = FeatureJSONReader.read(reader, "feature", Phase.RESOLVE);
+            Feature feature = FeatureJSONReader.read(reader, "feature", SubstituteVariables.RESOLVE);
 
             Application app = FeatureUtil.assembleApplication(null, ArtifactManager.getArtifactManager(new ArtifactManagerConfig()),
                     getTestResolver(), feature);

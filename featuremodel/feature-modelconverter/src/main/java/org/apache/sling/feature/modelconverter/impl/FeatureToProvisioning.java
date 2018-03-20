@@ -27,6 +27,7 @@ import org.apache.sling.feature.process.FeatureResolver;
 import org.apache.sling.feature.support.ArtifactManager;
 import org.apache.sling.feature.support.FeatureUtil;
 import org.apache.sling.feature.support.json.ApplicationJSONReader;
+import org.apache.sling.feature.support.json.FeatureJSONReader.SubstituteVariables;
 import org.apache.sling.provisioning.model.Artifact;
 import org.apache.sling.provisioning.model.Configuration;
 import org.apache.sling.provisioning.model.Feature;
@@ -52,15 +53,18 @@ public class FeatureToProvisioning {
     private static final String PROVISIONING_MODEL_NAME_VARIABLE = "provisioning.model.name";
 
     public static void convert(File file, String output, ArtifactManager am) throws IOException {
-        org.apache.sling.feature.Feature feature = FeatureUtil.getFeature(file.getAbsolutePath(), am);
+        org.apache.sling.feature.Feature feature = FeatureUtil.getFeature(file.getAbsolutePath(), am, SubstituteVariables.NONE);
 
-        String featureName = feature.getVariables().get(PROVISIONING_MODEL_NAME_VARIABLE);
-        if (featureName == null) {
+        Object featureNameVar = feature.getVariables().remove(PROVISIONING_MODEL_NAME_VARIABLE);
+        String featureName;
+        if (featureNameVar instanceof String) {
+            featureName = (String) featureNameVar;
+        } else {
             featureName = feature.getId().getArtifactId();
         }
 
         Feature newFeature = new Feature(featureName);
-        convert(newFeature, feature.getBundles(), feature.getConfigurations(), feature.getFrameworkProperties(), feature.getExtensions(), output);
+        convert(newFeature, feature.getVariables(), feature.getBundles(), feature.getConfigurations(), feature.getFrameworkProperties(), feature.getExtensions(), output);
     }
 
     public static void convert(List<File> files, String output, boolean createApp, ArtifactManager am) throws Exception {
@@ -95,11 +99,16 @@ public class FeatureToProvisioning {
         }
         final Feature feature = new Feature(featureName);
 
-        convert(feature, app.getBundles(), app.getConfigurations(), app.getFrameworkProperties(), app.getExtensions(), outputFile);
+        convert(feature, app.getVariables(), app.getBundles(), app.getConfigurations(), app.getFrameworkProperties(), app.getExtensions(), outputFile);
     }
 
-    private static void convert(Feature f, Bundles bundles, Configurations configurations, KeyValueMap frameworkProps,
+    private static void convert(Feature f, KeyValueMap variables, Bundles bundles, Configurations configurations, KeyValueMap frameworkProps,
             Extensions extensions, String outputFile) {
+        org.apache.sling.provisioning.model.KeyValueMap<String> vars = f.getVariables();
+        for (Map.Entry<String, String> entry : variables) {
+            vars.put(entry.getKey(), entry.getValue());
+        }
+
         Map<org.apache.sling.feature.Configuration, org.apache.sling.feature.Artifact> configBundleMap = new HashMap<>();
 
         // bundles
@@ -152,6 +161,9 @@ public class FeatureToProvisioning {
                 final String key = keys.nextElement();
                 c.getProperties().put(key, cfg.getProperties().get(key));
             }
+
+            // Remove these if they got in
+            c.getProperties().remove(org.apache.sling.feature.Configuration.PROP_ARTIFACT);
 
             // Check if the configuration has an associated runmode via the bundle that it belongs to
             org.apache.sling.feature.Artifact bundle = configBundleMap.get(cfg);

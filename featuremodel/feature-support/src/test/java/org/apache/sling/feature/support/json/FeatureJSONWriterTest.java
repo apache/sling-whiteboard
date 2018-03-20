@@ -17,7 +17,7 @@
 package org.apache.sling.feature.support.json;
 
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.support.json.FeatureJSONReader.Phase;
+import org.apache.sling.feature.support.json.FeatureJSONReader.SubstituteVariables;
 import org.junit.Test;
 
 import java.io.StringReader;
@@ -34,7 +34,7 @@ public class FeatureJSONWriterTest {
         try ( final StringWriter writer = new StringWriter() ) {
             FeatureJSONWriter.write(writer, f);
             try ( final StringReader reader = new StringReader(writer.toString()) ) {
-                rf = FeatureJSONReader.read(reader, null, Phase.RESOLVE);
+                rf = FeatureJSONReader.read(reader, null, SubstituteVariables.RESOLVE);
             }
         }
         assertEquals(f.getId(), rf.getId());

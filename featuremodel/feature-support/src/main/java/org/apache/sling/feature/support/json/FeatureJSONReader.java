@@ -46,7 +46,7 @@ import static org.apache.sling.feature.support.util.ManifestUtil.unmarshalDirect
  * This class offers a method to read a {@code Feature} using a {@code Reader} instance.
  */
 public class FeatureJSONReader extends JSONReaderBase {
-    public enum Phase { RESOLVE, LAUNCH }
+    public enum SubstituteVariables { NONE, RESOLVE, LAUNCH }
 
     // The pattern that variables in Feature JSON follow
     private static final Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\{[a-zA-Z0-9.-_]+\\}");
@@ -60,7 +60,7 @@ public class FeatureJSONReader extends JSONReaderBase {
      * @return The read feature
      * @throws IOException If an IO errors occurs or the JSON is invalid.
      */
-    public static Feature read(final Reader reader, final String location, final Phase phase)
+    public static Feature read(final Reader reader, final String location, final SubstituteVariables phase)
     throws IOException {
         return read(reader, null, location, phase);
     }
@@ -78,7 +78,7 @@ public class FeatureJSONReader extends JSONReaderBase {
     public static Feature read(final Reader reader,
             final ArtifactId providedId,
             final String location,
-            final Phase phase)
+            final SubstituteVariables phase)
     throws IOException {
         try {
             final FeatureJSONReader mr = new FeatureJSONReader(providedId, location, phase);
@@ -98,14 +98,14 @@ public class FeatureJSONReader extends JSONReaderBase {
     private Map<String, String> variables;
 
     /** The current reading phase. */
-    private final Phase phase;
+    private final SubstituteVariables phase;
 
     /**
      * Private constructor
      * @param pId Optional id
      * @param location Optional location
      */
-    FeatureJSONReader(final ArtifactId pId, final String location, final Phase phase) {
+    FeatureJSONReader(final ArtifactId pId, final String location, final SubstituteVariables phase) {
         super(location);
         this.providedId = pId;
         this.phase = phase;
@@ -172,7 +172,7 @@ public class FeatureJSONReader extends JSONReaderBase {
 
     @Override
     protected Object handleResolveVars(Object val) {
-        if (phase == Phase.RESOLVE) {
+        if (phase == SubstituteVariables.RESOLVE) {
             return handleVars(val);
         } else {
             return val;
@@ -181,7 +181,7 @@ public class FeatureJSONReader extends JSONReaderBase {
 
     @Override
     protected Object handleLaunchVars(Object val) {
-        if (phase == Phase.LAUNCH) {
+        if (phase == SubstituteVariables.LAUNCH) {
             return handleVars(val);
         }
         return val;

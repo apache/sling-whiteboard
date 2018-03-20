@@ -25,7 +25,7 @@ import org.apache.sling.feature.Extensions;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.Include;
 import org.apache.sling.feature.KeyValueMap;
-import org.apache.sling.feature.support.json.FeatureJSONReader.Phase;
+import org.apache.sling.feature.support.json.FeatureJSONReader.SubstituteVariables;
 import org.junit.Test;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
@@ -122,7 +122,7 @@ public class FeatureJSONReaderTest {
     }
 
     @Test public void testReadWithVariablesLaunch() throws Exception {
-        final Feature feature = U.readFeature("test3", Phase.LAUNCH);
+        final Feature feature = U.readFeature("test3", SubstituteVariables.LAUNCH);
 
         List<Include> includes = feature.getIncludes();
         assertEquals(1, includes.size());
@@ -195,7 +195,7 @@ public class FeatureJSONReaderTest {
     }
 
     @Test public void testHandleVars() throws Exception {
-        FeatureJSONReader reader = new FeatureJSONReader(null, null, Phase.LAUNCH);
+        FeatureJSONReader reader = new FeatureJSONReader(null, null, SubstituteVariables.LAUNCH);
         Map<String, Object> vars = new HashMap<>();
         vars.put("var1", "bar");
         vars.put("varvariable", "${myvar}");
