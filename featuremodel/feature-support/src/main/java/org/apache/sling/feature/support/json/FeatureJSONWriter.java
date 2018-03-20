@@ -75,6 +75,9 @@ public class FeatureJSONWriter extends JSONWriterBase {
         writeProperty(ob, JSONConstants.FEATURE_VENDOR, feature.getVendor());
         writeProperty(ob, JSONConstants.FEATURE_LICENSE, feature.getLicense());
 
+        // variables
+        writeVariables(ob, feature.getVariables());
+
         // includes
         if ( !feature.getIncludes().isEmpty() ) {
             JsonArrayBuilder incArray = Json.createArrayBuilder();

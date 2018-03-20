@@ -186,6 +186,16 @@ abstract class JSONWriterBase {
         return configObj.build();
     }
 
+    protected void writeVariables(final JsonObjectBuilder ob, final KeyValueMap vars) {
+        if ( !vars.isEmpty()) {
+            JsonObjectBuilder varsObj = Json.createObjectBuilder();
+            for (final Map.Entry<String, String> entry : vars) {
+                varsObj.add(entry.getKey(), entry.getValue());
+            }
+            ob.add(JSONConstants.FEATURE_VARIABLES, varsObj.build());
+        }
+    }
+
     protected void writeFrameworkProperties(final JsonObjectBuilder ob, final KeyValueMap props) {
         // framework properties
         if ( !props.isEmpty() ) {

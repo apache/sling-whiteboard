@@ -76,12 +76,24 @@ public class ModelConverterTest {
         testConvertToProvisioningModel("/boot.json", "/boot.txt");
     }
 
+    /* @Test
+    public void testBootToFeature() throws Exception {
+        testConvertToFeature("/boot.txt", "/boot.json");
+    } */
+
     @Test
     public void testOak() throws Exception {
         testConvertToProvisioningModel("/oak.json", "/oak.txt");
     }
 
-    private void testConvertToProvisioningModel(String originalJSON, String expectedProvModel) throws URISyntaxException, IOException {
+    public void testConvertToFeature(String originalProvModel, String expectedJSON) throws Exception {
+        File inFile = new File(getClass().getResource(originalProvModel).toURI());
+        File outFile = new File(tempDir.toFile(), expectedJSON + ".generated");
+
+        ProvisioningToFeature.convert(inFile, outFile.getAbsolutePath());
+    }
+
+    public void testConvertToProvisioningModel(String originalJSON, String expectedProvModel) throws URISyntaxException, IOException {
         File inFile = new File(getClass().getResource(originalJSON).toURI());
         File outFile = new File(tempDir.toFile(), expectedProvModel + ".generated");
 
@@ -106,17 +118,17 @@ public class ModelConverterTest {
         assertEquals(expected.getName(), actual.getName());
         assertEquals(expected.getVersion(), actual.getVersion());
         assertEquals(expected.getType(), actual.getType());
-        assertRunModesEqual(expected.getRunModes(), actual.getRunModes());
+        assertRunModesEqual(expected.getName(), expected.getRunModes(), actual.getRunModes());
         assertKVMapEquals(expected.getVariables(), actual.getVariables());
         assertSectionsEqual(expected.getAdditionalSections(), actual.getAdditionalSections());
     }
 
-    private void assertRunModesEqual(List<RunMode> expected, List<RunMode> actual) {
+    private void assertRunModesEqual(String featureName, List<RunMode> expected, List<RunMode> actual) {
         assertEquals(expected.size(), actual.size());
         for (RunMode rm : expected) {
             boolean found = false;
             for (RunMode arm : actual) {
-                if (runModesEqual(rm, arm)) {
+                if (runModesEqual(featureName, rm, arm)) {
                     found = true;
                     break;
                 }
@@ -128,7 +140,7 @@ public class ModelConverterTest {
         }
     }
 
-    private boolean runModesEqual(RunMode rm1, RunMode rm2) {
+    private boolean runModesEqual(String featureName, RunMode rm1, RunMode rm2) {
         if (rm1.getNames() == null) {
             if (rm2.getNames() != null)
                 return false;
@@ -151,7 +163,7 @@ public class ModelConverterTest {
         for (ArtifactGroup g1 : ag1) {
             boolean found = false;
             for (ArtifactGroup g2 : ag2) {
-                if (artifactGroupsEquals(g1, g2)) {
+                if (artifactGroupsEquals(featureName, g1, g2)) {
                     found = true;
                     break;
                 }
@@ -228,8 +240,10 @@ public class ModelConverterTest {
         return m;
     }
 
-    private boolean artifactGroupsEquals(ArtifactGroup g1, ArtifactGroup g2) {
-        if (g1.getStartLevel() != g2.getStartLevel())
+    private boolean artifactGroupsEquals(String featureName, ArtifactGroup g1, ArtifactGroup g2) {
+        int sl1 = effectiveStartLevel(featureName, g1.getStartLevel());
+        int sl2 = effectiveStartLevel(featureName, g2.getStartLevel());
+        if (sl1 != sl2)
             return false;
 
         List<Artifact> al1 = new ArrayList<>();
@@ -245,6 +259,17 @@ public class ModelConverterTest {
                 return false;
         }
         return true;
+    }
+
+    private int effectiveStartLevel(String featureName, int startLevel) {
+        if (startLevel != 0)
+            return startLevel;
+
+        if (ModelConstants.FEATURE_BOOT.equals(featureName)) {
+            return 1;
+        } else {
+            return 20;
+        }
     }
 
     private void assertKVMapEquals(KeyValueMap<String> expected, KeyValueMap<String> actual) {

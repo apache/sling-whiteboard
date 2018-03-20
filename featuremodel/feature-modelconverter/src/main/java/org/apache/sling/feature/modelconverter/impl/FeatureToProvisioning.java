@@ -50,7 +50,7 @@ import java.util.Map;
  */
 public class FeatureToProvisioning {
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureToProvisioning.class);
-    private static final String PROVISIONING_MODEL_NAME_VARIABLE = "provisioning.model.name";
+    static final String PROVISIONING_MODEL_NAME_VARIABLE = "provisioning.model.name";
 
     public static void convert(File file, String output, ArtifactManager am) throws IOException {
         org.apache.sling.feature.Feature feature = FeatureUtil.getFeature(file.getAbsolutePath(), am, SubstituteVariables.NONE);

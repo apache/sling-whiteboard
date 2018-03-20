@@ -52,17 +52,28 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 /** Converter that converts the provisioning model to the feature model.
  */
 public class ProvisioningToFeature {
     private static Logger LOGGER = LoggerFactory.getLogger(ProvisioningToFeature.class);
+
+    public static void convert(File file, String output) {
+        Model model = createModel(Collections.singletonList(file), null, false);
+        final List<org.apache.sling.feature.Feature> features = buildFeatures(model);
+        if (features.size() != 1)
+            throw new IllegalStateException("TODO");
+
+        writeFeature(features.get(0), output, 0);
+    }
 
     public static void convert(List<File> files,  String outputFile, String runModes, boolean createApp,
             boolean includeModelInfo, String propsFile) {
@@ -199,7 +210,7 @@ public class ProvisioningToFeature {
     /**
      * Read the provisioning model
      */
-    static Model readProvisioningModel(final File file)
+    public static Model readProvisioningModel(final File file)
     throws IOException {
         try (final FileReader is = new FileReader(file)) {
             final Model m = ModelReader.read(is, file.getAbsolutePath());
@@ -331,7 +342,7 @@ public class ProvisioningToFeature {
         final Application app = new Application();
 
         for(final Feature feature : model.getFeatures() ) {
-            buildFromFeature(feature, app.getBundles(), app.getConfigurations(), app.getExtensions(), app.getFrameworkProperties());
+            buildFromFeature(feature, app.getVariables(), app.getBundles(), app.getConfigurations(), app.getExtensions(), app.getFrameworkProperties());
         }
 
         // hard coded dependency to launchpad api
@@ -349,10 +360,19 @@ public class ProvisioningToFeature {
     }
 
     private static void buildFromFeature(final Feature feature,
+            final KeyValueMap variables,
             final Bundles bundles,
             final Configurations configurations,
             final Extensions extensions,
             final KeyValueMap properties) {
+        for (Iterator<Map.Entry<String, String>> it = feature.getVariables().iterator(); it.hasNext(); ) {
+            Entry<String, String> entry = it.next();
+            variables.put(entry.getKey(), entry.getValue());
+        }
+        if (feature.getName().startsWith(":")) {
+            variables.put(FeatureToProvisioning.PROVISIONING_MODEL_NAME_VARIABLE, feature.getName());
+        }
+
         Extension cpExtension = extensions.getByName(Extension.NAME_CONTENT_PACKAGES);
         for(final RunMode runMode : feature.getRunModes() ) {
             if ( !ModelConstants.FEATURE_LAUNCHPAD.equals(feature.getName()) ) {
@@ -378,7 +398,10 @@ public class ProvisioningToFeature {
                             } else if ( startLevel == 0 ) {
                                 startLevel = 20;
                             }
-                            newArtifact.getMetadata().put(org.apache.sling.feature.Artifact.KEY_START_ORDER, String.valueOf(startLevel));
+
+                            // TODO this is probably not correct
+                            // newArtifact.getMetadata().put(org.apache.sling.feature.Artifact.KEY_START_ORDER, String.valueOf(startLevel));
+
                             bundles.add(newArtifact);
                         }
                     }
@@ -436,7 +459,7 @@ public class ProvisioningToFeature {
             final org.apache.sling.feature.Feature f = new org.apache.sling.feature.Feature(ArtifactId.parse(idString));
             features.add(f);
 
-            buildFromFeature(feature, f.getBundles(), f.getConfigurations(), f.getExtensions(), f.getFrameworkProperties());
+            buildFromFeature(feature, f.getVariables(), f.getBundles(), f.getConfigurations(), f.getExtensions(), f.getFrameworkProperties());
         }
 
         return features;
