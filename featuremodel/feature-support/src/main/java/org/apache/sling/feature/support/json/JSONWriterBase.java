@@ -26,6 +26,7 @@ import org.apache.sling.feature.KeyValueMap;
 
 import java.io.StringReader;
 import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
@@ -36,11 +37,20 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonStructure;
 
-
 /**
  * Common functionality for writing JSON
  */
 abstract class JSONWriterBase {
+    private final char factoryConfigSeparator;
+
+    protected JSONWriterBase(WriteOption ... opts) {
+        if (Arrays.asList(opts).contains(WriteOption.OLD_STYLE_FACTORY_CONFIGS)) {
+            factoryConfigSeparator = '-';
+        } else {
+            factoryConfigSeparator = '~';
+        }
+    }
+
     protected void writeBundles(final JsonObjectBuilder ob,
             final Bundles bundles,
             final Configurations allConfigs) {
@@ -51,9 +61,16 @@ abstract class JSONWriterBase {
             for(final Artifact artifact : bundles) {
                 final Configurations cfgs = new Configurations();
                 for(final Configuration cfg : allConfigs) {
-                    final String artifactProp = (String)cfg.getProperties().get(Configuration.PROP_ARTIFACT);
-                    if (  artifact.getId().toMvnId().equals(artifactProp) ) {
-                        cfgs.add(cfg);
+                    String artifactProp = (String)cfg.getProperties().get(Configuration.PROP_ARTIFACT);
+                    if (artifactProp != null) {
+                        if (artifactProp.startsWith("mvn:")) {
+                            // Change Maven URL to maven GAV syntax
+                            artifactProp = artifactProp.substring("mvn:".length());
+                            artifactProp = artifactProp.replace('/', ':');
+                        }
+                        if (artifact.getId().toMvnId().equals(artifactProp)) {
+                            cfgs.add(cfg);
+                        }
                     }
                 }
                 KeyValueMap md = artifact.getMetadata();
@@ -78,6 +95,8 @@ abstract class JSONWriterBase {
                     for(final Map.Entry<String, String> me : md) {
                         bundleObj.add(me.getKey(), me.getValue());
                     }
+
+                    writeConfigurations(bundleObj, cfgs);
 
                     bundleArray.add(bundleObj.build());
                 }
@@ -109,7 +128,7 @@ abstract class JSONWriterBase {
         for(final Configuration cfg : cfgs) {
             final String key;
             if ( cfg.isFactoryConfiguration() ) {
-                key = cfg.getFactoryPid() + "~" + cfg.getName();
+                key = cfg.getFactoryPid() + factoryConfigSeparator + cfg.getName();
             } else {
                 key = cfg.getPid();
             }

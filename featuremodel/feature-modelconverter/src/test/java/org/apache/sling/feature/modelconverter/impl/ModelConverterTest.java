@@ -93,6 +93,11 @@ public class ModelConverterTest {
         testConvertToProvisioningModel("/oak.json", "/oak.txt");
     }
 
+    @Test
+    public void testOakToFeature() throws Exception {
+        testConvertToFeature("/oak.txt", "/oak.json");
+    }
+
     public void testConvertToFeature(String originalProvModel, String expectedJSON) throws Exception {
         File inFile = new File(getClass().getResource(originalProvModel).toURI());
         File outFile = new File(tempDir.toFile(), expectedJSON + ".generated");
@@ -133,7 +138,7 @@ public class ModelConverterTest {
 
         assertFeatureKVMapEquals(expected.getVariables(), actual.getVariables());
         assertBundlesEqual(expected.getBundles(), actual.getBundles());
-        assertConfigurationsEqual(expected.getConfigurations(), actual.getConfigurations());
+        assertConfigurationsEqual(expected.getConfigurations(), actual.getConfigurations(), expected.getBundles(), actual.getBundles());
         assertFeatureKVMapEquals(expected.getFrameworkProperties(), actual.getFrameworkProperties());
 
         // Ignore caps and reqs, includes and extensions here since they cannot come from the prov model.
@@ -149,26 +154,86 @@ public class ModelConverterTest {
                 if (ac.getId().equals(ex.getId())) {
                     found = true;
                     assertFeatureKVMapEquals(ex.getMetadata(), ac.getMetadata());
+                    break;
                 }
             }
-            assertTrue(found);
+            assertTrue("Not found: " + ex, found);
         }
     }
 
-    private void assertConfigurationsEqual(Configurations expected, Configurations actual) {
+    private void assertConfigurationsEqual(Configurations expected, Configurations actual, Bundles exBundles, Bundles acBundles) {
         for (Iterator<org.apache.sling.feature.Configuration> it = expected.iterator(); it.hasNext(); ) {
             org.apache.sling.feature.Configuration ex = it.next();
 
             boolean found = false;
             for (Iterator<org.apache.sling.feature.Configuration> it2 = actual.iterator(); it2.hasNext(); ) {
                 org.apache.sling.feature.Configuration ac = it2.next();
-                if (ac.getPid().equals(ex.getPid())) {
-                    found = true;
-                    assertEquals(ex.getProperties(), ac.getProperties());
+                if (ex.getPid() != null) {
+                    if (ex.getPid().equals(ac.getPid())) {
+                        found = true;
+                        assertConfigProps(ex, ac, exBundles, acBundles);
+                    }
+                } else {
+                    if (ex.getFactoryPid().equals(ac.getFactoryPid())) {
+                        found = true;
+                        assertConfigProps(ex, ac, exBundles, acBundles);
+                    }
                 }
             }
             assertTrue(found);
         }
+    }
+
+    private void assertConfigProps(org.apache.sling.feature.Configuration expected, org.apache.sling.feature.Configuration actual, Bundles exBundles, Bundles acBundles) {
+        // If the configuration is associated with an artifact, it's considered equal
+        // if both artifacts have the same runmode (as the configuration is really
+        // associated with the runmode.
+        Object art = expected.getProperties().remove(org.apache.sling.feature.Configuration.PROP_ARTIFACT);
+        if (art instanceof String) {
+            String expectedArtifact = (String) art;
+            String actualArtifact = (String) actual.getProperties().remove(org.apache.sling.feature.Configuration.PROP_ARTIFACT);
+
+            String expectedRunmodes = null;
+            for(Iterator<org.apache.sling.feature.Artifact> it = exBundles.iterator(); it.hasNext(); ) {
+                org.apache.sling.feature.Artifact a = it.next();
+                if (a.getId().toMvnId().equals(expectedArtifact)) {
+                    expectedRunmodes = a.getMetadata().get("run-modes");
+                }
+            }
+
+            boolean found = false;
+            for(Iterator<org.apache.sling.feature.Artifact> it = acBundles.iterator(); it.hasNext(); ) {
+                org.apache.sling.feature.Artifact a = it.next();
+                if (a.getId().toMvnId().equals(actualArtifact)) {
+                    found = true;
+                    assertEquals(expectedRunmodes, a.getMetadata().get("run-modes"));
+                    break;
+                }
+            }
+            assertTrue(found);
+        }
+
+        assertTrue("Configurations not equal: " + expected.getProperties() + " vs " + actual.getProperties(),
+                configPropsEqual(expected.getProperties(), actual.getProperties()));
+    }
+
+    private boolean configPropsEqual(Dictionary<String, Object> d1, Dictionary<String, Object> d2) {
+        if (d1.size() != d2.size()) {
+            return false;
+        }
+
+        for (Enumeration<String> e = d1.keys(); e.hasMoreElements(); ) {
+            String k = e.nextElement();
+            Object v = d1.get(k);
+            if (v instanceof Object[]) {
+                if (!Arrays.equals((Object[]) v, (Object[]) d2.get(k)))
+                    return false;
+            } else {
+                if (!v.equals(d2.get(k)))
+                    return false;
+            }
+        }
+        return true;
     }
 
     private void assertModelsEqual(Model expected, Model actual) {
@@ -279,6 +344,7 @@ public class ModelConverterTest {
         return m1.equals(m2);
     }
 
+    // TODO can this one go?
     private Map<String, Object> cfgMap(Dictionary<String, Object> properties) {
         Map<String, Object> m = new HashMap<>();
         for (Enumeration<String> e = properties.keys(); e.hasMoreElements(); ) {
@@ -292,7 +358,7 @@ public class ModelConverterTest {
 
                     String[] kv = line.trim().split("=");
                     if (kv.length >= 2) {
-                        String v = kv[1].trim().replaceAll("[" +Pattern.quote("[") + "]\\s+[\"]", "[\"");
+                        String v = kv[1].trim().replaceAll("[" + Pattern.quote("[") + "]\\s+[\"]", "[\"");
                         v = v.replaceAll("[\"][,]\\s*[]]","\"]");
                         m.put(kv[0].trim(), v.trim());
                     }

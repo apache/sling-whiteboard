@@ -30,6 +30,7 @@ import org.apache.sling.feature.support.ArtifactManagerConfig;
 import org.apache.sling.feature.support.FeatureUtil;
 import org.apache.sling.feature.support.json.ApplicationJSONWriter;
 import org.apache.sling.feature.support.json.FeatureJSONWriter;
+import org.apache.sling.feature.support.json.WriteOption;
 import org.apache.sling.provisioning.model.Artifact;
 import org.apache.sling.provisioning.model.ArtifactGroup;
 import org.apache.sling.provisioning.model.Configuration;
@@ -52,6 +53,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -67,7 +69,7 @@ public class ProvisioningToFeature {
     private static Logger LOGGER = LoggerFactory.getLogger(ProvisioningToFeature.class);
 
     public static void convert(File file, String output) {
-        Model model = createModel(Collections.singletonList(file), null, false);
+        Model model = createModel(Collections.singletonList(file), null, true, false);
         final List<org.apache.sling.feature.Feature> features = buildFeatures(model);
         if (features.size() != 1)
             throw new IllegalStateException("TODO");
@@ -77,7 +79,7 @@ public class ProvisioningToFeature {
 
     public static void convert(List<File> files,  String outputFile, String runModes, boolean createApp,
             boolean includeModelInfo, String propsFile) {
-        final Model model = createModel(files, runModes, includeModelInfo);
+        final Model model = createModel(files, runModes, false, includeModelInfo);
 
         if ( createApp ) {
             final Application app = buildApplication(model, propsFile);
@@ -99,27 +101,28 @@ public class ProvisioningToFeature {
      * @param includeModelInfo
      */
     private static Model createModel(final List<File> files,
-            final String runModes, boolean includeModelInfo) {
+            final String runModes, boolean allRunModes, boolean includeModelInfo) {
         LOGGER.info("Assembling model...");
+        ResolverOptions variableResolver = new ResolverOptions().variableResolver(new VariableResolver() {
+            @Override
+            public String resolve(final Feature feature, final String name) {
+                // Keep variables as-is in the model
+                return "${" + name + "}";
+            }
+        });
+
         Model model = null;
         for(final File initFile : files) {
             try {
-                model = processModel(model, initFile, includeModelInfo,
-                    new ResolverOptions().variableResolver(new VariableResolver() {
-                        @Override
-                        public String resolve(final Feature feature, final String name) {
-                            // Keep variables as-is in the model
-                            return "${" + name + "}";
-                        }
-                    })
-                );
+                model = processModel(model, initFile, includeModelInfo, variableResolver);
             } catch ( final IOException iae) {
                 LOGGER.error("Unable to read provisioning model {} : {}", initFile, iae.getMessage(), iae);
                 System.exit(1);
             }
         }
 
-        final Map<Traceable, String> errors = ModelUtility.validate(model);
+        final Model effectiveModel = ModelUtility.getEffectiveModel(model, variableResolver);
+        final Map<Traceable, String> errors = ModelUtility.validate(effectiveModel);
         if ( errors != null ) {
             LOGGER.error("Invalid assembled provisioning model.");
             for(final Map.Entry<Traceable, String> entry : errors.entrySet()) {
@@ -127,11 +130,24 @@ public class ProvisioningToFeature {
             }
             System.exit(1);
         }
-        final Set<String> modes = calculateRunModes(model, runModes);
+        final Set<String> modes;
+        if (allRunModes) {
+            modes = new HashSet<>();
+            for (Feature f : effectiveModel.getFeatures()) {
+                for (RunMode rm : f.getRunModes()) {
+                    String[] names = rm.getNames();
+                    if (names != null) {
+                        modes.addAll(Arrays.asList(names));
+                    }
+                }
+            }
+        } else {
+            modes = calculateRunModes(effectiveModel, runModes);
+        }
 
-        removeInactiveFeaturesAndRunModes(model, modes);
+        removeInactiveFeaturesAndRunModes(effectiveModel, modes);
 
-        return model;
+        return effectiveModel;
     }
 
     /**
@@ -420,6 +436,29 @@ public class ProvisioningToFeature {
                     final String key = keys.nextElement();
                     newCfg.getProperties().put(key, cfg.getProperties().get(key));
                 }
+
+                String[] runModeNames = runMode.getNames();
+                if (runModeNames != null) {
+                    // If this configuration is associated with a runmode other than null, attach it to a bundle
+                    // that has the same runmodes
+                    Artifact art = null;
+                    for (ArtifactGroup group : runMode.getArtifactGroups()) {
+                        if (art != null)
+                            break;
+
+                        for (Artifact artifact : group) {
+                            art = artifact;
+                            break;
+                        }
+                    }
+                    if (art == null) {
+                        throw new IllegalStateException("Should have at least one artifact in runmodes " +
+                                Arrays.toString(runModeNames) + " to attach configuration to");
+                    }
+
+                    newCfg.getProperties().put(org.apache.sling.feature.Configuration.PROP_ARTIFACT, art.toMvnUrl());
+                }
+
                 configurations.add(newCfg);
             }
 
@@ -491,7 +530,7 @@ public class ProvisioningToFeature {
 
         final File file = new File(out);
         try ( final FileWriter writer = new FileWriter(file)) {
-            FeatureJSONWriter.write(writer, f);
+            FeatureJSONWriter.write(writer, f, WriteOption.OLD_STYLE_FACTORY_CONFIGS);
         } catch ( final IOException ioe) {
             LOGGER.error("Unable to write feature to {} : {}", out, ioe.getMessage(), ioe);
             System.exit(1);
