@@ -29,6 +29,9 @@ import org.apache.sling.provisioning.model.Feature;
 import org.apache.sling.provisioning.model.KeyValueMap;
 import org.apache.sling.provisioning.model.Model;
 import org.apache.sling.provisioning.model.ModelConstants;
+import org.apache.sling.provisioning.model.ModelUtility;
+import org.apache.sling.provisioning.model.ModelUtility.ResolverOptions;
+import org.apache.sling.provisioning.model.ModelUtility.VariableResolver;
 import org.apache.sling.provisioning.model.RunMode;
 import org.apache.sling.provisioning.model.Section;
 import org.apache.sling.provisioning.model.io.ModelReader;
@@ -52,7 +55,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -126,7 +128,17 @@ public class ModelConverterTest {
 
     private static Model readProvisioningModel(File modelFile) throws IOException {
         try (final FileReader is = new FileReader(modelFile)) {
-            return ModelReader.read(is, modelFile.getAbsolutePath());
+            Model model = ModelReader.read(is, modelFile.getAbsolutePath());
+
+            // Fix the configurations up from the internal format to the Dictionary-based format
+            return ModelUtility.getEffectiveModel(model,
+                    new ResolverOptions().variableResolver(new VariableResolver() {
+                @Override
+                public String resolve(final Feature feature, final String name) {
+                    // Keep variables as-is in the model
+                    return "${" + name + "}";
+                }
+            }));
         }
     }
 
@@ -328,11 +340,10 @@ public class ModelConverterTest {
                     }
                 }
 
-                Map<String, Object> m1 = cfgMap(cfg1.getProperties());
-                Map<String, Object> m2 = cfgMap(cfg2.getProperties());
-                if (!m1.equals(m2)) {
+                if (!configPropsEqual(cfg1.getProperties(), cfg2.getProperties())) {
                     return false;
                 }
+
                 break;
             }
             assertTrue("Configuration with PID " + cfg1.getPid() + " not found", found);
@@ -342,32 +353,6 @@ public class ModelConverterTest {
         Map<String, String> m2 = kvToMap(rm2.getSettings());
 
         return m1.equals(m2);
-    }
-
-    // TODO can this one go?
-    private Map<String, Object> cfgMap(Dictionary<String, Object> properties) {
-        Map<String, Object> m = new HashMap<>();
-        for (Enumeration<String> e = properties.keys(); e.hasMoreElements(); ) {
-            String key = e.nextElement();
-            Object value = properties.get(key);
-            if (ModelConstants.CFG_UNPROCESSED.equals(key) && value instanceof String) {
-                String val = (String) value;
-                // Collapse line continuation characters
-                val = val.replaceAll("[\\\\]\\r?\\n", "");
-                for (String line : val.split("\\r?\\n")) {
-
-                    String[] kv = line.trim().split("=");
-                    if (kv.length >= 2) {
-                        String v = kv[1].trim().replaceAll("[" + Pattern.quote("[") + "]\\s+[\"]", "[\"");
-                        v = v.replaceAll("[\"][,]\\s*[]]","\"]");
-                        m.put(kv[0].trim(), v.trim());
-                    }
-                }
-            } else {
-                m.put(key, value);
-            }
-        }
-        return m;
     }
 
     private Map<String, String> kvToMap(KeyValueMap<String> kvm) {
