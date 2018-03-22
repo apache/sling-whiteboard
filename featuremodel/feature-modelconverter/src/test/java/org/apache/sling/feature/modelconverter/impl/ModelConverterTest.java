@@ -18,6 +18,8 @@ package org.apache.sling.feature.modelconverter.impl;
 
 import org.apache.sling.feature.Bundles;
 import org.apache.sling.feature.Configurations;
+import org.apache.sling.feature.Extension;
+import org.apache.sling.feature.Extensions;
 import org.apache.sling.feature.support.ArtifactManager;
 import org.apache.sling.feature.support.ArtifactManagerConfig;
 import org.apache.sling.feature.support.FeatureUtil;
@@ -96,7 +98,7 @@ public class ModelConverterTest {
     }
 
     @Test
-    public void testOakProvModel() throws Exception {
+    public void testOakToProvModel() throws Exception {
         testConvertToProvisioningModel("/oak.json", "/oak.txt");
     }
 
@@ -108,6 +110,21 @@ public class ModelConverterTest {
     @Test
     public void testOakRoundTrip() throws Exception {
         testConvertFromProvModelRoundTrip("/oak.txt");
+    }
+
+    @Test
+    public void testRepoinitToProvModel() throws Exception {
+        testConvertToProvisioningModel("/repoinit.json", "/repoinit.txt");
+    }
+
+    @Test
+    public void testRepoinitToFeature() throws Exception {
+        testConvertToFeature("/repoinit.txt", "/repoinit.json");
+    }
+
+    @Test
+    public void testRepoinitRoundtrip() throws Exception {
+        testConvertFromProvModelRoundTrip("/repoinit.txt");
     }
 
     public void testConvertFromProvModelRoundTrip(String orgProvModel) throws Exception {
@@ -176,8 +193,9 @@ public class ModelConverterTest {
         assertBundlesEqual(expected.getBundles(), actual.getBundles());
         assertConfigurationsEqual(expected.getConfigurations(), actual.getConfigurations(), expected.getBundles(), actual.getBundles());
         assertFeatureKVMapEquals(expected.getFrameworkProperties(), actual.getFrameworkProperties());
+        assertExtensionEqual(expected.getExtensions(), actual.getExtensions());
 
-        // Ignore caps and reqs, includes and extensions here since they cannot come from the prov model.
+        // Ignore caps and reqs, includes and here since they cannot come from the prov model.
     }
 
     private void assertBundlesEqual(Bundles expected, Bundles actual) {
@@ -440,6 +458,33 @@ public class ModelConverterTest {
         assertEquals(featureKvToMap(expected), featureKvToMap(actual));
     }
 
+    private void assertExtensionEqual(Extensions expected, Extensions actual) {
+        assertEquals(expected.size(), actual.size());
+
+        for (int i=0; i<expected.size(); i++) {
+            // TODO support the fact that they may be out of order
+            Extension ex = expected.get(i);
+            Extension ac = actual.get(i);
+
+            assertEquals(ex.getType(), ac.getType());
+            assertEquals(ex.getName(), ac.getName());
+            assertEquals(ex.isRequired(), ac.isRequired());
+
+            String exTxt = ex.getText().replaceAll("\\s+", "");
+            String acTxt = ac.getText().replaceAll("\\s+", "");
+            assertEquals(exTxt, acTxt);
+
+            /* TODO reinstantiate for Artifacts extentions
+            assertEquals(ex.getArtifacts().size(), ac.getArtifacts().size());
+            for (int j = 0; j<ex.getArtifacts().size(); j++) {
+                org.apache.sling.feature.Artifact exa = ex.getArtifacts().get(j);
+                org.apache.sling.feature.Artifact aca = ac.getArtifacts().get(j);
+                assertEquals(exa.getId().toMvnId(), aca.getId().toMvnId());
+            }
+            */
+        }
+    }
+
     private void assertSectionsEqual(List<Section> expected, List<Section> actual) {
         assertEquals(expected.size(), actual.size());
 
@@ -447,7 +492,8 @@ public class ModelConverterTest {
             Section esec = expected.get(i);
             Section asec = actual.get(i);
             assertEquals(esec.getName(), asec.getName());
-            assertEquals(esec.getContents(), asec.getContents());
+            assertEquals(esec.getContents().replaceAll("\\s+", ""),
+                    asec.getContents().replaceAll("\\s+", ""));
             assertEquals(esec.getAttributes(), asec.getAttributes());
         }
     }
