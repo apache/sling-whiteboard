@@ -71,10 +71,13 @@ public class ProvisioningToFeature {
     public static void convert(File file, String output) {
         Model model = createModel(Collections.singletonList(file), null, true, false);
         final List<org.apache.sling.feature.Feature> features = buildFeatures(model);
-        if (features.size() != 1)
-            throw new IllegalStateException("TODO");
-
-        writeFeature(features.get(0), output, 0);
+        if (features.size() != 1) {
+            for (int i=0; i<features.size(); i++) {
+                writeFeature(features.get(i), output, i+1);
+            }
+        } else {
+            writeFeature(features.get(0), output, 0);
+        }
     }
 
     public static void convert(List<File> files,  String outputFile, String runModes, boolean createApp,

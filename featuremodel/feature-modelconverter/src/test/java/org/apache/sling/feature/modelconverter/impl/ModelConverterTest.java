@@ -29,6 +29,7 @@ import org.apache.sling.provisioning.model.ArtifactGroup;
 import org.apache.sling.provisioning.model.Configuration;
 import org.apache.sling.provisioning.model.Feature;
 import org.apache.sling.provisioning.model.KeyValueMap;
+import org.apache.sling.provisioning.model.MergeUtility;
 import org.apache.sling.provisioning.model.Model;
 import org.apache.sling.provisioning.model.ModelConstants;
 import org.apache.sling.provisioning.model.ModelUtility;
@@ -49,6 +50,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Dictionary;
 import java.util.Enumeration;
@@ -129,15 +131,25 @@ public class ModelConverterTest {
     }
 
     public void testConvertFromProvModelRoundTrip(File orgProvModel) throws Exception {
-        File outJSONFile = new File(tempDir.toFile(), orgProvModel.getName() + ".json.generated");
-        File outProvFile = new File(tempDir.toFile(), orgProvModel.getName() + ".txt.generated");
+        String genJSONPrefix = orgProvModel.getName() + ".json";
+        String genTxtPrefix = orgProvModel.getName() + ".txt";
+        String genSuffix = ".generated";
+        File outJSONFile = new File(tempDir.toFile(), genJSONPrefix + genSuffix);
+        List<File> allGenerateProvisioningModelFiles = new ArrayList<>();
 
         ProvisioningToFeature.convert(orgProvModel, outJSONFile.getAbsolutePath());
-        FeatureToProvisioning.convert(outJSONFile, outProvFile.getAbsolutePath(),
-                artifactManager);
+
+        for (File f : tempDir.toFile().listFiles((p, n) -> n.startsWith(genJSONPrefix))) {
+            String infix = f.getName().substring(genJSONPrefix.length(),
+                    f.getName().length() - genSuffix.length());
+
+            File genFile = new File(tempDir.toFile(), genTxtPrefix + infix + genSuffix);
+            allGenerateProvisioningModelFiles.add(genFile);
+            FeatureToProvisioning.convert(f, genFile.getAbsolutePath(), artifactManager);
+        }
 
         Model expected = readProvisioningModel(orgProvModel);
-        Model actual = readProvisioningModel(outProvFile);
+        Model actual = readProvisioningModel(allGenerateProvisioningModelFiles);
         assertModelsEqual(expected, actual);
     }
 
@@ -168,19 +180,32 @@ public class ModelConverterTest {
     }
 
     private static Model readProvisioningModel(File modelFile) throws IOException {
-        try (final FileReader is = new FileReader(modelFile)) {
-            Model model = ModelReader.read(is, modelFile.getAbsolutePath());
+        return readProvisioningModel(Collections.singletonList(modelFile));
+    }
 
-            // Fix the configurations up from the internal format to the Dictionary-based format
-            return ModelUtility.getEffectiveModel(model,
-                    new ResolverOptions().variableResolver(new VariableResolver() {
-                @Override
-                public String resolve(final Feature feature, final String name) {
-                    // Keep variables as-is in the model
-                    return "${" + name + "}";
+    private static Model readProvisioningModel(List<File> modelFiles) throws IOException {
+        Model model = null;
+        for (File modelFile : modelFiles) {
+            try (FileReader fr = new FileReader(modelFile)) {
+                Model nextModel = ModelReader.read(fr, modelFile.getAbsolutePath());
+
+                if (model == null) {
+                    model = nextModel;
+                } else {
+                    MergeUtility.merge(model, nextModel);
                 }
-            }));
+            }
         }
+
+        // Fix the configurations up from the internal format to the Dictionary-based format
+        return ModelUtility.getEffectiveModel(model,
+                new ResolverOptions().variableResolver(new VariableResolver() {
+            @Override
+            public String resolve(final Feature feature, final String name) {
+                // Keep variables as-is in the model
+                return "${" + name + "}";
+            }
+        }));
     }
 
     private void assertFeaturesEqual(org.apache.sling.feature.Feature expected, org.apache.sling.feature.Feature actual) {

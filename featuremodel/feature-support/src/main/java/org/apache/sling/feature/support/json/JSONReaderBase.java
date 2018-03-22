@@ -152,8 +152,14 @@ abstract class JSONReaderBase {
             readArtifacts(JSONConstants.FEATURE_BUNDLES, "bundle", list, bundlesObj, configContainer);
 
             for(final Artifact a : list) {
-                if ( container.containsSame(a.getId()) ) {
-                    throw new IOException(exceptionPrefix + "Duplicate bundle " + a.getId().toMvnId());
+                Artifact sameFound = container.getSame(a.getId());
+                if ( sameFound != null) {
+                    String str1 = a.getMetadata().get("run-modes");
+                    String str2 = sameFound.getMetadata().get("run-modes");
+
+                    if (str1 == null ? str2 == null : str1.equals(str2)) {
+                        throw new IOException(exceptionPrefix + "Duplicate bundle " + a.getId().toMvnId());
+                    }
                 }
                 try {
                     // check start order
