@@ -81,7 +81,7 @@ public class ModelConverterTest {
     }
 
     @Test
-    public void testBoot() throws Exception {
+    public void testBootToProvModel() throws Exception {
         testConvertToProvisioningModel("/boot.json", "/boot.txt");
     }
 
@@ -91,13 +91,37 @@ public class ModelConverterTest {
     }
 
     @Test
-    public void testOak() throws Exception {
+    public void testBootRoundTrip() throws Exception {
+        testConvertFromProvModelRoundTrip("/boot.txt");
+    }
+
+    @Test
+    public void testOakProvModel() throws Exception {
         testConvertToProvisioningModel("/oak.json", "/oak.txt");
     }
 
     @Test
     public void testOakToFeature() throws Exception {
         testConvertToFeature("/oak.txt", "/oak.json");
+    }
+
+    @Test
+    public void testOakRoundTrip() throws Exception {
+        testConvertFromProvModelRoundTrip("/oak.txt");
+    }
+
+    public void testConvertFromProvModelRoundTrip(String orgProvModel) throws Exception {
+        File inFile = new File(getClass().getResource(orgProvModel).toURI());
+        File outJSONFile = new File(tempDir.toFile(), orgProvModel + ".json.generated");
+        File outProvFile = new File(tempDir.toFile(), orgProvModel + ".txt.generated");
+
+        ProvisioningToFeature.convert(inFile, outJSONFile.getAbsolutePath());
+        FeatureToProvisioning.convert(outJSONFile, outProvFile.getAbsolutePath(),
+                artifactManager);
+
+        Model expected = readProvisioningModel(inFile);
+        Model actual = readProvisioningModel(outProvFile);
+        assertModelsEqual(expected, actual);
     }
 
     public void testConvertToFeature(String originalProvModel, String expectedJSON) throws Exception {
