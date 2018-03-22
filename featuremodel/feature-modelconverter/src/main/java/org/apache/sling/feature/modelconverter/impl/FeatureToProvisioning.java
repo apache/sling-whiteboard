@@ -162,16 +162,10 @@ public class FeatureToProvisioning {
                 c.getProperties().put(key, cfg.getProperties().get(key));
             }
 
-            // Remove these if they got in
-            c.getProperties().remove(org.apache.sling.feature.Configuration.PROP_ARTIFACT);
-
-            // Check if the configuration has an associated runmode via the bundle that it belongs to
-            org.apache.sling.feature.Artifact bundle = configBundleMap.get(cfg);
-            String[] runModes;
-            if (bundle != null) {
-                runModes = getRunModes(bundle);
-            } else {
-                runModes = null;
+            String[] runModes = null;
+            Object rm = c.getProperties().remove(".runmodes.");
+            if (rm instanceof String) {
+                runModes = ((String) rm).split(",");
             }
             f.getOrCreateRunMode(runModes).getConfigurations().add(c);
         }

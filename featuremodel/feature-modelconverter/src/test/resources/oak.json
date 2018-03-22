@@ -33,23 +33,12 @@
         {
             "id": "org.apache.jackrabbit/oak-segment-tar/${oak.version}",
             "start-level": 15,
-            "run-modes": "oak_tar",
-            "configurations": {
-                "org.apache.jackrabbit.oak.segment.SegmentNodeStoreService": {
-                    "name": "Default NodeStore"
-                }
-            }
+            "run-modes": "oak_tar"
         },
         {
             "id": "org.mongodb/mongo-java-driver/3.4.1",
             "start-level": 15,
-            "run-modes": "oak_mongo",
-            "configurations": {
-                "org.apache.jackrabbit.oak.plugins.document.DocumentNodeStoreService": {
-                    "mongouri": "mongodb://localhost:27017",
-                    "db": "sling"
-                }
-            }
+            "run-modes": "oak_mongo"
         },
         {
             "id": "com.h2database/h2-mvstore/1.4.196",
@@ -96,6 +85,15 @@
             "enabledActions": ["org.apache.jackrabbit.oak.spi.security.user.action.AccessControlAction"],
             "userPrivilegeNames": ["jcr:all"],
             "groupPrivilegeNames": ["jcr:read"]
+        },
+        "org.apache.jackrabbit.oak.segment.SegmentNodeStoreService": {
+            ".runmodes.": "oak_tar", 
+            "name": "Default NodeStore"
+        },
+        "org.apache.jackrabbit.oak.plugins.document.DocumentNodeStoreService": {
+            ".runmodes.": "oak_mongo", 
+            "mongouri": "mongodb://localhost:27017",
+            "db": "sling"
         }
     }
 }

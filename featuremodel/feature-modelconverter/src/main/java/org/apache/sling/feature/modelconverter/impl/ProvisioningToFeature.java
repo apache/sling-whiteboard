@@ -439,24 +439,7 @@ public class ProvisioningToFeature {
 
                 String[] runModeNames = runMode.getNames();
                 if (runModeNames != null) {
-                    // If this configuration is associated with a runmode other than null, attach it to a bundle
-                    // that has the same runmodes
-                    Artifact art = null;
-                    for (ArtifactGroup group : runMode.getArtifactGroups()) {
-                        if (art != null)
-                            break;
-
-                        for (Artifact artifact : group) {
-                            art = artifact;
-                            break;
-                        }
-                    }
-                    if (art == null) {
-                        throw new IllegalStateException("Should have at least one artifact in runmodes " +
-                                Arrays.toString(runModeNames) + " to attach configuration to");
-                    }
-
-                    newCfg.getProperties().put(org.apache.sling.feature.Configuration.PROP_ARTIFACT, art.toMvnUrl());
+                    newCfg.getProperties().put(".runmodes.", String.join(",", runModeNames));
                 }
 
                 configurations.add(newCfg);

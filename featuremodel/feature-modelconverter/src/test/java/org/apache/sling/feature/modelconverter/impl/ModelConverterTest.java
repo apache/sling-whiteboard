@@ -93,11 +93,6 @@ public class ModelConverterTest {
     }
 
     @Test
-    public void testBootRoundTrip() throws Exception {
-        testConvertFromProvModelRoundTrip("/boot.txt");
-    }
-
-    @Test
     public void testOakToProvModel() throws Exception {
         testConvertToProvisioningModel("/oak.json", "/oak.txt");
     }
@@ -105,11 +100,6 @@ public class ModelConverterTest {
     @Test
     public void testOakToFeature() throws Exception {
         testConvertToFeature("/oak.txt", "/oak.json");
-    }
-
-    @Test
-    public void testOakRoundTrip() throws Exception {
-        testConvertFromProvModelRoundTrip("/oak.txt");
     }
 
     @Test
@@ -123,20 +113,30 @@ public class ModelConverterTest {
     }
 
     @Test
-    public void testRepoinitRoundtrip() throws Exception {
-        testConvertFromProvModelRoundTrip("/repoinit.txt");
+    public void testProvModelRoundtripFolder() throws Exception {
+        String dir = System.getProperty("test.prov.files.dir");
+        File filesDir;
+        if (dir != null) {
+            filesDir = new File(dir);
+        } else {
+            filesDir = new File(getClass().getResource("/repoinit.txt").toURI()).
+                getParentFile();
+        }
+
+        for (File f : filesDir.listFiles((d, n) -> n.endsWith(".txt"))) {
+            testConvertFromProvModelRoundTrip(f);
+        }
     }
 
-    public void testConvertFromProvModelRoundTrip(String orgProvModel) throws Exception {
-        File inFile = new File(getClass().getResource(orgProvModel).toURI());
-        File outJSONFile = new File(tempDir.toFile(), orgProvModel + ".json.generated");
-        File outProvFile = new File(tempDir.toFile(), orgProvModel + ".txt.generated");
+    public void testConvertFromProvModelRoundTrip(File orgProvModel) throws Exception {
+        File outJSONFile = new File(tempDir.toFile(), orgProvModel.getName() + ".json.generated");
+        File outProvFile = new File(tempDir.toFile(), orgProvModel.getName() + ".txt.generated");
 
-        ProvisioningToFeature.convert(inFile, outJSONFile.getAbsolutePath());
+        ProvisioningToFeature.convert(orgProvModel, outJSONFile.getAbsolutePath());
         FeatureToProvisioning.convert(outJSONFile, outProvFile.getAbsolutePath(),
                 artifactManager);
 
-        Model expected = readProvisioningModel(inFile);
+        Model expected = readProvisioningModel(orgProvModel);
         Model actual = readProvisioningModel(outProvFile);
         assertModelsEqual(expected, actual);
     }
@@ -239,34 +239,6 @@ public class ModelConverterTest {
     }
 
     private void assertConfigProps(org.apache.sling.feature.Configuration expected, org.apache.sling.feature.Configuration actual, Bundles exBundles, Bundles acBundles) {
-        // If the configuration is associated with an artifact, it's considered equal
-        // if both artifacts have the same runmode (as the configuration is really
-        // associated with the runmode.
-        Object art = expected.getProperties().remove(org.apache.sling.feature.Configuration.PROP_ARTIFACT);
-        if (art instanceof String) {
-            String expectedArtifact = (String) art;
-            String actualArtifact = (String) actual.getProperties().remove(org.apache.sling.feature.Configuration.PROP_ARTIFACT);
-
-            String expectedRunmodes = null;
-            for(Iterator<org.apache.sling.feature.Artifact> it = exBundles.iterator(); it.hasNext(); ) {
-                org.apache.sling.feature.Artifact a = it.next();
-                if (a.getId().toMvnId().equals(expectedArtifact)) {
-                    expectedRunmodes = a.getMetadata().get("run-modes");
-                }
-            }
-
-            boolean found = false;
-            for(Iterator<org.apache.sling.feature.Artifact> it = acBundles.iterator(); it.hasNext(); ) {
-                org.apache.sling.feature.Artifact a = it.next();
-                if (a.getId().toMvnId().equals(actualArtifact)) {
-                    found = true;
-                    assertEquals(expectedRunmodes, a.getMetadata().get("run-modes"));
-                    break;
-                }
-            }
-            assertTrue(found);
-        }
-
         assertTrue("Configurations not equal: " + expected.getProperties() + " vs " + actual.getProperties(),
                 configPropsEqual(expected.getProperties(), actual.getProperties()));
     }
