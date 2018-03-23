@@ -87,11 +87,11 @@
             "groupPrivilegeNames": ["jcr:read"]
         },
         "org.apache.jackrabbit.oak.segment.SegmentNodeStoreService": {
-            ".runmodes.": "oak_tar", 
+            ".runmodes": "oak_tar", 
             "name": "Default NodeStore"
         },
         "org.apache.jackrabbit.oak.plugins.document.DocumentNodeStoreService": {
-            ".runmodes.": "oak_mongo", 
+            ".runmodes": "oak_mongo", 
             "mongouri": "mongodb://localhost:27017",
             "db": "sling"
         }

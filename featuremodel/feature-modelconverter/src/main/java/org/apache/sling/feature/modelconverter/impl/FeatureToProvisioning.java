@@ -163,7 +163,7 @@ public class FeatureToProvisioning {
             }
 
             String[] runModes = null;
-            Object rm = c.getProperties().remove(".runmodes.");
+            Object rm = c.getProperties().remove(".runmodes");
             if (rm instanceof String) {
                 runModes = ((String) rm).split(",");
             }

@@ -442,7 +442,7 @@ public class ProvisioningToFeature {
 
                 String[] runModeNames = runMode.getNames();
                 if (runModeNames != null) {
-                    newCfg.getProperties().put(".runmodes.", String.join(",", runModeNames));
+                    newCfg.getProperties().put(".runmodes", String.join(",", runModeNames));
                 }
 
                 configurations.add(newCfg);
