@@ -1,0 +1,3 @@
+# TODO - optimise ; would use Conditional-Package but it does not include all content
+# of com.vladsch.flexmark.ast, which is split between the two jars
+Private-Package: com.vladsch.flexmark.*;-split-package:=merge-first
