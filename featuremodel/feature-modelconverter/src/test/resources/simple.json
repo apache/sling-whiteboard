@@ -1,0 +1,9 @@
+{
+  "id":"generated:simple:1.0.0",
+  "bundles":[
+    {
+      "id":"org.apache.aries:org.apache.aries.util:1.1.3",
+      "start-level":"20"
+    }
+  ]
+}

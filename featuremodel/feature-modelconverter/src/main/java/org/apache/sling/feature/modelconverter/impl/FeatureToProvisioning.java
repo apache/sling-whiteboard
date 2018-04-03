@@ -151,40 +151,64 @@ public class FeatureToProvisioning {
         // configurations
         for(final org.apache.sling.feature.Configuration cfg : configurations) {
             final Configuration c;
+
+            String[] runModes = null;
             if ( cfg.isFactoryConfiguration() ) {
                 c = new Configuration(cfg.getName(), cfg.getFactoryPid());
             } else {
-                c = new Configuration(cfg.getPid(), null);
+                String pid = cfg.getPid();
+                pid = pid.replaceAll("[.][.](\\S+)", ":$1");
+                int rmIdx = pid.indexOf(".runmodes.");
+                if (rmIdx > 0) {
+                    String rm = pid.substring(rmIdx + ".runmodes.".length());
+                    pid = pid.substring(0, rmIdx);
+                    runModes = rm.split("[.]");
+                }
+                c = new Configuration(pid, null);
             }
             final Enumeration<String> keys = cfg.getProperties().keys();
             while ( keys.hasMoreElements() ) {
-                final String key = keys.nextElement();
-                c.getProperties().put(key, cfg.getProperties().get(key));
+                String key = keys.nextElement();
+                Object val = cfg.getProperties().get(key);
+
+                if (key.startsWith("..")) {
+                    key = ":" + key.substring(2);
+                }
+                c.getProperties().put(key, val);
             }
 
-            String[] runModes = null;
-            Object rm = c.getProperties().remove(".runmodes");
-            if (rm instanceof String) {
-                runModes = ((String) rm).split(",");
-            }
             f.getOrCreateRunMode(runModes).getConfigurations().add(c);
         }
 
         // framework properties
         for(final Map.Entry<String, String> prop : frameworkProps) {
-            f.getOrCreateRunMode(null).getSettings().put(prop.getKey(), prop.getValue());
+            String key = prop.getKey();
+            if (key.startsWith(".runmodes:")) {
+                int lastIdx = key.lastIndexOf(':');
+                String rm = key.substring(".runmodes:".length(), lastIdx);
+                String[] runmodes = rm.split(",");
+                key = key.substring(lastIdx + 1);
+                f.getOrCreateRunMode(runmodes).getSettings().put(key, prop.getValue());
+            } else {
+                f.getOrCreateRunMode(null).getSettings().put(key, prop.getValue());
+            }
         }
 
         // extensions: content packages and repoinit
         for(final Extension ext : extensions) {
             if ( Extension.NAME_CONTENT_PACKAGES.equals(ext.getName()) ) {
                 for(final org.apache.sling.feature.Artifact cp : ext.getArtifacts() ) {
+                    String[] runmodes = null;
                     final ArtifactId id = cp.getId();
                     final Artifact newCP = new Artifact(id.getGroupId(), id.getArtifactId(), id.getVersion(), id.getClassifier(), id.getType());
                     for(final Map.Entry<String, String> prop : cp.getMetadata()) {
-                        newCP.getMetadata().put(prop.getKey(), prop.getValue());
+                        if (prop.getKey().equals("runmodes")) {
+                            runmodes = prop.getValue().split(",");
+                        } else {
+                            newCP.getMetadata().put(prop.getKey(), prop.getValue());
+                        }
                     }
-                    f.getOrCreateRunMode(null).getOrCreateArtifactGroup(0).add(newCP);
+                    f.getOrCreateRunMode(runmodes).getOrCreateArtifactGroup(20).add(newCP);
                 }
 
             } else if ( Extension.NAME_REPOINIT.equals(ext.getName()) ) {

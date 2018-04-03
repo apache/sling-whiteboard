@@ -1,0 +1,28 @@
+{
+  "id":"generated:feature:1.0.0",
+  "variables":{
+    "provisioning.model.name":":launchpad"
+  },
+  "bundles":[
+    {
+      "id":"org.apache.sling:org.apache.sling.launchpad.base:5.6.10-2.6.26",
+      "start-level":"20"
+    },
+    {
+      "id":"org.apache.sling:org.apache.sling.commons.osgi:2.4.0",
+      "run-modes":":something",
+      "start-level":"20"
+    }
+  ],
+  "configurations":{
+    "..bootstrap":{
+      "..bootstrap":"uninstall com.google.guava 15.0.0\n"
+    },
+    "..bootstrap.runmodes.:standalone":{
+      "..bootstrap":"uninstall org.apache.felix.http.bridge\nuninstall org.apache.felix.http.api\n"
+    },
+    "org.apache.testing.ConfigPid.factory-configuration.runmodes.:standalone":{
+      "key1":"val1"
+    }
+  }
+}

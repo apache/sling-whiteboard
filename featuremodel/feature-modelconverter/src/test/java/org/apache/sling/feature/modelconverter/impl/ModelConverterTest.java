@@ -115,6 +115,26 @@ public class ModelConverterTest {
     }
 
     @Test
+    public void testLaunchpadToProvModel() throws Exception {
+        testConvertToProvisioningModel("/launchpad.json", "/launchpad.txt");
+    }
+
+    @Test
+    public void testLaunchpadToFeature() throws Exception {
+        testConvertToFeature("/launchpad.txt", "/launchpad.json");
+    }
+
+    @Test
+    public void testSimpleToProvModel() throws Exception {
+        testConvertToProvisioningModel("/simple.json", "/simple.txt");
+    }
+
+    @Test
+    public void testSimpleToFeature() throws Exception {
+        testConvertToFeature("/simple.txt", "/simple.json");
+    }
+
+    @Test
     public void testProvModelRoundtripFolder() throws Exception {
         String dir = System.getProperty("test.prov.files.dir");
         File filesDir;
@@ -365,19 +385,20 @@ public class ModelConverterTest {
 
             boolean found = false;
             for (Configuration cfg2 : configs2) {
-                if (!cfg2.getPid().equals(cfg1.getPid())) {
+                if (cfg1.getFactoryPid() == null) {
+                    if (cfg2.getFactoryPid() != null) {
+                        continue;
+                    }
+                } else if (!cfg1.getFactoryPid().equals(cfg2.getFactoryPid())) {
                     continue;
                 }
-                found = true;
 
-                if (cfg1.getFactoryPid() == null) {
-                    if (cfg2.getFactoryPid() != null)
-                        return false;
-                } else {
-                    if (!cfg1.getFactoryPid().equals(cfg2.getFactoryPid())) {
-                        return false;
-                    }
+                if (!cfg1.getPid().equals(cfg2.getPid())) {
+                    continue;
                 }
+
+                // Factory and ordinary PIDs are equal, so check the content
+                found = true;
 
                 if (!configPropsEqual(cfg1.getProperties(), cfg2.getProperties())) {
                     return false;
@@ -385,7 +406,10 @@ public class ModelConverterTest {
 
                 break;
             }
-            assertTrue("Configuration with PID " + cfg1.getPid() + " not found", found);
+            if (!found) {
+                // Configuration with this PID not found
+                return false;
+            }
         }
 
         Map<String, String> m1 = kvToMap(rm1.getSettings());
@@ -426,13 +450,23 @@ public class ModelConverterTest {
         List<Artifact> al2 = new ArrayList<>();
         g2.iterator().forEachRemaining(al2::add);
 
-        for (int i=0; i < al1.size(); i++) {
+        for (int i=0; i<al1.size(); i++) {
             Artifact a1 = al1.get(i);
-            Artifact a2 = al2.get(i);
-            if (a1.compareTo(a2) != 0)
+            boolean found = false;
+            for (Iterator<Artifact> it = al2.iterator(); it.hasNext(); ) {
+                Artifact a2 = it.next();
+                if (a1.compareTo(a2) == 0) {
+                    found = true;
+                    it.remove();
+                }
+            }
+            if (!found) {
                 return false;
+            }
         }
-        return true;
+
+        // Should have found all artifacts
+        return (al2.size() == 0);
     }
 
     private int effectiveStartLevel(String featureName, int startLevel) {

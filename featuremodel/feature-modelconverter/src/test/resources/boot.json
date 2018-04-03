@@ -90,6 +90,11 @@
         "sling.run.mode.install.options": "oak_tar,oak_mongo",
         "repository.home": "${sling.home}/repository",
         "localIndexDir": "${sling.home}/repository/index",
+        
+        "# we need runmodes here too...": "",
+        ".runmodes:a:something": "else",
+        ".runmodes::b:special": "true", 
+        
         "#": "${sling.home} needs to be provided at launch time"
     }
 }

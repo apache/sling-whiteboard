@@ -28,6 +28,12 @@
     sling.run.mode.install.options=oak_tar,oak_mongo
     repository.home=${sling.home}/repository
     localIndexDir=${sling.home}/repository/index
+    
+[settings runModes=:b]
+    special=true    
+    
+[settings runModes=a]
+    something=else    
 
 [variables]
     slf4j.version=1.7.25

@@ -148,7 +148,7 @@ public class ProvisioningToFeature {
             modes = calculateRunModes(effectiveModel, runModes);
         }
 
-        removeInactiveFeaturesAndRunModes(effectiveModel, modes);
+        // removeInactiveFeaturesAndRunModes(effectiveModel, modes);
 
         return effectiveModel;
     }
@@ -237,6 +237,7 @@ public class ProvisioningToFeature {
         }
     }
 
+    // TODO is this needed for something?
     private static void removeInactiveFeaturesAndRunModes(final Model m,
             final Set<String> activeRunModes) {
         final String[] requiredFeatures = new String[] {ModelConstants.FEATURE_LAUNCHPAD, ModelConstants.FEATURE_BOOT};
@@ -394,35 +395,33 @@ public class ProvisioningToFeature {
 
         Extension cpExtension = extensions.getByName(Extension.NAME_CONTENT_PACKAGES);
         for(final RunMode runMode : feature.getRunModes() ) {
-            if ( !ModelConstants.FEATURE_LAUNCHPAD.equals(feature.getName()) ) {
-                for(final ArtifactGroup group : runMode.getArtifactGroups()) {
-                    for(final Artifact artifact : group) {
-                        final ArtifactId id = ArtifactId.fromMvnUrl(artifact.toMvnUrl());
-                        final org.apache.sling.feature.Artifact newArtifact = new org.apache.sling.feature.Artifact(id);
+            for(final ArtifactGroup group : runMode.getArtifactGroups()) {
+                for(final Artifact artifact : group) {
+                    final ArtifactId id = ArtifactId.fromMvnUrl(artifact.toMvnUrl());
+                    final org.apache.sling.feature.Artifact newArtifact = new org.apache.sling.feature.Artifact(id);
 
-                        for(final Map.Entry<String, String> entry : artifact.getMetadata().entrySet()) {
-                            newArtifact.getMetadata().put(entry.getKey(), entry.getValue());
+                    for(final Map.Entry<String, String> entry : artifact.getMetadata().entrySet()) {
+                        newArtifact.getMetadata().put(entry.getKey(), entry.getValue());
+                    }
+
+                    if ( newArtifact.getId().getType().equals("zip") ) {
+                        if ( cpExtension == null ) {
+                            cpExtension = new Extension(ExtensionType.ARTIFACTS, Extension.NAME_CONTENT_PACKAGES, true);
+                            extensions.add(cpExtension);
                         }
-
-                        if ( newArtifact.getId().getType().equals("zip") ) {
-                            if ( cpExtension == null ) {
-                                cpExtension = new Extension(ExtensionType.ARTIFACTS, Extension.NAME_CONTENT_PACKAGES, true);
-                                extensions.add(cpExtension);
+                        cpExtension.getArtifacts().add(newArtifact);
+                    } else {
+                        int startLevel = group.getStartLevel();
+                        if ( startLevel == 0) {
+                            if ( ModelConstants.FEATURE_BOOT.equals(feature.getName()) ) {
+                                startLevel = 1;
+                            } else if ( startLevel == 0 ) {
+                                startLevel = 20;
                             }
-                            cpExtension.getArtifacts().add(newArtifact);
-                        } else {
-                            int startLevel = group.getStartLevel();
-                            if ( startLevel == 0) {
-                                if ( ModelConstants.FEATURE_BOOT.equals(feature.getName()) ) {
-                                    startLevel = 1;
-                                } else if ( startLevel == 0 ) {
-                                    startLevel = 20;
-                                }
-                            }
-                            newArtifact.getMetadata().put("start-level", String.valueOf(startLevel));
-
-                            bundles.add(newArtifact);
                         }
+                        newArtifact.getMetadata().put("start-level", String.valueOf(startLevel));
+
+                        bundles.add(newArtifact);
                     }
                 }
             }
@@ -430,26 +429,54 @@ public class ProvisioningToFeature {
             for(final Configuration cfg : runMode.getConfigurations()) {
                 final org.apache.sling.feature.Configuration newCfg;
                 if ( cfg.getFactoryPid() != null ) {
-                    newCfg = new org.apache.sling.feature.Configuration(cfg.getFactoryPid(), cfg.getPid());
+                    String pid = cfg.getPid();
+                    if (pid.startsWith(":")) {
+                        // The configurator doesn't accept colons ':' in it's keys, so replace these
+                        pid = ".." + pid.substring(1);
+                    }
+
+                    String[] runModeNames = runMode.getNames();
+                    if (runModeNames != null) {
+                        pid = pid + ".runmodes." + String.join(".", runModeNames);
+                    }
+
+                    newCfg = new org.apache.sling.feature.Configuration(cfg.getFactoryPid(), pid);
                 } else {
-                    newCfg = new org.apache.sling.feature.Configuration(cfg.getPid());
+                    String pid = cfg.getPid();
+                    if (pid.startsWith(":")) {
+                        // The configurator doesn't accept colons ':' in it's keys, so replace these
+                        pid = ".." + pid.substring(1);
+                    }
+
+                    String[] runModeNames = runMode.getNames();
+                    if (runModeNames != null) {
+                        pid = pid + ".runmodes." + String.join(".", runModeNames);
+                    }
+
+                    newCfg = new org.apache.sling.feature.Configuration(pid);
                 }
                 final Enumeration<String> keys = cfg.getProperties().keys();
                 while ( keys.hasMoreElements() ) {
-                    final String key = keys.nextElement();
-                    newCfg.getProperties().put(key, cfg.getProperties().get(key));
-                }
+                    String key = keys.nextElement();
+                    Object value = cfg.getProperties().get(key);
 
-                String[] runModeNames = runMode.getNames();
-                if (runModeNames != null) {
-                    newCfg.getProperties().put(".runmodes", String.join(",", runModeNames));
+                    if (key.startsWith(":")) {
+                        key = ".." + key.substring(1);
+                    }
+                    newCfg.getProperties().put(key, value);
                 }
 
                 configurations.add(newCfg);
             }
 
             for(final Map.Entry<String, String> prop : runMode.getSettings()) {
-                properties.put(prop.getKey(), prop.getValue());
+                String[] runModeNames = runMode.getNames();
+                if (runModeNames == null) {
+                    properties.put(prop.getKey(), prop.getValue());
+                } else {
+                    properties.put(".runmodes:" + String.join(",", runModeNames) + ":" +
+                            prop.getKey(), prop.getValue());
+                }
             }
         }
         Extension repoExtension = extensions.getByName(Extension.NAME_REPOINIT);
