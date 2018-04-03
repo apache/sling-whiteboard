@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -70,18 +71,26 @@ public class ModelConverterTest {
 
     @Before
     public void setup() throws Exception {
-        tempDir = Files.createTempDirectory(getClass().getSimpleName());
+        String tmpDir = System.getProperty("test.prov.files.tempdir");
+        if (tmpDir != null) {
+            tempDir = Paths.get(tmpDir);
+            System.out.println("*** Using directory for generated files: " + tempDir);
+        } else {
+            tempDir = Files.createTempDirectory(getClass().getSimpleName());
+        }
         artifactManager = ArtifactManager.getArtifactManager(
                 new ArtifactManagerConfig());
     }
 
     @After
     public void tearDown() throws Exception {
-        // Delete the temp dir again
-        Files.walk(tempDir)
-            .sorted(Comparator.reverseOrder())
-            .map(Path::toFile)
-            .forEach(File::delete);
+        if(System.getProperty("test.prov.files.tempdir") == null) {
+            // Delete the temp dir again
+            Files.walk(tempDir)
+                .sorted(Comparator.reverseOrder())
+                .map(Path::toFile)
+                .forEach(File::delete);
+        }
     }
 
     @Test
@@ -151,6 +160,7 @@ public class ModelConverterTest {
     }
 
     public void testConvertFromProvModelRoundTrip(File orgProvModel) throws Exception {
+        System.out.println("*** Roundtrip converting: " + orgProvModel.getName());
         String genJSONPrefix = orgProvModel.getName() + ".json";
         String genTxtPrefix = orgProvModel.getName() + ".txt";
         String genSuffix = ".generated";

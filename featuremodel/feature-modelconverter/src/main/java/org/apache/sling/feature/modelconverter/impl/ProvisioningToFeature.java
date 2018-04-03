@@ -427,32 +427,22 @@ public class ProvisioningToFeature {
             }
 
             for(final Configuration cfg : runMode.getConfigurations()) {
+                String pid = cfg.getPid();
+                if (pid.startsWith(":")) {
+                    // The configurator doesn't accept colons ':' in it's keys, so replace these
+                    pid = ".." + pid.substring(1);
+                }
+
+                final String[] runModeNames = runMode.getNames();
+                if (runModeNames != null) {
+                    pid = pid + ".runmodes." + String.join(".", runModeNames);
+                    pid = pid.replaceAll("[:]", "..");
+                }
+
                 final org.apache.sling.feature.Configuration newCfg;
                 if ( cfg.getFactoryPid() != null ) {
-                    String pid = cfg.getPid();
-                    if (pid.startsWith(":")) {
-                        // The configurator doesn't accept colons ':' in it's keys, so replace these
-                        pid = ".." + pid.substring(1);
-                    }
-
-                    String[] runModeNames = runMode.getNames();
-                    if (runModeNames != null) {
-                        pid = pid + ".runmodes." + String.join(".", runModeNames);
-                    }
-
                     newCfg = new org.apache.sling.feature.Configuration(cfg.getFactoryPid(), pid);
                 } else {
-                    String pid = cfg.getPid();
-                    if (pid.startsWith(":")) {
-                        // The configurator doesn't accept colons ':' in it's keys, so replace these
-                        pid = ".." + pid.substring(1);
-                    }
-
-                    String[] runModeNames = runMode.getNames();
-                    if (runModeNames != null) {
-                        pid = pid + ".runmodes." + String.join(".", runModeNames);
-                    }
-
                     newCfg = new org.apache.sling.feature.Configuration(pid);
                 }
                 final Enumeration<String> keys = cfg.getProperties().keys();

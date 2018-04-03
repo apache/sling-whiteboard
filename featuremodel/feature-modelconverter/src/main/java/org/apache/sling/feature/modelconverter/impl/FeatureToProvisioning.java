@@ -157,7 +157,7 @@ public class FeatureToProvisioning {
                 c = new Configuration(cfg.getName(), cfg.getFactoryPid());
             } else {
                 String pid = cfg.getPid();
-                pid = pid.replaceAll("[.][.](\\S+)", ":$1");
+                pid = pid.replaceAll("[.][.](\\w+)", ":$1");
                 int rmIdx = pid.indexOf(".runmodes.");
                 if (rmIdx > 0) {
                     String rm = pid.substring(rmIdx + ".runmodes.".length());
