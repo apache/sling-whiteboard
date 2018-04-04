@@ -405,11 +405,34 @@ public class ProvisioningToFeature {
         }
         Extension repoExtension = extensions.getByName(Extension.NAME_REPOINIT);
         for(final Section sect : feature.getAdditionalSections("repoinit")) {
-            final String text = sect.getContents();
+            String text = sect.getContents();
             if ( repoExtension == null ) {
-                repoExtension = new Extension(ExtensionType.TEXT, Extension.NAME_REPOINIT, true);
+//                repoExtension = new Extension(ExtensionType.TEXT, Extension.NAME_REPOINIT, true);
+//                extensions.add(repoExtension);
+//                repoExtension.setJSON(text);
+
+                repoExtension = new Extension(ExtensionType.JSON, Extension.NAME_REPOINIT, true);
                 extensions.add(repoExtension);
-                repoExtension.setText(text);
+                text = text.replace('\t', ' ');
+                String[] lines = text.split("[\n]");
+
+                StringBuilder sb = new StringBuilder();
+                sb.append('[');
+
+                boolean first = true;
+                for (String t : lines) {
+                    if (first)
+                        first = false;
+                    else
+                        sb.append(',');
+
+                    sb.append('"');
+                    sb.append(t);
+                    sb.append('"');
+                }
+                sb.append(']');
+
+                repoExtension.setJSON(sb.toString());
             } else {
                 repoExtension.setText(repoExtension.getText() + "\n\n" + text);
             }

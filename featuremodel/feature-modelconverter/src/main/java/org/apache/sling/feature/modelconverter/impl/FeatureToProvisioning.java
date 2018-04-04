@@ -21,6 +21,7 @@ import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Bundles;
 import org.apache.sling.feature.Configurations;
 import org.apache.sling.feature.Extension;
+import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.Extensions;
 import org.apache.sling.feature.KeyValueMap;
 import org.apache.sling.feature.process.FeatureResolver;
@@ -41,10 +42,17 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonReader;
+import javax.json.JsonString;
+import javax.json.JsonValue;
 
 /** Converter that converts the feature model to the provisioning model.
  */
@@ -214,7 +222,20 @@ public class FeatureToProvisioning {
 
             } else if ( Extension.NAME_REPOINIT.equals(ext.getName()) ) {
                 final Section section = new Section("repoinit");
-                section.setContents(ext.getText());
+                if (ext.getType() == ExtensionType.TEXT) {
+                    section.setContents(ext.getText());
+                } else if (ext.getType() == ExtensionType.JSON) {
+                    JsonReader reader = Json.createReader(new StringReader(ext.getJSON()));
+                    JsonArray arr = reader.readArray();
+                    StringBuilder sb = new StringBuilder();
+                    for (JsonValue v : arr) {
+                        if (v instanceof JsonString) {
+                            sb.append(((JsonString) v).getString());
+                            sb.append('\n');
+                        }
+                    }
+                    section.setContents(sb.toString());
+                }
                 f.getAdditionalSections().add(section);
             } else if ( ext.isRequired() ) {
                 LOGGER.error("Unable to convert required extension {}", ext.getName());

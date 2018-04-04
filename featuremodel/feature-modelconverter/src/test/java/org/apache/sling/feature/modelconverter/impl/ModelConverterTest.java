@@ -19,6 +19,7 @@ package org.apache.sling.feature.modelconverter.impl;
 import org.apache.sling.feature.Bundles;
 import org.apache.sling.feature.Configurations;
 import org.apache.sling.feature.Extension;
+import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.Extensions;
 import org.apache.sling.feature.support.ArtifactManager;
 import org.apache.sling.feature.support.ArtifactManagerConfig;
@@ -505,9 +506,15 @@ public class ModelConverterTest {
             assertEquals(ex.getName(), ac.getName());
             assertEquals(ex.isRequired(), ac.isRequired());
 
-            String exTxt = ex.getText().replaceAll("\\s+", "");
-            String acTxt = ac.getText().replaceAll("\\s+", "");
-            assertEquals(exTxt, acTxt);
+            if (ex.getType() == ExtensionType.TEXT) {
+                String exTxt = ex.getText().replaceAll("\\s+", "");
+                String acTxt = ac.getText().replaceAll("\\s+", "");
+                assertEquals(exTxt, acTxt);
+            } else if (ex.getType() == ExtensionType.JSON) {
+                String exJson = ex.getJSON().replaceAll("\\s+", "").replaceAll("\"\",", "");
+                String acJson = ac.getJSON().replaceAll("\\s+", "").replaceAll("\"\",", "");
+                assertEquals(exJson, acJson);
+            }
 
             /* TODO reinstantiate for Artifacts extentions
             assertEquals(ex.getArtifacts().size(), ac.getArtifacts().size());
