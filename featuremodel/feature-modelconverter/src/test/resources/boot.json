@@ -92,8 +92,8 @@
         "localIndexDir": "${sling.home}/repository/index",
         
         "# we need runmodes here too...": "",
-        ".runmodes:a:something": "else",
-        ".runmodes::b:special": "true", 
+        "something.runmodes:a": "else",
+        "special.runmodes::b": "true", 
         
         "#": "${sling.home} needs to be provided at launch time"
     }

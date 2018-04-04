@@ -183,11 +183,12 @@ public class FeatureToProvisioning {
         // framework properties
         for(final Map.Entry<String, String> prop : frameworkProps) {
             String key = prop.getKey();
-            if (key.startsWith(".runmodes:")) {
-                int lastIdx = key.lastIndexOf(':');
-                String rm = key.substring(".runmodes:".length(), lastIdx);
+            int idx = key.indexOf(".runmodes:");
+
+            if (idx > 0) {
+                String rm = key.substring(idx + ".runmodes:".length());
                 String[] runmodes = rm.split(",");
-                key = key.substring(lastIdx + 1);
+                key = key.substring(0, idx);
                 f.getOrCreateRunMode(runmodes).getSettings().put(key, prop.getValue());
             } else {
                 f.getOrCreateRunMode(null).getSettings().put(key, prop.getValue());

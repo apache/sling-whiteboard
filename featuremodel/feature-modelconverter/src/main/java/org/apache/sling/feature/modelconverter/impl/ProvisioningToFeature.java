@@ -398,8 +398,8 @@ public class ProvisioningToFeature {
                 if (runModeNames == null) {
                     properties.put(prop.getKey(), prop.getValue());
                 } else {
-                    properties.put(".runmodes:" + String.join(",", runModeNames) + ":" +
-                            prop.getKey(), prop.getValue());
+                    properties.put(prop.getKey() + ".runmodes:" + String.join(",", runModeNames),
+                            prop.getValue());
                 }
             }
         }
