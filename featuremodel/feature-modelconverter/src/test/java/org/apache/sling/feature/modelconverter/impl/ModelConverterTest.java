@@ -161,19 +161,13 @@ public class ModelConverterTest {
 
     public void testConvertFromProvModelRoundTrip(File orgProvModel) throws Exception {
         System.out.println("*** Roundtrip converting: " + orgProvModel.getName());
-        String genJSONPrefix = orgProvModel.getName() + ".json";
-        String genTxtPrefix = orgProvModel.getName() + ".txt";
-        String genSuffix = ".generated";
-        File outJSONFile = new File(tempDir.toFile(), genJSONPrefix + genSuffix);
         List<File> allGenerateProvisioningModelFiles = new ArrayList<>();
 
-        ProvisioningToFeature.convert(orgProvModel, outJSONFile.getAbsolutePath());
+        List<File> generated = ProvisioningToFeature.convert(orgProvModel, tempDir.toFile());
 
-        for (File f : tempDir.toFile().listFiles((p, n) -> n.startsWith(genJSONPrefix))) {
-            String infix = f.getName().substring(genJSONPrefix.length(),
-                    f.getName().length() - genSuffix.length());
-
-            File genFile = new File(tempDir.toFile(), genTxtPrefix + infix + genSuffix);
+        for (File f : generated) {
+            String baseName = f.getName().substring(0, f.getName().length() - ".json".length());
+            File genFile = new File(tempDir.toFile(), baseName + ".txt");
             allGenerateProvisioningModelFiles.add(genFile);
             FeatureToProvisioning.convert(f, genFile.getAbsolutePath(), artifactManager);
         }
@@ -185,14 +179,14 @@ public class ModelConverterTest {
 
     public void testConvertToFeature(String originalProvModel, String expectedJSON) throws Exception {
         File inFile = new File(getClass().getResource(originalProvModel).toURI());
-        File outFile = new File(tempDir.toFile(), expectedJSON + ".generated");
 
-        String outPath = outFile.getAbsolutePath();
-        ProvisioningToFeature.convert(inFile, outPath);
+        List<File> files = ProvisioningToFeature.convert(inFile, tempDir.toFile());
+        assertEquals("The testing code expects a single output file here", 1, files.size());
+        File outFile = files.get(0);
 
         String expectedFile = new File(getClass().getResource(expectedJSON).toURI()).getAbsolutePath();
         org.apache.sling.feature.Feature expected = FeatureUtil.getFeature(expectedFile, artifactManager, SubstituteVariables.NONE);
-        org.apache.sling.feature.Feature actual = FeatureUtil.getFeature(outPath, artifactManager, SubstituteVariables.NONE);
+        org.apache.sling.feature.Feature actual = FeatureUtil.getFeature(outFile.getAbsolutePath(), artifactManager, SubstituteVariables.NONE);
         assertFeaturesEqual(expected, actual);
     }
 

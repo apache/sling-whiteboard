@@ -68,16 +68,27 @@ import java.util.Set;
 public class ProvisioningToFeature {
     private static Logger LOGGER = LoggerFactory.getLogger(ProvisioningToFeature.class);
 
-    public static void convert(File file, String output) {
+    public static List<File> convert(File file, File outDir) {
         Model model = createModel(Collections.singletonList(file), null, true, false);
         final List<org.apache.sling.feature.Feature> features = buildFeatures(model);
-        if (features.size() != 1) {
-            for (int i=0; i<features.size(); i++) {
-                writeFeature(features.get(i), output, i+1);
+
+        List<File> files = new ArrayList<>();
+        for (org.apache.sling.feature.Feature f : features) {
+            String id = f.getVariables().get("provisioning.model.name");
+            if (id == null) {
+                id = f.getId().getArtifactId();
             }
-        } else {
-            writeFeature(features.get(0), output, 0);
+
+            File outFile = new File(outDir, id + ".json");
+            int counter = 0;
+            while (outFile.exists()) {
+                outFile = new File(outDir, id + "_" + (++counter) + ".json");
+            }
+
+            files.add(outFile);
+            writeFeature(f, outFile.getAbsolutePath(), 0);
         }
+        return files;
     }
 
     public static void convert(List<File> files,  String outputFile, String runModes, boolean createApp,
@@ -147,8 +158,6 @@ public class ProvisioningToFeature {
         } else {
             modes = calculateRunModes(effectiveModel, runModes);
         }
-
-        // removeInactiveFeaturesAndRunModes(effectiveModel, modes);
 
         return effectiveModel;
     }
@@ -234,81 +243,6 @@ public class ProvisioningToFeature {
     throws IOException {
         try (final FileReader is = new FileReader(file)) {
             return ModelReader.read(is, file.getAbsolutePath());
-        }
-    }
-
-    // TODO is this needed for something?
-    private static void removeInactiveFeaturesAndRunModes(final Model m,
-            final Set<String> activeRunModes) {
-        final String[] requiredFeatures = new String[] {ModelConstants.FEATURE_LAUNCHPAD, ModelConstants.FEATURE_BOOT};
-        // first pass:
-        // - remove special features except boot required ones
-        // - remove special run modes and inactive run modes
-        // - remove special configurations (TODO)
-        final Iterator<Feature> i = m.getFeatures().iterator();
-        while ( i.hasNext() ) {
-            final Feature feature = i.next();
-            if ( feature.isSpecial() ) {
-                boolean remove = true;
-                if ( requiredFeatures != null ) {
-                    for(final String name : requiredFeatures) {
-                        if ( feature.getName().equals(name) ) {
-                            remove = false;
-                            break;
-                        }
-                    }
-                }
-                if ( remove ) {
-                    i.remove();
-                    continue;
-                }
-            }
-            feature.setComment(null);
-            final Iterator<RunMode> rmI = feature.getRunModes().iterator();
-            while ( rmI.hasNext() ) {
-                final RunMode rm = rmI.next();
-                if ( rm.isActive(activeRunModes) || rm.isRunMode(ModelConstants.RUN_MODE_STANDALONE) ) {
-                    final Iterator<Configuration> cI = rm.getConfigurations().iterator();
-                    while ( cI.hasNext() ) {
-                        final Configuration config = cI.next();
-                        if ( config.isSpecial() ) {
-                            cI.remove();
-                            continue;
-                        }
-                        config.setComment(null);
-                    }
-                } else {
-                    rmI.remove();
-                    continue;
-                }
-            }
-        }
-
-        // second pass: aggregate the settings and add them to the first required feature
-        final Feature requiredFeature = m.getFeature(requiredFeatures[0]);
-        if ( requiredFeature != null ) {
-            for(final Feature f : m.getFeatures()) {
-                if ( f.getName().equals(requiredFeature.getName()) ) {
-                    continue;
-                }
-                copyAndClearSettings(requiredFeature, f.getRunMode(new String[] {ModelConstants.RUN_MODE_STANDALONE}));
-                copyAndClearSettings(requiredFeature, f.getRunMode());
-            }
-        }
-    }
-
-    private static void copyAndClearSettings(final Feature requiredFeature, final RunMode rm) {
-        if ( rm != null && !rm.getSettings().isEmpty() ) {
-            final RunMode requiredRunMode = requiredFeature.getOrCreateRunMode(null);
-            final Set<String> keys = new HashSet<>();
-            for(final Map.Entry<String, String> entry : rm.getSettings()) {
-                requiredRunMode.getSettings().put(entry.getKey(), entry.getValue());
-                keys.add(entry.getKey());
-            }
-
-            for(final String key : keys) {
-                rm.getSettings().remove(key);
-            }
         }
     }
 
@@ -530,8 +464,12 @@ public class ProvisioningToFeature {
         }
 
         LOGGER.info("to file {}", out);
-
         final File file = new File(out);
+        while (file.exists()) {
+            LOGGER.error("Output file already exists: {}", file.getAbsolutePath());
+            System.exit(1);
+        }
+
         try ( final FileWriter writer = new FileWriter(file)) {
             FeatureJSONWriter.write(writer, f, WriteOption.OLD_STYLE_FACTORY_CONFIGS);
         } catch ( final IOException ioe) {
