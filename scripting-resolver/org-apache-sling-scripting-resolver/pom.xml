@@ -105,5 +105,85 @@
         </dependency>
     </dependencies>
 
+    <profiles>
+        <profile>
+            <id>it</id>
+            <properties>
+                <!--<http.port>8080</http.port>-->
+                <http.host>localhost</http.host>
+                <sling.vm.options>-Xmx1024m -XX:MaxPermSize=256m -Djava.awt.headless=true</sling.vm.options>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>reserve-network-port</id>
+                                <goals>
+                                    <!-- pre-integration-test is too late -->
+                                    <goal>reserve-network-port</goal>
+                                </goals>
+                                <phase>process-resources</phase>
+                                <configuration>
+                                    <portNames>
+                                        <portName>http.port</portName>
+                                    </portNames>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <!-- the Sling instance is provisioned from the model in src/test/provisioning/it-model.txt -->
+                        <groupId>org.apache.sling</groupId>
+                        <artifactId>slingstart-maven-plugin</artifactId>
+                        <version>1.7.16</version>
+                        <extensions>true</extensions>
+                        <executions>
+                            <execution>
+                                <id>prepare-launchpad-package</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>prepare-package</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>build-launchpad-package</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>package</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>start-container-before-IT</id>
+                                <goals>
+                                    <goal>start</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>stop-container-after-IT</id>
+                                <goals>
+                                    <goal>stop</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <usePomDependencies>true</usePomDependencies>
+                            <attachArtifact>false</attachArtifact>
+                            <!-- <shouldBlockUntilKeyIsPressed>true</shouldBlockUntilKeyIsPressed> -->
+                            <servers>
+                                <server>
+                                    <id>singleinstance</id>
+                                    <port>${http.port}</port>
+                                    <vmOpts>${sling.vm.options}</vmOpts>
+                                </server>
+                            </servers>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>
