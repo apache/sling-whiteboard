@@ -18,10 +18,12 @@
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 package org.apache.sling.scripting.resolver.internal;
 
+import org.apache.commons.lang3.StringUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.ServiceRegistration;
+import org.osgi.framework.Version;
 import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.service.component.annotations.Activate;
@@ -36,6 +38,7 @@ import javax.servlet.Servlet;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Component(
@@ -48,6 +51,7 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<ServiceRegi
 
     public static final String NS_JAVAX_SCRIPT_CAPABILITY = "javax.script";
     public static final String AT_SLING_RESOURCE_TYPE = "sling.resourceType";
+    public static final String AT_SLING_RESOURCE_TYPE_VERSION = "sling.resourceType.version";
 
     private volatile BundleContext m_context;
     private volatile BundleTracker<ServiceRegistration<Servlet>> m_tracker;
@@ -65,37 +69,40 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<ServiceRegi
     }
 
     @Override
-    public ServiceRegistration<Servlet> addingBundle(Bundle bundle, BundleEvent event)
-    {
+    public ServiceRegistration<Servlet> addingBundle(Bundle bundle, BundleEvent event) {
 
         BundleWiring bundleWiring = bundle.adapt(BundleWiring.class);
         List<BundleCapability> capabilities = bundleWiring.getCapabilities(NS_JAVAX_SCRIPT_CAPABILITY);
         LOGGER.debug("Inspecting bundle {} for {} capability.", bundle.getSymbolicName(), NS_JAVAX_SCRIPT_CAPABILITY);
-        String[] resourceTypes = capabilities.stream().map(cap -> cap.getAttributes().get(AT_SLING_RESOURCE_TYPE)).filter(Objects::nonNull).toArray(String[]::new);
-
-        if (resourceTypes.length > 0)
-        {
+        String[] resourceTypes = capabilities.stream().map(cap -> {
+            Map<String, Object> attributes = cap.getAttributes();
+            String resourceType = (String) attributes.get(AT_SLING_RESOURCE_TYPE);
+            Version version = (Version) attributes.get(AT_SLING_RESOURCE_TYPE_VERSION);
+            if (StringUtils.isNotEmpty(resourceType) && version != null) {
+                return resourceType + "/" + version;
+            } else if (StringUtils.isNotEmpty(resourceType)) {
+                return resourceType;
+            }
+            return null;
+        }).filter(Objects::nonNull).toArray(String[]::new);
+        if (resourceTypes.length > 0) {
             Hashtable<String, Object> properties = new Hashtable<>();
             properties.put("sling.servlet.resourceTypes", resourceTypes);
             properties.put("sling.servlet.methods", new String[]{"TRACE", "OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE"});
-            LOGGER.debug("Registering bundle {} for {} resourceTypes {}", bundle.getSymbolicName(), Arrays.asList(resourceTypes));
+            LOGGER.debug("Registering bundle {} for {} resourceTypes.", bundle.getSymbolicName(), Arrays.asList(resourceTypes));
             return m_context.registerService(Servlet.class, new BundledScriptServlet(bundle), properties);
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
 
     @Override
-    public void modifiedBundle(Bundle bundle, BundleEvent event, ServiceRegistration<Servlet> reg)
-    {
+    public void modifiedBundle(Bundle bundle, BundleEvent event, ServiceRegistration<Servlet> reg) {
         LOGGER.warn(String.format("Unexpected modified event: %s for bundle %s", event.toString(), bundle.toString()));
     }
 
     @Override
-    public void removedBundle(Bundle bundle, BundleEvent event, ServiceRegistration<Servlet> reg)
-    {
+    public void removedBundle(Bundle bundle, BundleEvent event, ServiceRegistration<Servlet> reg) {
         LOGGER.debug("Bundle {} removed", bundle.getSymbolicName());
         reg.unregister();
     }
