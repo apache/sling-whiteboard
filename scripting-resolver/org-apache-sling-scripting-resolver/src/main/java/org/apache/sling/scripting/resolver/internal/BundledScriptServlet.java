@@ -18,10 +18,10 @@
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 package org.apache.sling.scripting.resolver.internal;
 
-import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
+import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.osgi.framework.Bundle;
 
-class BundledScriptServlet extends SlingSafeMethodsServlet
+class BundledScriptServlet extends SlingAllMethodsServlet
 {
     private final Bundle m_bundle;
 

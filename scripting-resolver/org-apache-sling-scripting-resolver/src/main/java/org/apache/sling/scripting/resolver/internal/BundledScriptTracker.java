@@ -18,12 +18,6 @@
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 package org.apache.sling.scripting.resolver.internal;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Objects;
-
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
@@ -39,6 +33,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.Servlet;
+import java.util.Arrays;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Objects;
 
 @Component(
         service = {}
@@ -79,6 +77,7 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<ServiceRegi
         {
             Hashtable<String, Object> properties = new Hashtable<>();
             properties.put("sling.servlet.resourceTypes", resourceTypes);
+            properties.put("sling.servlet.methods", new String[]{"TRACE", "OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE"});
             LOGGER.debug("Registering bundle {} for {} resourceTypes {}", bundle.getSymbolicName(), Arrays.asList(resourceTypes));
             return m_context.registerService(Servlet.class, new BundledScriptServlet(bundle), properties);
         }
