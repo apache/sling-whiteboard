@@ -72,12 +72,20 @@ public class ProvisioningToFeature {
         Model model = createModel(Collections.singletonList(file), null, true, false);
         final List<org.apache.sling.feature.Feature> features = buildFeatures(model);
 
+        String bareFileName = file.getName();
+        int idx = bareFileName.lastIndexOf('.');
+        if (idx > 0) {
+            bareFileName = bareFileName.substring(0, idx);
+        }
+
         List<File> files = new ArrayList<>();
         for (org.apache.sling.feature.Feature f : features) {
             String id = f.getVariables().get("provisioning.model.name");
             if (id == null) {
                 id = f.getId().getArtifactId();
             }
+
+            id = bareFileName + "_" + id;
 
             File outFile = new File(outDir, id + ".json");
             int counter = 0;
