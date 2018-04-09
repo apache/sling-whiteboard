@@ -18,6 +18,8 @@
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 package org.apache.sling.scripting.resolver.internal;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Objects;
@@ -77,6 +79,7 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<ServiceRegi
         {
             Hashtable<String, Object> properties = new Hashtable<>();
             properties.put("sling.servlet.resourceTypes", resourceTypes);
+            LOGGER.debug("Registering bundle {} for {} resourceTypes {}", bundle.getSymbolicName(), Arrays.asList(resourceTypes));
             return m_context.registerService(Servlet.class, new BundledScriptServlet(bundle), properties);
         }
         else
