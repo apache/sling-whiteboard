@@ -1,5 +1,5 @@
 {
-    "id": "org.apache.sling.simple/oak/1.0.0",
+    "id": "generated/oak/1.0.0",
     
     "variables": {
         "oak.version": "1.6.8"

@@ -68,9 +68,9 @@ import java.util.Set;
 public class ProvisioningToFeature {
     private static Logger LOGGER = LoggerFactory.getLogger(ProvisioningToFeature.class);
 
-    public static List<File> convert(File file, File outDir) {
+    public static List<File> convert(File file, File outDir, Map<String, Object> options) {
         Model model = createModel(Collections.singletonList(file), null, true, false);
-        final List<org.apache.sling.feature.Feature> features = buildFeatures(model);
+        final List<org.apache.sling.feature.Feature> features = buildFeatures(model, options);
 
         String bareFileName = file.getName();
         int idx = bareFileName.lastIndexOf('.');
@@ -108,7 +108,7 @@ public class ProvisioningToFeature {
 
             writeApplication(app, outputFile);
         } else {
-            final List<org.apache.sling.feature.Feature> features = buildFeatures(model);
+            final List<org.apache.sling.feature.Feature> features = buildFeatures(model, Collections.emptyMap());
             int index = 1;
             for(final org.apache.sling.feature.Feature feature : features) {
                 writeFeature(feature, outputFile, features.size() > 1 ? index : 0);
@@ -448,20 +448,24 @@ public class ProvisioningToFeature {
     }
 
 
-    private static List<org.apache.sling.feature.Feature> buildFeatures(final Model model) {
+    private static List<org.apache.sling.feature.Feature> buildFeatures(Model model, Map<String, Object> options) {
         final List<org.apache.sling.feature.Feature> features = new ArrayList<>();
+
+        String groupId = getOption(options, "groupId", "generated");
+        String version = getOption(options, "version", "1.0.0");
 
         for(final Feature feature : model.getFeatures() ) {
             final String idString;
-            // use a default name if not present or not usable as a Maven artifactId ( starts with ':')
-            if ( feature.getName() != null && !feature.isSpecial() ) {
+            String name = feature.getName();
+            if ( name != null ) {
+                name = name.replaceAll("[:]", "");
                 if ( feature.getVersion() != null ) {
-                    idString = "generated/" + feature.getName() + "/" + feature.getVersion();
+                    idString = groupId + "/" + name + "/" + feature.getVersion();
                 } else {
-                    idString = "generated/" + feature.getName() + "/1.0.0";
+                    idString = groupId + "/" + name + "/" + version;
                 }
             } else {
-                idString = "generated/feature/1.0.0";
+                idString = groupId + "/feature/" + version;
             }
             final org.apache.sling.feature.Feature f = new org.apache.sling.feature.Feature(ArtifactId.parse(idString));
             features.add(f);
@@ -470,6 +474,15 @@ public class ProvisioningToFeature {
         }
 
         return features;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T getOption(Map<String, Object> options, String name, T defaultValue) {
+        if (options.containsKey(name)) {
+            return (T) options.get(name);
+        } else {
+            return defaultValue;
+        }
     }
 
     private static void writeApplication(final Application app, final String out) {

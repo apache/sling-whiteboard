@@ -1,5 +1,5 @@
 {
-  "id":"generated:feature:1.0.0",
+  "id":"generated:launchpad:1.0.0",
   "variables":{
     "provisioning.model.name":":launchpad"
   },

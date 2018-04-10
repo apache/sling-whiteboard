@@ -160,11 +160,31 @@ public class ModelConverterTest {
         }
     }
 
+    @Test
+    public void testModelGAV() throws Exception {
+        String originalProvModel = "/boot.txt";
+        String expectedJSON = "/boot_gav.json";
+
+        File inFile = new File(getClass().getResource(originalProvModel).toURI());
+
+        Map<String, Object> options = new HashMap<>();
+        options.put("groupId", "testing123");
+        options.put("version", "4.5.6");
+        List<File> files = ProvisioningToFeature.convert(inFile, tempDir.toFile(), options);
+        assertEquals("The testing code expects a single output file here", 1, files.size());
+        File outFile = files.get(0);
+
+        String expectedFile = new File(getClass().getResource(expectedJSON).toURI()).getAbsolutePath();
+        org.apache.sling.feature.Feature expected = FeatureUtil.getFeature(expectedFile, artifactManager, SubstituteVariables.NONE);
+        org.apache.sling.feature.Feature actual = FeatureUtil.getFeature(outFile.getAbsolutePath(), artifactManager, SubstituteVariables.NONE);
+        assertFeaturesEqual(expected, actual);
+    }
+
     public void testConvertFromProvModelRoundTrip(File orgProvModel) throws Exception {
         System.out.println("*** Roundtrip converting: " + orgProvModel.getName());
         List<File> allGenerateProvisioningModelFiles = new ArrayList<>();
 
-        List<File> generated = ProvisioningToFeature.convert(orgProvModel, tempDir.toFile());
+        List<File> generated = ProvisioningToFeature.convert(orgProvModel, tempDir.toFile(), Collections.emptyMap());
 
         for (File f : generated) {
             String baseName = f.getName().substring(0, f.getName().length() - ".json".length());
@@ -181,7 +201,7 @@ public class ModelConverterTest {
     public void testConvertToFeature(String originalProvModel, String expectedJSON) throws Exception {
         File inFile = new File(getClass().getResource(originalProvModel).toURI());
 
-        List<File> files = ProvisioningToFeature.convert(inFile, tempDir.toFile());
+        List<File> files = ProvisioningToFeature.convert(inFile, tempDir.toFile(), Collections.emptyMap());
         assertEquals("The testing code expects a single output file here", 1, files.size());
         File outFile = files.get(0);
 
@@ -234,6 +254,7 @@ public class ModelConverterTest {
     }
 
     private void assertFeaturesEqual(org.apache.sling.feature.Feature expected, org.apache.sling.feature.Feature actual) {
+        assertEquals(expected.getId(), actual.getId());
         assertEquals(expected.getTitle(), actual.getTitle());
         assertEquals(expected.getDescription(), actual.getDescription());
         assertEquals(expected.getVendor(), actual.getVendor());
