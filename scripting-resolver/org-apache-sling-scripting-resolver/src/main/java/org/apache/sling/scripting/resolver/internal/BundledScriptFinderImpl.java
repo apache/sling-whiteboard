@@ -20,7 +20,6 @@ package org.apache.sling.scripting.resolver.internal;
 
 import java.io.IOException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -28,7 +27,6 @@ import java.util.List;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.scripting.resolver.BundledScriptFinder;
@@ -75,8 +73,7 @@ public class BundledScriptFinderImpl implements BundledScriptFinder {
         for (String extension : scriptEngineExtensions) {
             URL bundledScriptURL = bundle.getEntry(BundledScriptTracker.NS_JAVAX_SCRIPT_CAPABILITY + "/" + scriptPath + "." + extension);
             if (bundledScriptURL != null) {
-                return new ScriptImpl(scriptEngineManager.getEngineByExtension(extension),
-                        IOUtils.toString(bundledScriptURL.openStream(), StandardCharsets.UTF_8));
+                return new ScriptImpl(bundledScriptURL, scriptEngineManager.getEngineByExtension(extension));
             }
         }
         return null;

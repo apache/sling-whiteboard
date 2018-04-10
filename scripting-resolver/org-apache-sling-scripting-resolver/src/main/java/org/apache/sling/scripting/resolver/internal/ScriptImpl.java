@@ -18,39 +18,46 @@
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 package org.apache.sling.scripting.resolver.internal;
 
-import java.io.Reader;
-import java.io.StringReader;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
-import javax.annotation.Nonnull;
-import javax.script.Bindings;
 import javax.script.ScriptEngine;
-import javax.script.ScriptException;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.sling.scripting.resolver.Script;
-
 
 public class ScriptImpl implements Script {
 
+    private URL url;
     private ScriptEngine scriptEngine;
     private String sourceCode;
 
-    public ScriptImpl(ScriptEngine scriptEngine, String sourceCode) {
+    public ScriptImpl(URL url, ScriptEngine scriptEngine) {
+        this.url = url;
         this.scriptEngine = scriptEngine;
-        this.sourceCode = sourceCode;
     }
 
     @Override
-    public Reader getSourceCodeReader() {
-        return new StringReader(sourceCode);
-    }
-
-    @Override
-    public String getSourceCode() {
+    public String getSourceCode() throws IOException {
+        if (sourceCode == null) {
+            sourceCode = IOUtils.toString(url.openStream(), StandardCharsets.UTF_8);
+        }
         return sourceCode;
     }
 
     @Override
-    public Object eval(@Nonnull Bindings props) throws ScriptException {
-        return scriptEngine.eval(sourceCode, props);
+    public ScriptEngine getScriptEngine() {
+        return scriptEngine;
+    }
+
+    @Override
+    public URL getURL() {
+        return url;
+    }
+
+    @Override
+    public String getName() {
+        return url.getPath();
     }
 }

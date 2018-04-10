@@ -18,21 +18,22 @@
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 package org.apache.sling.scripting.resolver;
 
-import java.io.Reader;
+import java.io.IOException;
+import java.net.URL;
 
-import javax.annotation.Nonnull;
-import javax.script.Bindings;
-import javax.script.ScriptException;
+import javax.script.ScriptEngine;
 
 import org.osgi.annotation.versioning.ProviderType;
 
 @ProviderType
 public interface Script {
 
-    Reader getSourceCodeReader();
+    String getSourceCode() throws IOException;
 
-    String getSourceCode();
+    ScriptEngine getScriptEngine();
 
-    Object eval(@Nonnull Bindings props) throws ScriptException;
+    URL getURL();
+
+    String getName();
 
 }

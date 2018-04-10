@@ -56,6 +56,9 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<ServiceRegi
     @Reference
     private BundledScriptFinder bundledScriptFinder;
 
+    @Reference
+    private ScriptContextProvider scriptContextProvider;
+
     public static final String NS_JAVAX_SCRIPT_CAPABILITY = "javax.script";
     public static final String AT_SLING_RESOURCE_TYPE = "sling.resourceType";
     public static final String AT_SLING_RESOURCE_TYPE_VERSION = "sling.resourceType.version";
@@ -96,7 +99,7 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<ServiceRegi
             properties.put("sling.servlet.resourceTypes", resourceTypes);
             properties.put("sling.servlet.methods", new String[]{"TRACE", "OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE"});
             LOGGER.debug("Registering bundle {} for {} resourceTypes.", bundle.getSymbolicName(), Arrays.asList(resourceTypes));
-            return m_context.registerService(Servlet.class, new BundledScriptServlet(bundledScriptFinder, bundle), properties);
+            return m_context.registerService(Servlet.class, new BundledScriptServlet(bundledScriptFinder, bundle, scriptContextProvider), properties);
         } else {
             return null;
         }

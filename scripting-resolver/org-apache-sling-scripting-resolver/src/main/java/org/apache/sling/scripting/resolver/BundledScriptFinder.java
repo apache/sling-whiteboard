@@ -27,6 +27,16 @@ import org.osgi.framework.Bundle;
 @ProviderType
 public interface BundledScriptFinder {
 
+    /**
+     * Given a {@code request}, this method finds the most appropriate bundled script to execute, taking into account the {@code
+     * scriptExtensions} priority.
+     *
+     * @param request          the request for which the script has to be found
+     * @param bundle           the bundle in which the scripts for the current resource type are packed (see
+     *                         {@link SlingHttpServletRequest#getResource()})
+     * @return the script to execute
+     * @throws IOException if the script cannot be located
+     */
     Script getScript(SlingHttpServletRequest request, Bundle bundle) throws IOException;
 
 }

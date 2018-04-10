@@ -19,42 +19,61 @@
 package org.apache.sling.scripting.resolver.internal;
 
 import java.io.IOException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.net.URI;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-import javax.script.ScriptEngineFactory;
-import javax.script.ScriptEngineManager;
-import javax.servlet.ServletException;
+import javax.script.CompiledScript;
+import javax.script.ScriptContext;
+import javax.script.ScriptException;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.sling.api.SlingConstants;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
+import org.apache.sling.api.scripting.ScriptEvaluationException;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.scripting.resolver.BundledScriptFinder;
+import org.apache.sling.scripting.resolver.Script;
 import org.osgi.framework.Bundle;
 
 class BundledScriptServlet extends SlingAllMethodsServlet {
 
     private final Bundle m_bundle;
     private final BundledScriptFinder m_bundledScriptFinder;
+    private final ScriptContextProvider m_scriptContextProvider;
 
-    BundledScriptServlet(BundledScriptFinder bundledScriptFinder, Bundle bundle) {
+    private Map<URI, CompiledScript> compiledScriptsMap = new ConcurrentHashMap<>();
+
+    BundledScriptServlet(BundledScriptFinder bundledScriptFinder, Bundle bundle, ScriptContextProvider scriptContextProvider) {
         m_bundle = bundle;
         m_bundledScriptFinder = bundledScriptFinder;
+        m_scriptContextProvider = scriptContextProvider;
     }
 
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
-        String scriptSource = m_bundledScriptFinder.getScript(request, m_bundle).getSourceCode();
-        if (scriptSource != null) {
-            response.getWriter().append(scriptSource);
-            response.setContentType("text/plain");
-            response.flushBuffer();
+        Script script = m_bundledScriptFinder.getScript(request, m_bundle);
+        if (script != null) {
+            if (request.getAttribute(SlingConstants.ATTR_INCLUDE_SERVLET_PATH) == null) {
+                final String contentType = request.getResponseContentType();
+                if (contentType != null) {
+                    response.setContentType(contentType);
+
+                    // only set the character encoding for text/ content types
+                    // see SLING-679
+                    if (contentType.startsWith("text/")) {
+                        response.setCharacterEncoding("UTF-8");
+                    }
+                }
+            }
+            ScriptContext scriptContext = m_scriptContextProvider.prepareScriptContext(request, response, script);
+            try {
+                script.getScriptEngine().eval(script.getSourceCode(), scriptContext);
+            } catch (ScriptException e) {
+                Throwable cause = (e.getCause() == null) ? e : e.getCause();
+                throw new ScriptEvaluationException(script.getName(), e.getMessage(), cause);
+            }
         } else {
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
