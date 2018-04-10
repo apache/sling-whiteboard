@@ -19,6 +19,7 @@
 package org.apache.sling.scripting.resolver.internal;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.sling.scripting.resolver.BundledScriptFinder;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
@@ -29,12 +30,16 @@ import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.util.tracker.BundleTracker;
 import org.osgi.util.tracker.BundleTrackerCustomizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.script.ScriptEngineManager;
 import javax.servlet.Servlet;
+
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
@@ -44,10 +49,12 @@ import java.util.Objects;
 @Component(
         service = {}
 )
-public class BundledScriptTracker implements BundleTrackerCustomizer<ServiceRegistration<Servlet>>
-{
+public class BundledScriptTracker implements BundleTrackerCustomizer<ServiceRegistration<Servlet>> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BundledScriptTracker.class);
+
+    @Reference
+    private BundledScriptFinder bundledScriptFinder;
 
     public static final String NS_JAVAX_SCRIPT_CAPABILITY = "javax.script";
     public static final String AT_SLING_RESOURCE_TYPE = "sling.resourceType";
@@ -70,7 +77,6 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<ServiceRegi
 
     @Override
     public ServiceRegistration<Servlet> addingBundle(Bundle bundle, BundleEvent event) {
-
         BundleWiring bundleWiring = bundle.adapt(BundleWiring.class);
         List<BundleCapability> capabilities = bundleWiring.getCapabilities(NS_JAVAX_SCRIPT_CAPABILITY);
         LOGGER.debug("Inspecting bundle {} for {} capability.", bundle.getSymbolicName(), NS_JAVAX_SCRIPT_CAPABILITY);
@@ -90,7 +96,7 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<ServiceRegi
             properties.put("sling.servlet.resourceTypes", resourceTypes);
             properties.put("sling.servlet.methods", new String[]{"TRACE", "OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE"});
             LOGGER.debug("Registering bundle {} for {} resourceTypes.", bundle.getSymbolicName(), Arrays.asList(resourceTypes));
-            return m_context.registerService(Servlet.class, new BundledScriptServlet(bundle), properties);
+            return m_context.registerService(Servlet.class, new BundledScriptServlet(bundledScriptFinder, bundle), properties);
         } else {
             return null;
         }
