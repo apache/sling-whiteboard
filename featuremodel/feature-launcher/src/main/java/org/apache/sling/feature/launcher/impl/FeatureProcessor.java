@@ -30,13 +30,13 @@ import org.apache.sling.feature.Configuration;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.launcher.impl.LauncherConfig.StartupMode;
-import org.apache.sling.feature.process.FeatureResolver;
 import org.apache.sling.feature.resolver.FrameworkResolver;
 import org.apache.sling.feature.support.ArtifactHandler;
 import org.apache.sling.feature.support.ArtifactManager;
 import org.apache.sling.feature.support.FeatureUtil;
 import org.apache.sling.feature.support.json.ApplicationJSONReader;
 import org.apache.sling.feature.support.json.ApplicationJSONWriter;
+import org.apache.sling.feature.support.process.FeatureResolver;
 
 public class FeatureProcessor {
 

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.feature.process;
+package org.apache.sling.feature.support.process;
 
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;

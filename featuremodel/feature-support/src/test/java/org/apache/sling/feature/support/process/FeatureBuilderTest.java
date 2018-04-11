@@ -14,12 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.feature.process;
+package org.apache.sling.feature.support.process;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import org.apache.sling.feature.Artifact;
+import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.Configuration;
+import org.apache.sling.feature.Extension;
+import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.Include;
+import org.apache.sling.feature.OSGiCapability;
+import org.apache.sling.feature.OSGiRequirement;
+import org.apache.sling.feature.support.process.BuilderContext;
+import org.apache.sling.feature.support.process.FeatureBuilder;
+import org.apache.sling.feature.support.process.FeatureProvider;
+import org.junit.Test;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,18 +37,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.sling.feature.Artifact;
-import org.apache.sling.feature.ArtifactId;
-import org.apache.sling.feature.BundlesTest;
-import org.apache.sling.feature.Configuration;
-import org.apache.sling.feature.Extension;
-import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.Include;
-import org.apache.sling.feature.OSGiCapability;
-import org.apache.sling.feature.OSGiRequirement;
-import org.junit.Test;
-import org.osgi.resource.Capability;
-import org.osgi.resource.Requirement;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class FeatureBuilderTest {
 
@@ -50,11 +52,11 @@ public class FeatureBuilderTest {
         f1.getFrameworkProperties().put("foo", "2");
         f1.getFrameworkProperties().put("bar", "X");
 
-        f1.getBundles().add(BundlesTest.createBundle("org.apache.sling/foo-bar/4.5.6", 3));
-        f1.getBundles().add(BundlesTest.createBundle("group/testnewversion_low/2", 5));
-        f1.getBundles().add(BundlesTest.createBundle("group/testnewversion_high/2", 5));
-        f1.getBundles().add(BundlesTest.createBundle("group/testnewstartlevel/1", 5));
-        f1.getBundles().add(BundlesTest.createBundle("group/testnewstartlevelandversion/1", 5));
+        f1.getBundles().add(BuilderUtilTest.createBundle("org.apache.sling/foo-bar/4.5.6", 3));
+        f1.getBundles().add(BuilderUtilTest.createBundle("group/testnewversion_low/2", 5));
+        f1.getBundles().add(BuilderUtilTest.createBundle("group/testnewversion_high/2", 5));
+        f1.getBundles().add(BuilderUtilTest.createBundle("group/testnewstartlevel/1", 5));
+        f1.getBundles().add(BuilderUtilTest.createBundle("group/testnewstartlevelandversion/1", 5));
 
         final Configuration c1 = new Configuration("org.apache.sling.foo");
         c1.getProperties().put("prop", "value");
@@ -219,9 +221,9 @@ public class FeatureBuilderTest {
         a1.getMetadata().put(Artifact.KEY_START_ORDER, "1");
         a1.getMetadata().put("hash", "4632463464363646436");
         base.getBundles().add(a1);
-        base.getBundles().add(BundlesTest.createBundle("org.apache.sling/application-bundle/2.0.0", 1));
-        base.getBundles().add(BundlesTest.createBundle("org.apache.sling/another-bundle/2.1.0", 1));
-        base.getBundles().add(BundlesTest.createBundle("org.apache.sling/foo-xyz/1.2.3", 2));
+        base.getBundles().add(BuilderUtilTest.createBundle("org.apache.sling/application-bundle/2.0.0", 1));
+        base.getBundles().add(BuilderUtilTest.createBundle("org.apache.sling/another-bundle/2.1.0", 1));
+        base.getBundles().add(BuilderUtilTest.createBundle("org.apache.sling/foo-xyz/1.2.3", 2));
 
         final Configuration co1 = new Configuration("my.pid");
         co1.getProperties().put("foo", 5L);
@@ -264,13 +266,13 @@ public class FeatureBuilderTest {
         a1.getMetadata().put(Artifact.KEY_START_ORDER, "1");
         a1.getMetadata().put("hash", "4632463464363646436");
         base.getBundles().add(a1);
-        base.getBundles().add(BundlesTest.createBundle("org.apache.sling/application-bundle/2.0.0", 1));
-        base.getBundles().add(BundlesTest.createBundle("org.apache.sling/another-bundle/2.1.0", 1));
-        base.getBundles().add(BundlesTest.createBundle("org.apache.sling/foo-xyz/1.2.3", 2));
-        base.getBundles().add(BundlesTest.createBundle("group/testnewversion_low/1", 5));
-        base.getBundles().add(BundlesTest.createBundle("group/testnewversion_high/5", 5));
-        base.getBundles().add(BundlesTest.createBundle("group/testnewstartlevel/1", 10));
-        base.getBundles().add(BundlesTest.createBundle("group/testnewstartlevelandversion/2", 10));
+        base.getBundles().add(BuilderUtilTest.createBundle("org.apache.sling/application-bundle/2.0.0", 1));
+        base.getBundles().add(BuilderUtilTest.createBundle("org.apache.sling/another-bundle/2.1.0", 1));
+        base.getBundles().add(BuilderUtilTest.createBundle("org.apache.sling/foo-xyz/1.2.3", 2));
+        base.getBundles().add(BuilderUtilTest.createBundle("group/testnewversion_low/1", 5));
+        base.getBundles().add(BuilderUtilTest.createBundle("group/testnewversion_high/5", 5));
+        base.getBundles().add(BuilderUtilTest.createBundle("group/testnewstartlevel/1", 10));
+        base.getBundles().add(BuilderUtilTest.createBundle("group/testnewstartlevelandversion/2", 10));
 
         final Configuration co1 = new Configuration("my.pid");
         co1.getProperties().put("foo", 5L);
@@ -288,7 +290,7 @@ public class FeatureBuilderTest {
         final Feature result = base.copy();
         result.getIncludes().remove(0);
         result.getFrameworkProperties().put("bar", "X");
-        result.getBundles().add(BundlesTest.createBundle("org.apache.sling/foo-bar/4.5.6", 3));
+        result.getBundles().add(BuilderUtilTest.createBundle("org.apache.sling/foo-bar/4.5.6", 3));
         final Configuration co3 = new Configuration("org.apache.sling.foo");
         co3.getProperties().put("prop", "value");
         result.getConfigurations().add(co3);

@@ -24,12 +24,12 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.sling.feature.Application;
 import org.apache.sling.feature.ArtifactId;
-import org.apache.sling.feature.process.FeatureResolver;
 import org.apache.sling.feature.resolver.FrameworkResolver;
 import org.apache.sling.feature.support.ArtifactManager;
 import org.apache.sling.feature.support.ArtifactManagerConfig;
 import org.apache.sling.feature.support.FeatureUtil;
 import org.apache.sling.feature.support.json.ApplicationJSONWriter;
+import org.apache.sling.feature.support.process.FeatureResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

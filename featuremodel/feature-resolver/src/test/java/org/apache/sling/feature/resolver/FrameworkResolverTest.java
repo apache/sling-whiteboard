@@ -18,12 +18,12 @@ package org.apache.sling.feature.resolver;
 
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.FeatureResource;
-import org.apache.sling.feature.process.FeatureResolver;
 import org.apache.sling.feature.support.ArtifactHandler;
 import org.apache.sling.feature.support.ArtifactManager;
 import org.apache.sling.feature.support.ArtifactManagerConfig;
 import org.apache.sling.feature.support.json.FeatureJSONReader;
 import org.apache.sling.feature.support.json.FeatureJSONReader.SubstituteVariables;
+import org.apache.sling.feature.support.process.FeatureResolver;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
