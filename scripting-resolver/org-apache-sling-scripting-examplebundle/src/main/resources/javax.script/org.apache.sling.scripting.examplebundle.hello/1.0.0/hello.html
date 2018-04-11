@@ -16,4 +16,10 @@
   ~ specific language governing permissions and limitations
   ~ under the License.
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/-->
-<div>Hello world!</div>
+<h2>HTL seems to be running</h2>
+<pre data-sly-use.slingSettings="org.apache.sling.settings.SlingSettingsService">
+    sling.home          : ${slingSettings.slingHomePath}
+    sling.id            : ${slingSettings.slingId}
+    sling.name          : ${slingSettings.slingName}
+    sling.description   : ${slingSettings.slingDescription}
+</pre>
