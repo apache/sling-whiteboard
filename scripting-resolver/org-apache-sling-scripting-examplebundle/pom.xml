@@ -42,8 +42,9 @@
                 <configuration>
                     <instructions>
                         <Provide-Capability>
-                            javax.script; sling.resourceType=org.apache.sling.scripting.examplebundle.hello;sling.resourceType.version:Version=1.0.0,
+                            sling.resourceType; sling.resourceType="org.apache.sling.scripting.examplebundle.hello";version:Version="1.0.0"
                         </Provide-Capability>
+                        <Require-Capability>osgi.extender;filter:="(&amp;(osgi.extender=sling.scripting)(version>=1.0.0)(!(version>=2.0.0)))"</Require-Capability>
                     </instructions>
                 </configuration>
             </plugin>

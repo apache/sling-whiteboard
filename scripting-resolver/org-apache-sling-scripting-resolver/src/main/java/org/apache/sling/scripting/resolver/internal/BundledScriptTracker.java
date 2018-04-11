@@ -18,14 +18,19 @@
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 package org.apache.sling.scripting.resolver.internal;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Properties;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.servlet.Servlet;
 
+import aQute.bnd.annotation.headers.ProvideCapability;
 import org.apache.commons.lang3.StringUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -33,6 +38,8 @@ import org.osgi.framework.BundleEvent;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.Version;
 import org.osgi.framework.wiring.BundleCapability;
+import org.osgi.framework.wiring.BundleRevision;
+import org.osgi.framework.wiring.BundleWire;
 import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -46,9 +53,14 @@ import org.slf4j.LoggerFactory;
 @Component(
         service = {}
 )
-public class BundledScriptTracker implements BundleTrackerCustomizer<ServiceRegistration<Servlet>> {
-
+@ProvideCapability(ns = "osgi.extender", name = BundledScriptTracker.NS_SLING_SCRIPTING_EXTENDER, version = "1.0.0")
+public class BundledScriptTracker implements BundleTrackerCustomizer<List<ServiceRegistration<Servlet>>> {
+    static final String NS_SLING_SCRIPTING_EXTENDER = "sling.scripting";
+    private static final String NS_SLING_RESOURCE_TYPE = "sling.resourceType";
     private static final Logger LOGGER = LoggerFactory.getLogger(BundledScriptTracker.class);
+    private static final String AT_SLING_RESOURCE_TYPE_ONLY = "sling.resourceType.standalone";
+    private static final String AT_SLING_SELECTORS = "sling.resourceType.selectors";
+    private static final String AT_SLING_EXTENSIONS = "sling.resourceType.extensions";
 
     @Reference
     private BundledScriptFinder bundledScriptFinder;
@@ -56,12 +68,9 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<ServiceRegi
     @Reference
     private ScriptContextProvider scriptContextProvider;
 
-    static final String NS_JAVAX_SCRIPT_CAPABILITY = "javax.script";
-    private static final String AT_SLING_RESOURCE_TYPE = "sling.resourceType";
-    private static final String AT_SLING_RESOURCE_TYPE_VERSION = "sling.resourceType.version";
 
     private volatile BundleContext m_context;
-    private volatile BundleTracker<ServiceRegistration<Servlet>> m_tracker;
+    private volatile BundleTracker<List<ServiceRegistration<Servlet>>> m_tracker;
 
     @Activate
     private void activate(BundleContext context) {
@@ -76,40 +85,86 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<ServiceRegi
     }
 
     @Override
-    public ServiceRegistration<Servlet> addingBundle(Bundle bundle, BundleEvent event) {
+    public List<ServiceRegistration<Servlet>> addingBundle(Bundle bundle, BundleEvent event) {
         BundleWiring bundleWiring = bundle.adapt(BundleWiring.class);
-        List<BundleCapability> capabilities = bundleWiring.getCapabilities(NS_JAVAX_SCRIPT_CAPABILITY);
-        LOGGER.debug("Inspecting bundle {} for {} capability.", bundle.getSymbolicName(), NS_JAVAX_SCRIPT_CAPABILITY);
-        String[] resourceTypes = capabilities.stream().map(cap -> {
-            Map<String, Object> attributes = cap.getAttributes();
-            String resourceType = (String) attributes.get(AT_SLING_RESOURCE_TYPE);
-            Version version = (Version) attributes.get(AT_SLING_RESOURCE_TYPE_VERSION);
-            if (StringUtils.isNotEmpty(resourceType) && version != null) {
-                return resourceType + "/" + version;
-            } else if (StringUtils.isNotEmpty(resourceType)) {
-                return resourceType;
+        if (bundleWiring.getRequiredWires("osgi.extender").stream().map(BundleWire::getProvider).map(BundleRevision::getBundle)
+            .anyMatch(m_context.getBundle()::equals))
+        {
+            LOGGER.debug("Inspecting bundle {} for {} capability.", bundle.getSymbolicName(), NS_SLING_RESOURCE_TYPE);
+            List<BundleCapability> capabilities = bundleWiring.getCapabilities(NS_SLING_RESOURCE_TYPE);
+
+            if (!capabilities.isEmpty())
+            {
+                BundledScriptServlet servlet = new BundledScriptServlet(bundledScriptFinder, bundle, scriptContextProvider);
+                Hashtable<String, Object> baseProperties = new Hashtable<>();
+                baseProperties.put("sling.servlet.methods", new String[]{"TRACE", "OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE"});
+
+                return capabilities.stream().flatMap(cap ->
+                {
+                    Hashtable<String, Object> properties = new Hashtable<>(baseProperties);
+
+                    List<ServiceRegistration<Servlet>> result = new ArrayList<>();
+
+                    Map<String, Object> attributes = cap.getAttributes();
+
+                    String resourceType = (String) attributes.get(NS_SLING_RESOURCE_TYPE);
+
+                    Version version = (Version) attributes.get("version");
+
+                    if (version != null)
+                    {
+                        resourceType += "/" + version;
+                    }
+
+                    properties.put("sling.servlet.resourceTypes", resourceType);
+
+                    Object selectors = attributes.get(AT_SLING_SELECTORS);
+                    Object extensions = attributes.get(AT_SLING_EXTENSIONS);
+
+
+                    if ("true".equalsIgnoreCase(attributes.containsKey(AT_SLING_RESOURCE_TYPE_ONLY) ? attributes.get(AT_SLING_RESOURCE_TYPE_ONLY).toString() : null)
+                        || (selectors == null && extensions == null))
+                    {
+                        result.add(m_context.registerService(Servlet.class, servlet, properties));
+                    }
+
+
+                    if (selectors != null)
+                    {
+                        properties.put("sling.servlet.selectors", selectors);
+                    }
+
+                    if (extensions != null)
+                    {
+                        properties.put("sling.servlet.extensions", extensions);
+                    }
+
+                    if (selectors != null || extensions != null)
+                    {
+                        m_context.registerService(Servlet.class, servlet, properties);
+                    }
+                    return result.stream();
+                }).collect(Collectors.toList());
             }
-            return null;
-        }).filter(Objects::nonNull).toArray(String[]::new);
-        if (resourceTypes.length > 0) {
-            Hashtable<String, Object> properties = new Hashtable<>();
-            properties.put("sling.servlet.resourceTypes", resourceTypes);
-            properties.put("sling.servlet.methods", new String[]{"TRACE", "OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE"});
-            LOGGER.debug("Registering bundle {} for {} resourceTypes.", bundle.getSymbolicName(), Arrays.asList(resourceTypes));
-            return m_context.registerService(Servlet.class, new BundledScriptServlet(bundledScriptFinder, bundle, scriptContextProvider), properties);
-        } else {
+            else
+            {
+                return null;
+            }
+        }
+        else
+        {
             return null;
         }
     }
 
     @Override
-    public void modifiedBundle(Bundle bundle, BundleEvent event, ServiceRegistration<Servlet> reg) {
+    public void modifiedBundle(Bundle bundle, BundleEvent event, List<ServiceRegistration<Servlet>> regs) {
         LOGGER.warn(String.format("Unexpected modified event: %s for bundle %s", event.toString(), bundle.toString()));
     }
 
     @Override
-    public void removedBundle(Bundle bundle, BundleEvent event, ServiceRegistration<Servlet> reg) {
+    public void removedBundle(Bundle bundle, BundleEvent event, List<ServiceRegistration<Servlet>> regs) {
         LOGGER.debug("Bundle {} removed", bundle.getSymbolicName());
-        reg.unregister();
+        regs.forEach(ServiceRegistration::unregister);
     }
 }

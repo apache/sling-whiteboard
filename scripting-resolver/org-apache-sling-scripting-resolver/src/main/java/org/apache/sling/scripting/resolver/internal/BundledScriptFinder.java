@@ -38,6 +38,7 @@ import org.osgi.service.component.annotations.Reference;
 )
 public class BundledScriptFinder {
 
+    private static final String NS_JAVAX_SCRIPT_CAPABILITY = "javax.script";
     private List<String> scriptEngineExtensions;
 
     @Reference
@@ -67,7 +68,7 @@ public class BundledScriptFinder {
                 ('.') + 1);
         String scriptPath = type + (version == null ? "/" : "/" + version + "/") + scriptName;
         for (String extension : scriptEngineExtensions) {
-            URL bundledScriptURL = bundle.getEntry(BundledScriptTracker.NS_JAVAX_SCRIPT_CAPABILITY + "/" + scriptPath + "." + extension);
+            URL bundledScriptURL = bundle.getEntry(NS_JAVAX_SCRIPT_CAPABILITY + "/" + scriptPath + "." + extension);
             if (bundledScriptURL != null) {
                 return new Script(bundledScriptURL, scriptEngineManager.getEngineByExtension(extension));
             }
