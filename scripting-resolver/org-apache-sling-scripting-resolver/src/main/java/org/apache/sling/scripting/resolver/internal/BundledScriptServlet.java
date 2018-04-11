@@ -19,31 +19,35 @@
 package org.apache.sling.scripting.resolver.internal;
 
 import java.io.IOException;
-import java.net.URI;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import javax.script.CompiledScript;
 import javax.script.ScriptContext;
 import javax.script.ScriptException;
+import javax.servlet.GenericServlet;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingConstants;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
+import org.apache.sling.api.request.RequestPathInfo;
 import org.apache.sling.api.scripting.ScriptEvaluationException;
-import org.apache.sling.api.servlets.SlingAllMethodsServlet;
-import org.apache.sling.scripting.resolver.BundledScriptFinder;
-import org.apache.sling.scripting.resolver.Script;
 import org.osgi.framework.Bundle;
 
-class BundledScriptServlet extends SlingAllMethodsServlet {
+class BundledScriptServlet extends GenericServlet {
 
     private final Bundle m_bundle;
     private final BundledScriptFinder m_bundledScriptFinder;
     private final ScriptContextProvider m_scriptContextProvider;
 
-    private Map<URI, CompiledScript> compiledScriptsMap = new ConcurrentHashMap<>();
+    private Map<String, Script> scriptsMap = new HashMap<>();
+    private ReadWriteLock lock = new ReentrantReadWriteLock();
 
     BundledScriptServlet(BundledScriptFinder bundledScriptFinder, Bundle bundle, ScriptContextProvider scriptContextProvider) {
         m_bundle = bundle;
@@ -52,30 +56,62 @@ class BundledScriptServlet extends SlingAllMethodsServlet {
     }
 
     @Override
-    protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
-        Script script = m_bundledScriptFinder.getScript(request, m_bundle);
-        if (script != null) {
-            if (request.getAttribute(SlingConstants.ATTR_INCLUDE_SERVLET_PATH) == null) {
-                final String contentType = request.getResponseContentType();
-                if (contentType != null) {
-                    response.setContentType(contentType);
-
-                    // only set the character encoding for text/ content types
-                    // see SLING-679
-                    if (contentType.startsWith("text/")) {
-                        response.setCharacterEncoding("UTF-8");
+    public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
+        if ((req instanceof SlingHttpServletRequest) && (res instanceof SlingHttpServletResponse)) {
+            SlingHttpServletRequest request = (SlingHttpServletRequest) req;
+            SlingHttpServletResponse response = (SlingHttpServletResponse) res;
+            lock.readLock().lock();
+            try {
+                String scriptsMapKey = getScriptsMapKey(request);
+                Script script = scriptsMap.get(scriptsMapKey);
+                if (script == null) {
+                    lock.readLock().unlock();
+                    lock.writeLock().lock();
+                    try {
+                        script = scriptsMap.get(getScriptsMapKey(request));
+                        if (script == null) {
+                            script = m_bundledScriptFinder.getScript(request, m_bundle);
+                            scriptsMap.put(scriptsMapKey, script);
+                        }
+                        lock.readLock().lock();
+                    } finally {
+                        lock.writeLock().unlock();
                     }
                 }
-            }
-            ScriptContext scriptContext = m_scriptContextProvider.prepareScriptContext(request, response, script);
-            try {
-                script.getScriptEngine().eval(script.getSourceCode(), scriptContext);
-            } catch (ScriptException e) {
-                Throwable cause = (e.getCause() == null) ? e : e.getCause();
-                throw new ScriptEvaluationException(script.getName(), e.getMessage(), cause);
+                if (script != null) {
+                    if (request.getAttribute(SlingConstants.ATTR_INCLUDE_SERVLET_PATH) == null) {
+                        final String contentType = request.getResponseContentType();
+                        if (contentType != null) {
+                            response.setContentType(contentType);
+                            if (contentType.startsWith("text/")) {
+                                response.setCharacterEncoding("UTF-8");
+                            }
+                        }
+                    }
+                    ScriptContext scriptContext = m_scriptContextProvider.prepareScriptContext(request, response, script);
+                    try {
+                        script.eval(scriptContext);
+                    } catch (ScriptException se) {
+                        Throwable cause = (se.getCause() == null) ? se : se.getCause();
+                        throw new ScriptEvaluationException(script.getName(), se.getMessage(), cause);
+                    }
+                } else {
+                    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                }
+            } finally {
+                lock.readLock().unlock();
             }
         } else {
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            throw new ServletException("Not a Sling HTTP request/response");
         }
+
+    }
+
+    private String getScriptsMapKey(SlingHttpServletRequest request) {
+        RequestPathInfo requestPathInfo = request.getRequestPathInfo();
+        String selectorString = requestPathInfo.getSelectorString();
+        String requestExtension = requestPathInfo.getExtension();
+        return request.getResource().getResourceType() + (StringUtils.isNotEmpty(selectorString) ? ":" + selectorString : "") +
+                (StringUtils.isNotEmpty(requestExtension) ? ":" + requestExtension : "");
     }
 }

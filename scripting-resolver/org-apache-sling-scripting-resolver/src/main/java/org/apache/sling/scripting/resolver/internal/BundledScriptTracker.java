@@ -18,8 +18,15 @@
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 package org.apache.sling.scripting.resolver.internal;
 
+import java.util.Arrays;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import javax.servlet.Servlet;
+
 import org.apache.commons.lang3.StringUtils;
-import org.apache.sling.scripting.resolver.BundledScriptFinder;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
@@ -31,20 +38,10 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.util.tracker.BundleTracker;
 import org.osgi.util.tracker.BundleTrackerCustomizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.script.ScriptEngineManager;
-import javax.servlet.Servlet;
-
-import java.util.Arrays;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 @Component(
         service = {}
@@ -59,9 +56,9 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<ServiceRegi
     @Reference
     private ScriptContextProvider scriptContextProvider;
 
-    public static final String NS_JAVAX_SCRIPT_CAPABILITY = "javax.script";
-    public static final String AT_SLING_RESOURCE_TYPE = "sling.resourceType";
-    public static final String AT_SLING_RESOURCE_TYPE_VERSION = "sling.resourceType.version";
+    static final String NS_JAVAX_SCRIPT_CAPABILITY = "javax.script";
+    private static final String AT_SLING_RESOURCE_TYPE = "sling.resourceType";
+    private static final String AT_SLING_RESOURCE_TYPE_VERSION = "sling.resourceType.version";
 
     private volatile BundleContext m_context;
     private volatile BundleTracker<ServiceRegistration<Servlet>> m_tracker;

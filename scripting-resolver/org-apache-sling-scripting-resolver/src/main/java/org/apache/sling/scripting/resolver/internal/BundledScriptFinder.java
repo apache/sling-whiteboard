@@ -18,7 +18,6 @@
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 package org.apache.sling.scripting.resolver.internal;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,8 +28,6 @@ import javax.script.ScriptEngineManager;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
-import org.apache.sling.scripting.resolver.BundledScriptFinder;
-import org.apache.sling.scripting.resolver.Script;
 import org.osgi.framework.Bundle;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -39,7 +36,7 @@ import org.osgi.service.component.annotations.Reference;
 @Component(
         service = BundledScriptFinder.class
 )
-public class BundledScriptFinderImpl implements BundledScriptFinder {
+public class BundledScriptFinder {
 
     private List<String> scriptEngineExtensions;
 
@@ -56,8 +53,7 @@ public class BundledScriptFinderImpl implements BundledScriptFinder {
         scriptEngineExtensions = Collections.unmodifiableList(_scriptEngineExtensions);
     }
 
-    @Override
-    public Script getScript(SlingHttpServletRequest request, Bundle bundle) throws IOException {
+    public Script getScript(SlingHttpServletRequest request, Bundle bundle) {
         String resourceType = request.getResource().getResourceType();
         String type;
         String version = null;
@@ -73,7 +69,7 @@ public class BundledScriptFinderImpl implements BundledScriptFinder {
         for (String extension : scriptEngineExtensions) {
             URL bundledScriptURL = bundle.getEntry(BundledScriptTracker.NS_JAVAX_SCRIPT_CAPABILITY + "/" + scriptPath + "." + extension);
             if (bundledScriptURL != null) {
-                return new ScriptImpl(bundledScriptURL, scriptEngineManager.getEngineByExtension(extension));
+                return new Script(bundledScriptURL, scriptEngineManager.getEngineByExtension(extension));
             }
         }
         return null;

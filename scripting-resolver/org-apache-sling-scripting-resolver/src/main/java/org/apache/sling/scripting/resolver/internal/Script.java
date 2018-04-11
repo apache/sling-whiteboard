@@ -16,27 +16,45 @@
  ~ specific language governing permissions and limitations
  ~ under the License.
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-package org.apache.sling.scripting.resolver;
+package org.apache.sling.scripting.resolver.internal;
 
 import java.io.IOException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
-import org.apache.sling.api.SlingHttpServletRequest;
-import org.osgi.annotation.versioning.ProviderType;
-import org.osgi.framework.Bundle;
+import javax.script.ScriptContext;
+import javax.script.ScriptEngine;
+import javax.script.ScriptException;
 
-@ProviderType
-public interface BundledScriptFinder {
+import org.apache.commons.io.IOUtils;
 
-    /**
-     * Given a {@code request}, this method finds the most appropriate bundled script to execute, taking into account the {@code
-     * scriptExtensions} priority.
-     *
-     * @param request          the request for which the script has to be found
-     * @param bundle           the bundle in which the scripts for the current resource type are packed (see
-     *                         {@link SlingHttpServletRequest#getResource()})
-     * @return the script to execute
-     * @throws IOException if the script cannot be located
-     */
-    Script getScript(SlingHttpServletRequest request, Bundle bundle) throws IOException;
+class Script {
 
+    private URL url;
+    private ScriptEngine scriptEngine;
+    private String sourceCode;
+
+    Script(URL url, ScriptEngine scriptEngine) {
+        this.url = url;
+        this.scriptEngine = scriptEngine;
+    }
+
+    private synchronized String getSourceCode() throws IOException {
+        if (sourceCode == null) {
+            sourceCode = IOUtils.toString(url.openStream(), StandardCharsets.UTF_8);
+        }
+        return sourceCode;
+    }
+
+    String getName() {
+        return url.getPath();
+    }
+
+    ScriptEngine getScriptEngine() {
+        return scriptEngine;
+    }
+
+    void eval(ScriptContext context) throws ScriptException, IOException {
+        scriptEngine.eval(getSourceCode(), context);
+    }
 }
