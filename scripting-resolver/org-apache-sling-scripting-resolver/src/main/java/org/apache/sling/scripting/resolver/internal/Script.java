@@ -19,20 +19,28 @@
 package org.apache.sling.scripting.resolver.internal;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
+import javax.script.Compilable;
+import javax.script.CompiledScript;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.sling.scripting.core.ScriptNameAwareReader;
 
 class Script {
 
     private URL url;
     private ScriptEngine scriptEngine;
     private String sourceCode;
+    private CompiledScript compiledScript = null;
+    private Lock lock = new ReentrantLock();
 
     Script(URL url, ScriptEngine scriptEngine) {
         this.url = url;
@@ -55,6 +63,22 @@ class Script {
     }
 
     void eval(ScriptContext context) throws ScriptException, IOException {
-        scriptEngine.eval(getSourceCode(), context);
+        if (scriptEngine instanceof Compilable && compiledScript == null) {
+            lock.lock();
+            try {
+                if (scriptEngine instanceof Compilable && compiledScript == null) {
+                    compiledScript =
+                            ((Compilable) scriptEngine).compile(new ScriptNameAwareReader(new StringReader(getSourceCode()), getName()));
+                }
+            } finally {
+                lock.unlock();
+            }
+        }
+        if (compiledScript != null) {
+            compiledScript.eval(context);
+        } else {
+            scriptEngine.eval(getSourceCode(), context);
+        }
+
     }
 }
