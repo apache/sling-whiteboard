@@ -23,12 +23,12 @@ import org.apache.sling.feature.FeatureResource;
 import org.apache.sling.feature.analyser.impl.BundleDescriptorImpl;
 import org.apache.sling.feature.analyser.service.Analyser;
 import org.apache.sling.feature.analyser.service.Scanner;
-import org.apache.sling.feature.process.FeatureResolver;
 import org.apache.sling.feature.support.ArtifactManager;
 import org.apache.sling.feature.support.ArtifactManagerConfig;
 import org.apache.sling.feature.support.FeatureUtil;
 import org.apache.sling.feature.support.json.FeatureJSONReader;
 import org.apache.sling.feature.support.json.FeatureJSONReader.SubstituteVariables;
+import org.apache.sling.feature.support.process.FeatureResolver;
 import org.junit.Test;
 
 import java.io.File;

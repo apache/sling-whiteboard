@@ -19,12 +19,12 @@ package org.apache.sling.feature.support;
 import org.apache.sling.feature.Application;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.process.ApplicationBuilder;
-import org.apache.sling.feature.process.BuilderContext;
-import org.apache.sling.feature.process.FeatureProvider;
-import org.apache.sling.feature.process.FeatureResolver;
 import org.apache.sling.feature.support.json.FeatureJSONReader;
 import org.apache.sling.feature.support.json.FeatureJSONReader.SubstituteVariables;
+import org.apache.sling.feature.support.process.ApplicationBuilder;
+import org.apache.sling.feature.support.process.BuilderContext;
+import org.apache.sling.feature.support.process.FeatureProvider;
+import org.apache.sling.feature.support.process.FeatureResolver;
 
 import java.io.File;
 import java.io.FileReader;

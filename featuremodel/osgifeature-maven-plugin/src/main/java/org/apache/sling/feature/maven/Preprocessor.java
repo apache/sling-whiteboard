@@ -23,12 +23,12 @@ import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.process.BuilderContext;
-import org.apache.sling.feature.process.FeatureBuilder;
-import org.apache.sling.feature.process.FeatureProvider;
 import org.apache.sling.feature.support.FeatureUtil;
 import org.apache.sling.feature.support.json.FeatureJSONReader;
 import org.apache.sling.feature.support.json.FeatureJSONReader.SubstituteVariables;
+import org.apache.sling.feature.support.process.BuilderContext;
+import org.apache.sling.feature.support.process.FeatureBuilder;
+import org.apache.sling.feature.support.process.FeatureProvider;
 import org.codehaus.plexus.logging.Logger;
 
 import java.io.File;

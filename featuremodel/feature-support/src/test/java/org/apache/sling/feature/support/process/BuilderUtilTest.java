@@ -14,21 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.feature.process;
+package org.apache.sling.feature.support.process;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import org.apache.sling.feature.Artifact;
+import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.Bundles;
+import org.apache.sling.feature.support.process.BuilderUtil;
+import org.apache.sling.feature.support.process.BuilderUtil.ArtifactMerge;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.sling.feature.Artifact;
-import org.apache.sling.feature.ArtifactId;
-import org.apache.sling.feature.Bundles;
-import org.apache.sling.feature.BundlesTest;
-import org.apache.sling.feature.process.BuilderUtil.ArtifactMerge;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class BuilderUtilTest {
 
@@ -73,14 +73,14 @@ public class BuilderUtilTest {
     @Test public void testMergeBundlesWithAlgHighest() {
         final Bundles target = new Bundles();
 
-        target.add(BundlesTest.createBundle("g/a/1.0", 1));
-        target.add(BundlesTest.createBundle("g/b/2.0", 2));
-        target.add(BundlesTest.createBundle("g/c/2.5", 3));
+        target.add(createBundle("g/a/1.0", 1));
+        target.add(createBundle("g/b/2.0", 2));
+        target.add(createBundle("g/c/2.5", 3));
 
         final Bundles source = new Bundles();
-        source.add(BundlesTest.createBundle("g/a/1.1", 1));
-        source.add(BundlesTest.createBundle("g/b/1.9", 2));
-        source.add(BundlesTest.createBundle("g/c/2.5", 3));
+        source.add(createBundle("g/a/1.1", 1));
+        source.add(createBundle("g/b/1.9", 2));
+        source.add(createBundle("g/c/2.5", 3));
 
         BuilderUtil.mergeBundles(target, source, ArtifactMerge.HIGHEST);
 
@@ -94,14 +94,14 @@ public class BuilderUtilTest {
     @Test public void testMergeBundlesWithAlgLatest() {
         final Bundles target = new Bundles();
 
-        target.add(BundlesTest.createBundle("g/a/1.0", 1));
-        target.add(BundlesTest.createBundle("g/b/2.0", 2));
-        target.add(BundlesTest.createBundle("g/c/2.5", 3));
+        target.add(createBundle("g/a/1.0", 1));
+        target.add(createBundle("g/b/2.0", 2));
+        target.add(createBundle("g/c/2.5", 3));
 
         final Bundles source = new Bundles();
-        source.add(BundlesTest.createBundle("g/a/1.1", 1));
-        source.add(BundlesTest.createBundle("g/b/1.9", 2));
-        source.add(BundlesTest.createBundle("g/c/2.5", 3));
+        source.add(createBundle("g/a/1.1", 1));
+        source.add(createBundle("g/b/1.9", 2));
+        source.add(createBundle("g/c/2.5", 3));
 
         BuilderUtil.mergeBundles(target, source, ArtifactMerge.LATEST);
 
@@ -115,10 +115,10 @@ public class BuilderUtilTest {
     @Test public void testMergeBundlesDifferentStartlevel() {
         final Bundles target = new Bundles();
 
-        target.add(BundlesTest.createBundle("g/a/1.0", 1));
+        target.add(createBundle("g/a/1.0", 1));
 
         final Bundles source = new Bundles();
-        source.add(BundlesTest.createBundle("g/a/1.1", 2));
+        source.add(createBundle("g/a/1.1", 2));
 
         BuilderUtil.mergeBundles(target, source, ArtifactMerge.LATEST);
 
@@ -130,14 +130,14 @@ public class BuilderUtilTest {
     @Test public void testMergeBundles() {
         final Bundles target = new Bundles();
 
-        target.add(BundlesTest.createBundle("g/a/1.0", 1));
-        target.add(BundlesTest.createBundle("g/b/2.0", 2));
-        target.add(BundlesTest.createBundle("g/c/2.5", 3));
+        target.add(createBundle("g/a/1.0", 1));
+        target.add(createBundle("g/b/2.0", 2));
+        target.add(createBundle("g/c/2.5", 3));
 
         final Bundles source = new Bundles();
-        source.add(BundlesTest.createBundle("g/d/1.1", 1));
-        source.add(BundlesTest.createBundle("g/e/1.9", 2));
-        source.add(BundlesTest.createBundle("g/f/2.5", 3));
+        source.add(createBundle("g/d/1.1", 1));
+        source.add(createBundle("g/e/1.9", 2));
+        source.add(createBundle("g/f/2.5", 3));
 
         BuilderUtil.mergeBundles(target, source, ArtifactMerge.LATEST);
 
@@ -149,5 +149,12 @@ public class BuilderUtilTest {
         assertContains(result, 1, ArtifactId.parse("g/d/1.1"));
         assertContains(result, 2, ArtifactId.parse("g/e/1.9"));
         assertContains(result, 3, ArtifactId.parse("g/f/2.5"));
+    }
+
+    public static Artifact createBundle(final String id, final int startOrder) {
+        final Artifact a = new Artifact(ArtifactId.parse(id));
+        a.getMetadata().put(Artifact.KEY_START_ORDER, String.valueOf(startOrder));
+
+        return a;
     }
 }
