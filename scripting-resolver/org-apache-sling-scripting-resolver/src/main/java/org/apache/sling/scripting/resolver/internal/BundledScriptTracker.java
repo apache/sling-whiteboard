@@ -141,7 +141,7 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<List<Servic
 
                     if (selectors != null || extensions != null)
                     {
-                        m_context.registerService(Servlet.class, servlet, properties);
+                        result.add(m_context.registerService(Servlet.class, servlet, properties));
                     }
                     return result.stream();
                 }).collect(Collectors.toList());

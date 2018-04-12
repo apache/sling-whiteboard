@@ -20,6 +20,7 @@ package org.apache.sling.scripting.resolver.internal;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -39,6 +40,8 @@ import org.osgi.service.component.annotations.Reference;
 public class BundledScriptFinder {
 
     private static final String NS_JAVAX_SCRIPT_CAPABILITY = "javax.script";
+    private static final String SLASH = "/";
+    private static final String DOT = ".";
     private List<String> scriptEngineExtensions;
 
     @Reference
@@ -55,24 +58,44 @@ public class BundledScriptFinder {
     }
 
     public Script getScript(SlingHttpServletRequest request, Bundle bundle) {
-        String resourceType = request.getResource().getResourceType();
-        String type;
-        String version = null;
-        if (resourceType.contains("/") && StringUtils.countMatches(resourceType, "/") == 1) {
-            type = resourceType.substring(0, resourceType.indexOf("/"));
-            version = resourceType.substring(resourceType.indexOf("/") + 1, resourceType.length());
-        } else {
-            type = resourceType;
-        }
-        String scriptName = version == null ? resourceType.substring(resourceType.lastIndexOf('.') + 1) : type.substring(type.lastIndexOf
-                ('.') + 1);
-        String scriptPath = type + (version == null ? "/" : "/" + version + "/") + scriptName;
+        List<String> scriptMatches = buildScriptMatches(request);
         for (String extension : scriptEngineExtensions) {
-            URL bundledScriptURL = bundle.getEntry(NS_JAVAX_SCRIPT_CAPABILITY + "/" + scriptPath + "." + extension);
-            if (bundledScriptURL != null) {
-                return new Script(bundledScriptURL, scriptEngineManager.getEngineByExtension(extension));
+            for (String match : scriptMatches) {
+                URL bundledScriptURL = bundle.getEntry(NS_JAVAX_SCRIPT_CAPABILITY + SLASH + match + DOT + extension);
+                if (bundledScriptURL != null) {
+                    return new Script(bundledScriptURL, scriptEngineManager.getEngineByExtension(extension));
+                }
             }
         }
         return null;
+    }
+
+    private List<String> buildScriptMatches(SlingHttpServletRequest request) {
+        List<String> matches = new ArrayList<>();
+        String resourceType = request.getResource().getResourceType();
+        String version = null;
+        if (resourceType.contains(SLASH) && StringUtils.countMatches(resourceType, SLASH) == 1) {
+            version = resourceType.substring(resourceType.indexOf(SLASH) + 1, resourceType.length());
+            resourceType = resourceType.substring(0, resourceType.length() - version.length() - 1);
+        }
+        String extension = request.getRequestPathInfo().getExtension();
+        String[] selectors = request.getRequestPathInfo().getSelectors();
+        if (selectors.length > 0) {
+            for (int i = selectors.length - 1; i >= 0; i--) {
+                String script = resourceType + (StringUtils.isNotEmpty(version) ? SLASH + version + SLASH : SLASH) + String.join
+                        (SLASH, Arrays.copyOf(selectors, i + 1));
+                if (StringUtils.isNotEmpty(extension)) {
+                    matches.add(script +  DOT + extension);
+                }
+                matches.add(script);
+            }
+        }
+        String script = resourceType + (StringUtils.isNotEmpty(version) ? SLASH + version + SLASH : SLASH) + resourceType
+                .substring(resourceType.lastIndexOf(DOT) + 1);
+        if (StringUtils.isNotEmpty(extension)) {
+            matches.add(script + DOT + extension);
+        }
+        matches.add(script);
+        return Collections.unmodifiableList(matches);
     }
 }
