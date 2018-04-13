@@ -30,7 +30,6 @@ import javax.script.ScriptEngineManager;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.osgi.framework.Bundle;
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -42,24 +41,22 @@ public class BundledScriptFinder {
     private static final String NS_JAVAX_SCRIPT_CAPABILITY = "javax.script";
     private static final String SLASH = "/";
     private static final String DOT = ".";
-    private List<String> scriptEngineExtensions;
 
     @Reference
     private ScriptEngineManager scriptEngineManager;
 
-    @Activate
-    private void activate() {
+    private List<String> getScriptEngineExtensions() {
         List<String> _scriptEngineExtensions = new ArrayList<>();
         for (ScriptEngineFactory factory : scriptEngineManager.getEngineFactories()) {
             _scriptEngineExtensions.addAll(factory.getExtensions());
         }
         Collections.reverse(_scriptEngineExtensions);
-        scriptEngineExtensions = Collections.unmodifiableList(_scriptEngineExtensions);
+        return Collections.unmodifiableList(_scriptEngineExtensions);
     }
 
-    public Script getScript(SlingHttpServletRequest request, Bundle bundle) {
+    Script getScript(SlingHttpServletRequest request, Bundle bundle) {
         List<String> scriptMatches = buildScriptMatches(request);
-        for (String extension : scriptEngineExtensions) {
+        for (String extension : getScriptEngineExtensions()) {
             for (String match : scriptMatches) {
                 URL bundledScriptURL = bundle.getEntry(NS_JAVAX_SCRIPT_CAPABILITY + SLASH + match + DOT + extension);
                 if (bundledScriptURL != null) {
@@ -70,7 +67,7 @@ public class BundledScriptFinder {
         return null;
     }
 
-    private List<String> buildScriptMatches(SlingHttpServletRequest request) {
+    List<String> buildScriptMatches(SlingHttpServletRequest request) {
         List<String> matches = new ArrayList<>();
         String resourceType = request.getResource().getResourceType();
         String version = null;
