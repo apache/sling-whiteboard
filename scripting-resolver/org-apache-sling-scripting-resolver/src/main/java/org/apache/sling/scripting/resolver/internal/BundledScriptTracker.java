@@ -61,7 +61,7 @@ import org.slf4j.LoggerFactory;
 @ProvideCapability(ns = "osgi.extender", name = BundledScriptTracker.NS_SLING_SCRIPTING_EXTENDER, version = "1.0.0")
 public class BundledScriptTracker implements BundleTrackerCustomizer<List<ServiceRegistration<Servlet>>> {
     static final String NS_SLING_SCRIPTING_EXTENDER = "sling.scripting";
-    private static final String NS_SLING_RESOURCE_TYPE = "sling.resourceType";
+    static final String NS_SLING_RESOURCE_TYPE = "sling.resourceType";
     private static final Logger LOGGER = LoggerFactory.getLogger(BundledScriptTracker.class);
     private static final String AT_SLING_RESOURCE_TYPE_ONLY = "sling.resourceType.standalone";
     private static final String AT_SLING_SELECTORS = "sling.resourceType.selectors";

@@ -16,10 +16,5 @@
   ~ specific language governing permissions and limitations
   ~ under the License.
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/-->
-<h2>HTL seems to be running</h2>
-<pre data-sly-use.slingSettings="org.apache.sling.settings.SlingSettingsService">
-    sling.home          : ${slingSettings.slingHomePath}
-    sling.id            : ${slingSettings.slingId}
-    sling.name          : ${slingSettings.slingName}
-    sling.description   : ${slingSettings.slingDescription}
-</pre>
+<h2>We're testing some serious scripting here</h2>
+<span data-sly-resource="${ @ selectors='h'}"></span> <span data-sly-resource="${ @ selectors='w'}"></span>

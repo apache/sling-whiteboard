@@ -45,11 +45,42 @@
                             sling.resourceType;
                                 sling.resourceType="org.apache.sling.scripting.examplebundle.hello";
                                 version:Version="1.0.0";
-                                sling.resourceType.selectors:List="a,b,c,b.c";
-                                sling.resourceType.standalone="true"
+                                sling.resourceType.extensions:List="html",
+                            sling.resourceType;
+                                sling.resourceType="org.apache.sling.scripting.examplebundle.hello";
+                                version:Version="1.0.0";
+                                sling.resourceType.selectors:List="h";
+                                sling.resourceType.extensions:List="html",
+                            sling.resourceType;
+                                sling.resourceType="org.apache.sling.scripting.examplebundle.hello";
+                                version:Version="1.0.0";
+                                sling.resourceType.selectors:List="w";
+                                sling.resourceType.extensions:List="html",
+                            sling.resourceType;
+                                sling.resourceType="org.apache.sling.scripting.examplebundle.hi";
+                                version:Version="1.0.0";
+                                sling.resourceType.extensions:List="html";
+                                extends="org.apache.sling.scripting.examplebundle.hello",
+                            sling.resourceType;
+                                sling.resourceType="org.apache.sling.scripting.examplebundle.hi";
+                                version:Version="1.0.0";
+                                sling.resourceType.selectors:List="h";
+                                sling.resourceType.extensions:List="html",
                         </Provide-Capability>
-                        <Require-Capability>osgi.extender;filter:="(&amp;(osgi.extender=sling.scripting)(version>=1.0.0)(!(version>=2.0.0)))"</Require-Capability>
+                        <Require-Capability>
+                            osgi.extender;filter:="(&amp;(osgi.extender=sling.scripting)(version>=1.0.0)(!(version>=2.0.0)))",
+                            sling.resourceType;filter:="(&amp;(sling.resourceType=org.apache.sling.scripting.examplebundle.hello)(version>=1.0.0)(!(version>=2.0.0)))",
+                        </Require-Capability>
                     </instructions>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.rat</groupId>
+                <artifactId>apache-rat-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>**/extends</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
         </plugins>

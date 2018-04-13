@@ -27,6 +27,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.script.ScriptContext;
 import javax.script.ScriptException;
 import javax.servlet.GenericServlet;
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -36,9 +37,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingConstants;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
+import org.apache.sling.api.request.RequestDispatcherOptions;
 import org.apache.sling.api.request.RequestPathInfo;
 import org.apache.sling.api.scripting.ScriptEvaluationException;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.wiring.BundleCapability;
+import org.osgi.framework.wiring.BundleWiring;
 
 class BundledScriptServlet extends GenericServlet {
 
@@ -60,6 +64,16 @@ class BundledScriptServlet extends GenericServlet {
         if ((req instanceof SlingHttpServletRequest) && (res instanceof SlingHttpServletResponse)) {
             SlingHttpServletRequest request = (SlingHttpServletRequest) req;
             SlingHttpServletResponse response = (SlingHttpServletResponse) res;
+
+            if (request.getAttribute(SlingConstants.ATTR_INCLUDE_SERVLET_PATH) == null) {
+                final String contentType = request.getResponseContentType();
+                if (contentType != null) {
+                    response.setContentType(contentType);
+                    if (contentType.startsWith("text/")) {
+                        response.setCharacterEncoding("UTF-8");
+                    }
+                }
+            }
 
             String scriptsMapKey = getScriptsMapKey(request);
             Script script = scriptsMap.get(scriptsMapKey);
@@ -85,15 +99,6 @@ class BundledScriptServlet extends GenericServlet {
                 lock.readLock().unlock();
             }
             if (script != null) {
-                if (request.getAttribute(SlingConstants.ATTR_INCLUDE_SERVLET_PATH) == null) {
-                    final String contentType = request.getResponseContentType();
-                    if (contentType != null) {
-                        response.setContentType(contentType);
-                        if (contentType.startsWith("text/")) {
-                            response.setCharacterEncoding("UTF-8");
-                        }
-                    }
-                }
                 ScriptContext scriptContext = m_scriptContextProvider.prepareScriptContext(request, response, script);
                 try {
                     script.eval(scriptContext);
@@ -102,7 +107,40 @@ class BundledScriptServlet extends GenericServlet {
                     throw new ScriptEvaluationException(script.getName(), se.getMessage(), cause);
                 }
             } else {
+                /*
+                 * The Script does not seem to belong to the capability for which this servlet has been registered. If this capability
+                 * extends another capability, the request should be dispatched to that capability.
+                 *
+                 * BIG FAT NOTE:
+                 * - we need to figure out how to map to the correct version of a wired resource type
+                 */
+                String currentResourceType = request.getResource().getResourceType();
+                if (currentResourceType.indexOf('/') > 0) {
+                    currentResourceType = currentResourceType.substring(0, currentResourceType.lastIndexOf('/'));
+                }
+                for (BundleCapability bundleCapability : m_bundle.adapt(BundleWiring.class).getCapabilities(BundledScriptTracker
+                        .NS_SLING_RESOURCE_TYPE)) {
+
+                    String capabilityRT = (String) bundleCapability.getAttributes().get(BundledScriptTracker
+                            .NS_SLING_RESOURCE_TYPE);
+                    if (currentResourceType.equals(capabilityRT)) {
+                        String extendsRT = (String) bundleCapability.getAttributes().get("extends");
+                        if (StringUtils.isNotEmpty(extendsRT)) {
+                            RequestDispatcherOptions options = new RequestDispatcherOptions();
+                            options.setForceResourceType(extendsRT + "/1.0.0");
+                            RequestDispatcher dispatcher = request.getRequestDispatcher(request.getResource(), options);
+                            if (dispatcher != null) {
+                                dispatcher.include(request, response);
+                                return;
+                            } else {
+                                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                            }
+                        }
+                    }
+                }
                 response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+
+
             }
         } else {
             throw new ServletException("Not a Sling HTTP request/response");
