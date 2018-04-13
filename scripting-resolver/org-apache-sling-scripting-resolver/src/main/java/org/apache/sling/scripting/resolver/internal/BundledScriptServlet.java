@@ -60,10 +60,11 @@ class BundledScriptServlet extends GenericServlet {
         if ((req instanceof SlingHttpServletRequest) && (res instanceof SlingHttpServletResponse)) {
             SlingHttpServletRequest request = (SlingHttpServletRequest) req;
             SlingHttpServletResponse response = (SlingHttpServletResponse) res;
+
+            String scriptsMapKey = getScriptsMapKey(request);
+            Script script = scriptsMap.get(scriptsMapKey);
             lock.readLock().lock();
             try {
-                String scriptsMapKey = getScriptsMapKey(request);
-                Script script = scriptsMap.get(scriptsMapKey);
                 if (script == null) {
                     lock.readLock().unlock();
                     lock.writeLock().lock();
@@ -71,40 +72,41 @@ class BundledScriptServlet extends GenericServlet {
                         script = scriptsMap.get(getScriptsMapKey(request));
                         if (script == null) {
                             script = m_bundledScriptFinder.getScript(request, m_bundle);
-                            scriptsMap.put(scriptsMapKey, script);
+                            if (script != null) {
+                                scriptsMap.put(scriptsMapKey, script);
+                            }
+                            lock.readLock().lock();
                         }
-                        lock.readLock().lock();
                     } finally {
                         lock.writeLock().unlock();
                     }
                 }
-                if (script != null) {
-                    if (request.getAttribute(SlingConstants.ATTR_INCLUDE_SERVLET_PATH) == null) {
-                        final String contentType = request.getResponseContentType();
-                        if (contentType != null) {
-                            response.setContentType(contentType);
-                            if (contentType.startsWith("text/")) {
-                                response.setCharacterEncoding("UTF-8");
-                            }
-                        }
-                    }
-                    ScriptContext scriptContext = m_scriptContextProvider.prepareScriptContext(request, response, script);
-                    try {
-                        script.eval(scriptContext);
-                    } catch (ScriptException se) {
-                        Throwable cause = (se.getCause() == null) ? se : se.getCause();
-                        throw new ScriptEvaluationException(script.getName(), se.getMessage(), cause);
-                    }
-                } else {
-                    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                }
             } finally {
                 lock.readLock().unlock();
+            }
+            if (script != null) {
+                if (request.getAttribute(SlingConstants.ATTR_INCLUDE_SERVLET_PATH) == null) {
+                    final String contentType = request.getResponseContentType();
+                    if (contentType != null) {
+                        response.setContentType(contentType);
+                        if (contentType.startsWith("text/")) {
+                            response.setCharacterEncoding("UTF-8");
+                        }
+                    }
+                }
+                ScriptContext scriptContext = m_scriptContextProvider.prepareScriptContext(request, response, script);
+                try {
+                    script.eval(scriptContext);
+                } catch (ScriptException se) {
+                    Throwable cause = (se.getCause() == null) ? se : se.getCause();
+                    throw new ScriptEvaluationException(script.getName(), se.getMessage(), cause);
+                }
+            } else {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             }
         } else {
             throw new ServletException("Not a Sling HTTP request/response");
         }
-
     }
 
     private String getScriptsMapKey(SlingHttpServletRequest request) {
