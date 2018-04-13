@@ -20,18 +20,23 @@ package org.apache.sling.scripting.resolver.internal;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.servlet.Servlet;
 
 import aQute.bnd.annotation.headers.ProvideCapability;
+
 import org.apache.commons.lang3.StringUtils;
+import org.apache.sling.api.servlets.ServletResolverConstants;
+import org.apache.sling.commons.osgi.PropertiesUtil;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
@@ -88,16 +93,15 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<List<Servic
     public List<ServiceRegistration<Servlet>> addingBundle(Bundle bundle, BundleEvent event) {
         BundleWiring bundleWiring = bundle.adapt(BundleWiring.class);
         if (bundleWiring.getRequiredWires("osgi.extender").stream().map(BundleWire::getProvider).map(BundleRevision::getBundle)
-            .anyMatch(m_context.getBundle()::equals))
-        {
+                .anyMatch(m_context.getBundle()::equals)) {
             LOGGER.debug("Inspecting bundle {} for {} capability.", bundle.getSymbolicName(), NS_SLING_RESOURCE_TYPE);
             List<BundleCapability> capabilities = bundleWiring.getCapabilities(NS_SLING_RESOURCE_TYPE);
 
-            if (!capabilities.isEmpty())
-            {
+            if (!capabilities.isEmpty()) {
                 BundledScriptServlet servlet = new BundledScriptServlet(bundledScriptFinder, bundle, scriptContextProvider);
                 Hashtable<String, Object> baseProperties = new Hashtable<>();
-                baseProperties.put("sling.servlet.methods", new String[]{"TRACE", "OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE"});
+                baseProperties.put(ServletResolverConstants.SLING_SERVLET_METHODS,
+                        new String[]{"TRACE", "OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE"});
 
                 return capabilities.stream().flatMap(cap ->
                 {
@@ -111,48 +115,30 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<List<Servic
 
                     Version version = (Version) attributes.get("version");
 
-                    if (version != null)
-                    {
+                    if (version != null) {
                         resourceType += "/" + version;
                     }
 
-                    properties.put("sling.servlet.resourceTypes", resourceType);
+                    properties.put(ServletResolverConstants.SLING_SERVLET_RESOURCE_TYPES, resourceType);
 
                     Object selectors = attributes.get(AT_SLING_SELECTORS);
-                    Object extensions = attributes.get(AT_SLING_EXTENSIONS);
+                    Set<String> extensions = new HashSet<>(
+                            Arrays.asList(PropertiesUtil.toStringArray(attributes.get(AT_SLING_EXTENSIONS), new String[]{}))
+                    );
+                    extensions.add("html");
+                    properties.put(ServletResolverConstants.SLING_SERVLET_EXTENSIONS, extensions);
 
-
-                    if ("true".equalsIgnoreCase(attributes.containsKey(AT_SLING_RESOURCE_TYPE_ONLY) ? attributes.get(AT_SLING_RESOURCE_TYPE_ONLY).toString() : null)
-                        || (selectors == null && extensions == null))
-                    {
-                        result.add(m_context.registerService(Servlet.class, servlet, properties));
+                    if (selectors != null) {
+                        properties.put(ServletResolverConstants.SLING_SERVLET_SELECTORS, selectors);
                     }
 
-
-                    if (selectors != null)
-                    {
-                        properties.put("sling.servlet.selectors", selectors);
-                    }
-
-                    if (extensions != null)
-                    {
-                        properties.put("sling.servlet.extensions", extensions);
-                    }
-
-                    if (selectors != null || extensions != null)
-                    {
-                        result.add(m_context.registerService(Servlet.class, servlet, properties));
-                    }
+                    result.add(m_context.registerService(Servlet.class, servlet, properties));
                     return result.stream();
                 }).collect(Collectors.toList());
-            }
-            else
-            {
+            } else {
                 return null;
             }
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
