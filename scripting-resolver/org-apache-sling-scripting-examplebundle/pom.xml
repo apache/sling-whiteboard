@@ -36,40 +36,30 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.sling</groupId>
+                <artifactId>org.apache.sling.scripting.maven.plugin</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+                <executions>
+                    <execution>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>metadata</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
                         <Provide-Capability>
-                            sling.resourceType;
-                                sling.resourceType="org.apache.sling.scripting.examplebundle.hello";
-                                version:Version="1.0.0";
-                                sling.resourceType.extensions:List="html",
-                            sling.resourceType;
-                                sling.resourceType="org.apache.sling.scripting.examplebundle.hello";
-                                version:Version="1.0.0";
-                                sling.resourceType.selectors:List="h";
-                                sling.resourceType.extensions:List="html",
-                            sling.resourceType;
-                                sling.resourceType="org.apache.sling.scripting.examplebundle.hello";
-                                version:Version="1.0.0";
-                                sling.resourceType.selectors:List="w";
-                                sling.resourceType.extensions:List="html",
-                            sling.resourceType;
-                                sling.resourceType="org.apache.sling.scripting.examplebundle.hi";
-                                version:Version="1.0.0";
-                                sling.resourceType.extensions:List="html";
-                                extends="org.apache.sling.scripting.examplebundle.hello",
-                            sling.resourceType;
-                                sling.resourceType="org.apache.sling.scripting.examplebundle.hi";
-                                version:Version="1.0.0";
-                                sling.resourceType.selectors:List="h";
-                                sling.resourceType.extensions:List="html",
+                            ${org.apache.sling.scripting.maven.plugin.Provide-Capability}
                         </Provide-Capability>
                         <Require-Capability>
                             osgi.extender;filter:="(&amp;(osgi.extender=sling.scripting)(version>=1.0.0)(!(version>=2.0.0)))",
-                            sling.resourceType;filter:="(&amp;(sling.resourceType=org.apache.sling.scripting.examplebundle.hello)(version>=1.0.0)(!(version>=2.0.0)))",
+                            ${org.apache.sling.scripting.maven.plugin.Require-Capability}
                         </Require-Capability>
                     </instructions>
                 </configuration>
@@ -82,19 +72,6 @@
                         <exclude>**/extends</exclude>
                     </excludes>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.sling</groupId>
-                <artifactId>org.apache.sling.scripting.maven.plugin</artifactId>
-                <version>0.0.1-SNAPSHOT</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>metadata</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
