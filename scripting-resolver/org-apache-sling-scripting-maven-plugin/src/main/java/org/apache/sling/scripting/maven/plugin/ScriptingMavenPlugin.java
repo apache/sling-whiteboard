@@ -114,7 +114,10 @@ public class ScriptingMavenPlugin extends AbstractMojo
                     }
                 }
             }
-            capability += ";sling.resourceType.extensions:List<String>=\"" + script.extension.replace("\"", "\\\"") + "\"";
+            if (script.extension != null)
+            {
+                capability += ";sling.resourceType.extensions:List<String>=\"" + script.extension.replace("\"", "\\\"") + "\"";
+            }
 
             if (script.method != null)
             {
@@ -177,14 +180,14 @@ public class ScriptingMavenPlugin extends AbstractMojo
         {
             result.extension = result.name.substring(idx + 1);
             result.name = result.name.substring(0, idx);
-            if (result.extension.isEmpty())
+            if (result.extension.isEmpty() || result.extension.equalsIgnoreCase("html"))
             {
-                result.extension = "html";
+                result.extension = null;
             }
         }
         else
         {
-            result.extension = "html";
+            result.extension = null;
         }
 
         idx = result.name.indexOf('.');

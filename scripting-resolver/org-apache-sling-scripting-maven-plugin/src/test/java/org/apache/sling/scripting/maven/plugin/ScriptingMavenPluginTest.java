@@ -49,7 +49,7 @@ public class ScriptingMavenPluginTest
         Assert.assertNull("1.0.0", script.version);
         Assert.assertEquals("foo", script.name);
         Assert.assertNull(script.method);
-        Assert.assertEquals("html", script.extension);
+        Assert.assertNull(script.extension);
         Assert.assertNull(script.scriptExtension);
     }
 
@@ -64,7 +64,7 @@ public class ScriptingMavenPluginTest
         Assert.assertEquals("1.2.0", script.version);
         Assert.assertEquals("", script.name);
         Assert.assertEquals("POST", script.method);
-        Assert.assertEquals("html", script.extension);
+        Assert.assertNull(script.extension);
         Assert.assertEquals("jsp", script.scriptExtension);
     }
 
@@ -79,7 +79,7 @@ public class ScriptingMavenPluginTest
         Assert.assertEquals("1.2.0", script.version);
         Assert.assertEquals("",script.name);
         Assert.assertEquals("POST", script.method);
-        Assert.assertEquals("html", script.extension);
+        Assert.assertNull(script.extension);
         Assert.assertNull(script.scriptExtension);
     }
 }

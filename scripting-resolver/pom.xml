@@ -33,8 +33,9 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>org-apache-sling-scripting-resolver</module>
+        <module>org-apache-sling-scripting-maven-plugin</module>
         <module>org-apache-sling-scripting-examplebundle</module>
         <module>org-apache-sling-scripting-examplebundle.hi</module>
+        <module>org-apache-sling-scripting-resolver</module>
     </modules>
 </project>

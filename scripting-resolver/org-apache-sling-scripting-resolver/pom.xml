@@ -161,6 +161,12 @@
         </dependency>
         <dependency>
             <groupId>org.apache.sling</groupId>
+            <artifactId>org.apache.sling.scripting.examplebundle.hi</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.junit.teleporter</artifactId>
             <version>1.0.16</version>
             <scope>test</scope>
@@ -264,7 +270,7 @@
                         <configuration>
                             <usePomDependencies>true</usePomDependencies>
                             <attachArtifact>false</attachArtifact>
-                            <!-- <shouldBlockUntilKeyIsPressed>true</shouldBlockUntilKeyIsPressed> -->
+                             <shouldBlockUntilKeyIsPressed>true</shouldBlockUntilKeyIsPressed>
                             <servers>
                                 <server>
                                     <id>singleinstance</id>

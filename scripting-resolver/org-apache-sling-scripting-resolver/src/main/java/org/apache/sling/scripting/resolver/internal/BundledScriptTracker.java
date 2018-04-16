@@ -64,6 +64,7 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<List<Servic
     private static final String AT_SLING_RESOURCE_TYPE_ONLY = "sling.resourceType.standalone";
     private static final String AT_SLING_SELECTORS = "sling.resourceType.selectors";
     private static final String AT_SLING_EXTENSIONS = "sling.resourceType.extensions";
+
     private static final String AT_VERSION = "version";
     private static final String AT_EXTENDS = "extends";
 
@@ -98,13 +99,10 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<List<Servic
             List<BundleCapability> capabilities = bundleWiring.getCapabilities(NS_SLING_RESOURCE_TYPE);
 
             if (!capabilities.isEmpty()) {
-                Hashtable<String, Object> baseProperties = new Hashtable<>();
-                baseProperties.put(ServletResolverConstants.SLING_SERVLET_METHODS,
-                        new String[]{"TRACE", "OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE"});
 
                 return capabilities.stream().flatMap(cap ->
                 {
-                    Hashtable<String, Object> properties = new Hashtable<>(baseProperties);
+                    Hashtable<String, Object> properties = new Hashtable<>();
 
                     List<ServiceRegistration<Servlet>> result = new ArrayList<>();
 
@@ -121,7 +119,7 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<List<Servic
 
                     Object selectors = attributes.get(AT_SLING_SELECTORS);
                     Set<String> extensions = new HashSet<>(
-                            Arrays.asList(PropertiesUtil.toStringArray(attributes.get(AT_SLING_EXTENSIONS), new String[]{}))
+                            Arrays.asList(PropertiesUtil.toStringArray(attributes.get(AT_SLING_EXTENSIONS), new String[0]))
                     );
                     extensions.add("html");
                     properties.put(ServletResolverConstants.SLING_SERVLET_EXTENSIONS, extensions);
@@ -130,30 +128,41 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<List<Servic
                         properties.put(ServletResolverConstants.SLING_SERVLET_SELECTORS, selectors);
                     }
 
-                    String extendsRT = (String) attributes.get(AT_EXTENDS);
-                    if (StringUtils.isNotEmpty(extendsRT)) {
-                        LOGGER.debug("Bundle {} extends resource type {} through {}.", bundle.getSymbolicName(), extendsRT, resourceType);
-                        Optional<BundleWire> optionalWire = bundleWiring.getRequiredWires(NS_SLING_RESOURCE_TYPE).stream().filter(
-                                bundleWire -> extendsRT.equals(bundleWire.getCapability().getAttributes().get(NS_SLING_RESOURCE_TYPE))
-                        ).findFirst();
-                        if (optionalWire.isPresent()) {
-                            BundleWire extendsWire = optionalWire.get();
-                            Map<String, Object> wireCapabilityAttributes = extendsWire.getCapability().getAttributes();
-                            String wireResourceType = (String) wireCapabilityAttributes.get(NS_SLING_RESOURCE_TYPE);
-                            Version wireResourceTypeVersion = (Version) wireCapabilityAttributes.get(AT_VERSION);
-                            result.add(m_context.registerService(
-                                    Servlet.class,
-                                    new BundledScriptServlet(bundledScriptFinder, optionalWire.get().getProvider().getBundle(),
-                                            scriptContextProvider, wireResourceType + (StringUtils.isNotEmpty(wireResourceType) ? "/" +
-                                            wireResourceTypeVersion.toString() : "")),
-                                    properties
-                            ));
-                        }
+                    Set<String> methods = new HashSet<>(Arrays.asList(PropertiesUtil.toStringArray(attributes.get(ServletResolverConstants.SLING_SERVLET_METHODS), new String[0])));
+                    if (!methods.isEmpty())
+                    {
+                        properties.put(ServletResolverConstants.SLING_SERVLET_METHODS, String.join(",",methods));
                     }
 
-                    result.add(m_context
+                    String extendsRT = (String) attributes.get(AT_EXTENDS);
+                    Optional<BundleWire> optionalWire = Optional.empty();
+
+                    if (StringUtils.isNotEmpty(extendsRT)) {
+                        LOGGER.debug("Bundle {} extends resource type {} through {}.", bundle.getSymbolicName(), extendsRT, resourceType);
+                        optionalWire = bundleWiring.getRequiredWires(NS_SLING_RESOURCE_TYPE).stream().filter(
+                                bundleWire -> extendsRT.equals(bundleWire.getCapability().getAttributes().get(NS_SLING_RESOURCE_TYPE))
+                        ).findFirst();
+                    }
+
+                    if (optionalWire.isPresent()) {
+                        BundleWire extendsWire = optionalWire.get();
+                        Map<String, Object> wireCapabilityAttributes = extendsWire.getCapability().getAttributes();
+                        String wireResourceType = (String) wireCapabilityAttributes.get(NS_SLING_RESOURCE_TYPE);
+                        Version wireResourceTypeVersion = (Version) wireCapabilityAttributes.get(AT_VERSION);
+                        result.add(bundle.getBundleContext().registerService(
+                            Servlet.class,
+                            new BundledScriptServlet(bundledScriptFinder, optionalWire.get().getProvider().getBundle(),
+                                scriptContextProvider, wireResourceType + (StringUtils.isNotEmpty(wireResourceType) ? "/" +
+                                wireResourceTypeVersion.toString() : "")),
+                            properties
+                        ));
+                    }
+                    else
+                    {
+                        result.add(bundle.getBundleContext()
                             .registerService(Servlet.class, new BundledScriptServlet(bundledScriptFinder, bundle, scriptContextProvider),
-                                    properties));
+                                properties));
+                    }
                     return result.stream();
                 }).collect(Collectors.toList());
             } else {
