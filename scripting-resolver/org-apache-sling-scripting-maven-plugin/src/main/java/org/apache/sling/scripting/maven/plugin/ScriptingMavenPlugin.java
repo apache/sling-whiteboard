@@ -51,7 +51,7 @@ public class ScriptingMavenPlugin extends AbstractMojo
     @Parameter(defaultValue = "${session}", readonly = true)
     private MavenSession session;
 
-    private final Set<String> METHODS = new HashSet<>(Arrays.asList(new String[]{"TRACE", "OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE"}));
+    private static final Set<String> METHODS = new HashSet<>(Arrays.asList(new String[]{"TRACE", "OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE"}));
 
     public void execute() throws MojoExecutionException
     {
@@ -62,7 +62,7 @@ public class ScriptingMavenPlugin extends AbstractMojo
         scanner.addDefaultExcludes();
         scanner.scan();
 
-        List<String> scripts = Stream.of(scanner.getIncludedFiles()).map(path -> new File(project.getBuild().getOutputDirectory(), path))
+        List<String> scriptPaths = Stream.of(scanner.getIncludedFiles()).map(path -> new File(project.getBuild().getOutputDirectory(), path))
             .map(file -> file.getPath().substring((new File(project.getBuild().getOutputDirectory(), "javax.script").getPath() + File.pathSeparatorChar).length()))
             .collect(Collectors.toList());
 
@@ -70,75 +70,23 @@ public class ScriptingMavenPlugin extends AbstractMojo
         List<String> requires = new ArrayList<>();
 
         List<String> capabilities = new ArrayList<>();
-        for (String script : scripts)
+        for (String scriptPath : scriptPaths)
         {
-            String[] parts = script.split("/");
+            Script script = getScripts(scriptPath);
 
-            String rt = parts[0];
-            String version = parts.length > 2 ? new Version(parts[1]).toString() : null;
-            String name = parts.length > 2 ? parts[2] : parts[1];
-            String scriptExtension;
-            int idx = name.lastIndexOf('.');
-            if (idx != -1)
-            {
-                scriptExtension = name.substring(idx + 1);
-                name = name.substring(0, idx);
-            }
-            else
-            {
-                scriptExtension = null;
-            }
+            String capability = "sling.resourceType;sling.resourceType=\"" + script.rt.replace("\"", "\\\"") + "\"";
 
-            String extension;
-            idx = name.lastIndexOf('.');
-            if (idx != -1)
+            if (!(script.rt.equals(script.name) || script.rt.endsWith("." + script.name) || script.name.isEmpty()))
             {
-                extension = name.substring(idx + 1);
-                name = name.substring(0, idx);
-            }
-            else
-            {
-                extension = "html";
-            }
-
-            String method;
-            idx = name.indexOf('.');
-            if (idx != -1)
-            {
-                String methodString = name.substring(0, idx);
-                if (METHODS.contains(methodString.toUpperCase()))
+                if (!script.name.equalsIgnoreCase("requires"))
                 {
-                    method = methodString.toUpperCase();
-                    name = name.substring(idx + 1);
-                }
-                else
-                {
-                    method = null;
-                }
-            }
-            else if (METHODS.contains(name.toUpperCase()))
-            {
-                method = name.toUpperCase();
-                name = "";
-            }
-            else
-            {
-                method = null;
-            }
-
-            String capability = "sling.resourceType;sling.resourceType=\"" + rt.replace("\"", "\\\"") + "\"";
-
-            if (!(rt.equals(name) || rt.endsWith("." + name) || name.isEmpty()))
-            {
-                if (!name.equalsIgnoreCase("requires"))
-                {
-                    if (!name.equalsIgnoreCase("extends"))
+                    if (!script.name.equalsIgnoreCase("extends"))
                     {
-                        capability += ";sling.resourceType.selectors:List<String>=\"" + name.replace("\"", "\\\"") + "\"";
+                        capability += ";sling.resourceType.selectors:List<String>=\"" + script.name.replace("\"", "\\\"") + "\"";
                     }
                     else
                     {
-                        try (BufferedReader input = new BufferedReader(new FileReader(new File(new File(project.getBuild().getOutputDirectory(), "javax.script"), script))))
+                        try (BufferedReader input = new BufferedReader(new FileReader(new File(new File(project.getBuild().getOutputDirectory(), "javax.script"), scriptPath))))
                         {
                             String extend = input.readLine();
 
@@ -153,7 +101,7 @@ public class ScriptingMavenPlugin extends AbstractMojo
                 }
                 else
                 {
-                    try (BufferedReader input = new BufferedReader(new FileReader(new File(new File(project.getBuild().getOutputDirectory(), "javax.script"), script))))
+                    try (BufferedReader input = new BufferedReader(new FileReader(new File(new File(project.getBuild().getOutputDirectory(), "javax.script"), scriptPath))))
                     {
                         for (String line = input.readLine(); line != null; line = input.readLine())
                         {
@@ -166,15 +114,15 @@ public class ScriptingMavenPlugin extends AbstractMojo
                     }
                 }
             }
-            capability += ";sling.resourceType.extensions:List<String>=\"" + extension.replace("\"", "\\\"") + "\"";
+            capability += ";sling.resourceType.extensions:List<String>=\"" + script.extension.replace("\"", "\\\"") + "\"";
 
-            if (method != null)
+            if (script.method != null)
             {
-                capability += ";sling.servlet.methods:List<String>=\"" + method.replace("\"", "\\\"") + "\"";
+                capability += ";sling.servlet.methods:List<String>=\"" + script.method.replace("\"", "\\\"") + "\"";
             }
-            if (version != null)
+            if (script.version != null)
             {
-                capability += ";version:Version=\"" + version + "\"";
+                capability += ";version:Version=\"" + script.version + "\"";
             }
             capabilities.add(capability);
         }
@@ -195,5 +143,65 @@ public class ScriptingMavenPlugin extends AbstractMojo
 
         project.getProperties().setProperty(ScriptingMavenPlugin.class.getPackage().getName() + "." + Constants.PROVIDE_CAPABILITY, String.join(",", capabilities));
         project.getProperties().setProperty(ScriptingMavenPlugin.class.getPackage().getName() + "." + Constants.REQUIRE_CAPABILITY, String.join(",", requirements));
+    }
+
+    static class Script {
+        String rt;
+        String version;
+        String name;
+        String extension;
+        String scriptExtension;
+        String method;
+    }
+
+    static Script getScripts(String script) {
+        Script result = new Script();
+        String[] parts = script.split("/");
+
+        result.rt = parts[0];
+        result.version = parts.length > 2 ? new Version(parts[1]).toString() : null;
+        result.name = parts.length > 2 ? parts[2] : parts[1];
+        int idx = result.name.lastIndexOf('.');
+        if (idx != -1)
+        {
+            result.scriptExtension = result.name.substring(idx + 1);
+            result.name = result.name.substring(0, idx);
+            if (result.scriptExtension.isEmpty())
+            {
+                result.scriptExtension = null;
+            }
+        }
+
+        idx = result.name.lastIndexOf('.');
+        if (idx != -1)
+        {
+            result.extension = result.name.substring(idx + 1);
+            result.name = result.name.substring(0, idx);
+            if (result.extension.isEmpty())
+            {
+                result.extension = "html";
+            }
+        }
+        else
+        {
+            result.extension = "html";
+        }
+
+        idx = result.name.indexOf('.');
+        if (idx != -1)
+        {
+            String methodString = result.name.substring(0, idx).toUpperCase();
+            if (METHODS.contains(methodString))
+            {
+                result.method = methodString;
+                result.name = result.name.substring(idx + 1);
+            }
+        }
+        else if (METHODS.contains(result.name.toUpperCase()))
+        {
+            result.method = result.name.toUpperCase();
+            result.name = "";
+        }
+        return result;
     }
 }
