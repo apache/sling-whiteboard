@@ -49,14 +49,21 @@ class BundledScriptServlet extends GenericServlet {
     private final Bundle m_bundle;
     private final BundledScriptFinder m_bundledScriptFinder;
     private final ScriptContextProvider m_scriptContextProvider;
+    private final String m_delegatedResourceType;
 
     private Map<String, Script> scriptsMap = new HashMap<>();
     private ReadWriteLock lock = new ReentrantReadWriteLock();
 
     BundledScriptServlet(BundledScriptFinder bundledScriptFinder, Bundle bundle, ScriptContextProvider scriptContextProvider) {
+        this(bundledScriptFinder, bundle, scriptContextProvider, null);
+    }
+
+    BundledScriptServlet(BundledScriptFinder bundledScriptFinder, Bundle bundle, ScriptContextProvider scriptContextProvider, String
+            overridingResourceType) {
         m_bundle = bundle;
         m_bundledScriptFinder = bundledScriptFinder;
         m_scriptContextProvider = scriptContextProvider;
+        m_delegatedResourceType = overridingResourceType;
     }
 
     @Override
@@ -85,7 +92,11 @@ class BundledScriptServlet extends GenericServlet {
                     try {
                         script = scriptsMap.get(getScriptsMapKey(request));
                         if (script == null) {
-                            script = m_bundledScriptFinder.getScript(request, m_bundle);
+                            if (StringUtils.isEmpty(m_delegatedResourceType)) {
+                                script = m_bundledScriptFinder.getScript(request, m_bundle);
+                            } else {
+                                script = m_bundledScriptFinder.getScript(request, m_bundle, m_delegatedResourceType);
+                            }
                             if (script != null) {
                                 scriptsMap.put(scriptsMapKey, script);
                             }
@@ -107,40 +118,7 @@ class BundledScriptServlet extends GenericServlet {
                     throw new ScriptEvaluationException(script.getName(), se.getMessage(), cause);
                 }
             } else {
-                /*
-                 * The Script does not seem to belong to the capability for which this servlet has been registered. If this capability
-                 * extends another capability, the request should be dispatched to that capability.
-                 *
-                 * BIG FAT NOTE:
-                 * - we need to figure out how to map to the correct version of a wired resource type
-                 */
-                String currentResourceType = request.getResource().getResourceType();
-                if (currentResourceType.indexOf('/') > 0) {
-                    currentResourceType = currentResourceType.substring(0, currentResourceType.lastIndexOf('/'));
-                }
-                for (BundleCapability bundleCapability : m_bundle.adapt(BundleWiring.class).getCapabilities(BundledScriptTracker
-                        .NS_SLING_RESOURCE_TYPE)) {
-
-                    String capabilityRT = (String) bundleCapability.getAttributes().get(BundledScriptTracker
-                            .NS_SLING_RESOURCE_TYPE);
-                    if (currentResourceType.equals(capabilityRT)) {
-                        String extendsRT = (String) bundleCapability.getAttributes().get("extends");
-                        if (StringUtils.isNotEmpty(extendsRT)) {
-                            RequestDispatcherOptions options = new RequestDispatcherOptions();
-                            options.setForceResourceType(extendsRT + "/1.0.0");
-                            RequestDispatcher dispatcher = request.getRequestDispatcher(request.getResource(), options);
-                            if (dispatcher != null) {
-                                dispatcher.include(request, response);
-                                return;
-                            } else {
-                                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                            }
-                        }
-                    }
-                }
                 response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-
-
             }
         } else {
             throw new ServletException("Not a Sling HTTP request/response");

@@ -45,17 +45,17 @@ public class BundledScriptFinder {
     @Reference
     private ScriptEngineManager scriptEngineManager;
 
-    private List<String> getScriptEngineExtensions() {
-        List<String> _scriptEngineExtensions = new ArrayList<>();
-        for (ScriptEngineFactory factory : scriptEngineManager.getEngineFactories()) {
-            _scriptEngineExtensions.addAll(factory.getExtensions());
-        }
-        Collections.reverse(_scriptEngineExtensions);
-        return Collections.unmodifiableList(_scriptEngineExtensions);
+    Script getScript(SlingHttpServletRequest request, Bundle bundle) {
+        return getScript(request, bundle, null);
     }
 
-    Script getScript(SlingHttpServletRequest request, Bundle bundle) {
-        List<String> scriptMatches = buildScriptMatches(request);
+    Script getScript(SlingHttpServletRequest request, Bundle bundle, String delegatedResourceType) {
+        List<String> scriptMatches;
+        if (StringUtils.isEmpty(delegatedResourceType)) {
+            scriptMatches = buildScriptMatches(request);
+        } else {
+            scriptMatches = buildScriptMatches(request, delegatedResourceType);
+        }
         for (String extension : getScriptEngineExtensions()) {
             for (String match : scriptMatches) {
                 URL bundledScriptURL = bundle.getEntry(NS_JAVAX_SCRIPT_CAPABILITY + SLASH + match + DOT + extension);
@@ -67,9 +67,13 @@ public class BundledScriptFinder {
         return null;
     }
 
-    List<String> buildScriptMatches(SlingHttpServletRequest request) {
+    private List<String> buildScriptMatches(SlingHttpServletRequest request) {
+        return buildScriptMatches(request, null);
+    }
+
+    private List<String> buildScriptMatches(SlingHttpServletRequest request, String delegatedResourceType) {
         List<String> matches = new ArrayList<>();
-        String resourceType = request.getResource().getResourceType();
+        String resourceType = StringUtils.isEmpty(delegatedResourceType) ? request.getResource().getResourceType() : delegatedResourceType;
         String version = null;
         if (resourceType.contains(SLASH) && StringUtils.countMatches(resourceType, SLASH) == 1) {
             version = resourceType.substring(resourceType.indexOf(SLASH) + 1, resourceType.length());
@@ -94,5 +98,14 @@ public class BundledScriptFinder {
         }
         matches.add(script);
         return Collections.unmodifiableList(matches);
+    }
+
+    private List<String> getScriptEngineExtensions() {
+        List<String> _scriptEngineExtensions = new ArrayList<>();
+        for (ScriptEngineFactory factory : scriptEngineManager.getEngineFactories()) {
+            _scriptEngineExtensions.addAll(factory.getExtensions());
+        }
+        Collections.reverse(_scriptEngineExtensions);
+        return Collections.unmodifiableList(_scriptEngineExtensions);
     }
 }
