@@ -138,9 +138,11 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<List<Servic
                     Optional<BundleWire> optionalWire = Optional.empty();
 
                     if (StringUtils.isNotEmpty(extendsRT)) {
+
                         LOGGER.debug("Bundle {} extends resource type {} through {}.", bundle.getSymbolicName(), extendsRT, resourceType);
                         optionalWire = bundleWiring.getRequiredWires(NS_SLING_RESOURCE_TYPE).stream().filter(
-                                bundleWire -> extendsRT.equals(bundleWire.getCapability().getAttributes().get(NS_SLING_RESOURCE_TYPE))
+                                bundleWire -> extendsRT.equals(bundleWire.getCapability().getAttributes().get(NS_SLING_RESOURCE_TYPE)) &&
+                                    !bundleWire.getCapability().getAttributes().containsKey(AT_SLING_SELECTORS)
                         ).findFirst();
                     }
 
