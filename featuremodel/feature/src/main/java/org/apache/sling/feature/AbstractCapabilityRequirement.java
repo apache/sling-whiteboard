@@ -23,30 +23,57 @@ import java.util.Map;
 import org.osgi.resource.Resource;
 
 abstract class AbstractCapabilityRequirement {
-    private final Resource resource;
+
+    /** The namespace. Required. */
     private final String namespace;
+
+    /** Optional resource. */
+    private final Resource resource;
+
+    /** Optional attributes. Never null. */
     private final Map<String, Object> attributes;
+
+    /** Optional attributes. Never null. */
     private final Map<String, String> directives;
 
-    AbstractCapabilityRequirement(Resource res, String ns, Map<String, Object> attrs, Map<String, String> dirs) {
+    AbstractCapabilityRequirement(final Resource res, final String ns, final Map<String, Object> attrs, final Map<String, String> dirs) {
+        if ( ns == null ) {
+            throw new IllegalArgumentException("Namespace must not be null.");
+        }
         resource = res;
         namespace = ns;
-        attributes = Collections.unmodifiableMap(new HashMap<>(attrs));
-        directives = Collections.unmodifiableMap(new HashMap<>(dirs));
+        attributes = attrs == null ? Collections.emptyMap() : Collections.unmodifiableMap(new HashMap<>(attrs));
+        directives = dirs == null ? Collections.emptyMap() : Collections.unmodifiableMap(new HashMap<>(dirs));
     }
 
+    /**
+     * Return the namespace.
+     * @return The namespace. This is never @{code null}.
+     */
     public String getNamespace() {
         return namespace;
     }
 
+    /**
+     * Return the attributes.
+     * @return The attributes, might be empty.
+     */
     public Map<String, Object> getAttributes() {
         return attributes;
     }
 
+    /**
+     * Return the directives.
+     * @return The directives, might be empty.
+     */
     public Map<String, String> getDirectives() {
         return directives;
     }
 
+    /**
+     * Return the resource.
+     * @return The resource or @{code null}.
+     */
     public Resource getResource() {
         return resource;
     }
@@ -55,9 +82,9 @@ abstract class AbstractCapabilityRequirement {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((attributes == null) ? 0 : attributes.hashCode());
-        result = prime * result + ((directives == null) ? 0 : directives.hashCode());
-        result = prime * result + ((namespace == null) ? 0 : namespace.hashCode());
+        result = prime * result + attributes.hashCode();
+        result = prime * result + directives.hashCode();
+        result = prime * result + namespace.hashCode();
         return result;
     }
 
@@ -70,20 +97,11 @@ abstract class AbstractCapabilityRequirement {
         if (getClass() != obj.getClass())
             return false;
         AbstractCapabilityRequirement other = (AbstractCapabilityRequirement) obj;
-        if (attributes == null) {
-            if (other.attributes != null)
-                return false;
-        } else if (!attributes.equals(other.attributes))
+        if (!namespace.equals(other.namespace))
             return false;
-        if (directives == null) {
-            if (other.directives != null)
-                return false;
-        } else if (!directives.equals(other.directives))
+        if (!attributes.equals(other.attributes))
             return false;
-        if (namespace == null) {
-            if (other.namespace != null)
-                return false;
-        } else if (!namespace.equals(other.namespace))
+        if (!directives.equals(other.directives))
             return false;
         return true;
     }
