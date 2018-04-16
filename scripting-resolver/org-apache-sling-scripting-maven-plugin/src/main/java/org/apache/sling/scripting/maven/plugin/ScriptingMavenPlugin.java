@@ -91,7 +91,7 @@ public class ScriptingMavenPlugin extends AbstractMojo
                             String extend = input.readLine();
 
                             capability += ";extends=\"" + extend.split(";")[0].replace("\"", "\\\"") + "\"";
-                            requires.add(extend);
+                            requires.add(extend + ";extends=true" );
                         }
                         catch (Exception ex)
                         {
@@ -140,6 +140,10 @@ public class ScriptingMavenPlugin extends AbstractMojo
             {
                 VersionRange range = new VersionRange(parts[1].substring(parts[1].indexOf("=") + 1).replace("\"", "").trim());
                 filter = "(&" + filter + range.toFilterString("version") + ")";
+            }
+            if (parts.length > 2)
+            {
+                filter = "(&" + filter + "(!(sling.resourceType.selectors=*)))";
             }
             requirements.add("sling.resourceType;filter:=\"" + filter + "\"");
         }
