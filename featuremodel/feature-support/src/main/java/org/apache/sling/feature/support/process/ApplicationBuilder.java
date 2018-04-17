@@ -20,6 +20,8 @@ import org.apache.sling.feature.Application;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.support.resolver.FeatureResolver;
+import org.apache.sling.feature.support.resolver.FeatureResource;
 
 import java.util.ArrayList;
 import java.util.Collections;

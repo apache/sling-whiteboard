@@ -16,24 +16,10 @@
  */
 package org.apache.sling.feature.resolver.impl;
 
-import org.apache.sling.feature.Artifact;
-import org.apache.sling.feature.ArtifactId;
-import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.OSGiCapability;
-import org.apache.sling.feature.OSGiRequirement;
-import org.apache.sling.feature.analyser.BundleDescriptor;
-import org.apache.sling.feature.analyser.Descriptor;
-import org.apache.sling.feature.analyser.impl.BundleDescriptorImpl;
-import org.apache.sling.feature.support.process.FeatureResource;
-import org.apache.sling.feature.support.util.PackageInfo;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.osgi.framework.Version;
-import org.osgi.framework.namespace.BundleNamespace;
-import org.osgi.framework.namespace.PackageNamespace;
-import org.osgi.resource.Capability;
-import org.osgi.resource.Requirement;
-import org.osgi.resource.Resource;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -44,10 +30,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import org.apache.sling.feature.Artifact;
+import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.OSGiCapability;
+import org.apache.sling.feature.OSGiRequirement;
+import org.apache.sling.feature.analyser.BundleDescriptor;
+import org.apache.sling.feature.analyser.Descriptor;
+import org.apache.sling.feature.analyser.impl.BundleDescriptorImpl;
+import org.apache.sling.feature.support.resolver.FeatureResource;
+import org.apache.sling.feature.support.util.PackageInfo;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.osgi.framework.Version;
+import org.osgi.framework.namespace.BundleNamespace;
+import org.osgi.framework.namespace.PackageNamespace;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
+import org.osgi.resource.Resource;
 
 public class BundleResourceImplTest {
     @Test

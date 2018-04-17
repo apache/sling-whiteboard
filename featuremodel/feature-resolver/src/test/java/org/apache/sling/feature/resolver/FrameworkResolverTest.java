@@ -16,19 +16,7 @@
  */
 package org.apache.sling.feature.resolver;
 
-import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.support.ArtifactHandler;
-import org.apache.sling.feature.support.ArtifactManager;
-import org.apache.sling.feature.support.ArtifactManagerConfig;
-import org.apache.sling.feature.support.json.FeatureJSONReader;
-import org.apache.sling.feature.support.json.FeatureJSONReader.SubstituteVariables;
-import org.apache.sling.feature.support.process.FeatureResolver;
-import org.apache.sling.feature.support.process.FeatureResource;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.osgi.framework.Constants;
-import org.osgi.framework.namespace.IdentityNamespace;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.FileReader;
@@ -40,7 +28,19 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
+import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.support.ArtifactHandler;
+import org.apache.sling.feature.support.ArtifactManager;
+import org.apache.sling.feature.support.ArtifactManagerConfig;
+import org.apache.sling.feature.support.json.FeatureJSONReader;
+import org.apache.sling.feature.support.json.FeatureJSONReader.SubstituteVariables;
+import org.apache.sling.feature.support.resolver.FeatureResolver;
+import org.apache.sling.feature.support.resolver.FeatureResource;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.osgi.framework.Constants;
+import org.osgi.framework.namespace.IdentityNamespace;
 
 public class FrameworkResolverTest {
     private Path tempDir;

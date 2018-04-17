@@ -29,7 +29,7 @@ import org.apache.sling.feature.support.json.FeatureJSONReader.SubstituteVariabl
 import org.apache.sling.feature.support.process.ApplicationBuilder;
 import org.apache.sling.feature.support.process.BuilderContext;
 import org.apache.sling.feature.support.process.FeatureProvider;
-import org.apache.sling.feature.support.process.FeatureResolver;
+import org.apache.sling.feature.support.resolver.FeatureResolver;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

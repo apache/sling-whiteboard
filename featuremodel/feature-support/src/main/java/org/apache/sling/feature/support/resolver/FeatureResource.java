@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.sling.feature.support.process;
+package org.apache.sling.feature.support.resolver;
 
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.Feature;

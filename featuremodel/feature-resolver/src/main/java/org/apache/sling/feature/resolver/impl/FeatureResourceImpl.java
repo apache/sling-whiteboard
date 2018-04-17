@@ -16,21 +16,21 @@
  */
 package org.apache.sling.feature.resolver.impl;
 
-import org.apache.sling.feature.Artifact;
-import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.OSGiCapability;
-import org.apache.sling.feature.OSGiRequirement;
-import org.apache.sling.feature.support.process.FeatureResource;
-import org.osgi.framework.Version;
-import org.osgi.framework.namespace.IdentityNamespace;
-import org.osgi.resource.Capability;
-import org.osgi.resource.Requirement;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.sling.feature.Artifact;
+import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.OSGiCapability;
+import org.apache.sling.feature.OSGiRequirement;
+import org.apache.sling.feature.support.resolver.FeatureResource;
+import org.osgi.framework.Version;
+import org.osgi.framework.namespace.IdentityNamespace;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
 
 public class FeatureResourceImpl extends AbstractResourceImpl implements FeatureResource {
     private final Artifact artifact;

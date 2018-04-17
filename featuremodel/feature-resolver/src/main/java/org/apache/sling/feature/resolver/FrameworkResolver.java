@@ -16,6 +16,19 @@
  */
 package org.apache.sling.feature.resolver;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.ServiceLoader;
+
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
@@ -25,8 +38,8 @@ import org.apache.sling.feature.resolver.impl.BundleResourceImpl;
 import org.apache.sling.feature.resolver.impl.FeatureResourceImpl;
 import org.apache.sling.feature.resolver.impl.ResolveContextImpl;
 import org.apache.sling.feature.support.ArtifactManager;
-import org.apache.sling.feature.support.process.FeatureResolver;
-import org.apache.sling.feature.support.process.FeatureResource;
+import org.apache.sling.feature.support.resolver.FeatureResolver;
+import org.apache.sling.feature.support.resolver.FeatureResource;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
@@ -44,24 +57,6 @@ import org.osgi.resource.Resource;
 import org.osgi.resource.Wire;
 import org.osgi.service.resolver.ResolutionException;
 import org.osgi.service.resolver.Resolver;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.Set;
 
 public class FrameworkResolver implements FeatureResolver {
     private final ArtifactManager artifactManager;

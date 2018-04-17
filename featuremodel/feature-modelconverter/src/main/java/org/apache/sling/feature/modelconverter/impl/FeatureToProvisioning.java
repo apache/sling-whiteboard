@@ -28,7 +28,7 @@ import org.apache.sling.feature.support.ArtifactManager;
 import org.apache.sling.feature.support.FeatureUtil;
 import org.apache.sling.feature.support.json.ApplicationJSONReader;
 import org.apache.sling.feature.support.json.FeatureJSONReader.SubstituteVariables;
-import org.apache.sling.feature.support.process.FeatureResolver;
+import org.apache.sling.feature.support.resolver.FeatureResolver;
 import org.apache.sling.provisioning.model.Artifact;
 import org.apache.sling.provisioning.model.Configuration;
 import org.apache.sling.provisioning.model.Feature;
