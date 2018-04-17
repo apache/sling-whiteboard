@@ -56,7 +56,7 @@
                         <outputDirectory>${project.build.directory}/classes</outputDirectory>
                         <overWriteReleases>false</overWriteReleases>
                         <overWriteSnapshots>true</overWriteSnapshots>
-                        <includeArtifactIds>commons-cli,org.apache.sling.feature,org.apache.sling.feature.support,org.apache.sling.commons.johnzon,slf4j-api,slf4j-simple,osgi.core,org.apache.felix.converter</includeArtifactIds>
+                        <includeArtifactIds>commons-cli,org.apache.sling.feature,org.apache.sling.feature.support,org.apache.sling.commons.johnzon,slf4j-api,slf4j-simple,osgi.core,org.apache.felix.converter,org.osgi.service.resolver,org.apache.sling.feature.resolver,org.apache.sling.feature.analyser</includeArtifactIds>
                     </configuration>
                 </execution>
             </executions>
