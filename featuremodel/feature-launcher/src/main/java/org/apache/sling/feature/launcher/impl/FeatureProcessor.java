@@ -32,6 +32,7 @@ import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.launcher.impl.LauncherConfig.StartupMode;
 import org.apache.sling.feature.resolver.FrameworkResolver;
 import org.apache.sling.feature.support.FeatureUtil;
+import org.apache.sling.feature.support.SlingConstants;
 import org.apache.sling.feature.support.artifact.ArtifactHandler;
 import org.apache.sling.feature.support.artifact.ArtifactManager;
 import org.apache.sling.feature.support.json.ApplicationJSONReader;
@@ -113,9 +114,9 @@ public class FeatureProcessor {
                     config.getInstallation().addInstallableArtifact(handler.getFile());
                 }
             } else {
-                if ( ext.getName().equals(Extension.NAME_REPOINIT) ) {
+                if ( ext.getName().equals(SlingConstants.EXTENSION_NAME_REPOINIT) ) {
                     if ( ext.getType() != ExtensionType.TEXT ) {
-                        throw new Exception(Extension.NAME_REPOINIT + " extension must be of type text and not json");
+                        throw new Exception(SlingConstants.EXTENSION_NAME_REPOINIT + " extension must be of type text and not json");
                     }
                     final Configuration cfg = new Configuration("org.apache.sling.jcr.repoinit.RepositoryInitializer", "repoinit" + String.valueOf(index));
                     index++;

@@ -16,28 +16,6 @@
  */
 package org.apache.sling.feature.modelconverter.impl;
 
-import org.apache.sling.feature.Application;
-import org.apache.sling.feature.ArtifactId;
-import org.apache.sling.feature.Bundles;
-import org.apache.sling.feature.Configurations;
-import org.apache.sling.feature.Extension;
-import org.apache.sling.feature.ExtensionType;
-import org.apache.sling.feature.Extensions;
-import org.apache.sling.feature.KeyValueMap;
-import org.apache.sling.feature.support.FeatureUtil;
-import org.apache.sling.feature.support.artifact.ArtifactManager;
-import org.apache.sling.feature.support.json.ApplicationJSONReader;
-import org.apache.sling.feature.support.json.FeatureJSONReader.SubstituteVariables;
-import org.apache.sling.feature.support.resolver.FeatureResolver;
-import org.apache.sling.provisioning.model.Artifact;
-import org.apache.sling.provisioning.model.Configuration;
-import org.apache.sling.provisioning.model.Feature;
-import org.apache.sling.provisioning.model.Model;
-import org.apache.sling.provisioning.model.Section;
-import org.apache.sling.provisioning.model.io.ModelWriter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -53,6 +31,29 @@ import javax.json.JsonArray;
 import javax.json.JsonReader;
 import javax.json.JsonString;
 import javax.json.JsonValue;
+
+import org.apache.sling.feature.Application;
+import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.Bundles;
+import org.apache.sling.feature.Configurations;
+import org.apache.sling.feature.Extension;
+import org.apache.sling.feature.ExtensionType;
+import org.apache.sling.feature.Extensions;
+import org.apache.sling.feature.KeyValueMap;
+import org.apache.sling.feature.support.FeatureUtil;
+import org.apache.sling.feature.support.SlingConstants;
+import org.apache.sling.feature.support.artifact.ArtifactManager;
+import org.apache.sling.feature.support.json.ApplicationJSONReader;
+import org.apache.sling.feature.support.json.FeatureJSONReader.SubstituteVariables;
+import org.apache.sling.feature.support.resolver.FeatureResolver;
+import org.apache.sling.provisioning.model.Artifact;
+import org.apache.sling.provisioning.model.Configuration;
+import org.apache.sling.provisioning.model.Feature;
+import org.apache.sling.provisioning.model.Model;
+import org.apache.sling.provisioning.model.Section;
+import org.apache.sling.provisioning.model.io.ModelWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** Converter that converts the feature model to the provisioning model.
  */
@@ -205,7 +206,7 @@ public class FeatureToProvisioning {
 
         // extensions: content packages and repoinit
         for(final Extension ext : extensions) {
-            if ( Extension.NAME_CONTENT_PACKAGES.equals(ext.getName()) ) {
+            if ( SlingConstants.EXTENSION_NAME_CONTENT_PACKAGES.equals(ext.getName()) ) {
                 for(final org.apache.sling.feature.Artifact cp : ext.getArtifacts() ) {
                     String[] runmodes = null;
                     final ArtifactId id = cp.getId();
@@ -220,7 +221,7 @@ public class FeatureToProvisioning {
                     f.getOrCreateRunMode(runmodes).getOrCreateArtifactGroup(20).add(newCP);
                 }
 
-            } else if ( Extension.NAME_REPOINIT.equals(ext.getName()) ) {
+            } else if ( SlingConstants.EXTENSION_NAME_REPOINIT.equals(ext.getName()) ) {
                 final Section section = new Section("repoinit");
                 if (ext.getType() == ExtensionType.TEXT) {
                     section.setContents(ext.getText());

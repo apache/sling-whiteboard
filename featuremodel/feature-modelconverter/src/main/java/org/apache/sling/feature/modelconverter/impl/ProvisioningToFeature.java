@@ -16,6 +16,21 @@
  */
 package org.apache.sling.feature.modelconverter.impl;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
 import org.apache.sling.feature.Application;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Bundles;
@@ -25,6 +40,7 @@ import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.Extensions;
 import org.apache.sling.feature.KeyValueMap;
 import org.apache.sling.feature.support.FeatureUtil;
+import org.apache.sling.feature.support.SlingConstants;
 import org.apache.sling.feature.support.artifact.ArtifactHandler;
 import org.apache.sling.feature.support.artifact.ArtifactManager;
 import org.apache.sling.feature.support.artifact.ArtifactManagerConfig;
@@ -47,21 +63,6 @@ import org.apache.sling.provisioning.model.Traceable;
 import org.apache.sling.provisioning.model.io.ModelReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 /** Converter that converts the provisioning model to the feature model.
  */
@@ -335,7 +336,7 @@ public class ProvisioningToFeature {
             variables.put(FeatureToProvisioning.PROVISIONING_MODEL_NAME_VARIABLE, feature.getName());
         }
 
-        Extension cpExtension = extensions.getByName(Extension.NAME_CONTENT_PACKAGES);
+        Extension cpExtension = extensions.getByName(SlingConstants.EXTENSION_NAME_CONTENT_PACKAGES);
         for(final RunMode runMode : feature.getRunModes() ) {
             for(final ArtifactGroup group : runMode.getArtifactGroups()) {
                 for(final Artifact artifact : group) {
@@ -348,7 +349,7 @@ public class ProvisioningToFeature {
 
                     if ( newArtifact.getId().getType().equals("zip") ) {
                         if ( cpExtension == null ) {
-                            cpExtension = new Extension(ExtensionType.ARTIFACTS, Extension.NAME_CONTENT_PACKAGES, true);
+                            cpExtension = new Extension(ExtensionType.ARTIFACTS, SlingConstants.EXTENSION_NAME_CONTENT_PACKAGES, true);
                             extensions.add(cpExtension);
                         }
                         cpExtension.getArtifacts().add(newArtifact);
@@ -411,7 +412,7 @@ public class ProvisioningToFeature {
                 }
             }
         }
-        Extension repoExtension = extensions.getByName(Extension.NAME_REPOINIT);
+        Extension repoExtension = extensions.getByName(SlingConstants.EXTENSION_NAME_REPOINIT);
         for(final Section sect : feature.getAdditionalSections("repoinit")) {
             String text = sect.getContents();
             if ( repoExtension == null ) {
@@ -419,7 +420,7 @@ public class ProvisioningToFeature {
 //                extensions.add(repoExtension);
 //                repoExtension.setJSON(text);
 
-                repoExtension = new Extension(ExtensionType.JSON, Extension.NAME_REPOINIT, true);
+                repoExtension = new Extension(ExtensionType.JSON, SlingConstants.EXTENSION_NAME_REPOINIT, true);
                 extensions.add(repoExtension);
                 text = text.replace('\t', ' ');
                 String[] lines = text.split("[\n]");

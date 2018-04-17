@@ -16,10 +16,6 @@
  */
 package org.apache.sling.feature.support;
 
-import org.apache.sling.feature.Configurations;
-import org.apache.sling.feature.support.json.ConfigurationJSONWriter;
-import org.osgi.framework.Constants;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -29,14 +25,15 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 
+import org.apache.sling.feature.Configurations;
+import org.apache.sling.feature.support.json.ConfigurationJSONWriter;
+import org.osgi.framework.Constants;
+
 
 public class ConfigurationUtil {
 
     public static final String REQUIRE_CONFIGURATOR_CAPABILITY =
             "osgi.extender;filter:=\"(&(osgi.extender=osgi.configurator)(version>=1.0)(!(version>=2.0)))\"";
-
-    public static final String REQUIRE_REPOINIT_CAPABILITY =
-            "osgi.implementation;filter:=\"(&(osgi.implementation=org.apache.sling.jcr.repoinit)(version>=1.0)(!(version>=2.0)))\"";
 
     /**
      * Create a bundle containing the configurations to be processed the

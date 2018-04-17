@@ -25,6 +25,7 @@ import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.analyser.ContainerDescriptor;
 import org.apache.sling.feature.scanner.ExtensionScanner;
+import org.apache.sling.feature.support.SlingConstants;
 import org.apache.sling.feature.support.artifact.ArtifactManager;
 
 public class ContentPackagesExtensionScanner implements ExtensionScanner {
@@ -43,7 +44,7 @@ public class ContentPackagesExtensionScanner implements ExtensionScanner {
     public ContainerDescriptor scan(final Extension extension,
             final ArtifactManager artifactManager)
     throws IOException {
-        if (!Extension.NAME_CONTENT_PACKAGES.equals(extension.getName()) ) {
+        if (!SlingConstants.EXTENSION_NAME_CONTENT_PACKAGES.equals(extension.getName()) ) {
             return null;
         }
         if ( extension.getType() != ExtensionType.ARTIFACTS ) {

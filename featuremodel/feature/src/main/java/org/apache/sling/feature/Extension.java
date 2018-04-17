@@ -31,12 +31,6 @@ import java.util.List;
  */
 public class Extension {
 
-    /** Common extension name to specify the repoinit part for Apache Sling. */
-    public static final String NAME_REPOINIT = "repoinit";
-
-    /** Common extension name to specify the content packages for Apache Sling. */
-    public static final String NAME_CONTENT_PACKAGES = "content-packages";
-
     /** The extension type */
     private final ExtensionType type;
 

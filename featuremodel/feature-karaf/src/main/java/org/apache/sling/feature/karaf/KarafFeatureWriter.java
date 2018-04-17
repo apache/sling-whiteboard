@@ -38,6 +38,7 @@ import org.apache.sling.feature.Configurations;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.support.ConfigurationUtil;
+import org.apache.sling.feature.support.SlingConstants;
 import org.apache.sling.feature.support.artifact.ArtifactHandler;
 import org.apache.sling.feature.support.artifact.ArtifactManager;
 
@@ -53,7 +54,7 @@ public class KarafFeatureWriter {
             final ArtifactManager artifactManager)
     throws IOException {
         // check for repoinit extension
-        final Extension repoinitExt = feature.getExtensions().getByName(Extension.NAME_REPOINIT);
+        final Extension repoinitExt = feature.getExtensions().getByName(SlingConstants.EXTENSION_NAME_REPOINIT);
         File configurationBundleFile = null;
         Artifact configuratorBundle = null;
         try {
@@ -74,7 +75,7 @@ public class KarafFeatureWriter {
                         map = null;
                     } else {
                         map = Collections.singletonMap("Require-Capability",
-                                ConfigurationUtil.REQUIRE_REPOINIT_CAPABILITY);
+                                SlingConstants.REQUIRE_REPOINIT_CAPABILITY);
                     }
                     ConfigurationUtil.createConfiguratorBundle(os,
                             configs,

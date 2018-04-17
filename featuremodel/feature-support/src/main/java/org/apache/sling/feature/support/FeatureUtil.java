@@ -48,7 +48,7 @@ public class FeatureUtil {
     public static ArtifactId getFelixFrameworkId(final String version) {
         return new ArtifactId("org.apache.felix",
                 "org.apache.felix.framework",
-                version != null ? version : "5.6.8", null, null);
+                version != null ? version : "5.6.10", null, null);
     }
 
     static final Comparator<String> FEATURE_PATH_COMP = new Comparator<String>() {
