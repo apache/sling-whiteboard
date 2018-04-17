@@ -16,21 +16,6 @@
  */
 package org.apache.sling.feature.maven;
 
-import org.apache.maven.model.Dependency;
-import org.apache.maven.project.MavenProject;
-import org.apache.sling.feature.Artifact;
-import org.apache.sling.feature.ArtifactId;
-import org.apache.sling.feature.Extension;
-import org.apache.sling.feature.ExtensionType;
-import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.support.FeatureUtil;
-import org.apache.sling.feature.support.json.FeatureJSONReader;
-import org.apache.sling.feature.support.json.FeatureJSONReader.SubstituteVariables;
-import org.apache.sling.feature.support.process.BuilderContext;
-import org.apache.sling.feature.support.process.FeatureBuilder;
-import org.apache.sling.feature.support.process.FeatureProvider;
-import org.codehaus.plexus.logging.Logger;
-
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -39,6 +24,20 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.apache.maven.model.Dependency;
+import org.apache.maven.project.MavenProject;
+import org.apache.sling.feature.Artifact;
+import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.Extension;
+import org.apache.sling.feature.ExtensionType;
+import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.support.json.FeatureJSONReader;
+import org.apache.sling.feature.support.json.FeatureJSONReader.SubstituteVariables;
+import org.apache.sling.feature.support.process.BuilderContext;
+import org.apache.sling.feature.support.process.FeatureBuilder;
+import org.apache.sling.feature.support.process.FeatureProvider;
+import org.codehaus.plexus.logging.Logger;
 
 /**
  * The processor processes all feature projects.
@@ -236,7 +235,7 @@ public class Preprocessor {
 
             for(final File file : files) {
                 try {
-                    final List<String> features = FeatureUtil.parseFeatureRefFile(file);
+                    final List<String> features = org.apache.sling.feature.support.io.FeatureUtil.parseFeatureRefFile(file);
                     if ( features.isEmpty() ) {
                         env.logger.debug("Empty feature ref file at " + file);
                     } else {

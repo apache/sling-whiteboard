@@ -62,7 +62,7 @@ public class FeatureToProvisioning {
     static final String PROVISIONING_MODEL_NAME_VARIABLE = "provisioning.model.name";
 
     public static void convert(File file, String output, ArtifactManager am) throws IOException {
-        org.apache.sling.feature.Feature feature = FeatureUtil.getFeature(file.getAbsolutePath(), am, SubstituteVariables.NONE);
+        org.apache.sling.feature.Feature feature = org.apache.sling.feature.support.io.FeatureUtil.getFeature(file.getAbsolutePath(), am, SubstituteVariables.NONE);
 
         Object featureNameVar = feature.getVariables().remove(PROVISIONING_MODEL_NAME_VARIABLE);
         String featureName;
