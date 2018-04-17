@@ -98,6 +98,7 @@ public class FrameworkResolver implements FeatureResolver {
             BundleRevision br = framework.adapt(BundleRevision.class);
             capabilities.put(PackageNamespace.PACKAGE_NAMESPACE, br.getCapabilities(PackageNamespace.PACKAGE_NAMESPACE));
             capabilities.put(BundleNamespace.BUNDLE_NAMESPACE, br.getCapabilities(BundleNamespace.BUNDLE_NAMESPACE));
+            capabilities.put(HostNamespace.HOST_NAMESPACE, br.getCapabilities(HostNamespace.HOST_NAMESPACE));
             capabilities.put(IdentityNamespace.IDENTITY_NAMESPACE, br.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE));
             frameworkResource = new BundleResourceImpl(framework.getSymbolicName(), framework.getVersion(), null, null,
                     capabilities, Collections.emptyMap());
@@ -231,6 +232,10 @@ public class FrameworkResolver implements FeatureResolver {
                 // This is a fragment
                 Requirement req = reqs.iterator().next(); // TODO handle more host requirements
                 String bsn = req.getAttributes().get(HostNamespace.HOST_NAMESPACE).toString(); // TODO this is not valid, should obtain from filter
+                // system bundle is already started, no need to reorder here
+                if ( Constants.SYSTEM_BUNDLE_SYMBOLICNAME.equals(bsn)) {
+                    continue;
+                }
                 int idx = getBundleIndex(orderedResources, bsn); // TODO check for filter too
                 if (idx < i) {
                     // the fragment is after the host, and should be moved to be before the host
