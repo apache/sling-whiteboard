@@ -52,20 +52,22 @@ class BundledScriptServlet extends GenericServlet {
     private final BundledScriptFinder m_bundledScriptFinder;
     private final ScriptContextProvider m_scriptContextProvider;
     private final String m_delegatedResourceType;
+    private final Set<String> m_wiredResourceTypes;
 
     private Map<String, Script> scriptsMap = new HashMap<>();
     private ReadWriteLock lock = new ReentrantReadWriteLock();
 
-    BundledScriptServlet(BundledScriptFinder bundledScriptFinder, Bundle bundle, ScriptContextProvider scriptContextProvider) {
-        this(bundledScriptFinder, bundle, scriptContextProvider, null);
+    BundledScriptServlet(BundledScriptFinder bundledScriptFinder, Bundle bundle, ScriptContextProvider scriptContextProvider, Set<String> wiredResourceTypes) {
+        this(bundledScriptFinder, bundle, scriptContextProvider, null, wiredResourceTypes );
     }
 
     BundledScriptServlet(BundledScriptFinder bundledScriptFinder, Bundle bundle, ScriptContextProvider scriptContextProvider, String
-            overridingResourceType) {
+            overridingResourceType, Set<String> wiredResourceTypes) {
         m_bundle = bundle;
         m_bundledScriptFinder = bundledScriptFinder;
         m_scriptContextProvider = scriptContextProvider;
         m_delegatedResourceType = overridingResourceType;
+        m_wiredResourceTypes = wiredResourceTypes;
     }
 
     @Override
@@ -112,7 +114,7 @@ class BundledScriptServlet extends GenericServlet {
                 lock.readLock().unlock();
             }
             if (script != null) {
-                RequestWrapper requestWrapper = new RequestWrapper(request, getWiredResourceTypes());
+                RequestWrapper requestWrapper = new RequestWrapper(request, m_wiredResourceTypes);
                 ScriptContext scriptContext = m_scriptContextProvider.prepareScriptContext(requestWrapper, response, script);
                 try {
                     script.eval(scriptContext);
@@ -134,29 +136,5 @@ class BundledScriptServlet extends GenericServlet {
         String requestExtension = requestPathInfo.getExtension();
         return request.getResource().getResourceType() + (StringUtils.isNotEmpty(selectorString) ? ":" + selectorString : "") +
                 (StringUtils.isNotEmpty(requestExtension) ? ":" + requestExtension : "");
-    }
-
-    private Set<String> getWiredResourceTypes() {
-        Set<String> wiredResourceTypes = new HashSet<>();
-        BundleWiring bundleWiring = m_bundle.adapt(BundleWiring.class);
-        bundleWiring.getProvidedWires(BundledScriptTracker.NS_SLING_RESOURCE_TYPE).forEach(
-                bundleWire -> {
-                    String resourceType = (String) bundleWire.getCapability().getAttributes().get(BundledScriptTracker
-                            .NS_SLING_RESOURCE_TYPE);
-                    Version version = (Version) bundleWire.getCapability().getAttributes().get(BundledScriptTracker
-                            .AT_VERSION);
-                    wiredResourceTypes.add(resourceType + (version == null ? "" : "/" + version.toString()));
-                }
-        );
-        bundleWiring.getRequiredWires(BundledScriptTracker.NS_SLING_RESOURCE_TYPE).forEach(
-                bundleWire -> {
-                    String resourceType = (String) bundleWire.getCapability().getAttributes().get(BundledScriptTracker
-                            .NS_SLING_RESOURCE_TYPE);
-                    Version version = (Version) bundleWire.getCapability().getAttributes().get(BundledScriptTracker
-                            .AT_VERSION);
-                    wiredResourceTypes.add(resourceType + (version == null ? "" : "/" + version.toString()));
-                }
-        );
-        return wiredResourceTypes;
     }
 }

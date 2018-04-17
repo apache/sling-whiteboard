@@ -270,7 +270,7 @@
                         <configuration>
                             <usePomDependencies>true</usePomDependencies>
                             <attachArtifact>false</attachArtifact>
-                             <shouldBlockUntilKeyIsPressed>true</shouldBlockUntilKeyIsPressed>
+                             <!-- <shouldBlockUntilKeyIsPressed>true</shouldBlockUntilKeyIsPressed> -->
                             <servers>
                                 <server>
                                     <id>singleinstance</id>
