@@ -14,11 +14,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.sling.feature.support;
+package org.apache.sling.feature.support.artifact;
 
 import org.apache.sling.feature.ArtifactId;
-import org.apache.sling.feature.support.spi.ArtifactProvider;
-import org.apache.sling.feature.support.spi.ArtifactProviderContext;
+import org.apache.sling.feature.support.artifact.spi.ArtifactProvider;
+import org.apache.sling.feature.support.artifact.spi.ArtifactProviderContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -36,8 +36,8 @@ import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.launcher.impl.launchers.FrameworkLauncher;
 import org.apache.sling.feature.launcher.spi.Launcher;
 import org.apache.sling.feature.launcher.spi.LauncherPrepareContext;
-import org.apache.sling.feature.support.ArtifactHandler;
-import org.apache.sling.feature.support.ArtifactManager;
+import org.apache.sling.feature.support.artifact.ArtifactHandler;
+import org.apache.sling.feature.support.artifact.ArtifactManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

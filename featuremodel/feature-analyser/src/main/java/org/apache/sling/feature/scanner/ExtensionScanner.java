@@ -20,7 +20,7 @@ import java.io.IOException;
 
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.analyser.ContainerDescriptor;
-import org.apache.sling.feature.support.ArtifactManager;
+import org.apache.sling.feature.support.artifact.ArtifactManager;
 import org.osgi.annotation.versioning.ConsumerType;
 
 /**

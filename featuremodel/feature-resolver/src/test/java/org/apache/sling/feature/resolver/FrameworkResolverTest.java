@@ -29,9 +29,9 @@ import java.util.Comparator;
 import java.util.Map;
 
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.support.ArtifactHandler;
-import org.apache.sling.feature.support.ArtifactManager;
-import org.apache.sling.feature.support.ArtifactManagerConfig;
+import org.apache.sling.feature.support.artifact.ArtifactHandler;
+import org.apache.sling.feature.support.artifact.ArtifactManager;
+import org.apache.sling.feature.support.artifact.ArtifactManagerConfig;
 import org.apache.sling.feature.support.json.FeatureJSONReader;
 import org.apache.sling.feature.support.json.FeatureJSONReader.SubstituteVariables;
 import org.apache.sling.feature.support.resolver.FeatureResolver;

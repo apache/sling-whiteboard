@@ -14,13 +14,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.sling.feature.support;
-
-import org.apache.sling.feature.support.spi.ArtifactProviderContext;
+package org.apache.sling.feature.support.artifact;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+
+import org.apache.sling.feature.support.artifact.spi.ArtifactProviderContext;
 
 /**
  * This class holds the configuration of artifact manager.
@@ -93,6 +93,10 @@ public class ArtifactManagerConfig implements ArtifactProviderContext {
         return cacheDirectory;
     }
 
+    /**
+     * Set the cache directory
+     * @param dir The cache directory
+     */
     public void setCacheDirectory(final File dir) {
         this.cacheDirectory = dir;
     }
@@ -112,14 +116,26 @@ public class ArtifactManagerConfig implements ArtifactProviderContext {
         this.localArtifacts++;
     }
 
+    /**
+     * Get the number of cached artifacts
+     * @return The number of cached artifacts
+     */
     public long getCachedArtifacts() {
         return this.cachedArtifacts;
     }
 
+    /**
+     * Get the number of downloaded artifacts
+     * @return The number of downloaded artifacts
+     */
     public long getDownloadedArtifacts() {
         return this.downloadedArtifacts;
     }
 
+    /**
+     * Get the number of local artifacts
+     * @return The number of local artifacts
+     */
     public long getLocalArtifacts() {
         return this.localArtifacts;
     }

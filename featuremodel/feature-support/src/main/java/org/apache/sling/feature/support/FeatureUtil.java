@@ -28,6 +28,8 @@ import java.util.List;
 import org.apache.sling.feature.Application;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.support.artifact.ArtifactHandler;
+import org.apache.sling.feature.support.artifact.ArtifactManager;
 import org.apache.sling.feature.support.json.FeatureJSONReader;
 import org.apache.sling.feature.support.json.FeatureJSONReader.SubstituteVariables;
 import org.apache.sling.feature.support.process.ApplicationBuilder;

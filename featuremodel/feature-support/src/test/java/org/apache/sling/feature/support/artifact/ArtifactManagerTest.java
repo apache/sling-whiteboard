@@ -14,9 +14,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.sling.feature.support;
+package org.apache.sling.feature.support.artifact;
 
-import org.apache.sling.feature.support.spi.ArtifactProvider;
+import org.apache.sling.feature.support.artifact.ArtifactHandler;
+import org.apache.sling.feature.support.artifact.ArtifactManager;
+import org.apache.sling.feature.support.artifact.ArtifactManagerConfig;
+import org.apache.sling.feature.support.artifact.spi.ArtifactProvider;
 import org.junit.Test;
 
 import java.io.File;

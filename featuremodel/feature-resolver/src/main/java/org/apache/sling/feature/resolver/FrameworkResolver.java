@@ -37,7 +37,7 @@ import org.apache.sling.feature.analyser.impl.BundleDescriptorImpl;
 import org.apache.sling.feature.resolver.impl.BundleResourceImpl;
 import org.apache.sling.feature.resolver.impl.FeatureResourceImpl;
 import org.apache.sling.feature.resolver.impl.ResolveContextImpl;
-import org.apache.sling.feature.support.ArtifactManager;
+import org.apache.sling.feature.support.artifact.ArtifactManager;
 import org.apache.sling.feature.support.resolver.FeatureResolver;
 import org.apache.sling.feature.support.resolver.FeatureResource;
 import org.osgi.framework.BundleContext;

@@ -25,7 +25,7 @@ import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.analyser.ContainerDescriptor;
 import org.apache.sling.feature.scanner.ExtensionScanner;
-import org.apache.sling.feature.support.ArtifactManager;
+import org.apache.sling.feature.support.artifact.ArtifactManager;
 
 public class ContentPackagesExtensionScanner implements ExtensionScanner {
 
