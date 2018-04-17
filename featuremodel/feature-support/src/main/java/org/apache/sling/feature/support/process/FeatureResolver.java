@@ -19,7 +19,6 @@ package org.apache.sling.feature.support.process;
 import java.util.List;
 
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.FeatureResource;
 
 /**
  * A resolver that can perform operations on the feature model.

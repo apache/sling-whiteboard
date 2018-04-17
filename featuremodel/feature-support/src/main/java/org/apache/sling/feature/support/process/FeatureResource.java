@@ -14,8 +14,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.sling.feature;
+package org.apache.sling.feature.support.process;
 
+import org.apache.sling.feature.Artifact;
+import org.apache.sling.feature.Feature;
 import org.osgi.framework.Version;
 import org.osgi.resource.Resource;
 

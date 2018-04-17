@@ -18,10 +18,10 @@ package org.apache.sling.feature.resolver.impl;
 
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.FeatureResource;
 import org.apache.sling.feature.OSGiCapability;
 import org.apache.sling.feature.OSGiRequirement;
 import org.apache.sling.feature.analyser.BundleDescriptor;
+import org.apache.sling.feature.support.process.FeatureResource;
 import org.apache.sling.feature.support.util.PackageInfo;
 import org.osgi.framework.Version;
 import org.osgi.framework.VersionRange;
