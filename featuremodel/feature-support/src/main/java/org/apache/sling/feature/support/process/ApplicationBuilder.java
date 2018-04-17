@@ -16,16 +16,13 @@
  */
 package org.apache.sling.feature.support.process;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.sling.feature.Application;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.support.resolver.FeatureResolver;
-import org.apache.sling.feature.support.resolver.FeatureResource;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Build an application based on features.
@@ -34,14 +31,10 @@ public class ApplicationBuilder {
 
     /**
      * Assemble an application based on the provided feature Ids.
-     *
-     * Upgrade features are only applied if the provided feature list
-     * contains the feature to be upgraded. Otherwise the upgrade feature
-     * is ignored.
+     * The features are processed in the order they are provided.
      *
      * @param app The optional application to use as a base.
      * @param context The builder context
-     * @param resolver The Feature Resolver to use
      * @param featureIds The feature ids
      * @return The application
      * throws IllegalArgumentException If context or featureIds is {@code null}
@@ -49,7 +42,6 @@ public class ApplicationBuilder {
      */
     public static Application assemble(final Application app,
             final BuilderContext context,
-            final FeatureResolver resolver,
             final String... featureIds) {
         if ( featureIds == null || context == null ) {
             throw new IllegalArgumentException("Features and/or context must not be null");
@@ -64,18 +56,18 @@ public class ApplicationBuilder {
             }
             index++;
         }
-        return assemble(app, context, resolver, features);
+        return assemble(app, context, features);
     }
 
     /**
      * Assemble an application based on the provided features.
      *
+     * The features are processed in the order they are provided.
      * If the same feature is included more than once only the feature with
      * the highest version is used. The others are ignored.
      *
      * @param app The optional application to use as a base.
      * @param context The builder context
-     * @param resolver The Feature Resolver to use
      * @param features The features
      * @return The application
      * throws IllegalArgumentException If context or featureIds is {@code null}
@@ -84,7 +76,7 @@ public class ApplicationBuilder {
     public static Application assemble(
             Application app,
             final BuilderContext context,
-            final FeatureResolver resolver, final Feature... features) {
+            final Feature... features) {
         if ( features == null || context == null ) {
             throw new IllegalArgumentException("Features and/or context must not be null");
         }
@@ -119,26 +111,9 @@ public class ApplicationBuilder {
             }
         }
 
-        final List<Feature> sortedFeatures;
-        if (resolver != null) {
-            // order by dependency chain
-            final List<FeatureResource> sortedResources = resolver.orderResources(featureList);
-
-            sortedFeatures = new ArrayList<>();
-            for (final FeatureResource fr : sortedResources) {
-                Feature f = fr.getFeature();
-                if (!sortedFeatures.contains(f)) {
-                    sortedFeatures.add(f);
-                }
-            }
-        } else {
-            sortedFeatures = featureList;
-            Collections.sort(sortedFeatures);
-        }
-
         // assemble
         int featureStartOrder = 5; // begin with start order a little higher than 0
-        for(final Feature f : sortedFeatures) {
+        for(final Feature f : featureList) {
             app.getFeatureIds().add(f.getId());
             final Feature assembled = FeatureBuilder.assemble(f, context.clone(new FeatureProvider() {
 

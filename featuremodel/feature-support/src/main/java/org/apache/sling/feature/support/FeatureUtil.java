@@ -16,6 +16,15 @@
  */
 package org.apache.sling.feature.support;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 import org.apache.sling.feature.Application;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
@@ -25,15 +34,7 @@ import org.apache.sling.feature.support.process.ApplicationBuilder;
 import org.apache.sling.feature.support.process.BuilderContext;
 import org.apache.sling.feature.support.process.FeatureProvider;
 import org.apache.sling.feature.support.resolver.FeatureResolver;
-
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import org.apache.sling.feature.support.resolver.FeatureResource;
 
 public class FeatureUtil {
     /**
@@ -230,6 +231,31 @@ public class FeatureUtil {
         return assembleApplication(app, artifactManager, fr, features.toArray(new Feature[0]));
     }
 
+    public static Feature[] sortFeatures(final FeatureResolver fr, final Feature... features) {
+        final List<Feature> featureList = new ArrayList<>();
+        for(final Feature f : features) {
+            featureList.add(f);
+        }
+
+        final List<Feature> sortedFeatures;
+        if (fr != null) {
+            // order by dependency chain
+            final List<FeatureResource> sortedResources = fr.orderResources(featureList);
+
+            sortedFeatures = new ArrayList<>();
+            for (final FeatureResource rsrc : sortedResources) {
+                Feature f = rsrc.getFeature();
+                if (!sortedFeatures.contains(f)) {
+                    sortedFeatures.add(rsrc.getFeature());
+                }
+            }
+        } else {
+            sortedFeatures = featureList;
+            Collections.sort(sortedFeatures);
+        }
+        return sortedFeatures.toArray(new Feature[sortedFeatures.size()]);
+    }
+
     public static Application assembleApplication(
             Application app,
             final ArtifactManager artifactManager, FeatureResolver fr, final Feature... features)
@@ -254,7 +280,7 @@ public class FeatureUtil {
                 }
                 return null;
             }
-        }), fr, features);
+        }), sortFeatures(fr, features));
 
         // check framework
         if ( app.getFramework() == null ) {

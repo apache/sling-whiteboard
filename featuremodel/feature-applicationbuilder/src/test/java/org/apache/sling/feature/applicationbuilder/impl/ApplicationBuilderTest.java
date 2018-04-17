@@ -16,24 +16,7 @@
  */
 package org.apache.sling.feature.applicationbuilder.impl;
 
-import org.apache.sling.feature.Application;
-import org.apache.sling.feature.ArtifactId;
-import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.resolver.FrameworkResolver;
-import org.apache.sling.feature.support.ArtifactHandler;
-import org.apache.sling.feature.support.ArtifactManager;
-import org.apache.sling.feature.support.ArtifactManagerConfig;
-import org.apache.sling.feature.support.json.ApplicationJSONWriter;
-import org.apache.sling.feature.support.json.FeatureJSONReader;
-import org.apache.sling.feature.support.json.FeatureJSONReader.SubstituteVariables;
-import org.apache.sling.feature.support.process.ApplicationBuilder;
-import org.apache.sling.feature.support.process.BuilderContext;
-import org.apache.sling.feature.support.process.FeatureProvider;
-import org.apache.sling.feature.support.resolver.FeatureResolver;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.osgi.framework.Constants;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.FileReader;
@@ -53,7 +36,25 @@ import javax.json.JsonWriter;
 import javax.json.JsonWriterFactory;
 import javax.json.stream.JsonGenerator;
 
-import static org.junit.Assert.assertEquals;
+import org.apache.sling.feature.Application;
+import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.resolver.FrameworkResolver;
+import org.apache.sling.feature.support.ArtifactHandler;
+import org.apache.sling.feature.support.ArtifactManager;
+import org.apache.sling.feature.support.ArtifactManagerConfig;
+import org.apache.sling.feature.support.FeatureUtil;
+import org.apache.sling.feature.support.json.ApplicationJSONWriter;
+import org.apache.sling.feature.support.json.FeatureJSONReader;
+import org.apache.sling.feature.support.json.FeatureJSONReader.SubstituteVariables;
+import org.apache.sling.feature.support.process.ApplicationBuilder;
+import org.apache.sling.feature.support.process.BuilderContext;
+import org.apache.sling.feature.support.process.FeatureProvider;
+import org.apache.sling.feature.support.resolver.FeatureResolver;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.osgi.framework.Constants;
 
 public class ApplicationBuilderTest {
     private Path tempDir;
@@ -87,7 +88,7 @@ public class ApplicationBuilderTest {
         Feature[] features = {fa, fb};
 
         try (FeatureResolver fr = new FrameworkResolver(am, getFrameworkProps())) {
-            Application app = ApplicationBuilder.assemble(null, bc, fr, features);
+            Application app = ApplicationBuilder.assemble(null, bc, FeatureUtil.sortFeatures(fr, features));
             String actualJSON = writeApplication(app);
 
             String expectedJSON = "{\"features\":["
@@ -119,7 +120,7 @@ public class ApplicationBuilderTest {
         Feature[] features = {fd, fc};
 
         try (FeatureResolver fr = new FrameworkResolver(am, getFrameworkProps())) {
-            Application app = ApplicationBuilder.assemble(null, bc, fr, features);
+            Application app = ApplicationBuilder.assemble(null, bc, FeatureUtil.sortFeatures(fr, features));
             String genApp = writeApplication(app);
 
             String expected = "{\"features\":["
