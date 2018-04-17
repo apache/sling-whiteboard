@@ -30,6 +30,7 @@ import org.apache.sling.feature.OSGiRequirement;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
+import org.osgi.framework.VersionRange;
 import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
 import org.osgi.framework.namespace.IdentityNamespace;
@@ -523,7 +524,7 @@ public class ManifestParser {
                 {
                     clauses.get(0).m_attrs.put(
                             Constants.BUNDLE_VERSION_ATTRIBUTE,
-                            VersionRange.parse(value.toString()));
+                            VersionRange.valueOf(value.toString()));
                 }
 
                 // Note that we use a linked hash map here to ensure the
@@ -704,7 +705,7 @@ public class ManifestParser {
                 {
                     clause.m_attrs.put(
                             Constants.BUNDLE_VERSION_ATTRIBUTE,
-                            VersionRange.parse(value.toString()));
+                            VersionRange.valueOf(value.toString()));
                 }
             }
         }

@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.osgi.framework.VersionRange;
+
 public class SimpleFilter
 {
     public static final int MATCH_ALL = 0;
@@ -60,6 +62,7 @@ public class SimpleFilter
         return m_op;
     }
 
+    @Override
     public String toString()
     {
         String s = null;
@@ -555,19 +558,19 @@ public class SimpleFilter
         // Rather than building a filter string to be parsed into a SimpleFilter,
         // we will just create the parsed SimpleFilter directly.
 
-        List<SimpleFilter> filters = new ArrayList<SimpleFilter>();
+        List<SimpleFilter> filters = new ArrayList<>();
 
         for (Entry<String, Object> entry : attrs.entrySet())
         {
             if (entry.getValue() instanceof VersionRange)
             {
                 VersionRange vr = (VersionRange) entry.getValue();
-                if (vr.isFloorInclusive())
+                if (vr.getLeftType() == VersionRange.LEFT_CLOSED)
                 {
                     filters.add(
                             new SimpleFilter(
                                     entry.getKey(),
-                                    vr.getFloor().toString(),
+                                    vr.getLeft().toString(),
                                     SimpleFilter.GTE));
                 }
                 else
@@ -577,19 +580,19 @@ public class SimpleFilter
                     ((List) not.getValue()).add(
                             new SimpleFilter(
                                     entry.getKey(),
-                                    vr.getFloor().toString(),
+                                    vr.getLeft().toString(),
                                     SimpleFilter.LTE));
                     filters.add(not);
                 }
 
-                if (vr.getCeiling() != null)
+                if (vr.getRight() != null)
                 {
-                    if (vr.isCeilingInclusive())
+                    if (vr.getRightType() == VersionRange.RIGHT_CLOSED)
                     {
                         filters.add(
                                 new SimpleFilter(
                                         entry.getKey(),
-                                        vr.getCeiling().toString(),
+                                        vr.getRight().toString(),
                                         SimpleFilter.LTE));
                     }
                     else
@@ -599,7 +602,7 @@ public class SimpleFilter
                         ((List) not.getValue()).add(
                                 new SimpleFilter(
                                         entry.getKey(),
-                                        vr.getCeiling().toString(),
+                                        vr.getRight().toString(),
                                         SimpleFilter.GTE));
                         filters.add(not);
                     }

@@ -35,6 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
+import org.osgi.framework.VersionRange;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 
@@ -243,7 +244,7 @@ public class CapabilityMatcher
 
             if(rhs != null && rhs instanceof VersionRange)
             {
-                return ((VersionRange)rhs).isInRange((Version)lhs);
+                return ((VersionRange)rhs).includes((Version)lhs);
             }
         }
 
@@ -429,7 +430,7 @@ public class CapabilityMatcher
             }
             else if(lhs instanceof Version && rhsString.indexOf(',') >= 0)
             {
-                rhs = VersionRange.parse(rhsString);
+                rhs = VersionRange.valueOf(rhsString);
             }
             else
             {
