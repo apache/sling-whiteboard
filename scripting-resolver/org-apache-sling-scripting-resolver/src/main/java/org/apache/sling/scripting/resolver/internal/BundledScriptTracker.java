@@ -61,11 +61,10 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<List<Servic
     static final String NS_SLING_SCRIPTING_EXTENDER = "sling.scripting";
     static final String NS_SLING_RESOURCE_TYPE = "sling.resourceType";
     private static final Logger LOGGER = LoggerFactory.getLogger(BundledScriptTracker.class);
-    private static final String AT_SLING_RESOURCE_TYPE_ONLY = "sling.resourceType.standalone";
     private static final String AT_SLING_SELECTORS = "sling.resourceType.selectors";
     private static final String AT_SLING_EXTENSIONS = "sling.resourceType.extensions";
 
-    private static final String AT_VERSION = "version";
+    static final String AT_VERSION = "version";
     private static final String AT_EXTENDS = "extends";
 
     @Reference

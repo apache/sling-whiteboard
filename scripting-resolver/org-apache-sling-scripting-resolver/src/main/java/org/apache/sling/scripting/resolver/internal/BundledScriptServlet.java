@@ -20,14 +20,15 @@ package org.apache.sling.scripting.resolver.internal;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.script.ScriptContext;
 import javax.script.ScriptException;
 import javax.servlet.GenericServlet;
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -37,14 +38,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingConstants;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
-import org.apache.sling.api.request.RequestDispatcherOptions;
 import org.apache.sling.api.request.RequestPathInfo;
 import org.apache.sling.api.scripting.ScriptEvaluationException;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.wiring.BundleCapability;
+import org.osgi.framework.Version;
 import org.osgi.framework.wiring.BundleWiring;
 
 class BundledScriptServlet extends GenericServlet {
+
+
 
     private final Bundle m_bundle;
     private final BundledScriptFinder m_bundledScriptFinder;
@@ -110,7 +112,8 @@ class BundledScriptServlet extends GenericServlet {
                 lock.readLock().unlock();
             }
             if (script != null) {
-                ScriptContext scriptContext = m_scriptContextProvider.prepareScriptContext(request, response, script);
+                RequestWrapper requestWrapper = new RequestWrapper(request, getWiredResourceTypes());
+                ScriptContext scriptContext = m_scriptContextProvider.prepareScriptContext(requestWrapper, response, script);
                 try {
                     script.eval(scriptContext);
                 } catch (ScriptException se) {
@@ -131,5 +134,29 @@ class BundledScriptServlet extends GenericServlet {
         String requestExtension = requestPathInfo.getExtension();
         return request.getResource().getResourceType() + (StringUtils.isNotEmpty(selectorString) ? ":" + selectorString : "") +
                 (StringUtils.isNotEmpty(requestExtension) ? ":" + requestExtension : "");
+    }
+
+    private Set<String> getWiredResourceTypes() {
+        Set<String> wiredResourceTypes = new HashSet<>();
+        BundleWiring bundleWiring = m_bundle.adapt(BundleWiring.class);
+        bundleWiring.getProvidedWires(BundledScriptTracker.NS_SLING_RESOURCE_TYPE).forEach(
+                bundleWire -> {
+                    String resourceType = (String) bundleWire.getCapability().getAttributes().get(BundledScriptTracker
+                            .NS_SLING_RESOURCE_TYPE);
+                    Version version = (Version) bundleWire.getCapability().getAttributes().get(BundledScriptTracker
+                            .AT_VERSION);
+                    wiredResourceTypes.add(resourceType + (version == null ? "" : "/" + version.toString()));
+                }
+        );
+        bundleWiring.getRequiredWires(BundledScriptTracker.NS_SLING_RESOURCE_TYPE).forEach(
+                bundleWire -> {
+                    String resourceType = (String) bundleWire.getCapability().getAttributes().get(BundledScriptTracker
+                            .NS_SLING_RESOURCE_TYPE);
+                    Version version = (Version) bundleWire.getCapability().getAttributes().get(BundledScriptTracker
+                            .AT_VERSION);
+                    wiredResourceTypes.add(resourceType + (version == null ? "" : "/" + version.toString()));
+                }
+        );
+        return wiredResourceTypes;
     }
 }
