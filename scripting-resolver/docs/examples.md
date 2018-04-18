@@ -19,7 +19,7 @@ scripts into OSGi bundles:
   2. [`org.apache.sling.scripting.examplebundle.hi`](../org-apache-sling-scripting-examplebundle.hi):
     * provides the `org.apache.sling.scripting.examplebundle.hi` resource type; it extends
     `org.apache.sling.scripting.examplebundle.hello;version=[1.0.0,2.0.0)` - the `extends` file will be used by the
-    [`org.apache.sling.scripting.maven.plugin`](../org-apache-sling-scripting-maven-plugin) to correctly generate the `Require-Capabilities`
+    [`org.apache.sling.scripting.maven.plugin`](./scripting-maven-plugin.md) to correctly generate the `Require-Capabilities`
     * the resource type is provided in one version (`1.0.0`)
     * it has a selector script (`h.html`), essentially overriding the same selector script from
     `org.apache.sling.scripting.examplebundle.hello/1.0.0`
