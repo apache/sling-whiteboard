@@ -65,7 +65,7 @@ public class FeatureProcessor {
         } else {
             try (FeatureResolver resolver = new FrameworkResolver(artifactManager, Collections.emptyMap())) {
                 app = FeatureUtil.assembleApplication(null, artifactManager, resolver,
-                       org.apache.sling.feature.support.io.FeatureUtil.getFeatureFiles(config.getHomeDirectory(), config.getFeatureFiles()).toArray(new String[0]));
+                       org.apache.sling.feature.support.io.FileUtils.getFeatureFiles(config.getHomeDirectory(), config.getFeatureFiles()).toArray(new String[0]));
             } catch (Exception ex) {
                 Main.LOG().error("Error while assembling application: {}", ex.getMessage(), ex);
                 System.exit(1);

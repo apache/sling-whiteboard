@@ -235,7 +235,7 @@ public class Preprocessor {
 
             for(final File file : files) {
                 try {
-                    final List<String> features = org.apache.sling.feature.support.io.FeatureUtil.parseFeatureRefFile(file);
+                    final List<String> features = org.apache.sling.feature.support.io.FileUtils.parseFeatureRefFile(file);
                     if ( features.isEmpty() ) {
                         env.logger.debug("Empty feature ref file at " + file);
                     } else {

@@ -40,7 +40,7 @@ public class FeatureUtilTest {
         };
 
         final List<String> l = new ArrayList<>(Arrays.asList(files));
-        Collections.sort(l, FeatureUtil.FEATURE_PATH_COMP);
+        Collections.sort(l, FileUtils.FEATURE_PATH_COMP);
         for(int i=0; i<files.length; i++) {
             assertEquals(files[i], l.get(i));
         }

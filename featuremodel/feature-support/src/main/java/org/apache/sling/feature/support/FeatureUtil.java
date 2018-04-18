@@ -69,7 +69,7 @@ public class FeatureUtil {
     throws IOException {
         final List<Feature> features = new ArrayList<>();
         for(final String initFile : featureFiles) {
-            final Feature f = org.apache.sling.feature.support.io.FeatureUtil.getFeature(initFile, artifactManager, SubstituteVariables.RESOLVE);
+            final Feature f = org.apache.sling.feature.support.io.FileUtils.getFeature(initFile, artifactManager, SubstituteVariables.RESOLVE);
             features.add(f);
         }
 
