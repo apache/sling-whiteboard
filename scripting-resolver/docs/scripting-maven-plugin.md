@@ -25,14 +25,15 @@ javax.script/<sling-resourceType>/<version>/[<METHOD>.]<name>[.<selector>][.<ext
 
 From that, it will create a Capability with the matching attributes with the following extra assumptions:
 
-* If the _name_ equals the _sling-resourceType_or the last part of it, it is assumed to be the name of the main script.
+* If the _name_ equals the _sling-resourceType_ or the last part of it, it is assumed to be the name of the main script.
 * Otherwise, it is assumed to be part of the selector.
 * As a special case, if the filename is just _extends_ it is assumed to be a file containing a single line with the
   resourceType used for the _extends_ attribute followed by a _;version=<version-range>_. In this case, the plugin will
   set the _extends_ attribute to the given resourceType and generate a Requirement for that resourcetype in the given
   version range.
 * As another special case, if the filename is just _requires_ the plugin will read it line by line (which should each
-  look like in the extends case) and generate a requirement.
+  look like in the extends case) and generate a requirement for each line based on the given resourcetype and version 
+  range.
 
 ### Example
 
