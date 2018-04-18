@@ -23,7 +23,7 @@ import java.util.Map.Entry;
 
 import org.osgi.framework.VersionRange;
 
-public class SimpleFilter
+class SimpleFilter
 {
     public static final int MATCH_ALL = 0;
     public static final int AND = 1;
@@ -40,7 +40,7 @@ public class SimpleFilter
     private final Object m_value;
     private final int m_op;
 
-    public SimpleFilter(String attr, Object value, int op)
+    SimpleFilter(String attr, Object value, int op)
     {
         m_name = attr;
         m_value = value;

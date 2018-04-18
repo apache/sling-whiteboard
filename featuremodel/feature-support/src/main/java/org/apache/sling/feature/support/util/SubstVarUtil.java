@@ -18,7 +18,6 @@ package org.apache.sling.feature.support.util;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 public class SubstVarUtil {
     private static final String DELIM_START = "${";

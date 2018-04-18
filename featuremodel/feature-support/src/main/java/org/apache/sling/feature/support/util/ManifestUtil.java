@@ -28,7 +28,6 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 
-import org.apache.sling.feature.support.util.ManifestParser.ParsedHeaderClause;
 import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
 import org.osgi.resource.Capability;
@@ -53,10 +52,10 @@ public class ManifestUtil {
             final boolean checkOptional) {
         final String pckInfo = m.getMainAttributes().getValue(headerName);
         if (pckInfo != null) {
-            final List<ParsedHeaderClause> clauses = ManifestParser.parseStandardHeader(pckInfo);
+            final List<ManifestParser.ParsedHeaderClause> clauses = ManifestParser.parseStandardHeader(pckInfo);
 
             final List<PackageInfo> pcks = new ArrayList<>();
-            for(final ParsedHeaderClause entry : clauses) {
+            for(final ManifestParser.ParsedHeaderClause entry : clauses) {
                 Object versionObj = entry.m_attrs.get("version");
                 final String version;
                 if ( versionObj == null ) {
