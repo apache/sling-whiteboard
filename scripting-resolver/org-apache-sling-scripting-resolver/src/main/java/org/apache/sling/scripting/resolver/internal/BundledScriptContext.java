@@ -18,15 +18,15 @@
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 package org.apache.sling.scripting.resolver.internal;
 
-import org.apache.sling.api.scripting.SlingScriptConstants;
-
-import javax.script.Bindings;
-import javax.script.SimpleBindings;
-import javax.script.SimpleScriptContext;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.Arrays;
 import java.util.List;
+import javax.script.Bindings;
+import javax.script.SimpleBindings;
+import javax.script.SimpleScriptContext;
+
+import org.apache.sling.api.scripting.SlingScriptConstants;
 
 class BundledScriptContext extends SimpleScriptContext {
 

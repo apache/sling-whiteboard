@@ -18,9 +18,9 @@
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 package org.apache.sling.scripting.resolver.internal;
 
-import org.slf4j.Logger;
-
 import java.io.Writer;
+
+import org.slf4j.Logger;
 
 class LogWriter extends Writer {
 

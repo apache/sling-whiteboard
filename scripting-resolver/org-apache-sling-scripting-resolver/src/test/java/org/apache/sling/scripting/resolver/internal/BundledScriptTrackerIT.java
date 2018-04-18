@@ -16,12 +16,12 @@
  */
 package org.apache.sling.scripting.resolver.internal;
 
+import javax.servlet.Servlet;
+
 import org.apache.sling.junit.rules.TeleporterRule;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
-
-import javax.servlet.Servlet;
 
 public class BundledScriptTrackerIT
 {

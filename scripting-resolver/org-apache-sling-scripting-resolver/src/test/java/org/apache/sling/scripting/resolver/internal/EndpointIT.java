@@ -16,6 +16,8 @@
  */
 package org.apache.sling.scripting.resolver.internal;
 
+import java.io.IOException;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
@@ -25,9 +27,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.io.IOException;
-
 import static org.apache.sling.junit.teleporter.customizers.ITCustomizer.BASE_URL_PROP;
 
 public class EndpointIT
