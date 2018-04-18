@@ -210,6 +210,12 @@ class BuilderUtil {
                 target.getExtensions().add(ext);
             }
         }
+        // post processing
+        for(final Extension ext : target.getExtensions()) {
+            for(final FeatureExtensionHandler fem : context.getFeatureExtensionHandlers()) {
+                fem.postProcess(target, ext.getName());
+            }
+        }
     }
 
     static void mergeExtensions(final Application target,

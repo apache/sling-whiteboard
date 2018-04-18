@@ -46,7 +46,9 @@ public interface FeatureExtensionHandler {
     void merge(Feature target, Feature source, String extensionName);
 
     /**
-     * Post process the feature with respect to the extension
+     * Post process the feature with respect to the extension.
+     * Post processing is invoked after all extensions have been merged.
+     * This method is called regardless whether {@link #canMerge(String)} returned {@code true} or not.
      * @param feature The feature
      * @param extensionName The extension name
      * @throws IllegalStateException If post processing failed

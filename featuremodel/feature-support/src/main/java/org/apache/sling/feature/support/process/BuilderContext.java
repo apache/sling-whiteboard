@@ -16,8 +16,8 @@
  */
 package org.apache.sling.feature.support.process;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Builder context holds services used by {@link ApplicationBuilder}
@@ -27,17 +27,13 @@ public class BuilderContext {
 
     private final FeatureProvider provider;
 
-    private final List<FeatureExtensionHandler> featureExtensionHandlers = new ArrayList<>();
+    private final List<FeatureExtensionHandler> featureExtensionHandlers = new CopyOnWriteArrayList<>();
 
     /**
-     * Assemble the full feature by processing all includes.
+     * Create a new context
      *
-     * @param feature The feature to start
      * @param provider A provider providing the included features
-     * @param extensionMergers Optional feature mergers
-     * @return The assembled feature.
-     * @throws IllegalArgumentException If feature or provider is {@code null}
-     * @throws IllegalStateException If an included feature can't be provided or merged.
+     * @throws IllegalArgumentException If feature provider is {@code null}
      */
     public BuilderContext(final FeatureProvider provider) {
         if ( provider == null ) {
@@ -46,19 +42,37 @@ public class BuilderContext {
         this.provider = provider;
     }
 
-    FeatureProvider getFeatureProvider() {
-        return this.provider;
-    }
-
-    List<FeatureExtensionHandler> getFeatureExtensionHandlers() {
-        return this.featureExtensionHandlers;
-    }
-
+    /**
+     * Add a feature extension handler
+     * @param handler A handler
+     * @return This instance
+     */
     public BuilderContext add(final FeatureExtensionHandler handler) {
         featureExtensionHandlers.add(handler);
         return this;
     }
 
+    /**
+     * Get the feature provider.
+     * @return The feature provider
+     */
+    FeatureProvider getFeatureProvider() {
+        return this.provider;
+    }
+
+    /**
+     * Get the list of extension handlers
+     * @return The list of handlers
+     */
+    List<FeatureExtensionHandler> getFeatureExtensionHandlers() {
+        return this.featureExtensionHandlers;
+    }
+
+    /**
+     * Clone the context and replace the feature provider
+     * @param featureProvider The new feature provider
+     * @return Cloned context
+     */
     BuilderContext clone(final FeatureProvider featureProvider) {
         final BuilderContext ctx = new BuilderContext(featureProvider);
         ctx.featureExtensionHandlers.addAll(featureExtensionHandlers);
