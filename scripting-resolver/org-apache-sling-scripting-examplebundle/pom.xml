@@ -61,6 +61,9 @@
                             osgi.extender;filter:="(&amp;(osgi.extender=sling.scripting)(version>=1.0.0)(!(version>=2.0.0)))",
                             ${org.apache.sling.scripting.maven.plugin.Require-Capability}
                         </Require-Capability>
+                        <Sling-Initial-Content>
+                            SLING-INF/content;overwrite:=true;path:=/content/srr/examples
+                        </Sling-Initial-Content>
                     </instructions>
                 </configuration>
             </plugin>
