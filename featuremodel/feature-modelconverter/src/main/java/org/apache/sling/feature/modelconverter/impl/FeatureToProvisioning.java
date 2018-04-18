@@ -21,6 +21,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -161,18 +163,12 @@ public class FeatureToProvisioning {
         for(final org.apache.sling.feature.Configuration cfg : configurations) {
             final Configuration c;
 
-            String[] runModes = null;
+            List<String> runModeList = new ArrayList<>();
             if ( cfg.isFactoryConfiguration() ) {
-                c = new Configuration(cfg.getName(), cfg.getFactoryPid());
+                String name = decodeRunModes(cfg.getName(), runModeList);
+                c = new Configuration(name, cfg.getFactoryPid());
             } else {
-                String pid = cfg.getPid();
-                pid = pid.replaceAll("[.][.](\\w+)", ":$1");
-                int rmIdx = pid.indexOf(".runmodes.");
-                if (rmIdx > 0) {
-                    String rm = pid.substring(rmIdx + ".runmodes.".length());
-                    pid = pid.substring(0, rmIdx);
-                    runModes = rm.split("[.]");
-                }
+                String pid = decodeRunModes(cfg.getPid(), runModeList);
                 c = new Configuration(pid, null);
             }
             final Enumeration<String> keys = cfg.getProperties().keys();
@@ -186,6 +182,9 @@ public class FeatureToProvisioning {
                 c.getProperties().put(key, val);
             }
 
+            String[] runModes = runModeList.toArray(new String[] {});
+            if (runModes.length == 0)
+                runModes = null;
             f.getOrCreateRunMode(runModes).getConfigurations().add(c);
         }
 
@@ -255,6 +254,17 @@ public class FeatureToProvisioning {
             LOGGER.error("Unable to write feature to {} : {}", out, ioe.getMessage(), ioe);
             System.exit(1);
         }
+    }
+
+    private static String decodeRunModes(String pid, List<String> runModes) {
+        pid = pid.replaceAll("[.][.](\\w+)", ":$1");
+        int rmIdx = pid.indexOf(".runmodes.");
+        if (rmIdx > 0) {
+            String rm = pid.substring(rmIdx + ".runmodes.".length());
+            pid = pid.substring(0, rmIdx);
+            runModes.addAll(Arrays.asList(rm.split("[.]")));
+        }
+        return pid;
     }
 
     private static String[] getRunModes(final org.apache.sling.feature.Artifact bundle) {

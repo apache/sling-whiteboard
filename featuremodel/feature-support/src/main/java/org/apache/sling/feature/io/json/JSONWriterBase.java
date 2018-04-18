@@ -26,7 +26,6 @@ import org.apache.sling.feature.KeyValueMap;
 
 import java.io.StringReader;
 import java.lang.reflect.Array;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
@@ -41,16 +40,6 @@ import javax.json.JsonStructure;
  * Common functionality for writing JSON
  */
 abstract class JSONWriterBase {
-    private final char factoryConfigSeparator;
-
-    protected JSONWriterBase(WriteOption ... opts) {
-        if (Arrays.asList(opts).contains(WriteOption.OLD_STYLE_FACTORY_CONFIGS)) {
-            factoryConfigSeparator = '-';
-        } else {
-            factoryConfigSeparator = '~';
-        }
-    }
-
     protected void writeBundles(final JsonObjectBuilder ob,
             final Bundles bundles,
             final Configurations allConfigs) {
@@ -128,7 +117,7 @@ abstract class JSONWriterBase {
         for(final Configuration cfg : cfgs) {
             final String key;
             if ( cfg.isFactoryConfiguration() ) {
-                key = cfg.getFactoryPid() + factoryConfigSeparator + cfg.getName();
+                key = cfg.getFactoryPid() + "~" + cfg.getName();
             } else {
                 key = cfg.getPid();
             }

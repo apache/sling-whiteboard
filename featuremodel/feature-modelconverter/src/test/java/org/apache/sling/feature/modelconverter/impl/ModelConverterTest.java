@@ -16,29 +16,6 @@
  */
 package org.apache.sling.feature.modelconverter.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Dictionary;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.sling.feature.Bundles;
 import org.apache.sling.feature.Configurations;
 import org.apache.sling.feature.Extension;
@@ -65,6 +42,29 @@ import org.apache.sling.provisioning.model.io.ModelReader;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Dictionary;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class ModelConverterTest {
     private Path tempDir;
@@ -299,7 +299,8 @@ public class ModelConverterTest {
                         assertConfigProps(ex, ac, exBundles, acBundles);
                     }
                 } else {
-                    if (ex.getFactoryPid().equals(ac.getFactoryPid())) {
+                    if (ex.getFactoryPid().equals(ac.getFactoryPid()) &&
+                            ex.getName().equals(ac.getName())) {
                         found = true;
                         assertConfigProps(ex, ac, exBundles, acBundles);
                     }

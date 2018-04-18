@@ -44,9 +44,7 @@ import static org.apache.sling.feature.support.util.ManifestUtil.marshalDirectiv
  * Simple JSON writer for a feature
  */
 public class FeatureJSONWriter extends JSONWriterBase {
-    private FeatureJSONWriter(WriteOption ... options) {
-        super(options);
-    }
+    private FeatureJSONWriter() {}
 
     /**
      * Writes the feature to the writer.
@@ -55,9 +53,9 @@ public class FeatureJSONWriter extends JSONWriterBase {
      * @param feature Feature
      * @throws IOException If writing fails
      */
-    public static void write(final Writer writer, final Feature feature, final WriteOption ... options)
+    public static void write(final Writer writer, final Feature feature)
     throws IOException {
-        final FeatureJSONWriter w = new FeatureJSONWriter(options);
+        final FeatureJSONWriter w = new FeatureJSONWriter();
         w.writeFeature(writer, feature);
     }
 

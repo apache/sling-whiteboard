@@ -16,21 +16,6 @@
  */
 package org.apache.sling.feature.modelconverter.impl;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import org.apache.sling.feature.Application;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Bundles;
@@ -44,7 +29,6 @@ import org.apache.sling.feature.io.ArtifactManager;
 import org.apache.sling.feature.io.ArtifactManagerConfig;
 import org.apache.sling.feature.io.json.ApplicationJSONWriter;
 import org.apache.sling.feature.io.json.FeatureJSONWriter;
-import org.apache.sling.feature.io.json.WriteOption;
 import org.apache.sling.feature.support.FeatureUtil;
 import org.apache.sling.feature.support.SlingConstants;
 import org.apache.sling.provisioning.model.Artifact;
@@ -63,6 +47,21 @@ import org.apache.sling.provisioning.model.Traceable;
 import org.apache.sling.provisioning.model.io.ModelReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 /** Converter that converts the provisioning model to the feature model.
  */
@@ -516,7 +515,7 @@ public class ProvisioningToFeature {
         }
 
         try ( final FileWriter writer = new FileWriter(file)) {
-            FeatureJSONWriter.write(writer, f, WriteOption.OLD_STYLE_FACTORY_CONFIGS);
+            FeatureJSONWriter.write(writer, f);
         } catch ( final IOException ioe) {
             LOGGER.error("Unable to write feature to {} : {}", out, ioe.getMessage(), ioe);
             System.exit(1);

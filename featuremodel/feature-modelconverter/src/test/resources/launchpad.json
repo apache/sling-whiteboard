@@ -21,7 +21,7 @@
     "..bootstrap.runmodes...standalone":{
       "..bootstrap":"uninstall org.apache.felix.http.bridge\nuninstall org.apache.felix.http.api\n"
     },
-    "org.apache.testing.ConfigPid.factory-configuration.runmodes...standalone":{
+    "org.apache.testing.ConfigPid.factory~configuration.runmodes...standalone":{
       "key1":"val1"
     }
   }
