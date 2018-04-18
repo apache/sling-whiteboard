@@ -17,8 +17,8 @@
 package org.apache.sling.junit.teleporter.customizers;
 
 import org.apache.sling.junit.rules.TeleporterRule;
-import org.apache.sling.testing.teleporter.client.ClientSideTeleporter;
 import org.apache.sling.testing.clients.util.TimeoutsProvider;
+import org.apache.sling.testing.teleporter.client.ClientSideTeleporter;
 
 public class ITCustomizer implements TeleporterRule.Customizer {
 

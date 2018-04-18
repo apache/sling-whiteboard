@@ -18,43 +18,11 @@
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 package org.apache.sling.scripting.resolver.internal;
 
-import java.io.IOException;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.servlet.GenericServlet;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.Servlet;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletResponse;
-
+import aQute.bnd.annotation.headers.ProvideCapability;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.request.RequestDispatcherOptions;
-import org.apache.sling.api.resource.Resource;
-import org.apache.sling.api.resource.ResourceUtil;
-import org.apache.sling.api.resource.ResourceWrapper;
-import org.apache.sling.api.resource.SyntheticResource;
 import org.apache.sling.api.servlets.ServletResolverConstants;
 import org.apache.sling.commons.osgi.PropertiesUtil;
 import org.osgi.framework.Bundle;
@@ -76,7 +44,27 @@ import org.osgi.util.tracker.BundleTrackerCustomizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import aQute.bnd.annotation.headers.ProvideCapability;
+import javax.servlet.GenericServlet;
+import javax.servlet.RequestDispatcher;
+import javax.servlet.Servlet;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component(
         service = {}
@@ -409,7 +397,6 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<List<Servic
                 RequestDispatcherOptions options = new RequestDispatcherOptions();
                 options.setForceResourceType(rt);
 
-                System.out.println("found: " + rt);
                 RequestDispatcher dispatcher = slingRequest.getRequestDispatcher(slingRequest.getResource(), options);
                 if (dispatcher != null)
                 {
@@ -422,7 +409,6 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<List<Servic
             }
             else
             {
-                System.out.println("Not found");
                 ((SlingHttpServletResponse) res).sendError(HttpServletResponse.SC_NOT_FOUND);
             }
         }

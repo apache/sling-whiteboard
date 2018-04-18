@@ -32,5 +32,9 @@ public class BundledScriptTrackerIT
     public void testSlingServletForResourceTypeProvided()
     {
         Assert.assertNotNull(teleporter.getService(Servlet.class, String.format("(%s=%s)", "sling.servlet.resourceTypes", "org.apache.sling.scripting.examplebundle.hello/1.0.0")));
+        Assert.assertNotNull(teleporter.getService(Servlet.class, String.format("(%s=%s)", "sling.servlet.resourceTypes", "org.apache.sling.scripting.examplebundle.hello/2.0.0")));
+        Assert.assertNotNull(teleporter.getService(Servlet.class, String.format("(%s=%s)", "sling.servlet.resourceTypes", "org.apache.sling.scripting.examplebundle.hello")));
+        Assert.assertNotNull(teleporter.getService(Servlet.class, String.format("(%s=%s)", "sling.servlet.resourceTypes", "org.apache.sling.scripting.examplebundle.hi")));
+        Assert.assertNotNull(teleporter.getService(Servlet.class, String.format("(%s=%s)", "sling.servlet.resourceTypes", "org.apache.sling.scripting.examplebundle.hi/1.0.0")));
     }
 }

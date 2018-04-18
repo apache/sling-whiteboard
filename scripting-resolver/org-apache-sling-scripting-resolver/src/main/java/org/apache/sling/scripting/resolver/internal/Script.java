@@ -18,21 +18,20 @@
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 package org.apache.sling.scripting.resolver.internal;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import org.apache.commons.io.IOUtils;
+import org.apache.sling.scripting.core.ScriptNameAwareReader;
 
 import javax.script.Compilable;
 import javax.script.CompiledScript;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.sling.scripting.core.ScriptNameAwareReader;
+import java.io.IOException;
+import java.io.StringReader;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 class Script {
 
