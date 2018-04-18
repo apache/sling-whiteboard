@@ -97,7 +97,7 @@ public class EndpointIT
         HttpResponse response = null;
         for (int i = 0;i < 10;i++)
         {
-            Thread.sleep(500);
+            Thread.sleep(2000);
             try
             {
                 response = client.execute(get);
