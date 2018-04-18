@@ -16,7 +16,6 @@
  */
 package org.apache.sling.feature.scanner.impl;
 
-import static org.apache.sling.feature.support.util.LambdaUtil.rethrowFunction;
 import static org.apache.sling.feature.support.util.ManifestParser.convertProvideCapabilities;
 import static org.apache.sling.feature.support.util.ManifestParser.normalizeCapabilityClauses;
 import static org.apache.sling.feature.support.util.ManifestParser.parseStandardHeader;
@@ -44,6 +43,7 @@ import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.spi.FrameworkScanner;
 import org.apache.sling.feature.support.util.PackageInfo;
 import org.apache.sling.feature.support.util.SubstVarUtil;
+import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
 import org.osgi.resource.Capability;
 
@@ -106,10 +106,15 @@ public class FelixFrameworkScanner implements FrameworkScanner {
                     fwkProps.get(Constants.FRAMEWORK_SYSTEMCAPABILITIES_EXTRA)
                 )
                 .filter(Objects::nonNull)
-                .flatMap(
-                        rethrowFunction(header ->
-                            convertProvideCapabilities(normalizeCapabilityClauses(parseStandardHeader(header), "2")).stream()
-                )).collect(Collectors.toSet());
+                .flatMap(header -> {
+                        try {
+                            return convertProvideCapabilities(normalizeCapabilityClauses(parseStandardHeader(header), "2"))
+                                    .stream();
+                        } catch (BundleException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    })
+                .collect(Collectors.toSet());
     }
 
     private Set<PackageInfo> calculateSystemPackages(final KeyValueMap fwkProps) {

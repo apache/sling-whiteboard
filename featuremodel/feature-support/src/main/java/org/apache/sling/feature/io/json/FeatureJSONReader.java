@@ -32,13 +32,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import static org.apache.sling.feature.support.util.LambdaUtil.rethrowBiConsumer;
 import static org.apache.sling.feature.support.util.ManifestUtil.unmarshalAttribute;
 import static org.apache.sling.feature.support.util.ManifestUtil.unmarshalDirective;
 
@@ -408,6 +408,26 @@ public class FeatureJSONReader extends JSONReaderBase {
                 feature.getCapabilities().add(c);
             }
         }
+    }
+
+    @FunctionalInterface
+    private interface BiConsumer_WithExceptions<T, V, E extends Exception> {
+        void accept(T t, V u) throws E;
+    }
+
+    private static <T, V, E extends Exception> BiConsumer<T, V> rethrowBiConsumer(BiConsumer_WithExceptions<T, V, E> biConsumer) {
+        return (t, u) -> {
+            try {
+                biConsumer.accept(t, u);
+            } catch (Exception exception) {
+                throwAsUnchecked(exception);
+            }
+        };
+    }
+
+    @SuppressWarnings ("unchecked")
+    private static <E extends Throwable> void throwAsUnchecked(Exception exception) throws E {
+        throw (E) exception;
     }
 }
 
