@@ -44,7 +44,7 @@ import org.osgi.resource.Requirement;
  */
 class BuilderUtil {
 
-    public enum ArtifactMerge {
+    enum ArtifactMerge {
         LATEST,
         HIGHEST
     };

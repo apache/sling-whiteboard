@@ -17,11 +17,13 @@
 package org.apache.sling.feature.builder;
 
 import org.apache.sling.feature.Feature;
+import org.osgi.annotation.versioning.ConsumerType;
 
 /**
  * A feature extension handler can merge a feature of a particular type
  * and also post process the final assembled feature.
  */
+@ConsumerType
 public interface FeatureExtensionHandler {
 
     /**

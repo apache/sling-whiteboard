@@ -18,7 +18,13 @@ package org.apache.sling.feature.builder;
 
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
+import org.osgi.annotation.versioning.ConsumerType;
 
+/**
+ * The feature provider is used to find features while assembling using either
+ * {@link ApplicationBuilder} or {@link FeatureBuilder}.
+ */
+@ConsumerType
 public interface FeatureProvider {
 
     /**
