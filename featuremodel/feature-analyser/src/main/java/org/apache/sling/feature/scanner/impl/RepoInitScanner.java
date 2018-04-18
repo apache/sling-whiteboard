@@ -20,9 +20,9 @@ import java.io.IOException;
 
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
-import org.apache.sling.feature.analyser.ContainerDescriptor;
 import org.apache.sling.feature.io.ArtifactManager;
-import org.apache.sling.feature.scanner.ExtensionScanner;
+import org.apache.sling.feature.scanner.ContainerDescriptor;
+import org.apache.sling.feature.scanner.spi.ExtensionScanner;
 import org.apache.sling.feature.support.SlingConstants;
 
 public class RepoInitScanner implements ExtensionScanner {

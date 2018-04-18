@@ -14,14 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.feature.analyser.service;
-
-import org.apache.sling.feature.Application;
-import org.apache.sling.feature.analyser.ApplicationDescriptor;
-import org.apache.sling.feature.analyser.task.AnalyserTask;
-import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+package org.apache.sling.feature.analyser;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,6 +23,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.ServiceLoader;
 import java.util.Set;
+
+import org.apache.sling.feature.Application;
+import org.apache.sling.feature.analyser.task.AnalyserTask;
+import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
+import org.apache.sling.feature.scanner.ApplicationDescriptor;
+import org.apache.sling.feature.scanner.Scanner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Analyser {
 

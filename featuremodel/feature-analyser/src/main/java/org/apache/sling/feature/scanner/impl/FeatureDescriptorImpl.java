@@ -14,26 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.feature.analyser;
+package org.apache.sling.feature.scanner.impl;
 
-import java.io.File;
-
-import org.apache.sling.feature.Artifact;
+import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.scanner.FeatureDescriptor;
 
 /**
- * Information about an artifact
+ * Information about a feature.
+ * This is the aggregated information.
  */
-public abstract class ArtifactDescriptor extends Descriptor {
+public class FeatureDescriptorImpl
+    extends FeatureDescriptor {
 
-    /**
-     * Get the artifact file
-     * @return The artifact file
-     */
-    public abstract File getArtifactFile();
+    private final Feature feature;
 
-    /**
-     * Get the artifact
-     * @return The artifact
-     */
-    public abstract Artifact getArtifact();
+    public FeatureDescriptorImpl(final Feature feature) {
+        this.feature = feature;
+    }
+
+    @Override
+    public Feature getFeature() {
+        return this.feature;
+    }
 }

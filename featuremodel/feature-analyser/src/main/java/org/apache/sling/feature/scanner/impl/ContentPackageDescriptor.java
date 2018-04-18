@@ -22,8 +22,8 @@ import java.util.List;
 
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.Configuration;
-import org.apache.sling.feature.analyser.ArtifactDescriptor;
-import org.apache.sling.feature.analyser.BundleDescriptor;
+import org.apache.sling.feature.scanner.ArtifactDescriptor;
+import org.apache.sling.feature.scanner.BundleDescriptor;
 
 /**
  * Information about a content package.

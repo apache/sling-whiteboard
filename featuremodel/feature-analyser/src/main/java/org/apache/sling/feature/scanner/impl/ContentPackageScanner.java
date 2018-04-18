@@ -34,8 +34,7 @@ import java.util.zip.ZipInputStream;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Configuration;
-import org.apache.sling.feature.analyser.BundleDescriptor;
-import org.apache.sling.feature.analyser.impl.BundleDescriptorImpl;
+import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

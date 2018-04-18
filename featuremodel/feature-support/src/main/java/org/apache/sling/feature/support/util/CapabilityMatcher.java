@@ -25,13 +25,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
@@ -41,68 +38,7 @@ import org.osgi.resource.Requirement;
 
 public class CapabilityMatcher
 {
-    public static Set<Capability> match(Set<Capability> caps, final SimpleFilter sf)
-    {
-        Set<Capability> matches = Collections.newSetFromMap(new ConcurrentHashMap<Capability, Boolean>());
-
-        if (sf.getOperation() == SimpleFilter.MATCH_ALL)
-        {
-            matches.addAll(caps);
-        }
-        else if (sf.getOperation() == SimpleFilter.AND)
-        {
-            // Evaluate each subfilter against the remaining capabilities.
-            // For AND we calculate the intersection of each subfilter.
-            // We can short-circuit the AND operation if there are no
-            // remaining capabilities.
-            final List<SimpleFilter> sfs = (List<SimpleFilter>) sf.getValue();
-            for (int i = 0; (caps.size() > 0) && (i < sfs.size()); i++)
-            {
-                matches = match(caps, sfs.get(i));
-                caps = matches;
-            }
-        }
-        else if (sf.getOperation() == SimpleFilter.OR)
-        {
-            // Evaluate each subfilter against the remaining capabilities.
-            // For OR we calculate the union of each subfilter.
-            List<SimpleFilter> sfs = (List<SimpleFilter>) sf.getValue();
-            for (int i = 0; i < sfs.size(); i++)
-            {
-                matches.addAll(match(caps, sfs.get(i)));
-            }
-        }
-        else if (sf.getOperation() == SimpleFilter.NOT)
-        {
-            // Evaluate each subfilter against the remaining capabilities.
-            // For OR we calculate the union of each subfilter.
-            matches.addAll(caps);
-            List<SimpleFilter> sfs = (List<SimpleFilter>) sf.getValue();
-            for (int i = 0; i < sfs.size(); i++)
-            {
-                matches.removeAll(match(caps, sfs.get(i)));
-            }
-        }
-        else
-        {
-            for (Iterator<Capability> it = caps.iterator(); it.hasNext(); )
-            {
-                Capability cap = it.next();
-                Object lhs = cap.getAttributes().get(sf.getName());
-                if (lhs != null)
-                {
-                    if (compare(lhs, sf.getValue(), sf.getOperation()))
-                    {
-                        matches.add(cap);
-                    }
-                }
-            }
-        }
-
-        return matches;
-    }
-
-    public static boolean matches(Capability cap, SimpleFilter sf)
+    static boolean matches(Capability cap, SimpleFilter sf)
     {
         return matchesInternal(cap, sf) && matchMandatory(cap, sf);
     }
@@ -159,20 +95,6 @@ public class CapabilityMatcher
         }
 
         return matched;
-    }
-
-    private static Set<Capability> matchMandatory(
-            Set<Capability> caps, SimpleFilter sf)
-    {
-        for (Iterator<Capability> it = caps.iterator(); it.hasNext(); )
-        {
-            Capability cap = it.next();
-            if (!matchMandatory(cap, sf))
-            {
-                it.remove();
-            }
-        }
-        return caps;
     }
 
     private static boolean matchMandatory(Capability cap, SimpleFilter sf)

@@ -17,28 +17,23 @@
 package org.apache.sling.feature.scanner;
 
 import java.io.File;
-import java.io.IOException;
 
-import org.apache.sling.feature.ArtifactId;
-import org.apache.sling.feature.KeyValueMap;
-import org.apache.sling.feature.analyser.BundleDescriptor;
-import org.osgi.annotation.versioning.ConsumerType;
+import org.apache.sling.feature.Artifact;
 
 /**
- * The framework scanner scans the framework
+ * Information about an artifact
  */
-@ConsumerType
-public interface FrameworkScanner  {
+public abstract class ArtifactDescriptor extends Descriptor {
 
     /**
-     * Try to scan the artifact
-     * @param framework The framework artifact id
-     * @param file The framework artifact
-     * @param frameworkProps framework properties to launch the framework
-     * @return A descriptor or {@code null}
-     * @throws IOException If an error occurs while scanning the platform or the artifact is invalid
+     * Get the artifact file
+     * @return The artifact file
      */
-    BundleDescriptor scan(ArtifactId framework,
-            File platformFile,
-            KeyValueMap frameworkProps) throws IOException;
+    public abstract File getArtifactFile();
+
+    /**
+     * Get the artifact
+     * @return The artifact
+     */
+    public abstract Artifact getArtifact();
 }

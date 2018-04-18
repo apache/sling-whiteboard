@@ -23,10 +23,10 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-import org.apache.sling.feature.analyser.ArtifactDescriptor;
-import org.apache.sling.feature.analyser.BundleDescriptor;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
+import org.apache.sling.feature.scanner.ArtifactDescriptor;
+import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.support.util.CapabilityMatcher;
 import org.osgi.resource.Requirement;
 

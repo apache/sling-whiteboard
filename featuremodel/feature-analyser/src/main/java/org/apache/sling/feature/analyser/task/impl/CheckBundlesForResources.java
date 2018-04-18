@@ -19,9 +19,9 @@
 package org.apache.sling.feature.analyser.task.impl;
 
 import org.apache.sling.commons.osgi.ManifestHeader;
-import org.apache.sling.feature.analyser.BundleDescriptor;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
+import org.apache.sling.feature.scanner.BundleDescriptor;
 
 import java.util.ArrayList;
 import java.util.List;

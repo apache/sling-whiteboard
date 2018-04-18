@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.feature.scanner;
+package org.apache.sling.feature.scanner.spi;
 
 import java.io.IOException;
 
 import org.apache.sling.feature.Extension;
-import org.apache.sling.feature.analyser.ContainerDescriptor;
 import org.apache.sling.feature.io.ArtifactManager;
+import org.apache.sling.feature.scanner.ContainerDescriptor;
 import org.osgi.annotation.versioning.ConsumerType;
 
 /**

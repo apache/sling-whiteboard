@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.feature.analyser.impl;
+package org.apache.sling.feature.scanner.impl;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,7 +22,7 @@ import java.util.Set;
 import java.util.jar.Manifest;
 
 import org.apache.sling.feature.Artifact;
-import org.apache.sling.feature.analyser.BundleDescriptor;
+import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.support.util.ManifestParser;
 import org.apache.sling.feature.support.util.ManifestUtil;
 import org.apache.sling.feature.support.util.PackageInfo;

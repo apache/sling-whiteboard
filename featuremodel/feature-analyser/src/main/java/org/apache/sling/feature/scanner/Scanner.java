@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.feature.analyser.service;
+package org.apache.sling.feature.scanner;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,27 +29,22 @@ import org.apache.sling.feature.Bundles;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.Extensions;
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.analyser.ApplicationDescriptor;
-import org.apache.sling.feature.analyser.BundleDescriptor;
-import org.apache.sling.feature.analyser.ContainerDescriptor;
-import org.apache.sling.feature.analyser.FeatureDescriptor;
-import org.apache.sling.feature.analyser.impl.ApplicationDescriptorImpl;
-import org.apache.sling.feature.analyser.impl.BundleDescriptorImpl;
-import org.apache.sling.feature.analyser.impl.FeatureDescriptorImpl;
 import org.apache.sling.feature.io.ArtifactManager;
 import org.apache.sling.feature.io.ArtifactManagerConfig;
-import org.apache.sling.feature.scanner.ExtensionScanner;
-import org.apache.sling.feature.scanner.FrameworkScanner;
+import org.apache.sling.feature.scanner.impl.ApplicationDescriptorImpl;
+import org.apache.sling.feature.scanner.impl.BundleDescriptorImpl;
+import org.apache.sling.feature.scanner.impl.FeatureDescriptorImpl;
+import org.apache.sling.feature.scanner.spi.ExtensionScanner;
+import org.apache.sling.feature.scanner.spi.FrameworkScanner;
 
 /**
  * The scanner is a service that scans items and provides descriptions for these.
  * The following items can be scanned individually
  * <ul>
  *   <li>A bundle artifact
- *   <li>An artifact (requires {@link ArtifactScannner}s)
  *   <li>An extension (requires {@link ExtensionScanner}s)
- *   <li>A feature (requires {@link ArtifactScannner}s and {@link ExtensionScanner}s)
- *   <li>A framework (requires {@link FrameworkScanner}s
+ *   <li>A feature (requires {@link ExtensionScanner}s)
+ *   <li>A framework (requires {@link FrameworkScanner}s)
  *   <li>An application (requires all scanner types)
  * </ul>
  */

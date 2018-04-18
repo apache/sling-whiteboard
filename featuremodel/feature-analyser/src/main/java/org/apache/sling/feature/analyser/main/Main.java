@@ -16,18 +16,18 @@
  */
 package org.apache.sling.feature.analyser.main;
 
-import org.apache.sling.feature.Application;
-import org.apache.sling.feature.analyser.service.Analyser;
-import org.apache.sling.feature.analyser.service.Scanner;
-import org.apache.sling.feature.io.ArtifactManagerConfig;
-import org.apache.sling.feature.io.json.ApplicationJSONReader;
-import org.apache.sling.feature.support.FeatureUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+
+import org.apache.sling.feature.Application;
+import org.apache.sling.feature.analyser.Analyser;
+import org.apache.sling.feature.io.ArtifactManagerConfig;
+import org.apache.sling.feature.io.json.ApplicationJSONReader;
+import org.apache.sling.feature.scanner.Scanner;
+import org.apache.sling.feature.support.FeatureUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Main {
 

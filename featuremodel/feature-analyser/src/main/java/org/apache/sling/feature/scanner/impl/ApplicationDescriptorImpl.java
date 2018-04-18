@@ -14,26 +14,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.feature.analyser;
+package org.apache.sling.feature.scanner.impl;
 
 import org.apache.sling.feature.Application;
+import org.apache.sling.feature.scanner.ApplicationDescriptor;
+import org.apache.sling.feature.scanner.BundleDescriptor;
 
 /**
  * Information about an application.
  * This is the aggregated information.
  */
-public abstract class ApplicationDescriptor extends ContainerDescriptor {
+public class ApplicationDescriptorImpl
+    extends ApplicationDescriptor {
 
-    public abstract Application getApplication();
+    private BundleDescriptor frameworkDescriptor;
 
-    public abstract BundleDescriptor getFrameworkDescriptor();
+    private final Application app;
+
+    public ApplicationDescriptorImpl(final Application app) {
+        this.app = app;
+    }
 
     @Override
-    public void lock() {
-        if ( this.isLocked() ) {
-            return;
-        }
-        this.aggregate(this.getFrameworkDescriptor());
-        super.lock();
+    public Application getApplication() {
+        return this.app;
+    }
+
+    @Override
+    public BundleDescriptor getFrameworkDescriptor() {
+        return frameworkDescriptor;
+    }
+
+    public void setFrameworkDescriptor(final BundleDescriptor frameworkDescriptor) {
+        checkLocked();
+        this.frameworkDescriptor = frameworkDescriptor;
     }
 }

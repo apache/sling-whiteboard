@@ -14,28 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.feature.analyser.task;
+package org.apache.sling.feature.scanner.spi;
 
+import java.io.File;
+import java.io.IOException;
+
+import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.KeyValueMap;
+import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.osgi.annotation.versioning.ConsumerType;
 
 /**
- * A analyser task analyses a specific part of the assembled
- * application. It can report errors and warnings.
+ * The framework scanner scans the framework
  */
 @ConsumerType
-public interface AnalyserTask {
+public interface FrameworkScanner  {
 
-    /** A unique (short) id. */
-    default String getId() {
-        return getClass().getName();
-    };
-
-    /** A human readable name to identify the task. */
-    default String getName() {
-        return getClass().getSimpleName();
-    };
-
-    /** Execute the task. */
-    void execute(AnalyserTaskContext ctx) throws Exception;
+    /**
+     * Try to scan the artifact
+     * @param framework The framework artifact id
+     * @param file The framework artifact
+     * @param frameworkProps framework properties to launch the framework
+     * @return A descriptor or {@code null}
+     * @throws IOException If an error occurs while scanning the platform or the artifact is invalid
+     */
+    BundleDescriptor scan(ArtifactId framework,
+            File platformFile,
+            KeyValueMap frameworkProps) throws IOException;
 }
-

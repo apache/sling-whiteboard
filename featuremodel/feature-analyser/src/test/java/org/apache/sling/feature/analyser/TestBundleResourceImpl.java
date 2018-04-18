@@ -20,6 +20,7 @@ import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.OSGiCapability;
 import org.apache.sling.feature.OSGiRequirement;
+import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.support.resolver.FeatureResource;
 import org.apache.sling.feature.support.util.PackageInfo;
 import org.osgi.framework.Version;

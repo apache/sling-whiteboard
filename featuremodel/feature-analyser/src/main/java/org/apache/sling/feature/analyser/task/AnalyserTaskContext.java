@@ -17,8 +17,10 @@
 package org.apache.sling.feature.analyser.task;
 
 import org.apache.sling.feature.Application;
-import org.apache.sling.feature.analyser.ApplicationDescriptor;
+import org.apache.sling.feature.scanner.ApplicationDescriptor;
+import org.osgi.annotation.versioning.ProviderType;
 
+@ProviderType
 public interface AnalyserTaskContext {
 
     /**

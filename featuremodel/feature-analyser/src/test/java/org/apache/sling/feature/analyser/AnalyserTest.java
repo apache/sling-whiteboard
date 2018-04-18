@@ -16,20 +16,7 @@
  */
 package org.apache.sling.feature.analyser;
 
-import org.apache.sling.feature.Application;
-import org.apache.sling.feature.Artifact;
-import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.analyser.impl.BundleDescriptorImpl;
-import org.apache.sling.feature.analyser.service.Analyser;
-import org.apache.sling.feature.analyser.service.Scanner;
-import org.apache.sling.feature.io.ArtifactManager;
-import org.apache.sling.feature.io.ArtifactManagerConfig;
-import org.apache.sling.feature.io.json.FeatureJSONReader;
-import org.apache.sling.feature.io.json.FeatureJSONReader.SubstituteVariables;
-import org.apache.sling.feature.support.FeatureUtil;
-import org.apache.sling.feature.support.resolver.FeatureResolver;
-import org.apache.sling.feature.support.resolver.FeatureResource;
-import org.junit.Test;
+import static junit.framework.TestCase.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,7 +25,21 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
-import static junit.framework.TestCase.fail;
+import org.apache.sling.feature.Application;
+import org.apache.sling.feature.Artifact;
+import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.analyser.Analyser;
+import org.apache.sling.feature.io.ArtifactManager;
+import org.apache.sling.feature.io.ArtifactManagerConfig;
+import org.apache.sling.feature.io.json.FeatureJSONReader;
+import org.apache.sling.feature.io.json.FeatureJSONReader.SubstituteVariables;
+import org.apache.sling.feature.scanner.BundleDescriptor;
+import org.apache.sling.feature.scanner.Scanner;
+import org.apache.sling.feature.scanner.impl.BundleDescriptorImpl;
+import org.apache.sling.feature.support.FeatureUtil;
+import org.apache.sling.feature.support.resolver.FeatureResolver;
+import org.apache.sling.feature.support.resolver.FeatureResource;
+import org.junit.Test;
 
 public class AnalyserTest {
     @Test

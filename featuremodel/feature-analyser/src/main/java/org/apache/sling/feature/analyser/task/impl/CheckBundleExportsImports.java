@@ -26,9 +26,9 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.apache.sling.feature.analyser.BundleDescriptor;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
+import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.support.util.PackageInfo;
 import org.osgi.framework.Version;
 

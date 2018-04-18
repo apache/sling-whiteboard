@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.feature.analyser;
+package org.apache.sling.feature.scanner;
 
 import java.util.jar.Manifest;
 
-import org.apache.sling.feature.analyser.impl.BundleDescriptorImpl;
+import org.apache.sling.feature.scanner.impl.BundleDescriptorImpl;
 import org.apache.sling.feature.support.util.PackageInfo;
 
 /**
