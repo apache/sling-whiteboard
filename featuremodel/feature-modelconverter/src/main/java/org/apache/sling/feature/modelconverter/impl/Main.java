@@ -22,8 +22,8 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.sling.feature.support.artifact.ArtifactManager;
-import org.apache.sling.feature.support.artifact.ArtifactManagerConfig;
+import org.apache.sling.feature.io.ArtifactManager;
+import org.apache.sling.feature.io.ArtifactManagerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

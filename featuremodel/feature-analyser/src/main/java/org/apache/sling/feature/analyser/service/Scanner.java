@@ -36,10 +36,10 @@ import org.apache.sling.feature.analyser.FeatureDescriptor;
 import org.apache.sling.feature.analyser.impl.ApplicationDescriptorImpl;
 import org.apache.sling.feature.analyser.impl.BundleDescriptorImpl;
 import org.apache.sling.feature.analyser.impl.FeatureDescriptorImpl;
+import org.apache.sling.feature.io.ArtifactManager;
+import org.apache.sling.feature.io.ArtifactManagerConfig;
 import org.apache.sling.feature.scanner.ExtensionScanner;
 import org.apache.sling.feature.scanner.FrameworkScanner;
-import org.apache.sling.feature.support.artifact.ArtifactManager;
-import org.apache.sling.feature.support.artifact.ArtifactManagerConfig;
 
 /**
  * The scanner is a service that scans items and provides descriptions for these.

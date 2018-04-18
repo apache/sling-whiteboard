@@ -33,11 +33,11 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.sling.feature.Application;
 import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.io.ArtifactHandler;
+import org.apache.sling.feature.io.ArtifactManager;
 import org.apache.sling.feature.launcher.impl.launchers.FrameworkLauncher;
 import org.apache.sling.feature.launcher.spi.Launcher;
 import org.apache.sling.feature.launcher.spi.LauncherPrepareContext;
-import org.apache.sling.feature.support.artifact.ArtifactHandler;
-import org.apache.sling.feature.support.artifact.ArtifactManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

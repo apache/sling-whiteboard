@@ -19,7 +19,7 @@ package org.apache.sling.feature.support.util;
 import static junit.framework.TestCase.assertTrue;
 
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.support.json.U;
+import org.apache.sling.feature.io.json.U;
 import org.junit.Test;
 import org.osgi.resource.Requirement;
 

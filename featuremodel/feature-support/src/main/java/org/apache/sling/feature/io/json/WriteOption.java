@@ -1,3 +1,4 @@
+package org.apache.sling.feature.io.json;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements. See the NOTICE file distributed with this
@@ -14,33 +15,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.sling.feature.support.artifact.spi;
-
-import java.io.File;
-
-/**
- * This is the context for the artifact providers
- */
-public interface ArtifactProviderContext {
-
-    /**
-     * Get the cache directory
-     * @return The cache directory.
+public enum WriteOption {
+    /* Write factory configurations out in the old style with a '-' separator.
+     * If this option is not used the new style with the '~' separator is used.
      */
-    File getCacheDirectory();
-
-    /**
-     * Inform about an artifact found in the cache.
-     */
-    void incCachedArtifacts();
-
-    /**
-     * Inform about an artifact being downloaded
-     */
-    void incDownloadedArtifacts();
-
-    /**
-     * Inform about an artifact found locally.
-     */
-    void incLocalArtifacts();
+    OLD_STYLE_FACTORY_CONFIGS
 }

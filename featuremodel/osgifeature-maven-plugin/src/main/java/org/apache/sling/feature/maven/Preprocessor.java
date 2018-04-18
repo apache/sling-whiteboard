@@ -35,8 +35,8 @@ import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.builder.BuilderContext;
 import org.apache.sling.feature.builder.FeatureBuilder;
 import org.apache.sling.feature.builder.FeatureProvider;
-import org.apache.sling.feature.support.json.FeatureJSONReader;
-import org.apache.sling.feature.support.json.FeatureJSONReader.SubstituteVariables;
+import org.apache.sling.feature.io.json.FeatureJSONReader;
+import org.apache.sling.feature.io.json.FeatureJSONReader.SubstituteVariables;
 import org.codehaus.plexus.logging.Logger;
 
 /**
@@ -235,7 +235,7 @@ public class Preprocessor {
 
             for(final File file : files) {
                 try {
-                    final List<String> features = org.apache.sling.feature.support.io.FileUtils.parseFeatureRefFile(file);
+                    final List<String> features = org.apache.sling.feature.io.FileUtils.parseFeatureRefFile(file);
                     if ( features.isEmpty() ) {
                         env.logger.debug("Empty feature ref file at " + file);
                     } else {

@@ -26,7 +26,7 @@ import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 
 import org.apache.sling.feature.Configurations;
-import org.apache.sling.feature.support.json.ConfigurationJSONWriter;
+import org.apache.sling.feature.io.json.ConfigurationJSONWriter;
 import org.osgi.framework.Constants;
 
 

@@ -30,9 +30,9 @@ import org.apache.maven.model.PluginExecution;
 import org.apache.maven.project.MavenProject;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.support.json.FeatureJSONReader;
-import org.apache.sling.feature.support.json.FeatureJSONReader.SubstituteVariables;
-import org.apache.sling.feature.support.json.FeatureJSONWriter;
+import org.apache.sling.feature.io.json.FeatureJSONReader;
+import org.apache.sling.feature.io.json.FeatureJSONWriter;
+import org.apache.sling.feature.io.json.FeatureJSONReader.SubstituteVariables;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 import java.io.IOException;

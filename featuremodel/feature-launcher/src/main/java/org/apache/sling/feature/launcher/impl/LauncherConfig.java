@@ -16,8 +16,8 @@
  */
 package org.apache.sling.feature.launcher.impl;
 
-import org.apache.sling.feature.support.artifact.ArtifactManagerConfig;
-import org.apache.sling.feature.support.artifact.spi.ArtifactProviderContext;
+import org.apache.sling.feature.io.ArtifactManagerConfig;
+import org.apache.sling.feature.io.spi.ArtifactProviderContext;
 
 import java.io.File;
 import java.io.IOException;

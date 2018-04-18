@@ -29,14 +29,14 @@ import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.Configuration;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
+import org.apache.sling.feature.io.ArtifactHandler;
+import org.apache.sling.feature.io.ArtifactManager;
+import org.apache.sling.feature.io.json.ApplicationJSONReader;
+import org.apache.sling.feature.io.json.ApplicationJSONWriter;
 import org.apache.sling.feature.launcher.impl.LauncherConfig.StartupMode;
 import org.apache.sling.feature.resolver.FrameworkResolver;
 import org.apache.sling.feature.support.FeatureUtil;
 import org.apache.sling.feature.support.SlingConstants;
-import org.apache.sling.feature.support.artifact.ArtifactHandler;
-import org.apache.sling.feature.support.artifact.ArtifactManager;
-import org.apache.sling.feature.support.json.ApplicationJSONReader;
-import org.apache.sling.feature.support.json.ApplicationJSONWriter;
 import org.apache.sling.feature.support.resolver.FeatureResolver;
 
 public class FeatureProcessor {
@@ -65,7 +65,7 @@ public class FeatureProcessor {
         } else {
             try (FeatureResolver resolver = new FrameworkResolver(artifactManager, Collections.emptyMap())) {
                 app = FeatureUtil.assembleApplication(null, artifactManager, resolver,
-                       org.apache.sling.feature.support.io.FileUtils.getFeatureFiles(config.getHomeDirectory(), config.getFeatureFiles()).toArray(new String[0]));
+                       org.apache.sling.feature.io.FileUtils.getFeatureFiles(config.getHomeDirectory(), config.getFeatureFiles()).toArray(new String[0]));
             } catch (Exception ex) {
                 Main.LOG().error("Error while assembling application: {}", ex.getMessage(), ex);
                 System.exit(1);

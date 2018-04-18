@@ -19,9 +19,9 @@ package org.apache.sling.feature.analyser.main;
 import org.apache.sling.feature.Application;
 import org.apache.sling.feature.analyser.service.Analyser;
 import org.apache.sling.feature.analyser.service.Scanner;
+import org.apache.sling.feature.io.ArtifactManagerConfig;
+import org.apache.sling.feature.io.json.ApplicationJSONReader;
 import org.apache.sling.feature.support.FeatureUtil;
-import org.apache.sling.feature.support.artifact.ArtifactManagerConfig;
-import org.apache.sling.feature.support.json.ApplicationJSONReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

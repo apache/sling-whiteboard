@@ -29,10 +29,10 @@ import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.builder.ApplicationBuilder;
 import org.apache.sling.feature.builder.BuilderContext;
 import org.apache.sling.feature.builder.FeatureProvider;
-import org.apache.sling.feature.support.artifact.ArtifactHandler;
-import org.apache.sling.feature.support.artifact.ArtifactManager;
-import org.apache.sling.feature.support.json.FeatureJSONReader;
-import org.apache.sling.feature.support.json.FeatureJSONReader.SubstituteVariables;
+import org.apache.sling.feature.io.ArtifactHandler;
+import org.apache.sling.feature.io.ArtifactManager;
+import org.apache.sling.feature.io.json.FeatureJSONReader;
+import org.apache.sling.feature.io.json.FeatureJSONReader.SubstituteVariables;
 import org.apache.sling.feature.support.resolver.FeatureResolver;
 import org.apache.sling.feature.support.resolver.FeatureResource;
 

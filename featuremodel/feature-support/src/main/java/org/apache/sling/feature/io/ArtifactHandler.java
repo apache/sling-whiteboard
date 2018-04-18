@@ -1,4 +1,3 @@
-package org.apache.sling.feature.support.json;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements. See the NOTICE file distributed with this
@@ -15,9 +14,29 @@ package org.apache.sling.feature.support.json;
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-public enum WriteOption {
-    /* Write factory configurations out in the old style with a '-' separator.
-     * If this option is not used the new style with the '~' separator is used.
-     */
-    OLD_STYLE_FACTORY_CONFIGS
+package org.apache.sling.feature.io;
+
+import java.io.File;
+
+/**
+ * A handler provides a file object for an artifact.
+ */
+public class ArtifactHandler {
+
+    private final String url;
+
+    private final File file;
+
+    public ArtifactHandler(final String url, final File file) {
+        this.url = url;
+        this.file = file;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public File getFile() {
+        return file;
+    }
 }
