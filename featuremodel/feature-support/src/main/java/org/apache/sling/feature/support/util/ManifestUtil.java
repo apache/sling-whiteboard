@@ -16,12 +16,6 @@
  */
 package org.apache.sling.feature.support.util;
 
-import org.apache.sling.commons.osgi.ManifestHeader;
-import org.osgi.framework.Constants;
-import org.osgi.framework.Version;
-import org.osgi.resource.Capability;
-import org.osgi.resource.Requirement;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,9 +28,11 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 
-import static org.apache.sling.feature.support.util.ManifestParser.convertProvideCapabilities;
-import static org.apache.sling.feature.support.util.ManifestParser.normalizeCapabilityClauses;
-import static org.apache.sling.feature.support.util.ManifestParser.parseStandardHeader;
+import org.apache.sling.feature.support.util.ManifestParser.ParsedHeaderClause;
+import org.osgi.framework.Constants;
+import org.osgi.framework.Version;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
 
 public class ManifestUtil {
 
@@ -57,23 +53,29 @@ public class ManifestUtil {
             final boolean checkOptional) {
         final String pckInfo = m.getMainAttributes().getValue(headerName);
         if (pckInfo != null) {
-            final ManifestHeader header = ManifestHeader.parse(pckInfo);
+            final List<ParsedHeaderClause> clauses = ManifestParser.parseStandardHeader(pckInfo);
 
             final List<PackageInfo> pcks = new ArrayList<>();
-            for(final ManifestHeader.Entry entry : header.getEntries()) {
-                String version = entry.getAttributeValue("version");
-                if ( version == null ) {
+            for(final ParsedHeaderClause entry : clauses) {
+                Object versionObj = entry.m_attrs.get("version");
+                final String version;
+                if ( versionObj == null ) {
                     version = defaultVersion;
+                } else {
+                    version = versionObj.toString();
                 }
+
                 boolean optional = false;
                 if ( checkOptional ) {
-                    final String resolution = entry.getDirectiveValue("resolution");
+                    final String resolution = entry.m_dirs.get("resolution");
                     optional = "optional".equalsIgnoreCase(resolution);
                 }
-                final PackageInfo pck = new PackageInfo(entry.getValue(),
+                for(final String path : entry.m_paths) {
+                    final PackageInfo pck = new PackageInfo(path,
                         version,
                         optional);
-                pcks.add(pck);
+                    pcks.add(pck);
+                }
             }
 
             return pcks;
@@ -111,8 +113,8 @@ public class ManifestUtil {
 
     private static <T> void unmarshal(String header, Function<Capability, Map<String, T>> lookup, BiConsumer<String, T> sink) throws IOException {
         try {
-            convertProvideCapabilities(
-                    normalizeCapabilityClauses(parseStandardHeader("foo;" + header), "2"))
+            ManifestParser.convertProvideCapabilities(
+                    ManifestParser.normalizeCapabilityClauses(ManifestParser.parseStandardHeader("foo;" + header), "2"))
                     .forEach(capability -> lookup.apply(capability).forEach(sink));
         } catch (Exception e) {
             throw new IOException(e);
