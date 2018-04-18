@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.feature.support.process;
+package org.apache.sling.feature.builder;
 
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
@@ -24,9 +24,9 @@ import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.Include;
 import org.apache.sling.feature.OSGiCapability;
 import org.apache.sling.feature.OSGiRequirement;
-import org.apache.sling.feature.support.process.BuilderContext;
-import org.apache.sling.feature.support.process.FeatureBuilder;
-import org.apache.sling.feature.support.process.FeatureProvider;
+import org.apache.sling.feature.builder.BuilderContext;
+import org.apache.sling.feature.builder.FeatureBuilder;
+import org.apache.sling.feature.builder.FeatureProvider;
 import org.junit.Test;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;

@@ -26,13 +26,13 @@ import java.util.List;
 import org.apache.sling.feature.Application;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.builder.ApplicationBuilder;
+import org.apache.sling.feature.builder.BuilderContext;
+import org.apache.sling.feature.builder.FeatureProvider;
 import org.apache.sling.feature.support.artifact.ArtifactHandler;
 import org.apache.sling.feature.support.artifact.ArtifactManager;
 import org.apache.sling.feature.support.json.FeatureJSONReader;
 import org.apache.sling.feature.support.json.FeatureJSONReader.SubstituteVariables;
-import org.apache.sling.feature.support.process.ApplicationBuilder;
-import org.apache.sling.feature.support.process.BuilderContext;
-import org.apache.sling.feature.support.process.FeatureProvider;
 import org.apache.sling.feature.support.resolver.FeatureResolver;
 import org.apache.sling.feature.support.resolver.FeatureResource;
 

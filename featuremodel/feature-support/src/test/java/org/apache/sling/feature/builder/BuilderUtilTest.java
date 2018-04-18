@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.feature.support.process;
+package org.apache.sling.feature.builder;
 
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Bundles;
-import org.apache.sling.feature.support.process.BuilderUtil;
-import org.apache.sling.feature.support.process.BuilderUtil.ArtifactMerge;
+import org.apache.sling.feature.builder.BuilderUtil;
+import org.apache.sling.feature.builder.BuilderUtil.ArtifactMerge;
 import org.junit.Test;
 
 import java.util.ArrayList;
