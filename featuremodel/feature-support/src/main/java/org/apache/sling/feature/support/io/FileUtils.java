@@ -17,19 +17,12 @@
 package org.apache.sling.feature.support.io;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.support.artifact.ArtifactHandler;
-import org.apache.sling.feature.support.artifact.ArtifactManager;
-import org.apache.sling.feature.support.json.FeatureJSONReader;
-import org.apache.sling.feature.support.json.FeatureJSONReader.SubstituteVariables;
 
 public class FileUtils {
 
@@ -160,27 +153,6 @@ public class FileUtils {
 
         Collections.sort(paths, FEATURE_PATH_COMP);
         return paths;
-    }
-
-    /**
-     * Read the feature
-     *
-     * @param file The feature file
-     * @param artifactManager The artifact manager to read the feature
-     * @param substituteVariables Variable substitution handling
-     * @return The read feature
-     * @throws IOException If reading fails
-     */
-    public static Feature getFeature(final String file,
-            final ArtifactManager artifactManager,
-            final SubstituteVariables substituteVariables)
-    throws IOException {
-        final ArtifactHandler featureArtifact = artifactManager.getArtifactHandler(file);
-
-        try (final FileReader r = new FileReader(featureArtifact.getFile())) {
-            final Feature f = FeatureJSONReader.read(r, featureArtifact.getUrl(), substituteVariables);
-            return f;
-        }
     }
 
     static final Comparator<String> FEATURE_PATH_COMP = new Comparator<String>() {

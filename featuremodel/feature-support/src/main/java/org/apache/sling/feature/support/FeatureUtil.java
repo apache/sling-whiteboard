@@ -50,6 +50,27 @@ public class FeatureUtil {
     }
 
     /**
+     * Read the feature
+     *
+     * @param url The feature url
+     * @param artifactManager The artifact manager to read the feature
+     * @param substituteVariables Variable substitution handling
+     * @return The read feature
+     * @throws IOException If reading fails
+     */
+    public static Feature getFeature(final String url,
+            final ArtifactManager artifactManager,
+            final SubstituteVariables substituteVariables)
+    throws IOException {
+        final ArtifactHandler featureArtifact = artifactManager.getArtifactHandler(url);
+
+        try (final FileReader r = new FileReader(featureArtifact.getFile())) {
+            final Feature f = FeatureJSONReader.read(r, featureArtifact.getUrl(), substituteVariables);
+            return f;
+        }
+    }
+
+    /**
      * Assemble an application based on the given files.
      *
      * Read the features and assemble the application
@@ -69,7 +90,7 @@ public class FeatureUtil {
     throws IOException {
         final List<Feature> features = new ArrayList<>();
         for(final String initFile : featureFiles) {
-            final Feature f = org.apache.sling.feature.support.io.FileUtils.getFeature(initFile, artifactManager, SubstituteVariables.RESOLVE);
+            final Feature f = getFeature(initFile, artifactManager, SubstituteVariables.RESOLVE);
             features.add(f);
         }
 

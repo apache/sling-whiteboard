@@ -44,6 +44,7 @@ import org.apache.sling.feature.Configurations;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.Extensions;
+import org.apache.sling.feature.support.FeatureUtil;
 import org.apache.sling.feature.support.artifact.ArtifactManager;
 import org.apache.sling.feature.support.artifact.ArtifactManagerConfig;
 import org.apache.sling.feature.support.json.FeatureJSONReader.SubstituteVariables;
@@ -174,8 +175,8 @@ public class ModelConverterTest {
         File outFile = files.get(0);
 
         String expectedFile = new File(getClass().getResource(expectedJSON).toURI()).getAbsolutePath();
-        org.apache.sling.feature.Feature expected = org.apache.sling.feature.support.io.FileUtils.getFeature(expectedFile, artifactManager, SubstituteVariables.NONE);
-        org.apache.sling.feature.Feature actual = org.apache.sling.feature.support.io.FileUtils.getFeature(outFile.getAbsolutePath(), artifactManager, SubstituteVariables.NONE);
+        org.apache.sling.feature.Feature expected = FeatureUtil.getFeature(expectedFile, artifactManager, SubstituteVariables.NONE);
+        org.apache.sling.feature.Feature actual = FeatureUtil.getFeature(outFile.getAbsolutePath(), artifactManager, SubstituteVariables.NONE);
         assertFeaturesEqual(expected, actual);
     }
 
@@ -205,8 +206,8 @@ public class ModelConverterTest {
         File outFile = files.get(0);
 
         String expectedFile = new File(getClass().getResource(expectedJSON).toURI()).getAbsolutePath();
-        org.apache.sling.feature.Feature expected = org.apache.sling.feature.support.io.FileUtils.getFeature(expectedFile, artifactManager, SubstituteVariables.NONE);
-        org.apache.sling.feature.Feature actual = org.apache.sling.feature.support.io.FileUtils.getFeature(outFile.getAbsolutePath(), artifactManager, SubstituteVariables.NONE);
+        org.apache.sling.feature.Feature expected = FeatureUtil.getFeature(expectedFile, artifactManager, SubstituteVariables.NONE);
+        org.apache.sling.feature.Feature actual = FeatureUtil.getFeature(outFile.getAbsolutePath(), artifactManager, SubstituteVariables.NONE);
         assertFeaturesEqual(expected, actual);
     }
 
