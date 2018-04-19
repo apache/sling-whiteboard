@@ -20,7 +20,7 @@ expects the following layout:
 javax.script/<sling-resourceType>/<version>/[<METHOD>.]<name>[.<selector>][.<extension>].<script-extension>
 ```
 
-From that, it will create an appropriate `Provide-Capability` (see the ["How"](../org-apache-sling-scripting-resolover/README.md#how)
+From that, it will create an appropriate `Provide-Capability` (see the ["How"](../org-apache-sling-scripting-resolver/README.md#how)
 section of the scripting resolver) with the following extra assumptions:
 
   * if the `name` part equals the `sling.resourceType` or the last part of it, it is assumed to be the name of the main script;
