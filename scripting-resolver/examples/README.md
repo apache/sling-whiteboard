@@ -27,4 +27,5 @@ package your scripts into OSGi bundles:
     * initial content is available at:
       1. `<sling>/content/examplehiv1.html` - explicitly wired to the `org.apache.sling.scripting.examplebundle.hi/1.0.0` resource type
 
-The integration tests using these bundles can be found [here](../org-apache-sling-scripting-resolver/src/test/java/org/apache/sling/scripting/resolver/internal).
+The integration tests using these bundles can be found [here](../org-apache-sling-scripting-resolver/src/test/java/org/apache/sling/scripting/resolver/internal) and
+you can find instructions to start a running sling instance with the provided examples [here](../org-apache-sling-scripting-resolver/#Example).

@@ -208,7 +208,7 @@
                                 <phase>process-resources</phase>
                                 <configuration>
                                     <portNames>
-                                        <portName>http.port</portName>
+                                        <portName>http.port.testing</portName>
                                     </portNames>
                                 </configuration>
                             </execution>
@@ -235,7 +235,7 @@
                         </executions>
                         <configuration>
                             <systemPropertyVariables>
-                                <ClientSideTeleporter.baseUrl>http://${http.host}:${http.port}/</ClientSideTeleporter.baseUrl>
+                                <ClientSideTeleporter.baseUrl>http://${http.host}:${http.port.testing}/</ClientSideTeleporter.baseUrl>
                                 <ClientSideTeleporter.testReadyTimeoutSeconds>20</ClientSideTeleporter.testReadyTimeoutSeconds>
                             </systemPropertyVariables>
                         </configuration>
@@ -280,7 +280,65 @@
                              <!-- <shouldBlockUntilKeyIsPressed>true</shouldBlockUntilKeyIsPressed> -->
                             <servers>
                                 <server>
-                                    <id>singleinstance</id>
+                                    <id>testinstance</id>
+                                    <port>${http.port.testing}</port>
+                                    <vmOpts>${sling.vm.options}</vmOpts>
+                                </server>
+                            </servers>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>example</id>
+            <properties>
+                <http.host>localhost</http.host>
+                <http.port>8080</http.port>
+                <sling.vm.options>-Xmx1024m -XX:MaxPermSize=256m -Djava.awt.headless=true</sling.vm.options>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <!-- the Sling instance is provisioned from the model in src/test/provisioning/it-model.txt -->
+                        <groupId>org.apache.sling</groupId>
+                        <artifactId>slingstart-maven-plugin</artifactId>
+                        <version>1.7.16</version>
+                        <extensions>true</extensions>
+                        <executions>
+                            <execution>
+                                <id>prepare-launchpad-package</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>prepare-package</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>build-launchpad-package</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>package</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>start-container-before-IT</id>
+                                <goals>
+                                    <goal>start</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <goals>
+                                    <goal>stop</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <usePomDependencies>true</usePomDependencies>
+                            <attachArtifact>false</attachArtifact>
+                            <shouldBlockUntilKeyIsPressed>true</shouldBlockUntilKeyIsPressed>
+                            <servers>
+                                <server>
+                                    <id>exampleinstance</id>
                                     <port>${http.port}</port>
                                     <vmOpts>${sling.vm.options}</vmOpts>
                                 </server>

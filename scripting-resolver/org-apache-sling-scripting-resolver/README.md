@@ -61,6 +61,22 @@ Short answer: exactly like you deploy your code, preferably right next to it. Pa
   example);
   6. `mvn clean sling:install`.
 
+### Integration Tests
+
+To run the integration tests do:
+
+```
+mvn clean install -Pit
+```
+
+### Example
+
+To play around with a sling instance on localhost port 8080 (override with -Dhttp.port=<port>) that has the [examples](../examples) installed run:
+
+```
+mvn clean install -Pexample
+``` 
+
 ## Resources
 [1] - https://semver.org/  
 [2] - https://osgi.org/javadoc/r6/core/org/osgi/util/tracker/BundleTrackerCustomizer.html  
