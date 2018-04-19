@@ -47,6 +47,8 @@
                 <configuration>
                 <excludes combine.children="append">
                         <exclude>**/*.md</exclude>
+                        <exclude>*/target/**</exclude>
+                        <exclude>**/*.iml</exclude>
                 </excludes>
                 </configuration>
             </plugin>
