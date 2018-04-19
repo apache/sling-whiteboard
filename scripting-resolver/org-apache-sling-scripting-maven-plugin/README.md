@@ -4,7 +4,7 @@ Apache Sling Scripting Maven Plugin (WIP, name not final)
 ## What
 This plugin provides support for deriving `sling.resourceType` `Requirements` and `Capabilities` from
 the file-system layout of scripts. Bundles that get extended by the
-[`org.apache.sling.scripting.resolver`](srr/tree/master/org-apache-sling-scripting-resolover/) with these `Requirements` and
+[`org.apache.sling.scripting.resolver`](../org-apache-sling-scripting-resolover/README.md) with these `Requirements` and
 `Capabilities` will have their scripts made available automatically with added versioning and dependency
 support.
 
@@ -20,8 +20,8 @@ expects the following layout:
 javax.script/<sling-resourceType>/<version>/[<METHOD>.]<name>[.<selector>][.<extension>].<script-extension>
 ```
 
-From that, it will create an appropriate `Provide-Capability` (see the ["How"](../org-apache-sling-scripting-resolover/#how) section of
-the scripting resolver) with the following extra assumptions:
+From that, it will create an appropriate `Provide-Capability` (see the ["How"](../org-apache-sling-scripting-resolover/README.md#how)
+section of the scripting resolver) with the following extra assumptions:
 
   * if the `name` part equals the `sling.resourceType` or the last part of it, it is assumed to be the name of the main script;
   otherwise, it is assumed to be a selector;
@@ -52,8 +52,8 @@ sling.resourceType;
 
 For a bigger example providing several versions and using an `extends` file consider the following two projects: 
 
-  * [example](../org-apache-sling-scripting-examplebundle);
-  * [example.hi](../org-apache-sling-scripting-examplebundle.hi).
+  * [example](../examples/org-apache-sling-scripting-examplebundle/README.md);
+  * [example.hi](../examples/org-apache-sling-scripting-examplebundle.hi/README.md).
 
 ## So how do I use the plugin?
 
