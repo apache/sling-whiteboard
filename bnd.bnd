@@ -14,6 +14,10 @@ DynamicImport-Package:\
   org.apache.commons.io.output;version="[2.4.0,3)",\
   org.apache.felix.inventory;version="[1.0.0,2)"
 
+Provide-Capability:\
+  osgi.service;objectClass=com.codahale.metrics.MetricRegistry,\
+  osgi.service;objectClass=org.apache.sling.commons.metrics.MetricsService
+
 -baseline: *
 
 -exportcontents: ${packages;VERSIONED}
