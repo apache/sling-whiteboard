@@ -7,7 +7,7 @@ The examples provided by the project also serve as integration tests, therefore 
 Two bundles showcase how the [`org.apache.sling.scripting.resolver`](../org-apache-sling-scripting-resolver/README.md) works and how you can
 package your scripts into OSGi bundles:
 
-  1. [`org.apache.sling.scripting.examplebundle`](./org-apache-sling-scripting-examplebundle/README.md):
+  1. [`org.apache.sling.scripting.examplebundle`](./org-apache-sling-scripting-examplebundle):
     * provides the `org.apache.sling.scripting.examplebundle.hello` resource type
     * the resource type is provided in two versions (`1.0.0` and `2.0.0`)
     * it has a main script (`hello.html`) and some selector scripts
@@ -16,7 +16,7 @@ package your scripts into OSGi bundles:
       2. `<sling>/content/examplev1.html` - explicitly wired to the `org.apache.sling.scripting.examplebundle.hello/1.0.0` resource type
       3. `<sling>/content/examplev2.html` - explicitly wired to the `org.apache.sling.scripting.examplebundle.hello/2.0.0` resource type
 
-  2. [`org.apache.sling.scripting.examplebundle.hi`](./org-apache-sling-scripting-examplebundle.hi/README.md):
+  2. [`org.apache.sling.scripting.examplebundle.hi`](./org-apache-sling-scripting-examplebundle.hi):
     * provides the `org.apache.sling.scripting.examplebundle.hi` resource type; it extends
     `org.apache.sling.scripting.examplebundle.hello;version=[1.0.0,2.0.0)` - the `extends` file will be used by the
     [`org.apache.sling.scripting.maven.plugin`](../org-apache-sling-scripting-maven-plugin/README.md) to correctly generate the
