@@ -56,8 +56,9 @@ Short answer: exactly like you deploy your code, preferably right next to it. Pa
   3. inside each `resourceType` folder create a `Version` folder; this has to follow the Semantic Versioning constraints described at [1];
   4. add your scripts, using the same naming conventions that you were used to from before [4];
   5. manually define your provide and require capabilities; just kidding; add the
-  [`org.apache.sling.scripting.maven.plugin`](./scripting-maven-plugin.md) to your build section and add its required properties in the
-  `maven-bundle-plugin`'s instructions (check [this](../org-apache-sling-scripting-examplebundle/pom.xml) example);
+  [`org.apache.sling.scripting.maven.plugin`](../org-apache-sling-scripting-maven-plugin/) to your build section and add its required
+  properties in the `maven-bundle-plugin`'s instructions (check [this](../examples/org-apache-sling-scripting-examplebundle/pom.xml)
+  example);
   6. `mvn clean sling:install`.
 
 ## Resources

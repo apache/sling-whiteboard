@@ -34,8 +34,22 @@
 
     <modules>
         <module>org-apache-sling-scripting-maven-plugin</module>
-        <module>org-apache-sling-scripting-examplebundle</module>
-        <module>org-apache-sling-scripting-examplebundle.hi</module>
+        <module>examples/org-apache-sling-scripting-examplebundle</module>
+        <module>examples/org-apache-sling-scripting-examplebundle.hi</module>
         <module>org-apache-sling-scripting-resolver</module>
     </modules>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.rat</groupId>
+                <artifactId>apache-rat-plugin</artifactId>
+                <configuration>
+                <excludes combine.children="append">
+                        <exclude>**/*.md</exclude>
+                </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

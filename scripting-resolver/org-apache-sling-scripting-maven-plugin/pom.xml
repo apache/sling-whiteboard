@@ -22,10 +22,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <parent>
-        <artifactId>sling</artifactId>
         <groupId>org.apache.sling</groupId>
-        <version>33</version>
-        <relativePath/>
+        <artifactId>org.apache.sling.scripting.resolver.reactor</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 

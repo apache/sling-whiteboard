@@ -4,10 +4,10 @@ Examples
 Because some code is worth a thousand words...
 
 The examples provided by the project also serve as integration tests, therefore they should always work and be relatively up-to-date.
-Two bundles showcase how the [`org.apache.sling.scripting.resolver`](./scripting-resolver.md) works and how you can package your
-scripts into OSGi bundles:
+Two bundles showcase how the [`org.apache.sling.scripting.resolver`](../org-apache-sling-scripting-resolver/) works and how you can
+package your scripts into OSGi bundles:
 
-  1. [`org.apache.sling.scripting.examplebundle`](../org-apache-sling-scripting-examplebundle):
+  1. [`org.apache.sling.scripting.examplebundle`](./org-apache-sling-scripting-examplebundle/):
     * provides the `org.apache.sling.scripting.examplebundle.hello` resource type
     * the resource type is provided in two versions (`1.0.0` and `2.0.0`)
     * it has a main script (`hello.html`) and some selector scripts
@@ -16,10 +16,10 @@ scripts into OSGi bundles:
       2. `<sling>/content/examplev1.html` - explicitly wired to the `org.apache.sling.scripting.examplebundle.hello/1.0.0` resource type
       3. `<sling>/content/examplev2.html` - explicitly wired to the `org.apache.sling.scripting.examplebundle.hello/2.0.0` resource type
 
-  2. [`org.apache.sling.scripting.examplebundle.hi`](../org-apache-sling-scripting-examplebundle.hi):
+  2. [`org.apache.sling.scripting.examplebundle.hi`](./org-apache-sling-scripting-examplebundle.hi/):
     * provides the `org.apache.sling.scripting.examplebundle.hi` resource type; it extends
     `org.apache.sling.scripting.examplebundle.hello;version=[1.0.0,2.0.0)` - the `extends` file will be used by the
-    [`org.apache.sling.scripting.maven.plugin`](./scripting-maven-plugin.md) to correctly generate the `Require-Capabilities`
+    [`org.apache.sling.scripting.maven.plugin`](../org-apache-sling-scripting-maven-plugin/) to correctly generate the `Require-Capabilities`
     * the resource type is provided in one version (`1.0.0`)
     * it has a selector script (`h.html`), essentially overriding the same selector script from
     `org.apache.sling.scripting.examplebundle.hello/1.0.0`

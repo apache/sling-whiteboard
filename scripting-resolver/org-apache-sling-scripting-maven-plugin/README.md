@@ -4,7 +4,7 @@ Apache Sling Scripting Maven Plugin (WIP, name not final)
 ## What
 This plugin provides support for deriving `sling.resourceType` `Requirements` and `Capabilities` from
 the file-system layout of scripts. Bundles that get extended by the
-[`org.apache.sling.scripting.resolver`](./scripting-resolver.md) with these `Requirements` and
+[`org.apache.sling.scripting.resolver`](../org-apache-sling-scripting-resolover/) with these `Requirements` and
 `Capabilities` will have their scripts made available automatically with added versioning and dependency
 support.
 
@@ -20,7 +20,7 @@ expects the following layout:
 javax.script/<sling-resourceType>/<version>/[<METHOD>.]<name>[.<selector>][.<extension>].<script-extension>
 ```
 
-From that, it will create an appropriate `Provide-Capability` (see the ["How"](./scripting-resolver#how) section of
+From that, it will create an appropriate `Provide-Capability` (see the ["How"](../org-apache-sling-scripting-resolover/#how) section of
 the scripting resolver) with the following extra assumptions:
 
   * if the `name` part equals the `sling.resourceType` or the last part of it, it is assumed to be the name of the main script;
@@ -101,4 +101,4 @@ the `maven-bundle-plugin`:
     </plugin>
 ```
 
-You can find an example in [here](../org-apache-sling-scripting-examplebundle/pom.xml).
+You can find an example in [here](../examples/org-apache-sling-scripting-examplebundle/pom.xml).

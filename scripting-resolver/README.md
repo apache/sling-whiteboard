@@ -29,7 +29,7 @@ Advantages of the new design:
 
 
 ## Further reading
-For a detailed view of how this project works please check the [`docs`](docs) folder.
+For a detailed view of how this project works please check each module's documentations plus the provided examples.
 
 ## References
 
