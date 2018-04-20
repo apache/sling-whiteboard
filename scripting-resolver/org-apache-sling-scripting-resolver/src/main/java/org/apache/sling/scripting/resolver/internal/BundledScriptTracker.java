@@ -247,6 +247,10 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<List<Servic
                 properties.put(ServletResolverConstants.SLING_SERVLET_RESOURCE_TYPES, rt);
                 Set<String> methods = propList.stream().map(props -> props.getOrDefault(ServletResolverConstants.SLING_SERVLET_METHODS, new String[]{"GET", "HEAD"}))
                     .map(PropertiesUtil::toStringArray).map(Arrays::asList).flatMap(List::stream).collect(Collectors.toSet());
+                Set<String> extensions = propList.stream().map(props -> props.getOrDefault(ServletResolverConstants
+                        .SLING_SERVLET_EXTENSIONS, new String[] {"html"})).map(PropertiesUtil::toStringArray).map(Arrays::asList).flatMap
+                        (List::stream).collect(Collectors.toSet());
+                properties.put(ServletResolverConstants.SLING_SERVLET_EXTENSIONS, extensions.toArray(new String[0]));
                 if (!methods.equals(new HashSet<>(Arrays.asList("GET", "HEAD"))))
                 {
                     properties.put(ServletResolverConstants.SLING_SERVLET_METHODS, methods.toArray(new String[0]));

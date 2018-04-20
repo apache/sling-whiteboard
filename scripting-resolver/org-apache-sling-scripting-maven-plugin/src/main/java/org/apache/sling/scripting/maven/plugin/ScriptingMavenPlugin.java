@@ -51,7 +51,8 @@ public class ScriptingMavenPlugin extends AbstractMojo
     @Parameter(defaultValue = "${session}", readonly = true)
     private MavenSession session;
 
-    private static final Set<String> METHODS = new HashSet<>(Arrays.asList(new String[]{"TRACE", "OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE"}));
+    private static final Set<String> METHODS = new HashSet<>(Arrays.asList(new String[]{"TRACE", "OPTIONS", "GET", "HEAD", "POST", "PUT",
+            "DELETE", "PATCH"}));
 
     public void execute() throws MojoExecutionException
     {

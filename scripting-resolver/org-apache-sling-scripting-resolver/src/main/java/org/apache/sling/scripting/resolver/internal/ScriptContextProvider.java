@@ -87,6 +87,7 @@ public class ScriptContextProvider {
         bindings.put(SlingBindings.LOG, scriptLogger);
         bindings.put(SlingBindings.SLING, new ScriptHelper(m_bundleContext, null, request, response));
         bindings.put(ScriptEngine.FILENAME, script.getName());
+        bindings.put(ScriptEngine.FILENAME.replaceAll("\\.", "_"), script.getName());
 
         ProtectedBindings protectedBindings = new ProtectedBindings(bindings, PROTECTED_BINDINGS);
         for (BindingsValuesProvider bindingsValuesProvider : bvpTracker.getBindingsValuesProviders(script.getScriptEngine().getFactory(),

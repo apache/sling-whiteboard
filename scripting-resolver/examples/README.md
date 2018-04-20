@@ -12,9 +12,9 @@ package your scripts into OSGi bundles:
     * the resource type is provided in two versions (`1.0.0` and `2.0.0`)
     * it has a main script (`hello.html`) and some selector scripts
     * initial content is available at:
-      1. `<sling>/content/example.html` - automatically wired to the `org.apache.sling.scripting.examplebundle.hello/2.0.0` resource type
-      2. `<sling>/content/examplev1.html` - explicitly wired to the `org.apache.sling.scripting.examplebundle.hello/1.0.0` resource type
-      3. `<sling>/content/examplev2.html` - explicitly wired to the `org.apache.sling.scripting.examplebundle.hello/2.0.0` resource type
+      1. `<sling>/content/srr/examples/hello.html` - automatically wired to the `org.apache.sling.scripting.examplebundle.hello/2.0.0` resource type
+      2. `<sling>/content/srr/examples/hello-v1.html` - explicitly wired to the `org.apache.sling.scripting.examplebundle.hello/1.0.0` resource type
+      3. `<sling>/content/srr/examples/hello-v2.html` - explicitly wired to the `org.apache.sling.scripting.examplebundle.hello/2.0.0` resource type
 
   2. [`org.apache.sling.scripting.examplebundle.hi`](./org-apache-sling-scripting-examplebundle.hi):
     * provides the `org.apache.sling.scripting.examplebundle.hi` resource type; it extends
@@ -25,7 +25,8 @@ package your scripts into OSGi bundles:
     * it has a selector script (`h.html`), essentially overriding the same selector script from
     `org.apache.sling.scripting.examplebundle.hello/1.0.0`
     * initial content is available at:
-      1. `<sling>/content/examplehiv1.html` - explicitly wired to the `org.apache.sling.scripting.examplebundle.hi/1.0.0` resource type
+      1. `<sling>/content/srr/examples/hi.html` - automatically wired to the `org.apache.sling.scripting.examplebundle.hi/1.0.0` resource type
+      2. `<sling>/content/srr/examples/hi-v1.html` - explicitly wired to the `org.apache.sling.scripting.examplebundle.hi/1.0.0` resource type
 
 The integration tests using these bundles can be found [here](../org-apache-sling-scripting-resolver/src/test/java/org/apache/sling/scripting/resolver/internal) and
 you can find instructions to start a running sling instance with the provided examples [here](../org-apache-sling-scripting-resolver/#Example).

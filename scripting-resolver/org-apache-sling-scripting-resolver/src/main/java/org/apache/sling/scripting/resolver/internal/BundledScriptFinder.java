@@ -22,7 +22,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 
@@ -40,6 +43,8 @@ public class BundledScriptFinder {
     private static final String NS_JAVAX_SCRIPT_CAPABILITY = "javax.script";
     private static final String SLASH = "/";
     private static final String DOT = ".";
+    private static final Set<String> DEFAULT_METHODS = new HashSet<>(Arrays.asList("GET", "HEAD"));
+    private static final Set<String> DEFAULT_EXTENSIONS = new HashSet<>(Arrays.asList("html"));
 
     @Reference
     private ScriptEngineManager scriptEngineManager;
@@ -74,6 +79,8 @@ public class BundledScriptFinder {
         List<String> matches = new ArrayList<>();
         String resourceType = StringUtils.isEmpty(delegatedResourceType) ? request.getResource().getResourceType() : delegatedResourceType;
         String version = null;
+        String method = request.getMethod();
+        boolean defaultMethod = DEFAULT_METHODS.contains(method);
         if (resourceType.contains(SLASH) && StringUtils.countMatches(resourceType, SLASH) == 1) {
             version = resourceType.substring(resourceType.indexOf(SLASH) + 1, resourceType.length());
             resourceType = resourceType.substring(0, resourceType.length() - version.length() - 1);
@@ -82,20 +89,36 @@ public class BundledScriptFinder {
         String[] selectors = request.getRequestPathInfo().getSelectors();
         if (selectors.length > 0) {
             for (int i = selectors.length - 1; i >= 0; i--) {
-                String script = resourceType + (StringUtils.isNotEmpty(version) ? SLASH + version + SLASH : SLASH) + String.join
+                String scriptForMethod = resourceType + (StringUtils.isNotEmpty(version) ? SLASH + version + SLASH : SLASH) +
+                        method + DOT + String.join(SLASH, Arrays.copyOf(selectors, i + 1));
+                String scriptNoMethod = resourceType + (StringUtils.isNotEmpty(version) ? SLASH + version + SLASH : SLASH) + String.join
                         (SLASH, Arrays.copyOf(selectors, i + 1));
                 if (StringUtils.isNotEmpty(extension)) {
-                    matches.add(script +  DOT + extension);
+                    if (defaultMethod) {
+                        matches.add(scriptNoMethod + DOT + extension);
+                    }
+                    matches.add(scriptForMethod +  DOT + extension);
                 }
-                matches.add(script);
+                if (defaultMethod) {
+                    matches.add(scriptNoMethod);
+                }
+                matches.add(scriptForMethod);
             }
         }
-        String script = resourceType + (StringUtils.isNotEmpty(version) ? SLASH + version + SLASH : SLASH) + resourceType
+        String scriptForMethod = resourceType + (StringUtils.isNotEmpty(version) ? SLASH + version + SLASH : SLASH) + method;
+        String scriptNoMethod = resourceType + (StringUtils.isNotEmpty(version) ? SLASH + version + SLASH : SLASH) + resourceType
                 .substring(resourceType.lastIndexOf(DOT) + 1);
         if (StringUtils.isNotEmpty(extension)) {
-            matches.add(script + DOT + extension);
+            if (defaultMethod) {
+                matches.add(scriptNoMethod + DOT + extension);
+            }
+            matches.add(scriptForMethod + DOT + extension);
+
         }
-        matches.add(script);
+        if (defaultMethod) {
+            matches.add(scriptNoMethod);
+        }
+        matches.add(scriptForMethod);
         return Collections.unmodifiableList(matches);
     }
 

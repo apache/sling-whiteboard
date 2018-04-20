@@ -184,6 +184,12 @@
             <version>1.7.3</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.sling</groupId>
+            <artifactId>org.apache.sling.testing.rules</artifactId>
+            <version>1.0.6</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <profiles>
@@ -237,6 +243,7 @@
                             <systemPropertyVariables>
                                 <ClientSideTeleporter.baseUrl>http://${http.host}:${http.port.testing}/</ClientSideTeleporter.baseUrl>
                                 <ClientSideTeleporter.testReadyTimeoutSeconds>20</ClientSideTeleporter.testReadyTimeoutSeconds>
+                                    <launchpad.http.server.url>http://${http.host}:${http.port.testing}/</launchpad.http.server.url>
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>
@@ -295,7 +302,7 @@
             <properties>
                 <http.host>localhost</http.host>
                 <http.port>8080</http.port>
-                <sling.vm.options>-Xmx1024m -XX:MaxPermSize=256m -Djava.awt.headless=true</sling.vm.options>
+                <sling.vm.options>-Xmx1024m -XX:MaxPermSize=256m -Djava.awt.headless=true -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000</sling.vm.options>
             </properties>
             <build>
                 <plugins>
