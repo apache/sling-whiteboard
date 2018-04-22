@@ -16,15 +16,8 @@
  */
 package org.apache.sling.feature.resolver.impl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.sling.feature.OSGiCapability;
-import org.apache.sling.feature.OSGiRequirement;
+import org.apache.felix.utils.resource.CapabilityImpl;
+import org.apache.felix.utils.resource.RequirementImpl;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.osgi.framework.Version;
@@ -34,6 +27,13 @@ import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.service.resolver.HostedCapability;
 import org.osgi.service.resolver.ResolveContext;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -61,10 +61,9 @@ public class ResolveContextImplTest {
         List<Resource> available = Arrays.asList(res1, res2, res3, res4);
         ResolveContext ctx = new ResolveContextImpl(mainRes, available);
 
-        Requirement req = new OSGiRequirement(PackageNamespace.PACKAGE_NAMESPACE,
-                Collections.emptyMap(),
+        Requirement req = new RequirementImpl(null, PackageNamespace.PACKAGE_NAMESPACE,
                 Collections.singletonMap("filter",
-                        "(&(osgi.wiring.package=org.foo)(&(version>=1.0.0)(!(version>=2.0.0))))"));
+                        "(&(osgi.wiring.package=org.foo)(&(version>=1.0.0)(!(version>=2.0.0))))"), null);
 
         List<Capability> expected = new ArrayList<>();
         expected.addAll(res3.getCapabilities(null));
@@ -77,8 +76,8 @@ public class ResolveContextImplTest {
         Map<String, Object> attrs = new HashMap<>();
         attrs.put(PackageNamespace.PACKAGE_NAMESPACE, pkg);
         attrs.put(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE, new Version(version));
-        Capability cap = new OSGiCapability(PackageNamespace.PACKAGE_NAMESPACE,
-                attrs, Collections.emptyMap());
+        Capability cap = new CapabilityImpl(null, PackageNamespace.PACKAGE_NAMESPACE,
+                null, attrs);
         return new BundleResourceImpl("c", "3", null, null,
                 Collections.singletonMap(PackageNamespace.PACKAGE_NAMESPACE,
                         Collections.singletonList(cap)),
@@ -91,9 +90,9 @@ public class ResolveContextImplTest {
                 Collections.emptyList());
 
         Capability cap1 =
-                new OSGiCapability("abc1", Collections.emptyMap(), Collections.emptyMap());
+                new CapabilityImpl(null, "abc1", null, null);
         Capability cap2 =
-                new OSGiCapability("abc2", Collections.emptyMap(), Collections.emptyMap());
+                new CapabilityImpl(null, "abc2", null, null);
         List<Capability> caps = new ArrayList<>();
         caps.add(cap1);
         caps.add(cap2);
@@ -112,18 +111,16 @@ public class ResolveContextImplTest {
         Map<String, String> dirs = new HashMap<>();
         dirs.put("filter", "(somekey=someval)");
         dirs.put("effective", "resolve ");
-        Requirement ereq1 = new OSGiRequirement(PackageNamespace.PACKAGE_NAMESPACE,
-                Collections.emptyMap(), dirs);
+        Requirement ereq1 = new RequirementImpl(null, PackageNamespace.PACKAGE_NAMESPACE,
+                dirs, null);
         assertTrue(ctx.isEffective(ereq1));
 
-        Requirement ereq2 = new OSGiRequirement(PackageNamespace.PACKAGE_NAMESPACE,
-                Collections.emptyMap(),
-                Collections.singletonMap("filter", "(a=b)"));
+        Requirement ereq2 = new RequirementImpl(null, PackageNamespace.PACKAGE_NAMESPACE,
+                Collections.singletonMap("filter", "(a=b)"), null);
         assertTrue(ctx.isEffective(ereq2));
 
-        Requirement req3 = new OSGiRequirement(PackageNamespace.PACKAGE_NAMESPACE,
-                Collections.emptyMap(),
-                Collections.singletonMap("effective", "active"));
+        Requirement req3 = new RequirementImpl(null, PackageNamespace.PACKAGE_NAMESPACE,
+                Collections.singletonMap("effective", "active"), null);
         assertFalse(ctx.isEffective(req3));
     }
 }

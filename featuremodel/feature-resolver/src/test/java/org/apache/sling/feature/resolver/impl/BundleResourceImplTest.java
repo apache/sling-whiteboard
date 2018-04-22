@@ -16,25 +16,11 @@
  */
 package org.apache.sling.feature.resolver.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-
-import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import org.apache.felix.utils.resource.CapabilityImpl;
+import org.apache.felix.utils.resource.RequirementImpl;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.OSGiCapability;
-import org.apache.sling.feature.OSGiRequirement;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.Descriptor;
 import org.apache.sling.feature.scanner.impl.BundleDescriptorImpl;
@@ -49,24 +35,38 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
+import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 public class BundleResourceImplTest {
     @Test
     public void testResource() {
         Map<String, List<Capability>> caps = new HashMap<>();
 
-        Capability c1 = new OSGiCapability("ns.1",
-                Collections.singletonMap("ns.1", "c1"), Collections.emptyMap());
-        Capability c2 = new OSGiCapability("ns.1",
-                Collections.singletonMap("ns.1", "c2"), Collections.emptyMap());
+        Capability c1 = new CapabilityImpl(null, "ns.1", null,
+                Collections.singletonMap("ns.1", "c1"));
+        Capability c2 = new CapabilityImpl(null, "ns.1", null,
+                Collections.singletonMap("ns.1", "c2"));
         List<Capability> capLst1 = Arrays.asList(c1, c2);
         caps.put("ns.1", capLst1);
-        Capability c3 = new OSGiCapability("ns.2",
-                Collections.singletonMap("ns.2", "c3"), Collections.emptyMap());
+        Capability c3 = new CapabilityImpl(null, "ns.2", null,
+                Collections.singletonMap("ns.2", "c3"));
         List<Capability> capLst2 = Collections.singletonList(c3);
         caps.put("ns.2", capLst2);
 
-        Requirement r1 = new OSGiRequirement("ns.1",
-                Collections.emptyMap(), Collections.singletonMap("mydir", "myvalue"));
+        Requirement r1 = new RequirementImpl(null, "ns.1",
+                Collections.singletonMap("mydir", "myvalue"), null);
         List<Requirement> reqList = Collections.singletonList(r1);
         Artifact art = Mockito.mock(Artifact.class);
         Feature feat = Mockito.mock(Feature.class);
@@ -152,28 +152,37 @@ public class BundleResourceImplTest {
         ArtifactId id = new ArtifactId("org.apache", "org.apache.someartifact", "0.0.0", null, null);
         Artifact artifact = new Artifact(id);
 
-        Capability cap = new OSGiCapability("org.example.cap1",
-                Collections.singletonMap("intAttr", 999),
-                Collections.singletonMap("somedir", "mydir"));
+        Capability cap = new CapabilityImpl(null, "org.example.cap1",
+                Collections.singletonMap("somedir", "mydir"),
+                Collections.singletonMap("intAttr", 999));
         Set<Capability> caps = Collections.singleton(cap);
 
-        Requirement req1 = new OSGiRequirement("org.example.req1",
-                Collections.singletonMap("boolAttr", true),
-                Collections.singletonMap("adir", "aval"));
-        Requirement req2 = new OSGiRequirement("org.example.req2",
-                Collections.singletonMap("boolAttr", false),
-                Collections.singletonMap("adir", "aval2"));
+        Requirement req1 = new RequirementImpl(null, "org.example.req1",
+                Collections.singletonMap("adir", "aval"),
+                Collections.singletonMap("boolAttr", true));
+        Requirement req2 = new RequirementImpl(null, "org.example.req2",
+                Collections.singletonMap("adir", "aval2"),
+                Collections.singletonMap("boolAttr", false));
         Set<Requirement> reqs = new HashSet<>(Arrays.asList(req1, req2));
         BundleDescriptorImpl bd = new BundleDescriptorImpl(artifact, Collections.emptySet(), reqs, caps);
 
         Resource res = new BundleResourceImpl(bd, null);
 
-        assertEquals(caps, new HashSet<>(res.getCapabilities("org.example.cap1")));
-        assertEquals(Collections.singleton(req1),
+        Set<Capability> caps2 = new HashSet<>();
+        for (Capability c : res.getCapabilities("org.example.cap1")) {
+            caps2.add(new CapabilityImpl(null, c));
+        }
+        assertEquals(caps, caps2);
+
+        // For comparison create an expected requirement that has the resource set in it.
+        RequirementImpl expectedReq1 = new RequirementImpl(res.getRequirements("org.example.req1").get(0).getResource(), req1);
+        assertEquals(Collections.singleton(expectedReq1),
                 new HashSet<>(res.getRequirements("org.example.req1")));
-        assertEquals(Collections.singleton(req2),
+        RequirementImpl expectedReq2 = new RequirementImpl(res.getRequirements("org.example.req2").get(0).getResource(), req2);
+        assertEquals(Collections.singleton(expectedReq2),
                 new HashSet<>(res.getRequirements("org.example.req2")));
-        assertEquals(reqs, new HashSet<>(res.getRequirements(null)));
+        assertEquals(new HashSet<>(Arrays.asList(expectedReq1, expectedReq2)),
+                new HashSet<>(res.getRequirements(null)));
     }
 
     private Object getCapAttribute(Resource res, String ns, String attr) {

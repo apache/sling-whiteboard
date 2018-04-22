@@ -77,11 +77,18 @@
             <version>1.0-alpha-1</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.utils</artifactId>
+            <version>1.11.0-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
 
-      <!-- Testing -->
+        <!-- Testing -->
         <dependency>
         	    <groupId>junit</groupId>
         	    <artifactId>junit</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <dependency>

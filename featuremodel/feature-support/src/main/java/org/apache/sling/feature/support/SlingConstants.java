@@ -16,10 +16,10 @@
  */
 package org.apache.sling.feature.support;
 
-import java.util.Collections;
-
-import org.apache.sling.feature.OSGiRequirement;
+import org.apache.felix.utils.resource.RequirementImpl;
 import org.osgi.resource.Requirement;
+
+import java.util.Collections;
 
 public abstract class SlingConstants {
 
@@ -32,6 +32,7 @@ public abstract class SlingConstants {
     public static final String REQUIRE_REPOINIT_CAPABILITY =
             "osgi.implementation;filter:=\"(&(osgi.implementation=org.apache.sling.jcr.repoinit)(version>=1.0)(!(version>=2.0)))\"";
 
-    public static final Requirement REQUIREMENT_REPOINIT = new OSGiRequirement("osgi.implementation", null,
-            Collections.singletonMap("filter", "(&(osgi.implementation=org.apache.sling.jcr.repoinit)(version>=1.0)(!(version>=2.0)))"));
+    public static final Requirement REQUIREMENT_REPOINIT = new RequirementImpl(null, "osgi.implementation",
+            Collections.singletonMap("filter", "(&(osgi.implementation=org.apache.sling.jcr.repoinit)(version>=1.0)(!(version>=2.0)))"),
+                    null);
 }

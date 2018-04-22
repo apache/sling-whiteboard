@@ -16,21 +16,21 @@
  */
 package org.apache.sling.feature.resolver.impl;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import org.apache.felix.utils.resource.CapabilityImpl;
+import org.apache.felix.utils.resource.RequirementImpl;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.OSGiCapability;
-import org.apache.sling.feature.OSGiRequirement;
 import org.apache.sling.feature.support.resolver.FeatureResource;
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class FeatureResourceImpl extends AbstractResourceImpl implements FeatureResource {
     private final Artifact artifact;
@@ -49,7 +49,7 @@ public class FeatureResourceImpl extends AbstractResourceImpl implements Feature
                 l = new ArrayList<>();
                 capabilities.put(r.getNamespace(), l);
             }
-            l.add(new OSGiCapability(this, r));
+            l.add(new CapabilityImpl(this, r));
         }
 
         // Add the identity capability
@@ -59,7 +59,7 @@ public class FeatureResourceImpl extends AbstractResourceImpl implements Feature
         idattrs.put(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, getVersion());
         idattrs.put(IdentityNamespace.CAPABILITY_DESCRIPTION_ATTRIBUTE, f.getDescription());
         idattrs.put(IdentityNamespace.CAPABILITY_LICENSE_ATTRIBUTE, f.getLicense());
-        OSGiCapability idCap = new OSGiCapability(this, IdentityNamespace.IDENTITY_NAMESPACE, idattrs, Collections.emptyMap());
+        Capability idCap = new CapabilityImpl(this, IdentityNamespace.IDENTITY_NAMESPACE, null, idattrs);
         capabilities.put(IdentityNamespace.IDENTITY_NAMESPACE, Collections.singletonList(idCap));
 
         requirements = new HashMap<>();
@@ -69,7 +69,7 @@ public class FeatureResourceImpl extends AbstractResourceImpl implements Feature
                 l = new ArrayList<>();
                 requirements.put(r.getNamespace(), l);
             }
-            l.add(new OSGiRequirement(this, r));
+            l.add(new RequirementImpl(this, r));
         }
     }
 
@@ -108,9 +108,30 @@ public class FeatureResourceImpl extends AbstractResourceImpl implements Feature
         final int prime = 31;
         int result = 1;
         result = prime * result + ((artifact == null) ? 0 : artifact.hashCode());
-        result = prime * result + ((capabilities == null) ? 0 : capabilities.hashCode());
+
+        if (capabilities != null) {
+            // Don't delegate to the capabilities to compute their hashcode since that results in an endless loop
+            for (List<Capability> lc : capabilities.values()) {
+                for (Capability c : lc) {
+                    result = prime * result + c.getNamespace().hashCode();
+                    result = prime * result + c.getAttributes().hashCode();
+                    result = prime * result + c.getDirectives().hashCode();
+                }
+            }
+        }
+
+        if (requirements != null) {
+            // Don't delegate to the requirements to compute their hashcode since that results in an endless loop
+            for (List<Requirement> lr : requirements.values()) {
+                for (Requirement r : lr) {
+                    result = prime * result + r.getNamespace().hashCode();
+                    result = prime * result + r.getAttributes().hashCode();
+                    result = prime * result + r.getDirectives().hashCode();
+                }
+            }
+        }
+
         result = prime * result + ((feature == null) ? 0 : feature.hashCode());
-        result = prime * result + ((requirements == null) ? 0 : requirements.hashCode());
         return result;
     }
 

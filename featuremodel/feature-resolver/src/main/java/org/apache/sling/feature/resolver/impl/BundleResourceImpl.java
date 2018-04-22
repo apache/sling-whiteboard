@@ -16,16 +16,10 @@
  */
 package org.apache.sling.feature.resolver.impl;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import org.apache.felix.utils.resource.CapabilityImpl;
+import org.apache.felix.utils.resource.RequirementImpl;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.OSGiCapability;
-import org.apache.sling.feature.OSGiRequirement;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.support.resolver.FeatureResource;
 import org.apache.sling.feature.support.util.PackageInfo;
@@ -37,6 +31,12 @@ import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Implementation of the OSGi Resource interface.
@@ -66,7 +66,7 @@ public class BundleResourceImpl extends AbstractResourceImpl implements FeatureR
                 l = new ArrayList<>();
                 caps.put(c.getNamespace(), l);
             }
-            l.add(new OSGiCapability(this, c));
+            l.add(new CapabilityImpl(this, c));
         }
 
         // Add the package capabilities (export package)
@@ -77,7 +77,7 @@ public class BundleResourceImpl extends AbstractResourceImpl implements FeatureR
             attrs.put(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE, exported.getPackageVersion());
             attrs.put(PackageNamespace.CAPABILITY_BUNDLE_SYMBOLICNAME_ATTRIBUTE, bsn);
             attrs.put(PackageNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version);
-            pkgCaps.add(new OSGiCapability(this, PackageNamespace.PACKAGE_NAMESPACE, attrs, Collections.emptyMap()));
+            pkgCaps.add(new CapabilityImpl(this, PackageNamespace.PACKAGE_NAMESPACE, null, attrs));
         }
         caps.put(PackageNamespace.PACKAGE_NAMESPACE, Collections.unmodifiableList(pkgCaps));
 
@@ -86,14 +86,14 @@ public class BundleResourceImpl extends AbstractResourceImpl implements FeatureR
         idattrs.put(IdentityNamespace.IDENTITY_NAMESPACE, bsn);
         idattrs.put(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, IdentityNamespace.TYPE_BUNDLE);
         idattrs.put(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
-        OSGiCapability idCap = new OSGiCapability(this, IdentityNamespace.IDENTITY_NAMESPACE, idattrs, Collections.emptyMap());
+        Capability idCap = new CapabilityImpl(this, IdentityNamespace.IDENTITY_NAMESPACE, null, idattrs);
         caps.put(IdentityNamespace.IDENTITY_NAMESPACE, Collections.singletonList(idCap));
 
         // Add the bundle capability
         Map<String, Object> battrs = new HashMap<>();
         battrs.put(BundleNamespace.BUNDLE_NAMESPACE, bsn);
         battrs.put(BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version);
-        OSGiCapability bundleCap = new OSGiCapability(this, BundleNamespace.BUNDLE_NAMESPACE, battrs, Collections.emptyMap());
+        Capability bundleCap = new CapabilityImpl(this, BundleNamespace.BUNDLE_NAMESPACE, null, battrs);
         caps.put(BundleNamespace.BUNDLE_NAMESPACE, Collections.singletonList(bundleCap));
         capabilities = Collections.unmodifiableMap(caps);
 
@@ -105,7 +105,7 @@ public class BundleResourceImpl extends AbstractResourceImpl implements FeatureR
                 reqs.put(r.getNamespace(), l);
             }
             // Add the requirement and associate with this resource
-            l.add(new OSGiRequirement(this, r));
+            l.add(new RequirementImpl(this, r));
         }
 
         // TODO What do we do with the execution environment?
@@ -127,7 +127,7 @@ public class BundleResourceImpl extends AbstractResourceImpl implements FeatureR
             if (imported.isOptional())
                 dirs.put(PackageNamespace.REQUIREMENT_RESOLUTION_DIRECTIVE,
                     PackageNamespace.RESOLUTION_OPTIONAL);
-            pkgReqs.add(new OSGiRequirement(this, PackageNamespace.PACKAGE_NAMESPACE, Collections.emptyMap(), dirs));
+            pkgReqs.add(new RequirementImpl(this, PackageNamespace.PACKAGE_NAMESPACE, dirs, null));
         }
         reqs.put(PackageNamespace.PACKAGE_NAMESPACE, Collections.unmodifiableList(pkgReqs));
         requirements = Collections.unmodifiableMap(reqs);
@@ -182,9 +182,30 @@ public class BundleResourceImpl extends AbstractResourceImpl implements FeatureR
         int result = 1;
         result = prime * result + ((artifact == null) ? 0 : artifact.hashCode());
         result = prime * result + ((bsn == null) ? 0 : bsn.hashCode());
-        result = prime * result + ((capabilities == null) ? 0 : capabilities.hashCode());
+
+        if (capabilities != null) {
+            // Don't delegate to the capabilities to compute their hashcode since that results in an endless loop
+            for (List<Capability> lc : capabilities.values()) {
+                for (Capability c : lc) {
+                    result = prime * result + c.getNamespace().hashCode();
+                    result = prime * result + c.getAttributes().hashCode();
+                    result = prime * result + c.getDirectives().hashCode();
+                }
+            }
+        }
+
+        if (requirements != null) {
+            // Don't delegate to the requirements to compute their hashcode since that results in an endless loop
+            for (List<Requirement> lr : requirements.values()) {
+                for (Requirement r : lr) {
+                    result = prime * result + r.getNamespace().hashCode();
+                    result = prime * result + r.getAttributes().hashCode();
+                    result = prime * result + r.getDirectives().hashCode();
+                }
+            }
+        }
+
         result = prime * result + ((feature == null) ? 0 : feature.hashCode());
-        result = prime * result + ((requirements == null) ? 0 : requirements.hashCode());
         result = prime * result + ((version == null) ? 0 : version.hashCode());
         return result;
     }

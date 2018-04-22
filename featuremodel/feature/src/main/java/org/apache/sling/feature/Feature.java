@@ -16,6 +16,8 @@
  */
 package org.apache.sling.feature;
 
+import org.apache.felix.utils.resource.CapabilityImpl;
+import org.apache.felix.utils.resource.RequirementImpl;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 
@@ -312,13 +314,13 @@ public class Feature implements Comparable<Feature> {
 
         // requirements
         for(final Requirement r : this.getRequirements()) {
-            final Requirement c = new OSGiRequirement(r.getNamespace(), r.getAttributes(), r.getDirectives());
+            final Requirement c = new RequirementImpl(null, r.getNamespace(), r.getDirectives(), r.getAttributes());
             result.getRequirements().add(c);
         }
 
         // capabilities
         for(final Capability r : this.getCapabilities()) {
-            final Capability c = new OSGiCapability(r.getNamespace(), r.getAttributes(), r.getDirectives());
+            final Capability c = new CapabilityImpl(null, r.getNamespace(), r.getDirectives(), r.getAttributes());
             result.getCapabilities().add(c);
         }
 

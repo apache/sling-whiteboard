@@ -16,10 +16,10 @@
  */
 package org.apache.sling.feature.analyser;
 
+import org.apache.felix.utils.resource.CapabilityImpl;
+import org.apache.felix.utils.resource.RequirementImpl;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.OSGiCapability;
-import org.apache.sling.feature.OSGiRequirement;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.support.resolver.FeatureResource;
 import org.apache.sling.feature.support.util.PackageInfo;
@@ -67,7 +67,7 @@ public class TestBundleResourceImpl implements FeatureResource {
                 l = new ArrayList<>();
                 caps.put(c.getNamespace(), l);
             }
-            l.add(new OSGiCapability(this, c));
+            l.add(new CapabilityImpl(this, c));
         }
 
         // Add the package capabilities (export package)
@@ -78,7 +78,7 @@ public class TestBundleResourceImpl implements FeatureResource {
             attrs.put(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE, exported.getPackageVersion());
             attrs.put(PackageNamespace.CAPABILITY_BUNDLE_SYMBOLICNAME_ATTRIBUTE, bd.getBundleSymbolicName());
             attrs.put(PackageNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, new Version(bd.getBundleVersion()));
-            pkgCaps.add(new OSGiCapability(this, PackageNamespace.PACKAGE_NAMESPACE, attrs, Collections.emptyMap()));
+            pkgCaps.add(new CapabilityImpl(this, PackageNamespace.PACKAGE_NAMESPACE, null, attrs));
         }
         caps.put(PackageNamespace.PACKAGE_NAMESPACE, Collections.unmodifiableList(pkgCaps));
 
@@ -86,7 +86,7 @@ public class TestBundleResourceImpl implements FeatureResource {
         Map<String, Object> battrs = new HashMap<>();
         battrs.put(BundleNamespace.BUNDLE_NAMESPACE, bd.getBundleSymbolicName());
         battrs.put(BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, new Version(bd.getBundleVersion()));
-        OSGiCapability bundleCap = new OSGiCapability(this, BundleNamespace.BUNDLE_NAMESPACE, battrs, Collections.emptyMap());
+        Capability bundleCap = new CapabilityImpl(this, BundleNamespace.BUNDLE_NAMESPACE, null, battrs);
         caps.put(BundleNamespace.BUNDLE_NAMESPACE, Collections.singletonList(bundleCap));
         capabilities = Collections.unmodifiableMap(caps);
 
@@ -98,7 +98,7 @@ public class TestBundleResourceImpl implements FeatureResource {
                 reqs.put(r.getNamespace(), l);
             }
             // Add the requirement and associate with this resource
-            l.add(new OSGiRequirement(this, r));
+            l.add(new RequirementImpl(this, r));
         }
 
         // TODO What do we do with the execution environment?
@@ -120,7 +120,7 @@ public class TestBundleResourceImpl implements FeatureResource {
             if (imported.isOptional())
                 dirs.put(PackageNamespace.REQUIREMENT_RESOLUTION_DIRECTIVE,
                     PackageNamespace.RESOLUTION_OPTIONAL);
-            pkgReqs.add(new OSGiRequirement(this, PackageNamespace.PACKAGE_NAMESPACE, Collections.emptyMap(), dirs));
+            pkgReqs.add(new RequirementImpl(this, PackageNamespace.PACKAGE_NAMESPACE, dirs, null));
         }
         reqs.put(PackageNamespace.PACKAGE_NAMESPACE, Collections.unmodifiableList(pkgReqs));
         requirements = Collections.unmodifiableMap(reqs);
