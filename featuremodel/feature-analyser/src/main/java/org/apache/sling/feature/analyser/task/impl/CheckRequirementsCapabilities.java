@@ -16,19 +16,20 @@
  */
 package org.apache.sling.feature.analyser.task.impl;
 
+import org.apache.felix.utils.resource.CapabilitySet;
+import org.apache.felix.utils.resource.RequirementImpl;
+import org.apache.sling.feature.analyser.task.AnalyserTask;
+import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
+import org.apache.sling.feature.scanner.ArtifactDescriptor;
+import org.apache.sling.feature.scanner.BundleDescriptor;
+import org.osgi.resource.Requirement;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
-
-import org.apache.sling.feature.analyser.task.AnalyserTask;
-import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
-import org.apache.sling.feature.scanner.ArtifactDescriptor;
-import org.apache.sling.feature.scanner.BundleDescriptor;
-import org.apache.sling.feature.support.util.CapabilityMatcher;
-import org.osgi.resource.Requirement;
 
 public class CheckRequirementsCapabilities implements AnalyserTask {
     private final String format = "Artifact %s:%s requires %s in start level %d but %s";
@@ -75,7 +76,7 @@ public class CheckRequirementsCapabilities implements AnalyserTask {
                                 // osgi.service is special - we don't provide errors or warnings in this case
                                 continue;
                             }
-                            if (!CapabilityMatcher.isOptional(requirement)) {
+                            if (!RequirementImpl.isOptional(requirement)) {
                                 ctx.reportError(String.format(format, info.getArtifact().getId().getArtifactId(), info.getArtifact().getId().getVersion(), requirement.toString(), entry.getKey(), "no artifact is providing a matching capability in this start level."));
                             }
                             else {
@@ -94,7 +95,7 @@ public class CheckRequirementsCapabilities implements AnalyserTask {
     private List<ArtifactDescriptor> getCandidates(List<ArtifactDescriptor> artifactDescriptors, Requirement requirement) {
         return artifactDescriptors.stream()
                 .filter(artifactDescriptor -> artifactDescriptor.getCapabilities() != null)
-                .filter(artifactDescriptor -> artifactDescriptor.getCapabilities().stream().anyMatch(capability -> CapabilityMatcher.matches(capability, requirement)))
+                .filter(artifactDescriptor -> artifactDescriptor.getCapabilities().stream().anyMatch(capability -> CapabilitySet.matches(capability, requirement)))
                 .collect(Collectors.toList());
     }
 }
