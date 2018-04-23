@@ -17,12 +17,11 @@
 package org.apache.sling.junit.teleporter.customizers;
 
 import org.apache.sling.junit.rules.TeleporterRule;
-import org.apache.sling.testing.clients.util.TimeoutsProvider;
 import org.apache.sling.testing.teleporter.client.ClientSideTeleporter;
 
 public class ITCustomizer implements TeleporterRule.Customizer {
 
-    public static final String BASE_URL_PROP = "ClientSideTeleporter.baseUrl";
+    public static final String BASE_URL_PROP = "launchpad.http.server.url";
 
     @Override
     public void customize(TeleporterRule t, String options) {
@@ -30,6 +29,6 @@ public class ITCustomizer implements TeleporterRule.Customizer {
         cst.setBaseUrl(System.getProperty(BASE_URL_PROP, BASE_URL_PROP + "_IS_NOT_SET"));
         cst.setServerCredentials("admin", "admin");
         cst.includeDependencyPrefix("org.apache.sling.scripting.resolver.internal");
-        cst.setTestReadyTimeoutSeconds(TimeoutsProvider.getInstance().getTimeout(5));
+        cst.setTestReadyTimeoutSeconds(20);
     }
 }

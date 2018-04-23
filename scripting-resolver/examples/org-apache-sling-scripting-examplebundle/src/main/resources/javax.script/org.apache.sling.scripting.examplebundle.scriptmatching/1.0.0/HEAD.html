@@ -16,4 +16,5 @@
   ~ specific language governing permissions and limitations
   ~ under the License.
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/-->
-<div>${javax_script_filename} matched for <code>${request.method} ${request.pathInfo}</code></div>
+<!--/* Hack to add a response header from HTL */-->
+<sly data-sly-use="org.apache.sling.scripting.examplebundle.hello.models.HeadRequestHelper"/>
