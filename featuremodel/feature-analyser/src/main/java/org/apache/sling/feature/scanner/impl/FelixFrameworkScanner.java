@@ -35,6 +35,8 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.apache.commons.lang.text.StrLookup;
+import org.apache.commons.lang.text.StrSubstitutor;
 import org.apache.sling.commons.osgi.ManifestHeader;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
@@ -42,7 +44,6 @@ import org.apache.sling.feature.KeyValueMap;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.spi.FrameworkScanner;
 import org.apache.sling.feature.support.util.PackageInfo;
-import org.apache.sling.feature.support.util.SubstVarUtil;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
 import org.osgi.resource.Capability;
@@ -142,7 +143,7 @@ public class FelixFrameworkScanner implements FrameworkScanner {
 
     private static final String DEFAULT_PROPERTIES = "default.properties";
 
-    private KeyValueMap getFrameworkProperties(final KeyValueMap appProps, final File framework)
+    KeyValueMap getFrameworkProperties(final KeyValueMap appProps, final File framework)
     throws IOException {
         final Map<String, Properties> propsMap = new HashMap<>();
         try (final ZipInputStream zis = new ZipInputStream(new FileInputStream(framework)) ) {
@@ -175,10 +176,24 @@ public class FelixFrameworkScanner implements FrameworkScanner {
         // replace variables
         defaultMap.put("java.specification.version",
                 System.getProperty("java.specification.version", "1.8"));
+
+        StrSubstitutor ss = new StrSubstitutor(new StrLookup() {
+            @Override
+            public String lookup(String key) {
+                // Normally if a variable cannot be found, StrSubstitutor will
+                // leave the raw variable in place. We need to replace it with
+                // nothing in that case.
+
+                String val = defaultMap.getProperty(key);
+                return val != null ? val : "";
+            }
+        });
+        ss.setEnableSubstitutionInVariables(true);
+
         for(final Object name : defaultMap.keySet()) {
             if ( frameworkProps.get(name.toString()) == null ) {
                 final String value = (String)defaultMap.get(name);
-                final String substValue = SubstVarUtil.substVars(value, name.toString(), null, (Map) defaultMap);
+                final String substValue = ss.replace(value);
                 frameworkProps.put(name.toString(), substValue);
             }
         }

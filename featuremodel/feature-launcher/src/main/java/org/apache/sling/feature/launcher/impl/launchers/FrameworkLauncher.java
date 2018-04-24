@@ -16,12 +16,13 @@
  */
 package org.apache.sling.feature.launcher.impl.launchers;
 
+import org.apache.commons.lang.text.StrLookup;
+import org.apache.commons.lang.text.StrSubstitutor;
 import org.apache.sling.feature.Application;
 import org.apache.sling.feature.launcher.impl.Main;
 import org.apache.sling.feature.launcher.spi.Launcher;
 import org.apache.sling.feature.launcher.spi.LauncherPrepareContext;
 import org.apache.sling.feature.launcher.spi.LauncherRunContext;
-import org.apache.sling.feature.support.util.SubstVarUtil;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
@@ -46,9 +47,22 @@ public class FrameworkLauncher implements Launcher {
      */
     @Override
     public void run(final LauncherRunContext context, final ClassLoader cl) throws Exception {
+        StrSubstitutor ss = new StrSubstitutor(new StrLookup() {
+            @Override
+            public String lookup(String key) {
+                // Normally if a variable cannot be found, StrSubstitutor will
+                // leave the raw variable in place. We need to replace it with
+                // nothing in that case.
+
+                String val = context.getFrameworkProperties().get(key);
+                return val != null ? val : "";
+            }
+        });
+        ss.setEnableSubstitutionInVariables(true);
+
         Map<String, String> properties = new HashMap<>();
         context.getFrameworkProperties().forEach((key, value) -> {
-            properties.put(key, SubstVarUtil.substVars(value, key,null, context.getFrameworkProperties()));
+            properties.put(key, ss.replace(value));
         });
         if ( Main.LOG().isDebugEnabled() ) {
             Main.LOG().debug("Bundles:");
