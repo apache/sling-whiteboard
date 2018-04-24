@@ -97,7 +97,7 @@ class LogWriter extends Writer {
     }
 
     /**
-     * Writes any data conained in the buffer to the logger as an error message.
+     * Writes any data contained in the buffer to the logger as an error message.
      */
     @Override
     public void flush() {

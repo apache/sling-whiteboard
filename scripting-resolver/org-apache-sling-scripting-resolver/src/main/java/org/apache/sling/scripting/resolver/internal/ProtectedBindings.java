@@ -29,7 +29,7 @@ class ProtectedBindings implements Bindings {
     private final Bindings wrapped;
     private final Set<String> protectedKeys;
 
-    public ProtectedBindings(Bindings wrapped, Set<String> protectedKeys) {
+    ProtectedBindings(Bindings wrapped, Set<String> protectedKeys) {
         this.wrapped = wrapped;
         this.protectedKeys = protectedKeys;
     }
@@ -49,10 +49,12 @@ class ProtectedBindings implements Bindings {
     /**
      * {@inheritDoc}
      */
-    public void putAll(Map<? extends String, ? extends Object> toMerge) {
-        for (Map.Entry<? extends String, ? extends Object> entry : toMerge.entrySet()) {
+    public void putAll(Map<? extends String, ?> toMerge) {
+        for (Map.Entry<? extends String, ?> entry : toMerge.entrySet()) {
             if (!protectedKeys.contains(entry.getKey())) {
                 wrapped.put(entry.getKey(), entry.getValue());
+            } else {
+                throw new IllegalArgumentException(String.format("Key %s is protected.", entry.getKey()));
             }
         }
     }
