@@ -19,22 +19,46 @@ package org.apache.sling.scripting.resolver.internal;
 import javax.servlet.Servlet;
 
 import org.apache.sling.junit.rules.TeleporterRule;
-import org.junit.Assert;
+import org.apache.sling.testing.clients.util.poller.Polling;
 import org.junit.Rule;
 import org.junit.Test;
 
-public class BundledScriptTrackerIT
-{
+public class BundledScriptTrackerIT {
+
     @Rule
     public TeleporterRule teleporter = TeleporterRule.forClass(getClass(), "IT");
 
     @Test
-    public void testSlingServletForResourceTypeProvided()
-    {
-        Assert.assertNotNull(teleporter.getService(Servlet.class, String.format("(%s=%s)", "sling.servlet.resourceTypes", "org.apache.sling.scripting.examplebundle.hello/1.0.0")));
-        Assert.assertNotNull(teleporter.getService(Servlet.class, String.format("(%s=%s)", "sling.servlet.resourceTypes", "org.apache.sling.scripting.examplebundle.hello/2.0.0")));
-        Assert.assertNotNull(teleporter.getService(Servlet.class, String.format("(%s=%s)", "sling.servlet.resourceTypes", "org.apache.sling.scripting.examplebundle.hello")));
-        Assert.assertNotNull(teleporter.getService(Servlet.class, String.format("(%s=%s)", "sling.servlet.resourceTypes", "org.apache.sling.scripting.examplebundle.hi")));
-        Assert.assertNotNull(teleporter.getService(Servlet.class, String.format("(%s=%s)", "sling.servlet.resourceTypes", "org.apache.sling.scripting.examplebundle.hi/1.0.0")));
+    public void testSlingServletForResourceTypeProvided() throws Exception {
+        waitForService(Servlet.class, String.format("(%s=%s)", "sling.servlet.resourceTypes", "org.apache.sling.scripting" +
+                ".examplebundle.hello/1.0.0"), 20000, 1000);
+        waitForService(Servlet.class, String.format("(%s=%s)", "sling.servlet.resourceTypes", "org.apache.sling.scripting" +
+                ".examplebundle.hello/2.0.0"), 20000, 1000);
+        waitForService(Servlet.class, String.format("(%s=%s)", "sling.servlet.resourceTypes", "org.apache.sling.scripting" +
+                ".examplebundle.hello"), 20000, 1000);
+        waitForService(Servlet.class, String.format("(%s=%s)", "sling.servlet.resourceTypes", "org.apache.sling.scripting" +
+                ".examplebundle.hi/1.0.0"), 20000, 1000);
+        waitForService(Servlet.class, String.format("(%s=%s)", "sling.servlet.resourceTypes", "org.apache.sling.scripting" +
+                ".examplebundle.hi"), 20000, 1000);
+        waitForService(Servlet.class, String.format("(%s=%s)", "sling.servlet.resourceTypes", "org.apache.sling.scripting" +
+                ".examplebundle.scriptmatching/1.0.0"), 20000, 1000);
+        waitForService(Servlet.class, String.format("(%s=%s)", "sling.servlet.resourceTypes", "org.apache.sling.scripting" +
+                ".examplebundle.scriptmatching"), 20000, 1000);
+    }
+
+    private void waitForService(Class serviceClass, String filter, long waitTime, long retryAfter)
+            throws Exception {
+        Polling p = new Polling() {
+            @Override
+            public Boolean call() {
+                return teleporter.getService(serviceClass, filter) != null;
+            }
+
+            @Override
+            protected String message() {
+                return "Cannot obtain a reference to service " + serviceClass.getName() + " with filter " + filter + " after %1$d ms";
+            }
+        };
+        p.poll(waitTime, retryAfter);
     }
 }
