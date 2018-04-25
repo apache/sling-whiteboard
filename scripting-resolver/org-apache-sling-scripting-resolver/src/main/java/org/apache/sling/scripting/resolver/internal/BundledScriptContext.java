@@ -32,22 +32,26 @@ class BundledScriptContext extends SimpleScriptContext {
 
     private static final Integer[] SCOPES = {SlingScriptConstants.SLING_SCOPE, GLOBAL_SCOPE, ENGINE_SCOPE};
 
-    private Bindings globalScope;
-    private Bindings engineScope;
-
+    private Bindings globalScope = new SimpleBindings();
+    private Bindings engineScope = new SimpleBindings();
     private Bindings slingScope = new SimpleBindings();
 
     @Override
     public void setBindings(final Bindings bindings, final int scope) {
+        if (bindings == null) {
+            throw new NullPointerException("None of the ScriptContext scopes accepts null bindings.");
+        }
         switch (scope) {
-            case SlingScriptConstants.SLING_SCOPE : this.slingScope = bindings;
+            case SlingScriptConstants.SLING_SCOPE :
+                this.slingScope = bindings;
                 break;
-            case 100: if (bindings == null) throw new NullPointerException("Bindings for ENGINE scope is null");
+            case 100:
                 this.engineScope = bindings;
                 break;
-            case 200: this.globalScope = bindings;
+            case 200:
+                this.globalScope = bindings;
                 break;
-            default: throw new IllegalArgumentException("Invalid scope");
+            default: throw new IllegalArgumentException("Invalid scope.");
         }
     }
 
@@ -58,36 +62,16 @@ class BundledScriptContext extends SimpleScriptContext {
             case 100: return this.engineScope;
             case 200: return this.globalScope;
         }
-        throw new IllegalArgumentException("Invalid scope");
+        throw new IllegalArgumentException("Invalid scope.");
     }
 
     @Override
     public void setAttribute(final String name, final Object value, final int scope) {
-        if (name == null) throw new IllegalArgumentException("Name is null");
+        if (name == null) throw new IllegalArgumentException("Name is null.");
         final Bindings bindings = getBindings(scope);
         if (bindings != null) {
             bindings.put(name, value);
         }
-    }
-
-    @Override
-    public Object getAttribute(final String name, final int scope) {
-        if (name == null) throw new IllegalArgumentException("Name is null");
-        final Bindings bindings = getBindings(scope);
-        if (bindings != null) {
-            return bindings.get(name);
-        }
-        return null;
-    }
-
-    @Override
-    public Object removeAttribute(final String name, final int scope) {
-        if (name == null) throw new IllegalArgumentException("Name is null");
-        final Bindings bindings = getBindings(scope);
-        if (bindings != null) {
-            return bindings.remove(name);
-        }
-        return null;
     }
 
     @Override
@@ -106,8 +90,28 @@ class BundledScriptContext extends SimpleScriptContext {
     }
 
     @Override
+    public Object getAttribute(final String name, final int scope) {
+        if (name == null) throw new IllegalArgumentException("Name is null.");
+        final Bindings bindings = getBindings(scope);
+        if (bindings != null) {
+            return bindings.get(name);
+        }
+        return null;
+    }
+
+    @Override
+    public Object removeAttribute(final String name, final int scope) {
+        if (name == null) throw new IllegalArgumentException("Name is null.");
+        final Bindings bindings = getBindings(scope);
+        if (bindings != null) {
+            return bindings.remove(name);
+        }
+        return null;
+    }
+
+    @Override
     public int getAttributesScope(String name) {
-        if (name == null) throw new IllegalArgumentException("Name is null");
+        if (name == null) throw new IllegalArgumentException("Name is null.");
         for (final int scope : SCOPES) {
             if ((getBindings(scope) != null) && (getBindings(scope).containsKey(name))) {
                 return scope;
