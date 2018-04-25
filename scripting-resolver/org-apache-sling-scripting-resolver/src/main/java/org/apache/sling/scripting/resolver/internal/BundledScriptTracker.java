@@ -116,6 +116,7 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<List<Servic
                 List<ServiceRegistration<Servlet>> serviceRegistrations = capabilities.stream().flatMap(cap ->
                 {
                     Hashtable<String, Object> properties = new Hashtable<>();
+                    properties.put(ServletResolverConstants.SLING_SERVLET_NAME, BundledScriptServlet.class.getName());
 
                     Map<String, Object> attributes = cap.getAttributes();
                     String resourceType = (String) attributes.get(NS_SLING_RESOURCE_TYPE);
@@ -244,6 +245,7 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<List<Servic
         Stream.concat(m_tracker.getTracked().values().stream(), Stream.of(regs)).flatMap(List::stream).map(this::toProperties).collect(
             Collectors.groupingBy(this::getResourceType)).forEach((rt, propList) -> {
                 Hashtable<String, Object> properties = new Hashtable<>();
+                properties.put(ServletResolverConstants.SLING_SERVLET_NAME, DispatcherServlet.class.getName());
                 properties.put(ServletResolverConstants.SLING_SERVLET_RESOURCE_TYPES, rt);
                 Set<String> methods = propList.stream().map(props -> props.getOrDefault(ServletResolverConstants.SLING_SERVLET_METHODS, new String[]{"GET", "HEAD"}))
                     .map(PropertiesUtil::toStringArray).map(Arrays::asList).flatMap(List::stream).collect(Collectors.toSet());
