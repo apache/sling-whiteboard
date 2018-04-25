@@ -24,7 +24,9 @@ import org.slf4j.Logger;
 
 class LogWriter extends Writer {
 
-    /** The logger to which the error messages are written */
+    /**
+     * The logger to which the error messages are written
+     */
     private Logger logger;
 
     /**

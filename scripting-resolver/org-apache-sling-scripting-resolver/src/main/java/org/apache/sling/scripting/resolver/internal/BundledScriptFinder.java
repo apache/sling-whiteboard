@@ -97,7 +97,7 @@ public class BundledScriptFinder {
                     if (defaultMethod) {
                         matches.add(scriptNoMethod + DOT + extension);
                     }
-                    matches.add(scriptForMethod +  DOT + extension);
+                    matches.add(scriptForMethod + DOT + extension);
                 }
                 if (defaultMethod) {
                     matches.add(scriptNoMethod);

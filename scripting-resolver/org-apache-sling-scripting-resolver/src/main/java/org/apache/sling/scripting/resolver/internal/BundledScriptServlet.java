@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+
 import javax.script.ScriptContext;
 import javax.script.ScriptException;
 import javax.servlet.GenericServlet;
@@ -43,7 +44,6 @@ import org.osgi.framework.Bundle;
 class BundledScriptServlet extends GenericServlet {
 
 
-
     private final Bundle m_bundle;
     private final BundledScriptFinder m_bundledScriptFinder;
     private final ScriptContextProvider m_scriptContextProvider;
@@ -53,8 +53,9 @@ class BundledScriptServlet extends GenericServlet {
     private Map<String, Script> scriptsMap = new HashMap<>();
     private ReadWriteLock lock = new ReentrantReadWriteLock();
 
-    BundledScriptServlet(BundledScriptFinder bundledScriptFinder, Bundle bundle, ScriptContextProvider scriptContextProvider, Set<String> wiredResourceTypes) {
-        this(bundledScriptFinder, bundle, scriptContextProvider, null, wiredResourceTypes );
+    BundledScriptServlet(BundledScriptFinder bundledScriptFinder, Bundle bundle, ScriptContextProvider scriptContextProvider,
+                         Set<String> wiredResourceTypes) {
+        this(bundledScriptFinder, bundle, scriptContextProvider, null, wiredResourceTypes);
     }
 
     BundledScriptServlet(BundledScriptFinder bundledScriptFinder, Bundle bundle, ScriptContextProvider scriptContextProvider, String

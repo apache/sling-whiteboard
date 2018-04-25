@@ -19,6 +19,7 @@
 package org.apache.sling.scripting.resolver.internal;
 
 import java.util.Set;
+
 import javax.servlet.RequestDispatcher;
 
 import org.apache.commons.lang3.StringUtils;
@@ -41,14 +42,10 @@ class RequestWrapper extends SlingHttpServletRequestWrapper {
         if (resource == null) {
             return null;
         }
-        if (StringUtils.isEmpty(options.getForceResourceType()))
-        {
-            if (!StringUtils.isEmpty(resource.getResourceType()))
-            {
+        if (StringUtils.isEmpty(options.getForceResourceType())) {
+            if (!StringUtils.isEmpty(resource.getResourceType())) {
                 options.setForceResourceType(resource.getResourceType());
-            }
-            else if (!StringUtils.isEmpty(resource.getResourceSuperType()))
-            {
+            } else if (!StringUtils.isEmpty(resource.getResourceSuperType())) {
                 options.setForceResourceType(resource.getResourceSuperType());
             }
         }

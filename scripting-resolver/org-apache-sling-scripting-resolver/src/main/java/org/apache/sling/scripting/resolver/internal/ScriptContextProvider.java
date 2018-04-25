@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
 import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
@@ -74,7 +75,8 @@ public class ScriptContextProvider {
         m_bundleContext = componentContext.getBundleContext();
     }
 
-    ScriptContext prepareScriptContext(SlingHttpServletRequest request, SlingHttpServletResponse response, Script script) throws IOException {
+    ScriptContext prepareScriptContext(SlingHttpServletRequest request, SlingHttpServletResponse response, Script script)
+            throws IOException {
         // prepare the SlingBindings
         Bindings bindings = new SimpleBindings();
         bindings.put(SlingBindings.REQUEST, request);

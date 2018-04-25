@@ -22,6 +22,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.util.Arrays;
 import java.util.List;
+
 import javax.script.Bindings;
 import javax.script.SimpleBindings;
 import javax.script.SimpleScriptContext;
@@ -42,7 +43,7 @@ class BundledScriptContext extends SimpleScriptContext {
             throw new NullPointerException("None of the ScriptContext scopes accepts null bindings.");
         }
         switch (scope) {
-            case SlingScriptConstants.SLING_SCOPE :
+            case SlingScriptConstants.SLING_SCOPE:
                 this.slingScope = bindings;
                 break;
             case 100:
@@ -51,23 +52,29 @@ class BundledScriptContext extends SimpleScriptContext {
             case 200:
                 this.globalScope = bindings;
                 break;
-            default: throw new IllegalArgumentException("Invalid scope.");
+            default:
+                throw new IllegalArgumentException("Invalid scope.");
         }
     }
 
     @Override
     public Bindings getBindings(final int scope) {
         switch (scope) {
-            case SlingScriptConstants.SLING_SCOPE : return slingScope;
-            case 100: return this.engineScope;
-            case 200: return this.globalScope;
+            case SlingScriptConstants.SLING_SCOPE:
+                return slingScope;
+            case 100:
+                return this.engineScope;
+            case 200:
+                return this.globalScope;
         }
         throw new IllegalArgumentException("Invalid scope.");
     }
 
     @Override
     public void setAttribute(final String name, final Object value, final int scope) {
-        if (name == null) throw new IllegalArgumentException("Name is null.");
+        if (name == null) {
+            throw new IllegalArgumentException("Name is null.");
+        }
         final Bindings bindings = getBindings(scope);
         if (bindings != null) {
             bindings.put(name, value);
@@ -76,12 +83,14 @@ class BundledScriptContext extends SimpleScriptContext {
 
     @Override
     public Object getAttribute(String name) {
-        if (name == null) throw new IllegalArgumentException("Name is null");
+        if (name == null) {
+            throw new IllegalArgumentException("Name is null");
+        }
         for (final int scope : SCOPES) {
             final Bindings bindings = getBindings(scope);
-            if ( bindings != null ) {
+            if (bindings != null) {
                 final Object o = bindings.get(name);
-                if ( o != null ) {
+                if (o != null) {
                     return o;
                 }
             }
@@ -91,7 +100,9 @@ class BundledScriptContext extends SimpleScriptContext {
 
     @Override
     public Object getAttribute(final String name, final int scope) {
-        if (name == null) throw new IllegalArgumentException("Name is null.");
+        if (name == null) {
+            throw new IllegalArgumentException("Name is null.");
+        }
         final Bindings bindings = getBindings(scope);
         if (bindings != null) {
             return bindings.get(name);
@@ -101,7 +112,9 @@ class BundledScriptContext extends SimpleScriptContext {
 
     @Override
     public Object removeAttribute(final String name, final int scope) {
-        if (name == null) throw new IllegalArgumentException("Name is null.");
+        if (name == null) {
+            throw new IllegalArgumentException("Name is null.");
+        }
         final Bindings bindings = getBindings(scope);
         if (bindings != null) {
             return bindings.remove(name);
@@ -111,7 +124,9 @@ class BundledScriptContext extends SimpleScriptContext {
 
     @Override
     public int getAttributesScope(String name) {
-        if (name == null) throw new IllegalArgumentException("Name is null.");
+        if (name == null) {
+            throw new IllegalArgumentException("Name is null.");
+        }
         for (final int scope : SCOPES) {
             if ((getBindings(scope) != null) && (getBindings(scope).containsKey(name))) {
                 return scope;
