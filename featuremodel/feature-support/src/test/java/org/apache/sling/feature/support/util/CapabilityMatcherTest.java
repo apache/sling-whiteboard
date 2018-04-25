@@ -16,12 +16,11 @@
  */
 package org.apache.sling.feature.support.util;
 
-import static junit.framework.TestCase.assertTrue;
-
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.io.json.U;
 import org.junit.Test;
 import org.osgi.resource.Requirement;
+
+import static junit.framework.TestCase.assertTrue;
 
 public class CapabilityMatcherTest {
     @Test public void testCapabilityMatching() throws Exception {

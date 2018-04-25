@@ -12,7 +12,6 @@
         and limitations under the License.
     -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.apache.sling</groupId>
@@ -21,24 +20,18 @@
         <relativePath />
     </parent>
 
-    <artifactId>org.apache.sling.feature.karaf</artifactId>
+    <artifactId>org.apache.sling.feature.io</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>bundle</packaging>
-
-    <name>Apache Sling Feature Karaf</name>
+    
+    <name>Apache Sling Feature IO Module</name>
     <description>
-        A feature describes an OSGi system
+        IO functionality for the Feature Model
     </description>
 
     <properties>
         <sling.java.version>8</sling.java.version>
     </properties>
-
-    <scm>
-        <connection>scm:svn:http://svn.apache.org/repos/asf/sling/trunk/tooling/support/feature-karaf</connection>
-        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/sling/trunk/tooling/support/feature-karaf</developerConnection>
-        <url>http://svn.apache.org/viewvc/sling/trunk/tooling/support/feature-karaf</url>
-    </scm>
 
     <build>
         <plugins>
@@ -46,10 +39,49 @@
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
                 <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <Conditional-Package>
+                            org.apache.felix.configurator.impl.json,
+                            org.apache.felix.configurator.impl.model                            
+                        </Conditional-Package>
+                    </instructions>
+                </configuration>
             </plugin>
         </plugins>
     </build>
+
     <dependencies>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.converter</artifactId>
+            <version>0.1.0-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.configurator</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.utils</artifactId>
+            <version>1.11.0-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.geronimo.specs</groupId>
+            <artifactId>geronimo-json_1.0_spec</artifactId>
+            <version>1.0-alpha-1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.sling</groupId>
+            <artifactId>org.apache.sling.feature</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.annotation.versioning</artifactId>
@@ -63,22 +95,26 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.sling</groupId>
-            <artifactId>org.apache.sling.feature</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-            <scope>provided</scope>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
+        <!-- Testing -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.sling</groupId>
-            <artifactId>org.apache.sling.feature.io</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-            <scope>provided</scope>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>2.8.9</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.sling</groupId>
-            <artifactId>org.apache.sling.feature.support</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-            <scope>provided</scope>
+            <groupId>org.apache.johnzon</groupId>
+            <artifactId>johnzon-core</artifactId>
+            <version>1.0.0</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

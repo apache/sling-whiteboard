@@ -39,9 +39,6 @@ import java.util.regex.Pattern;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import static org.apache.sling.feature.support.util.ManifestUtil.unmarshalAttribute;
-import static org.apache.sling.feature.support.util.ManifestUtil.unmarshalDirective;
-
 /**
  * This class offers a method to read a {@code Feature} using a {@code Reader} instance.
  */
@@ -354,7 +351,7 @@ public class FeatureJSONReader extends JSONReaderBase {
                     checkType("Requirement attributes", obj.get(JSONConstants.REQCAP_ATTRIBUTES), Map.class);
                     @SuppressWarnings("unchecked")
                     final Map<String, Object> attrs = (Map<String, Object>)obj.get(JSONConstants.REQCAP_ATTRIBUTES);
-                    attrs.forEach(rethrowBiConsumer((key, value) -> unmarshalAttribute(key, handleResolveVars(value), attrMap::put)));
+                    attrs.forEach(rethrowBiConsumer((key, value) -> ManifestUtils.unmarshalAttribute(key, handleResolveVars(value), attrMap::put)));
                 }
 
                 Map<String, String> dirMap = new HashMap<>();
@@ -362,7 +359,7 @@ public class FeatureJSONReader extends JSONReaderBase {
                     checkType("Requirement directives", obj.get(JSONConstants.REQCAP_DIRECTIVES), Map.class);
                     @SuppressWarnings("unchecked")
                     final Map<String, Object> dirs = (Map<String, Object>)obj.get(JSONConstants.REQCAP_DIRECTIVES);
-                    dirs.forEach(rethrowBiConsumer((key, value) -> unmarshalDirective(key, handleResolveVars(value), dirMap::put)));
+                    dirs.forEach(rethrowBiConsumer((key, value) -> ManifestUtils.unmarshalDirective(key, handleResolveVars(value), dirMap::put)));
                 }
 
                 final Requirement r = new RequirementImpl(null, handleResolveVars(obj.get(JSONConstants.REQCAP_NAMESPACE)).toString(), dirMap, attrMap);
@@ -393,7 +390,7 @@ public class FeatureJSONReader extends JSONReaderBase {
                     checkType("Capability attributes", obj.get(JSONConstants.REQCAP_ATTRIBUTES), Map.class);
                     @SuppressWarnings("unchecked")
                     final Map<String, Object> attrs = (Map<String, Object>)obj.get(JSONConstants.REQCAP_ATTRIBUTES);
-                    attrs.forEach(rethrowBiConsumer((key, value) -> unmarshalAttribute(key, handleResolveVars(value), attrMap::put)));
+                    attrs.forEach(rethrowBiConsumer((key, value) -> ManifestUtils.unmarshalAttribute(key, handleResolveVars(value), attrMap::put)));
                 }
 
                 Map<String, String> dirMap = new HashMap<>();
@@ -401,7 +398,7 @@ public class FeatureJSONReader extends JSONReaderBase {
                     checkType("Capability directives", obj.get(JSONConstants.REQCAP_DIRECTIVES), Map.class);
                     @SuppressWarnings("unchecked")
                     final Map<String, Object> dirs = (Map<String, Object>) obj.get(JSONConstants.REQCAP_DIRECTIVES);
-                    dirs.forEach(rethrowBiConsumer((key, value) -> unmarshalDirective(key, handleResolveVars(value), dirMap::put)));
+                    dirs.forEach(rethrowBiConsumer((key, value) -> ManifestUtils.unmarshalDirective(key, handleResolveVars(value), dirMap::put)));
                 }
 
                 final Capability c = new CapabilityImpl(null, handleResolveVars(obj.get(JSONConstants.REQCAP_NAMESPACE)).toString(), dirMap, attrMap);

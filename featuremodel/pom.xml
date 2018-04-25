@@ -59,6 +59,7 @@
         <module>feature</module> 
         <module>feature-analyser</module>
         <module>feature-applicationbuilder</module>
+        <module>feature-io</module>
         <module>feature-karaf</module>
         <module>feature-launcher</module>
         <module>feature-modelconverter</module>

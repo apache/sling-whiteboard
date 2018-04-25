@@ -37,9 +37,6 @@ import javax.json.JsonWriter;
 import javax.json.JsonWriterFactory;
 import javax.json.stream.JsonGenerator;
 
-import static org.apache.sling.feature.support.util.ManifestUtil.marshalAttribute;
-import static org.apache.sling.feature.support.util.ManifestUtil.marshalDirective;
-
 /**
  * Simple JSON writer for a feature
  */
@@ -147,12 +144,12 @@ public class FeatureJSONWriter extends JSONWriterBase {
                 requirementObj.add(JSONConstants.REQCAP_NAMESPACE, req.getNamespace());
                 if ( !req.getAttributes().isEmpty() ) {
                     JsonObjectBuilder attrObj = Json.createObjectBuilder();
-                    req.getAttributes().forEach((key, value) -> marshalAttribute(key, value, attrObj::add));
+                    req.getAttributes().forEach((key, value) -> ManifestUtils.marshalAttribute(key, value, attrObj::add));
                     requirementObj.add(JSONConstants.REQCAP_ATTRIBUTES, attrObj.build());
                 }
                 if ( !req.getDirectives().isEmpty() ) {
                     JsonObjectBuilder reqObj = Json.createObjectBuilder();
-                    req.getDirectives().forEach((key, value) -> marshalDirective(key, value, reqObj::add));
+                    req.getDirectives().forEach((key, value) -> ManifestUtils.marshalDirective(key, value, reqObj::add));
                     requirementObj.add(JSONConstants.REQCAP_DIRECTIVES, reqObj.build());
                 }
                 requirements.add(requirementObj.build());
@@ -169,12 +166,12 @@ public class FeatureJSONWriter extends JSONWriterBase {
                 capabilityObj.add(JSONConstants.REQCAP_NAMESPACE, cap.getNamespace());
                 if ( !cap.getAttributes().isEmpty() ) {
                     JsonObjectBuilder attrObj = Json.createObjectBuilder();
-                    cap.getAttributes().forEach((key, value) -> marshalAttribute(key, value, attrObj::add));
+                    cap.getAttributes().forEach((key, value) -> ManifestUtils.marshalAttribute(key, value, attrObj::add));
                     capabilityObj.add(JSONConstants.REQCAP_ATTRIBUTES, attrObj.build());
                 }
                 if ( !cap.getDirectives().isEmpty() ) {
                     JsonObjectBuilder reqObj = Json.createObjectBuilder();
-                    cap.getDirectives().forEach((key, value) -> marshalDirective(key, value, reqObj::add));
+                    cap.getDirectives().forEach((key, value) -> ManifestUtils.marshalDirective(key, value, reqObj::add));
                     capabilityObj.add(JSONConstants.REQCAP_DIRECTIVES, reqObj.build());
                 }
                 capabilities.add(capabilityObj.build());
