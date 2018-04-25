@@ -43,11 +43,7 @@ class RequestWrapper extends SlingHttpServletRequestWrapper {
             return null;
         }
         if (StringUtils.isEmpty(options.getForceResourceType())) {
-            if (!StringUtils.isEmpty(resource.getResourceType())) {
-                options.setForceResourceType(resource.getResourceType());
-            } else if (!StringUtils.isEmpty(resource.getResourceSuperType())) {
-                options.setForceResourceType(resource.getResourceSuperType());
-            }
+            options.setForceResourceType(resource.getResourceType());
         }
         RequestDispatcherOptions processedOptions = processOptions(options);
         return super.getRequestDispatcher(resource, processedOptions);

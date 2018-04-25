@@ -96,14 +96,14 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<List<Servic
     private volatile Map<String, ServiceRegistration<Servlet>> m_dispatchers = new HashMap<>();
 
     @Activate
-    private void activate(BundleContext context) {
+    protected void activate(BundleContext context) {
         m_context = context;
         m_tracker = new BundleTracker<>(context, Bundle.ACTIVE, this);
         m_tracker.open();
     }
 
     @Deactivate
-    private void deactivate() {
+    protected void deactivate() {
         m_tracker.close();
     }
 
