@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.sling.feature.support.resolver;
+package org.apache.sling.feature.resolver;
 
 import java.util.List;
 

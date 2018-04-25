@@ -48,9 +48,9 @@ import org.apache.sling.feature.io.ArtifactManagerConfig;
 import org.apache.sling.feature.io.json.ApplicationJSONWriter;
 import org.apache.sling.feature.io.json.FeatureJSONReader;
 import org.apache.sling.feature.io.json.FeatureJSONReader.SubstituteVariables;
+import org.apache.sling.feature.resolver.ApplicationResolverAssembler;
+import org.apache.sling.feature.resolver.FeatureResolver;
 import org.apache.sling.feature.resolver.FrameworkResolver;
-import org.apache.sling.feature.support.FeatureUtil;
-import org.apache.sling.feature.support.resolver.FeatureResolver;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -88,7 +88,7 @@ public class ApplicationBuilderTest {
         Feature[] features = {fa, fb};
 
         try (FeatureResolver fr = new FrameworkResolver(am, getFrameworkProps())) {
-            Application app = ApplicationBuilder.assemble(null, bc, FeatureUtil.sortFeatures(fr, features));
+            Application app = ApplicationBuilder.assemble(null, bc, ApplicationResolverAssembler.sortFeatures(fr, features));
             String actualJSON = writeApplication(app);
 
             String expectedJSON = "{\"features\":["
@@ -120,7 +120,7 @@ public class ApplicationBuilderTest {
         Feature[] features = {fd, fc};
 
         try (FeatureResolver fr = new FrameworkResolver(am, getFrameworkProps())) {
-            Application app = ApplicationBuilder.assemble(null, bc, FeatureUtil.sortFeatures(fr, features));
+            Application app = ApplicationBuilder.assemble(null, bc, ApplicationResolverAssembler.sortFeatures(fr, features));
             String genApp = writeApplication(app);
 
             String expected = "{\"features\":["

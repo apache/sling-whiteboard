@@ -22,8 +22,6 @@ import org.apache.sling.feature.io.ArtifactManager;
 import org.apache.sling.feature.io.ArtifactManagerConfig;
 import org.apache.sling.feature.io.json.FeatureJSONReader;
 import org.apache.sling.feature.io.json.FeatureJSONReader.SubstituteVariables;
-import org.apache.sling.feature.support.resolver.FeatureResolver;
-import org.apache.sling.feature.support.resolver.FeatureResource;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;

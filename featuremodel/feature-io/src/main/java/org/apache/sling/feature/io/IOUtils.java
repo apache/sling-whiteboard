@@ -16,7 +16,13 @@
  */
 package org.apache.sling.feature.io;
 
+import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.io.json.FeatureJSONReader;
+import org.apache.sling.feature.io.json.FeatureJSONReader.SubstituteVariables;
+
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -24,7 +30,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class FileUtils {
+public class IOUtils {
 
     /** The extension for a reference file. */
     public static final String EXTENSION_REF_FILE = ".ref";
@@ -155,8 +161,40 @@ public class FileUtils {
         return paths;
     }
 
-    static final Comparator<String> FEATURE_PATH_COMP = new Comparator<String>() {
+    /**
+     * Read the feature
+     *
+     * @param url The feature url
+     * @param artifactManager The artifact manager to read the feature
+     * @param substituteVariables Variable substitution handling
+     * @return The read feature
+     * @throws IOException If reading fails
+     */
+    public static Feature getFeature(final String url,
+            final ArtifactManager artifactManager,
+            final SubstituteVariables substituteVariables)
+    throws IOException {
+        final ArtifactHandler featureArtifact = artifactManager.getArtifactHandler(url);
 
+        try (final FileReader r = new FileReader(featureArtifact.getFile())) {
+            final Feature f = FeatureJSONReader.read(r, featureArtifact.getUrl(), substituteVariables);
+            return f;
+        }
+    }
+
+    /**
+     * Get an artifact id for the Apache Felix framework
+     * @param version The version to use or {@code null} for the default version
+     * @return The artifact id
+     * @throws IllegalArgumentException If the provided version is invalid
+     */
+    public static ArtifactId getFelixFrameworkId(final String version) {
+        return new ArtifactId("org.apache.felix",
+                "org.apache.felix.framework",
+                version != null ? version : "5.6.10", null, null);
+    }
+
+    static final Comparator<String> FEATURE_PATH_COMP = new Comparator<String>() {
         @Override
         public int compare(final String o1, final String o2) {
             // windows path conversion
@@ -193,8 +231,6 @@ public class FileUtils {
             }
         }
     }
-
-
 
     private static void processFile(final List<String> paths, final File f)
     throws IOException {

@@ -23,10 +23,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.sling.feature.io.FileUtils;
+import org.apache.sling.feature.io.IOUtils;
 import org.junit.Test;
 
-public class FeatureUtilTest {
+public class IOUtilsTest {
 
     @Test public void testFileSort() {
         final String[] files = new String[] {
@@ -41,7 +41,7 @@ public class FeatureUtilTest {
         };
 
         final List<String> l = new ArrayList<>(Arrays.asList(files));
-        Collections.sort(l, FileUtils.FEATURE_PATH_COMP);
+        Collections.sort(l, IOUtils.FEATURE_PATH_COMP);
         for(int i=0; i<files.length; i++) {
             assertEquals(files[i], l.get(i));
         }

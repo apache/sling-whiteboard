@@ -26,10 +26,11 @@ import org.apache.sling.feature.Application;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.io.ArtifactManager;
 import org.apache.sling.feature.io.ArtifactManagerConfig;
+import org.apache.sling.feature.io.IOUtils;
 import org.apache.sling.feature.io.json.ApplicationJSONWriter;
+import org.apache.sling.feature.resolver.ApplicationResolverAssembler;
+import org.apache.sling.feature.resolver.FeatureResolver;
 import org.apache.sling.feature.resolver.FrameworkResolver;
-import org.apache.sling.feature.support.FeatureUtil;
-import org.apache.sling.feature.support.resolver.FeatureResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -163,7 +164,7 @@ public class Main {
         }
 
         try (FeatureResolver fr = getFeatureResolver(am)) {
-            writeApplication(buildApplication(FeatureUtil.assembleApplication(null, am, fr, files)), output == null ? "application.json" : output);
+            writeApplication(buildApplication(ApplicationResolverAssembler.assembleApplication(null, am, fr, files)), output == null ? "application.json" : output);
 
         } catch ( final IOException ioe) {
             LOGGER.error("Unable to read feature/application files " + ioe.getMessage(), ioe);
@@ -185,7 +186,7 @@ public class Main {
 
         }
         // felix framework hard coded for now
-        app.setFramework(FeatureUtil.getFelixFrameworkId(null));
+        app.setFramework(IOUtils.getFelixFrameworkId(null));
         return app;
     }
 

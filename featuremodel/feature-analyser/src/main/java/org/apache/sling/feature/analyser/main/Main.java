@@ -16,18 +16,18 @@
  */
 package org.apache.sling.feature.analyser.main;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-
 import org.apache.sling.feature.Application;
 import org.apache.sling.feature.analyser.Analyser;
 import org.apache.sling.feature.io.ArtifactManagerConfig;
+import org.apache.sling.feature.io.IOUtils;
 import org.apache.sling.feature.io.json.ApplicationJSONReader;
 import org.apache.sling.feature.scanner.Scanner;
-import org.apache.sling.feature.support.FeatureUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 
 public class Main {
 
@@ -59,7 +59,7 @@ public class Main {
             System.exit(1);
         }
         if ( app.getFramework() == null ) {
-            app.setFramework(FeatureUtil.getFelixFrameworkId(null));
+            app.setFramework(IOUtils.getFelixFrameworkId(null));
         }
 
         try {

@@ -27,9 +27,9 @@ import org.apache.sling.feature.KeyValueMap;
 import org.apache.sling.feature.io.ArtifactHandler;
 import org.apache.sling.feature.io.ArtifactManager;
 import org.apache.sling.feature.io.ArtifactManagerConfig;
+import org.apache.sling.feature.io.IOUtils;
 import org.apache.sling.feature.io.json.ApplicationJSONWriter;
 import org.apache.sling.feature.io.json.FeatureJSONWriter;
-import org.apache.sling.feature.support.FeatureUtil;
 import org.apache.sling.feature.support.SlingConstants;
 import org.apache.sling.provisioning.model.Artifact;
 import org.apache.sling.provisioning.model.ArtifactGroup;
@@ -317,7 +317,7 @@ public class ProvisioningToFeature {
 
         }
         // felix framework hard coded for now
-        app.setFramework(FeatureUtil.getFelixFrameworkId(null));
+        app.setFramework(IOUtils.getFelixFrameworkId(null));
         return app;
     }
 

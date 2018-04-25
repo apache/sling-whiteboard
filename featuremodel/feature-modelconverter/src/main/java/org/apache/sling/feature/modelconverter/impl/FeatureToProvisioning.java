@@ -16,6 +16,30 @@
  */
 package org.apache.sling.feature.modelconverter.impl;
 
+import org.apache.sling.feature.Application;
+import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.Bundles;
+import org.apache.sling.feature.Configurations;
+import org.apache.sling.feature.Extension;
+import org.apache.sling.feature.ExtensionType;
+import org.apache.sling.feature.Extensions;
+import org.apache.sling.feature.KeyValueMap;
+import org.apache.sling.feature.io.ArtifactManager;
+import org.apache.sling.feature.io.IOUtils;
+import org.apache.sling.feature.io.json.ApplicationJSONReader;
+import org.apache.sling.feature.io.json.FeatureJSONReader.SubstituteVariables;
+import org.apache.sling.feature.resolver.ApplicationResolverAssembler;
+import org.apache.sling.feature.resolver.FeatureResolver;
+import org.apache.sling.feature.support.SlingConstants;
+import org.apache.sling.provisioning.model.Artifact;
+import org.apache.sling.provisioning.model.Configuration;
+import org.apache.sling.provisioning.model.Feature;
+import org.apache.sling.provisioning.model.Model;
+import org.apache.sling.provisioning.model.Section;
+import org.apache.sling.provisioning.model.io.ModelWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -34,29 +58,6 @@ import javax.json.JsonReader;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 
-import org.apache.sling.feature.Application;
-import org.apache.sling.feature.ArtifactId;
-import org.apache.sling.feature.Bundles;
-import org.apache.sling.feature.Configurations;
-import org.apache.sling.feature.Extension;
-import org.apache.sling.feature.ExtensionType;
-import org.apache.sling.feature.Extensions;
-import org.apache.sling.feature.KeyValueMap;
-import org.apache.sling.feature.io.ArtifactManager;
-import org.apache.sling.feature.io.json.ApplicationJSONReader;
-import org.apache.sling.feature.io.json.FeatureJSONReader.SubstituteVariables;
-import org.apache.sling.feature.support.FeatureUtil;
-import org.apache.sling.feature.support.SlingConstants;
-import org.apache.sling.feature.support.resolver.FeatureResolver;
-import org.apache.sling.provisioning.model.Artifact;
-import org.apache.sling.provisioning.model.Configuration;
-import org.apache.sling.provisioning.model.Feature;
-import org.apache.sling.provisioning.model.Model;
-import org.apache.sling.provisioning.model.Section;
-import org.apache.sling.provisioning.model.io.ModelWriter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /** Converter that converts the feature model to the provisioning model.
  */
 public class FeatureToProvisioning {
@@ -64,7 +65,7 @@ public class FeatureToProvisioning {
     static final String PROVISIONING_MODEL_NAME_VARIABLE = "provisioning.model.name";
 
     public static void convert(File file, String output, ArtifactManager am) throws IOException {
-        org.apache.sling.feature.Feature feature = FeatureUtil.getFeature(file.getAbsolutePath(), am, SubstituteVariables.NONE);
+        org.apache.sling.feature.Feature feature = IOUtils.getFeature(file.getAbsolutePath(), am, SubstituteVariables.NONE);
 
         Object featureNameVar = feature.getVariables().remove(PROVISIONING_MODEL_NAME_VARIABLE);
         String featureName;
@@ -91,7 +92,7 @@ public class FeatureToProvisioning {
                     index++;
                 }
             } else {
-                final Application app = FeatureUtil.assembleApplication(null, am, fr, files.stream()
+                final Application app = ApplicationResolverAssembler.assembleApplication(null, am, fr, files.stream()
                         .map(File::getAbsolutePath)
                         .toArray(String[]::new));
                 FeatureToProvisioning.convert(app, 0, output);

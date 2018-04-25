@@ -38,8 +38,6 @@ import org.apache.sling.feature.resolver.impl.FeatureResourceImpl;
 import org.apache.sling.feature.resolver.impl.ResolveContextImpl;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.impl.BundleDescriptorImpl;
-import org.apache.sling.feature.support.resolver.FeatureResolver;
-import org.apache.sling.feature.support.resolver.FeatureResource;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;

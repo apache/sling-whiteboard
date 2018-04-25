@@ -23,8 +23,8 @@ import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.Extensions;
 import org.apache.sling.feature.io.ArtifactManager;
 import org.apache.sling.feature.io.ArtifactManagerConfig;
+import org.apache.sling.feature.io.IOUtils;
 import org.apache.sling.feature.io.json.FeatureJSONReader.SubstituteVariables;
-import org.apache.sling.feature.support.FeatureUtil;
 import org.apache.sling.provisioning.model.Artifact;
 import org.apache.sling.provisioning.model.ArtifactGroup;
 import org.apache.sling.provisioning.model.Configuration;
@@ -175,8 +175,8 @@ public class ModelConverterTest {
         File outFile = files.get(0);
 
         String expectedFile = new File(getClass().getResource(expectedJSON).toURI()).getAbsolutePath();
-        org.apache.sling.feature.Feature expected = FeatureUtil.getFeature(expectedFile, artifactManager, SubstituteVariables.NONE);
-        org.apache.sling.feature.Feature actual = FeatureUtil.getFeature(outFile.getAbsolutePath(), artifactManager, SubstituteVariables.NONE);
+        org.apache.sling.feature.Feature expected = IOUtils.getFeature(expectedFile, artifactManager, SubstituteVariables.NONE);
+        org.apache.sling.feature.Feature actual = IOUtils.getFeature(outFile.getAbsolutePath(), artifactManager, SubstituteVariables.NONE);
         assertFeaturesEqual(expected, actual);
     }
 
@@ -206,8 +206,8 @@ public class ModelConverterTest {
         File outFile = files.get(0);
 
         String expectedFile = new File(getClass().getResource(expectedJSON).toURI()).getAbsolutePath();
-        org.apache.sling.feature.Feature expected = FeatureUtil.getFeature(expectedFile, artifactManager, SubstituteVariables.NONE);
-        org.apache.sling.feature.Feature actual = FeatureUtil.getFeature(outFile.getAbsolutePath(), artifactManager, SubstituteVariables.NONE);
+        org.apache.sling.feature.Feature expected = IOUtils.getFeature(expectedFile, artifactManager, SubstituteVariables.NONE);
+        org.apache.sling.feature.Feature actual = IOUtils.getFeature(outFile.getAbsolutePath(), artifactManager, SubstituteVariables.NONE);
         assertFeaturesEqual(expected, actual);
     }
 

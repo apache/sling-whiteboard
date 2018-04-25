@@ -14,14 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.sling.feature.support;
-
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+package org.apache.sling.feature.resolver;
 
 import org.apache.sling.feature.Application;
 import org.apache.sling.feature.ArtifactId;
@@ -31,45 +24,18 @@ import org.apache.sling.feature.builder.BuilderContext;
 import org.apache.sling.feature.builder.FeatureProvider;
 import org.apache.sling.feature.io.ArtifactHandler;
 import org.apache.sling.feature.io.ArtifactManager;
+import org.apache.sling.feature.io.IOUtils;
 import org.apache.sling.feature.io.json.FeatureJSONReader;
 import org.apache.sling.feature.io.json.FeatureJSONReader.SubstituteVariables;
-import org.apache.sling.feature.support.resolver.FeatureResolver;
-import org.apache.sling.feature.support.resolver.FeatureResource;
 
-public class FeatureUtil {
-    /**
-     * Get an artifact id for the Apache Felix framework
-     * @param version The version to use or {@code null} for the default version
-     * @return The artifact id
-     * @throws IllegalArgumentException If the provided version is invalid
-     */
-    public static ArtifactId getFelixFrameworkId(final String version) {
-        return new ArtifactId("org.apache.felix",
-                "org.apache.felix.framework",
-                version != null ? version : "5.6.10", null, null);
-    }
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
-    /**
-     * Read the feature
-     *
-     * @param url The feature url
-     * @param artifactManager The artifact manager to read the feature
-     * @param substituteVariables Variable substitution handling
-     * @return The read feature
-     * @throws IOException If reading fails
-     */
-    public static Feature getFeature(final String url,
-            final ArtifactManager artifactManager,
-            final SubstituteVariables substituteVariables)
-    throws IOException {
-        final ArtifactHandler featureArtifact = artifactManager.getArtifactHandler(url);
-
-        try (final FileReader r = new FileReader(featureArtifact.getFile())) {
-            final Feature f = FeatureJSONReader.read(r, featureArtifact.getUrl(), substituteVariables);
-            return f;
-        }
-    }
-
+public class ApplicationResolverAssembler {
     /**
      * Assemble an application based on the given files.
      *
@@ -90,7 +56,7 @@ public class FeatureUtil {
     throws IOException {
         final List<Feature> features = new ArrayList<>();
         for(final String initFile : featureFiles) {
-            final Feature f = getFeature(initFile, artifactManager, SubstituteVariables.RESOLVE);
+            final Feature f = IOUtils.getFeature(initFile, artifactManager, SubstituteVariables.RESOLVE);
             features.add(f);
         }
 
@@ -154,7 +120,7 @@ public class FeatureUtil {
         // check framework
         if ( app.getFramework() == null ) {
             // use hard coded Apache Felix
-            app.setFramework(getFelixFrameworkId(null));
+            app.setFramework(IOUtils.getFelixFrameworkId(null));
         }
 
         return app;
