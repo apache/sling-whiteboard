@@ -25,9 +25,11 @@ import org.apache.sling.feature.resolver.FeatureResource;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.Descriptor;
 import org.apache.sling.feature.scanner.impl.BundleDescriptorImpl;
-import org.apache.sling.feature.support.util.PackageInfo;
+import org.apache.sling.feature.scanner.PackageInfo;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.PackageNamespace;
@@ -35,6 +37,10 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collections;
@@ -43,6 +49,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -95,17 +103,17 @@ public class BundleResourceImplTest {
         ArtifactId id = new ArtifactId("grp", "art", "1.2.3", null, null);
         Artifact artifact = new Artifact(id);
 
-        PackageInfo ex1 = new PackageInfo("org.foo.a", "0.0.1.SNAPSHOT", false);
-        Set<PackageInfo> pkgs = Collections.singleton(ex1);
-        Set<Requirement> reqs = Collections.emptySet();
-        Set<Capability> caps = Collections.emptySet();
-        BundleDescriptor bd = new BundleDescriptorImpl(artifact, pkgs, reqs, caps);
+        String bmf = "Bundle-SymbolicName: " + Constants.SYSTEM_BUNDLE_SYMBOLICNAME + "\n"
+            + "Bundle-Version: 1.2.3\n"
+            + "Bundle-ManifestVersion: 2\n"
+            + "Export-Package: org.foo.a;version=0.0.1.SNAPSHOT\n"
+            + "Import-Package: org.bar;version=\"[1,2)\",org.tar;resolution:=\"optional\"\n";
 
-        setField(Descriptor.class, "locked", bd, false); // Unlock the Bundle Descriptor for the test
-        PackageInfo im1 = new PackageInfo("org.bar", "[1,2)", false);
-        PackageInfo im2 = new PackageInfo("org.tar", null, true);
-        bd.getImportedPackages().add(im1);
-        bd.getImportedPackages().add(im2);
+        File f = createBundle(bmf);
+
+
+        BundleDescriptor bd = new BundleDescriptorImpl(artifact, f, 1);
+
 
         Resource res = new BundleResourceImpl(bd, null);
         assertNotNull(
@@ -137,11 +145,11 @@ public class BundleResourceImplTest {
         }
 
         assertEquals(1, reqBar.getDirectives().size());
-        assertEquals("(&(osgi.wiring.package=org.bar)(&(version>=1.0.0)(!(version>=2.0.0))))",
+        assertEquals("(&(osgi.wiring.package=org.bar)(version>=1.0.0)(!(version>=2.0.0)))",
                 reqBar.getDirectives().get(PackageNamespace.REQUIREMENT_FILTER_DIRECTIVE));
 
         assertEquals(2, reqTar.getDirectives().size());
-        assertEquals("(&(osgi.wiring.package=org.tar))",
+        assertEquals("(osgi.wiring.package=org.tar)",
                 reqTar.getDirectives().get(PackageNamespace.REQUIREMENT_FILTER_DIRECTIVE));
         assertEquals(PackageNamespace.RESOLUTION_OPTIONAL,
                 reqTar.getDirectives().get(PackageNamespace.REQUIREMENT_RESOLUTION_DIRECTIVE));
@@ -183,6 +191,18 @@ public class BundleResourceImplTest {
                 new HashSet<>(res.getRequirements("org.example.req2")));
         assertEquals(new HashSet<>(Arrays.asList(expectedReq1, expectedReq2)),
                 new HashSet<>(res.getRequirements(null)));
+    }
+
+
+    private File createBundle(String manifest) throws IOException
+    {
+        File f = File.createTempFile("bundle", ".jar");
+        f.deleteOnExit();
+        Manifest mf = new Manifest(new ByteArrayInputStream(manifest.getBytes("UTF-8")));
+        mf.getMainAttributes().putValue("Manifest-Version", "1.0");
+        JarOutputStream os = new JarOutputStream(new FileOutputStream(f), mf);
+        os.close();
+        return f;
     }
 
     private Object getCapAttribute(Resource res, String ns, String attr) {

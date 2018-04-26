@@ -20,7 +20,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.sling.feature.support.util.PackageInfo;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 

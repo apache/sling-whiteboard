@@ -16,15 +16,12 @@
  */
 package org.apache.sling.feature.scanner.impl;
 
-import static org.apache.sling.feature.support.util.ManifestParser.convertProvideCapabilities;
-import static org.apache.sling.feature.support.util.ManifestParser.normalizeCapabilityClauses;
-import static org.apache.sling.feature.support.util.ManifestParser.parseStandardHeader;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
@@ -37,14 +34,14 @@ import java.util.zip.ZipInputStream;
 
 import org.apache.commons.lang.text.StrLookup;
 import org.apache.commons.lang.text.StrSubstitutor;
-import org.apache.sling.commons.osgi.ManifestHeader;
+import org.apache.felix.utils.manifest.Parser;
+import org.apache.felix.utils.resource.ResourceBuilder;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.KeyValueMap;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.spi.FrameworkScanner;
-import org.apache.sling.feature.support.util.PackageInfo;
-import org.osgi.framework.BundleException;
+import org.apache.sling.feature.scanner.PackageInfo;
 import org.osgi.framework.Constants;
 import org.osgi.resource.Capability;
 
@@ -61,7 +58,7 @@ public class FelixFrameworkScanner implements FrameworkScanner {
             return null;
         }
         final Set<PackageInfo> pcks = calculateSystemPackages(fwkProps);
-        final Set<Capability> capabilities = calculateSystemCapabilities(fwkProps);
+        final List<Capability> capabilities = calculateSystemCapabilities(fwkProps);
 
         final BundleDescriptor d = new BundleDescriptor() {
 
@@ -101,44 +98,45 @@ public class FelixFrameworkScanner implements FrameworkScanner {
         return d;
     }
 
-    private Set<Capability> calculateSystemCapabilities(final KeyValueMap fwkProps) {
-        return Stream.of(
+    private List<Capability> calculateSystemCapabilities(final KeyValueMap fwkProps) throws IOException
+    {
+         Map<String, String> mf = new HashMap<>();
+         mf.put(Constants.PROVIDE_CAPABILITY,
+                Stream.of(
                     fwkProps.get(Constants.FRAMEWORK_SYSTEMCAPABILITIES),
                     fwkProps.get(Constants.FRAMEWORK_SYSTEMCAPABILITIES_EXTRA)
                 )
                 .filter(Objects::nonNull)
-                .flatMap(header -> {
-                        try {
-                            return convertProvideCapabilities(normalizeCapabilityClauses(parseStandardHeader(header), "2"))
-                                    .stream();
-                        } catch (BundleException ex) {
-                            throw new RuntimeException(ex);
-                        }
-                    })
-                .collect(Collectors.toSet());
+                .collect(Collectors.joining(",")));
+         mf.put(Constants.EXPORT_PACKAGE, Stream.of(
+             fwkProps.get(Constants.FRAMEWORK_SYSTEMPACKAGES),
+             fwkProps.get(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA)
+             ).filter(Objects::nonNull)
+                 .collect(Collectors.joining(",")));
+         mf.put(Constants.BUNDLE_SYMBOLICNAME, Constants.SYSTEM_BUNDLE_SYMBOLICNAME);
+         mf.put(Constants.BUNDLE_MANIFESTVERSION, "2");
+         try
+         {
+             return ResourceBuilder.build(null, mf).getCapabilities(null);
+         }
+         catch (Exception ex) {
+             throw new IOException(ex);
+         }
     }
 
     private Set<PackageInfo> calculateSystemPackages(final KeyValueMap fwkProps) {
-        final String system = fwkProps.get(Constants.FRAMEWORK_SYSTEMPACKAGES);
-        final String extra = fwkProps.get(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA);
-        final Set<PackageInfo> packages = new HashSet<>();
-        for(int i=0;i<2;i++) {
-            final String value = (i == 0 ? system : extra);
-            if ( value != null ) {
-                final ManifestHeader header = ManifestHeader.parse(value);
-                for(final ManifestHeader.Entry entry : header.getEntries()) {
-                    String version = entry.getAttributeValue("version");
-                    if ( version == null ) {
-                        version = "0.0.0";
-                    }
-
-                    final PackageInfo exportedPackageInfo = new PackageInfo(entry.getValue(),
-                            version, false);
-                    packages.add(exportedPackageInfo);
-                }
-            }
-        }
-        return packages;
+        return
+            Stream.of(
+                Parser.parseHeader(
+                    Stream.of(
+                        fwkProps.get(Constants.FRAMEWORK_SYSTEMPACKAGES),
+                        fwkProps.get(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA)
+                    ).filter(Objects::nonNull)
+                    .collect(Collectors.joining(","))
+                )
+            ).map(
+                clause -> new PackageInfo(clause.getName(), clause.getAttribute("version") != null ? clause.getAttribute("version") : "0.0.0", false))
+            .collect(Collectors.toSet());
     }
 
     private static final String DEFAULT_PROPERTIES = "default.properties";

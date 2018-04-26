@@ -64,7 +64,6 @@
         <module>feature-launcher</module>
         <module>feature-modelconverter</module>
         <module>feature-resolver</module>
-        <module>feature-support</module>	
         <module>osgifeature-maven-plugin</module>
     </modules>
 

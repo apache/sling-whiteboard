@@ -19,7 +19,6 @@ package org.apache.sling.feature.scanner;
 import java.util.jar.Manifest;
 
 import org.apache.sling.feature.scanner.impl.BundleDescriptorImpl;
-import org.apache.sling.feature.support.util.PackageInfo;
 
 /**
  * Information about a bundle

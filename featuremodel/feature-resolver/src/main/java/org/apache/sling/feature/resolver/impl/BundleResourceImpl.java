@@ -22,7 +22,7 @@ import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.resolver.FeatureResource;
 import org.apache.sling.feature.scanner.BundleDescriptor;
-import org.apache.sling.feature.support.util.PackageInfo;
+import org.apache.sling.feature.scanner.PackageInfo;
 import org.osgi.framework.Version;
 import org.osgi.framework.VersionRange;
 import org.osgi.framework.namespace.BundleNamespace;
@@ -69,18 +69,6 @@ public class BundleResourceImpl extends AbstractResourceImpl implements FeatureR
             l.add(new CapabilityImpl(this, c));
         }
 
-        // Add the package capabilities (export package)
-        List<Capability> pkgCaps = new ArrayList<>();
-        for(PackageInfo exported : bd.getExportedPackages()) {
-            Map<String, Object> attrs = new HashMap<>();
-            attrs.put(PackageNamespace.PACKAGE_NAMESPACE, exported.getName());
-            attrs.put(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE, exported.getPackageVersion());
-            attrs.put(PackageNamespace.CAPABILITY_BUNDLE_SYMBOLICNAME_ATTRIBUTE, bsn);
-            attrs.put(PackageNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version);
-            pkgCaps.add(new CapabilityImpl(this, PackageNamespace.PACKAGE_NAMESPACE, null, attrs));
-        }
-        caps.put(PackageNamespace.PACKAGE_NAMESPACE, Collections.unmodifiableList(pkgCaps));
-
         // Add the identity capability
         Map<String, Object> idattrs = new HashMap<>();
         idattrs.put(IdentityNamespace.IDENTITY_NAMESPACE, bsn);
@@ -111,25 +99,6 @@ public class BundleResourceImpl extends AbstractResourceImpl implements FeatureR
         // TODO What do we do with the execution environment?
         reqs.remove(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE);
 
-        // Add the package requirements (import package)
-        List<Requirement> pkgReqs = new ArrayList<>();
-        for(PackageInfo imported : bd.getImportedPackages()) {
-            Map<String, String> dirs = new HashMap<>();
-            VersionRange range = imported.getPackageVersionRange();
-            String rangeFilter;
-            if (range != null) {
-                rangeFilter = range.toFilterString(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE);
-            } else {
-                rangeFilter = "";
-            }
-            dirs.put(PackageNamespace.REQUIREMENT_FILTER_DIRECTIVE,
-                "(&(" + PackageNamespace.PACKAGE_NAMESPACE + "=" + imported.getName() + ")" + rangeFilter + ")");
-            if (imported.isOptional())
-                dirs.put(PackageNamespace.REQUIREMENT_RESOLUTION_DIRECTIVE,
-                    PackageNamespace.RESOLUTION_OPTIONAL);
-            pkgReqs.add(new RequirementImpl(this, PackageNamespace.PACKAGE_NAMESPACE, dirs, null));
-        }
-        reqs.put(PackageNamespace.PACKAGE_NAMESPACE, Collections.unmodifiableList(pkgReqs));
         requirements = Collections.unmodifiableMap(reqs);
     }
 

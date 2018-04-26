@@ -27,6 +27,7 @@ import org.apache.sling.feature.io.json.FeatureJSONReader.SubstituteVariables;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.Scanner;
 import org.apache.sling.feature.scanner.impl.BundleDescriptorImpl;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;

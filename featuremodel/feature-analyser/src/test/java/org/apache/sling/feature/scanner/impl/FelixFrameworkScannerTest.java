@@ -16,13 +16,18 @@
  */
 package org.apache.sling.feature.scanner.impl;
 
+import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.KeyValueMap;
+import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.junit.Test;
 
 import java.io.File;
 import java.net.URL;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class FelixFrameworkScannerTest {
     @Test
@@ -45,5 +50,21 @@ public class FelixFrameworkScannerTest {
                 + "osgi.ee; osgi.ee=\"JavaSE/compact1\"; version:List<Version>=\"1.8\", "
                 + "osgi.ee; osgi.ee=\"JavaSE/compact2\"; version:List<Version>=\"1.8\", "
                 + "osgi.ee; osgi.ee=\"JavaSE/compact3\"; version:List<Version>=\"1.8\" ", props.get("org.osgi.framework.system.capabilities"));
+    }
+
+    @Test
+    public void testGetFrameworkExports() throws Exception {
+        URL url = getClass().getResource("/test-framework.jar");
+        File fwFile = new File(url.toURI());
+
+        FelixFrameworkScanner ffs = new FelixFrameworkScanner();
+
+        KeyValueMap kvmap = new KeyValueMap();
+        BundleDescriptor bundleDescriptor = ffs.scan(new ArtifactId("org.apache.felix",
+            "org.apache.felix.framework",
+            "5.6.10", null, null), fwFile, kvmap);
+
+        assertFalse(bundleDescriptor.getExportedPackages().isEmpty());
+        assertFalse(bundleDescriptor.getCapabilities().isEmpty());
     }
 }

@@ -18,14 +18,21 @@ package org.apache.sling.feature.scanner.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
+import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.stream.Collectors;
 
+import org.apache.felix.utils.manifest.Clause;
+import org.apache.felix.utils.manifest.Parser;
+import org.apache.felix.utils.resource.ResourceBuilder;
+import org.apache.felix.utils.resource.ResourceImpl;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.scanner.BundleDescriptor;
-import org.apache.sling.feature.support.util.ManifestParser;
-import org.apache.sling.feature.support.util.ManifestUtil;
-import org.apache.sling.feature.support.util.PackageInfo;
+import org.apache.sling.feature.scanner.PackageInfo;
 import org.osgi.framework.Constants;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
@@ -60,8 +67,9 @@ public class BundleDescriptorImpl
         this.artifact = a;
         this.artifactFile = file;
         this.startLevel = startLevel;
-
-        this.manifest = ManifestUtil.getManifest(file);
+        try (final JarFile jarFile = new JarFile(this.artifactFile) ) {
+            this.manifest = jarFile.getManifest();
+        }
         if ( this.manifest == null ) {
             throw new IOException("File has no manifest");
         }
@@ -142,18 +150,65 @@ public class BundleDescriptorImpl
                 this.symbolicName = newBundleName;
             }
 
-            this.getExportedPackages().addAll(ManifestUtil.extractExportedPackages(this.manifest));
-            this.getImportedPackages().addAll(ManifestUtil.extractImportedPackages(this.manifest));
-            this.getDynamicImportedPackages().addAll(ManifestUtil.extractDynamicImportedPackages(this.manifest));
+            this.getExportedPackages().addAll(extractExportedPackages(this.manifest));
+            this.getImportedPackages().addAll(extractImportedPackages(this.manifest));
+            this.getDynamicImportedPackages().addAll(extractDynamicImportedPackages(this.manifest));
             try {
-                ManifestParser parser = new ManifestParser(this.manifest);
-                this.getCapabilities().addAll(ManifestUtil.extractCapabilities(parser));
-                this.getRequirements().addAll(ManifestUtil.extractRequirements(parser));
+                ResourceImpl resource = ResourceBuilder.build(null, this.manifest.getMainAttributes().entrySet().stream()
+                    .collect(Collectors.toMap(entry -> entry.getKey().toString(), entry -> entry.getValue().toString())));
+                this.getCapabilities().addAll(resource.getCapabilities(null));
+                this.getRequirements().addAll(resource.getRequirements(null));
             } catch (Exception ex) {
                 throw new IOException(ex);
             }
         } else {
             throw new IOException("Unable to get bundle symbolic name from artifact " + getArtifact().getId().toMvnId());
         }
+    }
+
+    public static List<PackageInfo> extractPackages(final Manifest m,
+        final String headerName,
+        final String defaultVersion,
+        final boolean checkOptional) {
+        final String pckInfo = m.getMainAttributes().getValue(headerName);
+        if (pckInfo != null) {
+            final Clause[] clauses = Parser.parseHeader(pckInfo);
+
+            final List<PackageInfo> pcks = new ArrayList<>();
+            for(final Clause entry : clauses) {
+                Object versionObj = entry.getAttribute("version");
+                final String version;
+                if ( versionObj == null ) {
+                    version = defaultVersion;
+                } else {
+                    version = versionObj.toString();
+                }
+
+                boolean optional = false;
+                if ( checkOptional ) {
+                    final String resolution = entry.getDirective("resolution");
+                    optional = "optional".equalsIgnoreCase(resolution);
+                }
+                final PackageInfo pck = new PackageInfo(entry.getName(),
+                    version,
+                    optional);
+                pcks.add(pck);
+            }
+
+            return pcks;
+        }
+        return Collections.emptyList();
+    }
+
+    public static List<PackageInfo> extractExportedPackages(final Manifest m) {
+        return extractPackages(m, Constants.EXPORT_PACKAGE, "0.0.0", false);
+    }
+
+    public static List<PackageInfo> extractImportedPackages(final Manifest m) {
+        return extractPackages(m, Constants.IMPORT_PACKAGE, null, true);
+    }
+
+    public static List<PackageInfo> extractDynamicImportedPackages(final Manifest m) {
+        return extractPackages(m, Constants.DYNAMICIMPORT_PACKAGE, null, false);
     }
 }

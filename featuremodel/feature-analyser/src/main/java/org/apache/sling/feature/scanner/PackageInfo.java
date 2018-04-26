@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.feature.support.util;
+package org.apache.sling.feature.scanner;
 
 import org.osgi.framework.Version;
 import org.osgi.framework.VersionRange;

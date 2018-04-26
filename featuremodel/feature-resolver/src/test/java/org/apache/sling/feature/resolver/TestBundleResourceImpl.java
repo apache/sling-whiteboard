@@ -21,7 +21,7 @@ import org.apache.felix.utils.resource.RequirementImpl;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.scanner.BundleDescriptor;
-import org.apache.sling.feature.support.util.PackageInfo;
+import org.apache.sling.feature.scanner.PackageInfo;
 import org.osgi.framework.Version;
 import org.osgi.framework.VersionRange;
 import org.osgi.framework.namespace.BundleNamespace;

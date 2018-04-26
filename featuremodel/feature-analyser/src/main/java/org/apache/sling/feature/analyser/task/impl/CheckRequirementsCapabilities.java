@@ -22,6 +22,7 @@ import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 import org.apache.sling.feature.scanner.ArtifactDescriptor;
 import org.apache.sling.feature.scanner.BundleDescriptor;
+import org.osgi.framework.wiring.BundleRevision;
 import org.osgi.resource.Requirement;
 
 import java.util.ArrayList;
@@ -69,22 +70,30 @@ public class CheckRequirementsCapabilities implements AnalyserTask {
                 if (info.getRequirements() != null)
                 {
                     for (Requirement requirement : info.getRequirements()) {
-                        List<ArtifactDescriptor> candidates = getCandidates(artifacts, requirement);
+                        if (!BundleRevision.PACKAGE_NAMESPACE.equals(requirement.getNamespace()))
+                        {
+                            List<ArtifactDescriptor> candidates = getCandidates(artifacts, requirement);
 
-                        if (candidates.isEmpty()) {
-                            if ( "osgi.service".equals(requirement.getNamespace())  ){
-                                // osgi.service is special - we don't provide errors or warnings in this case
-                                continue;
+                            if (candidates.isEmpty())
+                            {
+                                if ("osgi.service".equals(requirement.getNamespace()))
+                                {
+                                    // osgi.service is special - we don't provide errors or warnings in this case
+                                    continue;
+                                }
+                                if (!RequirementImpl.isOptional(requirement))
+                                {
+                                    ctx.reportError(String.format(format, info.getArtifact().getId().getArtifactId(), info.getArtifact().getId().getVersion(), requirement.toString(), entry.getKey(), "no artifact is providing a matching capability in this start level."));
+                                }
+                                else
+                                {
+                                    ctx.reportWarning(String.format(format, info.getArtifact().getId().getArtifactId(), info.getArtifact().getId().getVersion(), requirement.toString(), entry.getKey(), "while the requirement is optional no artifact is providing a matching capability in this start level."));
+                                }
                             }
-                            if (!RequirementImpl.isOptional(requirement)) {
-                                ctx.reportError(String.format(format, info.getArtifact().getId().getArtifactId(), info.getArtifact().getId().getVersion(), requirement.toString(), entry.getKey(), "no artifact is providing a matching capability in this start level."));
+                            else if (candidates.size() > 1)
+                            {
+                                ctx.reportWarning(String.format(format, info.getArtifact().getId().getArtifactId(), info.getArtifact().getId().getVersion(), requirement.toString(), entry.getKey(), "there is more than one matching capability in this start level."));
                             }
-                            else {
-                                ctx.reportWarning(String.format(format, info.getArtifact().getId().getArtifactId(), info.getArtifact().getId().getVersion(), requirement.toString(), entry.getKey(), "while the requirement is optional no artifact is providing a matching capability in this start level."));
-                            }
-                        }
-                        else if ( candidates.size() > 1 ) {
-                            ctx.reportWarning(String.format(format, info.getArtifact().getId().getArtifactId(), info.getArtifact().getId().getVersion(), requirement.toString(), entry.getKey(), "there is more than one matching capability in this start level."));
                         }
                     }
                 }
