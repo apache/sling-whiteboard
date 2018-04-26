@@ -14,19 +14,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.sling.feature.support;
+package org.apache.sling.feature;
 
-import org.apache.felix.utils.resource.RequirementImpl;
-import org.osgi.resource.Requirement;
+public class FeatureConstants {
+    /** Common extension name to specify the repoinit part for Apache Sling. */
+    public static final String EXTENSION_NAME_REPOINIT = "repoinit";
 
-import java.util.Collections;
-
-public abstract class SlingConstants {
-
-    public static final String REQUIRE_REPOINIT_CAPABILITY =
-            "osgi.implementation;filter:=\"(&(osgi.implementation=org.apache.sling.jcr.repoinit)(version>=1.0)(!(version>=2.0)))\"";
-
-    public static final Requirement REQUIREMENT_REPOINIT = new RequirementImpl(null, "osgi.implementation",
-            Collections.singletonMap("filter", "(&(osgi.implementation=org.apache.sling.jcr.repoinit)(version>=1.0)(!(version>=2.0)))"),
-                    null);
+    /** Common extension name to specify the content packages for Apache Sling. */
+    public static final String EXTENSION_NAME_CONTENT_PACKAGES = "content-packages";
 }

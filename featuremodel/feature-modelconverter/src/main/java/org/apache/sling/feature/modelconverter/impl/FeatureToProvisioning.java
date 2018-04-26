@@ -23,6 +23,7 @@ import org.apache.sling.feature.Configurations;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.Extensions;
+import org.apache.sling.feature.FeatureConstants;
 import org.apache.sling.feature.KeyValueMap;
 import org.apache.sling.feature.io.ArtifactManager;
 import org.apache.sling.feature.io.IOUtils;
@@ -30,7 +31,6 @@ import org.apache.sling.feature.io.json.ApplicationJSONReader;
 import org.apache.sling.feature.io.json.FeatureJSONReader.SubstituteVariables;
 import org.apache.sling.feature.resolver.ApplicationResolverAssembler;
 import org.apache.sling.feature.resolver.FeatureResolver;
-import org.apache.sling.feature.support.SlingConstants;
 import org.apache.sling.provisioning.model.Artifact;
 import org.apache.sling.provisioning.model.Configuration;
 import org.apache.sling.provisioning.model.Feature;
@@ -206,7 +206,7 @@ public class FeatureToProvisioning {
 
         // extensions: content packages and repoinit
         for(final Extension ext : extensions) {
-            if ( SlingConstants.EXTENSION_NAME_CONTENT_PACKAGES.equals(ext.getName()) ) {
+            if ( FeatureConstants.EXTENSION_NAME_CONTENT_PACKAGES.equals(ext.getName()) ) {
                 for(final org.apache.sling.feature.Artifact cp : ext.getArtifacts() ) {
                     String[] runmodes = null;
                     final ArtifactId id = cp.getId();
@@ -221,7 +221,7 @@ public class FeatureToProvisioning {
                     f.getOrCreateRunMode(runmodes).getOrCreateArtifactGroup(20).add(newCP);
                 }
 
-            } else if ( SlingConstants.EXTENSION_NAME_REPOINIT.equals(ext.getName()) ) {
+            } else if ( FeatureConstants.EXTENSION_NAME_REPOINIT.equals(ext.getName()) ) {
                 final Section section = new Section("repoinit");
                 if (ext.getType() == ExtensionType.TEXT) {
                     section.setContents(ext.getText());

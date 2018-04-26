@@ -16,6 +16,17 @@
  */
 package org.apache.sling.feature.karaf;
 
+import org.apache.sling.feature.Artifact;
+import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.Configuration;
+import org.apache.sling.feature.Configurations;
+import org.apache.sling.feature.Extension;
+import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.FeatureConstants;
+import org.apache.sling.feature.io.ArtifactHandler;
+import org.apache.sling.feature.io.ArtifactManager;
+import org.apache.sling.feature.support.SlingConstants;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -31,16 +42,6 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.sling.feature.Artifact;
-import org.apache.sling.feature.ArtifactId;
-import org.apache.sling.feature.Configuration;
-import org.apache.sling.feature.Configurations;
-import org.apache.sling.feature.Extension;
-import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.io.ArtifactHandler;
-import org.apache.sling.feature.io.ArtifactManager;
-import org.apache.sling.feature.support.SlingConstants;
-
 
 /**
  * This writer writes out a Karaf feature XML.
@@ -53,7 +54,7 @@ public class KarafFeatureWriter {
             final ArtifactManager artifactManager)
     throws IOException {
         // check for repoinit extension
-        final Extension repoinitExt = feature.getExtensions().getByName(SlingConstants.EXTENSION_NAME_REPOINIT);
+        final Extension repoinitExt = feature.getExtensions().getByName(FeatureConstants.EXTENSION_NAME_REPOINIT);
         File configurationBundleFile = null;
         Artifact configuratorBundle = null;
         try {

@@ -16,17 +16,17 @@
  */
 package org.apache.sling.feature.scanner.impl;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Set;
-
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
+import org.apache.sling.feature.FeatureConstants;
 import org.apache.sling.feature.io.ArtifactManager;
 import org.apache.sling.feature.scanner.ContainerDescriptor;
 import org.apache.sling.feature.scanner.spi.ExtensionScanner;
-import org.apache.sling.feature.support.SlingConstants;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Set;
 
 public class ContentPackagesExtensionScanner implements ExtensionScanner {
 
@@ -44,7 +44,7 @@ public class ContentPackagesExtensionScanner implements ExtensionScanner {
     public ContainerDescriptor scan(final Extension extension,
             final ArtifactManager artifactManager)
     throws IOException {
-        if (!SlingConstants.EXTENSION_NAME_CONTENT_PACKAGES.equals(extension.getName()) ) {
+        if (!FeatureConstants.EXTENSION_NAME_CONTENT_PACKAGES.equals(extension.getName()) ) {
             return null;
         }
         if ( extension.getType() != ExtensionType.ARTIFACTS ) {

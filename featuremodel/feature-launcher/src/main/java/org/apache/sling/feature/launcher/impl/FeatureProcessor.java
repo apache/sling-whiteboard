@@ -16,19 +16,12 @@
  */
 package org.apache.sling.feature.launcher.impl;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.sling.feature.Application;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.Configuration;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
+import org.apache.sling.feature.FeatureConstants;
 import org.apache.sling.feature.io.ArtifactHandler;
 import org.apache.sling.feature.io.ArtifactManager;
 import org.apache.sling.feature.io.json.ApplicationJSONReader;
@@ -37,7 +30,14 @@ import org.apache.sling.feature.launcher.impl.LauncherConfig.StartupMode;
 import org.apache.sling.feature.resolver.ApplicationResolverAssembler;
 import org.apache.sling.feature.resolver.FeatureResolver;
 import org.apache.sling.feature.resolver.FrameworkResolver;
-import org.apache.sling.feature.support.SlingConstants;
+
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 public class FeatureProcessor {
 
@@ -114,9 +114,9 @@ public class FeatureProcessor {
                     config.getInstallation().addInstallableArtifact(handler.getFile());
                 }
             } else {
-                if ( ext.getName().equals(SlingConstants.EXTENSION_NAME_REPOINIT) ) {
+                if ( ext.getName().equals(FeatureConstants.EXTENSION_NAME_REPOINIT) ) {
                     if ( ext.getType() != ExtensionType.TEXT ) {
-                        throw new Exception(SlingConstants.EXTENSION_NAME_REPOINIT + " extension must be of type text and not json");
+                        throw new Exception(FeatureConstants.EXTENSION_NAME_REPOINIT + " extension must be of type text and not json");
                     }
                     final Configuration cfg = new Configuration("org.apache.sling.jcr.repoinit.RepositoryInitializer", "repoinit" + String.valueOf(index));
                     index++;

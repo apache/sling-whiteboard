@@ -23,6 +23,7 @@ import org.apache.sling.feature.Configurations;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.Extensions;
+import org.apache.sling.feature.FeatureConstants;
 import org.apache.sling.feature.KeyValueMap;
 import org.apache.sling.feature.io.ArtifactHandler;
 import org.apache.sling.feature.io.ArtifactManager;
@@ -30,7 +31,6 @@ import org.apache.sling.feature.io.ArtifactManagerConfig;
 import org.apache.sling.feature.io.IOUtils;
 import org.apache.sling.feature.io.json.ApplicationJSONWriter;
 import org.apache.sling.feature.io.json.FeatureJSONWriter;
-import org.apache.sling.feature.support.SlingConstants;
 import org.apache.sling.provisioning.model.Artifact;
 import org.apache.sling.provisioning.model.ArtifactGroup;
 import org.apache.sling.provisioning.model.Configuration;
@@ -335,7 +335,7 @@ public class ProvisioningToFeature {
             variables.put(FeatureToProvisioning.PROVISIONING_MODEL_NAME_VARIABLE, feature.getName());
         }
 
-        Extension cpExtension = extensions.getByName(SlingConstants.EXTENSION_NAME_CONTENT_PACKAGES);
+        Extension cpExtension = extensions.getByName(FeatureConstants.EXTENSION_NAME_CONTENT_PACKAGES);
         for(final RunMode runMode : feature.getRunModes() ) {
             for(final ArtifactGroup group : runMode.getArtifactGroups()) {
                 for(final Artifact artifact : group) {
@@ -348,7 +348,7 @@ public class ProvisioningToFeature {
 
                     if ( newArtifact.getId().getType().equals("zip") ) {
                         if ( cpExtension == null ) {
-                            cpExtension = new Extension(ExtensionType.ARTIFACTS, SlingConstants.EXTENSION_NAME_CONTENT_PACKAGES, true);
+                            cpExtension = new Extension(ExtensionType.ARTIFACTS, FeatureConstants.EXTENSION_NAME_CONTENT_PACKAGES, true);
                             extensions.add(cpExtension);
                         }
                         cpExtension.getArtifacts().add(newArtifact);
@@ -411,7 +411,7 @@ public class ProvisioningToFeature {
                 }
             }
         }
-        Extension repoExtension = extensions.getByName(SlingConstants.EXTENSION_NAME_REPOINIT);
+        Extension repoExtension = extensions.getByName(FeatureConstants.EXTENSION_NAME_REPOINIT);
         for(final Section sect : feature.getAdditionalSections("repoinit")) {
             String text = sect.getContents();
             if ( repoExtension == null ) {
@@ -419,7 +419,7 @@ public class ProvisioningToFeature {
 //                extensions.add(repoExtension);
 //                repoExtension.setJSON(text);
 
-                repoExtension = new Extension(ExtensionType.JSON, SlingConstants.EXTENSION_NAME_REPOINIT, true);
+                repoExtension = new Extension(ExtensionType.JSON, FeatureConstants.EXTENSION_NAME_REPOINIT, true);
                 extensions.add(repoExtension);
                 text = text.replace('\t', ' ');
                 String[] lines = text.split("[\n]");

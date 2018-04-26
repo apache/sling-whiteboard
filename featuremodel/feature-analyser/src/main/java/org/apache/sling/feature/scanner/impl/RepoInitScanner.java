@@ -16,14 +16,15 @@
  */
 package org.apache.sling.feature.scanner.impl;
 
-import java.io.IOException;
-
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
+import org.apache.sling.feature.FeatureConstants;
 import org.apache.sling.feature.io.ArtifactManager;
 import org.apache.sling.feature.scanner.ContainerDescriptor;
 import org.apache.sling.feature.scanner.spi.ExtensionScanner;
 import org.apache.sling.feature.support.SlingConstants;
+
+import java.io.IOException;
 
 public class RepoInitScanner implements ExtensionScanner {
 
@@ -41,7 +42,7 @@ public class RepoInitScanner implements ExtensionScanner {
     public ContainerDescriptor scan(final Extension extension,
             final ArtifactManager artifactManager)
     throws IOException {
-        if (!SlingConstants.EXTENSION_NAME_REPOINIT.equals(extension.getName()) ) {
+        if (!FeatureConstants.EXTENSION_NAME_REPOINIT.equals(extension.getName()) ) {
             return null;
         }
         if ( extension.getType() != ExtensionType.TEXT ) {
