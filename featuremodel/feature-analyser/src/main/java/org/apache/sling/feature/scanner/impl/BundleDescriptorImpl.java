@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
@@ -34,8 +33,6 @@ import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.PackageInfo;
 import org.osgi.framework.Constants;
-import org.osgi.resource.Capability;
-import org.osgi.resource.Requirement;
 
 /**
  * Information about a bundle
@@ -74,23 +71,6 @@ public class BundleDescriptorImpl
             throw new IOException("File has no manifest");
         }
         this.analyze();
-        this.lock();
-    }
-
-    public BundleDescriptorImpl(final Artifact artifact,
-            final Set<PackageInfo> pcks,
-            final Set<Requirement> reqs,
-            final Set<Capability> caps) throws IOException {
-        this.artifact = artifact;
-        this.artifactFile = null;
-        this.startLevel = 0;
-
-        this.symbolicName = Constants.SYSTEM_BUNDLE_SYMBOLICNAME;
-        this.bundleVersion = artifact.getId().getOSGiVersion().toString();
-        this.getExportedPackages().addAll(pcks);
-        this.getRequirements().addAll(reqs);
-        this.getCapabilities().addAll(caps);
-        this.manifest = null;
         this.lock();
     }
 
