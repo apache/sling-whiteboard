@@ -25,7 +25,6 @@ import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.FeatureConstants;
 import org.apache.sling.feature.io.ArtifactHandler;
 import org.apache.sling.feature.io.ArtifactManager;
-import org.apache.sling.feature.support.SlingConstants;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -48,6 +47,9 @@ import java.util.zip.ZipOutputStream;
  *
  */
 public class KarafFeatureWriter {
+    private static final String REQUIRE_REPOINIT_CAPABILITY =
+            "osgi.implementation;filter:=\"(&(osgi.implementation=org.apache.sling.jcr.repoinit)(version>=1.0)(!(version>=2.0)))\"";
+
 
     public static void writeKAR(final OutputStream os,
             final Feature feature,
@@ -74,8 +76,7 @@ public class KarafFeatureWriter {
                     if ( repoinitExt == null ) {
                         map = null;
                     } else {
-                        map = Collections.singletonMap("Require-Capability",
-                                SlingConstants.REQUIRE_REPOINIT_CAPABILITY);
+                        map = Collections.singletonMap("Require-Capability", REQUIRE_REPOINIT_CAPABILITY);
                     }
                     ConfigurationUtil.createConfiguratorBundle(os,
                             configs,
