@@ -18,7 +18,8 @@
  */
 package org.apache.sling.feature.analyser.task.impl;
 
-import org.apache.sling.commons.osgi.ManifestHeader;
+import org.apache.felix.utils.manifest.Clause;
+import org.apache.felix.utils.manifest.Parser;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 import org.apache.sling.feature.scanner.BundleDescriptor;
@@ -65,10 +66,10 @@ public class CheckBundlesForInitialContent implements AnalyserTask {
         if ( m != null ) {
             final String root =  m.getMainAttributes().getValue(CONTENT_HEADER);
             if (root != null) {
-                final ManifestHeader header = ManifestHeader.parse(root);
-                for (final ManifestHeader.Entry entry : header.getEntries()) {
+                Clause[] clauses = Parser.parseHeader(root);
+                for (final Clause entry :clauses) {
 
-                    String path = entry.getDirectiveValue(PATH_DIRECTIVE);
+                    String path = entry.getDirective(PATH_DIRECTIVE);
                     if (path == null) {
                         path = "/";
                     } else if (!path.startsWith("/")) {
