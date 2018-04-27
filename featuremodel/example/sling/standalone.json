@@ -1,7 +1,0 @@
-{
-    "id": "generated/standalone/1.0.0",
-    "bundles": [
-        "org.apache.felix/org.apache.felix.http.jetty/3.4.4",
-        "org.apache.felix/org.apache.felix.http.servlet-api/1.1.2"
-    ]
-}
