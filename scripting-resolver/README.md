@@ -1,4 +1,4 @@
-Apache Sling Scripting Reloaded
+Apache Sling Scripting Reloaded [![Build Status](https://builds.apache.org/buildStatus/icon?job=sling-whiteboard-scripting-resolver)](https://builds.apache.org/view/S-Z/view/Sling-Dashboard/job/sling-whiteboard-scripting-resolver/)
 ====
 
 ## Overview
