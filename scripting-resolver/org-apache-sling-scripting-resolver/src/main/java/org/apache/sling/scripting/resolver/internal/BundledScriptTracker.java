@@ -50,6 +50,7 @@ import org.apache.sling.commons.osgi.PropertiesUtil;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
+import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.Version;
@@ -121,6 +122,7 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<List<Servic
                 {
                     Hashtable<String, Object> properties = new Hashtable<>();
                     properties.put(ServletResolverConstants.SLING_SERVLET_NAME, BundledScriptServlet.class.getName());
+                    properties.put(Constants.SERVICE_DESCRIPTION, cap.toString());
 
                     Map<String, Object> attributes = cap.getAttributes();
                     String resourceType = (String) attributes.get(NS_SLING_RESOURCE_TYPE);
