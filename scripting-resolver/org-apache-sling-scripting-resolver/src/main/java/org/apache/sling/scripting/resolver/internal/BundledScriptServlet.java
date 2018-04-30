@@ -131,7 +131,8 @@ class BundledScriptServlet extends GenericServlet {
         RequestPathInfo requestPathInfo = request.getRequestPathInfo();
         String selectorString = requestPathInfo.getSelectorString();
         String requestExtension = requestPathInfo.getExtension();
-        return request.getResource().getResourceType() + (StringUtils.isNotEmpty(selectorString) ? ":" + selectorString : "") +
+        return request.getMethod() + ":" + request.getResource().getResourceType() +
+                (StringUtils.isNotEmpty(selectorString) ? ":" + selectorString : "") +
                 (StringUtils.isNotEmpty(requestExtension) ? ":" + requestExtension : "");
     }
 }
