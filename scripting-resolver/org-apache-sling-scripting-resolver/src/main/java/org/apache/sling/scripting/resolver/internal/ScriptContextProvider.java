@@ -21,8 +21,11 @@ package org.apache.sling.scripting.resolver.internal;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import javax.script.Bindings;
 import javax.script.ScriptContext;
@@ -49,6 +52,8 @@ import org.slf4j.LoggerFactory;
         service = ScriptContextProvider.class
 )
 public class ScriptContextProvider {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ScriptContextProvider.class);
 
     private BundleContext m_bundleContext;
 
@@ -97,9 +102,11 @@ public class ScriptContextProvider {
             bindingsValuesProvider.addBindings(protectedBindings);
         }
         ScriptContext scriptContext = new BundledScriptContext();
-        scriptContext.setBindings(new SimpleBindings(), SlingScriptConstants.SLING_SCOPE);
-        scriptContext.setAttribute(SlingScriptConstants.ATTR_SCRIPT_RESOURCE_RESOLVER, scriptingResourceResolverProvider
-                .getRequestScopedResourceResolver(), SlingScriptConstants.SLING_SCOPE);
+        Map<String, Supplier<Object>> slingBindingsSuppliers = new HashMap<>();
+        slingBindingsSuppliers.put(SlingScriptConstants.ATTR_SCRIPT_RESOURCE_RESOLVER,
+                () -> scriptingResourceResolverProvider.getRequestScopedResourceResolver());
+        LazyBindings slingScopeBindings = new LazyBindings(Collections.unmodifiableMap(slingBindingsSuppliers));
+        scriptContext.setBindings(slingScopeBindings, SlingScriptConstants.SLING_SCOPE);
         scriptContext.setBindings(bindings, ScriptContext.ENGINE_SCOPE);
         scriptContext.setWriter(response.getWriter());
         scriptContext.setErrorWriter(new LogWriter(scriptLogger));
