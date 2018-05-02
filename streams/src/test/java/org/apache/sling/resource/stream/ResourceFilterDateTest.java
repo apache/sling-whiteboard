@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.resource.stream.parser.ParseException;
+import org.apache.sling.resource.stream.impl.ParseException;
 import org.apache.sling.testing.mock.sling.junit.SlingContext;
 import org.junit.Before;
 import org.junit.Rule;
@@ -47,7 +47,7 @@ public class ResourceFilterDateTest {
 		found = handle(START_PATH, query);
 		assertEquals(3, found.size());
 
-		query = "[jcr:content/created] < '2013-08-08T16:32'";
+		query = "[jcr:content/created] < 2013-08-08T16:32";
 		found = handle(START_PATH, query);
 		assertEquals(3, found.size());
 
@@ -55,31 +55,31 @@ public class ResourceFilterDateTest {
 		found = handle(START_PATH, query);
 		assertEquals(3, found.size());
 
-		query = "[jcr:content/created] less than '2013-08-07T14:32:59'";
+		query = "[jcr:content/created] less than 2013-08-07T14:32:59";
 		found = handle(START_PATH, query);
 		assertEquals(2, found.size());
 
-		query = "[jcr:content/created] <= '2013-08-07T14:32:59'";
+		query = "[jcr:content/created] <= 2013-08-07T14:32:59";
 		found = handle(START_PATH, query);
 		assertEquals(3, found.size());
 
-		query = "[jcr:content/created] <= '2013-08-07T14:32'";
+		query = "[jcr:content/created] <= 2013-08-07T14:32";
 		found = handle(START_PATH, query);
 		assertEquals(2, found.size());
 
-		query = "[jcr:content/created] < '2013-08-07T14:32:59.010'";
+		query = "[jcr:content/created] < 2013-08-07T14:32:59.010";
 		found = handle(START_PATH, query);
 		assertEquals(3, found.size());
 
-		query = "[jcr:content/created] > '2013-08-07T14:32'";
+		query = "[jcr:content/created] > 2013-08-07T14:32";
 		found = handle(START_PATH, query);
 		assertEquals(3, found.size());
 
-		query = "[jcr:content/created] greater than '2013-08-07T14:32:59'";
+		query = "[jcr:content/created] greater than 2013-08-07T14:32:59";
 		found = handle(START_PATH, query);
 		assertEquals(2, found.size());
 
-		query = "[jcr:content/created] >= '2013-08-07T14:32:59'";
+		query = "[jcr:content/created] >= 2013-08-07T14:32:59";
 		found = handle(START_PATH, query);
 		assertEquals(3, found.size());
 

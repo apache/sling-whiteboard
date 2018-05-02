@@ -19,10 +19,11 @@ options
 }
 
 PARSER_BEGIN(FilterParser)
-package org.apache.sling.resource.stream.parser;
+package org.apache.sling.resource.stream.impl;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.sling.resource.stream.parser.node.*;
+import org.apache.sling.resource.stream.impl.node.*;
 
 public final class FilterParser
 {
@@ -38,15 +39,19 @@ SKIP :
 
 TOKEN :
 {
-  < #DOT: "." >
-| < #PLUS: "+" >
+  < #PLUS: "+" >
 | < #MINUS: "-" >
 | < #DIGIT: [ "0"-"9" ] >
 | < #EXP: ["e","E"] ( < PLUS > | < MINUS > )? >
-| < DATE: <INTEGER> <INTEGER> <INTEGER> <INTEGER> <MINUS> ["0"-"2"] <INTEGER> <MINUS> ["0"-"3"] <DIGIT> (["t","T"] ["0"-"2"] <DIGIT> ":" ["0"-"5"] <DIGIT> ( ":" ["0"-"5"] <DIGIT> ("." <DIGIT>  <DIGIT>  <DIGIT>)? (["+","-"]["0"-"2"] <DIGIT> ":" ["0"-"5"] <DIGIT> )? )?  )? >
+| < #OFFSET: ["+","-"]["0"-"2"] <DIGIT> ":" ["0"-"5"] <DIGIT> >
+| < #YYYYMMDD: <INTEGER> <INTEGER> <INTEGER> <INTEGER> <MINUS> ["0"-"1"] <INTEGER> <MINUS> ["0"-"3"] <DIGIT> >
+| < #TIME: ["0"-"2"] <DIGIT> ":" ["0"-"5"] <DIGIT> ( ":" ["0"-"5"] <DIGIT> ("." <DIGIT>  <DIGIT>  <DIGIT>)? )? >
+| < OFFSETDATETIME: <YYYYMMDD> "T" <TIME> <OFFSET> >
+| < DATETIME: <YYYYMMDD> "T" <TIME> >
+| < DATE: <YYYYMMDD> >
 | < NUMBER:  <INTEGER> | <INTEGER> <FRACTIONAL_DIGITS> | <INTEGER> <EXPONENT> | <INTEGER> <FRACTIONAL_DIGITS> <EXPONENT> >
 | < INTEGER: (<MINUS>)? ( <DIGITS> ) >
-| < FRACTIONAL_DIGITS: <DOT> <DIGITS> >
+| < FRACTIONAL_DIGITS: "." <DIGITS> >
 | < EXPONENT: <EXP> <DIGITS> >
 | < DIGITS: ( <DIGIT> )+ >
 }
@@ -80,7 +85,7 @@ TOKEN :
       "||"
     | "or"
     ) >
-| < NULL : " null" >
+| < NULL : "null" >
 | < LPAREN : "(" >
 | < RPAREN : ")" >
 | < COMMA : "," >
@@ -91,7 +96,7 @@ TOKEN :
 | < GREATER_THAN_OR_EQUAL : ">=" >
 | < LESS_THAN : "<" | "less than" >
 | < LESS_THAN_OR_EQUAL : "<=" >
-| < LIKE : "like" >
+| < LIKE : "~=" | "like" >
 | < LIKE_NOT : "like not" | "not like" >
 | < CONTAINS : "contains" >
 | < CONTAINS_NOT : "contains not" >
@@ -299,6 +304,8 @@ Node literal() :
   | < NULL >
   | < BOOLEAN >
   | < DATE >
+  | < DATETIME >
+  | < OFFSETDATETIME >
   )
   {
     return new Node(token.kind, token.image);

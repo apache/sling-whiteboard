@@ -22,9 +22,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.resource.stream.ResourceFilter;
-import org.apache.sling.resource.stream.ResourceStream;
-import org.apache.sling.resource.stream.parser.ParseException;
+import org.apache.sling.resource.stream.impl.ParseException;
 import org.apache.sling.testing.mock.sling.junit.SlingContext;
 import org.junit.Before;
 import org.junit.Rule;
@@ -154,7 +152,7 @@ public class ResourceFilterTest {
 		List<Resource> found = handle(START_PATH, query);
 		assertEquals(5, found.size());
 	}
-	
+
 	@Test
 	public void testNotProperty() throws ParseException {
 		String query = "[layout] != 'foo' ";
@@ -255,7 +253,8 @@ public class ResourceFilterTest {
 		} catch (ParseException e) {
 			error = e;
 		}
-		assert(error.getMessage().startsWith("Encountered \" <PROPERTY> \"jcr:content/monkey \"\" at line 1, column 15."));
+		assert (error.getMessage()
+				.startsWith("Encountered \" <PROPERTY> \"jcr:content/monkey \"\" at line 1, column 15."));
 	}
 
 	private List<Resource> handle(String path, String filter) throws ParseException {

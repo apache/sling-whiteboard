@@ -11,13 +11,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.resource.stream.parser.predicates;
+package org.apache.sling.resource.stream.impl.predicates;
 
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.resource.stream.parser.FilterParserConstants;
+import org.apache.sling.resource.stream.impl.FilterParserConstants;
 
 public class ComparisonPredicateFactory {
 

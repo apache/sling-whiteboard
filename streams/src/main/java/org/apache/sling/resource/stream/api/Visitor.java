@@ -11,9 +11,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.resource.stream.parser.api;
+package org.apache.sling.resource.stream.api;
 
-import org.apache.sling.resource.stream.parser.node.Node;
+import org.apache.sling.resource.stream.impl.node.Node;
 
 /**
  * An interface for visiting AST nodes of the RSQL.

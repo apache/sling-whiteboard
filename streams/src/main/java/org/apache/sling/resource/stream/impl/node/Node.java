@@ -11,13 +11,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.resource.stream.parser.node;
+package org.apache.sling.resource.stream.impl.node;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.sling.resource.stream.parser.api.Visitor;
+import org.apache.sling.resource.stream.api.Visitor;
 
 /**
  * 

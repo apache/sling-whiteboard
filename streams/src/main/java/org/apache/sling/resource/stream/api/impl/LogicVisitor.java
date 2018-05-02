@@ -11,16 +11,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.resource.stream.parser.visitor;
+package org.apache.sling.resource.stream.api.impl;
 
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.resource.stream.parser.FilterParserConstants;
-import org.apache.sling.resource.stream.parser.api.Visitor;
-import org.apache.sling.resource.stream.parser.node.Node;
-import org.apache.sling.resource.stream.parser.predicates.ComparisonPredicateFactory;
+import org.apache.sling.resource.stream.api.Context;
+import org.apache.sling.resource.stream.api.Visitor;
+import org.apache.sling.resource.stream.impl.FilterParserConstants;
+import org.apache.sling.resource.stream.impl.node.Node;
+import org.apache.sling.resource.stream.impl.predicates.ComparisonPredicateFactory;
 
 /**
  * Visitor implementation that handles the high level handling of logic between
@@ -32,7 +33,12 @@ import org.apache.sling.resource.stream.parser.predicates.ComparisonPredicateFac
  */
 public class LogicVisitor implements Visitor<Predicate<Resource>> {
 
-	private ComparisonVisitor valueVisitor = new ComparisonVisitor();
+	private Context context;
+
+	public LogicVisitor(Context context) {
+		this.context = context;
+		context.setLogicVisitor(this);
+	}
 
 	@Override
 	public Predicate<Resource> visit(Node node) {
@@ -76,13 +82,10 @@ public class LogicVisitor implements Visitor<Predicate<Resource>> {
 	}
 
 	private Predicate<Resource> createComparisonPredicate(Node comparisonNode) {
-		Function<Resource, Object> leftValue = comparisonNode.leftNode.accept(valueVisitor);
-		Function<Resource, Object> rightValue = comparisonNode.rightNode.accept(valueVisitor);
+		Function<Resource, Object> leftValue = comparisonNode.leftNode.accept(context.getComparisonVisitor());
+		Function<Resource, Object> rightValue = comparisonNode.rightNode.accept(context.getComparisonVisitor());
 		return ComparisonPredicateFactory.toPredicate(comparisonNode.kind, leftValue, rightValue);
 	}
 
-	public ComparisonVisitor getValueVisitor() {
-		return valueVisitor;
-	}
 
 }

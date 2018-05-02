@@ -17,23 +17,41 @@ import java.io.ByteArrayInputStream;
 import java.util.function.Predicate;
 
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.resource.stream.parser.FilterParser;
-import org.apache.sling.resource.stream.parser.ParseException;
-import org.apache.sling.resource.stream.parser.node.Node;
-import org.apache.sling.resource.stream.parser.visitor.LogicVisitor;
+import org.apache.sling.resource.stream.api.Context;
+import org.apache.sling.resource.stream.api.impl.ComparisonVisitor;
+import org.apache.sling.resource.stream.api.impl.DefaultContext;
+import org.apache.sling.resource.stream.api.impl.LogicVisitor;
+import org.apache.sling.resource.stream.impl.FilterParser;
+import org.apache.sling.resource.stream.impl.ParseException;
+import org.apache.sling.resource.stream.impl.node.Node;
 
 public class ResourceFilter implements Predicate<Resource> {
 
 	private Predicate<Resource> parsedPredicate;
 	
+	private Context context;
+	
 	public ResourceFilter(String filter) throws ParseException {
-		Node rootNode =new FilterParser(new ByteArrayInputStream(filter.getBytes())).parse();
-		this.parsedPredicate = rootNode.accept(new LogicVisitor());
+		Node rootNode = new FilterParser(new ByteArrayInputStream(filter.getBytes())).parse();
+		this.parsedPredicate = rootNode.accept(getContext().getLogicVisitor());
 	}
 
 	@Override
 	public boolean test(Resource resource) {
 		return parsedPredicate.test(resource);
+	}
+	
+	public Context getContext() {
+		if (context == null) {
+			context = new DefaultContext();
+			new LogicVisitor(context);
+			new ComparisonVisitor(context);
+		}
+		return context;
+	}
+	
+	public void setContext(Context context) {
+		this.context = context;
 	}
 	
 }

@@ -11,9 +11,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.resource.stream.parser.api;
+package org.apache.sling.resource.stream.api;
 
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import org.apache.sling.api.resource.Resource;
@@ -24,19 +25,18 @@ import org.apache.sling.api.resource.Resource;
  * Comparison
  * 
  */
-public interface ResourceFilterFunction {
+public interface FilterFunction extends BiFunction<List<Function<Resource, Object>>, Resource, Object>   {
 
 	/**
-	 * This method returns a {@code Function} which accepts the resource being
-	 * tested and returns an Object to be used as part of a comparison.
+	 * This method returns a {@code Object} to be used as part of a comparison.
 	 * 
 	 * @param arguments
 	 *            A list of {@code Function}'s which provides the arguments defined
 	 *            in the script, to obtain the arguments, each argument must be
 	 *            called
-	 * @return A {@code Function} which will provide a String, Instant, or Number to
+	 * @return A {@code Object} which should be a String, Instant, or Number to
 	 *         be used as part of a comparison or Function
 	 */
-	Function<Resource, Object> provision(List<Function<Resource, Object>> arguments);
+	Object apply(List<Function<Resource, Object>> arguments, Resource resource);
 
 }
