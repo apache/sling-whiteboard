@@ -35,4 +35,4 @@ For a detailed view of how this project works please check each module's documen
 
 [1] - https://wiki.apache.org/jackrabbit/DavidsModel  
 [2] - https://osgi.org/download/r6/osgi.core-6.0.0.pdf, Page 41, section 3.3.3 "Bundle Capabilities"  
-[3] - https://github.com/apache/sling-whiteboard/tree/master/featuremodel
+[3] - https://github.com/apache/sling-org-apache-sling-feature
