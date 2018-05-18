@@ -27,31 +27,31 @@ import org.apache.sling.resource.stream.impl.node.Node;
 
 public class ResourceFilter implements Predicate<Resource> {
 
-	private Predicate<Resource> parsedPredicate;
-	
-	private Context context;
-	
-	public ResourceFilter(String filter) throws ParseException {
-		Node rootNode = new FilterParser(new ByteArrayInputStream(filter.getBytes())).parse();
-		this.parsedPredicate = rootNode.accept(getContext().getLogicVisitor());
-	}
+    private Predicate<Resource> parsedPredicate;
 
-	@Override
-	public boolean test(Resource resource) {
-		return parsedPredicate.test(resource);
-	}
-	
-	public Context getContext() {
-		if (context == null) {
-			context = new DefaultContext();
-			new LogicVisitor(context);
-			new ComparisonVisitor(context);
-		}
-		return context;
-	}
-	
-	public void setContext(Context context) {
-		this.context = context;
-	}
-	
+    private Context context;
+
+    public ResourceFilter(String filter) throws ParseException {
+        Node rootNode = new FilterParser(new ByteArrayInputStream(filter.getBytes())).parse();
+        this.parsedPredicate = rootNode.accept(getContext().getLogicVisitor());
+    }
+
+    @Override
+    public boolean test(Resource resource) {
+        return parsedPredicate.test(resource);
+    }
+
+    public Context getContext() {
+        if (context == null) {
+            context = new DefaultContext();
+            new LogicVisitor(context);
+            new ComparisonVisitor(context);
+        }
+        return context;
+    }
+
+    public void setContext(Context context) {
+        this.context = context;
+    }
+
 }

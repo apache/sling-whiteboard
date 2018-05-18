@@ -22,23 +22,23 @@ import java.util.function.Predicate;
 import org.apache.sling.api.resource.Resource;
 
 public interface Context {
-	
-	Context addFunction(String name, BiFunction<List<Function<Resource, Object>>, Resource, Object>   function);
-	
-	Context removeFunction(String name);
-	
-	Context addArgument(String name, Object object);
-	
-	Visitor<Predicate<Resource>> getLogicVisitor();
-	
-	Visitor<Function<Resource, Object>> getComparisonVisitor();
 
-	void setLogicVisitor(Visitor<Predicate<Resource>> logicVisitor);
+    Context addFunction(String name, BiFunction<List<Function<Resource, Object>>, Resource, Object> functionImpl);
 
-	void setComparionVisitor(Visitor<Function<Resource, Object>> comparisonVisitor);
+    Context removeFunction(String name);
 
-	Optional<BiFunction<List<Function<Resource, Object>>, Resource, Object>> getFunction(String text);
-	
-	Optional<Object> getArgument(String text);
+    Context addArgument(String name, Object object);
+
+    Visitor<Predicate<Resource>> getLogicVisitor();
+
+    Visitor<Function<Resource, Object>> getComparisonVisitor();
+
+    void setLogicVisitor(Visitor<Predicate<Resource>> logicVisitor);
+
+    void setComparionVisitor(Visitor<Function<Resource, Object>> comparisonVisitor);
+
+    Optional<BiFunction<List<Function<Resource, Object>>, Resource, Object>> getFunction(String text);
+
+    Optional<Object> getArgument(String text);
 
 }

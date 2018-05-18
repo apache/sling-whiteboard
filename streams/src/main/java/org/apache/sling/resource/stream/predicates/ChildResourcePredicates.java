@@ -40,42 +40,42 @@ import org.apache.sling.api.resource.Resource;
  */
 public class ChildResourcePredicates {
 
-	private final String name;
+    private final String name;
 
-	private ChildResourcePredicates(String name) {
-		this.name = Objects.requireNonNull(name, "name value may not be null");
-		;
-	}
+    private ChildResourcePredicates(String name) {
+        this.name = Objects.requireNonNull(name, "name value may not be null");
+        ;
+    }
 
-	/**
-	 * Instantiates a ChildResourcePredicate object to provide the application of
-	 * Predicates against the named child
-	 * 
-	 * @param name
-	 *            of the expected child resource
-	 * @return Object providing helper predicates for a child resource
-	 */
-	static public ChildResourcePredicates child(String name) {
-		return new ChildResourcePredicates(name);
-	}
+    /**
+     * Instantiates a ChildResourcePredicate object to provide the application of
+     * Predicates against the named child
+     * 
+     * @param name
+     *            of the expected child resource
+     * @return Object providing helper predicates for a child resource
+     */
+    static public ChildResourcePredicates child(String name) {
+        return new ChildResourcePredicates(name);
+    }
 
-	/**
-	 * Applies a predicate against the named child resource. The returned predicate
-	 * will always return 'false' for a child that doesn't exist
-	 * 
-	 * @param predicate
-	 *            to be used against the child resource
-	 * @return Predicate which will apply the given predicate to the child resource
-	 */
-	public Predicate<Resource> has(Predicate<Resource> predicate) {
-		Objects.requireNonNull(predicate, "predicate may not be null");
-		return resource -> {
-			Resource child = resource.getChild(name);
-			if (child != null) {
-				return predicate.test(child);
-			}
-			return false;
-		};
-	}
+    /**
+     * Applies a predicate against the named child resource. The returned predicate
+     * will always return 'false' for a child that doesn't exist
+     * 
+     * @param predicate
+     *            to be used against the child resource
+     * @return Predicate which will apply the given predicate to the child resource
+     */
+    public Predicate<Resource> has(Predicate<Resource> predicate) {
+        Objects.requireNonNull(predicate, "predicate may not be null");
+        return resource -> {
+            Resource child = resource.getChild(name);
+            if (child != null) {
+                return predicate.test(child);
+            }
+            return false;
+        };
+    }
 
 }

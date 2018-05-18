@@ -35,76 +35,77 @@ import org.apache.sling.resource.stream.impl.predicates.Null;
 
 public class ComparisonVisitor implements Visitor<Function<Resource, Object>> {
 
-	private Context context;
+    private Context context;
 
-	public ComparisonVisitor(Context context) {
-		this.context = context;
-		context.setComparionVisitor(this);
-	}
+    public ComparisonVisitor(Context context) {
+        this.context = context;
+        context.setComparionVisitor(this);
+    }
 
-	@Override
-	public Function<Resource, Object> visit(Node node) {
-		switch (node.kind) {
-		case FilterParserConstants.FUNCTION_NAME:
-			// will only get here in the case of the 'FUNCTION' switch case
-			switch (node.text) {
-			case "name":
-				return Resource::getName;
-			case "path":
-				return Resource::getPath;
-			default:
-				Optional<BiFunction<List<Function<Resource, Object>>, Resource, Object>> temp = context.getFunction(node.text);
-				if (temp.isPresent()) {
-					final List<Function<Resource, Object>> arguments = node.visitChildren(this);
-					return resource -> temp.get().apply(arguments, resource);
-				}
-			}
-			break;
-		case FilterParserConstants.NULL:
-			return resource -> new Null();
-		case FilterParserConstants.NUMBER:
-			Number numericValue = null; {
-			String numberText = node.text;
-			try {
-				numericValue = Integer.valueOf(numberText);
-			} catch (NumberFormatException nfe1) {
-				try {
-					numericValue = new BigDecimal(numberText);
-				} catch (NumberFormatException nfe2) {
-					// swallow
-				}
-			}
-		}
-			final Number numericReply = numericValue;
-			return resource -> numericReply;
-		case FilterParserConstants.OFFSETDATETIME:
-			return resource -> OffsetDateTime.parse(node.text).toInstant();
-		case FilterParserConstants.DATETIME:
-			return resource -> LocalDateTime.parse(node.text).atOffset(ZoneOffset.UTC).toInstant();
-		case FilterParserConstants.DATE:
-			return resource -> LocalDate.parse(node.text).atStartOfDay(ZoneOffset.UTC).toInstant();
-		case FilterParserConstants.PROPERTY:
-			return resource -> {
-				Object value = valueMapOf(resource).get(node.text);
-				if (value instanceof Boolean) {
-					return value.toString();
-				}
-				if (value instanceof Calendar) {
-					return ((Calendar) value).toInstant();
-				}
-				return value;
-			};
-		default:
-			return resource -> node.text;
-		}
-		return null;
-	}
+    @Override
+    public Function<Resource, Object> visit(Node node) {
+        switch (node.kind) {
+        case FilterParserConstants.FUNCTION_NAME:
+            // will only get here in the case of the 'FUNCTION' switch case
+            switch (node.text) {
+            case "name":
+                return Resource::getName;
+            case "path":
+                return Resource::getPath;
+            default:
+                Optional<BiFunction<List<Function<Resource, Object>>, Resource, Object>> temp = context
+                        .getFunction(node.text);
+                if (temp.isPresent()) {
+                    final List<Function<Resource, Object>> arguments = node.visitChildren(this);
+                    return resource -> temp.get().apply(arguments, resource);
+                }
+            }
+            break;
+        case FilterParserConstants.NULL:
+            return resource -> new Null();
+        case FilterParserConstants.NUMBER:
+            Number numericValue = null; {
+            String numberText = node.text;
+            try {
+                numericValue = Integer.valueOf(numberText);
+            } catch (NumberFormatException nfe1) {
+                try {
+                    numericValue = new BigDecimal(numberText);
+                } catch (NumberFormatException nfe2) {
+                    // swallow
+                }
+            }
+        }
+            final Number numericReply = numericValue;
+            return resource -> numericReply;
+        case FilterParserConstants.OFFSETDATETIME:
+            return resource -> OffsetDateTime.parse(node.text).toInstant();
+        case FilterParserConstants.DATETIME:
+            return resource -> LocalDateTime.parse(node.text).atOffset(ZoneOffset.UTC).toInstant();
+        case FilterParserConstants.DATE:
+            return resource -> LocalDate.parse(node.text).atStartOfDay(ZoneOffset.UTC).toInstant();
+        case FilterParserConstants.PROPERTY:
+            return resource -> {
+                Object value = valueMapOf(resource).get(node.text);
+                if (value instanceof Boolean) {
+                    return value.toString();
+                }
+                if (value instanceof Calendar) {
+                    return ((Calendar) value).toInstant();
+                }
+                return value;
+            };
+        default:
+            return resource -> node.text;
+        }
+        return null;
+    }
 
-	private ValueMap valueMapOf(Resource resource) {
-		if (resource == null || ResourceUtil.isNonExistingResource(resource)) {
-			return ValueMap.EMPTY;
-		}
-		return resource.adaptTo(ValueMap.class);
-	}
+    private ValueMap valueMapOf(Resource resource) {
+        if (resource == null || ResourceUtil.isNonExistingResource(resource)) {
+            return ValueMap.EMPTY;
+        }
+        return resource.adaptTo(ValueMap.class);
+    }
 
 }

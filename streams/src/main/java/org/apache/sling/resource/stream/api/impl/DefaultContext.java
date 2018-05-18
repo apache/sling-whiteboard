@@ -27,71 +27,71 @@ import org.apache.sling.resource.stream.api.Visitor;
 
 public class DefaultContext implements Context {
 
-	private Map<String, BiFunction<List<Function<Resource, Object>>, Resource, Object>> functions = new HashMap<>();
-	
-	private Map<String, Object> arguments = new HashMap<>();
+    private Map<String, BiFunction<List<Function<Resource, Object>>, Resource, Object>> functions = new HashMap<>();
 
-	private Visitor<Predicate<Resource>> logicVisitor;
+    private Map<String, Object> arguments = new HashMap<>();
 
-	private Visitor<Function<Resource, Object>> comparisonVisitor;
-	
-	{
-		functions.put("date", new InstantProvider());
-	}
-	
-	public DefaultContext() {
-	}
+    private Visitor<Predicate<Resource>> logicVisitor;
 
-	@Override
-	public Context addFunction(String name, BiFunction<List<Function<Resource, Object>>, Resource, Object> function) {
-		functions.put(name, function);
-		return this;
-	}
+    private Visitor<Function<Resource, Object>> comparisonVisitor;
 
-	@Override
-	public Context removeFunction(String name) {
-		functions.remove(name);
-		return this;
-	}
+    {
+        functions.put("date", new InstantProvider());
+    }
 
-	@Override
-	public Context addArgument(String name, Object object) {
-		arguments.put(name, object);
-		return this;
-	}
+    public DefaultContext() {
+    }
 
-	@Override
-	public Visitor<Predicate<Resource>> getLogicVisitor() {
-		return logicVisitor;
-	}
+    @Override
+    public Context addFunction(String name,
+            BiFunction<List<Function<Resource, Object>>, Resource, Object> functionImpl) {
+        functions.put(name, functionImpl);
+        return this;
+    }
 
-	@Override
-	public Visitor<Function<Resource, Object>> getComparisonVisitor() {
-		return comparisonVisitor;
-	}
+    @Override
+    public Context removeFunction(String name) {
+        functions.remove(name);
+        return this;
+    }
 
-	@Override
-	public void setLogicVisitor(Visitor<Predicate<Resource>> logicVisitor) {
-		this.logicVisitor = logicVisitor;
-		
-	}
+    @Override
+    public Context addArgument(String name, Object object) {
+        arguments.put(name, object);
+        return this;
+    }
 
-	@Override
-	public void setComparionVisitor(Visitor<Function<Resource, Object>> comparisonVisitor) {
-		this.comparisonVisitor = comparisonVisitor;
-		
-	}
+    @Override
+    public Visitor<Predicate<Resource>> getLogicVisitor() {
+        return logicVisitor;
+    }
 
-	@Override
-	public Optional<BiFunction<List<Function<Resource, Object>>, Resource, Object> > getFunction(String text) {
-		return Optional.ofNullable(functions.get(text));
-	}
+    @Override
+    public Visitor<Function<Resource, Object>> getComparisonVisitor() {
+        return comparisonVisitor;
+    }
 
-	@Override
-	public Optional<Object> getArgument(String text) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public void setLogicVisitor(Visitor<Predicate<Resource>> logicVisitor) {
+        this.logicVisitor = logicVisitor;
 
+    }
+
+    @Override
+    public void setComparionVisitor(Visitor<Function<Resource, Object>> comparisonVisitor) {
+        this.comparisonVisitor = comparisonVisitor;
+
+    }
+
+    @Override
+    public Optional<BiFunction<List<Function<Resource, Object>>, Resource, Object>> getFunction(String text) {
+        return Optional.ofNullable(functions.get(text));
+    }
+
+    @Override
+    public Optional<Object> getArgument(String text) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
 }

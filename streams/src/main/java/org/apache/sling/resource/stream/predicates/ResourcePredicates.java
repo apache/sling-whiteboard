@@ -24,24 +24,24 @@ import org.apache.sling.api.resource.Resource;
  */
 public class ResourcePredicates {
 
-	/**
-	 * Convenience method to wrap the resources method 'isResourceType'
-	 * 
-	 * @param resourceType
-	 * @return predicate which evaluates
-	 */
-	public static Predicate<Resource> isResourceType(final String resourceType) {
-		return resource -> resource.isResourceType(resourceType);
-	}
+    /**
+     * Convenience method to wrap the resources method 'isResourceType'
+     * 
+     * @param resourceType
+     * @return predicate which evaluates
+     */
+    public static Predicate<Resource> isResourceType(final String resourceType) {
+        return resource -> resource.isResourceType(resourceType);
+    }
 
-	/**
-	 * Convenience method to determine depth of resource via the name pattern
-	 * 
-	 * @param resourceType
-	 * @return predicate which evaluates
-	 */
-	public static Predicate<Resource> depthIsLessThan(final int depth) {
-		return resource -> resource.getPath().split("/").length < depth;
-	}
+    /**
+     * Convenience method to determine depth of resource via the name pattern
+     * 
+     * @param resourceType
+     * @return predicate which evaluates
+     */
+    public static Predicate<Resource> depthIsLessThan(final int depth) {
+        return resource -> resource.getPath().split("/").length < depth;
+    }
 
 }

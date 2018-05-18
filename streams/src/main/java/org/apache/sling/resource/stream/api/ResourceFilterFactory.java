@@ -13,18 +13,10 @@
  */
 package org.apache.sling.resource.stream.api;
 
-import org.apache.sling.resource.stream.impl.node.Node;
+import org.apache.sling.resource.stream.ResourceFilter;
 
-/**
- * An interface for visiting AST nodes of the RSQL.
- *
- * @param <R>
- *            Return type of the visitor's method.
- * @param <A>
- *            Type of an optional parameter passed to the visitor's method.
- */
-public interface Visitor<R> {
+public interface ResourceFilterFactory {
 
-    R visit(Node abstractNode);
+    ResourceFilter getResourceFilter();
 
 }

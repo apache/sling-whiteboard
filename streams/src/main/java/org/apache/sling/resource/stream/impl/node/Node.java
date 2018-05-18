@@ -24,71 +24,74 @@ import org.apache.sling.resource.stream.api.Visitor;
  */
 public class Node {
 
-	public String text;
-	public Node leftNode;
-	public Node rightNode;
-	public List<Node> children = Collections.emptyList();
-	public int kind;
-	
-	/**
-	 * creates a node which represents a literal
-	 * 
-	 * @param value
-	 */
-	public Node(int kind, String text) {
-		this.kind = kind;
-		this.text = text;
-	}
-	
-	/**
-	 * creates a logical node
-	 * 
-	 * @param value
-	 */
-	public Node(int kind, List<Node> children) {
-		this.kind = kind;
-		this.children = children;
-	}
-	
-	/**
-	 * Node with children
-	 * 
-	 * @param value
-	 */
-	public Node(int kind, String text, List<Node> children) {
-		this.kind = kind;
-		this.text = text;
-		this.children = children;
-	}
+    public String text;
+    public Node leftNode;
+    public Node rightNode;
+    public List<Node> children = Collections.emptyList();
+    public int kind;
 
+    /**
+     * creates a node which represents a literal
+     * 
+     * @param value
+     */
+    public Node(int kind, String text) {
+        this.kind = kind;
+        this.text = text;
+    }
 
-	/**
-	 * Node used for comparison
-	 * 
-	 * @param kind nominally of type comparison
-	 * @param operator defines the type of comparison
-	 * @param leftValue basis of comparison
-	 * @param rightValue to be compared to
-	 */
-	public Node(int kind, String operator, Node leftValue, Node rightValue) {
-		this.kind = kind;
-		this.text = operator;
-		this.leftNode = leftValue;
-		this.rightNode = rightValue;
-	}
+    /**
+     * creates a logical node
+     * 
+     * @param value
+     */
+    public Node(int kind, List<Node> children) {
+        this.kind = kind;
+        this.children = children;
+    }
 
-	public <R> R accept(Visitor<R> visitor) {
-		return visitor.visit(this);
-	}
+    /**
+     * Node with children
+     * 
+     * @param value
+     */
+    public Node(int kind, String text, List<Node> children) {
+        this.kind = kind;
+        this.text = text;
+        this.children = children;
+    }
 
-	@Override
-	public String toString() {
-		return text + children.stream().map(item -> item.toString())
-				.collect(Collectors.joining(text.toString(), "(", ")"));
-	}
+    /**
+     * Node used for comparison
+     * 
+     * @param kind
+     *            nominally of type comparison
+     * @param operator
+     *            defines the type of comparison
+     * @param leftValue
+     *            basis of comparison
+     * @param rightValue
+     *            to be compared to
+     */
+    public Node(int kind, String operator, Node leftValue, Node rightValue) {
+        this.kind = kind;
+        this.text = operator;
+        this.leftNode = leftValue;
+        this.rightNode = rightValue;
+    }
 
-	public <R, A> List<R> visitChildren(Visitor<R> visitor) {
-		return children.stream().map(child -> child.accept(visitor)).collect(Collectors.toList());
-	}
+    public <R> R accept(Visitor<R> visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
+    public String toString() {
+        return text
+                + children.stream().map(item -> item.toString()).collect(Collectors.joining(text.toString(), "(", ")"));
+    }
+
+    public <R, A> List<R> visitChildren(Visitor<R> visitor) {
+        return children.stream().map(child -> child.accept(visitor)).collect(Collectors.toList());
+    }
 
 }

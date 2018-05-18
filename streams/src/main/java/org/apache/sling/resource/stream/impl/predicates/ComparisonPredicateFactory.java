@@ -21,39 +21,39 @@ import org.apache.sling.resource.stream.impl.FilterParserConstants;
 
 public class ComparisonPredicateFactory {
 
-	public static Predicate<Resource> toPredicate(int kind, Function<Resource, Object> leftValue,
-			Function<Resource, Object> rightValue) {
-		switch (kind) {
-		case FilterParserConstants.EQUAL:
-			return ComparisonPredicates.is(leftValue, rightValue);
-		case FilterParserConstants.NOT_EQUAL:
-			return ComparisonPredicates.isNot(leftValue, rightValue);
-		case FilterParserConstants.GREATER_THAN:
-			return ComparisonPredicates.gt(leftValue, rightValue);
-		case FilterParserConstants.GREATER_THAN_OR_EQUAL:
-			return ComparisonPredicates.gte(leftValue, rightValue);
-		case FilterParserConstants.LESS_THAN:
-			return ComparisonPredicates.lt(leftValue, rightValue);
-		case FilterParserConstants.LESS_THAN_OR_EQUAL:
-			return ComparisonPredicates.lte(leftValue, rightValue);
-		case FilterParserConstants.LIKE:
-			return ComparisonPredicates.like(leftValue, rightValue);
-		case FilterParserConstants.LIKE_NOT:
-			return ComparisonPredicates.like(leftValue, rightValue).negate();
-		case FilterParserConstants.CONTAINS:
-			return ComparisonPredicates.contains(leftValue, rightValue);
-		case FilterParserConstants.CONTAINS_NOT:
-			return ComparisonPredicates.contains(leftValue, rightValue).negate();
-		case FilterParserConstants.CONTAINS_ANY:
-			return ComparisonPredicates.containsAny(leftValue, rightValue);
-		case FilterParserConstants.CONTAINS_NOT_ANY:
-			return ComparisonPredicates.containsAny(leftValue, rightValue).negate();
-		case FilterParserConstants.IN:
-			return ComparisonPredicates.in(leftValue, rightValue);
-		case FilterParserConstants.NOT_IN:
-			return ComparisonPredicates.in(leftValue, rightValue).negate();
-		}
-		return null;
-	}
+    public static Predicate<Resource> toPredicate(int kind, Function<Resource, Object> leftValue,
+            Function<Resource, Object> rightValue) {
+        switch (kind) {
+        case FilterParserConstants.EQUAL:
+            return ComparisonPredicates.is(leftValue, rightValue);
+        case FilterParserConstants.NOT_EQUAL:
+            return ComparisonPredicates.isNot(leftValue, rightValue);
+        case FilterParserConstants.GREATER_THAN:
+            return ComparisonPredicates.gt(leftValue, rightValue);
+        case FilterParserConstants.GREATER_THAN_OR_EQUAL:
+            return ComparisonPredicates.gte(leftValue, rightValue);
+        case FilterParserConstants.LESS_THAN:
+            return ComparisonPredicates.lt(leftValue, rightValue);
+        case FilterParserConstants.LESS_THAN_OR_EQUAL:
+            return ComparisonPredicates.lte(leftValue, rightValue);
+        case FilterParserConstants.LIKE:
+            return ComparisonPredicates.like(leftValue, rightValue);
+        case FilterParserConstants.LIKE_NOT:
+            return ComparisonPredicates.like(leftValue, rightValue).negate();
+        case FilterParserConstants.CONTAINS:
+            return ComparisonPredicates.contains(leftValue, rightValue);
+        case FilterParserConstants.CONTAINS_NOT:
+            return ComparisonPredicates.contains(leftValue, rightValue).negate();
+        case FilterParserConstants.CONTAINS_ANY:
+            return ComparisonPredicates.containsAny(leftValue, rightValue);
+        case FilterParserConstants.CONTAINS_NOT_ANY:
+            return ComparisonPredicates.containsAny(leftValue, rightValue).negate();
+        case FilterParserConstants.IN:
+            return ComparisonPredicates.in(leftValue, rightValue);
+        case FilterParserConstants.NOT_IN:
+            return ComparisonPredicates.in(leftValue, rightValue).negate();
+        }
+        return null;
+    }
 
 }

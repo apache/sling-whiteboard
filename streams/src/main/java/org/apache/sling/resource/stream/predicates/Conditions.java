@@ -24,44 +24,41 @@ import java.util.function.Predicate;
  */
 public class Conditions {
 
-	/**
-	 * Syntactic sugar to provide context for the builder
-	 * 
-	 * @param predicate
-	 *            to be wrapped
-	 * @return the predicate that was passed in
-	 */
-	public static <T> Predicate<T> where(Predicate<T> predicate) {
-		return predicate;
-	}
+    /**
+     * Syntactic sugar to provide context for the builder
+     * 
+     * @param predicate
+     *            to be wrapped
+     * @return the predicate that was passed in
+     */
+    public static <T> Predicate<T> where(Predicate<T> predicate) {
+        return predicate;
+    }
 
-	/**
-	 * Syntactic sugar to provide context for the builder
-	 * 
-	 * @param predicate
-	 *            to be wrapped
-	 * @return the predicate that was passed in
-	 */
-	public static <T> Predicate<T> when(Predicate<T> predicate) {
-		return predicate;
-	}
+    /**
+     * Syntactic sugar to provide context for the builder
+     * 
+     * @param predicate
+     *            to be wrapped
+     * @return the predicate that was passed in
+     */
+    public static <T> Predicate<T> when(Predicate<T> predicate) {
+        return predicate;
+    }
 
-	/**
-	 * 'or' equivalent. only evaluates the second predicate if the first one
-	 * fails
-	 * 
-	 * @param firstPredicate
-	 *            always evaluated
-	 * @param secondPredicate
-	 *            evaluated if firstPredicate returns false
-	 * @return a new predicate which wraps the or method on the firstPredicate
-	 */
-	public static <T> Predicate<T> either(
-			final Predicate<T> firstPredicate,
-			final Predicate<T> secondPredicate) {
-		Objects.requireNonNull(firstPredicate, "predicate may not be null");
-		Objects.requireNonNull(secondPredicate, "predicate may not be null");
-		return firstPredicate.or(secondPredicate);
-	}
+    /**
+     * 'or' equivalent. only evaluates the second predicate if the first one fails
+     * 
+     * @param firstPredicate
+     *            always evaluated
+     * @param secondPredicate
+     *            evaluated if firstPredicate returns false
+     * @return a new predicate which wraps the or method on the firstPredicate
+     */
+    public static <T> Predicate<T> either(final Predicate<T> firstPredicate, final Predicate<T> secondPredicate) {
+        Objects.requireNonNull(firstPredicate, "predicate may not be null");
+        Objects.requireNonNull(secondPredicate, "predicate may not be null");
+        return firstPredicate.or(secondPredicate);
+    }
 
 }

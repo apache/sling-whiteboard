@@ -21,11 +21,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.function.Function;
 
+import org.apache.felix.scr.annotations.Component;
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.resource.stream.api.FilterFunction;
+import org.apache.sling.resource.stream.api.CustomFilteFunction;
 
 /**
- * Implementation of {@link FilterFunction} for the 'date' function.
+ * Implementation of {@link CustomFilteFunction} for the 'date' function.
  * 
  * The following combination of arguments are supported
  * 
@@ -39,26 +40,28 @@ import org.apache.sling.resource.stream.api.FilterFunction;
  * </pre>
  *
  */
-public class InstantProvider implements FilterFunction {
+@Component
 
-	@Override
-	public Object apply(List<Function<Resource, Object>> arguments, Resource resource) {
-		if (arguments.isEmpty()) {
-			return Instant.now();
-		}
-		String dateString = arguments.get(0).apply(resource).toString();
-		String formatString = null;
-		if (arguments.size() > 1) {
-			formatString = arguments.get(1).apply(resource).toString();
-			SimpleDateFormat dateFormat = new SimpleDateFormat(formatString);
-			try {
-				return Instant.ofEpochMilli(dateFormat.parse(dateString).getTime());
-			} catch (ParseException e) {
-				return null;
-			}
-		} else {
-			return DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(dateString, OffsetDateTime::from).toInstant();
-		}
+public class InstantProvider implements CustomFilteFunction {
 
-	}
+    @Override
+    public Object apply(List<Function<Resource, Object>> arguments, Resource resource) {
+        if (arguments.isEmpty()) {
+            return Instant.now();
+        }
+        String dateString = arguments.get(0).apply(resource).toString();
+        String formatString = null;
+        if (arguments.size() > 1) {
+            formatString = arguments.get(1).apply(resource).toString();
+            SimpleDateFormat dateFormat = new SimpleDateFormat(formatString);
+            try {
+                return Instant.ofEpochMilli(dateFormat.parse(dateString).getTime());
+            } catch (ParseException e) {
+                return null;
+            }
+        } else {
+            return DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(dateString, OffsetDateTime::from).toInstant();
+        }
+
+    }
 }

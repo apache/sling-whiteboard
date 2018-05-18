@@ -20,50 +20,50 @@ package org.apache.sling.resource.stream.impl.predicates;
  */
 public class Null extends Number implements CharSequence {
 
-	/**
-	 * The version identifier for this Serializable class. Increment only if the
-	 * <i>serialized</i> form of the class changes.
-	 */
-	private static final long serialVersionUID = 1L;
+    /**
+     * The version identifier for this Serializable class. Increment only if the
+     * <i>serialized</i> form of the class changes.
+     */
+    private static final long serialVersionUID = 1L;
 
-	@Override
-	public boolean equals(Object obj) {
-		return false;
-	}
+    @Override
+    public boolean equals(Object obj) {
+        return false;
+    }
 
-	@Override
-	public int length() {
-		return 0;
-	}
+    @Override
+    public int length() {
+        return 0;
+    }
 
-	@Override
-	public char charAt(int index) {
-		return 0;
-	}
+    @Override
+    public char charAt(int index) {
+        return 0;
+    }
 
-	@Override
-	public CharSequence subSequence(int start, int end) {
-		return null;
-	}
+    @Override
+    public CharSequence subSequence(int start, int end) {
+        return null;
+    }
 
-	@Override
-	public int intValue() {
-		return 0;
-	}
+    @Override
+    public int intValue() {
+        return 0;
+    }
 
-	@Override
-	public long longValue() {
-		return 0;
-	}
+    @Override
+    public long longValue() {
+        return 0;
+    }
 
-	@Override
-	public float floatValue() {
-		return 0;
-	}
+    @Override
+    public float floatValue() {
+        return 0;
+    }
 
-	@Override
-	public double doubleValue() {
-		return 0;
-	}
+    @Override
+    public double doubleValue() {
+        return Double.NaN;
+    }
 
 }

@@ -33,59 +33,58 @@ import org.apache.sling.resource.stream.impl.predicates.ComparisonPredicateFacto
  */
 public class LogicVisitor implements Visitor<Predicate<Resource>> {
 
-	private Context context;
+    private Context context;
 
-	public LogicVisitor(Context context) {
-		this.context = context;
-		context.setLogicVisitor(this);
-	}
+    public LogicVisitor(Context context) {
+        this.context = context;
+        context.setLogicVisitor(this);
+    }
 
-	@Override
-	public Predicate<Resource> visit(Node node) {
-		switch (node.kind) {
-		case FilterParserConstants.AND:
-			return createAndPredicate(node);
-		case FilterParserConstants.OR:
-			return createOrPredicate(node);
-		default:
-			return createComparisonPredicate(node);
-		}
-	}
+    @Override
+    public Predicate<Resource> visit(Node node) {
+        switch (node.kind) {
+        case FilterParserConstants.AND:
+            return createAndPredicate(node);
+        case FilterParserConstants.OR:
+            return createOrPredicate(node);
+        default:
+            return createComparisonPredicate(node);
+        }
+    }
 
-	private Predicate<Resource> createAndPredicate(Node node) {
-		return node.children.stream().map(child -> {
-			return visit(child);
-		}).reduce(null, (predicate, accumulator) -> {
-			if (predicate == null) {
-				return accumulator;
-			}
-			return accumulator.and(predicate);
-		});
-	}
+    private Predicate<Resource> createAndPredicate(Node node) {
+        return node.children.stream().map(child -> {
+            return visit(child);
+        }).reduce(null, (predicate, accumulator) -> {
+            if (predicate == null) {
+                return accumulator;
+            }
+            return accumulator.and(predicate);
+        });
+    }
 
-	/**
-	 * Returns a predicate which consists of a series of Or statements
-	 * 
-	 * @param node
-	 * @param param
-	 * @return
-	 */
-	private Predicate<Resource> createOrPredicate(Node node) {
-		return node.children.stream().map(child -> {
-			return visit(child);
-		}).reduce(null, (predicate, accumulator) -> {
-			if (predicate == null) {
-				return accumulator;
-			}
-			return accumulator.or(predicate);
-		});
-	}
+    /**
+     * Returns a predicate which consists of a series of Or statements
+     * 
+     * @param node
+     * @param param
+     * @return
+     */
+    private Predicate<Resource> createOrPredicate(Node node) {
+        return node.children.stream().map(child -> {
+            return visit(child);
+        }).reduce(null, (predicate, accumulator) -> {
+            if (predicate == null) {
+                return accumulator;
+            }
+            return accumulator.or(predicate);
+        });
+    }
 
-	private Predicate<Resource> createComparisonPredicate(Node comparisonNode) {
-		Function<Resource, Object> leftValue = comparisonNode.leftNode.accept(context.getComparisonVisitor());
-		Function<Resource, Object> rightValue = comparisonNode.rightNode.accept(context.getComparisonVisitor());
-		return ComparisonPredicateFactory.toPredicate(comparisonNode.kind, leftValue, rightValue);
-	}
-
+    private Predicate<Resource> createComparisonPredicate(Node comparisonNode) {
+        Function<Resource, Object> leftValue = comparisonNode.leftNode.accept(context.getComparisonVisitor());
+        Function<Resource, Object> rightValue = comparisonNode.rightNode.accept(context.getComparisonVisitor());
+        return ComparisonPredicateFactory.toPredicate(comparisonNode.kind, leftValue, rightValue);
+    }
 
 }
