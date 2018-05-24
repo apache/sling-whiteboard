@@ -21,27 +21,43 @@ package org.apache.sling.capabilities.internal;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.servlet.Servlet;
 import javax.servlet.ServletException;
-import org.apache.felix.scr.annotations.sling.SlingServlet;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
 import org.apache.felix.utils.json.JSONWriter;
+import org.apache.sling.capabilities.Probe;
+import org.apache.sling.capabilities.ProbeBuilder;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.component.annotations.ReferencePolicyOption;
 
-@SlingServlet(
-        resourceTypes = {"sling/capabilities"},
-        selectors = {"capabilities"},
-        methods = "GET",
-        extensions = "json"
-)
+@Component(service = Servlet.class,
+property = {
+    "sling.servlet.resourceTypes=sling/capabilities",
+    "sling.servlet.methods=GET",
+    "sling.servlet.selectors=capabilities",
+    "sling.servlet.extensions=json"
+})
+
 public class CapabilitiesServlet extends SlingSafeMethodsServlet {
     
+    @Reference(
+        policy=ReferencePolicy.DYNAMIC,
+        cardinality=ReferenceCardinality.AT_LEAST_ONE, 
+        policyOption=ReferencePolicyOption.GREEDY)
+    volatile List<ProbeBuilder> builders;
+
     public final static String PROBE_PROP_SUFFIX = "_probe";
     public final static String CAPS_KEY = "org.apache.sling.capabilities";
-    private final ProbeFactory factory = new ProbeFactory();
     
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws ServletException, IOException {
@@ -54,15 +70,29 @@ public class CapabilitiesServlet extends SlingSafeMethodsServlet {
         jw.object();
         
         for(String def : getProbeDefinitions(request.getResource())) {
-            final Probe p = factory.buildProbe(def);
-            String value = null;
-            try {
-                value = p.getValue();
-            } catch(Exception e) {
-                value = "EXCEPTION:" + e.getClass().getName() + ":" + e.getMessage();
+            Map<String, String> values = null;
+            Probe p = null;
+            for(ProbeBuilder b : builders) {
+                p = b.buildProbe(def);
+                if(p != null) {
+                    try {
+                        values = p.getValues();
+                    } catch(Exception e) {
+                        values = new HashMap<>();
+                        values.put("_EXCEPTION_", e.getClass().getName() + ":" + e.getMessage());
+                    }
+                    break;
+                }
             }
-            jw.key(p.getName());
-            jw.value(value);
+            if(p != null && values != null) {
+                jw.key(p.getName());
+                jw.object();
+                for(Map.Entry<String, String> e : values.entrySet()) {
+                    jw.key(e.getKey());
+                    jw.value(e.getValue());
+                }
+                jw.endObject();
+            }
         }
         
         jw.endObject();

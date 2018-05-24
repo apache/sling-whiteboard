@@ -16,18 +16,25 @@
  ~ specific language governing permissions and limitations
  ~ under the License.
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-package org.apache.sling.capabilities.internal;
+package org.apache.sling.capabilities;
 
-class ProbeFactory {
-    Probe buildProbe(String definition) {
-        final String [] parts = definition.split(":");
-        
-        if(ScriptProbe.ID.equals(parts[0])) {
-            return new ScriptProbe(parts[1], parts[2]);
-        } else if(HealthCheckProbe.ID.equals(parts[0])) {
-            return new HealthCheckProbe(parts[1], parts[2]);
-        } else {
-            throw new IllegalArgumentException("Invalid probe type " + parts[0] + " in " + definition);
-        }
-    }
+import java.util.Map;
+import org.osgi.annotation.versioning.ProviderType;
+
+/** A Probe computes capabilities. Various types of Probes are meant
+ *  to be implemented, using Health Checks, OSGi environment status
+ *  or any suitable input to find out which capabilities are present.
+ */
+@ProviderType
+public interface Probe {
+    /** @return the name of this Probe, which is used as a "section name" for
+     *  the capabilities that this Probe computes.
+     */
+    String getName();
+    
+    /** @return zero to N capabilities, each being represented by
+     *      a key/value pair of Strings.
+     * @throws Exception if the capabilities could not be computed
+     */
+    Map<String, String> getValues() throws Exception;
 }

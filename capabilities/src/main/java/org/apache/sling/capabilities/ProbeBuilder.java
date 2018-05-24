@@ -16,35 +16,27 @@
  ~ specific language governing permissions and limitations
  ~ under the License.
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-package org.apache.sling.capabilities.internal;
+package org.apache.sling.capabilities;
 
-/** A Probe that executes a script to find out if 
- *  specific capabilities are present.
- *  The capability value is the output of the script.
- */
-class ScriptProbe implements Probe {
-    
-    public static final String ID = "script";
-    
-    private final String name;
-    private final String script;
-    
-    ScriptProbe(String name, String script) {
-        this.name = name;
-        this.script = script;
-    }
+import org.osgi.annotation.versioning.ProviderType;
 
-    @Override
-    public String getName() {
-        return name;
-    }
+/** Service that builds a Probe if it gets a suitable definition */
+@ProviderType
+public interface ProbeBuilder {
     
-    @Override
-    public String getValue() {
-        // TODO implement this
-        if(script.contains("EX")) {
-            throw new IllegalArgumentException("foobar");
-        }
-        return script;
-    }
+    String DEF_SEPARATOR = ":";
+    
+    /**
+     * @param definition A Probe definition in a syntax that this services supports
+     * @return null if the definition doesn't start with our prefix followed by a colon
+     * @throws IllegalArgumentException if the definition starts with our prefix
+     *      but is otherwise invalid
+     */
+    Probe buildProbe(String definition) throws IllegalArgumentException;
+    
+    /** The prefix which definitions must start with (followed by
+     *  our DEF_SEPARATOR) to be considered by this builder.
+     * @return our prefix
+     */
+    String getPrefix();
 }
