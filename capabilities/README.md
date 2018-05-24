@@ -10,7 +10,7 @@ external systems or do anything suitable to check what's available. Each `Probe`
 multiple values as String key/value pairs.
 
 To define a Capabilities endpoint, create a Sling Resource with 1..N properties having
-names that end with the `_probe_` suffix. The String value of each property is passed
+names that end with the `_probe` suffix. The String value of each property is passed
 to all available `ProbeBuilder` services, and the first one that returns a `Probe` is used.
 
 As an example, with the default Probes found in this module, creating a Resource such as
