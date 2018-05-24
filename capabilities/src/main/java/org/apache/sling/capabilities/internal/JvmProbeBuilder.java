@@ -25,11 +25,9 @@ import org.apache.sling.capabilities.ProbeBuilder;
 import static org.apache.sling.capabilities.ProbeBuilder.DEF_SEPARATOR;
 import org.osgi.service.component.annotations.Component;
 
-/** A Probe that executes a script to find out if 
- *  specific capabilities are present.
- *  The capability value is the output of the script.
+/** Builds Probes that provide basic JVM information, as
+ *  an example.
  */
-
 @Component(service=ProbeBuilder.class)
 public class JvmProbeBuilder implements ProbeBuilder {
     
