@@ -16,20 +16,34 @@ package org.apache.sling.resource.stream.api.impl;
 import java.util.List;
 
 import org.apache.sling.resource.stream.ResourceFilter;
-import org.apache.sling.resource.stream.api.CustomFilteFunction;
+import org.apache.sling.resource.stream.api.Context;
+import org.apache.sling.resource.stream.api.ResourceFilterFunction;
 import org.apache.sling.resource.stream.api.ResourceFilterFactory;
+import org.apache.sling.resource.stream.impl.ParseException;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component(property = { "service.description=ResourceFilter Factory", "service.vendor=The Apache Software Foundation" })
 public class ResourceFactoryImpl implements ResourceFilterFactory {
 
     @Reference
-    List<CustomFilteFunction> functions;
+    List<ResourceFilterFunction> functions;
+    
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     @Override
-    public ResourceFilter getResourceFilter() {
-        // TODO Auto-generated method stub
+    public ResourceFilter getResourceFilter(String script) {
+        try {
+            ResourceFilter filter = new ResourceFilter(script);
+            Context context = filter.getContext();
+            for (ResourceFilterFunction func: functions) {
+                context.addArgument(func.getName(), func);
+            }
+        } catch (ParseException e) {
+            log.error(e.getLocalizedMessage());
+        }
         return null;
     }
 

@@ -17,6 +17,6 @@ import org.apache.sling.resource.stream.ResourceFilter;
 
 public interface ResourceFilterFactory {
 
-    ResourceFilter getResourceFilter();
+    ResourceFilter getResourceFilter(String script);
 
 }

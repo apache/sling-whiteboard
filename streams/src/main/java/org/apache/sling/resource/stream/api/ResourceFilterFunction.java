@@ -13,19 +13,17 @@
  */
 package org.apache.sling.resource.stream.api;
 
-import java.util.List;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import org.apache.sling.api.resource.Resource;
 
 /**
  * A CustomFilterFunction implementation is used to translate a command in a
- * script or an Object that is a result of a custom function into a value that
+ * script or an Object that is a result of a custom function. Into a value that
  * is used for Comparison
  * 
  */
-public interface CustomFilteFunction extends BiFunction<List<Function<Resource, Object>>, Resource, Object> {
+public interface ResourceFilterFunction extends BiFunction<Object[], Resource, Object> {
 
     /**
      * This method returns a {@code Object} to be used as part of a comparison.
@@ -37,6 +35,13 @@ public interface CustomFilteFunction extends BiFunction<List<Function<Resource, 
      * @return A {@code Object} which should be a String, Instant, or Number to be
      *         used as part of a comparison or Function
      */
-    Object apply(List<Function<Resource, Object>> arguments, Resource resource);
+    Object apply(Object[] arguments, Resource resource);
+    
+    /**
+     * Allows the name of the function to be defined
+     * 
+     * @return name to be used in the script
+     */
+    String getName();
 
 }

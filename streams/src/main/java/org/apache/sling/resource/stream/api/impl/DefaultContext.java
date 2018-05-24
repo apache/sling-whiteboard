@@ -14,7 +14,6 @@
 package org.apache.sling.resource.stream.api.impl;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
@@ -27,7 +26,7 @@ import org.apache.sling.resource.stream.api.Visitor;
 
 public class DefaultContext implements Context {
 
-    private Map<String, BiFunction<List<Function<Resource, Object>>, Resource, Object>> functions = new HashMap<>();
+    private Map<String, BiFunction<Object[], Resource, Object>> functions = new HashMap<>();
 
     private Map<String, Object> arguments = new HashMap<>();
 
@@ -35,16 +34,11 @@ public class DefaultContext implements Context {
 
     private Visitor<Function<Resource, Object>> comparisonVisitor;
 
-    {
-        functions.put("date", new InstantProvider());
-    }
-
     public DefaultContext() {
     }
 
     @Override
-    public Context addFunction(String name,
-            BiFunction<List<Function<Resource, Object>>, Resource, Object> functionImpl) {
+    public Context addFunction(String name, BiFunction<Object[], Resource, Object> functionImpl) {
         functions.put(name, functionImpl);
         return this;
     }
@@ -84,7 +78,7 @@ public class DefaultContext implements Context {
     }
 
     @Override
-    public Optional<BiFunction<List<Function<Resource, Object>>, Resource, Object>> getFunction(String text) {
+    public Optional<BiFunction<Object[], Resource, Object>> getFunction(String text) {
         return Optional.ofNullable(functions.get(text));
     }
 

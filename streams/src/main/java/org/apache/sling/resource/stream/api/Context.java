@@ -13,7 +13,6 @@
  */
 package org.apache.sling.resource.stream.api;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -23,7 +22,7 @@ import org.apache.sling.api.resource.Resource;
 
 public interface Context {
 
-    Context addFunction(String name, BiFunction<List<Function<Resource, Object>>, Resource, Object> functionImpl);
+    Context addFunction(String name, BiFunction<Object[], Resource, Object> functionImpl);
 
     Context removeFunction(String name);
 
@@ -37,7 +36,7 @@ public interface Context {
 
     void setComparionVisitor(Visitor<Function<Resource, Object>> comparisonVisitor);
 
-    Optional<BiFunction<List<Function<Resource, Object>>, Resource, Object>> getFunction(String text);
+    Optional<BiFunction<Object[], Resource, Object>> getFunction(String text);
 
     Optional<Object> getArgument(String text);
 

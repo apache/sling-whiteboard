@@ -14,10 +14,14 @@
 package org.apache.sling.resource.stream.api.impl;
 
 import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
@@ -44,6 +48,7 @@ public class ComparisonVisitor implements Visitor<Function<Resource, Object>> {
 
     @Override
     public Function<Resource, Object> visit(Node node) {
+       
         switch (node.kind) {
         case FilterParserConstants.FUNCTION_NAME:
             // will only get here in the case of the 'FUNCTION' switch case
@@ -52,12 +57,24 @@ public class ComparisonVisitor implements Visitor<Function<Resource, Object>> {
                 return Resource::getName;
             case "path":
                 return Resource::getPath;
+            case "date":
+                final List<Function<Resource, Object>> children = node.visitChildren(this);
+                return resource -> {
+                    Object[] arguments = children.stream().map(funct -> {
+                        return funct.apply(resource);
+                    }).toArray();
+                    return dateHandler(arguments, resource);
+                };
             default:
-                Optional<BiFunction<List<Function<Resource, Object>>, Resource, Object>> temp = context
-                        .getFunction(node.text);
+                Optional<BiFunction<Object[], Resource, Object>> temp = context.getFunction(node.text);
                 if (temp.isPresent()) {
-                    final List<Function<Resource, Object>> arguments = node.visitChildren(this);
-                    return resource -> temp.get().apply(arguments, resource);
+                    final List<Function<Resource, Object>> children2 = node.visitChildren(this);
+                    return resource -> {
+                        Object[] arguments = children2.stream().map(funct -> {
+                            return funct.apply(resource);
+                        }).toArray();
+                        return temp.get().apply(arguments, resource);
+                    };
                 }
             }
             break;
@@ -106,6 +123,26 @@ public class ComparisonVisitor implements Visitor<Function<Resource, Object>> {
             return ValueMap.EMPTY;
         }
         return resource.adaptTo(ValueMap.class);
+    }
+
+    private static Object dateHandler(Object[] arguments, Resource resource) {
+        if (arguments.length == 0) {
+            return Instant.now();
+        }
+        String dateString = arguments[0].toString();
+        String formatString = null;
+        if (arguments.length > 1) {
+            formatString = arguments[1].toString();
+            SimpleDateFormat dateFormat = new SimpleDateFormat(formatString);
+            try {
+                return Instant.ofEpochMilli(dateFormat.parse(dateString).getTime());
+            } catch (ParseException e) {
+                return null;
+            }
+        } else {
+            return DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(dateString, OffsetDateTime::from).toInstant();
+        }
+
     }
 
 }
