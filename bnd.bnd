@@ -25,15 +25,11 @@ Provide-Capability:\
   osgi.service;objectClass=com.codahale.metrics.MetricRegistry,\
   osgi.service;objectClass=org.apache.sling.commons.metrics.MetricsService
 
--baseline: *
-
 -exportcontents: ${packages;VERSIONED}
 
 -includeresource:\
   @org.apache.felix.utils-*.jar!/org/apache/felix/utils/json/JSONWriter**
 
 -removeheaders:\
-  Embed-Dependency,\
-  Embed-Transitive,\
   Include-Resource,\
   Private-Package
