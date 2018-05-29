@@ -104,7 +104,8 @@ TOKEN :
 | < CONTAINS_NOT_ANY : "contains not any" >
 | < IN : "in" >
 | < NOT_IN : "not in" >
-| < FUNCTION_NAME : (~[ "\"", "'", "(", ")", ",", "=", "<", ">", " ", "[", "]","+","-",".","0"-"9" ])+ >
+| < DYNAMIC_ARG : "$" >
+| < FUNCTION_NAME : (~[ "\"", "'", "$", "(", ")", ",", "=", "<", ">", " ", "[", "]","+","-",".","0"-"9" ])+ >
 | < PROPERTY: "[" ( "\\" ~[ ] | ~[ "]", "\\" ] )* "]" >{matchedToken.image = image.substring(1, lengthOfMatch - 1);}
 }
 
@@ -271,7 +272,9 @@ Node argument() :
   (
     selector = literal()
   | selector = property()
+  | selector = dynamicArg()
   | selector = function()
+
   )
   {
     return selector;
@@ -291,6 +294,18 @@ Node function() :
   < LPAREN > [ children = commaSepArguments() ] < RPAREN >
   {
     return new Node(FilterParserConstants.FUNCTION_NAME, functionName, children);
+  }
+}
+
+Node dynamicArg() :
+{
+  String functionName = null;
+}
+{
+  < DYNAMIC_ARG >< FUNCTION_NAME >
+  {
+    functionName = token.image;
+    return new Node(FilterParserConstants.DYNAMIC_ARG, functionName);
   }
 }
 

@@ -50,8 +50,14 @@ public class ResourceFilter implements Predicate<Resource> {
         return context;
     }
 
-    public void setContext(Context context) {
+    public ResourceFilter setContext(Context context) {
         this.context = context;
+        return this;
+    }
+    
+    public ResourceFilter addArgument(String key, Object value) {
+        getContext().addArgument(key, value);
+        return this;
     }
 
 }

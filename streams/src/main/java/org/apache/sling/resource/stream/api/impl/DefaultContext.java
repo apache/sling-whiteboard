@@ -84,8 +84,7 @@ public class DefaultContext implements Context {
 
     @Override
     public Optional<Object> getArgument(String text) {
-        // TODO Auto-generated method stub
-        return null;
+        return Optional.ofNullable(arguments.get(text));
     }
 
 }

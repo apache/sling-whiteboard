@@ -58,8 +58,8 @@ public class ComparisonVisitor implements Visitor<Function<Resource, Object>> {
             case "path":
                 return Resource::getPath;
             case "date":
-                final List<Function<Resource, Object>> children = node.visitChildren(this);
                 return resource -> {
+                    final List<Function<Resource, Object>> children = node.visitChildren(this);
                     Object[] arguments = children.stream().map(funct -> {
                         return funct.apply(resource);
                     }).toArray();
@@ -112,6 +112,11 @@ public class ComparisonVisitor implements Visitor<Function<Resource, Object>> {
                 }
                 return value;
             };
+        case FilterParserConstants.DYNAMIC_ARG:
+            return resource -> {
+                String argument = node.text;
+                return context.getArgument(argument).orElse(new Null());
+            };
         default:
             return resource -> node.text;
         }
@@ -142,7 +147,6 @@ public class ComparisonVisitor implements Visitor<Function<Resource, Object>> {
         } else {
             return DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(dateString, OffsetDateTime::from).toInstant();
         }
-
     }
 
 }
