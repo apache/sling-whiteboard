@@ -61,6 +61,6 @@ public class ResourceFilterLogicTest {
 	
 	private List<Resource> handle(String path, String filter) throws ParseException {
 		Resource resource = context.resourceResolver().getResource(path);
-		return ResourceStream.from(resource).setResourceSelector(filter).stream().collect(Collectors.toList());
+		return ResourceFilterStream.from(resource).setResourceSelector(filter).stream().collect(Collectors.toList());
 	}
 }

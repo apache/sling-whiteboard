@@ -65,7 +65,7 @@ public class ResourceStream {
      * 
      * @param resource
      */
-    private ResourceStream(Resource resource) {
+    protected ResourceStream(Resource resource) {
         this.resource = Objects.requireNonNull(resource);
     }
 
@@ -122,18 +122,6 @@ public class ResourceStream {
      * Predicate used to select child resources for traversal
      * 
      * @param branchSelector
-     *            resourceFilter script for traversal control
-     * @return ResourceStream
-     * @throws ParseException
-     */
-    public ResourceStream setBranchSelector(String branchSelector) throws ParseException {
-        return setBranchSelector(new ResourceFilter(branchSelector));
-    }
-
-    /**
-     * Predicate used to select child resources for traversal
-     * 
-     * @param branchSelector
      *            predicate for traversal control
      * @return ResourceStream
      */
@@ -141,20 +129,7 @@ public class ResourceStream {
         this.branchSelector = Objects.requireNonNull(branchSelector);
         return this;
     }
-
-    /**
-     * ResourceFilter script to identify Resource objects to add to the
-     * Stream<Resource>
-     * 
-     * @param resourceSelector
-     *            ResourceFilter script
-     * @return ResourceStream
-     * @throws ParseException
-     */
-    public ResourceStream setResourceSelector(String resourceSelector) throws ParseException {
-        return setResourceSelector(new ResourceFilter(resourceSelector));
-    }
-
+    
     /**
      * Sets a resource selector which defines whether a given resource should be
      * part of the stream
