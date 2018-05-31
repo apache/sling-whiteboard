@@ -32,6 +32,7 @@ import java.util.Set;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.ModifiableValueMap;
@@ -129,6 +130,24 @@ public class FileOptimizerServiceImpl implements FileOptimizerService, ServiceLi
 	 */
 	public Map<String, List<ServiceReference<FileOptimizer>>> getFileOptimizers() {
 		return fileOptimizers;
+	}
+
+	@Override
+	public boolean isOptimized(Resource fileResource) {
+
+		if (!fileResource.getName().equals(JcrConstants.JCR_CONTENT)) {
+			fileResource = fileResource.getChild(JcrConstants.JCR_CONTENT);
+		}
+
+		OptimizedFile of = fileResource.adaptTo(OptimizedFile.class);
+		try {
+			String calculatedHash = calculateHash(IOUtils.toByteArray(of.getContent()));
+			log.debug("Comparing stored {} and calculated {} hashes", of.getHash(), calculatedHash);
+			return ObjectUtils.equals(of.getHash(), calculatedHash);
+		} catch (IOException e) {
+			log.error("Exception checking if file optimized, assuming false", e);
+			return false;
+		}
 	}
 
 	@Override

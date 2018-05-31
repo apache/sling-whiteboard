@@ -40,6 +40,10 @@ public interface OptimizedFile {
 	public static final String PN_ORIGINAL = PREFIX + "original";
 	public static final String PN_SAVINGS = PREFIX + "savings";
 
+	@Named(PN_ALGORITHM)
+	@Inject
+	String getAlgorithm();
+
 	@Named(JcrConstants.JCR_DATA)
 	@Inject
 	@Required
@@ -57,4 +61,9 @@ public interface OptimizedFile {
 	@Named(PN_ORIGINAL)
 	@Inject
 	InputStream getOriginal();
+
+	@Named(PN_SAVINGS)
+	@Inject
+	double getSavings();
+
 }

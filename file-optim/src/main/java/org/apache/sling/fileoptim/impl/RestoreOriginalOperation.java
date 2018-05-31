@@ -17,6 +17,7 @@
 package org.apache.sling.fileoptim.impl;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,9 +25,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.api.resource.ModifiableValueMap;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.fileoptim.FileOptimizerService;
+import org.apache.sling.fileoptim.models.OptimizedFile;
 import org.apache.sling.servlets.post.Modification;
 import org.apache.sling.servlets.post.PostOperation;
 import org.apache.sling.servlets.post.PostResponse;
@@ -37,13 +41,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The File Optimization operation will optimize a file
+ * The File Optimization operation restore the original file
  */
 @Component(immediate = true, service = { PostOperation.class }, property = PostOperation.PROP_OPERATION_NAME
-		+ "=fileoptim")
-public class FileOptimizerOperation implements PostOperation {
+		+ "=fileoptim:restore")
+public class RestoreOriginalOperation implements PostOperation {
 
-	private static final Logger log = LoggerFactory.getLogger(FileOptimizerOperation.class);
+	private static final Logger log = LoggerFactory.getLogger(RestoreOriginalOperation.class);
 
 	@Reference
 	private FileOptimizerService fileOptimizer;
@@ -51,8 +55,16 @@ public class FileOptimizerOperation implements PostOperation {
 	protected void doRun(SlingHttpServletRequest request, PostResponse response, List<Modification> changes)
 			throws IOException {
 		Resource resource = request.getResource();
-		if (fileOptimizer.canOptimize(resource)) {
-			fileOptimizer.optimizeFile(resource, true);
+		if (fileOptimizer.isOptimized(resource)) {
+			ModifiableValueMap mvm = resource.getChild(JcrConstants.JCR_CONTENT).adaptTo(ModifiableValueMap.class);
+			mvm.put(JcrConstants.JCR_DATA, mvm.get(OptimizedFile.PN_ORIGINAL, InputStream.class));
+			mvm.remove(OptimizedFile.PN_ORIGINAL);
+			mvm.remove(OptimizedFile.PN_ALGORITHM);
+			mvm.remove(OptimizedFile.PN_HASH);
+			mvm.remove(OptimizedFile.PN_SAVINGS);
+			
+			resource.getResourceResolver().commit();
+			
 			changes.add(Modification.onModified(resource.getPath()));
 		}
 	}

@@ -40,6 +40,16 @@ public interface FileOptimizerService {
 	boolean canOptimize(Resource fileResource);
 
 	/**
+	 * Returns true if the specified resource has already been optimized by the
+	 * FileOptimizer.
+	 * 
+	 * @param fileResource
+	 *            the resource to check
+	 * @return true if optimized by the file optimizer, false otherwise
+	 */
+	boolean isOptimized(Resource fileResource);
+
+	/**
 	 * Optimizes a file resource.
 	 * 
 	 * @param fileResource
@@ -50,7 +60,7 @@ public interface FileOptimizerService {
 	 * @return the results of the optimization
 	 * @throws PersistenceException
 	 *             an exception occurs saving the optimized resource
-	 * @throws IOException 
+	 * @throws IOException
 	 *             an exception occurs reading the original resource
 	 */
 	OptimizationResult optimizeFile(Resource fileResource, boolean autoCommit) throws PersistenceException, IOException;
@@ -66,7 +76,7 @@ public interface FileOptimizerService {
 	 * @return the results of the optimization
 	 * @throws PersistenceException
 	 *             an exception occurs saving the optimized resources
-	 * @throws IOException 
+	 * @throws IOException
 	 *             an exception occurs reading the original resources
 	 */
 	Map<String, OptimizationResult> optimizeFiles(Collection<Resource> fileResources, boolean autoCommit)
