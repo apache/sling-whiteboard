@@ -17,8 +17,6 @@
 package org.apache.sling.fileoptim;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Map;
 
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
@@ -40,6 +38,19 @@ public interface FileOptimizerService {
 	boolean canOptimize(Resource fileResource);
 
 	/**
+	 * Gets the optimized contents of a file resource. This will not update the
+	 * underlying resource, but instead just returns the results of optimizing the
+	 * resource.
+	 * 
+	 * @param fileResource
+	 *            the resource to optimize
+	 * @return the results of the optimization
+	 * @throws IOException
+	 *             an exception occurs reading the original resource
+	 */
+	OptimizationResult getOptimizedContents(Resource fileResource) throws IOException;
+
+	/**
 	 * Returns true if the specified resource has already been optimized by the
 	 * FileOptimizer.
 	 * 
@@ -50,7 +61,7 @@ public interface FileOptimizerService {
 	boolean isOptimized(Resource fileResource);
 
 	/**
-	 * Optimizes a file resource.
+	 * Optimizes a file resource. This method will modify the underlying resource.
 	 * 
 	 * @param fileResource
 	 *            the resource to optimize
@@ -64,22 +75,5 @@ public interface FileOptimizerService {
 	 *             an exception occurs reading the original resource
 	 */
 	OptimizationResult optimizeFile(Resource fileResource, boolean autoCommit) throws PersistenceException, IOException;
-
-	/**
-	 * Optimizes a collection of file resources.
-	 * 
-	 * @param fileResources
-	 *            the resources to optimize
-	 * @param autoCommit
-	 *            if true, the results will automatically be committed to the Sling
-	 *            Repo
-	 * @return the results of the optimization
-	 * @throws PersistenceException
-	 *             an exception occurs saving the optimized resources
-	 * @throws IOException
-	 *             an exception occurs reading the original resources
-	 */
-	Map<String, OptimizationResult> optimizeFiles(Collection<Resource> fileResources, boolean autoCommit)
-			throws PersistenceException, IOException;
 
 }

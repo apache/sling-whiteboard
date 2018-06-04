@@ -16,7 +16,6 @@
  */
 package org.apache.sling.fileoptim.impl;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -116,7 +115,7 @@ public class FileOptimizerServiceImpl implements FileOptimizerService, ServiceLi
 			fileResource = fileResource.getChild(JcrConstants.JCR_CONTENT);
 		}
 		OptimizedFile of = fileResource.adaptTo(OptimizedFile.class);
-		return of != null && fileOptimizers.containsKey(of.getMimeType())
+		return of != null && of.getDisabled() != true && fileOptimizers.containsKey(of.getMimeType())
 				&& fileOptimizers.get(of.getMimeType()).size() > 0;
 	}
 
@@ -132,27 +131,15 @@ public class FileOptimizerServiceImpl implements FileOptimizerService, ServiceLi
 		return fileOptimizers;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.apache.sling.fileoptim.FileOptimizerService#getOptimizedContents(org.
+	 * apache.sling.api.resource.Resource)
+	 */
 	@Override
-	public boolean isOptimized(Resource fileResource) {
-
-		if (!fileResource.getName().equals(JcrConstants.JCR_CONTENT)) {
-			fileResource = fileResource.getChild(JcrConstants.JCR_CONTENT);
-		}
-
-		OptimizedFile of = fileResource.adaptTo(OptimizedFile.class);
-		try {
-			String calculatedHash = calculateHash(IOUtils.toByteArray(of.getContent()));
-			log.debug("Comparing stored {} and calculated {} hashes", of.getHash(), calculatedHash);
-			return ObjectUtils.equals(of.getHash(), calculatedHash);
-		} catch (IOException e) {
-			log.error("Exception checking if file optimized, assuming false", e);
-			return false;
-		}
-	}
-
-	@Override
-	public OptimizationResult optimizeFile(Resource fileResource, boolean autoCommit) throws IOException {
-
+	public OptimizationResult getOptimizedContents(Resource fileResource) throws IOException {
 		if (!fileResource.getName().equals(JcrConstants.JCR_CONTENT)) {
 			fileResource = fileResource.getChild(JcrConstants.JCR_CONTENT);
 		}
@@ -178,32 +165,12 @@ public class FileOptimizerServiceImpl implements FileOptimizerService, ServiceLi
 						double savings = 1.0 - ((double) optimized.length / (double) original.length);
 
 						log.debug("Optimized file with {} saving {}%", optimizer.getName(), Math.round(savings * 100));
-
-						ModifiableValueMap mvm = fileResource.adaptTo(ModifiableValueMap.class);
-
-						Set<String> mixins = new HashSet<String>(
-								Arrays.asList(mvm.get(JcrConstants.JCR_MIXINTYPES, new String[0])));
-						mixins.add(OptimizedFile.MT_OPTIMIZED);
-						mvm.put(JcrConstants.JCR_MIXINTYPES, mixins.toArray(new String[] {}));
-
-						mvm.put(OptimizedFile.PN_ALGORITHM, optimizer.getName());
-						mvm.put(OptimizedFile.PN_HASH, calculateHash(optimized));
-						mvm.put(OptimizedFile.PN_ORIGINAL, new ByteArrayInputStream(original));
-						mvm.put(OptimizedFile.PN_SAVINGS, savings);
-						mvm.put(JcrConstants.JCR_DATA, new ByteArrayInputStream(optimized));
-
-						if (autoCommit) {
-							log.debug("Persisting changes...");
-							fileResource.getResourceResolver().commit();
-						}
-
 						result.setAlgorithm(optimizer.getName());
 						result.setSavings(savings);
 						result.setOptimized(true);
 						result.setOptimizedSize(optimized.length);
 						result.setOriginalSize(original.length);
-
-						break;
+						result.setOptimizedContents(optimized);
 					} else {
 						log.debug("Optimizer {} was not able to optimize the file", optimizer.getName());
 					}
@@ -218,22 +185,49 @@ public class FileOptimizerServiceImpl implements FileOptimizerService, ServiceLi
 	}
 
 	@Override
-	public Map<String, OptimizationResult> optimizeFiles(Collection<Resource> fileResources, boolean autoCommit)
-			throws IOException {
-		Map<String, OptimizationResult> results = new HashMap<String, OptimizationResult>();
-		boolean dirty = false;
-		for (Resource fileResource : fileResources) {
-			OptimizationResult res = optimizeFile(fileResource, false);
-			results.put(fileResource.getName(), res);
-			if (res.isOptimized()) {
-				dirty = true;
-			}
+	public boolean isOptimized(Resource fileResource) {
+
+		if (!fileResource.getName().equals(JcrConstants.JCR_CONTENT)) {
+			fileResource = fileResource.getChild(JcrConstants.JCR_CONTENT);
 		}
-		if (autoCommit && dirty) {
+
+		OptimizedFile of = fileResource.adaptTo(OptimizedFile.class);
+		try {
+			String calculatedHash = calculateHash(IOUtils.toByteArray(of.getContent()));
+			log.debug("Comparing stored {} and calculated {} hashes", of.getHash(), calculatedHash);
+			return ObjectUtils.equals(of.getHash(), calculatedHash);
+		} catch (IOException e) {
+			log.error("Exception checking if file optimized, assuming false", e);
+			return false;
+		}
+	}
+
+	@Override
+	public OptimizationResult optimizeFile(Resource fileResource, boolean autoCommit) throws IOException {
+
+		OptimizationResult result = getOptimizedContents(fileResource);
+
+		ModifiableValueMap mvm = fileResource.adaptTo(ModifiableValueMap.class);
+
+		Set<String> mixins = new HashSet<String>(Arrays.asList(mvm.get(JcrConstants.JCR_MIXINTYPES, new String[0])));
+		mixins.add(OptimizedFile.MT_OPTIMIZED);
+		mvm.put(JcrConstants.JCR_MIXINTYPES, mixins.toArray(new String[] {}));
+
+		mvm.put(OptimizedFile.PN_ALGORITHM, result.getAlgorithm());
+		mvm.put(OptimizedFile.PN_HASH, calculateHash(result.getOptimizedContents()));
+		mvm.put(OptimizedFile.PN_ORIGINAL, result.getOptimizedContents());
+		mvm.put(OptimizedFile.PN_SAVINGS, result.getSavings());
+
+		OptimizedFile optim = fileResource.adaptTo(OptimizedFile.class);
+		mvm.put(JcrConstants.JCR_DATA, IOUtils.toByteArray(optim.getContent()));
+
+		if (autoCommit) {
 			log.debug("Persisting changes...");
-			fileResources.iterator().next().getResourceResolver().commit();
+			fileResource.getResourceResolver().commit();
 		}
-		return results;
+
+		return result;
+
 	}
 
 	private void rebuildOptimizerCache() {

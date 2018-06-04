@@ -16,6 +16,9 @@
  */
 package org.apache.sling.fileoptim;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+
 import org.apache.sling.api.resource.Resource;
 
 /**
@@ -25,6 +28,7 @@ public class OptimizationResult {
 
 	private String algorithm;
 	private boolean optimized = false;
+	private byte[] optimizedContents;
 	private long optimizedSize;
 	private long originalSize;
 	private final Resource resource;
@@ -35,6 +39,8 @@ public class OptimizationResult {
 	}
 
 	/**
+	 * Returns the algorithm by which the file was optimized
+	 * 
 	 * @return the algorithm
 	 */
 	public String getAlgorithm() {
@@ -42,6 +48,26 @@ public class OptimizationResult {
 	}
 
 	/**
+	 * Returns the raw optimized contents as a byte array
+	 * 
+	 * @return the optimized contents
+	 */
+	public byte[] getOptimizedContents() {
+		return optimizedContents;
+	}
+
+	/**
+	 * Returns the optimized contents as an InputStream
+	 * 
+	 * @return the optimized content stream
+	 */
+	public InputStream getOptimizedContentStream() {
+		return new ByteArrayInputStream(optimizedContents);
+	}
+
+	/**
+	 * Returns the optimized size in bytes
+	 * 
 	 * @return the optimizedSize
 	 */
 	public long getOptimizedSize() {
@@ -49,6 +75,8 @@ public class OptimizationResult {
 	}
 
 	/**
+	 * Return the original size in bytes
+	 * 
 	 * @return the originalSize
 	 */
 	public long getOriginalSize() {
@@ -56,6 +84,8 @@ public class OptimizationResult {
 	}
 
 	/**
+	 * Returns the resource that was optimized
+	 * 
 	 * @return the resource
 	 */
 	public Resource getResource() {
@@ -63,6 +93,8 @@ public class OptimizationResult {
 	}
 
 	/**
+	 * Return the percent savings as a 1-based double value
+	 * 
 	 * @return the savings
 	 */
 	public double getSavings() {
@@ -70,7 +102,11 @@ public class OptimizationResult {
 	}
 
 	/**
-	 * @return the optimized
+	 * Returns true if the result is actually optimized, if the optimization did not
+	 * provide a smaller result or the file was not optimized for any other reason,
+	 * this will be false.
+	 * 
+	 * @return the optimized flag
 	 */
 	public boolean isOptimized() {
 		return optimized;
@@ -90,6 +126,10 @@ public class OptimizationResult {
 	 */
 	public void setOptimized(boolean optimized) {
 		this.optimized = optimized;
+	}
+
+	public void setOptimizedContents(byte[] optimizedContents) {
+		this.optimizedContents = optimizedContents;
 	}
 
 	/**

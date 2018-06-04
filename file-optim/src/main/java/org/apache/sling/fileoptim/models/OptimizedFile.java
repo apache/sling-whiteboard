@@ -23,12 +23,13 @@ import javax.inject.Named;
 
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.Resource;
+import org.apache.sling.models.annotations.Default;
 import org.apache.sling.models.annotations.DefaultInjectionStrategy;
 import org.apache.sling.models.annotations.Model;
 import org.apache.sling.models.annotations.Required;
 
 /**
- * Sling Model representing an optimized file
+ * Sling Model representing a file which can be or has been optimized.
  */
 @Model(adaptables = Resource.class, defaultInjectionStrategy = DefaultInjectionStrategy.OPTIONAL)
 public interface OptimizedFile {
@@ -36,6 +37,7 @@ public interface OptimizedFile {
 	static final String PREFIX = "optim:";
 	public static final String MT_OPTIMIZED = PREFIX + "optimized";
 	public static final String PN_ALGORITHM = PREFIX + "algrithm";
+	public static final String PN_DISABLED = PREFIX + "disabled";
 	public static final String PN_HASH = PREFIX + "hash";
 	public static final String PN_ORIGINAL = PREFIX + "original";
 	public static final String PN_SAVINGS = PREFIX + "savings";
@@ -43,6 +45,11 @@ public interface OptimizedFile {
 	@Named(PN_ALGORITHM)
 	@Inject
 	String getAlgorithm();
+
+	@Named(PN_DISABLED)
+	@Inject
+	@Default(booleanValues = false)
+	boolean getDisabled();
 
 	@Named(JcrConstants.JCR_DATA)
 	@Inject

@@ -55,7 +55,7 @@ public class FileOptimizerPreview extends SlingSafeMethodsServlet {
 		if (resource == null) {
 			response.sendError(404, "No Resource found at path " + path);
 		} else if (fileOptimizer.canOptimize(resource)) {
-			OptimizationResult res = fileOptimizer.optimizeFile(resource.getChild(JcrConstants.JCR_CONTENT), false);
+			OptimizationResult res = fileOptimizer.getOptimizedContents(resource);
 			ValueMap vm = res.getResource().getValueMap();
 			response.setContentType(vm.get(JcrConstants.JCR_MIMETYPE, String.class));
 			response.setHeader("Content-disposition", "inline; filename=" + resource.getName());

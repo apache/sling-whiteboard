@@ -30,7 +30,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Sling model for executing the optimizer, will not commit the result
+ * Sling model for executing the optimizer on a resource, will not commit the
+ * result
  */
 @Model(adaptables = Resource.class)
 public class OptimizeResource {
@@ -55,21 +56,36 @@ public class OptimizeResource {
 		log.debug("initializing with resource {}", resource);
 		if (fileOptimizer.canOptimize(resource)) {
 			this.canOptimize = true;
-			this.result = fileOptimizer.optimizeFile(resource, false);
+			this.result = fileOptimizer.getOptimizedContents(resource);
 		} else {
 			this.canOptimize = false;
 			this.result = null;
 		}
 	}
 
+	/**
+	 * Returns true if the file is optimized, false otherwise
+	 * 
+	 * @return
+	 */
 	public boolean isOptimized() {
 		return fileOptimizer.isOptimized(resource);
 	}
 
+	/**
+	 * Gets the optimization result.
+	 * 
+	 * @return
+	 */
 	public OptimizationResult getResult() {
 		return result;
 	}
 
+	/**
+	 * Return true if the file can be optimized
+	 * 
+	 * @return
+	 */
 	public boolean isCanOptimize() {
 		return canOptimize;
 	}

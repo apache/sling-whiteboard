@@ -112,6 +112,12 @@
 			<version>2.3.22</version>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.sling</groupId>
+			<artifactId>org.apache.sling.engine</artifactId>
+			<version>2.6.12</version>
+			<scope>provided</scope>
+		</dependency>
 
 		<!-- Image Optimization Dependencies -->
 		<dependency>

@@ -27,6 +27,7 @@
 [optim:optimized] 
  mixin  
  - optim:algorithm (string)
+ - optim:disabled (boolean)
  - optim:hash (string)
  - optim:original (binary)
  - optim:savings (double)

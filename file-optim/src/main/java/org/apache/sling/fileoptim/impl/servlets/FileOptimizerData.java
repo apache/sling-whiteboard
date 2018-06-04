@@ -23,7 +23,6 @@ import javax.json.stream.JsonGenerator;
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 
-import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.Resource;
@@ -55,7 +54,7 @@ public class FileOptimizerData extends SlingSafeMethodsServlet {
 			response.sendError(404, "No Resource found at path " + path);
 		} else if (fileOptimizer.canOptimize(resource)) {
 
-			OptimizationResult res = fileOptimizer.optimizeFile(resource.getChild(JcrConstants.JCR_CONTENT), false);
+			OptimizationResult res = fileOptimizer.getOptimizedContents(resource);
 			response.setContentType("application/json");
 
 			JsonGenerator json = Json.createGenerator(response.getWriter());

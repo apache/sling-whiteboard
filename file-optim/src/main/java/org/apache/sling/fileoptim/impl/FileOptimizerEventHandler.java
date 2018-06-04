@@ -27,6 +27,7 @@ import org.apache.sling.fileoptim.FileOptimizerService;
 import org.apache.sling.fileoptim.impl.FileOptimizerEventHandler.Config;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
@@ -42,16 +43,12 @@ import org.slf4j.LoggerFactory;
  * An event filter to trigger to optimize images when they have been saved by
  * compressing.
  */
-@Component(service = EventHandler.class, immediate = true)
+@Component(service = EventHandler.class, immediate = true, configurationPolicy = ConfigurationPolicy.REQUIRE)
 @Designate(ocd = Config.class)
 public class FileOptimizerEventHandler implements EventHandler {
 
 	@ObjectClassDefinition(name = "%event.handler.name", description = "%event.handler.description", localization = "OSGI-INF/l10n/bundle")
 	public @interface Config {
-
-		@AttributeDefinition(name = "%event.handler.enabled.name", description = "%event.handler.enabled.description")
-		boolean enabled() default false;
-
 		@AttributeDefinition(name = "%event.handler.filter.name", description = "%event.handler.filter.description")
 		String event_filter() default "(&(resourceType=sling:File)(|(path=*.png)(path=*.jpg)))";
 
@@ -69,14 +66,11 @@ public class FileOptimizerEventHandler implements EventHandler {
 	@Reference
 	private ResourceResolverFactory rrf;
 
-	private Config config;
-
 	@Activate
 	@Modified
 	public void activate(Config config) throws LoginException {
 		deactivate();
 		resourceResolver = rrf.getServiceResourceResolver(null);
-		this.config = config;
 	}
 
 	@Deactivate
@@ -94,15 +88,13 @@ public class FileOptimizerEventHandler implements EventHandler {
 	 */
 	@Override
 	public void handleEvent(Event event) {
-		if (config.enabled()) {
-			String path = (String) event.getProperty(SlingConstants.PROPERTY_PATH);
-			Resource fileResource = resourceResolver.getResource(path);
-			if (fileResource != null && fileOptimizer.canOptimize(fileResource)) {
-				try {
-					fileOptimizer.optimizeFile(fileResource, true);
-				} catch (IOException e) {
-					log.error("Exception saving optimized file", e);
-				}
+		String path = (String) event.getProperty(SlingConstants.PROPERTY_PATH);
+		Resource fileResource = resourceResolver.getResource(path);
+		if (fileResource != null && fileOptimizer.canOptimize(fileResource)) {
+			try {
+				fileOptimizer.optimizeFile(fileResource, true);
+			} catch (IOException e) {
+				log.error("Exception saving optimized file", e);
 			}
 		}
 	}
