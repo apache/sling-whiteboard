@@ -5,3 +5,20 @@
 # Apache Sling GitHub Badge Script
 
 A simple utility to automatically update the badges in GitHub's README.md files.
+
+## Use
+
+All repositories:
+
+./add-badges.sh [SLING_DIR]
+
+Single repository:
+
+./add-badges.sh [SLING_DIR] [REPO_NAME]
+
+## Dependencies
+
+This script depends on the following utilities:
+
+ - xpath
+ - [grip](https://github.com/joeyespo/grip)
