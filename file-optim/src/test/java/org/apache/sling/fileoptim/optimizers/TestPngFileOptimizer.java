@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.sling;
+package org.apache.sling.fileoptim.optimizers;
 
 import static org.junit.Assert.assertTrue;
 
@@ -47,7 +47,7 @@ public class TestPngFileOptimizer {
 
 		double savings = 1.0 - ((double) optimized.length / (double) baos.toByteArray().length);
 		log.info("Compressed by {}%", Math.round(savings * 100.0));
-		
+
 		IOUtils.write(optimized, new FileOutputStream("target/optimized.png"));
 	}
 }
