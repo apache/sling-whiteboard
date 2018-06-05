@@ -48,9 +48,14 @@ function update_badges () {
     
     MAVEN_BADGE_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" https://maven-badges.herokuapp.com/maven-central/org.apache.sling/$ARTIFACT_ID/badge.svg)
     if [ "$MAVEN_BADGE_RESPONSE" = "200" ]; then
-        echo "Adding Maven release badge for $ARTIFACT_ID"
-        LINE=" [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.apache.sling/$ARTIFACT_ID/badge.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.apache.sling%22%20a%3A%22$ARTIFACT_ID%22)"
-        prepend
+        MAVEN_BADGE_CONTENTS=$(curl -L https://maven-badges.herokuapp.com/maven-central/org.apache.sling/$ARTIFACT_ID/badge.svg)
+        if [[ $MAVEN_BADGE_CONTENTS != *"unkown"* ]]; then
+            echo "Adding Maven release badge for $ARTIFACT_ID"
+            LINE=" [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.apache.sling/$ARTIFACT_ID/badge.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.apache.sling%22%20a%3A%22$ARTIFACT_ID%22)"
+            prepend
+        else
+            echo "No Maven release found for $ARTIFACT_ID"
+        fi
     else
         echo "No Maven release found for $ARTIFACT_ID"
     fi
