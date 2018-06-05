@@ -22,3 +22,9 @@ This script depends on the following utilities:
 
  - xpath
  - [grip](https://github.com/joeyespo/grip)
+
+## Prerequisites
+
+ 1. Use the repo tool to extract all of the repositories in the [sling aggregator](https://github.com/apache/sling-aggregator)
+ 2. Ensure you have SSH based access enabled to GitHub
+ 3. Ensure all repository workspaces are in a clean state
