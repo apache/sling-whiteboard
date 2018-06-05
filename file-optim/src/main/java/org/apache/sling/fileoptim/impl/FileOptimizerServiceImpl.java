@@ -84,8 +84,9 @@ public class FileOptimizerServiceImpl implements FileOptimizerService, ServiceLi
 	@Modified
 	public void activate(ComponentContext context, Config config) throws InvalidSyntaxException {
 		bundleContext = context.getBundleContext();
-		bundleContext.addServiceListener(this, "(" + Constants.OBJECTCLASS + "=" + FileOptimizer.class.getName() + ")");
 		this.config = config;
+		this.rebuildOptimizerCache();
+		bundleContext.addServiceListener(this, "(" + Constants.OBJECTCLASS + "=" + FileOptimizer.class.getName() + ")");
 	}
 
 	private void addOptimizer(Map<String, List<ServiceReference<FileOptimizer>>> tempCache, String metaType,
@@ -111,7 +112,8 @@ public class FileOptimizerServiceImpl implements FileOptimizerService, ServiceLi
 
 	@Override
 	public boolean canOptimize(Resource fileResource) {
-		if (!fileResource.getName().equals(JcrConstants.JCR_CONTENT)) {
+		if (!fileResource.getName().equals(JcrConstants.JCR_CONTENT)
+				&& fileResource.getChild(JcrConstants.JCR_CONTENT) != null) {
 			fileResource = fileResource.getChild(JcrConstants.JCR_CONTENT);
 		}
 		OptimizedFile of = fileResource.adaptTo(OptimizedFile.class);
@@ -140,7 +142,8 @@ public class FileOptimizerServiceImpl implements FileOptimizerService, ServiceLi
 	 */
 	@Override
 	public OptimizationResult getOptimizedContents(Resource fileResource) throws IOException {
-		if (!fileResource.getName().equals(JcrConstants.JCR_CONTENT)) {
+		if (!fileResource.getName().equals(JcrConstants.JCR_CONTENT)
+				&& fileResource.getChild(JcrConstants.JCR_CONTENT) != null) {
 			fileResource = fileResource.getChild(JcrConstants.JCR_CONTENT);
 		}
 		OptimizationResult result = new OptimizationResult(fileResource);
@@ -187,7 +190,8 @@ public class FileOptimizerServiceImpl implements FileOptimizerService, ServiceLi
 	@Override
 	public boolean isOptimized(Resource fileResource) {
 
-		if (!fileResource.getName().equals(JcrConstants.JCR_CONTENT)) {
+		if (!fileResource.getName().equals(JcrConstants.JCR_CONTENT)
+				&& fileResource.getChild(JcrConstants.JCR_CONTENT) != null) {
 			fileResource = fileResource.getChild(JcrConstants.JCR_CONTENT);
 		}
 
