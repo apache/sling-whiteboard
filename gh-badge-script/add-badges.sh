@@ -8,7 +8,16 @@ SCRIPT_DIR=$(pwd)
 
 function prepend () {
     echo -e "$LINE$(cat README.md)" > README.md
-    #echo "PREPENDING $LINE"
+}
+
+function overwrite_readme () {
+    PROJECT_NAME="$(xpath pom.xml '/project/name/text()' | xargs)" > /dev/null 2>&1
+    PROJECT_DESCRIPTION="$(xpath pom.xml '/project/description/text()' | xargs)" > /dev/null 2>&1
+    
+    echo "Overwriting README for $PROJECT_NAME"
+    
+    printf "# $PROJECT_NAME\n\nThis module is part of the [Apache Sling](https://sling.apache.org) project.\n\n$PROJECT_DESCRIPTION" > README.md
+    update_badges
 }
 
 function update_badges () {
@@ -17,18 +26,20 @@ function update_badges () {
     ARTIFACT_ID="$(xpath pom.xml '/project/artifactId/text()')" > /dev/null 2>&1
     echo "Artifact ID: $ARTIFACT_ID"
     
-    git checkout master
-    git remote remove origin
-    git remote add origin git@github.com:apache/sling-$REPO_NAME.git
-    git fetch
-    git branch --set-upstream-to=origin/master master
-    git pull
+    GIT=$(git remote -v)
+    if [[ "$GIT" = *"https"* ]]; then
+        git checkout master
+        git remote remove origin
+        git remote add origin git@github.com:apache/sling-$REPO_NAME.git
+        git fetch
+        git branch --set-upstream-to=origin/master master
+    fi
     
     echo "Adding standard items for $REPO_NAME"
     LINE="\n\n"
     prepend
     
-    while IFS=, read -r ID LOC GH CONTRIB TEST TOOL DEPRECATED
+    while IFS=, read -r ID LOC GH CONTRIB TEST TOOL DEPRECATED FEATURE
     do
         if [ "$ID" == "$REPO_NAME" ]; then
             if [ "$CONTRIB" == "Y" ]; then
@@ -40,24 +51,44 @@ function update_badges () {
                 LINE=" [![Deprecated](http://sling.apache.org/badges/deprecated.svg)](https://sling.apache.org/downloads.cgi)"
                 prepend
             fi
+            FEATURE=$(echo $FEATURE | xargs)
+            if [ ! -z "$FEATURE" ]; then
+                LINE=" [![${FEATURE}](https://sling.apache.org/badges/feature-$FEATURE.svg)](https://github.com/apache/sling-aggregator/docs/modules.md#$FEATURE)"
+                prepend
+            fi
         fi
     done < $SCRIPT_DIR/Sling-Repos.csv
     
     LINE=" [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)"
     prepend
     
-    MAVEN_BADGE_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" https://maven-badges.herokuapp.com/maven-central/org.apache.sling/$ARTIFACT_ID/badge.svg)
-    if [ "$MAVEN_BADGE_RESPONSE" = "200" ]; then
+    if [[ ! -z $ARTIFACT_ID ]]; then
+        JAVADOC_BADGE_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" https://www.javadoc.io/badge/org.apache.sling/$ARTIFACT_ID.svg)
+        if [ $JAVADOC_BADGE_RESPONSE = "200" ]; then
+            echo "Adding Javadoc badge for $ARTIFACT_ID"
+            LINE=" [![JavaDocs](https://www.javadoc.io/badge/org.apache.sling/$ARTIFACT_ID.svg)](https://www.javadoc.io/doc/org.apache.sling/org.apache.sling.api)"
+            prepend
+        else
+            echo "No published javadocs found for $ARTIFACT_ID"
+        fi
+    
         MAVEN_BADGE_CONTENTS=$(curl -L https://maven-badges.herokuapp.com/maven-central/org.apache.sling/$ARTIFACT_ID/badge.svg)
-        if [[ $MAVEN_BADGE_CONTENTS != *"unkown"* ]]; then
+        if [[ $MAVEN_BADGE_CONTENTS = *"unknown"* ]]; then
+            echo "No Maven release found for $ARTIFACT_ID"
+        else
             echo "Adding Maven release badge for $ARTIFACT_ID"
             LINE=" [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.apache.sling/$ARTIFACT_ID/badge.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.apache.sling%22%20a%3A%22$ARTIFACT_ID%22)"
             prepend
-        else
-            echo "No Maven release found for $ARTIFACT_ID"
         fi
+    fi
+    
+    COVERAGE_CONTENTS=$(curl -L https://img.shields.io/jenkins/c/https/builds.apache.org/view/S-Z/view/Sling/job/sling-$REPO_NAME-1.8.svg)
+    if [[ $COVERAGE_CONTENTS = *"inaccessible"* || $COVERAGE_CONTENTS = *"invalid"* ]]; then
+        echo "No coverage reports found for $REPO_NAME"
     else
-        echo "No Maven release found for $ARTIFACT_ID"
+        echo "Adding coverage badge for $REPO_NAME"
+        LINE=" [![Coverage Status](https://img.shields.io/jenkins/c/https/builds.apache.org/view/S-Z/view/Sling/job/sling-$REPO_NAME-1.8.svg)](https://builds.apache.org/view/S-Z/view/Sling/job/sling-$REPO_NAME-1.8/)"
+        prepend
     fi
     
     TEST_CONTENTS=$(curl -L https://img.shields.io/jenkins/t/https/builds.apache.org/view/S-Z/view/Sling/job/sling-$REPO_NAME-1.8.svg)
@@ -69,20 +100,10 @@ function update_badges () {
         prepend
     fi
     
-    
-    COVERAGE_CONTENTS=$(curl -L https://img.shields.io/jenkins/c/https/builds.apache.org/view/S-Z/view/Sling/job/sling-$REPO_NAME-1.8.svg)
-    if [[ $COVERAGE_CONTENTS = *"inaccessible"* || $COVERAGE_CONTENTS = *"invalid"* ]]; then
-        echo "No coverage reports found for $REPO_NAME"
-    else
-        echo "Adding coverage badge for $REPO_NAME"
-        LINE=" [![Coverage Status](https://img.shields.io/jenkins/c/https/builds.apache.org/view/S-Z/view/Sling/job/sling-$REPO_NAME-1.8.svg)](https://builds.apache.org/view/S-Z/view/Sling/job/sling-$REPO_NAME-1.8/)"
-        prepend
-    fi
-    
     BUILD_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" https://builds.apache.org/view/S-Z/view/Sling/job/sling-$REPO_NAME-1.8)
     if [ "$BUILD_RESPONSE" != "404" ]; then
         echo "Adding build badge for $REPO_NAME"
-        LINE=" [![Build Status](https://img.shields.io/jenkins/s/https/builds.apache.org/view/S-Z/view/Sling/job/sling-$REPO_NAME-1.8.svg)](https://builds.apache.org/view/S-Z/view/Sling/job/sling-$REPO_NAME-1.8)"
+        LINE=" [![Build Status](https://builds.apache.org/buildStatus/icon?job=sling-$REPO_NAME-1.8)](https://builds.apache.org/view/S-Z/view/Sling/job/sling-$REPO_NAME-1.8)"
         prepend
     else
         echo "No build found for $REPO_NAME"
@@ -95,15 +116,23 @@ function update_badges () {
     grip -b > /dev/null 2>&1 & > /dev/null
     PID=$!
     
-    echo "Commit results? (C=Commit,N=No,R=Revert)?"
+    if [[ ! -z $ARTIFACT_ID ]]; then
+        echo "Commit results? (C=Commit,N=No,R=Revert,O=Overwrite README)?"
+    else
+        echo "Commit results? (C=Commit,N=No,R=Revert)?"
+    fi
     read RESULTS
     
-    if [ "$RESULTS" == "C" ]; then
-        git commit -a -m "Updating badges for ${REPO_NAME}"
-    elif [ "$RESULTS" == "R" ]; then
-        git reset --hard HEAD
-    fi
     kill $PID 2>&1 > /dev/null
+    
+    if [ "$RESULTS" == "C" ]; then
+        git commit README.md -m "Updating badges for ${REPO_NAME}"
+    elif [ "$RESULTS" == "R" ]; then
+        git checkout -- README.md
+    elif [ "$RESULTS" == "O" ]; then
+        git checkout -- README.md
+        overwrite_readme
+    fi
 }
 
 function handle_repo () {
@@ -123,6 +152,12 @@ function handle_repo () {
         update_badges
     fi
 }
+
+if [ ! -f ~/.grip/settings.py ]; then
+    echo "Did not find GitHub Access token file, please generate an access token on GitHub https://github.com/settings/tokens/new?scopes= and provide it below:"
+    read ACCESS_TOKEN
+    echo "PASSWORD = '$ACCESS_TOKEN'" > ~/.grip/settings.py
+fi
 
 printf "\nStarting badge update!\n\n-------------------------\n\n"
 if [ -z "$SLING_DIR" ]; then
