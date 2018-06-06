@@ -39,7 +39,7 @@ function update_badges () {
     LINE="\n\n"
     prepend
     
-    while IFS=, read -r ID LOC GH CONTRIB TEST TOOL DEPRECATED FEATURE
+    while IFS=, read -r ID LOC GH CONTRIB TEST TOOL DEPRECATED FEATURE BASH
     do
         if [ "$ID" == "$REPO_NAME" ]; then
             if [ "$CONTRIB" == "Y" ]; then
