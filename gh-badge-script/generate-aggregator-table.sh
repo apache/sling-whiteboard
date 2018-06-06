@@ -79,7 +79,7 @@ function add_repo () {
             JAVADOC_BADGE_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" https://www.javadoc.io/badge/org.apache.sling/$ARTIFACT_ID.svg)
             if [ $JAVADOC_BADGE_RESPONSE != "404" ]; then
                 echo "Adding Javadoc badge for $ARTIFACT_ID"
-                LINE=" [![JavaDocs](https://www.javadoc.io/badge/org.apache.sling/$ARTIFACT_ID.svg)](https://www.javadoc.io/doc/org.apache.sling/org.apache.sling.api)"
+                LINE=" [![JavaDocs](https://www.javadoc.io/badge/org.apache.sling/$ARTIFACT_ID.svg)](https://www.javadoc.io/doc/org.apache.sling/$ARTIFACT_ID)"
                 write_data
             else
                 echo "No published javadocs found for $ARTIFACT_ID"
