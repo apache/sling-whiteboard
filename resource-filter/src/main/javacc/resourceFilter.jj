@@ -1,0 +1,338 @@
+/*
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+options
+{
+  STATIC = false;
+  UNICODE_INPUT = true;
+}
+
+PARSER_BEGIN(FilterParser)
+package org.apache.sling.resource.filter.impl;
+
+import java.util.ArrayList;
+import java.util.List;
+import org.apache.sling.resource.filter.impl.node.*;
+
+public final class FilterParser
+{
+}
+
+PARSER_END(FilterParser)
+
+SKIP :
+{
+  " "
+| "\t"
+}
+
+TOKEN :
+{
+  < #PLUS: "+" >
+| < #MINUS: "-" >
+| < #DIGIT: [ "0"-"9" ] >
+| < #EXP: ["e","E"] ( < PLUS > | < MINUS > )? >
+| < #OFFSET: ["+","-"]["0"-"2"] <DIGIT> ":" ["0"-"5"] <DIGIT> >
+| < #YYYYMMDD: <INTEGER> <INTEGER> <INTEGER> <INTEGER> <MINUS> ["0"-"1"] <INTEGER> <MINUS> ["0"-"3"] <DIGIT> >
+| < #TIME: ["0"-"2"] <DIGIT> ":" ["0"-"5"] <DIGIT> ( ":" ["0"-"5"] <DIGIT> ("." <DIGIT>  <DIGIT>  <DIGIT>)? )? >
+| < OFFSETDATETIME: <YYYYMMDD> "T" <TIME> <OFFSET> >
+| < DATETIME: <YYYYMMDD> "T" <TIME> >
+| < DATE: <YYYYMMDD> >
+| < NUMBER:  <INTEGER> | <INTEGER> <FRACTIONAL_DIGITS> | <INTEGER> <EXPONENT> | <INTEGER> <FRACTIONAL_DIGITS> <EXPONENT> >
+| < INTEGER: (<MINUS>)? ( <DIGITS> ) >
+| < FRACTIONAL_DIGITS: "." <DIGITS> >
+| < EXPONENT: <EXP> <DIGITS> >
+| < DIGITS: ( <DIGIT> )+ >
+}
+
+TOKEN :
+{
+  < STRING : < SQUOTE > | < DQUOTE > >{matchedToken.image = image.substring(1, lengthOfMatch - 1);}
+| < #SQUOTE :
+    (
+      "'"
+      ( "\\" ~[ ] | ~[ "'", "\\" ] )*
+      "'"
+    ) >
+| < #DQUOTE :
+    (
+      "\""
+      ( "\\" ~[ ] | ~[ "\"", "\\" ] )*
+      "\""
+    ) >
+}
+
+TOKEN :
+{
+  < AND :
+    (
+      "&&"
+    | "and"
+    ) >
+| < OR :
+    (
+      "||"
+    | "or"
+    ) >
+| < NULL : "null" >
+| < LPAREN : "(" >
+| < RPAREN : ")" >
+| < COMMA : "," >
+| < BOOLEAN: "true" | "false" >
+| < EQUAL : "==" | "is" >
+| < NOT_EQUAL : "!=" | "is not" >
+| < GREATER_THAN : ">" | "greater than" >
+| < GREATER_THAN_OR_EQUAL : ">=" >
+| < LESS_THAN : "<" | "less than" >
+| < LESS_THAN_OR_EQUAL : "<=" >
+| < LIKE : "~=" | "like" >
+| < LIKE_NOT : "like not" | "not like" >
+| < CONTAINS : "contains" >
+| < CONTAINS_NOT : "contains not" >
+| < CONTAINS_ANY : "contains any" >
+| < CONTAINS_NOT_ANY : "contains not any" >
+| < IN : "in" >
+| < NOT_IN : "not in" >
+| < DYNAMIC_ARG : "$" >
+| < FUNCTION_NAME : (~[ "\"", "'", "$", "(", ")", ",", "=", "<", ">", " ", "[", "]","+","-",".","0"-"9" ])+ >
+| < PROPERTY: "[" ( "\\" ~[ ] | ~[ "]", "\\" ] )* "]" >{matchedToken.image = image.substring(1, lengthOfMatch - 1);}
+}
+
+<*> TOKEN : { <UNKNOWN: ~[]> }
+
+Node parse() :
+{
+  final Node node;
+}
+{
+  node = or() < EOF >
+  {
+    return node;
+  }
+}
+
+Node or() :
+{
+  final List < Node > nodes = new ArrayList < Node > (3);
+  Node node;
+}
+{
+  node = and()
+  {
+    nodes.add(node);
+  }
+  (
+    < OR > node = and()
+    {
+      nodes.add(node);
+    }
+  )*
+  {
+    return nodes.size() != 1 ? new Node(FilterParserConstants.OR, nodes) : nodes.get(0);
+  }
+}
+
+Node and() :
+{
+  final List < Node > nodes = new ArrayList < Node > (3);
+  Node node;
+}
+{
+  node = constraint()
+  {
+    nodes.add(node);
+  }
+  (
+    < AND > node = constraint()
+    {
+      nodes.add(node);
+    }
+  )*
+  {
+    return nodes.size() != 1 ? new Node(FilterParserConstants.AND, nodes) : nodes.get(0);
+  }
+}
+
+Node constraint() :
+{
+  final Node node;
+}
+{
+  (
+    node = group()
+  | node = comparison()
+  )
+  {
+    return node;
+  }
+}
+
+Node group() :
+{
+  final Node node;
+}
+{
+  < LPAREN > node = or() < RPAREN >
+  {
+    return node;
+  }
+}
+
+Node comparison() :
+{
+  Node leftValue;
+  Token op;
+  Node rightValue;
+}
+{
+  leftValue = argument()
+  op = comparisonValue()
+  rightValue = argument()
+  {
+    return new Node(op.kind, op.image, leftValue, rightValue);
+  }
+}
+
+Token comparisonValue() :
+{
+}
+{
+  (
+     < EQUAL >
+  |  < NOT_EQUAL >
+  |  < GREATER_THAN >
+  |  < GREATER_THAN_OR_EQUAL >
+  |  < LESS_THAN >
+  |  < LESS_THAN_OR_EQUAL >
+  |  < LIKE >
+  |  < LIKE_NOT >
+  |  < CONTAINS >
+  |  < CONTAINS_NOT >
+  |  < CONTAINS_ANY >
+  |  < CONTAINS_NOT_ANY >
+  |  < IN >
+  |  < NOT_IN >
+  )
+  {
+    return token;
+  }
+}
+
+
+List < Node > Arguments() :
+{
+  Object value = new ArrayList();
+}
+{
+  
+  < LPAREN > [ value = commaSepArguments() ] < RPAREN >
+  {
+    return (List) value;
+  }
+}
+
+List < Node > commaSepArguments() :
+{
+  final List < Node > list = new ArrayList < Node > (3);
+  Node arg;
+}
+{
+  arg = argument()
+  {
+    list.add(arg);
+  }
+  (
+    < COMMA > 
+    arg = argument()
+    {
+      list.add(arg);
+    }
+  )*
+  {
+    return list;
+  }
+}
+
+Node argument() :
+{
+  Node selector = null;
+}
+{
+  (
+    selector = literal()
+  | selector = property()
+  | selector = dynamicArg()
+  | selector = function()
+
+  )
+  {
+    return selector;
+  }
+}
+
+Node function() :
+{
+  String functionName = null;
+  List < Node > children = null;
+}
+{
+  < FUNCTION_NAME >
+  {
+    functionName = token.image;
+  }
+  < LPAREN > [ children = commaSepArguments() ] < RPAREN >
+  {
+    return new Node(FilterParserConstants.FUNCTION_NAME, functionName, children);
+  }
+}
+
+Node dynamicArg() :
+{
+  String functionName = null;
+}
+{
+  < DYNAMIC_ARG >< FUNCTION_NAME >
+  {
+    functionName = token.image;
+    return new Node(FilterParserConstants.DYNAMIC_ARG, functionName);
+  }
+}
+
+Node literal() :
+{
+}
+{
+  (
+    < STRING >
+  | < NUMBER >
+  | < NULL >
+  | < BOOLEAN >
+  | < DATE >
+  | < DATETIME >
+  | < OFFSETDATETIME >
+  )
+  {
+    return new Node(token.kind, token.image);
+  }
+}
+
+Node property() :
+{
+}
+{
+  < PROPERTY > 
+  {
+    return new Node(token.kind, token.image);
+  }
+}

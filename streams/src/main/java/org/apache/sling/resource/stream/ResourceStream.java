@@ -27,7 +27,6 @@ import java.util.stream.StreamSupport;
 import javax.annotation.Nonnull;
 
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.resource.stream.impl.ParseException;
 
 /**
  * Utility to create a Stream<Resource> of Resource objects from a managed
