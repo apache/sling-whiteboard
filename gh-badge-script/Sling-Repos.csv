@@ -111,7 +111,7 @@ org-apache-sling-hc-junit-bridge,./bundles/extensions/healthcheck/junit-bridge/,
 org-apache-sling-hc-samples,./bundles/extensions/healthcheck/samples/,200,N,N,N,N,healthcheck,BASH
 org-apache-sling-hc-support,./bundles/extensions/healthcheck/support/,200,N,N,N,N,healthcheck,BASH
 org-apache-sling-hc-webconsole,./bundles/extensions/healthcheck/webconsole/,200,N,N,N,N,healthcheck,BASH
-org-apache-sling-i18n,./bundles/extensions/i18n/,200,N,N,N,N,core,BASH
+org-apache-sling-i18n,./bundles/extensions/i18n/,200,N,N,N,N,,BASH
 org-apache-sling-ide-api,./tooling/ide/api/,404,N,N,Y,Y,ide,BASH
 org-apache-sling-ide-api-test,./tooling/ide/api-test/,404,N,N,Y,Y,ide,BASH
 org-apache-sling-ide-artifacts,./tooling/ide/artifacts/,404,N,N,Y,Y,ide,BASH
