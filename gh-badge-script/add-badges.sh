@@ -39,25 +39,25 @@ function update_badges () {
     LINE="\n\n"
     prepend
     
-    while IFS=, read -r ID LOC GH CONTRIB TEST TOOL DEPRECATED FEATURE BASH
+    STATUS=""
+    while IFS=, read -r ID LOC GH STAT EOL
     do
         if [ "$ID" == "$REPO_NAME" ]; then
-            if [ "$CONTRIB" == "Y" ]; then
-                LINE=" [![Contrib](http://sling.apache.org/badges/contrib.svg)](https://sling.apache.org/downloads.cgi)"
-                prepend
-            fi
-            DEPRECATED=$(echo $DEPRECATED | xargs)
-            if [ "$DEPRECATED" == "Y" ]; then
-                LINE=" [![Deprecated](http://sling.apache.org/badges/deprecated.svg)](https://sling.apache.org/downloads.cgi)"
-                prepend
-            fi
-            FEATURE=$(echo $FEATURE | xargs)
-            if [ ! -z "$FEATURE" ]; then
-                LINE=" [![${FEATURE}](https://sling.apache.org/badges/feature-$FEATURE.svg)](https://github.com/apache/sling-aggregator/docs/features/$FEATURE.md)"
-                prepend
-            fi
+            STATUS="$STAT"
         fi
     done < $SCRIPT_DIR/Sling-Repos.csv
+    
+    if [ ! -z $STATUS ]; then
+        LINE="&#32;[![$STATUS](http://sling.apache.org/badges/status-$STATUS.svg)](https://github.com/apache/sling-aggregator/docs/status/$STATUS.md)"
+        prepend
+    fi
+    
+    GROUP="$(xmllint --xpath "string(/manifest/project[@path=\"$REPO_NAME\"]/@groups)" ~/git/sling/aggregator/default.xml)"
+    echo -e "\nGroup: $GROUP"
+    if [ ! -z "$GROUP" ]; then
+        LINE=" [![${GROUP}](https://sling.apache.org/badges/group-$GROUP.svg)](https://github.com/apache/sling-aggregator/docs/groups/$GROUP.md)"
+        prepend
+    fi
     
     LINE=" [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)"
     prepend
