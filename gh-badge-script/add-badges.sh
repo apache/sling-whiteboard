@@ -64,7 +64,7 @@ function update_badges () {
     
     if [[ ! -z $ARTIFACT_ID ]]; then
         JAVADOC_BADGE_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" https://www.javadoc.io/badge/org.apache.sling/$ARTIFACT_ID.svg)
-        if [ $JAVADOC_BADGE_RESPONSE = "200" ]; then
+        if [[ $JAVADOC_BADGE_RESPONSE != "404" ]]; then
             echo "Adding Javadoc badge for $ARTIFACT_ID"
             LINE=" [![JavaDocs](https://www.javadoc.io/badge/org.apache.sling/$ARTIFACT_ID.svg)](https://www.javadoc.io/doc/org.apache.sling/$ARTIFACT_ID)"
             prepend

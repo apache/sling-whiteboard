@@ -77,7 +77,7 @@ function add_repo () {
             echo "No tests found for $REPO_NAME"
         else
             echo "Adding test badge for $REPO_NAME"
-            LINE="&#32;[![Test Status](https://img.shields.io/jenkins/t/https/builds.apache.org/view/S-Z/view/Sling/job/sling-$REPO_NAME-1.8.svg)](https://builds.apache.org/view/S-Z/view/Sling/job/sling-$REPO_NAME-1.8/test_results_analyzer/)"
+            LINE="&#32;[![Test Status](https://img.shields.io/jenkins/t/https/builds.apache.org/view/S-Z/view/Sling/job/sling-$REPO_NAME-1.8.svg?longCache=true)](https://builds.apache.org/view/S-Z/view/Sling/job/sling-$REPO_NAME-1.8/test_results_analyzer/)"
             write_data
         fi
         
@@ -86,7 +86,7 @@ function add_repo () {
             echo "No coverage reports found for $REPO_NAME"
         else
             echo "Adding coverage badge for $REPO_NAME"
-            LINE="&#32;[![Coverage Status](https://img.shields.io/jenkins/c/https/builds.apache.org/view/S-Z/view/Sling/job/sling-$REPO_NAME-1.8.svg)](https://builds.apache.org/view/S-Z/view/Sling/job/sling-$REPO_NAME-1.8/)"
+            LINE="&#32;[![Coverage Status](https://img.shields.io/jenkins/c/https/builds.apache.org/view/S-Z/view/Sling/job/sling-$REPO_NAME-1.8.svg?longCache=true)](https://builds.apache.org/view/S-Z/view/Sling/job/sling-$REPO_NAME-1.8/)"
             write_data
         fi
         
