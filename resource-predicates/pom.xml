@@ -19,7 +19,7 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>bundle</packaging>
 
-	<name>Apache Sling Stream Support</name>
+	<name>Apache Sling Resource Predicate</name>
 
 	<properties>
 		<sling.java.version>8</sling.java.version>
@@ -58,5 +58,5 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-	<description>provides a set of utilities to create and handle streams</description>
+	<description>provides a set of utilities to create resource based predicates.</description>
 </project>

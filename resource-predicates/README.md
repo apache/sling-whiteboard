@@ -3,7 +3,7 @@
 Provides a series of predefined predicates for Resources and Properties
 for use with Collections and Streams
 
-Example of a stream.
+Examples
 
 ```java
 new ResourceStream(resource)
@@ -14,8 +14,6 @@ new ResourceStream(resource)
 		    .isNot("sling/components/page/folder")))
     .collect(Collectors.toList());
 ```
-
-same results using the filter script
 
 ```java
 list.stream()
