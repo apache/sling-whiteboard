@@ -115,7 +115,7 @@ public class ResourceFilterTest {
 	public void testNullPropertyAndLimit() throws ParseException {
 		String query = "[jcr:content/foo] == null ";
 		Resource resource = context.resourceResolver().getResource(START_PATH);
-		List<Resource> found = new ResourceStream(resource).stream().filter(new ResourceFilter(query)).limit(3).collect(Collectors.toList());
+		List<Resource> found = new ResourceStream(resource).stream(r -> true).filter(new ResourceFilter(query)).limit(3).collect(Collectors.toList());
 		assertEquals(3, found.size());
 	}
 
@@ -261,6 +261,6 @@ public class ResourceFilterTest {
 	private List<Resource> handle(String path, String filter) throws ParseException {
 		Resource resource = context.resourceResolver().getResource(path);
 		Predicate<Resource> f = new ResourceFilter(filter);
-		return new ResourceStream(resource).stream().filter(f).collect(Collectors.toList());
+		return new ResourceStream(resource).stream(r -> true).filter(f).collect(Collectors.toList());
 	}
 }

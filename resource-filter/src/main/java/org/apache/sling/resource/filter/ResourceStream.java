@@ -14,9 +14,9 @@
 package org.apache.sling.resource.filter;
 
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.Stack;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -29,63 +29,76 @@ import org.apache.sling.api.resource.Resource;
  *
  */
 public class ResourceStream {
-    
+
     private Resource resource;
 
     public ResourceStream(Resource resource) {
-       this.resource = resource;
+        this.resource = resource;
     }
 
     /**
-     * Provides a stream of resources starting from the current resource and
-     * traversing through its subtree, the path of descent is controlled by the 
-     * branch selector
+     * Provides a depth first {@code Stream<Resource>} traversal of the resource
+     * tree starting with the current resource. The traversal is controlled by the
+     * provided predicate which determines if a given child is traversed. If no
+     * children matches the predicate, the traversal for that branch ends
      * 
-     * @return self closing {@code Stream<Resource>} of unknown size.
+     * @param branchSelector
+     *            used to determine whether a given child resource is traversed
+     * @return {@code Stream<Resource>} of unknown size.
      */
     public Stream<Resource> stream(Predicate<Resource> branchSelector) {
         final Resource resource = this.resource;
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(new Iterator<Resource>() {
 
-            private final LinkedList<Resource> resourcesToCheck = new LinkedList<>();
+            private final Stack<Iterator<Resource>> resources = new Stack<Iterator<Resource>>();
+            private Resource current;
+            private Iterator<Resource> iterator;
 
             {
-                resourcesToCheck.addFirst(resource);
+                resources.push(resource.getChildren().iterator());
+                current = resource;
             }
-
-            Resource current;
 
             @Override
             public boolean hasNext() {
-                if (resourcesToCheck.isEmpty()) {
-                    return false;
+                if (current == null) {
+                    return seek();
                 }
-
-                current = resourcesToCheck.removeFirst();
-                int index = 0;
-                for (Resource child : current.getChildren()) {
-                    if (branchSelector.test(child)) {
-                        resourcesToCheck.add(index++, child);
-                    }
-                }
-
                 return true;
             }
 
             @Override
             public Resource next() {
-                return current;
+                Resource next = current;
+                current = null;
+                return next;
             }
+
+            private boolean seek() {
+                while (true) {
+                    if (resources.isEmpty()) {
+                        return false;
+                    }
+                    iterator = resources.peek();
+                    if (!iterator.hasNext()) {
+                        resources.pop();
+                    } else {
+                        current = iterator.next();
+                        if (branchSelector.test(current)) {
+                            resources.push(current.getChildren().iterator());
+                            break;
+                        }
+                    }
+                }
+                return true;
+            }
+
         }, Spliterator.ORDERED | Spliterator.IMMUTABLE), false);
     }
-    
-    /**
-     * Provides a stream of resources starting from the current resource and
-     * traversing through its subtree
-     * 
-     * @return self closing {@code Stream<Resource>} of unknown size.
-     */
-    public Stream<Resource> stream(){
-        return stream(resource -> true);
+
+    public Stream<Resource> listChildren(Predicate<Resource> childSelector) {
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(resource.listChildren(),
+                Spliterator.ORDERED | Spliterator.IMMUTABLE), false).filter(childSelector);
     }
+
 }

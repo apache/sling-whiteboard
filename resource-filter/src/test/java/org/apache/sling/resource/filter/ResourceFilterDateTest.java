@@ -96,6 +96,6 @@ public class ResourceFilterDateTest {
 	
 	private List<Resource> handle(String path, String filter) throws ParseException {
 		Resource resource = context.resourceResolver().getResource(path);
-		return new ResourceFilterStream(resource).stream().filter(new ResourceFilter(filter)).collect(Collectors.toList());
+		return new ResourceFilterStream(resource).stream(r -> true).filter(new ResourceFilter(filter)).collect(Collectors.toList());
 	}
 }

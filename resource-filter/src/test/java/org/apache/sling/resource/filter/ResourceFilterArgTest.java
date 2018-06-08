@@ -65,7 +65,7 @@ public class ResourceFilterArgTest {
 
     private List<Resource> handle(String startPath, ResourceFilter filter) {
         Resource resource = context.resourceResolver().getResource(startPath);
-        return new ResourceStream(resource).stream().filter(filter).collect(Collectors.toList());
+        return new ResourceStream(resource).stream(r -> true).filter(filter).collect(Collectors.toList());
     }
 
 
