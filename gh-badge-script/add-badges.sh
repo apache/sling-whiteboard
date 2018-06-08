@@ -144,6 +144,7 @@ function handle_repo () {
         read OVERWRITE
         if [ "$OVERWRITE" == "Y" ]; then
             sed -i -e 1,4d README.md
+            rm README.md-e
             update_badges
         else
             echo "Skipping..."
