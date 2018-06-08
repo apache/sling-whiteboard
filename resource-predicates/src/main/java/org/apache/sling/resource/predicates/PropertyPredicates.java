@@ -15,7 +15,6 @@ package org.apache.sling.resource.predicates;
 
 import java.lang.reflect.Array;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Objects;
 import java.util.function.Predicate;
 
@@ -88,10 +87,10 @@ public class PropertyPredicates {
      *            earliest acceptable value
      * @return predicate
      */
-    public Predicate<Resource> isAfter(Date when) {
+    public Predicate<Resource> isAfter(Calendar when) {
         Objects.requireNonNull(when, "value may not be null");
         return value -> {
-            Date then = value.adaptTo(ValueMap.class).get(key, Date.class);
+            Calendar then = value.adaptTo(ValueMap.class).get(key, Calendar.class);
             if (then != null) {
                 return then.after(when);
             }

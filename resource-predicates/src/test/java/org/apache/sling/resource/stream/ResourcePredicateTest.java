@@ -21,8 +21,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 import org.apache.sling.api.resource.Resource;
@@ -36,18 +36,21 @@ public class ResourcePredicateTest {
     @Rule
     public final SlingContext context = new SlingContext();
 
-    private Date midPoint;
+    private Calendar midPoint;
 
     private static String DATE_STRING = "Thu Aug 07 2013 16:32:59 GMT+0200";
 
     private static String DATE_FORMAT = "EEE MMM dd yyyy HH:mm:ss 'GMT'Z";
 
     private List<Resource> list;
-    
+
     @Before
     public void setUp() throws ParseException {
         context.load().json("/data.json", "/content/sample/en");
-        midPoint = new SimpleDateFormat(DATE_FORMAT).parse(DATE_STRING);
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeZone(TimeZone.getTimeZone("GMT+0200"));
+        cal.setTime(new SimpleDateFormat(DATE_FORMAT).parse(DATE_STRING));
+        midPoint = cal;
         Resource resource = context.resourceResolver().getResource("/content/sample/en");
         list = new ArrayList<>();
         resource.listChildren().forEachRemaining(list::add);
@@ -70,30 +73,31 @@ public class ResourcePredicateTest {
     @Test
     public void testBeforeThenDate() {
         List<Resource> found = list.stream()
-                .filter(property("jcr:content/created").isBefore(Calendar.getInstance().getTime()))
+                .filter(property("jcr:content/created").isBefore(Calendar.getInstance()))
                 .collect(Collectors.toList());
         assertEquals(7, found.size());
     }
 
     @Test
     public void testAfterThenDate() {
-        List<Resource> found = list.stream()
-                .filter( child("jcr:content").has(property("created").isAfter(new Date(0))))
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(0);
+        List<Resource> found = list.stream().filter(child("jcr:content").has(property("created").isAfter(cal)))
                 .collect(Collectors.toList());
         assertEquals(7, found.size());
     }
 
     @Test
     public void testAfterMidDate() {
-        List<Resource> found = list.stream()
-                .filter(property("jcr:content/created").isAfter(midPoint)).collect(Collectors.toList());
+        List<Resource> found = list.stream().filter(property("jcr:content/created").isAfter(midPoint))
+                .collect(Collectors.toList());
         assertEquals(4, found.size());
     }
 
     @Test
     public void testBeforeMidDate() {
-        List<Resource> found = list.stream()
-                .filter(property("jcr:content/created").isBefore(midPoint)).collect(Collectors.toList());
+        List<Resource> found = list.stream().filter(property("jcr:content/created").isBefore(midPoint))
+                .collect(Collectors.toList());
         assertEquals(1, found.size());
     }
 

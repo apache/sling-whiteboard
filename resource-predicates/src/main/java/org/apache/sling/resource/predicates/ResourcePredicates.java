@@ -43,6 +43,7 @@ public class ResourcePredicates {
     public static Predicate<Resource> maxDepth(final int depth) {
         return new Predicate<Resource>() {
             int startingDepth = -1;
+
             @Override
             public boolean test(Resource resource) {
                 int currentDepth = resource.getPath().split("/").length;
@@ -51,7 +52,7 @@ public class ResourcePredicates {
                 }
                 return currentDepth - startingDepth < depth;
             }
-            
+
         };
     }
 
