@@ -14,6 +14,7 @@
 package org.apache.sling.resource.predicates;
 
 import java.lang.reflect.Array;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Objects;
 import java.util.function.Predicate;
@@ -68,10 +69,10 @@ public class PropertyPredicates {
      *            latest acceptable time
      * @return predicate which will perform the matching
      */
-    public Predicate<Resource> isBefore(Date when) {
+    public Predicate<Resource> isBefore(Calendar when) {
         Objects.requireNonNull(when, "value may not be null");
         return value -> {
-            Date then = value.getValueMap().get(key, Date.class);
+            Calendar then = value.getValueMap().get(key, Calendar.class);
             if (then != null) {
                 return then.before(when);
             }

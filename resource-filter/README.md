@@ -59,7 +59,7 @@ Values for comparison are obtained through multiple methods
 All types are converted to either a String or a Number. For direct equivalence the comparison is done as a String. For relational comparisons the object will be adapted to a number.
 
 ### Dates/Instants
-Dates are a special, there are multiple ways to enter a date.
+Dates are special, there are multiple ways to enter a date.
 
 In line, as part of the query, a date can be identified as a string that conforms to a standard ISO-8601 date time.
 
@@ -98,6 +98,14 @@ OOTB Functions are:
 | name  | none      | String  | Provides the name of the resource                              |
 | date  | 0 - 2     | Instant | First argument is string representation of the date, second argument is a standard Java DateFormat representation of the value. No argument returns the current time. |
 | path  | none		| String  | path of the tested resource        |
+
+### Arguments
+The ResourceFilter can have key value pairs added so that the values may be used as part of the script resolution. Arguments are accessed by using the dollar sign '$'
+
+```java
+new ResourceFilter("[jcr:content/sling:resourceType] != $type").addArgument("type","apps/components/page/folder");
+```
+
 
 ## Optimizing Traversals
 Similar to indexing in a query there are strategies that you can do within a tree traversal so that traversals can be done in an efficient manner across a large number of resources. The following strategies will assist in traversal optimization.
