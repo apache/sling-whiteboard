@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.resource.stream;
+package org.apache.sling.resource.predicates;
 
 import static org.apache.sling.resource.predicates.ChildResourcePredicates.child;
 import static org.apache.sling.resource.predicates.PropertyPredicates.property;
