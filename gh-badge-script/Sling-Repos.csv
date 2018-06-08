@@ -316,9 +316,9 @@ samples,,,,EOL
 servlet-archetype,,,,EOL
 site,,,,EOL
 slingfeature-maven-plugin,,,,EOL
-slingstart-archetype,./tooling/maven/archetypes/slingstart/,404,deprecated,EOL
+slingstart-archetype,./tooling/maven/archetypes/slingstart/,404,,EOL
 slingstart-maven-plugin,./tooling/maven/slingstart-maven-plugin/,200,,EOL
-taglib-archetype,./tooling/maven/archetypes/taglib/,404,deprecated,EOL
+taglib-archetype,./tooling/maven/archetypes/taglib/,404,,EOL
 test-servlet-archetype-project,./tooling/maven/archetypes/servlet/src/test/resources/projects/normal/reference/,404,deprecated,EOL
 tooling-jenkins,,,,EOL
 tooling-release,,,,EOL

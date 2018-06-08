@@ -48,14 +48,14 @@ function update_badges () {
     done < $SCRIPT_DIR/Sling-Repos.csv
     
     if [ ! -z $STATUS ]; then
-        LINE="&#32;[![$STATUS](http://sling.apache.org/badges/status-$STATUS.svg)](https://github.com/apache/sling-aggregator/docs/status/$STATUS.md)"
+        LINE="&#32;[![$STATUS](http://sling.apache.org/badges/status-$STATUS.svg)](https://github.com/apache/sling-aggregator/blob/master/docs/status/$STATUS.md)"
         prepend
     fi
     
     GROUP="$(xmllint --xpath "string(/manifest/project[@path=\"$REPO_NAME\"]/@groups)" ~/git/sling/aggregator/default.xml)"
     echo -e "\nGroup: $GROUP"
     if [ ! -z "$GROUP" ]; then
-        LINE=" [![${GROUP}](https://sling.apache.org/badges/group-$GROUP.svg)](https://github.com/apache/sling-aggregator/docs/groups/$GROUP.md)"
+        LINE=" [![${GROUP}](https://sling.apache.org/badges/group-$GROUP.svg)](https://github.com/apache/sling-aggregator/blob/master/docs/groups/$GROUP.md)"
         prepend
     fi
     

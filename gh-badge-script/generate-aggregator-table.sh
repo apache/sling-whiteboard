@@ -14,7 +14,7 @@ function write_data () {
             echo -n -e $LINE >> $SLING_DIR/aggregator/docs/groups/$GROUP.md
         else
             echo "Creating group file"
-            echo -n -e "[Apache Sling](http://sling.apache.org) > [Aggregator](https://github.com/apache/sling-aggregator/) > [Modules](https://github.com/apache/sling-aggregator/docs/modules.md) > $GROUP\n# $GROUP Modules\n\n| Module | Description | Module&nbsp;Status |\n|---	|---	|---    |" > $SLING_DIR/aggregator/docs/groups/$GROUP.md
+            echo -n -e "[Apache Sling](http://sling.apache.org) > [Aggregator](https://github.com/apache/sling-aggregator/) > [Modules](https://github.com/apache/sling-aggregator/blob/master/docs/modules.md) > $GROUP\n# $GROUP Modules\n\n| Module | Description | Module&nbsp;Status |\n|---	|---	|---    |" > $SLING_DIR/aggregator/docs/groups/$GROUP.md
             echo -n -e $LINE >> $SLING_DIR/aggregator/docs/groups/$GROUP.md
         fi
     fi
@@ -26,7 +26,7 @@ function write_data () {
             echo -n -e $LINE >> $SLING_DIR/aggregator/docs/status/$STATUS.md
         else
             echo "Creating status file"
-            echo -n -e "[Apache Sling](http://sling.apache.org) > [Aggregator](https://github.com/apache/sling-aggregator/) > [Modules](https://github.com/apache/sling-aggregator/docs/modules.md) > $STATUS\n# $STATUS Modules\n\n| Module | Description | Module&nbsp;Status |\n|---	|---	|---    |" > $SLING_DIR/aggregator/docs/status/$STATUS.md
+            echo -n -e "[Apache Sling](http://sling.apache.org) > [Aggregator](https://github.com/apache/sling-aggregator/) > [Modules](https://github.com/apache/sling-aggregator/blob/master/docs/modules.md) > $STATUS\n# $STATUS Modules\n\n| Module | Description | Module&nbsp;Status |\n|---	|---	|---    |" > $SLING_DIR/aggregator/docs/status/$STATUS.md
             echo -n -e $LINE >> $SLING_DIR/aggregator/docs/status/$STATUS.md
         fi
     fi
@@ -109,12 +109,12 @@ function add_repo () {
         fi
         
         if [ ! -z $STATUS ]; then
-            LINE="&#32;[![$STATUS](http://sling.apache.org/badges/status-$STATUS.svg)](https://github.com/apache/sling-aggregator/docs/status/$STATUS.md)"
+            LINE="&#32;[![$STATUS](http://sling.apache.org/badges/status-$STATUS.svg)](https://github.com/apache/sling-aggregator/blob/master/docs/status/$STATUS.md)"
             write_data
         fi
         
         if [ ! -z "$GROUP" ]; then
-            LINE="&#32;[![${GROUP}](https://sling.apache.org/badges/group-$GROUP.svg)](https://github.com/apache/sling-aggregator/docs/groups/$GROUP.md)"
+            LINE="&#32;[![${GROUP}](https://sling.apache.org/badges/group-$GROUP.svg)](https://github.com/apache/sling-aggregator/blob/master/docs/groups/$GROUP.md)"
             write_data
         fi
     
