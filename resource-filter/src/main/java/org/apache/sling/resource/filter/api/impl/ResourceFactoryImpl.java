@@ -30,7 +30,7 @@ public class ResourceFactoryImpl implements ResourceFilterFactory {
 
     @Reference
     List<ResourceFilterFunction> functions;
-    
+
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     @Override
@@ -38,7 +38,7 @@ public class ResourceFactoryImpl implements ResourceFilterFactory {
         try {
             ResourceFilter filter = new ResourceFilter(script);
             Context context = filter.getContext();
-            for (ResourceFilterFunction func: functions) {
+            for (ResourceFilterFunction func : functions) {
                 context.addArgument(func.getName(), func);
             }
         } catch (ParseException e) {

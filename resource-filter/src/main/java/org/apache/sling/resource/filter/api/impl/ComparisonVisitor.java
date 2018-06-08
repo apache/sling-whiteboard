@@ -48,7 +48,7 @@ public class ComparisonVisitor implements Visitor<Function<Resource, Object>> {
 
     @Override
     public Function<Resource, Object> visit(Node node) {
-       
+
         switch (node.kind) {
         case FilterParserConstants.FUNCTION_NAME:
             // will only get here in the case of the 'FUNCTION' switch case

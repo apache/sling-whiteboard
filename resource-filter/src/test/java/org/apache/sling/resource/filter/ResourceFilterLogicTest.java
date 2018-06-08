@@ -28,40 +28,38 @@ import org.junit.Test;
 
 public class ResourceFilterLogicTest {
 
-	@Rule
-	public final SlingContext context = new SlingContext();
-	
-	private static String START_PATH = "/content/sample/en";
-	
+    @Rule
+    public final SlingContext context = new SlingContext();
 
-	@Before
-	public void setUp() throws ParseException, java.text.ParseException {
-		context.load().json("/data.json", START_PATH);
-	}
+    private static String START_PATH = "/content/sample/en";
 
-	
-	@Test
-	public void testDateAndProperty() throws ParseException {
-		String query = "[jcr:content/created] > '2013-08-08T16:32:59' and [jcr:content/jcr:title] == 'Mongolian'";
-		List<Resource> found = handle(START_PATH, query);
-		assertEquals(1, found.size());
+    @Before
+    public void setUp() throws ParseException, java.text.ParseException {
+        context.load().json("/data.json", START_PATH);
+    }
 
-		query = "([jcr:content/created] < '2013-08-08T16:32' and [jcr:content/jcr:title] == 'English') or [jcr:content/jcr:title] == 'Mongolian'";
-		found = handle(START_PATH, query);
-		assertEquals(4, found.size());
+    @Test
+    public void testDateAndProperty() throws ParseException {
+        String query = "[jcr:content/created] > '2013-08-08T16:32:59' and [jcr:content/jcr:title] == 'Mongolian'";
+        List<Resource> found = handle(START_PATH, query);
+        assertEquals(1, found.size());
 
-		query = "[jcr:content/created] < '2013-08-08T16:32' and ([jcr:content/jcr:title] == 'English' or [jcr:content/jcr:title] == 'Mongolian')";
-		found = handle(START_PATH, query);
-		assertEquals(3, found.size());
+        query = "([jcr:content/created] < '2013-08-08T16:32' and [jcr:content/jcr:title] == 'English') or [jcr:content/jcr:title] == 'Mongolian'";
+        found = handle(START_PATH, query);
+        assertEquals(4, found.size());
 
-		query = "[jcr:content/created] < date('2013-08-08T16:32:59.000+02:00') or [jcr:content/jcr:title] == 'Mongolian'";
-		found = handle(START_PATH, query);
-		assertEquals(4, found.size());
-	}
-	
-	
-	private List<Resource> handle(String path, String filter) throws ParseException {
-		Resource resource = context.resourceResolver().getResource(path);
-		return new ResourceFilterStream(resource).stream(r -> true).filter(new ResourceFilter(filter)).collect(Collectors.toList());
-	}
+        query = "[jcr:content/created] < '2013-08-08T16:32' and ([jcr:content/jcr:title] == 'English' or [jcr:content/jcr:title] == 'Mongolian')";
+        found = handle(START_PATH, query);
+        assertEquals(3, found.size());
+
+        query = "[jcr:content/created] < date('2013-08-08T16:32:59.000+02:00') or [jcr:content/jcr:title] == 'Mongolian'";
+        found = handle(START_PATH, query);
+        assertEquals(4, found.size());
+    }
+
+    private List<Resource> handle(String path, String filter) throws ParseException {
+        Resource resource = context.resourceResolver().getResource(path);
+        return new ResourceFilterStream(resource).stream(r -> true).filter(new ResourceFilter(filter))
+                .collect(Collectors.toList());
+    }
 }

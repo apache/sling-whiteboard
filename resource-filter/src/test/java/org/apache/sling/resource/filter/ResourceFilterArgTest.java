@@ -41,20 +41,19 @@ public class ResourceFilterArgTest {
     @Test
     public void testMatchingNameInArg() throws Exception {
         ResourceFilter filter = new ResourceFilter("[jcr:content/jcr:title] == $lang")
-                        .addArgument("date", "2013-08-08T16:32:59").addArgument("lang", "Mongolian");
+                .addArgument("date", "2013-08-08T16:32:59").addArgument("lang", "Mongolian");
         List<Resource> found = handle(START_PATH, filter);
         assertEquals(1, found.size());
     }
-    
+
     @Test
     public void testMatchingNameAndMultipleArgs() throws Exception {
-        ResourceFilter filter = new ResourceFilter(
-                "[jcr:content/created] > $date and [jcr:content/jcr:title] == $lang")
-                        .addArgument("date", "2013-08-08T16:32:59").addArgument("lang", "Mongolian");
+        ResourceFilter filter = new ResourceFilter("[jcr:content/created] > $date and [jcr:content/jcr:title] == $lang")
+                .addArgument("date", "2013-08-08T16:32:59").addArgument("lang", "Mongolian");
         List<Resource> found = handle(START_PATH, filter);
         assertEquals(1, found.size());
     }
-    
+
     @Test
     public void testNameFunctionAgainstRegex() throws ParseException, Exception {
         ResourceFilter query = new ResourceFilter("name() like $regex").addArgument("regex", "testpage[1-2]");
@@ -66,6 +65,5 @@ public class ResourceFilterArgTest {
         Resource resource = context.resourceResolver().getResource(startPath);
         return new ResourceStream(resource).stream(r -> true).filter(filter).collect(Collectors.toList());
     }
-
 
 }

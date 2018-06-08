@@ -36,7 +36,7 @@ public interface ResourceFilterFunction extends BiFunction<Object[], Resource, O
      *         used as part of a comparison or Function
      */
     Object apply(Object[] arguments, Resource resource);
-    
+
     /**
      * Allows the name of the function to be defined
      * 

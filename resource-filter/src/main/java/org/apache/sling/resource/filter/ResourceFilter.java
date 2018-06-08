@@ -54,7 +54,7 @@ public class ResourceFilter implements Predicate<Resource> {
         this.context = context;
         return this;
     }
-    
+
     public ResourceFilter addArgument(String key, Object value) {
         getContext().addArgument(key, value);
         return this;
