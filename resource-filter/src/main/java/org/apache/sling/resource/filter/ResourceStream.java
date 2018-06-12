@@ -13,10 +13,12 @@
  */
 package org.apache.sling.resource.filter;
 
+import java.util.Deque;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.NoSuchElementException;
 import java.util.Spliterator;
 import java.util.Spliterators;
-import java.util.Stack;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -47,16 +49,14 @@ public class ResourceStream {
      * @return {@code Stream<Resource>} of unknown size.
      */
     public Stream<Resource> stream(Predicate<Resource> branchSelector) {
-        final Resource resource = this.resource;
+
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(new Iterator<Resource>() {
 
-            private final Stack<Iterator<Resource>> resources = new Stack<Iterator<Resource>>();
-            private Resource current;
-            private Iterator<Resource> iterator;
+            private final Deque<Iterator<Resource>> resources = new LinkedList<>();
+            private Resource current = resource;
 
             {
                 resources.push(resource.getChildren().iterator());
-                current = resource;
             }
 
             @Override
@@ -69,28 +69,30 @@ public class ResourceStream {
 
             @Override
             public Resource next() {
+                if (current == null) {
+                    seek();
+                }
+                if (current == null) {
+                    throw new NoSuchElementException();
+                }
                 Resource next = current;
                 current = null;
                 return next;
             }
 
             private boolean seek() {
-                while (true) {
-                    if (resources.isEmpty()) {
-                        return false;
-                    }
-                    iterator = resources.peek();
-                    if (!iterator.hasNext()) {
-                        resources.pop();
-                    } else {
+                while (!resources.isEmpty()) {
+                    Iterator<Resource> iterator = resources.peek();
+                    if (iterator.hasNext()) {
                         current = iterator.next();
                         if (branchSelector.test(current)) {
                             resources.push(current.getChildren().iterator());
-                            break;
                         }
+                        return true;
                     }
+                    resources.pop();
                 }
-                return true;
+                return false;
             }
 
         }, Spliterator.ORDERED | Spliterator.IMMUTABLE), false);
