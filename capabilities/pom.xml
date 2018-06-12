@@ -29,7 +29,9 @@
   <version>0.0.1-SNAPSHOT</version>
   <packaging>bundle</packaging>
   <properties>
-    <sling.java.version>8</sling.java.version>
+    <!-- This module can work with older versions of Sling
+         as well, so be conservative here -->
+    <sling.java.version>7</sling.java.version>
   </properties>
   <build>
     <plugins>

@@ -21,20 +21,25 @@ package org.apache.sling.capabilities;
 import java.util.Map;
 import org.osgi.annotation.versioning.ProviderType;
 
-/** A Probe computes capabilities. Various types of Probes are meant
+/** A CapabilitiesSource provides capabilities, as a Map of key/value
+ *  pairs. 
+ *  Various types of CapabilitiesSources are meant
  *  to be implemented, using Health Checks, OSGi environment status
  *  or any suitable input to find out which capabilities are present.
  */
 @ProviderType
-public interface Probe {
-    /** @return the name of this Probe, which is used as a "section name" for
-     *  the capabilities that this Probe computes.
+public interface CapabilitiesSource {
+    /** Services that implement this interface must be registered
+     *  with a unique value for this service property. It is used
+     *  to define the namespace of the capabilities provided by this
+     *  source, and group them in the JSON output of the capabilities
+     *  servlet.
      */
-    String getName();
+    String PREFIX_SERVICE_PROPERTY = "sling.capabilities.prefix";
     
     /** @return zero to N capabilities, each being represented by
      *      a key/value pair of Strings.
-     * @throws Exception if the capabilities could not be computed
+     * @throws Exception if the capabilities could not be computed.
      */
-    Map<String, String> getValues() throws Exception;
+    Map<String, String> getCapabilities() throws Exception;
 }
