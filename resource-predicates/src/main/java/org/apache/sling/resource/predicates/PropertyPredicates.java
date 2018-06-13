@@ -46,7 +46,6 @@ public class PropertyPredicates {
 
     private PropertyPredicates(String name) {
         this.key = Objects.requireNonNull(name, "value may not be null");
-        ;
     }
 
     /**
@@ -56,7 +55,7 @@ public class PropertyPredicates {
      *            key value of the property
      * @return PropertyPredicate instance
      */
-    static public PropertyPredicates property(String name) {
+    public static PropertyPredicates property(String name) {
         return new PropertyPredicates(name);
     }
 
@@ -122,7 +121,7 @@ public class PropertyPredicates {
             @SuppressWarnings("unchecked")
             T propValue = (T) valueMapOf(resource).get(key, type.getClass());
             if (propValue instanceof Comparable<?>) {
-                return ((Comparable<T>) propValue).compareTo(type) > 0;
+                return propValue.compareTo(type) > 0;
             }
             return type.equals(propValue);
         };
@@ -139,7 +138,7 @@ public class PropertyPredicates {
             @SuppressWarnings("unchecked")
             T propValue = (T) valueMapOf(resource).get(key, type.getClass());
             if (propValue instanceof Comparable<?>) {
-                return ((Comparable<T>) propValue).compareTo(type) >= 0;
+                return propValue.compareTo(type) >= 0;
             }
             return type.equals(propValue);
         };
@@ -156,7 +155,7 @@ public class PropertyPredicates {
             @SuppressWarnings("unchecked")
             T propValue = (T) valueMapOf(resource).get(key, type.getClass());
             if (propValue instanceof Comparable<?>) {
-                return ((Comparable<T>) propValue).compareTo(type) < 0;
+                return propValue.compareTo(type) < 0;
             }
             return type.equals(propValue);
         };
@@ -173,7 +172,7 @@ public class PropertyPredicates {
             @SuppressWarnings("unchecked")
             T propValue = (T) valueMapOf(resource).get(key, type.getClass());
             if (propValue instanceof Comparable<?>) {
-                return ((Comparable<T>) propValue).compareTo(type) >= 0;
+                return propValue.compareTo(type) >= 0;
             }
             return type.equals(propValue);
         };
@@ -208,6 +207,7 @@ public class PropertyPredicates {
                 return false;
             }
             // validate that all items in values have matches in properties
+            
             for (T item : values) {
                 innerloop: {
                     for (T propItem : propValues) {
@@ -318,7 +318,7 @@ public class PropertyPredicates {
         if (resource == null || ResourceUtil.isNonExistingResource(resource)) {
             return ValueMap.EMPTY;
         }
-        return resource.adaptTo(ValueMap.class);
+        return resource.getValueMap();
     }
 
 }
