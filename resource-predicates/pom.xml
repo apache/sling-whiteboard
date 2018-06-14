@@ -15,7 +15,7 @@
 		<version>32</version>
 	</parent>
 
-	<artifactId>org.apache.sling.resource.predicates</artifactId>
+	<artifactId>org.apache.sling.predicates</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>bundle</packaging>
 
@@ -58,5 +58,5 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-	<description>provides a set of utilities to create resource based predicates.</description>
+	<description>provides a set of classes to assist in the creation of predicates for resources to use in filtering of collections and streams.</description>
 </project>

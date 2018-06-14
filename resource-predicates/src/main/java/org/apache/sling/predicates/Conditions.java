@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.resource.predicates;
+package org.apache.sling.predicates;
 
 import java.util.Objects;
 import java.util.function.Predicate;
