@@ -34,9 +34,6 @@ public class DefaultContext implements Context {
 
     private Visitor<Function<Resource, Object>> comparisonVisitor;
 
-    public DefaultContext() {
-    }
-
     @Override
     public Context addFunction(String name, BiFunction<Object[], Resource, Object> functionImpl) {
         functions.put(name, functionImpl);

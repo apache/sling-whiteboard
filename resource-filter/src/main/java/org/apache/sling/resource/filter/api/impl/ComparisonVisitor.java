@@ -59,20 +59,16 @@ public class ComparisonVisitor implements Visitor<Function<Resource, Object>> {
                 return Resource::getPath;
             case "date":
                 return resource -> {
-                    final List<Function<Resource, Object>> children = node.visitChildren(this);
-                    Object[] arguments = children.stream().map(funct -> {
-                        return funct.apply(resource);
-                    }).toArray();
-                    return dateHandler(arguments, resource);
+                    Object[] arguments = node.visitChildren(this).stream().map(funct -> funct.apply(resource))
+                            .toArray();
+                    return dateHandler(arguments);
                 };
             default:
                 Optional<BiFunction<Object[], Resource, Object>> temp = context.getFunction(node.text);
                 if (temp.isPresent()) {
                     final List<Function<Resource, Object>> children2 = node.visitChildren(this);
                     return resource -> {
-                        Object[] arguments = children2.stream().map(funct -> {
-                            return funct.apply(resource);
-                        }).toArray();
+                        Object[] arguments = children2.stream().map(funct -> funct.apply(resource)).toArray();
                         return temp.get().apply(arguments, resource);
                     };
                 }
@@ -81,7 +77,7 @@ public class ComparisonVisitor implements Visitor<Function<Resource, Object>> {
         case FilterParserConstants.NULL:
             return resource -> new Null();
         case FilterParserConstants.NUMBER:
-            Number numericValue = null; {
+            Number numericValue = null;
             String numberText = node.text;
             try {
                 numericValue = Integer.valueOf(numberText);
@@ -92,7 +88,6 @@ public class ComparisonVisitor implements Visitor<Function<Resource, Object>> {
                     // swallow
                 }
             }
-        }
             final Number numericReply = numericValue;
             return resource -> numericReply;
         case FilterParserConstants.OFFSETDATETIME:
@@ -130,7 +125,7 @@ public class ComparisonVisitor implements Visitor<Function<Resource, Object>> {
         return resource.adaptTo(ValueMap.class);
     }
 
-    private static Object dateHandler(Object[] arguments, Resource resource) {
+    private static Object dateHandler(Object[] arguments) {
         if (arguments.length == 0) {
             return Instant.now();
         }

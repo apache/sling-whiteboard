@@ -87,10 +87,10 @@ public class Node {
     @Override
     public String toString() {
         return text
-                + children.stream().map(item -> item.toString()).collect(Collectors.joining(text.toString(), "(", ")"));
+                + children.stream().map(Node::toString).collect(Collectors.joining(text, "(", ")"));
     }
 
-    public <R, A> List<R> visitChildren(Visitor<R> visitor) {
+    public <R> List<R> visitChildren(Visitor<R> visitor) {
         return children.stream().map(child -> child.accept(visitor)).collect(Collectors.toList());
     }
 

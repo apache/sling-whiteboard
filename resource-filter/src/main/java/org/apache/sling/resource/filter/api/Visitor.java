@@ -16,7 +16,7 @@ package org.apache.sling.resource.filter.api;
 import org.apache.sling.resource.filter.impl.node.Node;
 
 /**
- * An interface for visiting AST nodes of the RSQL.
+ * An interface for visiting AST nodes
  *
  * @param <R>
  *            Return type of the visitor's method.

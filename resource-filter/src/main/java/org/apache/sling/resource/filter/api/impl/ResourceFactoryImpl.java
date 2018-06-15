@@ -22,13 +22,14 @@ import org.apache.sling.resource.filter.api.ResourceFilterFunction;
 import org.apache.sling.resource.filter.impl.ParseException;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferencePolicyOption;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Component(property = { "service.description=ResourceFilter Factory", "service.vendor=The Apache Software Foundation" })
 public class ResourceFactoryImpl implements ResourceFilterFactory {
 
-    @Reference
+    @Reference(policyOption=ReferencePolicyOption.GREEDY)
     List<ResourceFilterFunction> functions;
 
     protected final Logger log = LoggerFactory.getLogger(getClass());

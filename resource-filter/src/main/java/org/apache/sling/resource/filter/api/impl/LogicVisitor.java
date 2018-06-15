@@ -53,9 +53,7 @@ public class LogicVisitor implements Visitor<Predicate<Resource>> {
     }
 
     private Predicate<Resource> createAndPredicate(Node node) {
-        return node.children.stream().map(child -> {
-            return visit(child);
-        }).reduce(null, (predicate, accumulator) -> {
+        return node.children.stream().map(this::visit).reduce(null, (predicate, accumulator) -> {
             if (predicate == null) {
                 return accumulator;
             }
@@ -71,9 +69,7 @@ public class LogicVisitor implements Visitor<Predicate<Resource>> {
      * @return
      */
     private Predicate<Resource> createOrPredicate(Node node) {
-        return node.children.stream().map(child -> {
-            return visit(child);
-        }).reduce(null, (predicate, accumulator) -> {
+        return node.children.stream().map(this::visit).reduce(null, (predicate, accumulator) -> {
             if (predicate == null) {
                 return accumulator;
             }
