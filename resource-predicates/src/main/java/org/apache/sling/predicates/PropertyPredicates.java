@@ -14,7 +14,9 @@
 package org.apache.sling.predicates;
 
 import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 
@@ -189,32 +191,21 @@ public class PropertyPredicates {
         return resource -> {
             T[] propValues = (T[]) valueMapOf(resource).get(key, values.getClass());
             if (propValues == null) {
-                if (values.length > 1) {
-                    // no point converting if the number of values to test
-                    // exceeds the possible values in the repository
-                    return false;
-                }
                 Class<?> componentType = values.getClass().getComponentType();
                 T tempValue = (T) valueMapOf(resource).get(key, componentType);
-                if (tempValue != null) {
-                    propValues = (T[]) Array.newInstance(componentType, 1);
-                    propValues[0] = tempValue;
+                if (tempValue == null) {
+                    return false;
                 }
+                propValues = (T[]) Array.newInstance(componentType, 1);
+                propValues[0] = tempValue;
             }
-            // property identified by resource is either not present or is
-            // of a type that is not the type being requested
-            if (propValues == null || propValues.length < values.length) {
+            if (propValues.length < values.length) {
                 return false;
             }
             // validate that all items in values have matches in properties
-            
+            List<T> list = Arrays.asList(propValues);
             for (T item : values) {
-                innerloop: {
-                    for (T propItem : propValues) {
-                        if (item.equals(propItem)) {
-                            break innerloop;
-                        }
-                    }
+                if (!list.contains(item)) {
                     return false;
                 }
             }
@@ -235,23 +226,16 @@ public class PropertyPredicates {
     public <T> Predicate<Resource> containsAny(final T... values) {
         Objects.requireNonNull(values, "value may not be null");
         return resource -> {
-            T[] propValues = (T[]) valueMapOf(resource).get(key, values.getClass());
+            ValueMap valueMap = valueMapOf(resource);
+            T[] propValues = (T[]) valueMap.get(key, values.getClass());
             if (propValues == null) {
-                if (values.length > 1) {
-                    // no point converting if the number of values to test
-                    // exceeds the possible values in the repository
+                Class<?> componentType = values.getClass().getComponentType();
+                T tempValue = (T) valueMap.get(key, componentType);
+                if (tempValue == null) {
                     return false;
                 }
-                Class<?> componentType = values.getClass().getComponentType();
-                T tempValue = (T) valueMapOf(resource).get(key, componentType);
-                if (tempValue != null) {
-                    propValues = (T[]) Array.newInstance(componentType, 1);
-                    propValues[0] = tempValue;
-                }
-            }
-            // property identified by resource is not present
-            if (propValues == null) {
-                return false;
+                propValues = (T[]) Array.newInstance(componentType, 1);
+                propValues[0] = tempValue;
             }
             // validate that all items in values have matches in properties
             for (T item : values) {
