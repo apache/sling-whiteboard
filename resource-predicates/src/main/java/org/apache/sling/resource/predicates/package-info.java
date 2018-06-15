@@ -12,4 +12,4 @@
  * limitations under the License.
  */
 @org.osgi.annotation.versioning.Version("0.0.1")
-package org.apache.sling.predicates;
+package org.apache.sling.resource.predicates;

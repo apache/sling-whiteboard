@@ -15,7 +15,7 @@
 		<version>32</version>
 	</parent>
 
-	<artifactId>org.apache.sling.predicates</artifactId>
+	<artifactId>org.apache.sling.resource.predicates</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>bundle</packaging>
 

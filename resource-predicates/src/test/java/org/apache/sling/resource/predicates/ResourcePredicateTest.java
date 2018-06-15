@@ -11,10 +11,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.predicates;
+package org.apache.sling.resource.predicates;
 
-import static org.apache.sling.predicates.ChildResourcePredicates.child;
-import static org.apache.sling.predicates.PropertyPredicates.property;
+import static org.apache.sling.resource.predicates.ChildResourcePredicates.child;
+import static org.apache.sling.resource.predicates.PropertyPredicates.property;
 import static org.junit.Assert.assertEquals;
 
 import java.text.ParseException;
