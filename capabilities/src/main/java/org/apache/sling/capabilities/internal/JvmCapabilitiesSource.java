@@ -26,13 +26,14 @@ import org.apache.sling.capabilities.CapabilitiesSource;
 /**
  * Builds Probes that provide basic JVM information, as an example.
  */
-@Component(
-    service = CapabilitiesSource.class,
-    property = {
-        CapabilitiesSource.PREFIX_SERVICE_PROPERTY + "=org.apache.sling.capabilities.examples.JvmCapabilitiesSource"
-})
+@Component(service = CapabilitiesSource.class)
 public class JvmCapabilitiesSource implements CapabilitiesSource {
 
+    @Override
+    public String getNamespace() {
+        return "org.apache.sling.capabilities.demo." + getClass().getSimpleName();
+    }
+    
     @Override
     public Map<String, String> getCapabilities() throws Exception {
         // Return semi-useful JVM properties for our proof of concept

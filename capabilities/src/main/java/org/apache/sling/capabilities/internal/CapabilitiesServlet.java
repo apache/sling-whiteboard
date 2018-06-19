@@ -71,8 +71,7 @@ public class CapabilitiesServlet extends SlingSafeMethodsServlet {
                 values = new HashMap<>();
                 values.put("_EXCEPTION_", e.getClass().getName() + ":" + e.getMessage());
             }
-            // TODO use service property
-            jw.key(s.getClass().getName());
+            jw.key(s.getNamespace());
             jw.object();
             for(Map.Entry<String, String> e : values.entrySet()) {
                 jw.key(e.getKey());

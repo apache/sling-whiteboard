@@ -31,11 +31,7 @@ import org.osgi.service.component.annotations.Activate;
 /**
  * Builds Probes that provide basic JVM information, as an example.
  */
-@Component(
-    service = CapabilitiesSource.class,
-    property = {
-        CapabilitiesSource.PREFIX_SERVICE_PROPERTY + "=org.apache.sling.capabilities.examples.OsgiFrameworkCapabilitiesSource"
-})
+@Component(service = CapabilitiesSource.class)
 public class OsgiFrameworkCapabilitiesSource implements CapabilitiesSource {
     
     private BundleContext bundleContext;
@@ -45,6 +41,11 @@ public class OsgiFrameworkCapabilitiesSource implements CapabilitiesSource {
         bundleContext = ctx.getBundleContext();
     }
 
+    @Override
+    public String getNamespace() {
+        return "org.apache.sling.capabilities.demo." + getClass().getSimpleName();
+    }
+    
     @Override
     public Map<String, String> getCapabilities() throws Exception {
         final Map<String, String> result = new HashMap<>();

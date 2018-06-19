@@ -29,13 +29,11 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface CapabilitiesSource {
-    /** Services that implement this interface must be registered
-     *  with a unique value for this service property. It is used
-     *  to define the namespace of the capabilities provided by this
-     *  source, and group them in the JSON output of the capabilities
-     *  servlet.
+    
+    /** @return the namespace to use to group our capabilities.
+     *  That name must be unique in a given Sling instance.
      */
-    String PREFIX_SERVICE_PROPERTY = "sling.capabilities.prefix";
+    String getNamespace();
     
     /** @return zero to N capabilities, each being represented by
      *      a key/value pair of Strings.
