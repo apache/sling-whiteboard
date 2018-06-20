@@ -16,39 +16,36 @@
  ~ specific language governing permissions and limitations
  ~ under the License.
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-package org.apache.sling.capabilities.internal.demo;
+package org.apache.sling.capabilities.internal;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import org.osgi.service.component.annotations.Component;
 import org.apache.sling.capabilities.CapabilitiesSource;
 
-/**
- * Builds Probes that provide basic JVM information, as an example.
- */
-@Component(service = CapabilitiesSource.class)
-public class JvmCapabilitiesSource implements CapabilitiesSource {
+class MockSource implements CapabilitiesSource {
+
+    private final String namespace;
+    private final Map<String, Object> props = new HashMap<>();
+
+    MockSource(String namespace, int propsCount) {
+        this.namespace = namespace;
+        for (int i = 0; i < propsCount; i++) {
+            props.put("KEY_" + i + "_" + namespace, "VALUE_" + i + "_" + namespace);
+        }
+    }
+
+    @Override
+    public Map<String, Object> getCapabilities() throws Exception {
+        if (namespace.contains("EXCEPTION")) {
+            throw new IllegalArgumentException("Simulating a problem");
+        }
+        return Collections.unmodifiableMap(props);
+    }
 
     @Override
     public String getNamespace() {
-        return "org.apache.sling.capabilities.DEMO." + getClass().getSimpleName();
+        return namespace;
     }
-    
-    @Override
-    public Map<String, Object> getCapabilities() throws Exception {
-        // Return semi-useful JVM properties for our proof of concept
-        final Map<String, Object> result = new HashMap<>();
 
-        final String[] props = {
-            "java.specification.version",
-            "java.vm.vendor",
-            "java.vm.version"
-        };
-
-        for (String prop : props) {
-            result.put(prop, System.getProperty(prop));
-        }
-
-        return result;
-    }
 }

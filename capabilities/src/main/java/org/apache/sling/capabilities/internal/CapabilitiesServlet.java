@@ -48,6 +48,9 @@ public class CapabilitiesServlet extends SlingSafeMethodsServlet {
         policyOption=ReferencePolicyOption.GREEDY)
     volatile List<CapabilitiesSource> sources;
 
+    CapabilitiesServlet() {
+    }
+    
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws ServletException, IOException {
         response.setContentType("application/json");

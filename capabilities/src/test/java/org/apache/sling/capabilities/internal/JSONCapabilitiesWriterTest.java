@@ -22,10 +22,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
@@ -36,37 +33,11 @@ import org.junit.Test;
 /** Test the JSONCapabilitiesWriter */
 public class JSONCapabilitiesWriterTest {
 
-    static class TestSource implements CapabilitiesSource {
-        private final String namespace;
-        private final Map<String, Object> props = new HashMap<>();
-        
-        TestSource(String namespace, int propsCount) {
-            this.namespace = namespace;
-            for(int i=0; i < propsCount; i++) {
-                props.put("KEY_" + i + "_" + namespace, "VALUE_" + i + "_" + namespace);
-            }
-        }
-
-        @Override
-        public Map<String, Object> getCapabilities() throws Exception {
-            if(namespace.contains("EXCEPTION")) {
-                throw new IllegalArgumentException("Simulating a problem");
-            }
-            return Collections.unmodifiableMap(props);
-        }
-        
-        @Override
-        public String getNamespace() {
-            return namespace;
-        }
-        
-    }
-    
     @Test
     public void testWithTwoSources() throws IOException {
         final List<CapabilitiesSource> sources = new ArrayList<>();
-        sources.add(new TestSource("A", 2));
-        sources.add(new TestSource("B", 1));
+        sources.add(new MockSource("A", 2));
+        sources.add(new MockSource("B", 1));
         
         final StringWriter w = new StringWriter();
         new JSONCapabilitiesWriter().writeJson(w, sources);
@@ -86,9 +57,9 @@ public class JSONCapabilitiesWriterTest {
     @Test
     public void testWithException() throws IOException {
         final List<CapabilitiesSource> sources = new ArrayList<>();
-        sources.add(new TestSource("A", 1));
-        sources.add(new TestSource("EXCEPTION", 2));
-        sources.add(new TestSource("B", 1));
+        sources.add(new MockSource("A", 1));
+        sources.add(new MockSource("EXCEPTION", 2));
+        sources.add(new MockSource("B", 1));
         
         final StringWriter w = new StringWriter();
         new JSONCapabilitiesWriter().writeJson(w, sources);

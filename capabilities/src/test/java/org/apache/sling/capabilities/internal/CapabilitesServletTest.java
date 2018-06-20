@@ -20,63 +20,59 @@ package org.apache.sling.capabilities.internal;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.servlet.ServletException;
+import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
 import org.apache.sling.capabilities.CapabilitiesSource;
-import static org.junit.Assert.assertEquals;
+import org.apache.sling.servlethelpers.MockSlingHttpServletRequest;
+import org.apache.sling.servlethelpers.MockSlingHttpServletResponse;
+import org.apache.sling.testing.mock.osgi.MockOsgi;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.apache.sling.testing.mock.osgi.junit.OsgiContext;
+import org.apache.sling.testing.mock.sling.MockSling;
+import static org.junit.Assert.assertEquals;
+import org.osgi.framework.BundleContext;
 
 /** Test the JSONCapabilitiesWriter */
-public class JSONCapabilitiesWriterTest {
+public class CapabilitesServletTest {
 
-    static class TestSource implements CapabilitiesSource {
-        private final String namespace;
-        private final Map<String, Object> props = new HashMap<>();
-        
-        TestSource(String namespace, int propsCount) {
-            this.namespace = namespace;
-            for(int i=0; i < propsCount; i++) {
-                props.put("KEY_" + i + "_" + namespace, "VALUE_" + i + "_" + namespace);
-            }
-        }
+    private SlingSafeMethodsServlet servlet;
 
-        @Override
-        public Map<String, Object> getCapabilities() throws Exception {
-            return Collections.unmodifiableMap(props);
-        }
+    @Rule
+    public final OsgiContext context = new OsgiContext();
+    
+    private BundleContext bundleContext;
+    
+    @Before
+    public void setup() {
+        servlet = new CapabilitiesServlet();
+        bundleContext = MockOsgi.newBundleContext();
         
-        @Override
-        public String getNamespace() {
-            return namespace;
-        }
+        bundleContext.registerService(CapabilitiesSource.class.getName(), new MockSource("F", 2), null);
+        bundleContext.registerService(CapabilitiesSource.class.getName(), new MockSource("G", 43), null);
         
+        MockOsgi.injectServices(servlet, bundleContext);
     }
     
     @Test
-    public void testWithTwoSources() throws IOException {
-        final List<CapabilitiesSource> sources = new ArrayList<>();
-        sources.add(new TestSource("A", 2));
-        sources.add(new TestSource("B", 1));
+    public void testServlet() throws ServletException, IOException {
+        final ResourceResolver resolver = MockSling.newResourceResolver(bundleContext);
+        MockSlingHttpServletRequest req = new MockSlingHttpServletRequest(resolver);
+        MockSlingHttpServletResponse resp = new MockSlingHttpServletResponse();
         
-        final StringWriter w = new StringWriter();
-        new JSONCapabilitiesWriter().writeJson(w, sources);
-        
-        final JsonReader r = Json.createReader(new StringReader(w.toString()));
+        servlet.service(req, resp);
+
+        // Just verify that both sources are taken into account
+        // the JSON format details are tested elsewhere
+        final JsonReader r = Json.createReader(new StringReader(resp.getOutputAsString()));
         final JsonObject rootJson = r.readObject();
         final JsonObject json = rootJson.getJsonObject(JSONCapabilitiesWriter.CAPS_KEY);
-        assertEquals("VALUE_0_A", json.getJsonObject("A").getString("KEY_0_A"));
-        assertEquals("VALUE_1_A", json.getJsonObject("A").getString("KEY_1_A"));
-        assertEquals("VALUE_0_B", json.getJsonObject("B").getString("KEY_0_B"));
-        
-        assertEquals("Expecting 1 root key", 1, rootJson.keySet().size());
-        assertEquals("Expecting 2 keys at A", 2, json.getJsonObject("A").keySet().size());
-        assertEquals("Expecting 1 key at B", 1, json.getJsonObject("B").keySet().size());
+        assertEquals("VALUE_1_F", json.getJsonObject("F").getString("KEY_1_F"));
+        assertEquals("VALUE_42_G", json.getJsonObject("G").getString("KEY_42_G"));
     }
 }
