@@ -19,12 +19,9 @@
 package org.apache.sling.capabilities.internal;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
-import org.apache.felix.utils.json.JSONWriter;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
@@ -51,37 +48,11 @@ public class CapabilitiesServlet extends SlingSafeMethodsServlet {
         policyOption=ReferencePolicyOption.GREEDY)
     volatile List<CapabilitiesSource> sources;
 
-    public final static String CAPS_KEY = "org.apache.sling.capabilities";
-    
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws ServletException, IOException {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        
-        final JSONWriter jw = new JSONWriter(response.getWriter());
-        jw.object();
-        jw.key(CAPS_KEY);
-        jw.object();
-        
-        Map<String, String> values = null;
-        for(CapabilitiesSource s : sources) {
-            try {
-                values = s.getCapabilities();
-            } catch(Exception e) {
-                values = new HashMap<>();
-                values.put("_EXCEPTION_", e.getClass().getName() + ":" + e.getMessage());
-            }
-            jw.key(s.getNamespace());
-            jw.object();
-            for(Map.Entry<String, String> e : values.entrySet()) {
-                jw.key(e.getKey());
-                jw.value(e.getValue());
-            }
-            jw.endObject();
-        }
-        
-        jw.endObject();
-        jw.endObject();
+        new JSONCapabilitiesWriter().writeJson(response.getWriter(), sources);
         response.getWriter().flush();
     }
 }
