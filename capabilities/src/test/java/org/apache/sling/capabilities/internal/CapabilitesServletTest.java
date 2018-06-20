@@ -49,9 +49,6 @@ public class JSONCapabilitiesWriterTest {
 
         @Override
         public Map<String, Object> getCapabilities() throws Exception {
-            if(namespace.contains("EXCEPTION")) {
-                throw new IllegalArgumentException("Simulating a problem");
-            }
             return Collections.unmodifiableMap(props);
         }
         
@@ -82,24 +79,4 @@ public class JSONCapabilitiesWriterTest {
         assertEquals("Expecting 2 keys at A", 2, json.getJsonObject("A").keySet().size());
         assertEquals("Expecting 1 key at B", 1, json.getJsonObject("B").keySet().size());
     }
-
-    @Test
-    public void testWithException() throws IOException {
-        final List<CapabilitiesSource> sources = new ArrayList<>();
-        sources.add(new TestSource("A", 1));
-        sources.add(new TestSource("EXCEPTION", 2));
-        sources.add(new TestSource("B", 1));
-        
-        final StringWriter w = new StringWriter();
-        new JSONCapabilitiesWriter().writeJson(w, sources);
-        
-        final JsonReader r = Json.createReader(new StringReader(w.toString()));
-        final JsonObject rootJson = r.readObject();
-        final JsonObject json = rootJson.getJsonObject(JSONCapabilitiesWriter.CAPS_KEY);
-        assertEquals("VALUE_0_A", json.getJsonObject("A").getString("KEY_0_A"));
-        assertEquals("java.lang.IllegalArgumentException:Simulating a problem", json.getJsonObject("EXCEPTION").getString("_EXCEPTION_"));
-        assertEquals("VALUE_0_B", json.getJsonObject("B").getString("KEY_0_B"));
-        
-        assertEquals("Expecting 1 key at EXCEPTION", 1, json.getJsonObject("EXCEPTION").keySet().size());
-   }
 }
