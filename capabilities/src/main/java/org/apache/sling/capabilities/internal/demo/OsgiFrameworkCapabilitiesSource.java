@@ -16,38 +16,45 @@
  ~ specific language governing permissions and limitations
  ~ under the License.
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-package org.apache.sling.capabilities.internal;
+package org.apache.sling.capabilities.internal.demo;
 
 import java.util.HashMap;
 import java.util.Map;
 import org.osgi.service.component.annotations.Component;
 import org.apache.sling.capabilities.CapabilitiesSource;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.Constants;
+import org.osgi.service.component.ComponentContext;
+import org.osgi.service.component.annotations.Activate;
 
 /**
  * Builds Probes that provide basic JVM information, as an example.
  */
 @Component(service = CapabilitiesSource.class)
-public class JvmCapabilitiesSource implements CapabilitiesSource {
+public class OsgiFrameworkCapabilitiesSource implements CapabilitiesSource {
+    
+    private BundleContext bundleContext;
+
+    @Activate
+    public void activate(ComponentContext ctx) {
+        bundleContext = ctx.getBundleContext();
+    }
 
     @Override
     public String getNamespace() {
-        return "org.apache.sling.capabilities.demo." + getClass().getSimpleName();
+        return "org.apache.sling.capabilities.DEMO." + getClass().getSimpleName();
     }
     
     @Override
-    public Map<String, String> getCapabilities() throws Exception {
-        // Return semi-useful JVM properties for our proof of concept
-        final Map<String, String> result = new HashMap<>();
+    public Map<String, Object> getCapabilities() throws Exception {
+        final Map<String, Object> result = new HashMap<>();
+        
+        final Bundle frameworkBundle = bundleContext.getBundle(0);
+        
+        result.put("framework.bundle.symbolic.name", frameworkBundle.getSymbolicName());
+        result.put("framework.bundle.version", frameworkBundle.getHeaders(Constants.BUNDLE_VERSION).get(Constants.BUNDLE_VERSION).toString());
 
-        final String[] props = {
-            "java.specification.version",
-            "java.vm.vendor",
-            "java.vm.version"
-        };
-
-        for (String prop : props) {
-            result.put(prop, System.getProperty(prop));
-        }
 
         return result;
     }

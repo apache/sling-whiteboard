@@ -36,8 +36,8 @@ public interface CapabilitiesSource {
     String getNamespace();
     
     /** @return zero to N capabilities, each being represented by
-     *      a key/value pair of Strings.
+     *      a key/value pair.
      * @throws Exception if the capabilities could not be computed.
      */
-    Map<String, String> getCapabilities() throws Exception;
+    Map<String, Object> getCapabilities() throws Exception;
 }

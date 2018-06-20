@@ -38,7 +38,7 @@ class JSONCapabilitiesWriter {
         jw.key(CAPS_KEY);
         jw.object();
         
-        Map<String, String> values = null;
+        Map<String, Object> values = null;
         for(CapabilitiesSource s : sources) {
             try {
                 values = s.getCapabilities();
@@ -48,7 +48,7 @@ class JSONCapabilitiesWriter {
             }
             jw.key(s.getNamespace());
             jw.object();
-            for(Map.Entry<String, String> e : values.entrySet()) {
+            for(Map.Entry<String, Object> e : values.entrySet()) {
                 jw.key(e.getKey());
                 jw.value(e.getValue());
             }
