@@ -1,7 +1,7 @@
 Sling Capabilities Module
 =========================
 
-This servlet provided by this module allows for creating Capabilities HTTP endpoints
+The servlet provided by this module allows for creating Capabilities HTTP endpoints
 on a Sling instance: Resources that provide information on which services are available,
 version levels etc.
 
@@ -10,7 +10,7 @@ For now, a single type of endpoint is provided: all Resources which have the
 by aggregating the output of all active `CapabilitiesSource` services.
 
 This can be easily expanded to multiple sets of Capabilities if needed later on,
-using service properties to group or tag the `CapabilitiesSource` services.
+by changing the code to use service properties to group or tag the `CapabilitiesSource` services.
 
 The tests provide simple `CapabilitiesSource` examples, that API is as follows:
 
