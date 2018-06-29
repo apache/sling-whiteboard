@@ -10,7 +10,7 @@ The file optimizer includes the ability to revert the optimized file either usin
 
 This module is part of the [Apache Sling](https://sling.apache.org) project.
 
-## Using the File Opimization Library
+## Using the File Optimization Library
 
 There are four different methods for interacting with the File Optimizer: using the Event Handler, interacting with the Servlets / Post Operations, using the Filter or invoking the API directly. 
 
