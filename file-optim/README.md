@@ -87,7 +87,7 @@ Additionally, there are two Sling mdoels for discovering the optimization inform
 
 ## Defining a File Optimizer
 
-File optimizers are used by the library to optimize resources based on the file mime type. Each File Optimizer should implement the [FileOptimizer](src/main/java/org/apache/sling/fileoptim/FileOptimizer.java) interface, setting the *mime.type* property to the MimeTypes for which the optimizer is applicable. The [Service Rankin](https://osgi.org/javadoc/r2/org/osgi/framework/Constants.html#SERVICE_RANKING) property can be used to override the default File Optimizers.
+File optimizers are used by the library to optimize resources based on the file mime type. Each File Optimizer should implement the [FileOptimizer](src/main/java/org/apache/sling/fileoptim/FileOptimizer.java) interface, setting the *mime.type* property to the MimeTypes for which the optimizer is applicable. The [Service Ranking](https://osgi.org/javadoc/r2/org/osgi/framework/Constants.html#SERVICE_RANKING) property can be used to override the default File Optimizers.
 
     @Component(service = FileOptimizer.class, property = { FileOptimizer.MIME_TYPE + "=image/jpeg" })
     public class DevNullFileOptimizer implements FileOptimizer {
