@@ -80,7 +80,7 @@ The File Optimizer service can be retrieved by reference, for example:
         fileOptimSvc.optimizeFile(fileResource, true);
     }
     
-Additionally, there are two Sling mdoels for discovering the optimization information of resources.
+Additionally, there are two Sling models for discovering the optimization information of resources.
 
  - *org.apache.sling.fileoptim.models.OptimizedFile* - Allows for retrieval of the data from a file which has been optimized
  - *org.apache.sling.fileoptim.models.OptimizeResource* - Allows for determining if a resource can be optimized and what the results would be if it were
