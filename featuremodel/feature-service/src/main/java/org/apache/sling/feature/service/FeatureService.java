@@ -24,5 +24,5 @@ import java.util.Collection;
 
 public interface FeatureService {
     Collection<Feature> listFeatures();
-    Feature getFeature(long bundleId);
+    Feature getFeatureForBundle(long bundleId);
 }

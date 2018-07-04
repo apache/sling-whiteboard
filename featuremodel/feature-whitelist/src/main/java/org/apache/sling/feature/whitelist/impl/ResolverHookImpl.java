@@ -71,7 +71,7 @@ public class ResolverHookImpl implements ResolverHook {
                 return;
             }
 
-            Feature reqFeat = fs.getFeature(reqBundleID);
+            Feature reqFeat = fs.getFeatureForBundle(reqBundleID);
             Set<String> regions = whitelistService.listRegions(reqFeat.getId().toMvnId());
 
             nextCapability:
@@ -85,7 +85,7 @@ public class ResolverHookImpl implements ResolverHook {
                 if (capBundleID == reqBundleID)
                     continue nextCapability;
 
-                Feature capFeat = fs.getFeature(capBundleID);
+                Feature capFeat = fs.getFeatureForBundle(capBundleID);
 
                 // Within a single feature everything can wire to everything else
                 if (capFeat.equals(reqFeat))

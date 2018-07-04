@@ -18,6 +18,35 @@
  */
 package org.apache.sling.feature.service.impl;
 
-public class FeatureServiceImpl {
+import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.service.FeatureService;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+public class FeatureServiceImpl implements FeatureService {
+    private final Set<Feature> features;
+    private final Map<Long, Feature> bundleFeatureMap;
+
+    FeatureServiceImpl(Map<Long, Feature> bundleIDFeatures) {
+        Map<Long, Feature> bfm = new HashMap<>(bundleIDFeatures);
+        bundleFeatureMap = Collections.unmodifiableMap(bfm);
+
+        Set<Feature> fs = new HashSet<>(bundleIDFeatures.values());
+        features = Collections.unmodifiableSet(fs);
+    }
+
+    @Override
+    public Collection<Feature> listFeatures() {
+        return features;
+    }
+
+    @Override
+    public Feature getFeatureForBundle(long bundleId) {
+        return bundleFeatureMap.get(bundleId);
+    }
 }
