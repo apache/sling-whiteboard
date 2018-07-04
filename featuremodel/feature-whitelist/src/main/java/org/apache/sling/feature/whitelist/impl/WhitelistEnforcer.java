@@ -40,7 +40,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class WhitelistEnforcer implements ResolverHookFactory, ManagedService {
+class WhitelistEnforcer implements ResolverHookFactory, ManagedService {
     private static final String CONFIG_REGION_MAPPING_PREFIX = "whitelist.region.";
     private static final String CONFIG_FEATURE_MAPPING_PREFIX = "whitelist.feature.";
     static final Logger LOG = LoggerFactory.getLogger(WhitelistEnforcer.class);
@@ -48,7 +48,7 @@ public class WhitelistEnforcer implements ResolverHookFactory, ManagedService {
     final ServiceTracker<FeatureService, FeatureService> featureServiceTracker;
     volatile WhitelistService whitelistService = new NullWhitelistService();
 
-    public WhitelistEnforcer(ServiceTracker<FeatureService, FeatureService> tracker) {
+    WhitelistEnforcer(ServiceTracker<FeatureService, FeatureService> tracker) {
         featureServiceTracker = tracker;
     }
 
@@ -84,27 +84,28 @@ public class WhitelistEnforcer implements ResolverHookFactory, ManagedService {
         whitelistService = new WhitelistServiceImpl(rpm, frm);
     }
 
-    private Set<String> getStringPlusValue(Object val) {
+    Set<String> getStringPlusValue(Object val) {
         if (val == null)
             return null;
 
         if (val instanceof Collection) {
-            return ((Collection<?>) val).stream().map(Object::toString).collect(Collectors.toSet());
+            return ((Collection<?>) val).stream().map(Object::toString)
+                    .collect(Collectors.toSet());
         } else if (val instanceof String[]) {
             return new HashSet<>(Arrays.asList((String[]) val));
         }
         return Collections.singleton(val.toString());
     }
 
-    private static class NullWhitelistService implements WhitelistService {
+    static class NullWhitelistService implements WhitelistService {
         @Override
         public Set<String> listRegions(String feature) {
             return null;
         }
 
         @Override
-        public boolean regionContainsPackage(String region, String packageName) {
-            return true;
+        public Boolean regionWhitelistsPackage(String region, String packageName) {
+            return null;
         }
     }
 

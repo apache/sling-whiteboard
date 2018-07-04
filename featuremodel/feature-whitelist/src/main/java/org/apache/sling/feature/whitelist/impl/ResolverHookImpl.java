@@ -32,7 +32,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
-public class ResolverHookImpl implements ResolverHook {
+class ResolverHookImpl implements ResolverHook {
     private static final long SERVICE_WAIT_TIMEOUT = 60000;
 
     private final ServiceTracker<FeatureService, FeatureService> featureServiceTracker;
@@ -96,7 +96,7 @@ public class ResolverHookImpl implements ResolverHook {
                 if (pkg instanceof String) {
                     String packageName = (String) pkg;
                     // If the export is in the global region.
-                    if (whitelistService.regionContainsPackage(WhitelistService.GLOBAL_REGION, packageName))
+                    if (whitelistService.regionWhitelistsPackage(WhitelistService.GLOBAL_REGION, packageName))
                         continue nextCapability;
 
                     // If the export is in a region that the feature is also in, then allow
@@ -105,7 +105,7 @@ public class ResolverHookImpl implements ResolverHook {
                         if (WhitelistService.GLOBAL_REGION.equals(region))
                             continue;
 
-                        if (whitelistService.regionContainsPackage(region, packageName))
+                        if (whitelistService.regionWhitelistsPackage(region, packageName))
                             continue nextCapability;
                     }
 

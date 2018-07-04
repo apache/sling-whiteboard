@@ -53,9 +53,9 @@ public class WhitelistServiceImplTest {
         rpm.put("region1", new HashSet<>(Arrays.asList("org.foo", "org.bar", "org.foo.bar")));
         WhitelistService wls = new WhitelistServiceImpl(rpm, Collections.emptyMap());
 
-        assertTrue(wls.regionContainsPackage("region1", "org.foo"));
-        assertTrue(wls.regionContainsPackage("region1", "org.foo.bar"));
-        assertFalse(wls.regionContainsPackage("region1", "org.bar.foo"));
-        assertFalse(wls.regionContainsPackage("nonexitent", "org.foo"));
+        assertTrue(wls.regionWhitelistsPackage("region1", "org.foo"));
+        assertTrue(wls.regionWhitelistsPackage("region1", "org.foo.bar"));
+        assertFalse(wls.regionWhitelistsPackage("region1", "org.bar.foo"));
+        assertNull(wls.regionWhitelistsPackage("nonexitent", "org.foo"));
     }
 }

@@ -28,7 +28,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class FeatureServiceImpl implements FeatureService {
+class FeatureServiceImpl implements FeatureService {
     private final Set<Feature> features;
     private final Map<Long, Feature> bundleFeatureMap;
 

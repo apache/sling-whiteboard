@@ -26,10 +26,16 @@ public interface WhitelistService {
     /**
      * List the regions that a given feature is part of
      * @param feature The feature ID in mvn syntax.
-     * @return A set of regions.
+     * @return A set of regions or {@code null} if the feature is no known.
      */
     Set<String> listRegions(String feature);
 
-    boolean regionContainsPackage(String region, String packageName);
-
+    /**
+     * Returns whether a package is whitelisted for the given region.
+     * @param region The region
+     * @param packageName The package
+     * @return Returns whether the package is whitelisted for the region.
+     * If the region is not known {@code null} is returned.
+     */
+    Boolean regionWhitelistsPackage(String region, String packageName);
 }

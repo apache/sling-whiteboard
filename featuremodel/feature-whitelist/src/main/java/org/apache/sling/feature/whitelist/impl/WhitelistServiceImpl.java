@@ -26,7 +26,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class WhitelistServiceImpl implements WhitelistService {
+class WhitelistServiceImpl implements WhitelistService {
     final Map<String, Set<String>> featureRegionMapping;
     final Map<String, Set<String>> regionPackageMapping;
 
@@ -53,11 +53,11 @@ public class WhitelistServiceImpl implements WhitelistService {
     }
 
     @Override
-    public boolean regionContainsPackage(String region, String packageName) {
+    public Boolean regionWhitelistsPackage(String region, String packageName) {
         Set<String> packages = regionPackageMapping.get(region);
 
         if (packages == null)
-            return false;
+            return null;
 
         return packages.contains(packageName);
     }
