@@ -32,19 +32,30 @@ class WhitelistServiceImpl implements WhitelistService {
 
     WhitelistServiceImpl(Map<String, Set<String>> regionPackages,
             Map<String, Set<String>> featureRegions) {
-        Map<String, Set<String>> rpm = new HashMap<>();
-        for (Map.Entry<String, Set<String>> entry : regionPackages.entrySet()) {
-            rpm.put(entry.getKey(),
-                    Collections.unmodifiableSet(new HashSet<>(entry.getValue())));
-        }
-        regionPackageMapping = Collections.unmodifiableMap(rpm);
+        Set<String> allRegions = new HashSet<>();
 
         Map<String, Set<String>> frm = new HashMap<>();
         for (Map.Entry<String, Set<String>> entry : featureRegions.entrySet()) {
-            frm.put(entry.getKey(),
-                    Collections.unmodifiableSet(new HashSet<>(entry.getValue())));
+            Set<String> regions = Collections.unmodifiableSet(new HashSet<>(entry.getValue()));
+            allRegions.addAll(regions);
+            frm.put(entry.getKey(), regions);
         }
         featureRegionMapping = Collections.unmodifiableMap(frm);
+
+        Map<String, Set<String>> rpm = new HashMap<>();
+        for (Map.Entry<String, Set<String>> entry : regionPackages.entrySet()) {
+            String region = entry.getKey();
+            rpm.put(region,
+                    Collections.unmodifiableSet(new HashSet<>(entry.getValue())));
+            allRegions.remove(region);
+        }
+
+        // If there are more regions mentioned but these don't have any package
+        // mappings, give them an empty mapping
+        for (String region : allRegions) {
+            rpm.put(region, Collections.emptySet());
+        }
+        regionPackageMapping = Collections.unmodifiableMap(rpm);
     }
 
     @Override

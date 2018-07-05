@@ -88,7 +88,7 @@ class ResolverHookImpl implements ResolverHook {
                 Feature capFeat = fs.getFeatureForBundle(capBundleID);
 
                 // Within a single feature everything can wire to everything else
-                if (capFeat.equals(reqFeat))
+                if (reqFeat.equals(capFeat))
                     continue nextCapability;
 
 
@@ -96,7 +96,7 @@ class ResolverHookImpl implements ResolverHook {
                 if (pkg instanceof String) {
                     String packageName = (String) pkg;
                     // If the export is in the global region.
-                    if (whitelistService.regionWhitelistsPackage(WhitelistService.GLOBAL_REGION, packageName))
+                    if (Boolean.TRUE.equals(whitelistService.regionWhitelistsPackage(WhitelistService.GLOBAL_REGION, packageName)))
                         continue nextCapability;
 
                     // If the export is in a region that the feature is also in, then allow
@@ -105,7 +105,7 @@ class ResolverHookImpl implements ResolverHook {
                         if (WhitelistService.GLOBAL_REGION.equals(region))
                             continue;
 
-                        if (whitelistService.regionWhitelistsPackage(region, packageName))
+                        if (!Boolean.FALSE.equals(whitelistService.regionWhitelistsPackage(region, packageName)))
                             continue nextCapability;
                     }
 
