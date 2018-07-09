@@ -19,7 +19,7 @@
 package org.apache.sling.feature.whitelist.impl;
 
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.service.FeatureService;
+import org.apache.sling.feature.service.Features;
 import org.apache.sling.feature.whitelist.WhitelistService;
 import org.osgi.framework.hooks.resolver.ResolverHook;
 import org.osgi.framework.namespace.PackageNamespace;
@@ -35,10 +35,10 @@ import java.util.Set;
 class ResolverHookImpl implements ResolverHook {
     private static final long SERVICE_WAIT_TIMEOUT = 60000;
 
-    private final ServiceTracker<FeatureService, FeatureService> featureServiceTracker;
+    private final ServiceTracker<Features, Features> featureServiceTracker;
     private final WhitelistService whitelistService;
 
-    public ResolverHookImpl(ServiceTracker<FeatureService, FeatureService> tracker,
+    public ResolverHookImpl(ServiceTracker<Features, Features> tracker,
             WhitelistService wls) {
         featureServiceTracker = tracker;
         whitelistService = wls;
@@ -63,7 +63,7 @@ class ResolverHookImpl implements ResolverHook {
         long reqBundleID = requirement.getRevision().getBundle().getBundleId();
 
         try {
-            FeatureService fs = featureServiceTracker.waitForService(SERVICE_WAIT_TIMEOUT);
+            Features fs = featureServiceTracker.waitForService(SERVICE_WAIT_TIMEOUT);
 
             // The Feature Service could not be found, skip candidate pruning
             if (fs == null) {

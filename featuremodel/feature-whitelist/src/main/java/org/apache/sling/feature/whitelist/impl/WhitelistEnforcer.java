@@ -18,7 +18,7 @@
  */
 package org.apache.sling.feature.whitelist.impl;
 
-import org.apache.sling.feature.service.FeatureService;
+import org.apache.sling.feature.service.Features;
 import org.apache.sling.feature.whitelist.WhitelistService;
 import org.osgi.framework.hooks.resolver.ResolverHook;
 import org.osgi.framework.hooks.resolver.ResolverHookFactory;
@@ -45,10 +45,10 @@ class WhitelistEnforcer implements ResolverHookFactory, ManagedService {
     private static final String CONFIG_FEATURE_MAPPING_PREFIX = "whitelist.feature.";
     static final Logger LOG = LoggerFactory.getLogger(WhitelistEnforcer.class);
 
-    final ServiceTracker<FeatureService, FeatureService> featureServiceTracker;
+    final ServiceTracker<Features, Features> featureServiceTracker;
     volatile WhitelistService whitelistService = new NullWhitelistService();
 
-    WhitelistEnforcer(ServiceTracker<FeatureService, FeatureService> tracker) {
+    WhitelistEnforcer(ServiceTracker<Features, Features> tracker) {
         featureServiceTracker = tracker;
     }
 

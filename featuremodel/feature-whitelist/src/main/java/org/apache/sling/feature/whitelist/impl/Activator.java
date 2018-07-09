@@ -18,7 +18,7 @@
  */
 package org.apache.sling.feature.whitelist.impl;
 
-import org.apache.sling.feature.service.FeatureService;
+import org.apache.sling.feature.service.Features;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
@@ -31,12 +31,12 @@ import java.util.Dictionary;
 import java.util.Hashtable;
 
 public class Activator implements BundleActivator {
-    private ServiceTracker<FeatureService, FeatureService> tracker;
+    private ServiceTracker<Features, Features> tracker;
     private ServiceRegistration<?> resolverHookServiceRegistration;
 
     @Override
     public synchronized void start(BundleContext context) throws Exception {
-        tracker = new ServiceTracker<>(context, FeatureService.class, null);
+        tracker = new ServiceTracker<>(context, Features.class, null);
         tracker.open();
 
         WhitelistEnforcer whitelistEnforcer = new WhitelistEnforcer(tracker);
