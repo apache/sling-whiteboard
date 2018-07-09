@@ -60,7 +60,7 @@
         <dependency>
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.feature</artifactId>
-            <version>0.1.2</version>
+            <version>0.1.3-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

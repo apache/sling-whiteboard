@@ -18,11 +18,9 @@
  */
 package org.apache.sling.feature.service;
 
-import org.apache.sling.feature.Feature;
-
 import java.util.Collection;
 
-public interface FeatureService {
-    Collection<Feature> listFeatures();
-    Feature getFeatureForBundle(long bundleId);
+public interface Features {
+    Collection<String> listFeatures();
+    String getFeatureForBundle(long bundleId);
 }

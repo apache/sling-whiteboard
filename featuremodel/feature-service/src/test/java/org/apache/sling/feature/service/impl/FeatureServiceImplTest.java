@@ -18,9 +18,7 @@
  */
 package org.apache.sling.feature.service.impl;
 
-import org.apache.sling.feature.ArtifactId;
-import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.service.FeatureService;
+import org.apache.sling.feature.service.Features;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -32,18 +30,16 @@ import static org.junit.Assert.assertNull;
 public class FeatureServiceImplTest {
     @Test
     public void testFeatureService() {
-        Map<Long, Feature> bif = new HashMap<>();
+        Map<Long, String> bif = new HashMap<>();
 
-        ArtifactId aid1 = new ArtifactId("gid", "aid", "1.0.0", "myfeature", "slingfeature");
-        Feature f1 = new Feature(aid1);
+        String f1 = "gid:aid:1.0.0:myfeature:slingfeature";
         bif.put(123L, f1);
         bif.put(456L, f1);
 
-        ArtifactId aid2 = new ArtifactId("gid", "aid", "1.0.0", "myotherfeature", "slingfeature");
-        Feature f2 = new Feature(aid2);
+        String f2 = "gid:aid2:1.0.0";
         bif.put(789L, f2);
 
-        FeatureService fs = new FeatureServiceImpl(bif);
+        Features fs = new FeatureServiceImpl(bif);
         assertEquals(2, fs.listFeatures().size());
 
         assertEquals(f1, fs.getFeatureForBundle(123));
