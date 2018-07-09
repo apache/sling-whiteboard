@@ -18,7 +18,6 @@
  */
 package org.apache.sling.feature.whitelist.impl;
 
-import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.service.Features;
 import org.apache.sling.feature.whitelist.WhitelistService;
 import org.osgi.framework.hooks.resolver.ResolverHook;
@@ -71,8 +70,8 @@ class ResolverHookImpl implements ResolverHook {
                 return;
             }
 
-            Feature reqFeat = fs.getFeatureForBundle(reqBundleID);
-            Set<String> regions = whitelistService.listRegions(reqFeat.getId().toMvnId());
+            String reqFeat = fs.getFeatureForBundle(reqBundleID);
+            Set<String> regions = whitelistService.listRegions(reqFeat);
 
             nextCapability:
             for (Iterator<BundleCapability> it = candidates.iterator(); it.hasNext(); ) {
@@ -85,7 +84,7 @@ class ResolverHookImpl implements ResolverHook {
                 if (capBundleID == reqBundleID)
                     continue nextCapability;
 
-                Feature capFeat = fs.getFeatureForBundle(capBundleID);
+                String capFeat = fs.getFeatureForBundle(capBundleID);
 
                 // Within a single feature everything can wire to everything else
                 if (reqFeat.equals(capFeat))

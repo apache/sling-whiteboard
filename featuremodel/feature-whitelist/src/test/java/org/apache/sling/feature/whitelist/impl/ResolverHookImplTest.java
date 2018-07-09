@@ -18,8 +18,6 @@
  */
 package org.apache.sling.feature.whitelist.impl;
 
-import org.apache.sling.feature.ArtifactId;
-import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.service.Features;
 import org.apache.sling.feature.whitelist.WhitelistService;
 import org.junit.Test;
@@ -48,11 +46,8 @@ public class ResolverHookImplTest {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Test
     public void testFilterMatches() throws Exception {
-        ArtifactId fid = new ArtifactId("gid", "aid", "0.0.9", null, null);
-        Feature f = new Feature(fid);
-
-        ArtifactId fid2 = new ArtifactId("gid2", "aid2", "1.0.0-SNAPSHOT", null, null);
-        Feature f2 = new Feature(fid2);
+        String f = "gid:aid:0.0.9";
+        String f2 = "gid2:aid2:1.0.0-SNAPSHOT";
 
         Features fs = Mockito.mock(Features.class);
         Mockito.when(fs.getFeatureForBundle(7)).thenReturn(f);
