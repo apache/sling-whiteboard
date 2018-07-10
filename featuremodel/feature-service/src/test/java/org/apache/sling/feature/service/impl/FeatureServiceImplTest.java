@@ -42,7 +42,7 @@ public class FeatureServiceImplTest {
         String f2 = "gid:aid2:1.0.0";
         bif.put(new AbstractMap.SimpleEntry<String,Version>("mybsn", new Version(7,8,9)), f2);
 
-        Features fs = new FeatureServiceImpl(bif);
+        Features fs = new FeaturesServiceImpl(bif);
         assertEquals(2, fs.listFeatures().size());
 
         assertEquals(f1, fs.getFeatureForBundle("mybsn", new Version(1,2,3)));

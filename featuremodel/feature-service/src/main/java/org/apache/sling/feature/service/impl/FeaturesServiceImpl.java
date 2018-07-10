@@ -28,11 +28,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-class FeatureServiceImpl implements Features {
+class FeaturesServiceImpl implements Features {
     private final Set<String> features;
     private final Map<Map.Entry<String, Version>, String> bundleFeatureMap;
 
-    FeatureServiceImpl(Map<Map.Entry<String, Version>, String> bundleIDFeatures) {
+    FeaturesServiceImpl(Map<Map.Entry<String, Version>, String> bundleIDFeatures) {
         bundleFeatureMap = Collections.unmodifiableMap(bundleIDFeatures);
 
         Set<String> fs = new HashSet<>(bundleIDFeatures.values());

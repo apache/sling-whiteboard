@@ -77,7 +77,7 @@ class FeaturesServiceManager implements ManagedService {
             }
         }
 
-        FeatureServiceImpl fs = new FeatureServiceImpl(bundleIDFeatures);
+        FeaturesServiceImpl fs = new FeaturesServiceImpl(bundleIDFeatures);
         reg = bundleContext.registerService(Features.class, fs, props);
     }
 

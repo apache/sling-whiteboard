@@ -30,7 +30,7 @@ public class Activator implements BundleActivator {
     @Override
     public void start(BundleContext context) throws Exception {
         Dictionary<String, Object> props = new Hashtable<>();
-        props.put(Constants.SERVICE_PID, FeatureServiceImpl.class.getName());
+        props.put(Constants.SERVICE_PID, FeaturesServiceImpl.class.getName());
         context.registerService(ManagedService.class,
                 new FeaturesServiceManager(context), props);
     }
