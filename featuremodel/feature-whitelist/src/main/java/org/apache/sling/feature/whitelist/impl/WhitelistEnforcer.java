@@ -20,6 +20,8 @@ package org.apache.sling.feature.whitelist.impl;
 
 import org.apache.sling.feature.service.Features;
 import org.apache.sling.feature.whitelist.WhitelistService;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.hooks.resolver.ResolverHook;
 import org.osgi.framework.hooks.resolver.ResolverHookFactory;
 import org.osgi.framework.wiring.BundleRevision;
@@ -40,27 +42,40 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-class WhitelistEnforcer implements ResolverHookFactory, ManagedService {
+class WhitelistEnforcer implements ManagedService, ResolverHookFactory {
     private static final String CONFIG_REGION_MAPPING_PREFIX = "whitelist.region.";
     private static final String CONFIG_FEATURE_MAPPING_PREFIX = "whitelist.feature.";
     static final Logger LOG = LoggerFactory.getLogger(WhitelistEnforcer.class);
 
+    final BundleContext bundleContext;
     final ServiceTracker<Features, Features> featureServiceTracker;
-    volatile WhitelistService whitelistService = new NullWhitelistService();
+    volatile WhitelistService whitelistService = null;
+    volatile ServiceRegistration<WhitelistService> wlsRegistration = null;
 
-    WhitelistEnforcer(ServiceTracker<Features, Features> tracker) {
+    WhitelistEnforcer(BundleContext context, ServiceTracker<Features, Features> tracker) {
+        bundleContext = context;
         featureServiceTracker = tracker;
     }
 
     @Override
     public ResolverHook begin(Collection<BundleRevision> triggers) {
-        return new ResolverHookImpl(featureServiceTracker, whitelistService);
+        WhitelistService wls = whitelistService;
+        if (wls != null) {
+            return new ResolverHookImpl(featureServiceTracker, wls);
+        } else {
+            return null;
+        }
     }
 
     @Override
-    public void updated(Dictionary<String, ?> properties) throws ConfigurationException {
+    public synchronized void updated(Dictionary<String, ?> properties) throws ConfigurationException {
+        if (wlsRegistration != null) {
+            wlsRegistration.unregister();
+            wlsRegistration = null;
+        }
+
         if (properties == null) {
-            whitelistService = new NullWhitelistService();
+            whitelistService = null;
             return;
         }
 
@@ -82,6 +97,7 @@ class WhitelistEnforcer implements ResolverHookFactory, ManagedService {
         }
 
         whitelistService = new WhitelistServiceImpl(rpm, frm);
+        wlsRegistration = bundleContext.registerService(WhitelistService.class, whitelistService, null);
     }
 
     Set<String> getStringPlusValue(Object val) {
@@ -96,17 +112,4 @@ class WhitelistEnforcer implements ResolverHookFactory, ManagedService {
         }
         return Collections.singleton(val.toString());
     }
-
-    static class NullWhitelistService implements WhitelistService {
-        @Override
-        public Set<String> listRegions(String feature) {
-            return null;
-        }
-
-        @Override
-        public Boolean regionWhitelistsPackage(String region, String packageName) {
-            return null;
-        }
-    }
-
 }

@@ -20,6 +20,8 @@ package org.apache.sling.feature.whitelist.impl;
 
 import org.apache.sling.feature.whitelist.WhitelistService;
 import org.junit.Test;
+import org.mockito.Mockito;
+import org.osgi.framework.BundleContext;
 import org.osgi.service.cm.ConfigurationException;
 
 import java.util.Arrays;
@@ -31,16 +33,17 @@ import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class WhitelistEnforcerTest {
     @Test
     public void testWhitelistEnforcerConfigUpdate() throws ConfigurationException {
-        WhitelistEnforcer enf = new WhitelistEnforcer(null);
+        BundleContext bc = Mockito.mock(BundleContext.class);
+        WhitelistEnforcer enf = new WhitelistEnforcer(bc, null);
 
-        assertTrue("Precondition",
-                enf.whitelistService instanceof WhitelistEnforcer.NullWhitelistService);
+        assertNull("Precondition", enf.whitelistService);
 
         Dictionary<String, Object> props = new Hashtable<>();
         props.put("ignored", "ignored-too");
@@ -51,7 +54,9 @@ public class WhitelistEnforcerTest {
         props.put("whitelist.feature.gid:myfeature:1.0.0", new String [] {"region1", "region2"});
         enf.updated(props);
 
-        assertFalse(enf.whitelistService instanceof WhitelistEnforcer.NullWhitelistService);
+        assertNotNull(enf.whitelistService);
+        Mockito.verify(bc, Mockito.times(1)).registerService(
+                Mockito.eq(WhitelistService.class), Mockito.isA(WhitelistService.class), Mockito.any());
 
         // check that the configuration parsing worked
         assertTrue(enf.whitelistService.regionWhitelistsPackage("region1", "org.foo.pkg1"));
@@ -69,7 +74,6 @@ public class WhitelistEnforcerTest {
         assertNull(enf.whitelistService.listRegions("unknown"));
 
         enf.updated(null);
-        assertTrue("A null configuration should put back the null whitelist service",
-                enf.whitelistService instanceof WhitelistEnforcer.NullWhitelistService);
+        assertNull("A null configuration should put back the null whitelist service", enf.whitelistService);
     }
 }

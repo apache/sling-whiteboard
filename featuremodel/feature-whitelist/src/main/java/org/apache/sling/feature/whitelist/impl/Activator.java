@@ -39,12 +39,12 @@ public class Activator implements BundleActivator {
         tracker = new ServiceTracker<>(context, Features.class, null);
         tracker.open();
 
-        WhitelistEnforcer whitelistEnforcer = new WhitelistEnforcer(tracker);
+        WhitelistEnforcer enforcer = new WhitelistEnforcer(context, tracker);
         Dictionary<String, Object> resHookProps = new Hashtable<>();
         resHookProps.put(Constants.SERVICE_PID, WhitelistEnforcer.class.getName());
         resolverHookServiceRegistration = context.registerService(
                 new String[] {ManagedService.class.getName(), ResolverHookFactory.class.getName()},
-                whitelistEnforcer, resHookProps);
+                enforcer, resHookProps);
     }
 
     @Override
