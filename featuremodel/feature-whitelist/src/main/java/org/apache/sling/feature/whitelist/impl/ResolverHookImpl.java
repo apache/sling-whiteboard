@@ -20,6 +20,8 @@ package org.apache.sling.feature.whitelist.impl;
 
 import org.apache.sling.feature.service.Features;
 import org.apache.sling.feature.whitelist.WhitelistService;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.Version;
 import org.osgi.framework.hooks.resolver.ResolverHook;
 import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.framework.wiring.BundleCapability;
@@ -59,7 +61,10 @@ class ResolverHookImpl implements ResolverHook {
         if (!PackageNamespace.PACKAGE_NAMESPACE.equals(requirement.getNamespace()))
             return;
 
-        long reqBundleID = requirement.getRevision().getBundle().getBundleId();
+        Bundle reqBundle = requirement.getRevision().getBundle();
+        long reqBundleID = reqBundle.getBundleId();
+        String reqBundleName = reqBundle.getSymbolicName();
+        Version reqBundleVersion = reqBundle.getVersion();
 
         try {
             Features fs = featureServiceTracker.waitForService(SERVICE_WAIT_TIMEOUT);
@@ -70,7 +75,7 @@ class ResolverHookImpl implements ResolverHook {
                 return;
             }
 
-            String reqFeat = fs.getFeatureForBundle(reqBundleID);
+            String reqFeat = fs.getFeatureForBundle(reqBundleName, reqBundleVersion);
             Set<String> regions = whitelistService.listRegions(reqFeat);
 
             nextCapability:
@@ -80,16 +85,19 @@ class ResolverHookImpl implements ResolverHook {
                 BundleRevision rev = bc.getRevision();
 
                 // A bundle is allowed to wire to itself
-                long capBundleID = rev.getBundle().getBundleId();
+                Bundle capBundle = rev.getBundle();
+                long capBundleID = capBundle.getBundleId();
                 if (capBundleID == reqBundleID)
                     continue nextCapability;
 
-                String capFeat = fs.getFeatureForBundle(capBundleID);
+                String capBundleName = capBundle.getSymbolicName();
+                Version capBundleVersion = capBundle.getVersion();
+
+                String capFeat = fs.getFeatureForBundle(capBundleName, capBundleVersion);
 
                 // Within a single feature everything can wire to everything else
                 if (reqFeat.equals(capFeat))
                     continue nextCapability;
-
 
                 Object pkg = bc.getAttributes().get(PackageNamespace.PACKAGE_NAMESPACE);
                 if (pkg instanceof String) {

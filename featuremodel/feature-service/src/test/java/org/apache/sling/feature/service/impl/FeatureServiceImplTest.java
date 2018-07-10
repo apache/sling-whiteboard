@@ -20,9 +20,12 @@ package org.apache.sling.feature.service.impl;
 
 import org.apache.sling.feature.service.Features;
 import org.junit.Test;
+import org.osgi.framework.Version;
 
+import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -30,21 +33,21 @@ import static org.junit.Assert.assertNull;
 public class FeatureServiceImplTest {
     @Test
     public void testFeatureService() {
-        Map<Long, String> bif = new HashMap<>();
+        Map<Entry<String, Version>, String> bif = new HashMap<>();
 
         String f1 = "gid:aid:1.0.0:myfeature:slingfeature";
-        bif.put(123L, f1);
-        bif.put(456L, f1);
+        bif.put(new AbstractMap.SimpleEntry<String,Version>("mybsn", new Version(1,2,3)), f1);
+        bif.put(new AbstractMap.SimpleEntry<String,Version>("mybsn2", new Version(4,5,6)), f1);
 
         String f2 = "gid:aid2:1.0.0";
-        bif.put(789L, f2);
+        bif.put(new AbstractMap.SimpleEntry<String,Version>("mybsn", new Version(7,8,9)), f2);
 
         Features fs = new FeatureServiceImpl(bif);
         assertEquals(2, fs.listFeatures().size());
 
-        assertEquals(f1, fs.getFeatureForBundle(123));
-        assertEquals(f1, fs.getFeatureForBundle(456));
-        assertEquals(f2, fs.getFeatureForBundle(789));
-        assertNull(fs.getFeatureForBundle(999));
+        assertEquals(f1, fs.getFeatureForBundle("mybsn", new Version(1,2,3)));
+        assertEquals(f1, fs.getFeatureForBundle("mybsn2", new Version(4,5,6)));
+        assertEquals(f2, fs.getFeatureForBundle("mybsn", new Version(7,8,9)));
+        assertNull(fs.getFeatureForBundle("mybsn2", new Version(1,2,3)));
     }
 }

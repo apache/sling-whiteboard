@@ -19,16 +19,19 @@
 package org.apache.sling.feature.service.impl;
 
 import org.apache.sling.feature.service.Features;
-import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceRegistration;
+import org.osgi.framework.Version;
 import org.osgi.service.cm.ConfigurationException;
 import org.osgi.service.cm.ManagedService;
 
+import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -42,36 +45,40 @@ class FeaturesServiceManager implements ManagedService {
 
     @Override
     public synchronized void updated(Dictionary<String, ?> properties) throws ConfigurationException {
-        System.out.println("######******* Updated " + properties);
         if (reg != null)
             reg.unregister();
 
         if (properties == null)
             return;
 
-        Map<String, Long> bsnVerToID = getBundleToID();
-
-        Map<Long, String> bundleIDFeatures = new HashMap<>();
+        Map<Map.Entry<String, Version>, String> bundleIDFeatures = new HashMap<>();
+        Dictionary<String, String> props = new Hashtable<>();
         for(Enumeration<String> e = properties.keys(); e.hasMoreElements(); ) {
             String key = e.nextElement();
-            Long bid = bsnVerToID.get(key);
-            if (bid != null) {
-                bundleIDFeatures.put(bid, getStringPlus(properties.get(key)));
+            if (key.startsWith("."))
+                continue;
+
+            if (Constants.SERVICE_PID.equals(key))
+                continue;
+
+            String[] bsnver = key.split(":");
+            if (bsnver.length != 2)
+                continue;
+
+            try {
+                Version ver = Version.valueOf(bsnver[1]);
+
+                String value = getStringPlus(properties.get(key));
+                AbstractMap.SimpleEntry<String, Version> newKey = new AbstractMap.SimpleEntry<>(bsnver[0], ver);
+                bundleIDFeatures.put(newKey, value);
+                props.put(key, value);
+            } catch (IllegalArgumentException iae) {
+                // TODO log
             }
         }
 
         FeatureServiceImpl fs = new FeatureServiceImpl(bundleIDFeatures);
-        reg = bundleContext.registerService(Features.class, fs, null);
-    }
-
-    private Map<String, Long> getBundleToID() {
-        Map<String, Long> m = new HashMap<>();
-
-        for (Bundle b : bundleContext.getBundles()) {
-            m.put(b.getSymbolicName() + ":" + b.getVersion(), b.getBundleId());
-        }
-
-        return m;
+        reg = bundleContext.registerService(Features.class, fs, props);
     }
 
     private String getStringPlus(Object obj) {
@@ -85,4 +92,5 @@ class FeaturesServiceManager implements ManagedService {
         }
         return null;
     }
+
 }

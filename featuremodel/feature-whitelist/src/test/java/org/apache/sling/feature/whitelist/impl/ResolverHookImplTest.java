@@ -23,6 +23,7 @@ import org.apache.sling.feature.whitelist.WhitelistService;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.Version;
 import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleRequirement;
@@ -48,11 +49,16 @@ public class ResolverHookImplTest {
     public void testFilterMatches() throws Exception {
         String f = "gid:aid:0.0.9";
         String f2 = "gid2:aid2:1.0.0-SNAPSHOT";
+        String f3 = "gid3:aid3:1.2.3";
+        String f4 = "gid4:aid4:1.2.3";
 
         Features fs = Mockito.mock(Features.class);
-        Mockito.when(fs.getFeatureForBundle(7)).thenReturn(f);
-        Mockito.when(fs.getFeatureForBundle(9)).thenReturn(f2);
-        Mockito.when(fs.getFeatureForBundle(10)).thenReturn(f2);
+        Mockito.when(fs.getFeatureForBundle("a.b.c", new Version(0,0,0))).thenReturn(f); // b7
+        Mockito.when(fs.getFeatureForBundle("some.other.bundle", new Version(9,9,9,"suffix"))).thenReturn(f2); // b9
+        Mockito.when(fs.getFeatureForBundle("a-bundle", new Version(1,0,0,"SNAPSHOT"))).thenReturn(f2); // b10
+        Mockito.when(fs.getFeatureForBundle("a.b.c", new Version(1,2,3))).thenReturn(f3); // b17
+        Mockito.when(fs.getFeatureForBundle("x.y.z", new Version(9,9,9))).thenReturn(f3); // b19
+        Mockito.when(fs.getFeatureForBundle("zzz", new Version(1,0,0))).thenReturn(f4); // b20
 
         ServiceTracker st = Mockito.mock(ServiceTracker.class);
         Mockito.when(st.waitForService(Mockito.anyLong())).thenReturn(fs);
@@ -61,57 +67,60 @@ public class ResolverHookImplTest {
         rpm.put("r0", Collections.singleton("org.bar"));
         rpm.put("r1", new HashSet<>(Arrays.asList("org.blah", "org.foo")));
         rpm.put(WhitelistService.GLOBAL_REGION, Collections.singleton("org.bar.tar"));
+        rpm.put("r3", Collections.singleton("xyz"));
 
         Map<String, Set<String>> frm = new HashMap<>();
         frm.put("gid:aid:0.0.9",
                 new HashSet<>(Arrays.asList("r1", "r2", WhitelistService.GLOBAL_REGION)));
         frm.put("gid2:aid2:1.0.0-SNAPSHOT", Collections.singleton("r2"));
+        frm.put("gid3:aid3:1.2.3", Collections.singleton("r3"));
+        frm.put("gid4:aid4:1.2.3", Collections.singleton("r3"));
 
         WhitelistService wls = new WhitelistServiceImpl(rpm, frm);
         ResolverHookImpl rh = new ResolverHookImpl(st, wls);
 
         // Check that we can get the capability from another bundle in the same region
         // Bundle 7 is in feature f with regions r1, r2
-        BundleRequirement req = mockRequirement(7);
-        BundleCapability bc1 = mockCapability("org.foo", 19);
+        BundleRequirement req = mockRequirement(17, "a.b.c", new Version(1,2,3));
+        BundleCapability bc1 = mockCapability("org.foo", 19, "x.y.z", new Version(9,9,9));
         List<BundleCapability> candidates = new ArrayList<>(Arrays.asList(bc1));
         rh.filterMatches(req, candidates);
         assertEquals(Collections.singletonList(bc1), candidates);
 
         // Check that we cannot get the capability from another bundle in a different region
         // Bundle 9 is in feature f2 with region r2
-        BundleRequirement req2 = mockRequirement(9);
-        BundleCapability bc2 = mockCapability("org.bar", 17);
+        BundleRequirement req2 = mockRequirement(9, "some.other.bundle", new Version(9,9,9,"suffix"));
+        BundleCapability bc2 = mockCapability("org.bar", 17, "a.b.c", new Version(1,2,3));
         Collection<BundleCapability> c2 = new ArrayList<>(Arrays.asList(bc2));
         rh.filterMatches(req2, c2);
         assertEquals(0, c2.size());
 
         // Check that we can get the capability from the same bundle
-        BundleRequirement req3 = mockRequirement(9);
-        BundleCapability bc3 = mockCapability("org.bar", 9);
+        BundleRequirement req3 = mockRequirement(9, "some.other.bundle", new Version(9,9,9,"suffix"));
+        BundleCapability bc3 = mockCapability("org.bar", 9, "some.other.bundle", new Version(9,9,9,"suffix"));
         Collection<BundleCapability> c3 = new ArrayList<>(Arrays.asList(bc3));
         rh.filterMatches(req3, c3);
         assertEquals(Collections.singletonList(bc3), c3);
 
         // Check that we can get the capability from the another bundle in the same feature
-        BundleRequirement req4 = mockRequirement(9);
-        BundleCapability bc4 = mockCapability("org.bar", 10);
+        BundleRequirement req4 = mockRequirement(9, "some.other.bundle", new Version(9,9,9,"suffix"));
+        BundleCapability bc4 = mockCapability("org.bar", 10, "a-bundle", new Version(1,0,0,"SNAPSHOT"));
         Collection<BundleCapability> c4 = new ArrayList<>(Arrays.asList(bc4));
         rh.filterMatches(req4, c4);
         assertEquals(Collections.singletonList(bc4), c4);
 
-        // Check that we cannot get the capability from another bundle where the capability
+        // Check that we can get the capability from another bundle where the capability
         // is globally visible (from bundle 9, f2)
-        BundleRequirement req5 = mockRequirement(9);
-        BundleCapability bc5 = mockCapability("org.bar.tar", 17);
+        BundleRequirement req5 = mockRequirement(17, "a.b.c", new Version(1,2,3));
+        BundleCapability bc5 = mockCapability("org.bar.tar", 9, "some.other.bundle", new Version(9,9,9,"suffix"));
         Collection<BundleCapability> c5 = new ArrayList<>(Arrays.asList(bc5));
         rh.filterMatches(req5, c5);
         assertEquals(Collections.singletonList(bc5), c5);
 
-        // Check that we cannot get the capability from another bundle where the capability
+        // Check that we can get the capability from another bundle where the capability
         // is globally visible (from bundle 7, f)
-        BundleRequirement req6 = mockRequirement(7);
-        BundleCapability bc6 = mockCapability("org.bar.tar", 17);
+        BundleRequirement req6 = mockRequirement(7, "a.b.c", new Version(0,0,0));
+        BundleCapability bc6 = mockCapability("org.bar.tar", 17, "a.b.c", new Version(1,2,3));
         Collection<BundleCapability> c6 = new ArrayList<>(Arrays.asList(bc6));
         rh.filterMatches(req6, c6);
         assertEquals(Collections.singletonList(bc6), c6);
@@ -119,18 +128,27 @@ public class ResolverHookImplTest {
         // Check that capabilities in non-package namespaces are ignored
         BundleRequirement req7 = Mockito.mock(BundleRequirement.class);
         Mockito.when(req7.getNamespace()).thenReturn("some.other.namespace");
-        BundleCapability bc7 = mockCapability("org.bar", 17);
+        BundleCapability bc7 = mockCapability("org.bar", 17, "a.b.c", new Version(1,2,3));
         Collection<BundleCapability> c7 = new ArrayList<>(Arrays.asList(bc7));
         rh.filterMatches(req7, c7);
         assertEquals(Collections.singletonList(bc7), c7);
+
+        // Check that we can get the capability from another provider in the same region
+        BundleRequirement req8 = mockRequirement(20, "zzz", new Version(1,0,0));
+        BundleCapability bc8 = mockCapability("xyz", 19, "x.y.z", new Version(9,9,9));
+        Collection<BundleCapability> c8 = new ArrayList<>(Arrays.asList(bc8));
+        rh.filterMatches(req8, c8);
+        assertEquals(Collections.singletonList(bc8), c8);
     }
 
-    private BundleCapability mockCapability(String pkg, long bundleID) {
+    private BundleCapability mockCapability(String pkg, long bundleID, String bsn, Version version) {
         Map<String, Object> attrs =
                 Collections.singletonMap(PackageNamespace.PACKAGE_NAMESPACE, pkg);
 
         Bundle bundle = Mockito.mock(Bundle.class);
         Mockito.when(bundle.getBundleId()).thenReturn(bundleID);
+        Mockito.when(bundle.getSymbolicName()).thenReturn(bsn);
+        Mockito.when(bundle.getVersion()).thenReturn(version);
 
         BundleRevision br = Mockito.mock(BundleRevision.class);
         Mockito.when(br.getBundle()).thenReturn(bundle);
@@ -142,9 +160,11 @@ public class ResolverHookImplTest {
         return cap;
     }
 
-    private BundleRequirement mockRequirement(long bundleID) {
+    private BundleRequirement mockRequirement(long bundleID, String bsn, Version version) {
         Bundle bundle = Mockito.mock(Bundle.class);
         Mockito.when(bundle.getBundleId()).thenReturn(bundleID);
+        Mockito.when(bundle.getSymbolicName()).thenReturn(bsn);
+        Mockito.when(bundle.getVersion()).thenReturn(version);
 
         BundleRevision br = Mockito.mock(BundleRevision.class);
         Mockito.when(br.getBundle()).thenReturn(bundle);

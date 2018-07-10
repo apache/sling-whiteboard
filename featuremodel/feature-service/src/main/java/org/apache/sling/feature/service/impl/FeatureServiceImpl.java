@@ -19,21 +19,21 @@
 package org.apache.sling.feature.service.impl;
 
 import org.apache.sling.feature.service.Features;
+import org.osgi.framework.Version;
 
+import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class FeatureServiceImpl implements Features {
+class FeatureServiceImpl implements Features {
     private final Set<String> features;
-    private final Map<Long, String> bundleFeatureMap;
+    private final Map<Map.Entry<String, Version>, String> bundleFeatureMap;
 
-    public FeatureServiceImpl(Map<Long, String> bundleIDFeatures) {
-        Map<Long, String> bfm = new HashMap<>(bundleIDFeatures);
-        bundleFeatureMap = Collections.unmodifiableMap(bfm);
+    FeatureServiceImpl(Map<Map.Entry<String, Version>, String> bundleIDFeatures) {
+        bundleFeatureMap = Collections.unmodifiableMap(bundleIDFeatures);
 
         Set<String> fs = new HashSet<>(bundleIDFeatures.values());
         features = Collections.unmodifiableSet(fs);
@@ -45,7 +45,7 @@ public class FeatureServiceImpl implements Features {
     }
 
     @Override
-    public String getFeatureForBundle(long bundleId) {
-        return bundleFeatureMap.get(bundleId);
+    public String getFeatureForBundle(String bsn, Version version) {
+        return bundleFeatureMap.get(new AbstractMap.SimpleEntry<String, Version>(bsn, version));
     }
 }
