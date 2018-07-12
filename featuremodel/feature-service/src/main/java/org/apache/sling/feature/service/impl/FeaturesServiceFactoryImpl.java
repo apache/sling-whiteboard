@@ -32,7 +32,7 @@ import java.util.Map.Entry;
 class FeaturesServiceFactoryImpl implements FeaturesFactory {
     private final BundleContext bundleContext;
 
-    public FeaturesServiceFactoryImpl(BundleContext context) {
+    FeaturesServiceFactoryImpl(BundleContext context) {
         bundleContext = context;
     }
 
