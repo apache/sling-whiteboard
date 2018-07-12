@@ -18,26 +18,8 @@
  */
 package org.apache.sling.feature.whitelist.impl;
 
-import org.apache.sling.feature.whitelist.WhitelistService;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.osgi.framework.BundleContext;
-import org.osgi.service.cm.ConfigurationException;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Dictionary;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Set;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 public class WhitelistEnforcerTest {
+    /*
     @Test
     public void testWhitelistEnforcerConfigUpdate() throws ConfigurationException {
         BundleContext bc = Mockito.mock(BundleContext.class);
@@ -76,4 +58,5 @@ public class WhitelistEnforcerTest {
         enf.updated(null);
         assertNull("A null configuration should put back the null whitelist service", enf.whitelistService);
     }
+    */
 }

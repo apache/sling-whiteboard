@@ -20,53 +20,32 @@ package org.apache.sling.feature.whitelist.impl;
 
 import org.apache.sling.feature.service.Features;
 import org.apache.sling.feature.whitelist.WhitelistService;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.hooks.resolver.ResolverHook;
 import org.osgi.framework.hooks.resolver.ResolverHookFactory;
 import org.osgi.framework.wiring.BundleRevision;
-import org.osgi.service.cm.ConfigurationException;
-import org.osgi.service.cm.ManagedService;
 import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Dictionary;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
-class WhitelistEnforcer implements ManagedService, ResolverHookFactory {
-    private static final String CONFIG_REGION_MAPPING_PREFIX = "whitelist.region.";
-    private static final String CONFIG_FEATURE_MAPPING_PREFIX = "whitelist.feature.";
+class WhitelistEnforcer implements ResolverHookFactory {
     static final Logger LOG = LoggerFactory.getLogger(WhitelistEnforcer.class);
 
-    final BundleContext bundleContext;
     final ServiceTracker<Features, Features> featureServiceTracker;
-    volatile WhitelistService whitelistService = null;
-    volatile ServiceRegistration<WhitelistService> wlsRegistration = null;
+    final WhitelistService whitelistService;
 
-    WhitelistEnforcer(BundleContext context, ServiceTracker<Features, Features> tracker) {
-        bundleContext = context;
+    WhitelistEnforcer(WhitelistService wls, ServiceTracker<Features, Features> tracker) {
+        whitelistService = wls;
         featureServiceTracker = tracker;
     }
 
     @Override
     public ResolverHook begin(Collection<BundleRevision> triggers) {
-        WhitelistService wls = whitelistService;
-        if (wls != null) {
-            return new ResolverHookImpl(featureServiceTracker, wls);
-        } else {
-            return null;
-        }
+        return new ResolverHookImpl(featureServiceTracker, whitelistService);
     }
 
+    /*
     @Override
     public synchronized void updated(Dictionary<String, ?> properties) throws ConfigurationException {
         if (wlsRegistration != null) {
@@ -112,4 +91,5 @@ class WhitelistEnforcer implements ManagedService, ResolverHookFactory {
         }
         return Collections.singleton(val.toString());
     }
+    */
 }

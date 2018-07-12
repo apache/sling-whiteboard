@@ -19,16 +19,11 @@
 package org.apache.sling.feature.whitelist.impl;
 
 import org.apache.sling.feature.service.Features;
+import org.apache.sling.feature.whitelist.WhitelistServiceFactory;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceRegistration;
-import org.osgi.framework.hooks.resolver.ResolverHookFactory;
-import org.osgi.service.cm.ManagedService;
 import org.osgi.util.tracker.ServiceTracker;
-
-import java.util.Dictionary;
-import java.util.Hashtable;
 
 public class Activator implements BundleActivator {
     private ServiceTracker<Features, Features> tracker;
@@ -39,12 +34,16 @@ public class Activator implements BundleActivator {
         tracker = new ServiceTracker<>(context, Features.class, null);
         tracker.open();
 
+        WhitelistServiceFactory wsf = new WhitelistServiceFactoryImpl(context, tracker);
+        context.registerService(WhitelistServiceFactory.class, wsf, null);
+        /*
         WhitelistEnforcer enforcer = new WhitelistEnforcer(context, tracker);
         Dictionary<String, Object> resHookProps = new Hashtable<>();
         resHookProps.put(Constants.SERVICE_PID, WhitelistEnforcer.class.getName());
         resolverHookServiceRegistration = context.registerService(
                 new String[] {ManagedService.class.getName(), ResolverHookFactory.class.getName()},
                 enforcer, resHookProps);
+                */
     }
 
     @Override
