@@ -16,20 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.sling.feature.service.impl;
+package org.apache.sling.feature.service;
 
-import org.apache.sling.feature.service.FeaturesFactory;
-import org.osgi.framework.BundleActivator;
-import org.osgi.framework.BundleContext;
+import java.util.Map;
 
-public class Activator implements BundleActivator {
-    @Override
-    public void start(BundleContext context) throws Exception {
-        FeaturesServiceFactoryImpl ff = new FeaturesServiceFactoryImpl(context);
-        context.registerService(FeaturesFactory.class, ff, null);
-    }
-
-    @Override
-    public void stop(BundleContext context) throws Exception {
-    }
+public interface FeaturesFactory {
+    void initialize(Map<String, String> bundleFeatureMapping);
 }
