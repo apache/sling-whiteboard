@@ -30,6 +30,7 @@ import org.osgi.framework.wiring.BundleRevision;
 import org.osgi.util.tracker.ServiceTracker;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -61,6 +62,7 @@ class ResolverHookImpl implements ResolverHook {
         if (!PackageNamespace.PACKAGE_NAMESPACE.equals(requirement.getNamespace()))
             return;
 
+        System.out.println("*** Filter Matches: " + requirement);
         Bundle reqBundle = requirement.getRevision().getBundle();
         long reqBundleID = reqBundle.getBundleId();
         String reqBundleName = reqBundle.getSymbolicName();
@@ -77,6 +79,8 @@ class ResolverHookImpl implements ResolverHook {
 
             String reqFeat = fs.getFeatureForBundle(reqBundleName, reqBundleVersion);
             Set<String> regions = whitelistService.listRegions(reqFeat);
+            if (regions == null)
+                regions = Collections.emptySet();
 
             nextCapability:
             for (Iterator<BundleCapability> it = candidates.iterator(); it.hasNext(); ) {
@@ -87,16 +91,25 @@ class ResolverHookImpl implements ResolverHook {
                 // A bundle is allowed to wire to itself
                 Bundle capBundle = rev.getBundle();
                 long capBundleID = capBundle.getBundleId();
+                if (capBundleID == 0)
+                    continue nextCapability; // always allow capability from the system bundle
+
                 if (capBundleID == reqBundleID)
-                    continue nextCapability;
+                    continue nextCapability; // always allow capability from same bundle
 
                 String capBundleName = capBundle.getSymbolicName();
                 Version capBundleVersion = capBundle.getVersion();
 
                 String capFeat = fs.getFeatureForBundle(capBundleName, capBundleVersion);
+                if (capFeat == null)
+                    continue nextCapability; // always allow capability not coming from a feature
 
                 // Within a single feature everything can wire to everything else
-                if (reqFeat.equals(capFeat))
+                if (reqFeat != null && reqFeat.equals(capFeat))
+                    continue nextCapability;
+
+                // If the feature hosting the capability has no regions defined, everyone can access
+                if (whitelistService.listRegions(capFeat) == null)
                     continue nextCapability;
 
                 Object pkg = bc.getAttributes().get(PackageNamespace.PACKAGE_NAMESPACE);
@@ -119,6 +132,7 @@ class ResolverHookImpl implements ResolverHook {
                     // The capability package is not visible by the requirer
                     // remove from the candidates.
                     it.remove();
+                    System.out.println("***** Removed: " + bc);
                 }
             }
         } catch (InterruptedException e) {

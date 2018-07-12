@@ -60,6 +60,9 @@ class WhitelistServiceImpl implements WhitelistService {
 
     @Override
     public Set<String> listRegions(String featureID) {
+        if (featureID == null)
+            return null;
+
         return featureRegionMapping.get(featureID);
     }
 
