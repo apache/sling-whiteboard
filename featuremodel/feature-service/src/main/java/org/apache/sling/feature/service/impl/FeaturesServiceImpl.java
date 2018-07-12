@@ -22,26 +22,14 @@ import org.apache.sling.feature.service.Features;
 import org.osgi.framework.Version;
 
 import java.util.AbstractMap;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 class FeaturesServiceImpl implements Features {
-    private final Set<String> features;
     private final Map<Map.Entry<String, Version>, String> bundleFeatureMap;
 
     FeaturesServiceImpl(Map<Map.Entry<String, Version>, String> bundleIDFeatures) {
         bundleFeatureMap = Collections.unmodifiableMap(bundleIDFeatures);
-
-        Set<String> fs = new HashSet<>(bundleIDFeatures.values());
-        features = Collections.unmodifiableSet(fs);
-    }
-
-    @Override
-    public Collection<String> listFeatures() {
-        return features;
     }
 
     @Override

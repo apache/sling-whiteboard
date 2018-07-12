@@ -20,9 +20,6 @@ package org.apache.sling.feature.service;
 
 import org.osgi.framework.Version;
 
-import java.util.Collection;
-
 public interface Features {
-    Collection<String> listFeatures();
     String getFeatureForBundle(String bsn, Version ver);
 }
