@@ -42,7 +42,8 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Bundle-Activator>org.apache.sling.feature.service.impl.Activator</Bundle-Activator>
+                        <ExtensionBundle-Activator>org.apache.sling.feature.service.impl.Activator</ExtensionBundle-Activator>
+                        <Fragment-Host>system.bundle;extension:=framework</Fragment-Host>
                     </instructions>
                 
                     <!--  Skip baselining for 0.x version -->

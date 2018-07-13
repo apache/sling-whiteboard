@@ -42,7 +42,8 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Bundle-Activator>org.apache.sling.feature.whitelist.impl.Activator</Bundle-Activator>
+                        <ExtensionBundle-Activator>org.apache.sling.feature.whitelist.impl.Activator</ExtensionBundle-Activator>
+                        <Fragment-Host>system.bundle;extension:=framework</Fragment-Host>
                     </instructions>
                 
                     <!--  Skip baselining for 0.x version -->
@@ -82,11 +83,6 @@
             <artifactId>osgi.cmpn</artifactId>
             <scope>provided</scope>
         </dependency>        
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
 
         <!-- Testing -->
         <dependency>

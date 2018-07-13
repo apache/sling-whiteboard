@@ -24,13 +24,11 @@ import org.osgi.framework.hooks.resolver.ResolverHook;
 import org.osgi.framework.hooks.resolver.ResolverHookFactory;
 import org.osgi.framework.wiring.BundleRevision;
 import org.osgi.util.tracker.ServiceTracker;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 
 class WhitelistEnforcer implements ResolverHookFactory {
-    static final Logger LOG = LoggerFactory.getLogger(WhitelistEnforcer.class);
+    // static final Logger LOG = LoggerFactory.getLogger(WhitelistEnforcer.class);
 
     final ServiceTracker<Features, Features> featureServiceTracker;
     final WhitelistService whitelistService;

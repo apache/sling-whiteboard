@@ -73,7 +73,7 @@ class ResolverHookImpl implements ResolverHook {
 
             // The Feature Service could not be found, skip candidate pruning
             if (fs == null) {
-                WhitelistEnforcer.LOG.warn("Could not obtain the feature service, no whitelist enforcement");
+                // WhitelistEnforcer.LOG.warn("Could not obtain the feature service, no whitelist enforcement");
                 return;
             }
 
