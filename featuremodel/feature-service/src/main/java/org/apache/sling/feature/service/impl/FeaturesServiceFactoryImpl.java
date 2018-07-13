@@ -27,7 +27,7 @@ import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Set;
 
 class FeaturesServiceFactoryImpl implements FeaturesFactory {
     private final BundleContext bundleContext;
@@ -37,9 +37,10 @@ class FeaturesServiceFactoryImpl implements FeaturesFactory {
     }
 
     @Override
-    public void initialize(Map<String, String> bfm) {
-        Map<Entry<String, Version>, String> bundleFeatureMapping = new HashMap<>();
-        for (Map.Entry<String, String> entry : bfm.entrySet()) {
+    public void initialize(Map<String, Set<String>> bfm) {
+        Map<Map.Entry<String, Version>, Set<String>> bundleFeatureMapping = new HashMap<>();
+
+        for (Map.Entry<String, Set<String>> entry : bfm.entrySet()) {
             String[] bv = entry.getKey().split(":");
             if (bv.length == 2) {
                 try {

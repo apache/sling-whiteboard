@@ -23,9 +23,13 @@ import org.junit.Test;
 import org.osgi.framework.Version;
 
 import java.util.AbstractMap;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -33,20 +37,24 @@ import static org.junit.Assert.assertNull;
 public class FeatureServiceImplTest {
     @Test
     public void testFeatureService() {
-        Map<Entry<String, Version>, String> bif = new HashMap<>();
+        Map<Entry<String, Version>, Set<String>> bif = new HashMap<>();
 
         String f1 = "gid:aid:1.0.0:myfeature:slingfeature";
-        bif.put(new AbstractMap.SimpleEntry<String,Version>("mybsn", new Version(1,2,3)), f1);
-        bif.put(new AbstractMap.SimpleEntry<String,Version>("mybsn2", new Version(4,5,6)), f1);
+        bif.put(new AbstractMap.SimpleEntry<String,Version>("mybsn", new Version(1,2,3)),
+                new HashSet<>(Arrays.asList(f1)));
+        bif.put(new AbstractMap.SimpleEntry<String,Version>("mybsn2", new Version(4,5,6)),
+                new HashSet<>(Arrays.asList(f1, null)));
 
         String f2 = "gid:aid2:1.0.0";
-        bif.put(new AbstractMap.SimpleEntry<String,Version>("mybsn", new Version(7,8,9)), f2);
+        bif.put(new AbstractMap.SimpleEntry<String,Version>("mybsn", new Version(7,8,9)),
+                new HashSet<>(Collections.singleton(f2)));
 
         Features fs = new FeaturesServiceImpl(bif);
 
-        assertEquals(f1, fs.getFeatureForBundle("mybsn", new Version(1,2,3)));
-        assertEquals(f1, fs.getFeatureForBundle("mybsn2", new Version(4,5,6)));
-        assertEquals(f2, fs.getFeatureForBundle("mybsn", new Version(7,8,9)));
-        assertNull(fs.getFeatureForBundle("mybsn2", new Version(1,2,3)));
+        assertEquals(Collections.singleton(f1), fs.getFeaturesForBundle("mybsn", new Version(1,2,3)));
+        assertEquals(new HashSet<>(Arrays.asList(null, f1)),
+                fs.getFeaturesForBundle("mybsn2", new Version(4,5,6)));
+        assertEquals(Collections.singleton(f2), fs.getFeaturesForBundle("mybsn", new Version(7,8,9)));
+        assertNull(fs.getFeaturesForBundle("mybsn2", new Version(1,2,3)));
     }
 }

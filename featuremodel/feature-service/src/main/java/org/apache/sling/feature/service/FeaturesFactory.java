@@ -19,7 +19,23 @@
 package org.apache.sling.feature.service;
 
 import java.util.Map;
+import java.util.Set;
 
+/**
+ * Service to initialize the {@link Features} service.
+ */
 public interface FeaturesFactory {
-    void initialize(Map<String, String> bundleFeatureMapping);
+    /**
+     * Initialize the Features service. The implementation of this
+     * factory service will register a {@link Features} service
+     * based on the mapping provided.
+     * @param bundleFeatureMapping A mapping from a bundle to the features
+     * that this bundle belongs to. If a bundle is not part of a feature
+     * this must be represented by a {@code null} value in the set.
+     * Bundles are listed using the {@code symbolic-name:version} syntax.
+     * Features are described using the maven ID syntax:
+     * {@code groupID:artifactID:type:classifier:version} where
+     * type and classifier are optional.
+     */
+    void initialize(Map<String, Set<String>> bundleFeatureMapping);
 }

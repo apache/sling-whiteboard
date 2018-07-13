@@ -24,16 +24,17 @@ import org.osgi.framework.Version;
 import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 class FeaturesServiceImpl implements Features {
-    private final Map<Map.Entry<String, Version>, String> bundleFeatureMap;
+    private final Map<Map.Entry<String, Version>, Set<String>> bundleFeatureMap;
 
-    FeaturesServiceImpl(Map<Map.Entry<String, Version>, String> bundleIDFeatures) {
+    FeaturesServiceImpl(Map<Map.Entry<String, Version>, Set<String>> bundleIDFeatures) {
         bundleFeatureMap = Collections.unmodifiableMap(bundleIDFeatures);
     }
 
     @Override
-    public String getFeatureForBundle(String bsn, Version version) {
+    public Set<String> getFeaturesForBundle(String bsn, Version version) {
         return bundleFeatureMap.get(new AbstractMap.SimpleEntry<String, Version>(bsn, version));
     }
 }
