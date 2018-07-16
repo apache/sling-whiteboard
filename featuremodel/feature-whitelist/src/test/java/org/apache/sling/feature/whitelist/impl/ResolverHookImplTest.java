@@ -43,7 +43,6 @@ import java.util.Set;
 import static org.junit.Assert.assertEquals;
 
 public class ResolverHookImplTest {
-
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Test
     public void testFilterMatches() throws Exception {
@@ -53,12 +52,20 @@ public class ResolverHookImplTest {
         String f4 = "gid4:aid4:1.2.3";
 
         Features fs = Mockito.mock(Features.class);
-        Mockito.when(fs.getFeatureForBundle("a.b.c", new Version(0,0,0))).thenReturn(f); // b7
-        Mockito.when(fs.getFeatureForBundle("some.other.bundle", new Version(9,9,9,"suffix"))).thenReturn(f2); // b9
-        Mockito.when(fs.getFeatureForBundle("a-bundle", new Version(1,0,0,"SNAPSHOT"))).thenReturn(f2); // b10
-        Mockito.when(fs.getFeatureForBundle("a.b.c", new Version(1,2,3))).thenReturn(f3); // b17
-        Mockito.when(fs.getFeatureForBundle("x.y.z", new Version(9,9,9))).thenReturn(f3); // b19
-        Mockito.when(fs.getFeatureForBundle("zzz", new Version(1,0,0))).thenReturn(f4); // b20
+        Mockito.when(fs.getFeaturesForBundle("a.b.c", new Version(0,0,0)))
+            .thenReturn(Collections.singleton(f)); // b7
+        Mockito.when(fs.getFeaturesForBundle("some.other.bundle", new Version(9,9,9,"suffix")))
+            .thenReturn(Collections.singleton(f2)); // b9
+        Mockito.when(fs.getFeaturesForBundle("a-bundle", new Version(1,0,0,"SNAPSHOT")))
+            .thenReturn(Collections.singleton(f2)); // b10
+        Mockito.when(fs.getFeaturesForBundle("a.b.c", new Version(1,2,3)))
+            .thenReturn(Collections.singleton(f3)); // b17
+        Mockito.when(fs.getFeaturesForBundle("z.z.z", new Version(3,2,1)))
+            .thenReturn(new HashSet<>(Arrays.asList(f, f3))); // b18
+        Mockito.when(fs.getFeaturesForBundle("x.y.z", new Version(9,9,9)))
+            .thenReturn(Collections.singleton(f3)); // b19
+        Mockito.when(fs.getFeaturesForBundle("zzz", new Version(1,0,0)))
+            .thenReturn(Collections.singleton(f4)); // b20
 
         ServiceTracker st = Mockito.mock(ServiceTracker.class);
         Mockito.when(st.waitForService(Mockito.anyLong())).thenReturn(fs);
@@ -79,10 +86,32 @@ public class ResolverHookImplTest {
         WhitelistService wls = new WhitelistServiceImpl(rpm, frm);
         ResolverHookImpl rh = new ResolverHookImpl(st, wls);
 
+        // A requirement from a bundle that has no feature cannot access one in a region
+        BundleRequirement req9 = mockRequirement(11, "qqq", new Version(6,6,6));
+        BundleCapability bc9 = mockCapability("org.bar", 17, "a.b.c", new Version(1,2,3));
+        ArrayList c9 = new ArrayList<>(Arrays.asList(bc9));
+        rh.filterMatches(req9, c9);
+        assertEquals(0, c9.size());
+
+        // A requirement from a bundle that has no feature can still access on in the global region
+        BundleRequirement req10 = mockRequirement(11, "qqq", new Version(6,6,6));
+        BundleCapability bc10 = mockCapability("org.bar.tar", 18, "z.z.z", new Version(3,2,1));
+        ArrayList c10 = new ArrayList<>(Arrays.asList(bc10));
+        rh.filterMatches(req10, c10);
+        assertEquals(Collections.singletonList(bc10), c10);
+
+        // A requirement from a bundle that has no feature can be satisfied by a capability
+        // from a bundle that has no feature
+        BundleRequirement req11 = mockRequirement(11, "qqq", new Version(6,6,6));
+        BundleCapability bc11 = mockCapability("org.bar.tar", 16, "x", new Version(3,2,1));
+        ArrayList c11 = new ArrayList<>(Arrays.asList(bc11));
+        rh.filterMatches(req11, c11);
+        assertEquals(Collections.singletonList(bc11), c11);
+
         // Check that we can get the capability from another bundle in the same region
-        // Bundle 7 is in feature f with regions r1, r2
-        BundleRequirement req = mockRequirement(17, "a.b.c", new Version(1,2,3));
-        BundleCapability bc1 = mockCapability("org.foo", 19, "x.y.z", new Version(9,9,9));
+        // Bundle 7 is in feature f with regions r1, r2. Bundle 9 is in feature f2 with regions r2
+        BundleRequirement req = mockRequirement(7, "a.b.c", new Version(0,0,0));
+        BundleCapability bc1 = mockCapability("org.foo", 9, "some.other.bundle", new Version(9,9,9,"suffix"));
         List<BundleCapability> candidates = new ArrayList<>(Arrays.asList(bc1));
         rh.filterMatches(req, candidates);
         assertEquals(Collections.singletonList(bc1), candidates);

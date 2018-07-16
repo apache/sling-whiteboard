@@ -44,10 +44,14 @@ public class WhitelistServiceFactoryImpl implements WhitelistServiceFactory {
         Map<String, Set<String>> packages = mappings.get("packages");
         Map<String, Set<String>> regions = mappings.get("regions");
 
-        WhitelistService wls = new WhitelistServiceImpl(packages, regions);
+        WhitelistService wls = createWhitelistService(packages, regions);
         WhitelistEnforcer enforcer = new WhitelistEnforcer(wls, featuresServiceTracker);
         Hashtable<String, Set<String>> props = new Hashtable<>(packages);
         props.putAll(regions);
         bundleContext.registerService(ResolverHookFactory.class, enforcer, props);
+    }
+
+    WhitelistService createWhitelistService(Map<String, Set<String>> packages, Map<String, Set<String>> regions) {
+        return new WhitelistServiceImpl(packages, regions);
     }
 }

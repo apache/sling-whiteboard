@@ -26,9 +26,10 @@ import org.osgi.framework.wiring.BundleRevision;
 import org.osgi.util.tracker.ServiceTracker;
 
 import java.util.Collection;
+import java.util.logging.Logger;
 
 class WhitelistEnforcer implements ResolverHookFactory {
-    // static final Logger LOG = LoggerFactory.getLogger(WhitelistEnforcer.class);
+    static final Logger LOG = Logger.getLogger(WhitelistEnforcer.class.getName());
 
     final ServiceTracker<Features, Features> featureServiceTracker;
     final WhitelistService whitelistService;
@@ -42,52 +43,4 @@ class WhitelistEnforcer implements ResolverHookFactory {
     public ResolverHook begin(Collection<BundleRevision> triggers) {
         return new ResolverHookImpl(featureServiceTracker, whitelistService);
     }
-
-    /*
-    @Override
-    public synchronized void updated(Dictionary<String, ?> properties) throws ConfigurationException {
-        if (wlsRegistration != null) {
-            wlsRegistration.unregister();
-            wlsRegistration = null;
-        }
-
-        if (properties == null) {
-            whitelistService = null;
-            return;
-        }
-
-        Map<String, Set<String>> frm = new HashMap<>();
-        Map<String, Set<String>> rpm = new HashMap<>();
-
-        for (Enumeration<String> e = properties.keys(); e.hasMoreElements(); ) {
-            String key = e.nextElement().trim();
-
-            if (key.startsWith(CONFIG_REGION_MAPPING_PREFIX)) {
-                String region = key.substring(CONFIG_REGION_MAPPING_PREFIX.length());
-                Set<String> packages = getStringPlusValue(properties.get(key));
-                rpm.put(region, packages);
-            } else if (key.startsWith(CONFIG_FEATURE_MAPPING_PREFIX)) {
-                String feature = key.substring(CONFIG_FEATURE_MAPPING_PREFIX.length());
-                Set<String> regions = getStringPlusValue(properties.get(key));
-                frm.put(feature, regions);
-            }
-        }
-
-        whitelistService = new WhitelistServiceImpl(rpm, frm);
-        wlsRegistration = bundleContext.registerService(WhitelistService.class, whitelistService, null);
-    }
-
-    Set<String> getStringPlusValue(Object val) {
-        if (val == null)
-            return null;
-
-        if (val instanceof Collection) {
-            return ((Collection<?>) val).stream().map(Object::toString)
-                    .collect(Collectors.toSet());
-        } else if (val instanceof String[]) {
-            return new HashSet<>(Arrays.asList((String[]) val));
-        }
-        return Collections.singleton(val.toString());
-    }
-    */
 }

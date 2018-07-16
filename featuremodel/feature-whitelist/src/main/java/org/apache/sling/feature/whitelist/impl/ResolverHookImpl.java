@@ -31,8 +31,9 @@ import org.osgi.util.tracker.ServiceTracker;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 
 class ResolverHookImpl implements ResolverHook {
     private static final long SERVICE_WAIT_TIMEOUT = 60000;
@@ -73,67 +74,92 @@ class ResolverHookImpl implements ResolverHook {
 
             // The Feature Service could not be found, skip candidate pruning
             if (fs == null) {
-                // WhitelistEnforcer.LOG.warn("Could not obtain the feature service, no whitelist enforcement");
+                WhitelistEnforcer.LOG.warning("Could not obtain the feature service, no whitelist enforcement");
                 return;
             }
 
-            String reqFeat = fs.getFeatureForBundle(reqBundleName, reqBundleVersion);
-            Set<String> regions = whitelistService.listRegions(reqFeat);
-            if (regions == null)
+            Set<String> reqFeatures = fs.getFeaturesForBundle(reqBundleName, reqBundleVersion);
+            Set<String> regions;
+            if (reqFeatures == null) {
                 regions = Collections.emptySet();
+                reqFeatures = Collections.emptySet();
+            } else {
+                regions = new HashSet<>();
+                for (String feature : reqFeatures) {
+                    regions.addAll(whitelistService.listRegions(feature));
+                }
+            }
+
+            Set<BundleCapability> coveredCaps = new HashSet<>();
 
             nextCapability:
-            for (Iterator<BundleCapability> it = candidates.iterator(); it.hasNext(); ) {
-                BundleCapability bc = it.next();
-
+            for (BundleCapability bc : candidates) {
                 BundleRevision rev = bc.getRevision();
 
-                // A bundle is allowed to wire to itself
                 Bundle capBundle = rev.getBundle();
                 long capBundleID = capBundle.getBundleId();
-                if (capBundleID == 0)
-                    continue nextCapability; // always allow capability from the system bundle
+                if (capBundleID == 0) {
+                    // always allow capability from the system bundle
+                    coveredCaps.add(bc);
+                    continue nextCapability;
+                }
 
-                if (capBundleID == reqBundleID)
-                    continue nextCapability; // always allow capability from same bundle
+                if (capBundleID == reqBundleID) {
+                    // always allow capability from same bundle
+                    coveredCaps.add(bc);
+                    continue nextCapability;
+                }
 
                 String capBundleName = capBundle.getSymbolicName();
                 Version capBundleVersion = capBundle.getVersion();
 
-                String capFeat = fs.getFeatureForBundle(capBundleName, capBundleVersion);
-                if (capFeat == null)
-                    continue nextCapability; // always allow capability not coming from a feature
+                Set<String> capFeatures = fs.getFeaturesForBundle(capBundleName, capBundleVersion);
+                if (capFeatures == null || capFeatures.isEmpty())
+                    capFeatures = Collections.singleton(null);
 
-                // Within a single feature everything can wire to everything else
-                if (reqFeat != null && reqFeat.equals(capFeat))
-                    continue nextCapability;
-
-                // If the feature hosting the capability has no regions defined, everyone can access
-                if (whitelistService.listRegions(capFeat) == null)
-                    continue nextCapability;
-
-                Object pkg = bc.getAttributes().get(PackageNamespace.PACKAGE_NAMESPACE);
-                if (pkg instanceof String) {
-                    String packageName = (String) pkg;
-                    // If the export is in the global region.
-                    if (Boolean.TRUE.equals(whitelistService.regionWhitelistsPackage(WhitelistService.GLOBAL_REGION, packageName)))
+                for (String capFeat : capFeatures) {
+                    if (capFeat == null) {
+                        // always allow capability not coming from a feature
+                        coveredCaps.add(bc);
                         continue nextCapability;
-
-                    // If the export is in a region that the feature is also in, then allow
-                    for (String region : regions) {
-                        // We've done this one already
-                        if (WhitelistService.GLOBAL_REGION.equals(region))
-                            continue;
-
-                        if (!Boolean.FALSE.equals(whitelistService.regionWhitelistsPackage(region, packageName)))
-                            continue nextCapability;
                     }
 
-                    // The capability package is not visible by the requirer
-                    // remove from the candidates.
-                    it.remove();
-                    System.out.println("***** Removed: " + bc);
+                    if (reqFeatures.contains(capFeat)) {
+                        // Within a single feature everything can wire to everything else
+                        coveredCaps.add(bc);
+                        continue nextCapability;
+                    }
+
+                    if (whitelistService.listRegions(capFeat) == null) {
+                        // If the feature hosting the capability has no regions defined, everyone can access
+                        coveredCaps.add(bc);
+                        continue nextCapability;
+                    }
+
+                    Object pkg = bc.getAttributes().get(PackageNamespace.PACKAGE_NAMESPACE);
+                    if (pkg instanceof String) {
+                        String packageName = (String) pkg;
+                        if (Boolean.TRUE.equals(whitelistService.regionWhitelistsPackage(WhitelistService.GLOBAL_REGION, packageName))) {
+                            // If the export is in the global region everyone can access
+                            coveredCaps.add(bc);
+                            continue nextCapability;
+                        }
+
+                        for (String region : regions) {
+                            if (!Boolean.FALSE.equals(whitelistService.regionWhitelistsPackage(region, packageName))) {
+                                // If the export is in a region that the feature is also in, then allow
+                                coveredCaps.add(bc);
+                                continue nextCapability;
+                            }
+                        }
+                    }
                 }
+            }
+
+            // Remove any capabilities that are not covered
+            if (candidates.retainAll(coveredCaps)) {
+                WhitelistEnforcer.LOG.log(Level.INFO,
+                        "Removed one ore more candidates for requirement {0} as they are not in the correct region", requirement);
             }
         } catch (InterruptedException e) {
             // ignore
