@@ -32,8 +32,10 @@ public interface Features {
      * @param ver The version of the bundle.
      * @return The set of Feature IDs in the Maven ID syntax of the features
      * that the bundle belongs to. A bundle can belong to more than one
-     * feature. If a bundle is not part of a feature then the returned set
-     * must contain a {@code null} value to represent this.
+     * feature. If a bundle is not part of a feature then this method
+     * can return {@code null}, and empty set or the value {@code null}
+     * as part of a set if the bundle is present both inside as well as
+     * outside of a feature.
      */
     Set<String> getFeaturesForBundle(String bsn, Version ver);
 }
