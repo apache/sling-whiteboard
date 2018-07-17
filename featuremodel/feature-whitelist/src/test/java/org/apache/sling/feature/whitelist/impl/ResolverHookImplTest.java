@@ -50,6 +50,7 @@ public class ResolverHookImplTest {
         String f2 = "gid2:aid2:1.0.0-SNAPSHOT";
         String f3 = "gid3:aid3:1.2.3";
         String f4 = "gid4:aid4:1.2.3";
+        String f5 = "gid5:aid5:1.2.3";
 
         Features fs = Mockito.mock(Features.class);
         Mockito.when(fs.getFeaturesForBundle("a.b.c", new Version(0,0,0)))
@@ -66,6 +67,8 @@ public class ResolverHookImplTest {
             .thenReturn(Collections.singleton(f3)); // b19
         Mockito.when(fs.getFeaturesForBundle("zzz", new Version(1,0,0)))
             .thenReturn(Collections.singleton(f4)); // b20
+        Mockito.when(fs.getFeaturesForBundle("www", new Version(1,0,0)))
+        .thenReturn(Collections.singleton(f5)); // b20
 
         ServiceTracker st = Mockito.mock(ServiceTracker.class);
         Mockito.when(st.waitForService(Mockito.anyLong())).thenReturn(fs);
@@ -82,31 +85,10 @@ public class ResolverHookImplTest {
         frm.put("gid2:aid2:1.0.0-SNAPSHOT", Collections.singleton("r2"));
         frm.put("gid3:aid3:1.2.3", Collections.singleton("r3"));
         frm.put("gid4:aid4:1.2.3", Collections.singleton("r3"));
+        frm.put("gid5:aid5:1.2.3", Collections.emptySet());
 
         WhitelistService wls = new WhitelistServiceImpl(rpm, frm);
         ResolverHookImpl rh = new ResolverHookImpl(st, wls);
-
-        // A requirement from a bundle that has no feature cannot access one in a region
-        BundleRequirement req9 = mockRequirement(11, "qqq", new Version(6,6,6));
-        BundleCapability bc9 = mockCapability("org.bar", 17, "a.b.c", new Version(1,2,3));
-        ArrayList c9 = new ArrayList<>(Arrays.asList(bc9));
-        rh.filterMatches(req9, c9);
-        assertEquals(0, c9.size());
-
-        // A requirement from a bundle that has no feature can still access on in the global region
-        BundleRequirement req10 = mockRequirement(11, "qqq", new Version(6,6,6));
-        BundleCapability bc10 = mockCapability("org.bar.tar", 18, "z.z.z", new Version(3,2,1));
-        ArrayList c10 = new ArrayList<>(Arrays.asList(bc10));
-        rh.filterMatches(req10, c10);
-        assertEquals(Collections.singletonList(bc10), c10);
-
-        // A requirement from a bundle that has no feature can be satisfied by a capability
-        // from a bundle that has no feature
-        BundleRequirement req11 = mockRequirement(11, "qqq", new Version(6,6,6));
-        BundleCapability bc11 = mockCapability("org.bar.tar", 16, "x", new Version(3,2,1));
-        ArrayList c11 = new ArrayList<>(Arrays.asList(bc11));
-        rh.filterMatches(req11, c11);
-        assertEquals(Collections.singletonList(bc11), c11);
 
         // Check that we can get the capability from another bundle in the same region
         // Bundle 7 is in feature f with regions r1, r2. Bundle 9 is in feature f2 with regions r2
@@ -167,7 +149,36 @@ public class ResolverHookImplTest {
         BundleCapability bc8 = mockCapability("xyz", 19, "x.y.z", new Version(9,9,9));
         Collection<BundleCapability> c8 = new ArrayList<>(Arrays.asList(bc8));
         rh.filterMatches(req8, c8);
+
         assertEquals(Collections.singletonList(bc8), c8);
+        // A requirement from a bundle that has no feature cannot access one in a region
+        BundleRequirement req9 = mockRequirement(11, "qqq", new Version(6,6,6));
+        BundleCapability bc9 = mockCapability("org.bar", 17, "a.b.c", new Version(1,2,3));
+        ArrayList c9 = new ArrayList<>(Arrays.asList(bc9));
+        rh.filterMatches(req9, c9);
+        assertEquals(0, c9.size());
+
+        // A requirement from a bundle that has no feature can still access on in the global region
+        BundleRequirement req10 = mockRequirement(11, "qqq", new Version(6,6,6));
+        BundleCapability bc10 = mockCapability("org.bar.tar", 18, "z.z.z", new Version(3,2,1));
+        ArrayList c10 = new ArrayList<>(Arrays.asList(bc10));
+        rh.filterMatches(req10, c10);
+        assertEquals(Collections.singletonList(bc10), c10);
+
+        // A requirement from a bundle that has no feature can be satisfied by a capability
+        // from a bundle that has no feature
+        BundleRequirement req11 = mockRequirement(11, "qqq", new Version(6,6,6));
+        BundleCapability bc11 = mockCapability("org.bar.tar", 20, "www", new Version(1,0,0));
+        ArrayList c11 = new ArrayList<>(Arrays.asList(bc11));
+        rh.filterMatches(req11, c11);
+        assertEquals(Collections.singletonList(bc11), c11);
+
+        // A capability from the system bundle is always accessible
+        BundleRequirement req12 = mockRequirement(11, "qqq", new Version(6,6,6));
+        BundleCapability bc12 = mockCapability("ping.pong", 0, "system.bundle", new Version(3,2,1));
+        ArrayList c12 = new ArrayList<>(Arrays.asList(bc12));
+        rh.filterMatches(req12, c12);
+        assertEquals(Collections.singletonList(bc12), c12);
     }
 
     private BundleCapability mockCapability(String pkg, long bundleID, String bsn, Version version) {
