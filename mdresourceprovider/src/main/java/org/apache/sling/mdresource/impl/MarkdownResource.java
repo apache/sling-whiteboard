@@ -137,7 +137,7 @@ public class MarkdownResource extends AbstractResource {
     
     @SuppressWarnings("unchecked")
     public <T> T adaptTo(Class<T> type) {
-        if ( type == ValueMap.class ) {
+        if ( type == ValueMap.class || type == Map.class ) {
             return (T) getValueMap();
         }
         

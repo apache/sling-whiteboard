@@ -28,6 +28,7 @@ import static org.junit.Assert.assertThat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.sling.api.resource.Resource;
@@ -62,6 +63,8 @@ public class MarkdownResourceProviderTest {
 
         ValueMap adapted = resource.adaptTo(ValueMap.class);
         assertThat("adapted ValueMap", adapted, notNullValue());
+        assertThat("adapted Map", resource.adaptTo(Map.class), notNullValue());
+        
         // TODO - more valueMap tests
     }
     
