@@ -38,6 +38,20 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * A <tt>ResourceProvider</tt> based on Markdown files
+ * 
+ * <p>This <tt>ResourceProvider</tt> serves content from a filesystem directory. It maps 
+ * file names to resources, by either:
+ * 
+ * <ul>
+ *  <li>Removing the file name if the name is <em>index.md</em></li>
+ *  <li>Removing the extension otherwise</li>
+ * </ul>
+ * 
+ * <p>In case of a conflict, the file named <em>index.md</em> takes precedence</p>
+ *
+ */
 @Component(
         service = ResourceProvider.class,
         configurationPolicy = ConfigurationPolicy.REQUIRE
@@ -45,7 +59,7 @@ import org.slf4j.LoggerFactory;
 @Designate(ocd = MarkdownResourceProvider.Config.class, factory = true)
 public class MarkdownResourceProvider extends ResourceProvider<Object> {
     
-    @ObjectClassDefinition(name = "Apache Sling Markdown Resource Provider")
+	@ObjectClassDefinition(name = "Apache Sling Markdown Resource Provider")
     public @interface Config {
 
         @AttributeDefinition(name="File system root",
@@ -60,9 +74,10 @@ public class MarkdownResourceProvider extends ResourceProvider<Object> {
         // Internal Name hint for web console.
         String webconsole_configurationFactory_nameHint() default "{" + ResourceProvider.PROPERTY_ROOT + "}";
     }
-    
-    private final Logger log = LoggerFactory.getLogger(getClass());
-    
+
+    private static final String MARKDOWN_EXTENSION = ".md";
+	private static final String INDEX_FILE_NAME = "index" + MARKDOWN_EXTENSION;
+
     private String fsPath;
     private String repoPath;
     
@@ -76,30 +91,22 @@ public class MarkdownResourceProvider extends ResourceProvider<Object> {
     public Resource getResource(ResolveContext<Object> ctx, String path, ResourceContext resourceContext,
             Resource parent) {
         
-        log.info("getResource(" + path + ")");
-        
         // try index.md file first
-        Path filePath = Paths.get(fsPath, path, "index.md");
+        Path filePath = Paths.get(fsPath, path, INDEX_FILE_NAME);
         File backingFile = filePath.toFile();
-        if ( !backingFile.exists() ) {
-            log.info("File at " + filePath + " does not exist");
+        if ( !backingFile.canRead() ) {
             // try direct file .md next
-            filePath = Paths.get(fsPath, path + ".md");
+            filePath = Paths.get(fsPath, path + MARKDOWN_EXTENSION);
             backingFile = filePath.toFile();
-            if ( !backingFile.exists() ) {
-                log.info("File at " + filePath + " does not exist");
-                log.info("Returning null");
-                return null;
-            }
+            if ( !backingFile.canRead() )
+				return null;
         }
         
-        log.info("Returning resource");
         return new MarkdownResource(ctx.getResourceResolver(), path, backingFile);
     }
 
     @Override
     public Iterator<Resource> listChildren(ResolveContext<Object> ctx, Resource parent) {
-        log.info("listChildren(" + parent.getPath() + ")");
         
         Path root = Paths.get(fsPath, parent.getPath());
         
@@ -119,18 +126,17 @@ public class MarkdownResourceProvider extends ResourceProvider<Object> {
         File backingFile = path.toFile();
 
         if ( backingFile.isDirectory() ) {
-            backingFile = new File(backingFile, "index.md");
-            if ( backingFile.exists() && backingFile.canRead() ) {
+            backingFile = new File(backingFile, INDEX_FILE_NAME);
+            if ( backingFile.canRead() ) {
                 return asResource0(path, parent, ctx, backingFile);
             }
         }
         
-        if ( backingFile.isFile() && backingFile.canRead() && backingFile.getName().endsWith(".md") && !backingFile.getName().equals("index.md")) {
-        	Path potentialDirectory = Paths.get(backingFile.getAbsolutePath().substring(0, backingFile.getAbsolutePath().length() - ".md".length() ));
-        	if ( potentialDirectory.resolve("index.md").toFile().exists() ) {
+        if ( isRegularMarkdownFile(backingFile) ) {
+        	if ( isShadowed(backingFile) )
         		return null;
-        	}
-            return asResource0(path, parent, ctx, backingFile);
+
+        	return asResource0(path, parent, ctx, backingFile);
         }
         
         return null;
@@ -138,9 +144,23 @@ public class MarkdownResourceProvider extends ResourceProvider<Object> {
 
     private Resource asResource0(Path path, Path parent, ResolveContext<Object> ctx, File backingFile) {
         Path fsRelativePath = Paths.get(fsPath).relativize(path);
-        Path parentRelativePath = Paths.get("/").relativize(parent);
         
         return new MarkdownResource(ctx.getResourceResolver(), "/" + fsRelativePath.toString().replaceAll("\\.md$", ""), backingFile);
     }
+
+	private boolean isRegularMarkdownFile(File backingFile) {
+		return backingFile.isFile() && backingFile.canRead() 
+				&& backingFile.getName().endsWith(MARKDOWN_EXTENSION) 
+				&& !backingFile.getName().equals(INDEX_FILE_NAME);
+	}
+
+	private boolean isShadowed(File backingFile) {
+		
+		File potentialDir = new File(backingFile.getParentFile(), backingFile.getName().replaceAll("\\.md$", ""));
+		if ( !potentialDir.canRead() )
+			return false;
+		
+		return new File(potentialDir, INDEX_FILE_NAME).canRead();
+	}
 
 }
