@@ -78,13 +78,13 @@ public class MarkdownResourceProvider extends ResourceProvider<Object> {
         
         log.info("getResource(" + path + ")");
         
-        // try .md file first
-        Path filePath = Paths.get(fsPath, path + ".md");
+        // try index.md file first
+        Path filePath = Paths.get(fsPath, path, "index.md");
         File backingFile = filePath.toFile();
         if ( !backingFile.exists() ) {
             log.info("File at " + filePath + " does not exist");
-            // try /index.md next
-            filePath = Paths.get(fsPath, path, "index.md");
+            // try direct file .md next
+            filePath = Paths.get(fsPath, path + ".md");
             backingFile = filePath.toFile();
             if ( !backingFile.exists() ) {
                 log.info("File at " + filePath + " does not exist");
@@ -117,15 +117,20 @@ public class MarkdownResourceProvider extends ResourceProvider<Object> {
 
     private Resource asResource(Path path, Path parent, ResolveContext<Object> ctx) {
         File backingFile = path.toFile();
-        if ( backingFile.isFile() && backingFile.canRead() && backingFile.getName().endsWith(".md") && !backingFile.getName().equals("index.md")) {
-            return asResource0(path, parent, ctx, backingFile);
-        }
-        
+
         if ( backingFile.isDirectory() ) {
             backingFile = new File(backingFile, "index.md");
             if ( backingFile.exists() && backingFile.canRead() ) {
                 return asResource0(path, parent, ctx, backingFile);
             }
+        }
+        
+        if ( backingFile.isFile() && backingFile.canRead() && backingFile.getName().endsWith(".md") && !backingFile.getName().equals("index.md")) {
+        	Path potentialDirectory = Paths.get(backingFile.getAbsolutePath().substring(0, backingFile.getAbsolutePath().length() - ".md".length() ));
+        	if ( potentialDirectory.resolve("index.md").toFile().exists() ) {
+        		return null;
+        	}
+            return asResource0(path, parent, ctx, backingFile);
         }
         
         return null;
