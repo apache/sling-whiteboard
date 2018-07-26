@@ -60,6 +60,8 @@ public class MarkdownResourceProviderTest {
             equalTo("<p>This is an example of a simple markdown file</p>\n"));
         assertThat("valueMap[sling:resourceType]", resource.getValueMap().get("sling:resourceType", String.class),
             equalTo("sling/markdown/file"));
+        assertThat("valueMap[author]", resource.getValueMap().get("author", String.class), equalTo("John Doe"));
+        assertThat("valueMap[keywords]", resource.getValueMap().get("keywords", String[].class), equalTo(new String[] {"news", "simple"}));
 
         ValueMap adapted = resource.adaptTo(ValueMap.class);
         assertThat("adapted ValueMap", adapted, notNullValue());

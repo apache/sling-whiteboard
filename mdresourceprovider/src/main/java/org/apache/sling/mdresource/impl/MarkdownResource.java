@@ -18,11 +18,15 @@
  */
 package org.apache.sling.mdresource.impl;
 
+import static java.util.Collections.singleton;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.sling.api.resource.AbstractResource;
@@ -33,7 +37,8 @@ import org.apache.sling.api.wrappers.ValueMapDecorator;
 
 import com.vladsch.flexmark.ast.Heading;
 import com.vladsch.flexmark.ast.Node;
-import com.vladsch.flexmark.ast.util.TextCollectingVisitor;
+import com.vladsch.flexmark.ext.yaml.front.matter.AbstractYamlFrontMatterVisitor;
+import com.vladsch.flexmark.ext.yaml.front.matter.YamlFrontMatterExtension;
 import com.vladsch.flexmark.html.HtmlRenderer;
 import com.vladsch.flexmark.parser.Parser;
 
@@ -44,6 +49,11 @@ public class MarkdownResource extends AbstractResource {
     private final File backingFile;
     private ValueMap valueMap;
     private ResourceMetadata metadata;
+    private final List<SpecialHandler> handlers = new ArrayList<>();
+    {
+    	handlers.add(new HeadingHandler());
+    	handlers.add(new YamlFrontMatterHandler());
+    }
 
     public MarkdownResource(ResourceResolver resourceResolver, String path, File backingFile) {
         this.resolver = resourceResolver;
@@ -104,28 +114,42 @@ public class MarkdownResource extends AbstractResource {
             return null;
         }
         
-        Parser parser = Parser.builder().build();
+        Parser parser = Parser.builder()
+        		.extensions(singleton(YamlFrontMatterExtension.create()))
+        		.build();
         HtmlRenderer htmlRenderer = HtmlRenderer.builder().build();
-        TextCollectingVisitor visitor = new TextCollectingVisitor();
 
         Map<String, Object> props = new HashMap<>();
-        // TODO - do we need the primary type?
-        // TODO - allow reading properties from the file, overriding default for resource type
         props.put("sling:resourceType", "sling/markdown/file");
 
         try {
             try ( BufferedReader r =  Files.newBufferedReader(backingFile.toPath())) {
                 
-                Node node = parser.parseReader(r);
-                Node maybeTitle = node.getFirstChild();
-                // TODO - what to do if no title is found?
-                if ( maybeTitle instanceof Heading ) {
-                    props.put("jcr:title", visitor.collectAndGetText(maybeTitle));
-                    node = maybeTitle.getNext();
+                Node document = parser.parseReader(r);
+                Node currentNode = document.getFirstChild();
+                // consume special nodes at the beginning of the file
+                // while at least one special node (as defined by the list of handlers) finds
+                // something to handle, parsing continues
+                //
+                // this restriction is mostly for simplicity, as it's easy to skip the first
+                // special nodes and pass off the rest to the HTML renderer
+                // in the future, we can consider allowing these special nodes anywhere
+                while ( currentNode != null ) {
+                	boolean handled = false;
+                	for ( SpecialHandler handler : handlers ) {
+                		handled = handler.consume(currentNode, props);
+                		if ( handled ) {
+                			currentNode = currentNode.getNext();
+                			break;
+                		}
+                	}
+                	
+                	if ( !handled ) 
+            			break;
                 }
-                // TODO parse excluding the title
-                props.put("jcr:description", htmlRenderer.render(node));
 
+                if ( currentNode != null)
+                	props.put("jcr:description", htmlRenderer.render(currentNode));
             }
         } catch (IOException e) {
             // TODO - handle errors someplace else?
@@ -149,4 +173,57 @@ public class MarkdownResource extends AbstractResource {
         
         return getClass().getSimpleName() + ", path: " + path;
     }
+
+	/**
+	 * Interface for declaring handlers for 'special' nodes
+	 * 
+	 * <p>A 'special' node is processed by a separate handler and will not
+	 * be included in the parsed HTML body.</p>
+	 *
+	 */
+	private interface SpecialHandler {
+    	boolean consume(Node node, Map<String, Object> properties);
+    }
+    
+    /**
+     * Handler that populates a resource's properties based on a YAML front matter entry
+     *
+     */
+    private static final class YamlFrontMatterHandler implements SpecialHandler {
+		@Override
+		public boolean consume(Node n, Map<String, Object> p) {
+			AbstractYamlFrontMatterVisitor vis = new AbstractYamlFrontMatterVisitor();
+			vis.visit(n);
+			if ( vis.getData().isEmpty() )
+				return false;
+			
+			for ( Map.Entry<String, List<String>> entry : vis.getData().entrySet() ) {
+				if ( entry.getValue().size() == 1)
+					p.put(entry.getKey(), entry.getValue().get(0));
+				else
+					p.put(entry.getKey(), entry.getValue().toArray(new String[0]));
+			}
+				
+			
+			return true;
+		}
+	}
+
+	/**
+	 * Handler that populates a resource's jcr:title property based on a first-level heading
+	 *
+	 */
+	private static final class HeadingHandler implements SpecialHandler {
+		@Override
+		public boolean consume(Node n, Map<String, Object> p) {
+			if ( n instanceof Heading ) {
+				Heading h = (Heading) n;
+				if ( h.getLevel() == 1 ) {
+					p.put("jcr:title", h.getText());
+					return true;
+				}
+			}
+			return false;
+		}
+	}
 }
