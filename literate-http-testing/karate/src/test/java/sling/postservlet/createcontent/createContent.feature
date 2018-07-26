@@ -1,10 +1,8 @@
 Feature: create content using the Sling POST Servlet
 
 # ------------------------------------------------------------------------
-# TESTS SETUP
-# ------------------------------------------------------------------------
-
 Background:
+# ------------------------------------------------------------------------
 
 # TODO for now you need to start Sling manually
 # TODO get this from the environment
