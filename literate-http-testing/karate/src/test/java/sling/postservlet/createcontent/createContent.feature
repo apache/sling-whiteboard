@@ -1,5 +1,9 @@
 Feature: create content using the Sling POST Servlet
 
+# ------------------------------------------------------------------------
+# TESTS SETUP
+# ------------------------------------------------------------------------
+
 Background:
 
 # TODO for now you need to start Sling manually
@@ -10,29 +14,31 @@ Background:
 # Use admin:admin credentials for all requests
 * configure headers = { 'Authorization' : 'Basic YWRtaW46YWRtaW4=' }
 
-Scenario: get the root resource
-
+# ------------------------------------------------------------------------
+Scenario: Check access to the Sling instance under test
+# ------------------------------------------------------------------------
 Given path '/.json'
 When method get
 Then status 200
 
-Scenario: create a content resource and verify its output
+# ------------------------------------------------------------------------
+Scenario: Create a resource with a POST and read back with a GET
+# ------------------------------------------------------------------------
+* def testID = '' + java.util.UUID.randomUUID()
+* def testTitle = 'Title for the First Resource at ' + testID
 
-* def id = java.util.UUID.randomUUID()
-* def title = 'Title for the First Resource at ' + id
-
-Given url 'http://localhost:8080/tmp/' + id
-And form field title = title
-And form field const = 'const42'
+Given url 'http://localhost:8080/tmp/' + testID
+And form field title = testTitle
+And form field anotherField = testID
 When method POST
 Then status 201
 
+# The Location header indicates where the resource was created
 # TODO use a variable for the base URL
+* def newResourceURL = 'http://localhost:8080' + responseHeaders['Location'][0]
 
-* def location = 'http://localhost:8080' + responseHeaders['Location'][0]
-
-Given url location + '.json'
+Given url newResourceURL + '.json'
 When method get
 Then status 200
-Then match response.title == title
-Then match response.const == 'const42'
+Then match response.title == testTitle
+Then match response.anotherField == testID
