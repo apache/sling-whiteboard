@@ -1,54 +1,38 @@
-Feature: sample karate test script    
-    If you are using Eclipse, install the free Cucumber-Eclipse plugin from
-    https://cucumber.io/cucumber-eclipse/
-    Then you will see syntax-coloring for this file. But best of all,
-    you will be able to right-click within this file and [Run As -> Cucumber Feature].
-    If you see warnings like "does not have a matching glue code",
-    go to the Eclipse preferences, find the 'Cucumber User Settings'
-    and enter the following Root Package Name: com.intuit.karate    
-    Refer to the Cucumber-Eclipse wiki for more: http://bit.ly/2mDaXeV
+Feature: create content using the Sling POST Servlet
 
 Background:
-* url 'https://jsonplaceholder.typicode.com'
 
-Scenario: get all users and then get the first user by id
+# TODO for now you need to start Sling manually
+# TODO get this from the environment
 
-Given path 'users'
+* url 'http://localhost:8080'
+
+# Use admin:admin credentials for all requests
+* configure headers = { 'Authorization' : 'Basic YWRtaW46YWRtaW4=' }
+
+Scenario: get the root resource
+
+Given path '/.json'
 When method get
 Then status 200
 
-* def first = response[0]
+Scenario: create a content resource and verify its output
 
-Given path 'users', first.id
-When method get
-Then status 200
+* def id = java.util.UUID.randomUUID()
+* def title = 'Title for the First Resource at ' + id
 
-Scenario: create a user and then get it by id
-
-* def user =
-"""
-{
-  "name": "Test User",
-  "username": "testuser",
-  "email": "test@user.com",
-  "address": {
-    "street": "Has No Name",
-    "suite": "Apt. 123",
-    "city": "Electri",
-    "zipcode": "54321-6789"
-  }
-}
-"""
-
-Given url 'https://jsonplaceholder.typicode.com/users'
-And request user
-When method post
+Given url 'http://localhost:8080/tmp/' + id
+And form field title = title
+And form field const = 'const42'
+When method POST
 Then status 201
 
-* def id = response.id
-* print 'created id is: ' + id
+# TODO use a variable for the base URL
 
-Given path id
-# When method get
-# Then status 200
-# And match response contains user
+* def location = 'http://localhost:8080' + responseHeaders['Location'][0]
+
+Given url location + '.json'
+When method get
+Then status 200
+Then match response.title == title
+Then match response.const == 'const42'
