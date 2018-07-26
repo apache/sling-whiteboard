@@ -219,7 +219,7 @@ public class MarkdownResource extends AbstractResource {
 			if ( n instanceof Heading ) {
 				Heading h = (Heading) n;
 				if ( h.getLevel() == 1 ) {
-					p.put("jcr:title", h.getText());
+					p.put("jcr:title", h.getText().toString());
 					return true;
 				}
 			}
