@@ -9,8 +9,9 @@ Background:
 
 * url 'http://localhost:8080'
 
-# Use admin:admin credentials for all requests
-* configure headers = { 'Authorization' : 'Basic YWRtaW46YWRtaW4=' }
+# Use admin credentials for all requests
+* def encodedAuth = call read('basic-auth.js') { username: 'admin', password: 'admin' }
+* configure headers = { 'Authorization' : #(encodedAuth) }
 
 # ------------------------------------------------------------------------
 Scenario: Check access to the Sling instance under test
