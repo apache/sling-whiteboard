@@ -9,8 +9,7 @@ Background:
 * url baseURL
 
 # Use admin credentials for all requests
-* def encodedAuth = call read('basic-auth.js') { username: 'admin', password: 'admin' }
-* configure headers = { 'Authorization' : #(encodedAuth) }
+* configure headers = call read('basic-auth-header.js') { username: 'admin', password: 'admin' }
 
 * def testID = '' + java.util.UUID.randomUUID()
 
