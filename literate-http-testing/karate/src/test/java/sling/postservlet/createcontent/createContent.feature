@@ -25,7 +25,7 @@ Scenario: Create a resource with a POST and read back with a GET
 * def testID = '' + java.util.UUID.randomUUID()
 * def testTitle = 'Title for the First Resource at ' + testID
 
-Given url 'http://localhost:8080/tmp/' + testID
+Given url 'http://localhost:8080/tmp/*'
 And form field title = testTitle
 And form field anotherField = testID
 When method POST
