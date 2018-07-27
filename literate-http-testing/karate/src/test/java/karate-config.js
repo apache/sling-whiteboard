@@ -6,7 +6,7 @@ function() {
   }
   var config = {
     env: env,
-	myVarName: 'someValue'
+    baseURL: 'http://localhost:8080'
   }
   if (env == 'dev') {
     // customize

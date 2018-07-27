@@ -4,9 +4,7 @@ Feature: create content using the Sling POST Servlet
 Background:
 # ------------------------------------------------------------------------
 
-# TODO for now you need to start Sling manually
-# TODO get the URL from the environment
-* url 'http://localhost:8080'
+* url baseURL
 
 # Use admin credentials for all requests
 * def encodedAuth = call read('basic-auth.js') { username: 'admin', password: 'admin' }
