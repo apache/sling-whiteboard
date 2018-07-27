@@ -5,7 +5,7 @@ To run these tests, start a Sling trunk instance on port 8080 and run `mvn clean
 
 The Karate HTML output (like `target/surefire-reports/TEST-sling.postservlet.createcontent.createContent.html`) then displays the detailed HTTP interactions, it's very useful for debugging the tests.
 
-The test definitions are found *.feature files under `src/test`.
+The test definitions are found *.feature files under `src/test`, like [createContent.feature](src/test/java/sling/postservlet/createcontent/createContent.feature)
 
 Karate notes
 ------------
