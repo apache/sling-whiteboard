@@ -12,6 +12,7 @@ Background:
 * configure headers = call read('basic-auth-header.js') { username: 'admin', password: 'admin' }
 
 * def testID = '' + java.util.UUID.randomUUID()
+* def testFolderPath = '/createContentTest' + testID
 
 # ------------------------------------------------------------------------
 Scenario: Check access to the Sling instance under test
@@ -25,7 +26,7 @@ Then status 200
 # ------------------------------------------------------------------------
 
 # Create a resource
-Given path '/createContentTest/*'
+Given path testFolderPath + '/*'
 And form field f1 = 'v1A' + testID
 And form field f2 = 'v2A'
 When method POST
@@ -62,5 +63,14 @@ When method DELETE
 Then status 204
 
 Given path resourcePath
+When method GET
+Then status 404
+
+# Cleanup test folder
+Given path testFolderPath
+When method DELETE
+Then status 204
+
+Given path testFolderPath
 When method GET
 Then status 404
