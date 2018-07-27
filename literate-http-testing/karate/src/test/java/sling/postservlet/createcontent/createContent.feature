@@ -38,5 +38,5 @@ Then status 201
 Given url newResourceURL + '.json'
 When method get
 Then status 200
-Then match response.title == testTitle
-Then match response.anotherField == testID
+And match response.title == testTitle
+And match response.anotherField == testID
