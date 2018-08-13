@@ -16,14 +16,13 @@ package org.apache.sling.resource.encryption.wrapper;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import javax.annotation.CheckForNull;
-
 import org.apache.sling.api.resource.ModifiableValueMap;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.wrappers.ModifiableValueMapDecorator;
 import org.apache.sling.resource.encryption.EncryptionException;
 import org.apache.sling.resource.encryption.EncryptionProvider;
 import org.apache.sling.resource.encryption.EncryptableValueMap;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +53,7 @@ public class EncryptableValueMapDecorator extends ModifiableValueMapDecorator
 	 * @param property
 	 *            property
 	 */
-	@CheckForNull
+	@Nullable
 	public void encrypt(String property) {
 		super.put(property, doEncrypt(property, get(property)));
 	}

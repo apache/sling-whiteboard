@@ -78,9 +78,10 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.google.code.findbugs</groupId>
-			<artifactId>jsr305</artifactId>
-			<scope>provided</scope>
+			<groupId>org.jetbrains</groupId>
+			<artifactId>annotations</artifactId>
+      <version>16.0.2</version>
+      <scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.sling</groupId>
