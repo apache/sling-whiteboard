@@ -51,20 +51,23 @@ public class ScriptingMavenPlugin extends AbstractMojo
     @Parameter(defaultValue = "${session}", readonly = true)
     private MavenSession session;
 
+    @Parameter(defaultValue = "${project.basedir}/src/main/resources/javax.script")
+    private String scriptsDirectory;
+
     private static final Set<String> METHODS = new HashSet<>(Arrays.asList(new String[]{"TRACE", "OPTIONS", "GET", "HEAD", "POST", "PUT",
             "DELETE", "PATCH"}));
 
     public void execute() throws MojoExecutionException
     {
         DirectoryScanner scanner = new DirectoryScanner();
-        scanner.setBasedir(project.getBuild().getOutputDirectory());
-        scanner.setIncludes("javax.script/**");
+        scanner.setBasedir(scriptsDirectory);
+        scanner.setIncludes("**");
         scanner.setExcludes("**/*.class");
         scanner.addDefaultExcludes();
         scanner.scan();
 
-        List<String> scriptPaths = Stream.of(scanner.getIncludedFiles()).map(path -> new File(project.getBuild().getOutputDirectory(), path))
-            .map(file -> file.getPath().substring((new File(project.getBuild().getOutputDirectory(), "javax.script").getPath() + File.pathSeparatorChar).length()))
+        List<String> scriptPaths = Stream.of(scanner.getIncludedFiles()).map(path -> new File(scriptsDirectory, path))
+            .map(file -> file.getPath().substring((scriptsDirectory + File.pathSeparatorChar).length()))
             .collect(Collectors.toList());
 
 
@@ -87,7 +90,7 @@ public class ScriptingMavenPlugin extends AbstractMojo
                     }
                     else
                     {
-                        try (BufferedReader input = new BufferedReader(new FileReader(new File(new File(project.getBuild().getOutputDirectory(), "javax.script"), scriptPath))))
+                        try (BufferedReader input = new BufferedReader(new FileReader(new File(new File(scriptsDirectory), scriptPath))))
                         {
                             String extend = input.readLine();
 
@@ -102,7 +105,7 @@ public class ScriptingMavenPlugin extends AbstractMojo
                 }
                 else
                 {
-                    try (BufferedReader input = new BufferedReader(new FileReader(new File(new File(project.getBuild().getOutputDirectory(), "javax.script"), scriptPath))))
+                    try (BufferedReader input = new BufferedReader(new FileReader(new File(new File(scriptsDirectory), scriptPath))))
                     {
                         for (String line = input.readLine(); line != null; line = input.readLine())
                         {
