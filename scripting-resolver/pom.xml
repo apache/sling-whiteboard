@@ -35,6 +35,7 @@
     <modules>
         <module>org-apache-sling-scripting-maven-plugin</module>
         <module>examples/org-apache-sling-scripting-examplebundle</module>
+        <module>examples/org-apache-sling-scripting-examplebundle-precompiled</module>
         <module>examples/org-apache-sling-scripting-examplebundle.hi</module>
         <module>org-apache-sling-scripting-resolver</module>
         <module>sling-org-apache-sling-scripting-sightly</module>
