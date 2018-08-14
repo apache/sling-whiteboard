@@ -177,7 +177,7 @@ public class ScriptingMavenPlugin extends AbstractMojo
 
     static Script getScripts(String script) {
         Script result = new Script();
-        String[] parts = script.split("/");
+        String[] parts = script.split(File.separator);
 
         result.rt = parts[0];
         result.version = parts.length > 2 ? new Version(parts[1]).toString() : null;
