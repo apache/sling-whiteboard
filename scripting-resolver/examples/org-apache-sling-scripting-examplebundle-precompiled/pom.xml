@@ -34,7 +34,6 @@
     <packaging>bundle</packaging>
 
     <build>
-        <sourceDirectory>src/main/scripts</sourceDirectory>
         <plugins>
             <plugin>
                 <groupId>org.apache.sling</groupId>

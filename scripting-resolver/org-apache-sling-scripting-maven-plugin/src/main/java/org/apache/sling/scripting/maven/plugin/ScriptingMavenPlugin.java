@@ -38,6 +38,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -59,15 +60,24 @@ public class ScriptingMavenPlugin extends AbstractMojo
 
     public void execute() throws MojoExecutionException
     {
+        File sdFile = new File(scriptsDirectory);
+        if (!sdFile.exists()) {
+            sdFile = new File(project.getBasedir(), scriptsDirectory);
+            if (!sdFile.exists()) {
+                throw new MojoExecutionException("Cannot find file " + scriptsDirectory + ".");
+            }
+        }
+        final AtomicReference<File> scriptsDirectoryReference = new AtomicReference<>();
+        scriptsDirectoryReference.set(sdFile);;
         DirectoryScanner scanner = new DirectoryScanner();
-        scanner.setBasedir(scriptsDirectory);
+        scanner.setBasedir(sdFile);
         scanner.setIncludes("**");
         scanner.setExcludes("**/*.class");
         scanner.addDefaultExcludes();
         scanner.scan();
 
-        List<String> scriptPaths = Stream.of(scanner.getIncludedFiles()).map(path -> new File(scriptsDirectory, path))
-            .map(file -> file.getPath().substring((scriptsDirectory + File.pathSeparatorChar).length()))
+        List<String> scriptPaths = Stream.of(scanner.getIncludedFiles()).map(path -> new File(scriptsDirectoryReference.get(), path))
+            .map(file -> file.getPath().substring((scriptsDirectoryReference.get().getPath() + File.pathSeparatorChar).length()))
             .collect(Collectors.toList());
 
 
@@ -90,7 +100,7 @@ public class ScriptingMavenPlugin extends AbstractMojo
                     }
                     else
                     {
-                        try (BufferedReader input = new BufferedReader(new FileReader(new File(new File(scriptsDirectory), scriptPath))))
+                        try (BufferedReader input = new BufferedReader(new FileReader(new File(scriptsDirectoryReference.get(), scriptPath))))
                         {
                             String extend = input.readLine();
 
@@ -105,7 +115,7 @@ public class ScriptingMavenPlugin extends AbstractMojo
                 }
                 else
                 {
-                    try (BufferedReader input = new BufferedReader(new FileReader(new File(new File(scriptsDirectory), scriptPath))))
+                    try (BufferedReader input = new BufferedReader(new FileReader(new File(scriptsDirectoryReference.get(), scriptPath))))
                     {
                         for (String line = input.readLine(); line != null; line = input.readLine())
                         {
