@@ -39,6 +39,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -177,7 +178,7 @@ public class ScriptingMavenPlugin extends AbstractMojo
 
     static Script getScripts(String script) {
         Script result = new Script();
-        String[] parts = script.split(File.separator);
+        String[] parts = script.split(Pattern.quote(File.separator));
 
         result.rt = parts[0];
         result.version = parts.length > 2 ? new Version(parts[1]).toString() : null;
