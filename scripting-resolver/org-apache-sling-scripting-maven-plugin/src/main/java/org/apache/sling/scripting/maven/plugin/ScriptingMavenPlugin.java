@@ -59,6 +59,8 @@ public class ScriptingMavenPlugin extends AbstractMojo
     private static final Set<String> METHODS = new HashSet<>(Arrays.asList(new String[]{"TRACE", "OPTIONS", "GET", "HEAD", "POST", "PUT",
             "DELETE", "PATCH"}));
 
+    private static final Set<String> FILE_SEPARATORS = new HashSet<>(Arrays.asList("\\", "/"));
+
     public void execute() throws MojoExecutionException
     {
         File sdFile = new File(scriptsDirectory);
@@ -177,8 +179,15 @@ public class ScriptingMavenPlugin extends AbstractMojo
     }
 
     static Script getScripts(String script) {
+        String fileSeparator = null;
+        for (String sep : FILE_SEPARATORS) {
+            if (script.contains(sep)) {
+                fileSeparator = sep;
+                break;
+            }
+        }
         Script result = new Script();
-        String[] parts = script.split(Pattern.quote(File.separator));
+        String[] parts = script.split(Pattern.quote(fileSeparator));
 
         result.rt = parts[0];
         result.version = parts.length > 2 ? new Version(parts[1]).toString() : null;
