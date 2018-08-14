@@ -66,7 +66,7 @@ Short answer: exactly like you deploy your code, preferably right next to it. Pa
 To run the integration tests do:
 
 ```
-mvn clean install -Pit
+mvn clean verify -Pit
 ```
 
 ### Example
@@ -74,7 +74,7 @@ mvn clean install -Pit
 To play around with a sling instance on localhost port 8080 (override with -Dhttp.port=<port>) that has the [examples](../examples) installed run:
 
 ```
-mvn clean install -Pexample
+mvn clean verify -Pexample
 ``` 
 
 ## Resources

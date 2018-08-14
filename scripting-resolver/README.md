@@ -27,9 +27,21 @@ Advantages of the new design:
 * backwards compatibility will be handled the same way we do for Java APIs, allowing for smoother upgrades and delivery of new features
 * such a model could be described through Apache Sling's Feature Model [3], allowing an application to be built using a mix & match technique for collecting the components it requires for rendering.
 
-
 ## Further reading
 For a detailed view of how this project works please check each module's documentations plus the provided examples.
+
+## Building
+The following instructions should allow you to correctly build this project:
+
+```bash
+git clone https://github.com/apache/sling-whiteboard.git
+git submodule update --init
+cd scripting-resolver
+# if you want to access the examples directly - check the examples/README.md file
+mvn clean verify -Pexample
+# if you want to run the IT
+mvn clean verify -Pit
+```
 
 ## References
 
