@@ -34,7 +34,7 @@ import javax.script.ScriptException;
 import org.apache.commons.io.IOUtils;
 import org.apache.sling.scripting.core.ScriptNameAwareReader;
 
-class Script {
+class Script implements ScriptEngineExecutable {
 
     private URL url;
     private ScriptEngine scriptEngine;
@@ -54,30 +54,35 @@ class Script {
         return sourceCode;
     }
 
-    String getName() {
+    public String getName() {
         return url.getPath();
     }
 
-    ScriptEngine getScriptEngine() {
+    public ScriptEngine getScriptEngine() {
         return scriptEngine;
     }
 
-    void eval(ScriptContext context) throws ScriptException, IOException {
-        if (scriptEngine instanceof Compilable && compiledScript == null) {
-            lock.lock();
-            try {
-                if (scriptEngine instanceof Compilable && compiledScript == null) {
-                    compiledScript =
-                            ((Compilable) scriptEngine).compile(new ScriptNameAwareReader(new StringReader(getSourceCode()), getName()));
+    public void eval(ScriptContext context) throws ScriptException {
+        try {
+            if (scriptEngine instanceof Compilable && compiledScript == null) {
+                lock.lock();
+                try {
+                    if (scriptEngine instanceof Compilable && compiledScript == null) {
+                        compiledScript =
+                                ((Compilable) scriptEngine)
+                                        .compile(new ScriptNameAwareReader(new StringReader(getSourceCode()), getName()));
+                    }
+                } finally {
+                    lock.unlock();
                 }
-            } finally {
-                lock.unlock();
             }
-        }
-        if (compiledScript != null) {
-            compiledScript.eval(context);
-        } else {
-            scriptEngine.eval(getSourceCode(), context);
+            if (compiledScript != null) {
+                compiledScript.eval(context);
+            } else {
+                scriptEngine.eval(getSourceCode(), context);
+            }
+        } catch (IOException e) {
+            throw new ScriptException(e);
         }
 
     }

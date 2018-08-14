@@ -80,7 +80,7 @@ public class ScriptContextProvider {
         m_bundleContext = componentContext.getBundleContext();
     }
 
-    ScriptContext prepareScriptContext(SlingHttpServletRequest request, SlingHttpServletResponse response, Script script)
+    ScriptContext prepareScriptContext(SlingHttpServletRequest request, SlingHttpServletResponse response, ScriptEngineExecutable executable)
             throws IOException {
         // prepare the SlingBindings
         Bindings bindings = new SimpleBindings();
@@ -90,14 +90,14 @@ public class ScriptContextProvider {
         bindings.put(SlingBindings.RESOURCE, request.getResource());
         bindings.put(SlingBindings.RESOLVER, request.getResource().getResourceResolver());
         bindings.put(SlingBindings.OUT, response.getWriter());
-        Logger scriptLogger = LoggerFactory.getLogger(script.getName());
+        Logger scriptLogger = LoggerFactory.getLogger(executable.getName());
         bindings.put(SlingBindings.LOG, scriptLogger);
         bindings.put(SlingBindings.SLING, new ScriptHelper(m_bundleContext, null, request, response));
-        bindings.put(ScriptEngine.FILENAME, script.getName());
-        bindings.put(ScriptEngine.FILENAME.replaceAll("\\.", "_"), script.getName());
+        bindings.put(ScriptEngine.FILENAME, executable.getName());
+        bindings.put(ScriptEngine.FILENAME.replaceAll("\\.", "_"), executable.getName());
 
         ProtectedBindings protectedBindings = new ProtectedBindings(bindings, PROTECTED_BINDINGS);
-        for (BindingsValuesProvider bindingsValuesProvider : bvpTracker.getBindingsValuesProviders(script.getScriptEngine().getFactory(),
+        for (BindingsValuesProvider bindingsValuesProvider : bvpTracker.getBindingsValuesProviders(executable.getScriptEngine().getFactory(),
                 BindingsValuesProvider.DEFAULT_CONTEXT)) {
             bindingsValuesProvider.addBindings(protectedBindings);
         }
@@ -111,7 +111,6 @@ public class ScriptContextProvider {
         scriptContext.setWriter(response.getWriter());
         scriptContext.setErrorWriter(new LogWriter(scriptLogger));
         scriptContext.setReader(request.getReader());
-
         return scriptContext;
     }
 

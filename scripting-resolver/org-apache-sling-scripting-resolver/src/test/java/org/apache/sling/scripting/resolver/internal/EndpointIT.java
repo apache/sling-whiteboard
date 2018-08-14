@@ -31,6 +31,14 @@ public class EndpointIT extends AbstractEndpointIT {
     }
 
     @Test
+    public void testPrecompiledHelloEndpoint() throws Exception {
+        Document document = getDocument("/content/srr/examples/precompiled-hello.html");
+        Assert.assertEquals("We're testing some serious scripting here in Version 2", document.select("h2").html());
+        Assert.assertTrue(document.body().html().contains("World2"));
+        Assert.assertTrue(document.body().html().contains("Hello2"));
+    }
+
+    @Test
     public void testHelloEndpointV1() throws Exception {
         Document document = getDocument("content/srr/examples/hello-v1.html");
         Assert.assertEquals("We're testing some serious scripting here", document.select("h2").html());
@@ -39,8 +47,24 @@ public class EndpointIT extends AbstractEndpointIT {
     }
 
     @Test
+    public void testPrecompiledHelloEndpointV1() throws Exception {
+        Document document = getDocument("content/srr/examples/precompiled-hello-v1.html");
+        Assert.assertEquals("We're testing some serious scripting here", document.select("h2").html());
+        Assert.assertTrue(document.body().html().contains("World"));
+        Assert.assertTrue(document.body().html().contains("Hello"));
+    }
+
+    @Test
     public void testHelloEndpointV2() throws Exception {
         Document document = getDocument("content/srr/examples/hello-v2.html");
+        Assert.assertEquals("We're testing some serious scripting here in Version 2", document.select("h2").html());
+        Assert.assertTrue(document.body().html().contains("World2"));
+        Assert.assertTrue(document.body().html().contains("Hello2"));
+    }
+
+    @Test
+    public void testPrecompiledHelloEndpointV2() throws Exception {
+        Document document = getDocument("content/srr/examples/precompiled-hello-v2.html");
         Assert.assertEquals("We're testing some serious scripting here in Version 2", document.select("h2").html());
         Assert.assertTrue(document.body().html().contains("World2"));
         Assert.assertTrue(document.body().html().contains("Hello2"));

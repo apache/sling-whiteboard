@@ -21,9 +21,11 @@
 
 # Dependencies
 [artifacts]
-  org.apache.sling/org.apache.sling.starter/10/slingstart
+  org.apache.sling/org.apache.sling.starter/11-SNAPSHOT/slingstart
+  org.apache.sling/org.apache.sling.scripting.sightly/1.0.55-1.4.0-exp-SNAPSHOT
   org.apache.sling/org.apache.sling.scripting.resolver
   org.apache.sling/org.apache.sling.scripting.examplebundle
+  org.apache.sling/org.apache.sling.scripting.examplebundle.precompiled
   org.apache.sling/org.apache.sling.scripting.examplebundle.hi
   org.apache.sling/org.apache.sling.junit.core/1.0.26
 

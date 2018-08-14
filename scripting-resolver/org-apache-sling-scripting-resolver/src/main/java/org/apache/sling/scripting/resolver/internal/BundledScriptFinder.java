@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
@@ -44,16 +45,16 @@ public class BundledScriptFinder {
     private static final String SLASH = "/";
     private static final String DOT = ".";
     private static final Set<String> DEFAULT_METHODS = new HashSet<>(Arrays.asList("GET", "HEAD"));
-    private static final Set<String> DEFAULT_EXTENSIONS = new HashSet<>(Arrays.asList("html"));
+    private static final Pattern STARTS_WITH_NUMBER = Pattern.compile("^[0-9].*");
 
     @Reference
     private ScriptEngineManager scriptEngineManager;
 
-    Script getScript(SlingHttpServletRequest request, Bundle bundle) {
-        return getScript(request, bundle, null);
+    ScriptEngineExecutable getScript(SlingHttpServletRequest request, Bundle bundle, boolean precompiledScripts) {
+        return getScript(request, bundle, precompiledScripts,null);
     }
 
-    Script getScript(SlingHttpServletRequest request, Bundle bundle, String delegatedResourceType) {
+    ScriptEngineExecutable getScript(SlingHttpServletRequest request, Bundle bundle, boolean precompiledScripts, String delegatedResourceType) {
         List<String> scriptMatches;
         if (StringUtils.isEmpty(delegatedResourceType)) {
             scriptMatches = buildScriptMatches(request);
@@ -62,9 +63,24 @@ public class BundledScriptFinder {
         }
         for (String extension : getScriptEngineExtensions()) {
             for (String match : scriptMatches) {
-                URL bundledScriptURL = bundle.getEntry(NS_JAVAX_SCRIPT_CAPABILITY + SLASH + match + DOT + extension);
-                if (bundledScriptURL != null) {
-                    return new Script(bundledScriptURL, scriptEngineManager.getEngineByExtension(extension));
+                URL bundledScriptURL;
+                if (precompiledScripts) {
+                    String classResource = fromScriptPathToBundleResource(match);
+                    bundledScriptURL = bundle.getEntry(classResource);
+
+                    if (bundledScriptURL != null) {
+                        try {
+                            return new PrecompiledScript(scriptEngineManager.getEngineByExtension(extension),
+                                    bundle.loadClass(fromClassResourceToClassname(classResource)));
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                } else {
+                    bundledScriptURL = bundle.getEntry(NS_JAVAX_SCRIPT_CAPABILITY + SLASH + match + DOT + extension);
+                    if (bundledScriptURL != null) {
+                        return new Script(bundledScriptURL, scriptEngineManager.getEngineByExtension(extension));
+                    }
                 }
             }
         }
@@ -82,7 +98,7 @@ public class BundledScriptFinder {
         String method = request.getMethod();
         boolean defaultMethod = DEFAULT_METHODS.contains(method);
         if (resourceType.contains(SLASH) && StringUtils.countMatches(resourceType, SLASH) == 1) {
-            version = resourceType.substring(resourceType.indexOf(SLASH) + 1, resourceType.length());
+            version = resourceType.substring(resourceType.indexOf(SLASH) + 1);
             resourceType = resourceType.substring(0, resourceType.length() - version.length() - 1);
         }
         String extension = request.getRequestPathInfo().getExtension();
@@ -129,5 +145,25 @@ public class BundledScriptFinder {
         }
         Collections.reverse(_scriptEngineExtensions);
         return Collections.unmodifiableList(_scriptEngineExtensions);
+    }
+
+    private String fromScriptPathToBundleResource(String scriptPath) {
+        String[] parts = scriptPath.split("/");
+        StringBuilder stringBuilder = new StringBuilder();
+        for (String part : parts) {
+            if (stringBuilder.length() > 0) {
+                stringBuilder.append("/");
+            }
+            if (STARTS_WITH_NUMBER.matcher(part).matches()) {
+                stringBuilder.append("_");
+            }
+            stringBuilder.append(part.replaceAll("\\.", "_"));
+        }
+        stringBuilder.append(".class");
+        return stringBuilder.toString();
+    }
+
+    private String fromClassResourceToClassname(String classResource) {
+        return classResource.substring(0, classResource.length() - 6).replaceAll("/", ".");
     }
 }

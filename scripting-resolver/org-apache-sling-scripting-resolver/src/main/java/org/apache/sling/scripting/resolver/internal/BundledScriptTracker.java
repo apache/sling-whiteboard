@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -115,9 +116,8 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<List<Servic
                 .anyMatch(m_context.getBundle()::equals)) {
             LOGGER.debug("Inspecting bundle {} for {} capability.", bundle.getSymbolicName(), NS_SLING_RESOURCE_TYPE);
             List<BundleCapability> capabilities = bundleWiring.getCapabilities(NS_SLING_RESOURCE_TYPE);
-
             if (!capabilities.isEmpty()) {
-
+                boolean precompiled = Boolean.parseBoolean(bundle.getHeaders().get("Sling-ResourceType-Precompiled"));
                 List<ServiceRegistration<Servlet>> serviceRegistrations = capabilities.stream().flatMap(cap ->
                 {
                     Hashtable<String, Object> properties = new Hashtable<>();
@@ -187,7 +187,7 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<List<Servic
                         regs.add(bundle.getBundleContext()
                                 .registerService(Servlet.class, new BundledScriptServlet(bundledScriptFinder, bundle, scriptContextProvider,
                                                 getWiredResourceTypes(new HashSet<>(Arrays.asList((String) attributes.get(NS_SLING_RESOURCE_TYPE))),
-                                                        new HashSet<>(Arrays.asList(resourceType)), bundle)),
+                                                        new HashSet<>(Arrays.asList(resourceType)), bundle), precompiled),
                                         properties));
                     }
                     return regs.stream();
@@ -204,7 +204,7 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<List<Servic
 
 
     private Set<String> getWiredResourceTypes(Set<String> rts, Set<String> initial, Bundle... bundles) {
-        Set<String> wiredResourceTypes = new HashSet<>();
+        Set<String> wiredResourceTypes = new HashSet<>(initial);
         wiredResourceTypes.addAll(initial);
         for (Bundle bundle : bundles) {
             BundleWiring bundleWiring = bundle.adapt(BundleWiring.class);

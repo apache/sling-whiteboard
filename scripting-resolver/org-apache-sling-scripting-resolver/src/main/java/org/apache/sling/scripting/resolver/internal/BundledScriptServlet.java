@@ -50,12 +50,15 @@ class BundledScriptServlet extends GenericServlet {
     private final String m_delegatedResourceType;
     private final Set<String> m_wiredResourceTypes;
 
-    private Map<String, Script> scriptsMap = new HashMap<>();
+    private Map<String, ScriptEngineExecutable> scriptsMap = new HashMap<>();
     private ReadWriteLock lock = new ReentrantReadWriteLock();
+    private boolean precompiledScripts = false;
+
 
     BundledScriptServlet(BundledScriptFinder bundledScriptFinder, Bundle bundle, ScriptContextProvider scriptContextProvider,
-                         Set<String> wiredResourceTypes) {
+                         Set<String> wiredResourceTypes, boolean precompiledScripts) {
         this(bundledScriptFinder, bundle, scriptContextProvider, null, wiredResourceTypes);
+        this.precompiledScripts = precompiledScripts;
     }
 
     BundledScriptServlet(BundledScriptFinder bundledScriptFinder, Bundle bundle, ScriptContextProvider scriptContextProvider, String
@@ -65,6 +68,7 @@ class BundledScriptServlet extends GenericServlet {
         m_scriptContextProvider = scriptContextProvider;
         m_delegatedResourceType = overridingResourceType;
         m_wiredResourceTypes = wiredResourceTypes;
+
     }
 
     @Override
@@ -84,7 +88,7 @@ class BundledScriptServlet extends GenericServlet {
             }
 
             String scriptsMapKey = getScriptsMapKey(request);
-            Script script = scriptsMap.get(scriptsMapKey);
+            ScriptEngineExecutable script = scriptsMap.get(scriptsMapKey);
             lock.readLock().lock();
             try {
                 if (script == null) {
@@ -94,16 +98,16 @@ class BundledScriptServlet extends GenericServlet {
                         script = scriptsMap.get(getScriptsMapKey(request));
                         if (script == null) {
                             if (StringUtils.isEmpty(m_delegatedResourceType)) {
-                                script = m_bundledScriptFinder.getScript(request, m_bundle);
+                                script = m_bundledScriptFinder.getScript(request, m_bundle, precompiledScripts);
                             } else {
-                                script = m_bundledScriptFinder.getScript(request, m_bundle, m_delegatedResourceType);
+                                script = m_bundledScriptFinder.getScript(request, m_bundle, precompiledScripts, m_delegatedResourceType);
                             }
                             if (script != null) {
                                 scriptsMap.put(scriptsMapKey, script);
                             }
-                            lock.readLock().lock();
                         }
                     } finally {
+                        lock.readLock().lock();
                         lock.writeLock().unlock();
                     }
                 }
