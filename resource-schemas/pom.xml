@@ -19,12 +19,13 @@
     <version>32</version>
     <relativePath/>
   </parent>
-  <artifactId>org.apache.sling.rtdx.core</artifactId>
+  <artifactId>org.apache.sling.resourceschemas.core</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>bundle</packaging>
-  <name>Apache Sling RTD-X Core</name>
+  <name>Apache Sling Resource Schemas</name>
   <description>
-        Sling Resource Type Definition Extensions Core
+        Prototype using Schemas for Sling Resources, to 
+        create discoverable HTTP APIs
     </description>
   <properties>
     <sling.java.version>8</sling.java.version>

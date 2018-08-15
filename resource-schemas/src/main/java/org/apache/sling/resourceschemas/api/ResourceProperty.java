@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.sling.rtdx.api;
+package org.apache.sling.resourceschemas.api;
 
 /** Define a Property of a Resource: name, type, required etc */
 public class ResourceProperty {

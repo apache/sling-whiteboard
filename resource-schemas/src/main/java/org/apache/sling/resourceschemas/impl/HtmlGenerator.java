@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package org.apache.sling.rtdx.impl;
+package org.apache.sling.resourceschemas.impl;
 
 import java.io.PrintWriter;
 import java.util.Iterator;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ValueMap;
-import org.apache.sling.rtdx.api.*;
+import org.apache.sling.resourceschemas.api.*;
 import org.apache.sling.api.request.ResponseUtil;
 
 
@@ -53,7 +53,7 @@ public class HtmlGenerator {
     }
     
     public void generateNavigation(Resource r) {
-        w.println("<div class='rtdx-navigation'><h2>Navigation</h2>");
+        w.println("<div class='srs-navigation'><h2>Navigation</h2>");
         w.println("<ul>");
         
         if(r.getParent() != null) {
@@ -73,7 +73,7 @@ public class HtmlGenerator {
         w.println("</ul></div>");
     }
     
-    public void generateEditForm(Resource r, ResourceModel m) {
+    public void generateEditForm(Resource r, ResourceSchema m) {
         if(m.getProperties().isEmpty()) {
             return;
         }
@@ -82,25 +82,25 @@ public class HtmlGenerator {
             r.adaptTo(ValueMap.class), 
             "Edit the current Resource",
             r.getPath() + " (" + m.getDescription() + ")",
-            "rtdx-edit-form",
+            "srs-edit-form",
             "", 
             addSelectorsAndExtension(request, r.getPath()),
             null);
     }
     
-    public void generateCreateForm(String parentPath, ResourceModel m) {
+    public void generateCreateForm(String parentPath, ResourceSchema m) {
         form(
             m, 
             null,
             null,
             "Create a " + m.getDescription() + " here", 
-            "rtdx-create-form", 
+            "srs-create-form", 
             parentPath + "/*", 
             "*",
-            RtdxConstants.RTDX_FORM_MARKER_PARAMETER);
+            ResourceSchemasConstants.SRS_FORM_MARKER_PARAMETER);
     }
     
-     public void form(ResourceModel m, ValueMap vm, String title, String subtitle, String cssClass, String actionPath, String redirectPath, String formMarkerFieldName) {
+     public void form(ResourceSchema m, ValueMap vm, String title, String subtitle, String cssClass, String actionPath, String redirectPath, String formMarkerFieldName) {
         // TODO should use templates
         // TODO escape values
         w.println("<br/>");

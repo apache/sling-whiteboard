@@ -15,20 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.sling.rtdx.api;
+package org.apache.sling.resourceschemas.api;
 
-import java.util.Collection;
-
-/** Give access to registered ResourceModels */
-public interface ResourceModelRegistry {
-    /** Return the ResourceModel for the specified resource type
-     * @param resourceType the desired resource type
-     * @return  the corresponding ResourceModel, or null if not found 
-     */
-    public ResourceModel getModel(String resourceType);
-    
-    /** Iterate over all registered Models
-     * @return an immutable Collection of all registered ResourceModels
-     */
-    public Collection<ResourceModel> getModels();
+public class ResourceSchemasConstants {
+    public static String SRS_SELECTOR = "srs";
+    public static String EXT_HTML = "html";
+    public static String SRS_FORM_MARKER_PARAMETER = ":srs-form-marker";
+    public static String POST_METHOD = "POST";
 }

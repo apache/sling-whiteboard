@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.sling.rtdx.impl;
+package org.apache.sling.resourceschemas.impl;
 
 import java.io.IOException;
 import javax.servlet.Filter;
@@ -27,15 +27,15 @@ import javax.servlet.ServletResponse;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.wrappers.SlingHttpServletResponseWrapper;
-import org.apache.sling.rtdx.api.RtdxConstants;
+import org.apache.sling.resourceschemas.api.ResourceSchemasConstants;
 import org.osgi.service.component.annotations.Component;
 
 /** Servlet Filter that provides the correct redirects when creating
- *  Resources from RTD-X forms.
+ *  Resources from Sling Resource Schemas generated forms
  */
 @Component(service = Filter.class,
     property = {
-            "service.description=RTD-X Redirect Filter",
+            "service.description=Sling Resource Schemas Redirect Filter",
             "service.vendor=The Apache Software Foundation",
             "sling.filter.scope=request"
     })
@@ -43,8 +43,8 @@ public class RedirectFilter implements Filter {
 
     public static final String LOCATION_HEADER = "Location";
     
-    class RtdxResponseWrapper extends SlingHttpServletResponseWrapper {
-        RtdxResponseWrapper(SlingHttpServletResponse r) {
+    class ResponseWrapper extends SlingHttpServletResponseWrapper {
+        ResponseWrapper(SlingHttpServletResponse r) {
             super(r);
         }
 
@@ -62,7 +62,7 @@ public class RedirectFilter implements Filter {
         }
         
         private String transformRedirectUrl(String url) {
-            return url + "." + RtdxConstants.RTDX_SELECTOR + "." + RtdxConstants.EXT_HTML;
+            return url + "." + ResourceSchemasConstants.SRS_SELECTOR + "." + ResourceSchemasConstants.EXT_HTML;
         }
     }
             
@@ -79,8 +79,8 @@ public class RedirectFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         if(request instanceof SlingHttpServletRequest) {
             final SlingHttpServletRequest sr = (SlingHttpServletRequest)request;
-            if(sr.getMethod().equals(RtdxConstants.POST_METHOD) && sr.getParameter(RtdxConstants.RTDX_FORM_MARKER_PARAMETER) != null) {
-                response = new RtdxResponseWrapper((SlingHttpServletResponse)response);
+            if(sr.getMethod().equals(ResourceSchemasConstants.POST_METHOD) && sr.getParameter(ResourceSchemasConstants.SRS_FORM_MARKER_PARAMETER) != null) {
+                response = new ResponseWrapper((SlingHttpServletResponse)response);
             }
         }
         chain.doFilter(request, response);

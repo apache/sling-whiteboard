@@ -15,53 +15,53 @@
  * limitations under the License.
  */
 
-package org.apache.sling.rtdx.demo.models;
+package org.apache.sling.resourceschemas.demo.schemas;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import org.apache.sling.rtdx.api.*;
+import org.apache.sling.resourceschemas.api.*;
 
-/** Demonstration ResourceModels - those should rather be provided
+/** Demonstration ResourceSchemas- those should rather be provided
  *  by YAML or other structured text files, ready dynamically
  *  from bundle resources or the Sling content repository
  */
-class DemoModels {
+class DemoSchemas {
 
-    static Collection<ResourceModel> getModels() {
-        final List<ResourceModel> list = new ArrayList<>();
+    static Collection<ResourceSchema> getSchemas() {
+        final List<ResourceSchema> list = new ArrayList<>();
         
-        list.add(ResourceModel.BUILDER()
-                .withName("rtdx/root")
-                .withDescription("RTD-X Root")
-                .withPostHereResourceType("rtdx/blog/home")
+        list.add(ResourceSchema.BUILDER()
+                .withName("srs/demo/root")
+                .withDescription("SRS Demo Root")
+                .withPostHereResourceType("srs/demo/blog/home")
                 .build()
         );
         
-        list.add(ResourceModel.BUILDER()
-                .withName("rtdx/blog/home")
+        list.add(ResourceSchema.BUILDER()
+                .withName("srs/demo/blog/home")
                 .withDescription("Homepage of a Blog")
-                .withPostHereResourceType("rtdx/blog/post")
-                .withPostHereResourceType("rtdx/blog/folder")
-                .withProperty(new ResourceProperty("title", "Title", true, "rtdx:string"))
+                .withPostHereResourceType("srs/demo/blog/post")
+                .withPostHereResourceType("srs/demo/blog/folder")
+                .withProperty(new ResourceProperty("title", "Title", true, "srs:string"))
                 .build()
         );
         
-        list.add(ResourceModel.BUILDER()
-                .withName("rtdx/blog/folder")
+        list.add(ResourceSchema.BUILDER()
+                .withName("srs/demo/blog/folder")
                 .withDescription("Folder for Blog Posts")
-                .withPostHereResourceType("rtdx/blog/post")
-                .withPostHereResourceType("rtdx/blog/folder")
-                .withProperty(new ResourceProperty("title", "Title", true, "rtdx:string"))
+                .withPostHereResourceType("srs/demo/blog/post")
+                .withPostHereResourceType("srs/demo/blog/folder")
+                .withProperty(new ResourceProperty("title", "Title", true, "srs:string"))
                 .build()
         );
         
-        list.add(ResourceModel.BUILDER()
-                .withName("rtdx/blog/post")
+        list.add(ResourceSchema.BUILDER()
+                .withName("srs/demo/blog/post")
                 .withDescription("Blog Post")
-                .withProperty(new ResourceProperty("title", "Title", true, "rtdx:string"))
-                .withProperty(new ResourceProperty("text", "Text", true, "rtdx:richtext"))
+                .withProperty(new ResourceProperty("title", "Title", true, "srs:string"))
+                .withProperty(new ResourceProperty("text", "Text", true, "srs:richtext"))
                 .build()
         );
         return Collections.unmodifiableCollection(list);

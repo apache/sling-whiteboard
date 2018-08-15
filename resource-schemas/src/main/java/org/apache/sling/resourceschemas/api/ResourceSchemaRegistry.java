@@ -15,11 +15,21 @@
  * limitations under the License.
  */
 
-package org.apache.sling.rtdx.api;
+package org.apache.sling.resourceschemas.api;
 
-public class RtdxConstants {
-    public static String RTDX_SELECTOR = "rtdx";
-    public static String EXT_HTML = "html";
-    public static String RTDX_FORM_MARKER_PARAMETER = ":rtdx-form-marker";
-    public static String POST_METHOD = "POST";
+import java.util.Collection;
+
+/** Give access to registered ResourceSchemas */
+public interface ResourceSchemaRegistry {
+    
+    /** Return the ResourceSchema for the specified resource type
+     * @param resourceType the desired resource type
+     * @return  the corresponding ResourceSchema, or null if not found 
+     */
+    public ResourceSchema getSchema(String resourceType);
+    
+    /** Iterate over all registered ResourceSchema
+     * @return an immutable Collection of all registered ResourceSchemas
+     */
+    public Collection<ResourceSchema> getSchemas();
 }

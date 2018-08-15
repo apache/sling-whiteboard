@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.sling.rtdx.servlets;
+package org.apache.sling.resourceschemas.servlets;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -26,20 +26,20 @@ import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
-import org.apache.sling.rtdx.api.ResourceModel;
-import org.apache.sling.rtdx.api.ResourceModelRegistry;
-import org.apache.sling.rtdx.impl.HtmlGenerator;
+import org.apache.sling.resourceschemas.api.ResourceSchema;
+import org.apache.sling.resourceschemas.impl.HtmlGenerator;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.apache.sling.resourceschemas.api.ResourceSchemaRegistry;
 
 /** SlingServlet that generates the default HTML representations
- *  to allow CRUD operations on resources backed by RTD-X models.
+ *  to allow CRUD operations on resources backed by Sling Resource Schemas
  */
 @Component(service = Servlet.class,
     property = {
-            "service.description=RTD-X Default HTML Servlet",
+            "service.description=Sling Resource Schemas Default HTML Servlet",
             "service.vendor=The Apache Software Foundation",
-            "sling.servlet.selectors=rtdx",
+            "sling.servlet.selectors=srs",
             "sling.servlet.extensions=html",
             "sling.servlet.resourceTypes=sling/servlet/default",
             "sling.servlet.methods=GET"
@@ -47,18 +47,18 @@ import org.osgi.service.component.annotations.Reference;
 public class DefaultHtmlServlet extends SlingSafeMethodsServlet {
 
     @Reference
-    private ResourceModelRegistry registry;
+    private ResourceSchemaRegistry registry;
     
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws ServletException, IOException {
 
         final Resource r = request.getResource();
         final String resourceType = r.getResourceType();
-        final ResourceModel m = registry.getModel(resourceType);
+        final ResourceSchema m = registry.getSchema(resourceType);
         if(m == null) {
             response.sendError(
                 HttpServletResponse.SC_BAD_REQUEST,
-                "ResourceModel not found for resource type " + resourceType + " at " + request.getResource().getPath());
+                "ResourceSchema not found for resource type " + resourceType + " at " + request.getResource().getPath());
             return;
         }
         
@@ -66,8 +66,8 @@ public class DefaultHtmlServlet extends SlingSafeMethodsServlet {
         response.setContentType("text/html");
         
         final PrintWriter w = response.getWriter();
-        w.println("<html><body><div class='rtdx-page'>");
-        w.println("<h1>RTD-X generated editing forms<br/>for " + r.getPath() + "</h1><hr/>\n");
+        w.println("<html><body><div class='srs-page'>");
+        w.println("<h1>Sling Resource Schemas: generated edit forms<br/>for " + r.getPath() + "</h1><hr/>\n");
         
         final HtmlGenerator h = new HtmlGenerator(request, w);
         h.generateNavigation(r);
@@ -78,9 +78,9 @@ public class DefaultHtmlServlet extends SlingSafeMethodsServlet {
             w.println("<h2>Create Child Resources</h2>");
         }
         for(String rt : m.getPostHereResourceTypes()) {
-            final ResourceModel em = registry.getModel(rt);
+            final ResourceSchema em = registry.getSchema(rt);
             if(em == null) {
-                w.println("<p>WARNING: model not found for resource type " + rt + "</p>");
+                w.println("<p>WARNING: ResourceSchema not found for resource type " + rt + "</p>");
             } else {
                 h.generateCreateForm(r.getPath(), em);
             }

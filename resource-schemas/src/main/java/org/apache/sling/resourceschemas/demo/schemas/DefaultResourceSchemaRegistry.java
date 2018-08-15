@@ -15,40 +15,40 @@
  * limitations under the License.
  */
 
-package org.apache.sling.rtdx.demo.models;
+package org.apache.sling.resourceschemas.demo.schemas;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import org.apache.sling.rtdx.api.*;
+import org.apache.sling.resourceschemas.api.*;
 import java.util.Map;
 import org.osgi.service.component.annotations.Component;
 
-/** Temporary ResourceModelRegistry that provides a set of
- *  demo ResourceModels */
-@Component(service = ResourceModelRegistry.class,
+/** Temporary ResourceSchemaRegistry that provides a set of
+  demo ResourceSchemas */
+@Component(service = ResourceSchemaRegistry.class,
     property = {
-            "service.description=RTD-X Default ResourceModel Registry",
+            "service.description=Sling Resource Schemas Default ResourceSchema Registry",
             "service.vendor=The Apache Software Foundation"
     })
-public class DefaultResourceModelRegistry implements ResourceModelRegistry {
+public class DefaultResourceSchemaRegistry implements ResourceSchemaRegistry {
 
-    private final Map<String, ResourceModel> models = new HashMap<>();
+    private final Map<String, ResourceSchema> schemas = new HashMap<>();
     
-    public DefaultResourceModelRegistry() {
-        // TODO models are hardcoded for now
-        for(ResourceModel m : DemoModels.getModels()) {
-            models.put(m.getName(), m);
+    public DefaultResourceSchemaRegistry() {
+        // TODO schemas are hardcoded for now
+        for(ResourceSchema m : DemoSchemas.getSchemas()) {
+            schemas.put(m.getName(), m);
         }
     }
     
     @Override
-    public ResourceModel getModel(String resourceType) {
-        return models.get(resourceType);
+    public ResourceSchema getSchema(String resourceType) {
+        return schemas.get(resourceType);
     }
 
     @Override
-    public Collection<ResourceModel> getModels() {
-        return Collections.unmodifiableCollection(models.values());
+    public Collection<ResourceSchema> getSchemas() {
+        return Collections.unmodifiableCollection(schemas.values());
     }
 }

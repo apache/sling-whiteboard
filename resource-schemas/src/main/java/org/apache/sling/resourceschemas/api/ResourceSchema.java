@@ -15,19 +15,18 @@
  * limitations under the License.
  */
 
-package org.apache.sling.rtdx.api;
+package org.apache.sling.resourceschemas.api;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
-/** Define the Model of a Resource: its description,
+/** Define the Schema of a Resource: its description,
  *  properties, links to other Resource types etc.
  *  Objects of this class are immutable.
  */
-public class ResourceModel {
+public class ResourceSchema {
     
     private final Builder b;
     
@@ -58,12 +57,12 @@ public class ResourceModel {
             return this;
         }
         
-        public ResourceModel build() {
-            return new ResourceModel(this);
+        public ResourceSchema build() {
+            return new ResourceSchema(this);
         }
     }
     
-    private ResourceModel(Builder b) {
+    private ResourceSchema(Builder b) {
         this.b = b;
     }
     
@@ -81,12 +80,12 @@ public class ResourceModel {
        return sb.toString();
     }
     
-    /** @return the name of this model */
+    /** @return the name of this schema */
     public String getName() {
         return b.name;
     }
     
-    /** @return a textual description of this model */
+    /** @return a textual description of this schema */
     public String getDescription() {
         return b.description;
     }
@@ -98,7 +97,7 @@ public class ResourceModel {
         return Collections.unmodifiableCollection(b.postHereResourceTypes);
     }
     
-    /** @return an Iterator over the Resource Properties of this model */
+    /** @return an Iterator over the Resource Properties of this schema */
     public Collection<ResourceProperty> getProperties() {
         return Collections.unmodifiableCollection(b.properties);
     }
