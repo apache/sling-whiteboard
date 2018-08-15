@@ -11,12 +11,12 @@ To test the demo schemas, which allow for managing a very basic blog with folder
 this bundle on Sling, create a resource with the `srs/demo/root`
 resource type and navigate to it with the `.srs.html` selector and extension:
 
-  $ curl -u admin:admin -F sling:resourceType=srs/demo/root http://localhost:8080/test
-  $ curl -u admin:admin http://localhost:8080/test.srs.html
+    $ curl -u admin:admin -F sling:resourceType=srs/demo/root http://localhost:8080/test
+    $ curl -u admin:admin http://localhost:8080/test.srs.html
   
-  <html><body><div class='srs-page'>
-  <h1>Sling Resource Schemas: generated edit forms<br/>for /test</h1><hr/>
-  ....
+    <html><body><div class='srs-page'>
+    <h1>Sling Resource Schemas: generated edit forms<br/>for /test</h1><hr/>
+    ....
 
 This module generates a basic HTML UI that allows you to navigate, create and edit resources
 based on the Resource Schemas.
