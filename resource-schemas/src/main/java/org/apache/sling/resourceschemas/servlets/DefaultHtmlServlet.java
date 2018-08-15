@@ -18,7 +18,6 @@
 package org.apache.sling.resourceschemas.servlets;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
@@ -26,13 +25,11 @@ import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
-import org.apache.sling.resourceschemas.api.CreateChildAction;
-import org.apache.sling.resourceschemas.api.ResourceAction;
+import org.apache.sling.resourceschemas.api.RenderingLogic;
 import org.apache.sling.resourceschemas.api.ResourceSchema;
-import org.apache.sling.resourceschemas.impl.HtmlGenerator;
+import org.apache.sling.resourceschemas.api.ResourceSchemaRegistry;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
-import org.apache.sling.resourceschemas.api.ResourceSchemaRegistry;
 
 /** SlingServlet that generates the default HTML representations
  *  to allow CRUD operations on resources backed by Sling Resource Schemas
@@ -51,6 +48,9 @@ public class DefaultHtmlServlet extends SlingSafeMethodsServlet {
     @Reference
     private ResourceSchemaRegistry registry;
     
+    @Reference
+    private RenderingLogic renderingLogic;
+    
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws ServletException, IOException {
 
@@ -66,33 +66,8 @@ public class DefaultHtmlServlet extends SlingSafeMethodsServlet {
         
         response.setCharacterEncoding("UTF-8");
         response.setContentType("text/html");
-        
-        final PrintWriter w = response.getWriter();
-        w.println("<html><body><div class='srs-page'>");
-        w.println("<h1>Sling Resource Schemas: generated edit forms<br/>for " + r.getPath() + "</h1><hr/>\n");
-        
-        final HtmlGenerator h = new HtmlGenerator(request, w);
-        h.generateNavigation(r);
-        h.generateEditForm(r, m);
-        w.println();
 
-        if(!m.getActions().isEmpty()) {
-            w.println("<h2>Actions</h2>");
-        }
-        for(ResourceAction a : m.getActions()) {
-            if(a instanceof CreateChildAction) {
-                final CreateChildAction cca = (CreateChildAction)a;
-                final ResourceSchema em = registry.getSchema(cca.getResourceType());
-                if(em == null) {
-                    w.println("<p>WARNING: ResourceSchema not found for resource type " + cca.getResourceType() + "</p>");
-                } else {
-                    h.generateCreateForm(r.getPath(), em);
-                }
-                w.println();
-            }
-        }
-        
-        w.println("\n</div></body></html>\n");
-        w.flush();
+        renderingLogic.render(r, m, new HtmlResourceRenderer(registry, request, response.getWriter()));
+        response.getWriter().flush();
     }
 }
