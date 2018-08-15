@@ -29,36 +29,41 @@ import org.apache.sling.resourceschemas.api.*;
  */
 class DemoSchemas {
 
+    static String RT_ROOT = "srs/demo/root";
+    static String RT_BLOG_HOME = "srs/demo/blog/home";
+    static String RT_BLOG_FOLDER = "srs/demo/blog/folder";
+    static String RT_BLOG_POST = "srs/blog/post";
+    
     static Collection<ResourceSchema> getSchemas() {
         final List<ResourceSchema> list = new ArrayList<>();
         
         list.add(ResourceSchema.BUILDER()
-                .withName("srs/demo/root")
+                .withName(RT_ROOT)
                 .withDescription("SRS Demo Root")
-                .withPostHereResourceType("srs/demo/blog/home")
+                .withAction(new CreateChildAction(RT_BLOG_HOME))
                 .build()
         );
         
         list.add(ResourceSchema.BUILDER()
-                .withName("srs/demo/blog/home")
+                .withName(RT_BLOG_HOME)
                 .withDescription("Homepage of a Blog")
-                .withPostHereResourceType("srs/demo/blog/post")
-                .withPostHereResourceType("srs/demo/blog/folder")
+                .withAction(new CreateChildAction(RT_BLOG_POST))
+                .withAction(new CreateChildAction(RT_BLOG_FOLDER))
                 .withProperty(new ResourceProperty("title", "Title", true, "srs:string"))
                 .build()
         );
         
         list.add(ResourceSchema.BUILDER()
-                .withName("srs/demo/blog/folder")
+                .withName(RT_BLOG_FOLDER)
                 .withDescription("Folder for Blog Posts")
-                .withPostHereResourceType("srs/demo/blog/post")
-                .withPostHereResourceType("srs/demo/blog/folder")
+                .withAction(new CreateChildAction(RT_BLOG_POST))
+                .withAction(new CreateChildAction(RT_BLOG_FOLDER))
                 .withProperty(new ResourceProperty("title", "Title", true, "srs:string"))
                 .build()
         );
         
         list.add(ResourceSchema.BUILDER()
-                .withName("srs/demo/blog/post")
+                .withName(RT_BLOG_POST)
                 .withDescription("Blog Post")
                 .withProperty(new ResourceProperty("title", "Title", true, "srs:string"))
                 .withProperty(new ResourceProperty("text", "Text", true, "srs:richtext"))

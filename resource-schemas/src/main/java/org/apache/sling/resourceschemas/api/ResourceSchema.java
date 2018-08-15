@@ -34,7 +34,7 @@ public class ResourceSchema {
         
         String name;
         String description;
-        List<String> postHereResourceTypes = new ArrayList<>();
+        List<ResourceAction> actions  = new ArrayList<>();
         List<ResourceProperty> properties = new ArrayList<>(); 
         
         public Builder withName(String n) {
@@ -47,8 +47,8 @@ public class ResourceSchema {
             return this;
         }
         
-        public Builder withPostHereResourceType(String p) {
-            postHereResourceTypes.add(p);
+        public Builder withAction(ResourceAction a) {
+            actions.add(a);
             return this;
         }
         
@@ -76,7 +76,7 @@ public class ResourceSchema {
        sb.append(getClass().getSimpleName()).append(":");
        sb.append(b.name).append(":").append(b.description);
        sb.append("\nproperties=").append(b.properties);
-       sb.append("\npost-here=").append(b.postHereResourceTypes);
+       sb.append("\npactions=").append(b.actions);
        return sb.toString();
     }
     
@@ -93,8 +93,8 @@ public class ResourceSchema {
     /** @return an Iterator over resource types that
      *  can be POSTed to this Resource.
      */
-    public Collection<String> getPostHereResourceTypes() {
-        return Collections.unmodifiableCollection(b.postHereResourceTypes);
+    public Collection<ResourceAction> getActions() {
+        return Collections.unmodifiableCollection(b.actions);
     }
     
     /** @return an Iterator over the Resource Properties of this schema */

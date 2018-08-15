@@ -26,6 +26,8 @@ import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
+import org.apache.sling.resourceschemas.api.CreateChildAction;
+import org.apache.sling.resourceschemas.api.ResourceAction;
 import org.apache.sling.resourceschemas.api.ResourceSchema;
 import org.apache.sling.resourceschemas.impl.HtmlGenerator;
 import org.osgi.service.component.annotations.Component;
@@ -74,17 +76,20 @@ public class DefaultHtmlServlet extends SlingSafeMethodsServlet {
         h.generateEditForm(r, m);
         w.println();
 
-        if(!m.getPostHereResourceTypes().isEmpty()) {
-            w.println("<h2>Create Child Resources</h2>");
+        if(!m.getActions().isEmpty()) {
+            w.println("<h2>Actions</h2>");
         }
-        for(String rt : m.getPostHereResourceTypes()) {
-            final ResourceSchema em = registry.getSchema(rt);
-            if(em == null) {
-                w.println("<p>WARNING: ResourceSchema not found for resource type " + rt + "</p>");
-            } else {
-                h.generateCreateForm(r.getPath(), em);
+        for(ResourceAction a : m.getActions()) {
+            if(a instanceof CreateChildAction) {
+                final CreateChildAction cca = (CreateChildAction)a;
+                final ResourceSchema em = registry.getSchema(cca.getResourceType());
+                if(em == null) {
+                    w.println("<p>WARNING: ResourceSchema not found for resource type " + cca.getResourceType() + "</p>");
+                } else {
+                    h.generateCreateForm(r.getPath(), em);
+                }
+                w.println();
             }
-            w.println();
         }
         
         w.println("\n</div></body></html>\n");
