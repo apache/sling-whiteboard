@@ -2,7 +2,7 @@ Apache Sling Resource Schemas prototype - demo schemas
 ======================================================
 
 To test the demo schemas, which allow for managing a very basic blog with folders and posts, install 
-both the sibling core bundle and this one, create a resource with the `srs/demo/root`
+both the sibling `core` bundle and this one, create a resource with the `srs/demo/root`
 resource type and navigate to it with the `.srs.html` selector and extension:
 
     $ curl -u admin:admin -F sling:resourceType=srs/demo/root http://localhost:8080/test
