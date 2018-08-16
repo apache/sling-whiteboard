@@ -29,11 +29,6 @@ import org.apache.sling.resourceschemas.api.*;
  */
 class DemoSchemas {
 
-    static String RT_ROOT = "srs/demo/root";
-    static String RT_BLOG_HOME = "srs/demo/blog/home";
-    static String RT_BLOG_FOLDER = "srs/demo/blog/folder";
-    static String RT_BLOG_POST = "srs/blog/post";
-    
     static Collection<ResourceSchema> getSchemas() {
         final List<ResourceSchema> list = new ArrayList<>();
         
@@ -71,4 +66,10 @@ class DemoSchemas {
         );
         return Collections.unmodifiableCollection(list);
     }
+    
+    static String RT_ROOT = "srs/demo/root";
+    static String RT_BLOG_HOME = "srs/demo/blog/home";
+    static String RT_BLOG_FOLDER = "srs/demo/blog/folder";
+    static String RT_BLOG_POST = "srs/blog/post";
+    
 }

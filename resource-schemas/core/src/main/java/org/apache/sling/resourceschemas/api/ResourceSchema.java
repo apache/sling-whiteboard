@@ -30,6 +30,47 @@ public class ResourceSchema {
     
     private final Builder b;
     
+    /** Builder must be used to construct ResourceSchema objects */
+    private ResourceSchema(Builder b) {
+        this.b = b;
+    }
+    
+    /** @return the name of this schema */
+    public String getName() {
+        return b.name;
+    }
+    
+    /** @return a textual description of this schema */
+    public String getDescription() {
+        return b.description;
+    }
+    
+    /** @return an Iterator over resource types that
+     *  can be POSTed to this Resource.
+     */
+    public Collection<ResourceAction> getActions() {
+        return Collections.unmodifiableCollection(b.actions);
+    }
+    
+    /** @return an Iterator over the Resource Properties of this schema */
+    public Collection<ResourceProperty> getProperties() {
+        return Collections.unmodifiableCollection(b.properties);
+    }
+    
+    @Override
+    public String toString() {
+       final StringBuilder sb = new StringBuilder();
+       sb.append(getClass().getSimpleName()).append(":");
+       sb.append(b.name).append(":").append(b.description);
+       sb.append("\nproperties=").append(b.properties);
+       sb.append("\npactions=").append(b.actions);
+       return sb.toString();
+    }
+    
+    public static Builder BUILDER() {
+        return new Builder();
+    }
+    
     public static class Builder {
         
         String name;
@@ -62,43 +103,4 @@ public class ResourceSchema {
         }
     }
     
-    private ResourceSchema(Builder b) {
-        this.b = b;
-    }
-    
-    public static Builder BUILDER() {
-        return new Builder();
-    }
-    
-    @Override
-    public String toString() {
-       final StringBuilder sb = new StringBuilder();
-       sb.append(getClass().getSimpleName()).append(":");
-       sb.append(b.name).append(":").append(b.description);
-       sb.append("\nproperties=").append(b.properties);
-       sb.append("\npactions=").append(b.actions);
-       return sb.toString();
-    }
-    
-    /** @return the name of this schema */
-    public String getName() {
-        return b.name;
-    }
-    
-    /** @return a textual description of this schema */
-    public String getDescription() {
-        return b.description;
-    }
-    
-    /** @return an Iterator over resource types that
-     *  can be POSTed to this Resource.
-     */
-    public Collection<ResourceAction> getActions() {
-        return Collections.unmodifiableCollection(b.actions);
-    }
-    
-    /** @return an Iterator over the Resource Properties of this schema */
-    public Collection<ResourceProperty> getProperties() {
-        return Collections.unmodifiableCollection(b.properties);
-    }
 }
