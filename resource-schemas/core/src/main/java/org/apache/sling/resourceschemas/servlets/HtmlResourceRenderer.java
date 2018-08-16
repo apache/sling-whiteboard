@@ -38,19 +38,27 @@ class HtmlResourceRenderer implements ResourceRenderer {
         this.w = writer;
         this.registry = rsr;
     }
+    
+    private void html(String formatString, String ... variables) {
+        for(int i=0 ; i < variables.length; i++) {
+            variables[i] = ResponseUtil.escapeXml(variables[i]);
+        }
+        w.print(String.format(formatString, (Object [])variables));
+    }
  
     @Override
     public void renderPrefix(Resource r, ResourceSchema s) throws IOException {
-        w.println("<html><body><div class='srs-page'>");
-        w.println("<h1>Sling Resource Schemas: generated edit forms<br/>for " + r.getPath() + "</h1><hr/>\n");
+        html("<html>\n<body>\n<div id='srs-page'>\n");
+        html("<h1>Sling Resource Schemas: generated edit forms<br/>for %s </h1>\n<hr/>\n", r.getPath());
     }
     
     @Override
     public void renderSuffix(Resource r, ResourceSchema s) throws IOException {
-        w.println("\n</div></body></html>\n");
+        html("\n</div>\n</body>\n</html>\n");
     }
     
     public void renderContent(Resource r, ResourceSchema s) throws IOException {
+        html("\n<div id='srs-content'>\n");
         if(s.getProperties().isEmpty()) {
             return;
         }
@@ -63,26 +71,28 @@ class HtmlResourceRenderer implements ResourceRenderer {
             "", 
             addSelectorsAndExtension(request, r.getPath()),
             null);
+        html("</div>\n");
     }
     
     public void renderNavigationItems(Resource r, NavigationItem ... items) throws IOException {
-        w.println("<div class='srs-navigation'><h2>Navigation</h2>");
-        w.println("<ul>");
+        html("\n<div id='srs-navigation'>\n<h2>Navigation</h2>\n");
+        html("<ul>\n");
         
         for(NavigationItem i : items) {
             final String prefix = i.type == NavigationType.PARENT ? "^" : "-";
-            link("ul", prefix + " " + i.resource.getName(), addSelectorsAndExtension(request, i.resource.getPath()));
+            link(prefix + " " + i.resource.getName(), addSelectorsAndExtension(request, i.resource.getPath()));
         }
         
-        w.println("</ul></div>");
+        html("</ul>\n</div>\n");
     }
     
     public void renderActions(Resource r, ResourceAction ... actions) throws IOException {
-        
+        html("\n<div id='srs-actions'>\n");
+
         if(actions.length == 0) {
-            w.println("<h2>No Actions available here</h2>");
+            html("<h2>No Actions available here</h2>");
         } else {
-            w.println("<h2>Actions</h2>");
+            html("<h2>Actions</h2>");
         }
         
         for(ResourceAction act : actions) {
@@ -91,6 +101,7 @@ class HtmlResourceRenderer implements ResourceRenderer {
                 generateCreateForm(r.getPath(), registry.getSchema(cca.getResourceType()));
             }
         }
+        html("</div>");
     }
     
     private String addSelectorsAndExtension(SlingHttpServletRequest request, String path) {
@@ -118,15 +129,12 @@ class HtmlResourceRenderer implements ResourceRenderer {
     }
     
     private void form(ResourceSchema m, ValueMap vm, String title, String subtitle, String cssClass, String actionPath, String redirectPath, String formMarkerFieldName) {
-        // TODO should use templates
-        // TODO escape values
-        w.println("<br/>");
-        w.println("<div class='" + cssClass + "'>");
+        html("\n<div class='%s'>\n", cssClass);
         if(title != null) {
-            w.println("<h2>" + ResponseUtil.escapeXml(title) + "</h2>");
+            html("<h2>%s</h2>\n", title);
         }
-        w.println("<p>" + ResponseUtil.escapeXml(subtitle) + "</p>");
-        w.println("<form method='POST' action='" + ResponseUtil.escapeXml(actionPath) + "' enctype='multipart/form-data'>\n");
+        html("<p>%s</p>\n", subtitle);
+        html("<form method='POST' action='%s' enctype='multipart/form-data'>\n", actionPath);
         hiddenField("sling:resourceType", ResponseUtil.escapeXml(m.getName()));
         if(redirectPath != null) {
             hiddenField(":redirect", ResponseUtil.escapeXml(redirectPath));
@@ -135,34 +143,33 @@ class HtmlResourceRenderer implements ResourceRenderer {
             hiddenField(formMarkerFieldName, "");
         }
         for(ResourceProperty p : m.getProperties()) {
-            w.println("<br/>");
+            html("<br/>\n");
             inputField(p, vm);
         }
-        w.println("<br/><input type='submit'/>");
-        w.println("</form></div>");
+        html("<br/>\n<input type='submit'/>\n");
+        html("</form>\n</div>\n");
     }
     
    private void hiddenField(String name, String value) {
-        w.println("<input type='hidden' name='" + ResponseUtil.escapeXml(name) + "' value='" + ResponseUtil.escapeXml(value) + "'/>");
+        html("<input type='hidden' name='%s' value='%s'/>\n", name, value);
     }
     
     private void inputField(ResourceProperty p, ValueMap vm) {
-        w.println("<label for='" + ResponseUtil.escapeXml(p.getName()) + "'>" + ResponseUtil.escapeXml(p.getLabel()) + "</label>");
-        w.print("<input type='text' name='" + ResponseUtil.escapeXml(p.getName()) + "'");
+        html("<label for='%s'>%s</label>", p.getName(), p.getLabel());
+        html("<input type='text' name='%s'", p.getName());
         if(vm != null) {
             final String value = vm.get(p.getName(), String.class);
             if(value != null) {
-                // TODO escape
-                w.print(" value='" + ResponseUtil.escapeXml(value) + "'");
+                html(" value='%s'", value);
             }
         }
-        w.print("/>");
+        html("/>\n");
         
     }
     
-    private void link(String enclosingElement, String text, String href) {
-        w.println("<" + enclosingElement + ">");
-        w.println("<a href='" + ResponseUtil.escapeXml(href) + "'>" + ResponseUtil.escapeXml(text) + "</a>");
-        w.println("</" + enclosingElement + ">");
+    private void link(String text, String href) {
+        html("<li>");
+        html("<a href='%s'>%s</a>", href, text);
+        html("</li>\n");
     }
 }
