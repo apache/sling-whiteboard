@@ -48,7 +48,12 @@ class HtmlResourceRenderer implements ResourceRenderer {
  
     @Override
     public void renderPrefix(Resource r, ResourceSchema s) throws IOException {
-        html("<html>\n<body>\n<div id='srs-page'>\n");
+        html("<html>\n");
+        html("<head>\n<meta charset=\"utf-8\">\n");
+        html("<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n");
+        html("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n");
+        html("<link href=\"/content/starter/css/bundle.css\" rel=\"stylesheet\">\n");
+        html("<body>\n<div id='srs-page'>\n");
         html("<h1>Sling Resource Schemas: generated edit forms<br/>for %s </h1>\n<hr/>\n", r.getPath());
     }
     
