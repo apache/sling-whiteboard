@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -82,6 +81,7 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<List<Servic
     private static final Logger LOGGER = LoggerFactory.getLogger(BundledScriptTracker.class);
     private static final String AT_SLING_SELECTORS = "sling.resourceType.selectors";
     private static final String AT_SLING_EXTENSIONS = "sling.resourceType.extensions";
+    private static final String REGISTERING_BUNDLE = "org.apache.sling.scripting.resolver.internal.BundledScriptTracker.registering_bundle";
 
     static final String AT_VERSION = "version";
     private static final String AT_EXTENDS = "extends";
@@ -255,7 +255,17 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<List<Servic
             }
             ServiceRegistration<Servlet> reg = m_dispatchers.remove(rt);
             if (reg == null) {
-                reg = m_context.registerService(Servlet.class, new DispatcherServlet(rt), properties);
+                Optional<BundleContext> registeringBundle = propList.stream().map(props -> {
+                    Bundle bundle = (Bundle) props.get(REGISTERING_BUNDLE);
+                    if (bundle != null) {
+                        return bundle.getBundleContext();
+                    }
+                    return null;
+                }).findFirst();
+                properties.put(Constants.SERVICE_DESCRIPTION, ServletResolverConstants.SLING_SERVLET_RESOURCE_TYPES + "=" + rt + "; " +
+                        ServletResolverConstants.SLING_SERVLET_EXTENSIONS + "=" + extensions + "; " +
+                        ServletResolverConstants.SLING_SERVLET_METHODS + "=" + methods);
+                reg = registeringBundle.orElse(m_context).registerService(Servlet.class, new DispatcherServlet(rt), properties);
             } else {
                 if (!new HashSet<>(Arrays.asList(PropertiesUtil
                         .toStringArray(reg.getReference().getProperty(ServletResolverConstants.SLING_SERVLET_METHODS), new String[0])))
@@ -277,6 +287,7 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<List<Servic
         set(ServletResolverConstants.SLING_SERVLET_EXTENSIONS, ref, result);
         set(ServletResolverConstants.SLING_SERVLET_SELECTORS, ref, result);
         set(ServletResolverConstants.SLING_SERVLET_METHODS, ref, result);
+        result.put(REGISTERING_BUNDLE, reg.getReference().getBundle());
 
         return result;
     }
