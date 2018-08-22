@@ -36,8 +36,8 @@ import org.apache.sling.scripting.core.ScriptNameAwareReader;
 
 class Script implements ScriptEngineExecutable {
 
-    private URL url;
-    private ScriptEngine scriptEngine;
+    private final URL url;
+    private final ScriptEngine scriptEngine;
     private String sourceCode;
     private CompiledScript compiledScript = null;
     private Lock compilationLock = new ReentrantLock();
@@ -76,7 +76,7 @@ class Script implements ScriptEngineExecutable {
             if (scriptEngine instanceof Compilable && compiledScript == null) {
                 compilationLock.lock();
                 try {
-                    if (scriptEngine instanceof Compilable && compiledScript == null) {
+                    if (compiledScript == null) {
                         compiledScript =
                                 ((Compilable) scriptEngine)
                                         .compile(new ScriptNameAwareReader(new StringReader(getSourceCode()), getName()));

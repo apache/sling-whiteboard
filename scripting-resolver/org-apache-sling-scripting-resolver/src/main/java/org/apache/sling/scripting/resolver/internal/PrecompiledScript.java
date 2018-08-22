@@ -29,8 +29,10 @@ import org.apache.sling.api.scripting.SlingScriptConstants;
 
 public class PrecompiledScript implements ScriptEngineExecutable {
 
-    private ScriptEngine scriptEngine;
-    private Object precompiledScript;
+    private static final StringReader EMPTY_READER = new StringReader(StringUtils.EMPTY);
+
+    private final ScriptEngine scriptEngine;
+    private final Object precompiledScript;
 
     PrecompiledScript(ScriptEngine scriptEngine, Object precompiledScript) {
         this.scriptEngine = scriptEngine;
@@ -50,6 +52,6 @@ public class PrecompiledScript implements ScriptEngineExecutable {
     @Override
     public void eval(ScriptContext context) throws ScriptException {
         context.setAttribute("precompiled.unit", precompiledScript, SlingScriptConstants.SLING_SCOPE);
-        scriptEngine.eval(new StringReader(StringUtils.EMPTY), context);
+        scriptEngine.eval(EMPTY_READER, context);
     }
 }
