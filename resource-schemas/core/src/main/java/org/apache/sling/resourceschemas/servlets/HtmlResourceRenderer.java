@@ -96,8 +96,6 @@ class HtmlResourceRenderer implements ResourceRenderer {
 
         if(actions.length == 0) {
             html("<h2>No Actions available here</h2>");
-        } else {
-            html("<h2>Actions</h2>");
         }
         
         for(ResourceAction act : actions) {
@@ -125,8 +123,8 @@ class HtmlResourceRenderer implements ResourceRenderer {
         form(
             m, 
             null,
-            null,
             "Create a " + m.getDescription() + " here", 
+            null,
             "srs-create-form", 
             parentPath + "/*", 
             "*",
@@ -138,7 +136,9 @@ class HtmlResourceRenderer implements ResourceRenderer {
         if(title != null) {
             html("<h2>%s</h2>\n", title);
         }
-        html("<p>%s</p>\n", subtitle);
+        if(subtitle != null) {
+            html("<p>%s</p>\n", subtitle);
+        }
         html("<form method='POST' action='%s' enctype='multipart/form-data'>\n", actionPath);
         hiddenField("sling:resourceType", ResponseUtil.escapeXml(m.getName()));
         if(redirectPath != null) {
