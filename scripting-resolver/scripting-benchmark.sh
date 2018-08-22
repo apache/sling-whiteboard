@@ -17,9 +17,9 @@
 # under the License.
 URLS=$(cat <<EOF
 http://localhost:8080/content/srr/examples/hello.html
-http://localhost:8080/content/srr/examples/hello-v1.html
+http://localhost:8080/content/srr/examples/hello-v2.html
 http://localhost:8080/content/srr/examples/precompiled-hello.html
-http://localhost:8080/content/srr/examples/precompiled-hello-v1.html
+http://localhost:8080/content/srr/examples/precompiled-hello-v2.html
 http://localhost:8080/content/srr/examples/classic-hello.html
 EOF
 )
