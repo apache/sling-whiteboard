@@ -71,7 +71,7 @@ public class BundledScriptFinder {
                     if (bundledScriptURL != null) {
                         try {
                             return new PrecompiledScript(scriptEngineManager.getEngineByExtension(extension),
-                                    bundle.loadClass(fromClassResourceToClassname(classResource)));
+                                    bundle.loadClass(fromClassResourceToClassname(classResource)).getDeclaredConstructor().newInstance());
                         } catch (Exception e) {
                             throw new RuntimeException(e);
                         }

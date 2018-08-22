@@ -40,16 +40,25 @@ class Script implements ScriptEngineExecutable {
     private ScriptEngine scriptEngine;
     private String sourceCode;
     private CompiledScript compiledScript = null;
-    private Lock lock = new ReentrantLock();
+    private Lock compilationLock = new ReentrantLock();
+    private Lock readLock = new ReentrantLock();
+
 
     Script(URL url, ScriptEngine scriptEngine) {
         this.url = url;
         this.scriptEngine = scriptEngine;
     }
 
-    private synchronized String getSourceCode() throws IOException {
+    private String getSourceCode() throws IOException {
         if (sourceCode == null) {
-            sourceCode = IOUtils.toString(url.openStream(), StandardCharsets.UTF_8);
+            readLock.lock();
+            try {
+                if (sourceCode == null) {
+                    sourceCode = IOUtils.toString(url.openStream(), StandardCharsets.UTF_8);
+                }
+            } finally {
+                readLock.unlock();
+            }
         }
         return sourceCode;
     }
@@ -65,7 +74,7 @@ class Script implements ScriptEngineExecutable {
     public void eval(ScriptContext context) throws ScriptException {
         try {
             if (scriptEngine instanceof Compilable && compiledScript == null) {
-                lock.lock();
+                compilationLock.lock();
                 try {
                     if (scriptEngine instanceof Compilable && compiledScript == null) {
                         compiledScript =
@@ -73,7 +82,7 @@ class Script implements ScriptEngineExecutable {
                                         .compile(new ScriptNameAwareReader(new StringReader(getSourceCode()), getName()));
                     }
                 } finally {
-                    lock.unlock();
+                    compilationLock.unlock();
                 }
             }
             if (compiledScript != null) {

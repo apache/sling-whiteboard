@@ -88,14 +88,15 @@ class BundledScriptServlet extends GenericServlet {
             }
 
             String scriptsMapKey = getScriptsMapKey(request);
-            ScriptEngineExecutable script = scriptsMap.get(scriptsMapKey);
+            ScriptEngineExecutable script;
             lock.readLock().lock();
             try {
+                script = scriptsMap.get(scriptsMapKey);
                 if (script == null) {
                     lock.readLock().unlock();
                     lock.writeLock().lock();
                     try {
-                        script = scriptsMap.get(getScriptsMapKey(request));
+                        script = scriptsMap.get(scriptsMapKey);
                         if (script == null) {
                             if (StringUtils.isEmpty(m_delegatedResourceType)) {
                                 script = m_bundledScriptFinder.getScript(request, m_bundle, precompiledScripts);
@@ -106,8 +107,8 @@ class BundledScriptServlet extends GenericServlet {
                                 scriptsMap.put(scriptsMapKey, script);
                             }
                         }
-                    } finally {
                         lock.readLock().lock();
+                    } finally {
                         lock.writeLock().unlock();
                     }
                 }

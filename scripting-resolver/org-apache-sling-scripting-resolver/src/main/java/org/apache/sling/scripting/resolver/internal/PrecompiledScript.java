@@ -30,16 +30,16 @@ import org.apache.sling.api.scripting.SlingScriptConstants;
 public class PrecompiledScript implements ScriptEngineExecutable {
 
     private ScriptEngine scriptEngine;
-    private Class precompiledScript;
+    private Object precompiledScript;
 
-    PrecompiledScript(ScriptEngine scriptEngine, Class precompiledScript) {
+    PrecompiledScript(ScriptEngine scriptEngine, Object precompiledScript) {
         this.scriptEngine = scriptEngine;
         this.precompiledScript = precompiledScript;
     }
 
     @Override
     public String getName() {
-        return precompiledScript.getName();
+        return precompiledScript.getClass().getName();
     }
 
     @Override
