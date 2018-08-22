@@ -6,7 +6,7 @@ Background:
 * url baseURL
 
 # Use admin credentials for all requests
-* configure headers = call read('basic-auth-header.js') { username: 'admin', password: 'admin' }
+* configure headers = call read('../..//util/basic-auth-header.js') { username: 'admin', password: 'admin' }
 
 * def testID = '' + java.util.UUID.randomUUID()
 * def testFolderPath = 'importContentTest/' + testID
