@@ -20,40 +20,37 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
     <parent>
-        <artifactId>sling</artifactId>
         <groupId>org.apache.sling</groupId>
-        <version>33</version>
-        <relativePath/>
+        <artifactId>org.apache.sling.scripting.resolver.reactor</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>org.apache.sling.scripting.resolver.reactor</artifactId>
+    <artifactId>org.apache.sling.scripting.examplebundle.classic</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <packaging>pom</packaging>
-
-    <modules>
-        <module>org-apache-sling-scripting-maven-plugin</module>
-        <module>examples/org-apache-sling-scripting-examplebundle</module>
-        <module>examples/org-apache-sling-scripting-examplebundle-precompiled</module>
-        <module>examples/org-apache-sling-scripting-examplebundle-classic</module>
-        <module>examples/org-apache-sling-scripting-examplebundle.hi</module>
-        <module>org-apache-sling-scripting-resolver</module>
-        <module>sling-org-apache-sling-scripting-sightly</module>
-    </modules>
+    <packaging>bundle</packaging>
 
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <Sling-Initial-Content>
+                            SLING-INF/content;overwrite:=true;path:=/content/srr/examples,
+                            SLING-INF/apps/assr;overwrite:=true;path:=/apps/assr,
+                        </Sling-Initial-Content>
+                    </instructions>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.rat</groupId>
                 <artifactId>apache-rat-plugin</artifactId>
-                <configuration>
-                <excludes combine.children="append">
-                        <exclude>**/*.md</exclude>
-                        <exclude>*/target/**</exclude>
-                        <exclude>**/*.iml</exclude>
-                </excludes>
-                </configuration>
             </plugin>
         </plugins>
     </build>
