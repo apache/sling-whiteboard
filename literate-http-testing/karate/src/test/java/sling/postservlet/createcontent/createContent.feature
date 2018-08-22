@@ -22,7 +22,7 @@ When method GET
 Then status 200
 
 # ------------------------------------------------------------------------
-# Scenario: Create a resource, update, read back, delete
+Scenario: Create a resource, update, read back, delete
 # ------------------------------------------------------------------------
 
 # Create a resource
