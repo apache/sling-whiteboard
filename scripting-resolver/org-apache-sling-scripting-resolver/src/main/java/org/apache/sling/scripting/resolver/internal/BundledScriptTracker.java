@@ -77,13 +77,13 @@ import aQute.bnd.annotation.headers.ProvideCapability;
                    version = "1.0.0")
 public class BundledScriptTracker implements BundleTrackerCustomizer<List<ServiceRegistration<Servlet>>> {
     static final String NS_SLING_SCRIPTING_EXTENDER = "sling.scripting";
-    static final String NS_SLING_RESOURCE_TYPE = "sling.resourceType";
+
+    private static final String NS_SLING_RESOURCE_TYPE = "sling.resourceType";
     private static final Logger LOGGER = LoggerFactory.getLogger(BundledScriptTracker.class);
     private static final String AT_SLING_SELECTORS = "sling.resourceType.selectors";
     private static final String AT_SLING_EXTENSIONS = "sling.resourceType.extensions";
     private static final String REGISTERING_BUNDLE = "org.apache.sling.scripting.resolver.internal.BundledScriptTracker.registering_bundle";
-
-    static final String AT_VERSION = "version";
+    private static final String AT_VERSION = "version";
     private static final String AT_EXTENDS = "extends";
 
     @Reference
@@ -352,21 +352,14 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<List<Servic
                     .filter(reg ->
                     {
                         Hashtable<String, Object> props = toProperties(reg);
-                        if (getResourceType(props).equals(m_rt)) {
-                            if (
-                                    Arrays.asList(PropertiesUtil.toStringArray(props.get(ServletResolverConstants.SLING_SERVLET_METHODS),
-                                            new String[]{"GET", "HEAD"}))
-                                            .contains(slingRequest.getMethod())
-                                            &&
-                                            Arrays.asList(PropertiesUtil
-                                                    .toStringArray(props.get(ServletResolverConstants.SLING_SERVLET_EXTENSIONS),
-                                                            new String[]{"html"}))
-                                                    .contains(slingRequest.getRequestPathInfo().getExtension() == null ? "html" :
-                                                            slingRequest.getRequestPathInfo().getExtension())) {
-                                return true;
-                            }
-                        }
-                        return false;
+                        return getResourceType(props).equals(m_rt) &&
+                                Arrays.asList(PropertiesUtil
+                                .toStringArray(props.get(ServletResolverConstants.SLING_SERVLET_METHODS), new String[]{"GET", "HEAD"}))
+                                .contains(slingRequest.getMethod()) &&
+                                Arrays.asList(PropertiesUtil
+                                    .toStringArray(props.get(ServletResolverConstants.SLING_SERVLET_EXTENSIONS), new String[]{"html"}))
+                                    .contains(slingRequest.getRequestPathInfo().getExtension() == null ? "html" :
+                                            slingRequest.getRequestPathInfo().getExtension());
                     })
                     .sorted((left, right) ->
                     {

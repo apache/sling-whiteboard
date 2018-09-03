@@ -53,8 +53,6 @@ import org.slf4j.LoggerFactory;
 )
 public class ScriptContextProvider {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ScriptContextProvider.class);
-
     private BundleContext m_bundleContext;
 
     private static final Set<String> PROTECTED_BINDINGS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(

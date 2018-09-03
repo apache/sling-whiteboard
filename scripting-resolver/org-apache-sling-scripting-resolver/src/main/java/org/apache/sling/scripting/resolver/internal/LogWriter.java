@@ -27,20 +27,20 @@ class LogWriter extends Writer {
     /**
      * The logger to which the error messages are written
      */
-    private Logger logger;
+    final private Logger logger;
 
     /**
      * The internal buffer to gather message data until being flushed or a CR or
      * LF is encountered in the message data.
      */
-    private StringBuilder lineBuffer;
+    final private StringBuilder lineBuffer;
 
     /**
      * Creates a writer based on the given logger.
      *
      * @param logger the logger
      */
-    public LogWriter(Logger logger) {
+    LogWriter(Logger logger) {
         this.logger = logger;
         this.lineBuffer = new StringBuilder();
     }
