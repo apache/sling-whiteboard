@@ -54,4 +54,4 @@ And match header Content-Length == "10102"
   | path |
   | imagePath |
   | testFolderPath |
-# * def result = call read('classpath:util/cleanup-test-content.feature') paths
+* def result = call read('classpath:util/cleanup-test-content.feature') paths
