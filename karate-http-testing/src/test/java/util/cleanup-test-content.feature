@@ -20,6 +20,7 @@ Given path path
 When method DELETE
 Then status 204
 
+# Use HEAD to avoid an XML parsing warning
 Given path path
-When method GET
+When method HEAD
 Then status 404
