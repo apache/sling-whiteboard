@@ -9,17 +9,13 @@ Background:
 * url baseURL
 
 # Use admin credentials for all requests
-* configure headers = call read('classpath:sling/util/basic-auth-header.js') { username: 'admin', password: 'admin' }
+* configure headers = call read('classpath:util/basic-auth-header.js')
 
 * def testID = '' + java.util.UUID.randomUUID()
 * def testFolderPath = '/createContentTest/' + testID
 
-# ------------------------------------------------------------------------
-Scenario: Check access to the Sling instance under test
-# ------------------------------------------------------------------------
-Given path '/.json'
-When method GET
-Then status 200
+# Sling instance ready?
+* def unused = call read('classpath:util/sling-ready.feature')
 
 # ------------------------------------------------------------------------
 Scenario: Create a resource, update, read back, delete
@@ -57,20 +53,9 @@ And match response.f1 == 'v1A' + testID
 And match response.f2 == 'v2B'
 And match response.f3 == 'v3B'
 
-# Delete and verify that the resource is gone
-Given path resourcePath
-When method DELETE
-Then status 204
-
-Given path resourcePath
-When method GET
-Then status 404
-
-# Cleanup test folder
-Given path testFolderPath
-When method DELETE
-Then status 204
-
-Given path testFolderPath
-When method GET
-Then status 404
+# Cleanup test content
+* table paths
+  | path |
+  | resourcePath |
+  | testFolderPath |
+* def result = call read('classpath:util/cleanup-test-content.feature') paths

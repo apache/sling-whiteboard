@@ -9,18 +9,14 @@ Background:
 * url baseURL
 
 # Use admin credentials for all requests
-* configure headers = call read('classpath:sling/util/basic-auth-header.js') { username: 'admin', password: 'admin' }
+* configure headers = call read('classpath:util/basic-auth-header.js')
 
 * def testID = '' + java.util.UUID.randomUUID()
 * def testFolderPath = '/uploadImageTest/folder_' + testID
 * def filename = 'file_' + testID
 
-# ------------------------------------------------------------------------
-Scenario: Check access to the Sling instance under test
-# ------------------------------------------------------------------------
-Given path '/.json'
-When method GET
-Then status 200
+# Sling instance ready?
+* def unused = call read('classpath:util/sling-ready.feature')
 
 # ------------------------------------------------------------------------
 Scenario: Upload an image, read back and check
@@ -45,20 +41,9 @@ And match response.name == filename
 And match response.file.jcr:primaryType == 'nt:resource'
 And match response.file.jcr:mimeType == 'application/octet-stream'
 
-# Delete and verify that the resource is gone
-Given path imagePath
-When method DELETE
-Then status 204
-
-Given path imagePath
-When method GET
-Then status 404
-
-# Cleanup test folder
-Given path testFolderPath
-When method DELETE
-Then status 204
-
-Given path testFolderPath
-When method GET
-Then status 404
+# Cleanup test content
+* table paths
+  | path |
+  | imagePath |
+  | testFolderPath |
+* def result = call read('classpath:util/cleanup-test-content.feature') paths

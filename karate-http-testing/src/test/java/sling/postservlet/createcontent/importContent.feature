@@ -6,10 +6,13 @@ Background:
 * url baseURL
 
 # Use admin credentials for all requests
-* configure headers = call read('classpath:sling/util/basic-auth-header.js') { username: 'admin', password: 'admin' }
+* configure headers = call read('classpath:util/basic-auth-header.js')
 
 * def testID = '' + java.util.UUID.randomUUID()
 * def testFolderPath = 'importContentTest/' + testID
+
+# Sling instance ready?
+* def unused = call read('classpath:util/sling-ready.feature')
 
 # ------------------------------------------------------------------------
 Scenario: Create the parent folder, import JSON content, verify and delete
@@ -47,11 +50,9 @@ Then status 200
 And match $ == newContent
 And match $.p2[2] == testID
 
-# Delete parent folder
-Given path testFolderPath, testID
-When method DELETE
-Then status 204
-
-Given path testFolderPath, testID
-When method GET
-Then status 404
+# Cleanup test content
+* table paths
+  | path |
+  | testFolderPath + '/' + testID |
+  | testFolderPath |
+* def result = call read('classpath:util/cleanup-test-content.feature') paths
