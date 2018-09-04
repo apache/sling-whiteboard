@@ -1,6 +1,6 @@
 function() {    
   var env = karate.env; // get system property 'karate.env'
-  karate.log('karate.env system property was:', env);
+  // karate.log('karate.env system property is', env);
   if (!env) {
     env = 'dev';
   }
@@ -8,11 +8,6 @@ function() {
     env: env,
     baseURL: 'http://localhost:8080'
   }
-  if (env == 'dev') {
-    // customize
-    // e.g. config.foo = 'bar';
-  } else if (env == 'e2e') {
-    // customize
-  }
+  karate.log('Expecting a Sling instance at base URL', config.baseURL);
   return config;
 }
