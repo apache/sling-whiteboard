@@ -12,7 +12,7 @@ Background:
 * configure headers = call read('classpath:sling/util/basic-auth-header.js') { username: 'admin', password: 'admin' }
 
 * def testID = '' + java.util.UUID.randomUUID()
-* def testFolderPath = '/createContentTest' + testID
+* def testFolderPath = '/createContentTest/' + testID
 
 # ------------------------------------------------------------------------
 Scenario: Check access to the Sling instance under test
@@ -26,7 +26,7 @@ Scenario: Create a resource, update, read back, delete
 # ------------------------------------------------------------------------
 
 # Create a resource
-Given path testFolderPath + '/*'
+Given path testFolderPath, '*'
 And form field f1 = 'v1A' + testID
 And form field f2 = 'v2A'
 When method POST
