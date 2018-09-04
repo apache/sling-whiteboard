@@ -23,7 +23,7 @@ Scenario: Upload an image, read back and check
 # ------------------------------------------------------------------------
 
 # Create a resource
-Given path testFolderPath + '/*'
+Given path testFolderPath + "/*"
 And multipart field file = read("classpath:images/testimage.jpg")
 And multipart field name = filename
 When method POST
@@ -32,7 +32,7 @@ Then status 201
 # The Location header provides the path where the resource was created
 * def imagePath = responseHeaders['Location'][0]
 
-# Read metadata back
+# Read metadata back and verify
 Given path imagePath + '.tidy.5.json'
 When method GET
 Then status 200
@@ -41,9 +41,17 @@ And match response.name == filename
 And match response.file.jcr:primaryType == 'nt:resource'
 And match response.file.jcr:mimeType == 'application/octet-stream'
 
+# Read the image itself back and verify
+Given path imagePath + '/file/jcr:data'
+When method GET
+Then status 200
+And match header Content-Type == 'application/octet-stream'
+And match response == read("classpath:images/testimage.jpg")
+And match header Content-Length == "10102"
+
 # Cleanup test content
 * table paths
   | path |
   | imagePath |
   | testFolderPath |
-* def result = call read('classpath:util/cleanup-test-content.feature') paths
+# * def result = call read('classpath:util/cleanup-test-content.feature') paths
