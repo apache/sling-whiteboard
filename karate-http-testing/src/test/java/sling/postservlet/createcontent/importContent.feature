@@ -15,7 +15,14 @@ Background:
 Scenario: Create the parent folder, import JSON content, verify and delete
 # ------------------------------------------------------------------------
 
-* def newContent = { 'jcr:primaryType' : 'nt:unstructured', p1 : '#(testID)', p2: [ 'a', 'b', '#(testID)' ] }
+* def newContent = 
+"""
+{ 
+    'jcr:primaryType' : 'nt:unstructured', 
+    p1 : '#(testID)', 
+    p2: [ 'a', 'b', '#(testID)' ] 
+}
+"""
 
 # Create parent folder
 Given path testFolderPath, testID
