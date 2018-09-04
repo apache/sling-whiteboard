@@ -8,6 +8,8 @@ function() {
     env: env,
     baseURL: 'http://localhost:8080'
   }
-  karate.log('Expecting a Sling instance at base URL', config.baseURL);
+
+  karate.callSingle('classpath:logBaseURL.js', config.baseURL);
+
   return config;
 }
