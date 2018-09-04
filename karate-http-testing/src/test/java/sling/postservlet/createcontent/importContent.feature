@@ -8,11 +8,11 @@ Background:
 # Use admin credentials for all requests
 * configure headers = call read('classpath:util/basic-auth-header.js')
 
-* def testID = '' + java.util.UUID.randomUUID()
-* def testFolderPath = 'importContentTest/' + testID
-
 # Sling instance ready?
 * def unused = call read('classpath:util/sling-ready.feature')
+
+* def testID = '' + java.util.UUID.randomUUID()
+* def testFolderPath = 'importContentTest/' + testID
 
 # ------------------------------------------------------------------------
 Scenario: Create the parent folder, import JSON content, verify and delete

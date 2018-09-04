@@ -11,12 +11,12 @@ Background:
 # Use admin credentials for all requests
 * configure headers = call read('classpath:util/basic-auth-header.js')
 
+# Sling instance ready?
+* def unused = call read('classpath:util/sling-ready.feature')
+
 * def testID = '' + java.util.UUID.randomUUID()
 * def testFolderPath = '/uploadImageTest/folder_' + testID
 * def filename = 'file_' + testID
-
-# Sling instance ready?
-* def unused = call read('classpath:util/sling-ready.feature')
 
 # ------------------------------------------------------------------------
 Scenario: Upload an image, read back and check
