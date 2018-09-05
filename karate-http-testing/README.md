@@ -11,6 +11,8 @@ The Karate HTML output (like `target/surefire-reports/TEST-sling.postservlet.cre
 
 The test scenarios are found *.feature files under `src/test`, like [createContent.feature](src/test/java/sling/postservlet/createcontent/createContent.feature) which should be self-explaining - that's the goal of all this.
 
+See also https://github.com/bdelacretaz/karate-mini-mocks which is a minimal demonstration of the Karate "test doubles" which allow for mocking HTTP services with a very similar syntax than the feature tests.
+
 Karate notes
 ------------
 
