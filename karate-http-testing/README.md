@@ -9,7 +9,7 @@ To run these tests, start a Sling trunk instance on port 8080 (separately for no
 
 The Karate HTML reports (`target/surefire-reports/TEST-sling.*.html`) then display detailed HTTP interactions if tests fail, it's very useful for troubleshooting.
 
-The test scenarios are found *.feature files under `src/test`, like [createContent.feature](src/test/java/sling/postservlet/createcontent/createContent.feature) which should be self-explaining - that's the goal of all this.
+The test scenarios are found *.feature files under `src/test`, like [createContent.feature](src/test/java/sling/postservlet/createContent.feature) which should be self-explaining - that's the goal of all this.
 
 See also https://github.com/bdelacretaz/karate-mini-mocks which is a minimal demonstration of the Karate "test doubles" which allow for mocking HTTP services with a very similar syntax than the feature tests.
 
