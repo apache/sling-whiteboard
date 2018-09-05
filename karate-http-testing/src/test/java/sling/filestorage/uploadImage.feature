@@ -33,14 +33,26 @@ Then status 201
 # The Location header provides the path where the resource was created
 * def imagePath = responseHeaders['Location'][0]
 
+# Use Karate's schema-like features for the file element
+* def expectedFile =
+"""
+{
+  "jcr:primaryType" : "nt:resource",
+  "jcr:mimeType" : "application/octet-stream",
+  "jcr:lastModifiedBy" : #string,
+  "jcr:lastModified" : #string,
+  ":jcr:data" : "10102",
+  "jcr:uuid" : #uuid
+}
+"""
+
 # Read metadata back and verify
 Given path imagePath + '.tidy.5.json'
 When method GET
 Then status 200
 And match response.jcr:primaryType == 'nt:unstructured'
 And match response.name == filename
-And match response.file.jcr:primaryType == 'nt:resource'
-And match response.file.jcr:mimeType == 'application/octet-stream'
+And match response.file == expectedFile
 
 # Read the image itself back and verify
 Given path imagePath + '/file/jcr:data'
