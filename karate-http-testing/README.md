@@ -7,7 +7,7 @@ It is used as the basis of my adaptTo 2018 talk, [Karate, the black belt of HTTP
 
 To run these tests, start a Sling trunk instance on port 8080 (separately for now - should be automated) and run `mvn clean test`.
 
-The Karate HTML output (like `target/surefire-reports/TEST-sling.postservlet.createcontent.createContent.html`) then displays the detailed HTTP interactions, it's very useful for debugging the tests.
+The Karate HTML reports (`target/surefire-reports/TEST-sling.*.html`) then display detailed HTTP interactions if tests fail, it's very useful for troubleshooting.
 
 The test scenarios are found *.feature files under `src/test`, like [createContent.feature](src/test/java/sling/postservlet/createcontent/createContent.feature) which should be self-explaining - that's the goal of all this.
 
