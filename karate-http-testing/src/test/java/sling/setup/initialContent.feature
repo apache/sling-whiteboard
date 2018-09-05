@@ -1,4 +1,5 @@
 # ------------------------------------------------------------------------
+@slingsetup @initialcontent
 Feature: Test the Sling initial content and demonstrate Scenario Outline
 # ------------------------------------------------------------------------
 

@@ -1,4 +1,5 @@
 # ------------------------------------------------------------------------
+@importcontent @postservlet
 Feature: Import content using the Sling POST Servlet
 # ------------------------------------------------------------------------
 
@@ -51,8 +52,5 @@ And match $ == newContent
 And match $.p2[2] == testID
 
 # Cleanup test content
-* table paths
-  | path |
-  | testFolderPath + '/' + testID |
-  | testFolderPath |
-* def result = call read('classpath:util/cleanup-test-content.feature') paths
+* def toDelete = ([ testFolderPath + '/' + testID, testFolderPath ])
+* def result = call read('classpath:util/cleanup-paths.js') toDelete

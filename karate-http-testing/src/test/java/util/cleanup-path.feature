@@ -1,7 +1,5 @@
 # ------------------------------------------------------------------------
-Feature: Cleanup content by DELETEing a set of paths
-# The 'path' parameter must be passed in when calling, optionally
-# using a table to delete multiple paths
+Feature: DELETE a path and verify that it's gone
 # ------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------
@@ -16,11 +14,11 @@ Background:
 # ------------------------------------------------------------------------
 Scenario: Delete a given path and verify that it's gone
 # ------------------------------------------------------------------------
-Given path path
+Given path pathToDelete
 When method DELETE
 Then status 204
 
 # Use HEAD to avoid an XML parsing warning
-Given path path
+Given path pathToDelete
 When method HEAD
 Then status 404

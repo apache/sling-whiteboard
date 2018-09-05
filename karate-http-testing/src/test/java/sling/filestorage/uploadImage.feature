@@ -1,4 +1,5 @@
 # ------------------------------------------------------------------------
+@filestorage @postservlet @images
 Feature: Upload an image in Sling and check the result
 # ------------------------------------------------------------------------
 
@@ -50,8 +51,5 @@ And match response == read("classpath:images/testimage.jpg")
 And match header Content-Length == "10102"
 
 # Cleanup test content
-* table paths
-  | path |
-  | imagePath |
-  | testFolderPath |
-* def result = call read('classpath:util/cleanup-test-content.feature') paths
+* def toDelete = ([ imagePath, testFolderPath ])
+* def result = call read('classpath:util/cleanup-paths.js') toDelete

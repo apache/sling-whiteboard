@@ -1,4 +1,5 @@
 # ------------------------------------------------------------------------
+@postservlet
 Feature: create content using the Sling POST Servlet
 # ------------------------------------------------------------------------
 
@@ -54,8 +55,5 @@ And match response.f2 == 'v2B'
 And match response.f3 == 'v3B'
 
 # Cleanup test content
-* table paths
-  | path |
-  | resourcePath |
-  | testFolderPath |
-* def result = call read('classpath:util/cleanup-test-content.feature') paths
+* def toDelete = ([ resourcePath, testFolderPath ])
+* def result = call read('classpath:util/cleanup-paths.js') toDelete
