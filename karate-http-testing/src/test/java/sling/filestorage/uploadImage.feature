@@ -13,7 +13,7 @@ Background:
 * configure headers = call read('classpath:util/basic-auth-header.js')
 
 # Sling instance ready?
-* def unused = call read('classpath:util/sling-ready.feature')
+* eval karate.call('classpath:util/sling-ready.feature')
 
 * def testID = '' + java.util.UUID.randomUUID()
 * def testFolderPath = '/uploadImageTest/folder_' + testID
