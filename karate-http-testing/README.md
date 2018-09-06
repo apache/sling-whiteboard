@@ -13,11 +13,18 @@ The test scenarios are found *.feature files under `src/test`, like [createConte
 
 See also https://github.com/bdelacretaz/karate-mini-mocks which is a minimal demonstration of the Karate "test doubles" which allow for mocking HTTP services with a very similar syntax than the feature tests.
 
+Running the tests
+-----------------
+The karate "feature" test files are triggered by JUnit tests which have the `@RunWith(Karate.class)` annotation, like [SlingTest.java](src/test/java/sling/SlingTest.java), so they run as part of the standard Maven unit or integration tests.
+
+To run test features which have a specific tag, use for example
+
+    mvn clean test -Dcucumber.options="--tags @images"
+
+And to run the Gatling performance tests, use
+
+    mvn -o clean test-compile gatling:test && open $(find target/gatling -name index.html)
+
 Karate notes
 ------------
-
-Karate docs are at https://github.com/intuit/karate
-
-A comment on Karate vs. Spock (by the author of Karate) is available at https://stackoverflow.com/questions/45352358/karate-vs-spock
-
 The Karate UI is described at https://github.com/intuit/karate/wiki/Karate-UI
