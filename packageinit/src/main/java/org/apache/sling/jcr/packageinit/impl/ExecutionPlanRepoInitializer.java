@@ -16,8 +16,7 @@
  */
 package org.apache.sling.jcr.packageinit.impl;
 
-
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.vault.packaging.registry.ExecutionPlan;
 import org.apache.jackrabbit.vault.packaging.registry.ExecutionPlanBuilder;
 import org.apache.jackrabbit.vault.packaging.registry.PackageRegistry;
