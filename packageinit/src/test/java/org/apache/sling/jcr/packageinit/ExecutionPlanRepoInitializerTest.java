@@ -104,7 +104,6 @@ public class ExecutionPlanRepoInitializerTest {
     public void setup() throws IOException, PackageException {
         when(registry.createExecutionPlan()).thenReturn(builder);
         when(builder.execute()).thenReturn(xplan);
-        when(builder2.execute()).thenReturn(xplan);
         this.statusFile = temporaryFolder.newFile(STATUSFILE_NAME + UUID.randomUUID());
     }
 
