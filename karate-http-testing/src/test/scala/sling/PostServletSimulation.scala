@@ -14,11 +14,23 @@ import scala.concurrent.duration._
  */
 class PostServletSimulation extends Simulation {
 
+  // Declare path patterns used by our Karate tests, to group similar
+  // requests in the Gatling report. Optionally add delays to specific
+  // HTTP request methods.
   val protocol = karateProtocol(
-    "/createContentTest/*" -> pauseFor("post" -> 2, "get" -> 5, "delete" -> 2),
-    "/importContentTest/*" -> pauseFor("post" -> 7, "get" -> 15, "delete" -> 50),
+    "/createContentTest/{folder}/{testResource}" -> pauseFor("post" -> 0),
+    "/createContentTest/{folder}" -> pauseFor("post" -> 0),
+    "/importContentTest/{folder}/{testResource}" -> pauseFor("post" -> 0),
+    "/importContentTest/{folder}" -> pauseFor("post" -> 0),
+    "/importContentTest/{folder}/{testResource}/{file}" -> pauseFor("get" -> 0),
+    "/uploadImageTest/{folder}" -> pauseFor("delete" -> 0),
+    "/uploadImageTest/{folder}/*" -> pauseFor("get" -> 0),
+    "/uploadImageTest/{folder}/{file}" -> pauseFor("get" -> 0),
+    "/uploadImageTest/{folder}/{file}/{details}" -> pauseFor("get" -> 0),
+    "/uploadImageTest/{folder}/{file}/file/jcr:data" -> pauseFor("get" -> 0)
   )
 
+  // Which Karate features do we want to test?
   val createContent = scenario("create")
     .exec(
       karateFeature("classpath:sling/postservlet/createContent.feature")
@@ -27,9 +39,15 @@ class PostServletSimulation extends Simulation {
     .exec(
       karateFeature("classpath:sling/postservlet/importContent.feature")
     )
+  val uploadImage = scenario("upload")
+    .exec(
+      karateFeature("classpath:sling/filestorage/uploadImage.feature")
+    )
 
+    // Define Gatling load models
   setUp(
     createContent.inject(rampUsers(75) over (5 seconds)).protocols(protocol),
-    importContent.inject(rampUsers(125) over (3 seconds)).protocols(protocol)
+    importContent.inject(rampUsers(125) over (3 seconds)).protocols(protocol),
+    uploadImage.inject(rampUsers(50) over (1 seconds)).protocols(protocol)
   )
 }
