@@ -23,18 +23,19 @@ And match $.<jsonPath> == "<value>"
 
 # ------------------------------------------------------------------------
 # Data values used by the Scenario outline
+# These values work for the Sling 10 release
 # ------------------------------------------------------------------------
 Examples:
   | contentPath | jsonPath | value |
 
   # Sling starter content
-  | starter/css | jcr:primaryType | sling:Folder |
-  | starter/css/bundle.css | jcr:createdBy | admin |
-  | starter/index.html/jcr:content| jcr:mimeType| text/html |
+  | home/users | jcr:primaryType | rep:AuthorizableFolder |
+  | sling.css | jcr:createdBy | admin |
+  | htl/repl| sling:resourceType | repl/components/repl |
 
   # OSGi console
   | system/console/bundles | data[0].symbolicName | org.apache.felix.framework |
 
   # Empty path means root
-  | | sling:target | /starter/index.html |
+  | | sling:target | /index.html |
   | | sling:resourceType | sling:redirect |
