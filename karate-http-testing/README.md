@@ -15,6 +15,8 @@ See also https://github.com/bdelacretaz/karate-mini-mocks which is a minimal dem
 
 Running the tests
 -----------------
+For now, the tests require a Sling instance to be started separately on port 8080. The simplest way to do that is to download the "Sling Starter Standalone" release 10 jar file from http://sling.apache.org/downloads.cgi and start it with `java -jar org.apache.sling.starter.*.jar` in an empty folder. To reset the state of that instance, if needed, stop it and delete the `sling` folder that's created when that jar file starts.
+
 The karate "feature" test files are triggered by JUnit tests which have the `@RunWith(Karate.class)` annotation, like [SlingTest.java](src/test/java/sling/SlingTest.java), so they run as part of the standard Maven unit or integration tests.
 
 To run test features which have a specific tag, use for example
