@@ -65,16 +65,15 @@ public class BundledScriptFinder {
             for (String match : scriptMatches) {
                 URL bundledScriptURL;
                 if (precompiledScripts) {
-                    String classResource = fromScriptPathToBundleResource(match);
-                    bundledScriptURL = bundle.getEntry(classResource);
-
-                    if (bundledScriptURL != null) {
-                        try {
-                            return new PrecompiledScript(scriptEngineManager.getEngineByExtension(extension),
-                                    bundle.loadClass(fromClassResourceToClassname(classResource)).getDeclaredConstructor().newInstance());
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
+                    String className = fromScriptPathToClassName(match);
+                    try {
+                        Class clazz = bundle.loadClass(className);
+                        return new PrecompiledScript(scriptEngineManager.getEngineByExtension(extension),
+                                clazz.getDeclaredConstructor().newInstance());
+                    } catch (ClassNotFoundException e) {
+                        // do nothing here
+                    } catch (Exception e) {
+                        throw new RuntimeException("Cannot correctly instantiate class " + className + ".");
                     }
                 } else {
                     bundledScriptURL = bundle.getEntry(NS_JAVAX_SCRIPT_CAPABILITY + SLASH + match + DOT + extension);
@@ -147,23 +146,16 @@ public class BundledScriptFinder {
         return Collections.unmodifiableList(_scriptEngineExtensions);
     }
 
-    private String fromScriptPathToBundleResource(String scriptPath) {
+    private String fromScriptPathToClassName(String scriptPath) {
         String[] parts = scriptPath.split("/");
         StringBuilder stringBuilder = new StringBuilder();
         for (String part : parts) {
             if (stringBuilder.length() > 0) {
-                stringBuilder.append("/");
+                stringBuilder.append(".");
             }
-            if (STARTS_WITH_NUMBER.matcher(part).matches()) {
-                stringBuilder.append("_");
-            }
-            stringBuilder.append(part.replaceAll("\\.", "_"));
+            stringBuilder.append(JavaEscapeUtils.makeJavaIdentifier(part));
         }
-        stringBuilder.append(".class");
         return stringBuilder.toString();
     }
 
-    private String fromClassResourceToClassname(String classResource) {
-        return classResource.substring(0, classResource.length() - 6).replaceAll("/", ".");
-    }
 }
