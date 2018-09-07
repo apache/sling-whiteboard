@@ -180,7 +180,7 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<List<Servic
                                         new HashSet<>(
                                                 Arrays.asList(resourceType, wireResourceType + (wireResourceTypeVersion != null ? "/" +
                                                         wireResourceTypeVersion.toString() : ""))),
-                                        bundle, optionalWire.get().getProvider().getBundle())),
+                                        bundle, optionalWire.get().getProvider().getBundle()), precompiled),
                                 properties
                         ));
                     } else {

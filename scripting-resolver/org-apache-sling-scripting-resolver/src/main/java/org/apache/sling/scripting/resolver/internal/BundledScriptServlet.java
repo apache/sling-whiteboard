@@ -31,7 +31,6 @@ import javax.servlet.GenericServlet;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingConstants;
@@ -49,26 +48,26 @@ class BundledScriptServlet extends GenericServlet {
     private final ScriptContextProvider m_scriptContextProvider;
     private final String m_delegatedResourceType;
     private final Set<String> m_wiredResourceTypes;
+    private final boolean m_precompiledScripts;
 
     private Map<String, ScriptEngineExecutable> scriptsMap = new HashMap<>();
     private ReadWriteLock lock = new ReentrantReadWriteLock();
-    private boolean precompiledScripts = false;
+
 
 
     BundledScriptServlet(BundledScriptFinder bundledScriptFinder, Bundle bundle, ScriptContextProvider scriptContextProvider,
                          Set<String> wiredResourceTypes, boolean precompiledScripts) {
-        this(bundledScriptFinder, bundle, scriptContextProvider, null, wiredResourceTypes);
-        this.precompiledScripts = precompiledScripts;
+        this(bundledScriptFinder, bundle, scriptContextProvider, null, wiredResourceTypes, precompiledScripts);
     }
 
     BundledScriptServlet(BundledScriptFinder bundledScriptFinder, Bundle bundle, ScriptContextProvider scriptContextProvider, String
-            overridingResourceType, Set<String> wiredResourceTypes) {
+            overridingResourceType, Set<String> wiredResourceTypes, boolean precompiledScripts) {
         m_bundle = bundle;
         m_bundledScriptFinder = bundledScriptFinder;
         m_scriptContextProvider = scriptContextProvider;
         m_delegatedResourceType = overridingResourceType;
         m_wiredResourceTypes = wiredResourceTypes;
-
+        m_precompiledScripts = precompiledScripts;
     }
 
     @Override
@@ -99,9 +98,9 @@ class BundledScriptServlet extends GenericServlet {
                         script = scriptsMap.get(scriptsMapKey);
                         if (script == null) {
                             if (StringUtils.isEmpty(m_delegatedResourceType)) {
-                                script = m_bundledScriptFinder.getScript(request, m_bundle, precompiledScripts);
+                                script = m_bundledScriptFinder.getScript(request, m_bundle, m_precompiledScripts);
                             } else {
-                                script = m_bundledScriptFinder.getScript(request, m_bundle, precompiledScripts, m_delegatedResourceType);
+                                script = m_bundledScriptFinder.getScript(request, m_bundle, m_precompiledScripts, m_delegatedResourceType);
                             }
                             if (script != null) {
                                 scriptsMap.put(scriptsMapKey, script);
@@ -125,7 +124,7 @@ class BundledScriptServlet extends GenericServlet {
                     throw new ScriptEvaluationException(script.getName(), se.getMessage(), cause);
                 }
             } else {
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                throw new ServletException("Unable to locate a " + (m_precompiledScripts ? "class" : "script") + " for rendering.");
             }
         } else {
             throw new ServletException("Not a Sling HTTP request/response");
