@@ -1,12 +1,4 @@
-Bundle-Category: sling
-
-Bundle-Description: ${project.description}
-
 Bundle-DocURL: https://sling.apache.org/documentation/bundles/metrics.html
-
-Bundle-License: Apache License, Version 2.0
-
-Bundle-Vendor: The Apache Software Foundation
 
 DynamicImport-Package:\
   javax.servlet,\
@@ -24,8 +16,6 @@ Import-Package:\
 Provide-Capability:\
   osgi.service;objectClass=com.codahale.metrics.MetricRegistry,\
   osgi.service;objectClass=org.apache.sling.commons.metrics.MetricsService
-
--exportcontents: ${packages;VERSIONED}
 
 -includeresource:\
   @org.apache.felix.utils-*.jar!/org/apache/felix/utils/json/JSONWriter**
