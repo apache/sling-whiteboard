@@ -19,22 +19,24 @@
 package org.apache.sling.commons.metrics.test;
 
 import javax.inject.Inject;
+
 import org.apache.sling.commons.metrics.MetricsService;
 import org.apache.sling.commons.metrics.MetricsServiceFactory;
-import static org.apache.sling.testing.paxexam.SlingOptions.slingLaunchpadOakTar;
 import org.apache.sling.testing.paxexam.TestSupport;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ops4j.pax.exam.Configuration;
-import static org.ops4j.pax.exam.CoreOptions.composite;
-import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
 import org.ops4j.pax.exam.Option;
 import org.ops4j.pax.exam.junit.PaxExam;
 import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
 import org.ops4j.pax.exam.spi.reactors.PerClass;
 import org.osgi.framework.BundleContext;
+
+import static org.apache.sling.testing.paxexam.SlingOptions.scr;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+import static org.ops4j.pax.exam.CoreOptions.junitBundles;
+import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
 
 @RunWith(PaxExam.class)
 @ExamReactorStrategy(PerClass.class)
@@ -42,55 +44,41 @@ public class MetricsServiceFactoryIT extends TestSupport {
 
     @Inject
     private BundleContext bundleContext;
-    
+
     @Configuration
     public Option[] configuration() {
         return new Option[]{
-            baseConfiguration()
+            baseConfiguration(),
+            scr(),
+            // Commons Metrics
+            testBundle("bundle.filename"),
+            mavenBundle().groupId("io.dropwizard.metrics").artifactId("metrics-core").versionAsInProject(),
+            junitBundles()
         };
     }
 
-    @Override
-    protected Option baseConfiguration() {
-        return composite(
-            super.baseConfiguration(),
-            launchpad(),
-            testBundle("bundle.filename"),
-            mavenBundle().groupId("io.dropwizard.metrics").artifactId("metrics-core").versionAsInProject(),
-            mavenBundle().groupId("org.apache.sling").artifactId("org.apache.sling.testing.paxexam").versionAsInProject(),
-            mavenBundle().groupId("org.apache.sling").artifactId("org.apache.sling.junit.core").version("1.0.23")
-        );
-    }
-    
-   protected Option launchpad() {
-        final int httpPort = findFreePort();
-        final String workingDirectory = workingDirectory();
-        return slingLaunchpadOakTar(workingDirectory, httpPort);
-    }
-   
     @Test
     public void nullClass() {
         try {
             MetricsServiceFactory.getMetricsService(null);
             fail("Expecting an Exception");
-        } catch(IllegalArgumentException asExpected) {
+        } catch (IllegalArgumentException asExpected) {
         }
-        
     }
-    
+
     @Test
     public void classNotLoadedFromOsgiBundle() {
         try {
             MetricsServiceFactory.getMetricsService(String.class);
             fail("Expecting an Exception");
-        } catch(IllegalArgumentException asExpected) {
+        } catch (IllegalArgumentException asExpected) {
         }
     }
-    
+
     @Test
     public void classFromBundle() {
         final MetricsService m = MetricsServiceFactory.getMetricsService(getClass());
         assertNotNull("Expecting a MetricsService", m);
     }
-    
+
 }
