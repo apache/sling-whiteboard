@@ -3,7 +3,7 @@ HTTP Testing with Karate
 
 This is a series of experiments using Karate (https://github.com/intuit/karate) for testing Sling HTTP APIs.
 
-It is used as the basis of my adaptTo 2018 talk, [Karate, the black belt of HTTP API testing?](https://adapt.to/2018/en/schedule/karate-the-black-belt-of-http-api-testing.html)
+It is used as the basis of my adaptTo 2018 talk, [Karate, the black belt of HTTP API testing?](https://adapt.to/2018/en/schedule/karate-the-black-belt-of-http-api-testing.html). The [slides are available](https://www.slideshare.net/bdelacretaz/karate-the-black-belt-of-http-api-testing) and a video recording should be available there soon.
 
 To run these tests, start a Sling trunk instance on port 8080 (separately for now - should be automated) and run `mvn clean test`.
 
