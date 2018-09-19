@@ -52,6 +52,8 @@ public class PrecompiledScript implements ScriptEngineExecutable {
     @Override
     public void eval(ScriptContext context) throws ScriptException {
         context.setAttribute("precompiled.unit", precompiledScript, SlingScriptConstants.SLING_SCOPE);
+        context.setAttribute("precompiled.bundle.classloader", precompiledScript.getClass().getClassLoader(),
+                SlingScriptConstants.SLING_SCOPE);
         scriptEngine.eval(EMPTY_READER, context);
     }
 }
