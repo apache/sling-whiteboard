@@ -22,11 +22,15 @@ import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
+import org.osgi.framework.Bundle;
+
 interface ScriptEngineExecutable {
 
     String getName();
 
     ScriptEngine getScriptEngine();
+
+    Bundle getBundle();
 
     void eval(ScriptContext context) throws ScriptException;
 }

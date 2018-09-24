@@ -26,6 +26,7 @@ import javax.script.ScriptException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.scripting.SlingScriptConstants;
+import org.osgi.framework.Bundle;
 
 public class PrecompiledScript implements ScriptEngineExecutable {
 
@@ -33,10 +34,12 @@ public class PrecompiledScript implements ScriptEngineExecutable {
 
     private final ScriptEngine scriptEngine;
     private final Object precompiledScript;
+    private final Bundle bundle;
 
-    PrecompiledScript(ScriptEngine scriptEngine, Object precompiledScript) {
+    PrecompiledScript(Bundle bundle, ScriptEngine scriptEngine, Object precompiledScript) {
         this.scriptEngine = scriptEngine;
         this.precompiledScript = precompiledScript;
+        this.bundle = bundle;
     }
 
     @Override
@@ -52,8 +55,11 @@ public class PrecompiledScript implements ScriptEngineExecutable {
     @Override
     public void eval(ScriptContext context) throws ScriptException {
         context.setAttribute("precompiled.unit", precompiledScript, SlingScriptConstants.SLING_SCOPE);
-        context.setAttribute("precompiled.bundle.classloader", precompiledScript.getClass().getClassLoader(),
-                SlingScriptConstants.SLING_SCOPE);
         scriptEngine.eval(EMPTY_READER, context);
+    }
+
+    @Override
+    public Bundle getBundle() {
+        return bundle;
     }
 }

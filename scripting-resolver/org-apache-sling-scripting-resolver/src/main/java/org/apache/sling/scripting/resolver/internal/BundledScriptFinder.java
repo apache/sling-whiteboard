@@ -45,7 +45,6 @@ public class BundledScriptFinder {
     private static final String SLASH = "/";
     private static final String DOT = ".";
     private static final Set<String> DEFAULT_METHODS = new HashSet<>(Arrays.asList("GET", "HEAD"));
-    private static final Pattern STARTS_WITH_NUMBER = Pattern.compile("^[0-9].*");
 
     @Reference
     private ScriptEngineManager scriptEngineManager;
@@ -68,7 +67,7 @@ public class BundledScriptFinder {
                     String className = fromScriptPathToClassName(match);
                     try {
                         Class clazz = bundle.loadClass(className);
-                        return new PrecompiledScript(scriptEngineManager.getEngineByExtension(extension),
+                        return new PrecompiledScript(bundle, scriptEngineManager.getEngineByExtension(extension),
                                 clazz.getDeclaredConstructor().newInstance());
                     } catch (ClassNotFoundException e) {
                         // do nothing here
@@ -78,7 +77,7 @@ public class BundledScriptFinder {
                 } else {
                     bundledScriptURL = bundle.getEntry(NS_JAVAX_SCRIPT_CAPABILITY + SLASH + match + DOT + extension);
                     if (bundledScriptURL != null) {
-                        return new Script(bundledScriptURL, scriptEngineManager.getEngineByExtension(extension));
+                        return new Script(bundle, bundledScriptURL, scriptEngineManager.getEngineByExtension(extension));
                     }
                 }
             }

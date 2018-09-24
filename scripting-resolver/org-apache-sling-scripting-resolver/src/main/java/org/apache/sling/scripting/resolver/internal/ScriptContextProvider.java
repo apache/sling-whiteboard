@@ -40,9 +40,6 @@ import org.apache.sling.scripting.api.BindingsValuesProvider;
 import org.apache.sling.scripting.api.BindingsValuesProvidersByContext;
 import org.apache.sling.scripting.api.resource.ScriptingResourceResolverProvider;
 import org.apache.sling.scripting.core.ScriptHelper;
-import org.osgi.framework.BundleContext;
-import org.osgi.service.component.ComponentContext;
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
@@ -52,9 +49,7 @@ import org.slf4j.LoggerFactory;
         service = ScriptContextProvider.class
 )
 public class ScriptContextProvider {
-
-    private BundleContext m_bundleContext;
-
+    
     private static final Set<String> PROTECTED_BINDINGS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             SlingBindings.REQUEST,
             SlingBindings.RESPONSE,
@@ -73,11 +68,6 @@ public class ScriptContextProvider {
     @Reference
     private ScriptingResourceResolverProvider scriptingResourceResolverProvider;
 
-    @Activate
-    private void activate(ComponentContext componentContext) {
-        m_bundleContext = componentContext.getBundleContext();
-    }
-
     ScriptContext prepareScriptContext(SlingHttpServletRequest request, SlingHttpServletResponse response, ScriptEngineExecutable executable)
             throws IOException {
         // prepare the SlingBindings
@@ -90,7 +80,7 @@ public class ScriptContextProvider {
         bindings.put(SlingBindings.OUT, response.getWriter());
         Logger scriptLogger = LoggerFactory.getLogger(executable.getName());
         bindings.put(SlingBindings.LOG, scriptLogger);
-        bindings.put(SlingBindings.SLING, new ScriptHelper(m_bundleContext, null, request, response));
+        bindings.put(SlingBindings.SLING, new ScriptHelper(executable.getBundle().getBundleContext(), null, request, response));
         bindings.put(ScriptEngine.FILENAME, executable.getName());
         bindings.put(ScriptEngine.FILENAME.replaceAll("\\.", "_"), executable.getName());
 
@@ -109,6 +99,7 @@ public class ScriptContextProvider {
         scriptContext.setWriter(response.getWriter());
         scriptContext.setErrorWriter(new LogWriter(scriptLogger));
         scriptContext.setReader(request.getReader());
+        scriptContext.setAttribute("org.apache.sling.scripting.resolver.provider.bundle", executable.getBundle(), SlingScriptConstants.SLING_SCOPE);
         return scriptContext;
     }
 

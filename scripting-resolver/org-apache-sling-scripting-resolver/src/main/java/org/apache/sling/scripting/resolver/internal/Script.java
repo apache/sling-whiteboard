@@ -33,9 +33,11 @@ import javax.script.ScriptException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.sling.scripting.core.ScriptNameAwareReader;
+import org.osgi.framework.Bundle;
 
 class Script implements ScriptEngineExecutable {
 
+    private final Bundle bundle;
     private final URL url;
     private final ScriptEngine scriptEngine;
     private String sourceCode;
@@ -44,7 +46,8 @@ class Script implements ScriptEngineExecutable {
     private Lock readLock = new ReentrantLock();
 
 
-    Script(URL url, ScriptEngine scriptEngine) {
+    Script(Bundle bundle, URL url, ScriptEngine scriptEngine) {
+        this.bundle = bundle;
         this.url = url;
         this.scriptEngine = scriptEngine;
     }
@@ -63,14 +66,17 @@ class Script implements ScriptEngineExecutable {
         return sourceCode;
     }
 
+    @Override
     public String getName() {
         return url.getPath();
     }
 
+    @Override
     public ScriptEngine getScriptEngine() {
         return scriptEngine;
     }
 
+    @Override
     public void eval(ScriptContext context) throws ScriptException {
         try {
             if (scriptEngine instanceof Compilable && compiledScript == null) {
@@ -93,6 +99,10 @@ class Script implements ScriptEngineExecutable {
         } catch (IOException e) {
             throw new ScriptException(e);
         }
+    }
 
+    @Override
+    public Bundle getBundle() {
+        return bundle;
     }
 }

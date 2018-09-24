@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptException;
 import javax.servlet.GenericServlet;
@@ -38,6 +39,8 @@ import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.request.RequestPathInfo;
 import org.apache.sling.api.scripting.ScriptEvaluationException;
+import org.apache.sling.api.scripting.SlingBindings;
+import org.apache.sling.scripting.core.ScriptHelper;
 import org.osgi.framework.Bundle;
 
 class BundledScriptServlet extends GenericServlet {
@@ -122,6 +125,17 @@ class BundledScriptServlet extends GenericServlet {
                 } catch (ScriptException se) {
                     Throwable cause = (se.getCause() == null) ? se : se.getCause();
                     throw new ScriptEvaluationException(script.getName(), se.getMessage(), cause);
+                } finally {
+                    if (scriptContext != null) {
+                        Bindings engineBindings = scriptContext.getBindings(ScriptContext.ENGINE_SCOPE);
+                        if (engineBindings != null && engineBindings.containsKey(SlingBindings.SLING)) {
+                            Object scriptHelper = engineBindings.get(SlingBindings.SLING);
+                            if (scriptHelper instanceof ScriptHelper) {
+                                ((ScriptHelper) scriptHelper).cleanup();
+                            }
+                        }
+
+                    }
                 }
             } else {
                 throw new ServletException("Unable to locate a " + (m_precompiledScripts ? "class" : "script") + " for rendering.");
