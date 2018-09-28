@@ -26,40 +26,42 @@ import javax.script.ScriptException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.scripting.SlingScriptConstants;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.osgi.framework.Bundle;
 
-public class PrecompiledScript implements ScriptEngineExecutable {
+public class PrecompiledScript extends AbstractBundledRenderUnit {
 
     private static final StringReader EMPTY_READER = new StringReader(StringUtils.EMPTY);
 
     private final ScriptEngine scriptEngine;
     private final Object precompiledScript;
-    private final Bundle bundle;
 
-    PrecompiledScript(Bundle bundle, ScriptEngine scriptEngine, Object precompiledScript) {
+    PrecompiledScript(@NotNull Bundle bundle, @NotNull ScriptEngine scriptEngine, @NotNull Object precompiledScript) {
+        super(bundle);
         this.scriptEngine = scriptEngine;
         this.precompiledScript = precompiledScript;
-        this.bundle = bundle;
     }
 
     @Override
+    @NotNull
     public String getName() {
         return precompiledScript.getClass().getName();
     }
 
     @Override
+    @NotNull
     public ScriptEngine getScriptEngine() {
         return scriptEngine;
     }
 
     @Override
-    public void eval(ScriptContext context) throws ScriptException {
-        context.setAttribute("precompiled.unit", precompiledScript, SlingScriptConstants.SLING_SCOPE);
+    public void eval(@NotNull ScriptContext context) throws ScriptException {
         scriptEngine.eval(EMPTY_READER, context);
     }
 
     @Override
-    public Bundle getBundle() {
-        return bundle;
+    public @NotNull Object getUnit() {
+        return precompiledScript;
     }
 }

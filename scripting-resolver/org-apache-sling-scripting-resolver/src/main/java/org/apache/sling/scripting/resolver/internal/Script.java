@@ -35,9 +35,8 @@ import org.apache.commons.io.IOUtils;
 import org.apache.sling.scripting.core.ScriptNameAwareReader;
 import org.osgi.framework.Bundle;
 
-class Script implements ScriptEngineExecutable {
+class Script extends AbstractBundledRenderUnit {
 
-    private final Bundle bundle;
     private final URL url;
     private final ScriptEngine scriptEngine;
     private String sourceCode;
@@ -47,7 +46,7 @@ class Script implements ScriptEngineExecutable {
 
 
     Script(Bundle bundle, URL url, ScriptEngine scriptEngine) {
-        this.bundle = bundle;
+        super(bundle);
         this.url = url;
         this.scriptEngine = scriptEngine;
     }
@@ -99,10 +98,5 @@ class Script implements ScriptEngineExecutable {
         } catch (IOException e) {
             throw new ScriptException(e);
         }
-    }
-
-    @Override
-    public Bundle getBundle() {
-        return bundle;
     }
 }

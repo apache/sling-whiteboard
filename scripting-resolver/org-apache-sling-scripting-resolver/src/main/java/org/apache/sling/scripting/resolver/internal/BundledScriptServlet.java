@@ -53,7 +53,7 @@ class BundledScriptServlet extends GenericServlet {
     private final Set<String> m_wiredResourceTypes;
     private final boolean m_precompiledScripts;
 
-    private Map<String, ScriptEngineExecutable> scriptsMap = new HashMap<>();
+    private Map<String, Executable> scriptsMap = new HashMap<>();
     private ReadWriteLock lock = new ReentrantReadWriteLock();
 
 
@@ -90,23 +90,23 @@ class BundledScriptServlet extends GenericServlet {
             }
 
             String scriptsMapKey = getScriptsMapKey(request);
-            ScriptEngineExecutable script;
+            Executable executable;
             lock.readLock().lock();
             try {
-                script = scriptsMap.get(scriptsMapKey);
-                if (script == null) {
+                executable = scriptsMap.get(scriptsMapKey);
+                if (executable == null) {
                     lock.readLock().unlock();
                     lock.writeLock().lock();
                     try {
-                        script = scriptsMap.get(scriptsMapKey);
-                        if (script == null) {
+                        executable = scriptsMap.get(scriptsMapKey);
+                        if (executable == null) {
                             if (StringUtils.isEmpty(m_delegatedResourceType)) {
-                                script = m_bundledScriptFinder.getScript(request, m_bundle, m_precompiledScripts);
+                                executable = m_bundledScriptFinder.getScript(request, m_bundle, m_precompiledScripts);
                             } else {
-                                script = m_bundledScriptFinder.getScript(request, m_bundle, m_precompiledScripts, m_delegatedResourceType);
+                                executable = m_bundledScriptFinder.getScript(request, m_bundle, m_precompiledScripts, m_delegatedResourceType);
                             }
-                            if (script != null) {
-                                scriptsMap.put(scriptsMapKey, script);
+                            if (executable != null) {
+                                scriptsMap.put(scriptsMapKey, executable);
                             }
                         }
                         lock.readLock().lock();
@@ -117,25 +117,23 @@ class BundledScriptServlet extends GenericServlet {
             } finally {
                 lock.readLock().unlock();
             }
-            if (script != null) {
+            if (executable != null) {
                 RequestWrapper requestWrapper = new RequestWrapper(request, m_wiredResourceTypes);
-                ScriptContext scriptContext = m_scriptContextProvider.prepareScriptContext(requestWrapper, response, script);
+                ScriptContext scriptContext = m_scriptContextProvider.prepareScriptContext(requestWrapper, response, executable);
                 try {
-                    script.eval(scriptContext);
+                    executable.eval(scriptContext);
                 } catch (ScriptException se) {
                     Throwable cause = (se.getCause() == null) ? se : se.getCause();
-                    throw new ScriptEvaluationException(script.getName(), se.getMessage(), cause);
+                    throw new ScriptEvaluationException(executable.getName(), se.getMessage(), cause);
                 } finally {
-                    if (scriptContext != null) {
-                        Bindings engineBindings = scriptContext.getBindings(ScriptContext.ENGINE_SCOPE);
-                        if (engineBindings != null && engineBindings.containsKey(SlingBindings.SLING)) {
-                            Object scriptHelper = engineBindings.get(SlingBindings.SLING);
-                            if (scriptHelper instanceof ScriptHelper) {
-                                ((ScriptHelper) scriptHelper).cleanup();
-                            }
+                    Bindings engineBindings = scriptContext.getBindings(ScriptContext.ENGINE_SCOPE);
+                    if (engineBindings != null && engineBindings.containsKey(SlingBindings.SLING)) {
+                        Object scriptHelper = engineBindings.get(SlingBindings.SLING);
+                        if (scriptHelper instanceof ScriptHelper) {
+                            ((ScriptHelper) scriptHelper).cleanup();
                         }
-
                     }
+                    executable.releaseDependencies();
                 }
             } else {
                 throw new ServletException("Unable to locate a " + (m_precompiledScripts ? "class" : "script") + " for rendering.");

@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
@@ -49,11 +48,11 @@ public class BundledScriptFinder {
     @Reference
     private ScriptEngineManager scriptEngineManager;
 
-    ScriptEngineExecutable getScript(SlingHttpServletRequest request, Bundle bundle, boolean precompiledScripts) {
+    Executable getScript(SlingHttpServletRequest request, Bundle bundle, boolean precompiledScripts) {
         return getScript(request, bundle, precompiledScripts,null);
     }
 
-    ScriptEngineExecutable getScript(SlingHttpServletRequest request, Bundle bundle, boolean precompiledScripts, String delegatedResourceType) {
+    Executable getScript(SlingHttpServletRequest request, Bundle bundle, boolean precompiledScripts, String delegatedResourceType) {
         List<String> scriptMatches;
         if (StringUtils.isEmpty(delegatedResourceType)) {
             scriptMatches = buildScriptMatches(request);

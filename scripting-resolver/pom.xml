@@ -23,7 +23,7 @@
     <parent>
         <artifactId>sling</artifactId>
         <groupId>org.apache.sling</groupId>
-        <version>33</version>
+        <version>34</version>
         <relativePath/>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -31,6 +31,8 @@
     <artifactId>org.apache.sling.scripting.resolver.reactor</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
+
+    <name>Apache Sling Scripting Resolver Reactor</name>
 
     <modules>
         <module>org-apache-sling-scripting-maven-plugin</module>
@@ -40,6 +42,7 @@
         <module>examples/org-apache-sling-scripting-examplebundle.hi</module>
         <module>org-apache-sling-scripting-resolver</module>
         <module>sling-org-apache-sling-scripting-sightly</module>
+        <module>org-apache-sling-scripting-resolver-it</module>
     </modules>
 
     <build>

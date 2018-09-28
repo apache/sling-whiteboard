@@ -16,21 +16,7 @@
  ~ specific language governing permissions and limitations
  ~ under the License.
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-package org.apache.sling.scripting.resolver.internal;
+@Version("0.1.0")
+package org.apache.sling.scripting.resolver;
 
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
-import javax.script.ScriptException;
-
-import org.osgi.framework.Bundle;
-
-interface ScriptEngineExecutable {
-
-    String getName();
-
-    ScriptEngine getScriptEngine();
-
-    Bundle getBundle();
-
-    void eval(ScriptContext context) throws ScriptException;
-}
+import org.osgi.annotation.versioning.Version;

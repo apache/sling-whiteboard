@@ -40,6 +40,7 @@ import org.apache.sling.scripting.api.BindingsValuesProvider;
 import org.apache.sling.scripting.api.BindingsValuesProvidersByContext;
 import org.apache.sling.scripting.api.resource.ScriptingResourceResolverProvider;
 import org.apache.sling.scripting.core.ScriptHelper;
+import org.apache.sling.scripting.resolver.BundledRenderUnit;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
@@ -49,7 +50,7 @@ import org.slf4j.LoggerFactory;
         service = ScriptContextProvider.class
 )
 public class ScriptContextProvider {
-    
+
     private static final Set<String> PROTECTED_BINDINGS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             SlingBindings.REQUEST,
             SlingBindings.RESPONSE,
@@ -59,7 +60,8 @@ public class ScriptContextProvider {
             SlingBindings.OUT,
             SlingBindings.LOG,
             SlingBindings.SLING,
-            ScriptEngine.FILENAME
+            ScriptEngine.FILENAME,
+            BundledRenderUnit.VARIABLE
     )));
 
     @Reference
@@ -68,7 +70,7 @@ public class ScriptContextProvider {
     @Reference
     private ScriptingResourceResolverProvider scriptingResourceResolverProvider;
 
-    ScriptContext prepareScriptContext(SlingHttpServletRequest request, SlingHttpServletResponse response, ScriptEngineExecutable executable)
+    ScriptContext prepareScriptContext(SlingHttpServletRequest request, SlingHttpServletResponse response, Executable executable)
             throws IOException {
         // prepare the SlingBindings
         Bindings bindings = new SimpleBindings();
@@ -81,6 +83,7 @@ public class ScriptContextProvider {
         Logger scriptLogger = LoggerFactory.getLogger(executable.getName());
         bindings.put(SlingBindings.LOG, scriptLogger);
         bindings.put(SlingBindings.SLING, new ScriptHelper(executable.getBundle().getBundleContext(), null, request, response));
+        bindings.put(BundledRenderUnit.VARIABLE, executable);
         bindings.put(ScriptEngine.FILENAME, executable.getName());
         bindings.put(ScriptEngine.FILENAME.replaceAll("\\.", "_"), executable.getName());
 
@@ -99,7 +102,6 @@ public class ScriptContextProvider {
         scriptContext.setWriter(response.getWriter());
         scriptContext.setErrorWriter(new LogWriter(scriptLogger));
         scriptContext.setReader(request.getReader());
-        scriptContext.setAttribute("org.apache.sling.scripting.resolver.provider.bundle", executable.getBundle(), SlingScriptConstants.SLING_SCOPE);
         return scriptContext;
     }
 
