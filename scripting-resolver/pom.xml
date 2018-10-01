@@ -34,6 +34,11 @@
 
     <name>Apache Sling Scripting Resolver Reactor</name>
 
+    <properties>
+        <sling.java.version>8</sling.java.version>
+        <jacoco.maven.plugin.version>0.8.1</jacoco.maven.plugin.version>
+    </properties>
+
     <modules>
         <module>org-apache-sling-scripting-maven-plugin</module>
         <module>examples/org-apache-sling-scripting-examplebundle</module>
