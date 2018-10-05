@@ -18,24 +18,18 @@
  */
 package org.apache.sling.feature.service;
 
-import java.util.Map;
-import java.util.Set;
+import org.osgi.framework.Version;
 
 /**
- * Service to initialize the {@link Features} service.
+ * This Service can provide information about bundles in the feature model.
  */
-public interface FeaturesFactory {
+public interface Bundles {
     /**
-     * Initialize the Features service. The implementation of this
-     * factory service will register a {@link Features} service
-     * based on the mapping provided.
-     * @param bundleFeatureMapping A mapping from a bundle to the features
-     * that this bundle belongs to. If a bundle is not part of a feature
-     * this must be represented by a {@code null} value in the set.
-     * Bundles are listed using the {@code symbolic-name:version} syntax.
-     * Features are described using the maven ID syntax:
-     * {@code groupID:artifactID:type:classifier:version} where
-     * type and classifier are optional.
+     * Obtain the Artifact ID for a given bundle, identified by its
+     * Symbolic Name and version.
+     * @param bsn The symbolic name of the bundle.
+     * @param ver The version of the bundle.
+     * @return The artifact ID.
      */
-    void initialize(Map<String, Set<String>> bundleFeatureMapping);
+    String getBundleArtifact(String bsn, Version ver);
 }

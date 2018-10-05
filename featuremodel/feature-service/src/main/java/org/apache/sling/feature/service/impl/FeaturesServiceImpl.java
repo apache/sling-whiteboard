@@ -18,23 +18,33 @@
  */
 package org.apache.sling.feature.service.impl;
 
+import org.apache.felix.inventory.InventoryPrinter;
 import org.apache.sling.feature.service.Features;
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.Version;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
-import java.util.AbstractMap;
-import java.util.Collections;
-import java.util.Map;
 import java.util.Set;
 
-class FeaturesServiceImpl implements Features {
-    private final Map<Map.Entry<String, Version>, Set<String>> bundleFeatureMap;
+@Component(immediate = true)
+public class FeaturesServiceImpl implements Features {
 
-    FeaturesServiceImpl(Map<Map.Entry<String, Version>, Set<String>> bundleIDFeatures) {
-        bundleFeatureMap = Collections.unmodifiableMap(bundleIDFeatures);
+    @Reference(target="(" + InventoryPrinter.NAME + "=launch.features)")
+    InventoryPrinter printer;
+
+    public FeaturesServiceImpl() {
+        // TODO Auto-generated constructor stub
+    }
+
+    @Activate
+    public void activate(BundleContext bc) {
+        System.out.println("*** Features Service Activated: " + bc);
     }
 
     @Override
-    public Set<String> getFeaturesForBundle(String bsn, Version version) {
-        return bundleFeatureMap.get(new AbstractMap.SimpleEntry<String, Version>(bsn, version));
+    public Set<String> getFeaturesForBundle(String bsn, Version ver) {
+        return null; // TODO
     }
 }

@@ -23,7 +23,7 @@
 
     <artifactId>org.apache.sling.feature.service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <packaging>bundle</packaging>
+    <packaging>jar</packaging>
 
     <name>Apache Sling Feature Runtime Service</name>
     <description>
@@ -37,6 +37,34 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-maven-plugin</artifactId>
+                <version>4.0.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>bnd-process</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <bnd><![CDATA[
+                        -exportcontents: ${packages;VERSIONED}
+                        -removeheaders: Private-Package,Include-Resource
+                    ]]></bnd>
+                </configuration>
+            </plugin>
+            <!-- 
+            <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
                 <extensions>true</extensions>
@@ -46,16 +74,18 @@
                         <Fragment-Host>system.bundle;extension:=framework</Fragment-Host>
                     </instructions>
                 
-                    <!--  Skip baselining for 0.x version -->
+                    <!- -  Skip baselining for 0.x version - ->
                     <skip>true</skip>
                 </configuration>
             </plugin>
+             -->
             <plugin>
                 <groupId>org.apache.rat</groupId>
                 <artifactId>apache-rat-plugin</artifactId>
                 <configuration>
                     <excludes>
                         <exclude>*.md</exclude>
+                        <exclude>src/main/resources/META-INF/services/*</exclude>
                     </excludes>
                 </configuration>
             </plugin>
@@ -71,7 +101,33 @@
             <groupId>org.osgi</groupId>
             <artifactId>osgi.core</artifactId>
             <scope>provided</scope>
-        </dependency>        
+        </dependency>     
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.service.component.annotations</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.inventory</artifactId>
+            <version>1.0.6</version>
+            <scope>provided</scope>
+        </dependency>
+                
+        <!--    
+        <dependency>
+            <groupId>org.apache.sling</groupId>
+            <artifactId>org.apache.sling.feature</artifactId>
+            <version>0.1.3-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.sling</groupId>
+            <artifactId>org.apache.sling.feature.launcher</artifactId>
+            <version>0.1.0-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+         -->
 
         <!-- Testing -->
         <dependency>
