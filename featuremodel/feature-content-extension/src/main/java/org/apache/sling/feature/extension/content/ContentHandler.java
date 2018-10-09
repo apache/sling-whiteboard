@@ -95,7 +95,14 @@ public class ContentHandler implements ExtensionHandler {
                 && extension.getName().equals(FeatureConstants.EXTENSION_NAME_CONTENT_PACKAGES)) {
             MultiValueMap orderedArtifacts = MultiValueMap.decorate(new LinkedHashMap<Integer, Collection<Artifact>>());
             for (final Artifact a : extension.getArtifacts()) {
-                orderedArtifacts.put(Integer.valueOf(a.getStartOrder()), a);
+                int order;
+                // content-packages without explicit start-order to be installed last
+                if (a.getMetadata().get(Artifact.KEY_START_ORDER) != null) {
+                    order = Integer.valueOf(a.getStartOrder());
+                } else {
+                    order = Integer.MAX_VALUE;
+                }
+                orderedArtifacts.put(order, a);
             }
             List<String> executionPlans = new ArrayList<String>();
             for (Object key : orderedArtifacts.keySet()) {
