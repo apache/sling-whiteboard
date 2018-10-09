@@ -98,7 +98,7 @@ public class ContentHandler implements ExtensionHandler {
                 int order;
                 // content-packages without explicit start-order to be installed last
                 if (a.getMetadata().get(Artifact.KEY_START_ORDER) != null) {
-                    order = Integer.valueOf(a.getStartOrder());
+                    order = a.getStartOrder();
                 } else {
                     order = Integer.MAX_VALUE;
                 }
