@@ -1,3 +1,0 @@
-# News
-
-News file

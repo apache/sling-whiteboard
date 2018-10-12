@@ -26,6 +26,10 @@ import java.io.File;
 
 class LazyModifiedDateResourceMetadata extends ResourceMetadata {
 
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
     private volatile long lastModified = -1;
     private File file;
 
@@ -36,7 +40,6 @@ class LazyModifiedDateResourceMetadata extends ResourceMetadata {
     @Override
     public long getModificationTime() {
         if (lastModified == -1) {
-            // lazy init - fs access is quite slow
             lastModified = file.lastModified();
         }
         return lastModified;

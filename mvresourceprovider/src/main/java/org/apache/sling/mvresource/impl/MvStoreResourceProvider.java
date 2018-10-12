@@ -1,6 +1,27 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.apache.sling.mvresource.impl;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.sling.api.resource.PersistenceException;
@@ -13,19 +34,23 @@ import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component(
 service=ResourceProvider.class,
-configurationPolicy=ConfigurationPolicy.REQUIRE,
 property={
         Constants.SERVICE_DESCRIPTION + "=Sling File System Resource Provider",
-        Constants.SERVICE_VENDOR + "=The Apache Software Foundation"
+        Constants.SERVICE_VENDOR + "=The Apache Software Foundation",
+        ResourceProvider.PROPERTY_ROOT +"=/content/monkey",
+        ResourceProvider.PROPERTY_AUTHENTICATE + "=" + ResourceProvider.AUTHENTICATE_NO
 })
 public class MvStoreResourceProvider extends ResourceProvider<Object> {
 
+    private static final Logger LOG = LoggerFactory.getLogger(MvStoreResourceProvider.class);
+    
     @ObjectClassDefinition(name = "Apache Sling Resource Provider",
             description = "Configure an instance of the file system " +
                           "resource provider in terms of provider root and file system location")
@@ -45,8 +70,8 @@ public class MvStoreResourceProvider extends ResourceProvider<Object> {
         String provider_root();
 
         @AttributeDefinition(name = "Cache Size",
-                description = "Max. number of content files cached in memory.")
-        int provider_cache_size() default 10000;
+                description = "Cache size in MB")
+        int provider_cache_size() default 1024;
 
         // Internal Name hint for web console.
         String webconsole_configurationFactory_nameHint() default "{provider.fs.mode}: {" + ResourceProvider.PROPERTY_ROOT + "}";
@@ -56,6 +81,7 @@ public class MvStoreResourceProvider extends ResourceProvider<Object> {
     
     @Override
     public void start(ProviderContext ctx) {
+        LOG.info("mvprovider has started");
         super.start(ctx);
         store =  MVStore.open("dataStore");
     }
@@ -68,20 +94,39 @@ public class MvStoreResourceProvider extends ResourceProvider<Object> {
 
     @Override
     public Resource getResource(ResolveContext<Object> context, String resourcePath, ResourceContext resourceContext, Resource parentResource) {
+        LOG.info("mvprovider has been asked for {} ",resourcePath);
         MVMap<String,Object> properties = store.openMap(resourcePath);
+        if (resourcePath.equalsIgnoreCase("/content/monkey")) {
+            properties.put("sling:resourceType", "nt:unstructured");
+            store.commit();
+        }
+        if(properties.isEmpty()) {
+            return null;
+        }
         return new MvResource(context.getResourceResolver(),resourcePath,properties);
     }
 
     @Override
     public Resource create(ResolveContext<Object> ctx, String path, Map<String, Object> properties)
             throws PersistenceException {
+        LOG.info("mvprovider has been asked to create {} ",path);
         String parent = parentPath(path);
-        MVMap<String,Boolean> children = store.openMap(parent+":children");
+        String child = currentName(path);
+        LOG.info("mvprovider has been asked to create {} ",path);
+        MVMap<String,String[]> parentResource = store.openMap("_children");
+        String[] children = parentResource.getOrDefault(parent, new String[] {});
+        List<String> childList =  Arrays.asList(children);
+        childList.add(child);
+        parentResource.put(parent, childList.toArray(new String[]{}));
         MVMap<String,Object> data = store.openMap(path);
-        children.put(path, true);
         data.putAll(properties);
         store.commit();
-        return super.create(ctx, path, properties);
+        return new MvResource(ctx.getResourceResolver(), path, data);
+    }
+
+    private String currentName(String path) {
+        int index = path.lastIndexOf('/');
+        return path.substring(index,path.length());
     }
 
     private String parentPath(String path) {
@@ -101,7 +146,14 @@ public class MvStoreResourceProvider extends ResourceProvider<Object> {
 
     @Override
     public Iterator<Resource> listChildren(ResolveContext<Object> resolveContext, Resource resource) {
-        return null;
+        MVMap<String,String[]> parentResource = store.openMap("_children");
+        List<Resource> response = new ArrayList<>();
+        String[] childNames = parentResource.getOrDefault(resource.getPath(), new String[] {});
+        for (int i = 0; i < childNames.length;++i) {
+            String childPath = resource.getPath()+"/"+childNames[i];
+            response.add(new MvResource(resolveContext.getResourceResolver(),childPath , store.openMap(childPath)));
+        }
+        return response.iterator();
     }
 
 }

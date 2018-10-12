@@ -19,7 +19,7 @@
         <version>34</version>
     </parent>
 
-    <artifactId>org.apache.sling.resourceprovider</artifactId>
+    <artifactId>org.apache.sling.mvresourceprovider</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
     <name>Apache Sling Resource Provider</name>
@@ -81,7 +81,5 @@
             <version>1.4.197</version>
         </dependency>
     </dependencies>
-    <properties>
-        <sling.java.version>8</sling.java.version>
-    </properties>
+    <packaging>bundle</packaging>
 </project>

@@ -21,14 +21,17 @@ package org.apache.sling.mvresource.impl;
 import org.apache.sling.api.resource.AbstractResource;
 import org.apache.sling.api.resource.ResourceMetadata;
 import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.api.resource.ValueMap;
+import org.apache.sling.api.wrappers.DeepReadModifiableValueMapDecorator;
+import org.apache.sling.api.wrappers.ValueMapDecorator;
 import org.h2.mvstore.MVMap;
 
 public class MvResource extends AbstractResource {
 
-    private MVMap<String,Object> properties;
+    private MVMap<String, Object> properties;
     private String path;
     private ResourceResolver resolver;
-    
+
     public MvResource(ResourceResolver resolver, String path, MVMap<String, Object> properties) {
         this.resolver = resolver;
         this.properties = properties;
@@ -43,7 +46,7 @@ public class MvResource extends AbstractResource {
     @Override
     public String getResourceType() {
         if (properties.isEmpty()) {
-            return RESOURCE_TYPE_NON_EXISTING;
+            return null;
         }
         return (String) properties.get("sling:resourceType");
     }
@@ -51,15 +54,14 @@ public class MvResource extends AbstractResource {
     @Override
     public String getResourceSuperType() {
         if (properties.isEmpty()) {
-            return RESOURCE_TYPE_NON_EXISTING;
+            return null;
         }
         return (String) properties.get("sling:resourceSuperType");
     }
 
     @Override
     public ResourceMetadata getResourceMetadata() {
-        // TODO Auto-generated method stub
-        return null;
+        return new ResourceMetadata();
     }
 
     @Override
@@ -71,5 +73,9 @@ public class MvResource extends AbstractResource {
         return properties;
     }
 
+    @Override
+    public ValueMap getValueMap() {
+        return new DeepReadModifiableValueMapDecorator(this, new ValueMapDecorator(properties));
+    }
 
 }
