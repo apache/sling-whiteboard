@@ -1,0 +1,1 @@
+# Apache Sling Resource Provider
