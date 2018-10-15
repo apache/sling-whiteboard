@@ -52,6 +52,6 @@ public class WhitelistServiceFactoryImpl implements WhitelistServiceFactory {
     }
 
     WhitelistService createWhitelistService(Map<String, Set<String>> packages, Map<String, Set<String>> regions) {
-        return new WhitelistServiceImpl(packages, regions);
+        return null; // new WhitelistServiceImpl(packages, regions);
     }
 }

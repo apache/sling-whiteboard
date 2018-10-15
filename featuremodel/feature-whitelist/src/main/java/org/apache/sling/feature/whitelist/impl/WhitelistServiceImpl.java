@@ -18,15 +18,119 @@
  */
 package org.apache.sling.feature.whitelist.impl;
 
+import org.apache.sling.feature.Extension;
+import org.apache.sling.feature.service.Features;
 import org.apache.sling.feature.whitelist.WhitelistService;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
+import java.io.StringReader;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.json.JsonString;
+import javax.json.JsonValue;
+
+@Component(immediate=true)
 class WhitelistServiceImpl implements WhitelistService {
+
+    @Reference
+    Features featuresService;
+
+    final Map<String, Set<String>> featureRegions = new ConcurrentHashMap<>();
+    final Map<String, Set<String>> regionPackages = new ConcurrentHashMap<>();
+
+
+    @Activate
+    public void activate() {
+        Map<String, Set<String>> frMap = new HashMap<>();
+        Map<String, Set<String>> rpMap = new HashMap<>();
+
+        for (Extension ex : featuresService.getCurrentFeature().getExtensions()) {
+            if (!"api-region".equals(ex.getName()))
+                continue;
+
+            JsonReader reader = Json.createReader(new StringReader(ex.getJSON()));
+            JsonArray ja = reader.readArray();
+            for (JsonValue jv : ja) {
+                if (jv instanceof JsonObject) {
+                    JsonObject jo = (JsonObject) jv;
+                    String name = jo.getString("name");
+                    String feature = jo.getString("org-feature");
+
+                    Set<String> regions = frMap.get(feature);
+                    if (regions == null) {
+                        regions = new HashSet<>();
+                        frMap.put(feature, regions);
+                    }
+                    regions.add(name);
+
+                    Set<String> packages = rpMap.get(name);
+                    if (packages == null) {
+                        packages = new HashSet<>();
+                        rpMap.put(name, packages);
+                    }
+
+                    JsonArray xja = jo.getJsonArray("exports");
+                    for (JsonValue ev : xja) {
+                        if (ev instanceof JsonString) {
+                            JsonString js = (JsonString) ev;
+                            packages.add(js.getString());
+                        }
+                    }
+                }
+            }
+        }
+
+        // Store in fields as immutable sets
+        featureRegions.clear();
+        for (Map.Entry<String, Set<String>> entry : frMap.entrySet()) {
+            featureRegions.put(entry.getKey(), Collections.unmodifiableSet(entry.getValue()));
+        }
+
+        regionPackages.clear();
+        for (Map.Entry<String, Set<String>> entry : rpMap.entrySet()) {
+            regionPackages.put(entry.getKey(), Collections.unmodifiableSet(entry.getValue()));
+        }
+    }
+
+
+    @Override
+    public Set<String> listRegions(String feature) {
+        Set<String> regions = featureRegions.get(feature);
+        if (regions == null)
+            return Collections.emptySet();
+        else
+            return regions;
+    }
+
+
+    @Override
+    public Set<String> listPackages(String region) {
+        Map<String, Set<String>> packages = regionPackages;
+        if (packages == null)
+            return Collections.emptySet();
+        else
+            return packages.get(region);
+    }
+
+
+
+//    @Override
+//    public Boolean regionWhitelistsPackage(String region, String packageName) {
+//        // TODO Auto-generated method stub
+//        return null;
+//    }
+    /*
     final Map<String, Set<String>> featureRegionMapping;
     final Map<String, Set<String>> regionPackageMapping;
 
@@ -75,4 +179,5 @@ class WhitelistServiceImpl implements WhitelistService {
 
         return packages.contains(packageName);
     }
+    */
 }

@@ -18,6 +18,8 @@
  */
 package org.apache.sling.feature.whitelist.impl;
 
+import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.launcher.service.Bundles;
 import org.apache.sling.feature.service.Features;
 import org.apache.sling.feature.whitelist.WhitelistService;
 import org.osgi.framework.Bundle;
@@ -27,6 +29,7 @@ import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleRequirement;
 import org.osgi.framework.wiring.BundleRevision;
+import org.osgi.service.component.annotations.Reference;
 import org.osgi.util.tracker.ServiceTracker;
 
 import java.util.Collection;
@@ -40,6 +43,12 @@ class ResolverHookImpl implements ResolverHook {
 
     private final ServiceTracker<Features, Features> featureServiceTracker;
     private final WhitelistService whitelistService;
+
+    @Reference
+    Bundles bundleService;
+
+    @Reference
+    Features featuresService;
 
     public ResolverHookImpl(ServiceTracker<Features, Features> tracker,
             WhitelistService wls) {
@@ -78,7 +87,9 @@ class ResolverHookImpl implements ResolverHook {
                 return;
             }
 
-            Set<String> reqFeatures = fs.getFeaturesForBundle(reqBundleName, reqBundleVersion);
+            String reqBundleArtifact = bundleService.getBundleArtifact(reqBundleName, reqBundleVersion.toString());
+            String reqFeatureArtifact = featuresService.getBundleOrigin(ArtifactId.fromMvnId(reqBundleArtifact));
+            Set<String> reqFeatures = Collections.singleton(reqFeatureArtifact); // TODO multiple features?
             Set<String> regions;
             if (reqFeatures == null) {
                 regions = Collections.emptySet();
@@ -113,7 +124,9 @@ class ResolverHookImpl implements ResolverHook {
                 String capBundleName = capBundle.getSymbolicName();
                 Version capBundleVersion = capBundle.getVersion();
 
-                Set<String> capFeatures = fs.getFeaturesForBundle(capBundleName, capBundleVersion);
+                String capBundleArtifact = bundleService.getBundleArtifact(capBundleName, capBundleVersion.toString());
+                String capFeatureArtifact = featuresService.getBundleOrigin(ArtifactId.fromMvnId(capBundleArtifact));
+                Set<String> capFeatures = Collections.singleton(capFeatureArtifact); // TODO multiple features?
                 if (capFeatures == null || capFeatures.isEmpty())
                     capFeatures = Collections.singleton(null);
 
@@ -139,14 +152,15 @@ class ResolverHookImpl implements ResolverHook {
                     Object pkg = bc.getAttributes().get(PackageNamespace.PACKAGE_NAMESPACE);
                     if (pkg instanceof String) {
                         String packageName = (String) pkg;
-                        if (Boolean.TRUE.equals(whitelistService.regionWhitelistsPackage(WhitelistService.GLOBAL_REGION, packageName))) {
+
+                        if (whitelistService.listPackages(WhitelistService.GLOBAL_REGION).contains(packageName)) {
                             // If the export is in the global region everyone can access
                             coveredCaps.add(bc);
                             continue nextCapability;
                         }
 
                         for (String region : regions) {
-                            if (!Boolean.FALSE.equals(whitelistService.regionWhitelistsPackage(region, packageName))) {
+                            if (whitelistService.listPackages(region).contains(packageName)) {
                                 // If the export is in a region that the feature is also in, then allow
                                 coveredCaps.add(bc);
                                 continue nextCapability;

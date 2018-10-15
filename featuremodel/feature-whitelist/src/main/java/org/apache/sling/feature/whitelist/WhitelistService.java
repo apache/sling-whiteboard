@@ -30,12 +30,14 @@ public interface WhitelistService {
      */
     Set<String> listRegions(String feature);
 
-    /**
-     * Returns whether a package is whitelisted for the given region.
-     * @param region The region
-     * @param packageName The package
-     * @return Returns whether the package is whitelisted for the region.
-     * If the region is not known {@code null} is returned.
-     */
-    Boolean regionWhitelistsPackage(String region, String packageName);
+    Set<String> listPackages(String region);
+
+//    /**
+//     * Returns whether a package is whitelisted for the given region.
+//     * @param region The region
+//     * @param packageName The package
+//     * @return Returns whether the package is whitelisted for the region.
+//     * If the region is not known {@code null} is returned.
+//     */
+//    Boolean regionWhitelistsPackage(String region, String packageName);
 }
