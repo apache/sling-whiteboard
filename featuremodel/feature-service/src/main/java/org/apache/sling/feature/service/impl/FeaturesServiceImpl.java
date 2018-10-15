@@ -18,33 +18,43 @@
  */
 package org.apache.sling.feature.service.impl;
 
-import org.apache.felix.inventory.InventoryPrinter;
+import org.apache.sling.feature.Artifact;
+import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.io.json.FeatureJSONReader;
 import org.apache.sling.feature.service.Features;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.Version;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
-import java.util.Set;
+import java.io.IOException;
+import java.io.StringReader;
 
-@Component(immediate = true)
+@Component(immediate=true)
 public class FeaturesServiceImpl implements Features {
+    private Feature feature;
 
-    @Reference(target="(" + InventoryPrinter.NAME + "=launch.features)")
-    InventoryPrinter printer;
-
-    public FeaturesServiceImpl() {
-        // TODO Auto-generated constructor stub
-    }
+    @Reference
+    org.apache.sling.feature.launcher.service.Features launcherFeaturesService;
 
     @Activate
-    public void activate(BundleContext bc) {
-        System.out.println("*** Features Service Activated: " + bc);
+    public void activate() throws IOException {
+        feature = FeatureJSONReader.read(
+                new StringReader(launcherFeaturesService.getEffectiveFeature()), null);
     }
 
     @Override
-    public Set<String> getFeaturesForBundle(String bsn, Version ver) {
-        return null; // TODO
+    public Feature getCurrentFeature() {
+        return feature;
+    }
+
+    @Override
+    public String getBundleOrigin(ArtifactId bundleId) {
+        for (Artifact b : feature.getBundles()) {
+            if (bundleId.equals(b.getId())) {
+                return b.getMetadata().get("org-feature");
+            }
+        }
+        return null;
     }
 }

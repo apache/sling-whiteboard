@@ -18,24 +18,10 @@
  */
 package org.apache.sling.feature.service;
 
-import org.osgi.framework.Version;
+import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.Feature;
 
-import java.util.Set;
-
-/**
- * The Features service provides information over Features at runtime.
- */
 public interface Features {
-    /**
-     * Find out what features a given bundle belongs to.
-     * @param bsn The symbolic name of the bundle.
-     * @param ver The version of the bundle.
-     * @return The set of Feature IDs in the Maven ID syntax of the features
-     * that the bundle belongs to. A bundle can belong to more than one
-     * feature. If a bundle is not part of a feature then this method
-     * can return {@code null}, and empty set or the value {@code null}
-     * as part of a set if the bundle is present both inside as well as
-     * outside of a feature.
-     */
-    Set<String> getFeaturesForBundle(String bsn, Version ver);
+    Feature getCurrentFeature();
+    String getBundleOrigin(ArtifactId bundleId);
 }
