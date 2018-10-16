@@ -18,6 +18,8 @@
  */
 package org.apache.sling.mvresource.impl;
 
+import java.util.Map;
+
 import org.apache.sling.api.resource.AbstractResource;
 import org.apache.sling.api.resource.ResourceMetadata;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -59,9 +61,10 @@ public class MvResource extends AbstractResource {
         return (String) properties.get("sling:resourceSuperType");
     }
 
+    private ResourceMetadata metaData  = new ResourceMetadata();
     @Override
     public ResourceMetadata getResourceMetadata() {
-        return new ResourceMetadata();
+        return metaData;
     }
 
     @Override
