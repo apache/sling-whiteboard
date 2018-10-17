@@ -20,7 +20,9 @@ package org.apache.sling.mvresource.impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -113,16 +115,13 @@ public class MvStoreResourceProvider extends ResourceProvider<Object> implements
         LOG.info("CREATE  {} ", path);
         try {
             String parent = parentPath(path);
-            String child = currentName(path);
             MVMap<String, String[]> parentResource = store.openMap("_children");
             String[] children = parentResource.getOrDefault(parent, new String[] {});
             String[] newChildren = Arrays.copyOf(children, children.length + 1);
-            newChildren[children.length] = child;
+            newChildren[children.length] = path;
             parentResource.put(parent, newChildren);
             MVMap<String, Object> data = store.openMap(path);
-            
             data.putAll(properties);
-            store.commit();
             return new MvResource(ctx.getResourceResolver(), path, data);
         } catch (Exception e) {
             LOG.error("Error occured in creation {}", e);
@@ -131,7 +130,7 @@ public class MvStoreResourceProvider extends ResourceProvider<Object> implements
 
     }
 
-    private String currentName(String path) {
+    public String currentName(String path) {
         LOG.info("CURRENT NAME  {} ", path);
         int index = path.lastIndexOf('/');
         return path.substring(index + 1, path.length());
@@ -151,12 +150,36 @@ public class MvStoreResourceProvider extends ResourceProvider<Object> implements
     @Override
     public void delete(ResolveContext<Object> ctx, Resource resource) throws PersistenceException {
         LOG.info("DELETE  {} ", resource.getName());
-        if (!(resource instanceof MVMap)) {
-            throw new PersistenceException();
+        if (!(resource instanceof MvResource)) {
+            throw new PersistenceException("can not delete resource of type" + resource.getClass());
         }
-        MVMap<String, Object> map = ((MvResource) resource).getMVMap();
-        store.removeMap(map);
-        store.commit();
+        MVMap<String, String[]> parentResource = store.openMap("_children");
+        String parentPath = parentPath(resource.getPath());
+        String[] childNames = parentResource.get(parentPath);
+        String[] newChildren = new String[childNames.length - 1];
+        int newIndex = 0;
+        for (int index = 0; index < childNames.length ; ++index) {
+            if (!childNames[index].equals(resource.getName())) {
+                newChildren[newIndex++] = childNames[index];
+            }
+        }
+        parentResource.put(parentPath, newChildren);
+        Deque<String> resourceToDelete = new LinkedList<>();
+        resourceToDelete.add(resource.getPath());
+        deleteDescendents(parentResource, resourceToDelete);
+    }
+    
+    private void deleteDescendents(MVMap<String, String[]> parentMap, Deque<String> pathsToDelete ) {
+        if (pathsToDelete.isEmpty()) {
+            return;
+        }
+        String currentPath = pathsToDelete.pop();
+        String[] children = parentMap.getOrDefault(currentPath, new String[] {});
+        store.removeMap(store.openMap(currentPath));
+        for (int i = 0; i < children.length ; ++i) {
+            pathsToDelete.add(children[i]);
+        }
+        deleteDescendents(parentMap,pathsToDelete);
     }
 
     @Override

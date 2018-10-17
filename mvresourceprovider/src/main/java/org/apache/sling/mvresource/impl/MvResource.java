@@ -48,7 +48,11 @@ public class MvResource extends AbstractResource {
         if (properties.isEmpty()) {
             return null;
         }
-        return (String) properties.get("sling:resourceType");
+        String type = (String) properties.get("sling:resourceType");
+        if (type == null) {
+            type = (String) properties.get("jcr:primaryType");
+        }
+        return type;
     }
 
     @Override
