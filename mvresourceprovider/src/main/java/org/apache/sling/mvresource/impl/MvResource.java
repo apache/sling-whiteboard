@@ -18,8 +18,6 @@
  */
 package org.apache.sling.mvresource.impl;
 
-import java.util.Map;
-
 import org.apache.sling.api.resource.AbstractResource;
 import org.apache.sling.api.resource.ResourceMetadata;
 import org.apache.sling.api.resource.ResourceResolver;

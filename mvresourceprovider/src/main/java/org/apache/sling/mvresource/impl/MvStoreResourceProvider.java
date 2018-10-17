@@ -120,6 +120,7 @@ public class MvStoreResourceProvider extends ResourceProvider<Object> implements
             newChildren[children.length] = child;
             parentResource.put(parent, newChildren);
             MVMap<String, Object> data = store.openMap(path);
+            
             data.putAll(properties);
             store.commit();
             return new MvResource(ctx.getResourceResolver(), path, data);
@@ -139,6 +140,12 @@ public class MvStoreResourceProvider extends ResourceProvider<Object> implements
     private String parentPath(String path) {
         int index = path.lastIndexOf('/');
         return path.substring(0, index);
+    }
+
+    @Override
+    public void commit(ResolveContext<Object> ctx) throws PersistenceException {
+       LOG.info("COMMIT  {} ", ctx.getProviderState());
+       store.commit();
     }
 
     @Override
