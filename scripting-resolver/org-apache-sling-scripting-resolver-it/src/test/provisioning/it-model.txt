@@ -21,7 +21,7 @@
 
 # Dependencies
 [artifacts]
-  org.apache.sling/org.apache.sling.starter/11-SNAPSHOT/slingstart
+  org.apache.sling/org.apache.sling.starter/12-SNAPSHOT/slingstart
   org.antlr/antlr4-runtime/4.7.1
   org.apache.sling/org.apache.sling.scripting.sightly.runtime
   org.apache.sling/org.apache.sling.scripting.sightly.compiler
