@@ -19,6 +19,7 @@
 package org.apache.sling.mvresource.impl;
 
 import org.apache.sling.api.resource.AbstractResource;
+import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceMetadata;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ValueMap;
@@ -28,11 +29,11 @@ import org.h2.mvstore.MVMap;
 
 public class MvResource extends AbstractResource {
 
-    private MVMap<String, Object> properties;
+    private MvValueMap properties;
     private String path;
     private ResourceResolver resolver;
 
-    public MvResource(ResourceResolver resolver, String path, MVMap<String, Object> properties) {
+    public MvResource(ResourceResolver resolver, String path, MvValueMap properties) {
         this.resolver = resolver;
         this.properties = properties;
         this.path = path;
@@ -45,12 +46,14 @@ public class MvResource extends AbstractResource {
 
     @Override
     public String getResourceType() {
-        if (properties.isEmpty()) {
-            return null;
-        }
         String type = (String) properties.get("sling:resourceType");
         if (type == null) {
             type = (String) properties.get("jcr:primaryType");
+        }
+        if (type == null) {
+            if (properties.isEmpty()) {
+                return "sling:Folder";
+            }
         }
         return type;
     }
@@ -64,6 +67,7 @@ public class MvResource extends AbstractResource {
     }
 
     private ResourceMetadata metaData  = new ResourceMetadata();
+    
     @Override
     public ResourceMetadata getResourceMetadata() {
         return metaData;
@@ -74,13 +78,13 @@ public class MvResource extends AbstractResource {
         return resolver;
     }
 
-    public MVMap<String, Object> getMVMap() {
+    public MvValueMap getMVMap() {
         return properties;
     }
 
     @Override
     public ValueMap getValueMap() {
-        return new DeepReadModifiableValueMapDecorator(this, new ValueMapDecorator(properties));
+        return this.properties;
     }
 
 }
