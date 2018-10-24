@@ -1,0 +1,231 @@
+/*
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+options { 
+  IGNORE_CASE = true;
+  STATIC = false;
+  UNICODE_INPUT = true;
+} 
+
+PARSER_BEGIN(TagParser)
+package org.apache.sling.tagmodifier.impl;
+
+import com.github.tagstream.*;
+import com.github.tagstream.impl.tag.*;
+import java.util.*;
+
+public class TagParser {
+
+  private static String getTokenHtmlText(Token first, Token cur) {
+    Token t;
+    StringBuilder sb = new StringBuilder();
+
+    for (t=first; t != cur.next; t = t.next) {
+      if (t.specialToken != null) {
+        Token tt=t.specialToken;
+        while (tt.specialToken != null) 
+          tt = tt.specialToken;
+        for (; tt != null; tt = tt.next) 
+          sb.append(tt.image);
+      };
+      sb.append(t.image);
+    };
+    return sb.toString();
+  }
+
+}
+
+PARSER_END(TagParser)
+
+< * >TOKEN :
+{
+  <#SPACE: ( " " | "\t" | "\n" | "\r" | "\u000C" ) >
+| <#ATTR_IDENTIFIER:  (~[" ", "\t", "\n", "\r", "\u000C", "=", "/", ">" ])+ >
+| <#NAME_IDENTIFIER:  (~[" ", "\t", "\n", "\r", "\u000C", "/", ">" ])+ >
+| <#SQUOTE : ( "'" ( ~["'"] )* "'") >
+| <#DQUOTE : ( "\"" ( ~["\""] )* "\"") >
+| <#TAG_END: ">" >
+| <#TAG_SLASHEND: "/>" >
+}
+
+
+<DEFAULT> TOKEN : 
+{
+  <TAG_START:      "<"       > : START_TAG
+| <ENDTAG_START:   "</"      > : START_TAG
+| <COMMENT_START:  "<!--"    > : COMMENT
+| <DECL_START:     "<!"      > : DECLARATION
+| <RAWTEXT:         ( ~["<"] )+ >
+}
+
+
+<START_TAG> TOKEN :
+{
+ <TAG_NAME: <NAME_IDENTIFIER> > : IN_TAG
+| <LST_ERROR: ~[]>          : DEFAULT
+}
+
+<IN_TAG, ATTR_VALUE, IN_DECLARATION> SPECIAL_TOKEN :
+{
+  < (<SPACE>)+ >
+}
+
+<IN_TAG> TOKEN :
+{
+  <ATTR_NAME: <ATTR_IDENTIFIER> >
+| <END_OF_TAG: <TAG_END> | <TAG_SLASHEND> >    : DEFAULT 
+| <ATTR_EQ: "=" >                              : ATTR_VALUE
+| <LIT_ERROR: ~[]>
+}
+
+
+<ATTR_VALUE> TOKEN :
+{
+  <QUOTED_STRING : < SQUOTE > | < DQUOTE > >{matchedToken.image = image.substring(1, lengthOfMatch - 1);} : IN_TAG
+| <ATTR_VAL:  ( ~[">", "\"", "'", " ", "\t", "\n", "\r"] )+ > : IN_TAG
+| <ERROR: ~[]>
+}
+
+<COMMENT> TOKEN : 
+{
+  < COMMENT_END:  "-->" > : DEFAULT 
+| < COMMENT_WORD: ~[] >
+}
+
+<DECLARATION> TOKEN :
+{
+  <DECL_TAG: <NAME_IDENTIFIER> > : IN_DECLARATION
+}
+
+<IN_DECLARATION> TOKEN :
+{
+  <DECL_ATTR: <QUOTED_STRING> | ( ~[">", "\"", "'", " ", "\t", "\n", "\r"] )+ >
+| <DECL_END: <TAG_END> | <TAG_SLASHEND> >  : DEFAULT 
+}
+
+
+Element element() :
+{
+  Element e;
+  Token text;
+}
+{
+(
+    LOOKAHEAD(2) 
+         e = tag()        { return e; }
+  |      e = endHtmlElement()     { return e; }
+  |      e = commentHtmlElement() { return e; }
+  |      e = decltag()    { return e; }
+  | LOOKAHEAD(2) 
+        <TAG_START> text=<LST_ERROR>
+            { return new TextData("<" + text.image); }
+  |   text = <RAWTEXT>     { return new TextData(text.image); }
+  |   <EOF> { return new EndOfFile(); }
+)
+}
+
+/** @return an attribute */
+void attribute(Map<String,AttrValue > alist) : 
+{
+  Token t1, t2=null;
+}
+{
+  t1=<ATTR_NAME> [ <ATTR_EQ> t2= < QUOTED_STRING > | t2 = <ATTR_VAL> ]
+  {
+     if (t2 == null) {
+        alist.put(t1.image,new AttrValue());
+      } else {
+        alist.put(t1.image,new AttrValue(t2.image));
+     }
+  }
+}
+
+Map<String,AttrValue> attributeList() : 
+{
+  Map<String,AttrValue> alist = new HashMap<String,AttrValue>();
+
+}
+{
+  (attribute(alist) )*
+  {
+     return alist;
+  }
+}
+
+
+Element tag() :
+{
+  Token t, et;
+  Map<String,AttrValue> alist;
+  Token firstToken = getToken(1);
+}
+{
+  try {
+    <TAG_START> t=<TAG_NAME> alist=attributeList() et=<END_OF_TAG>
+    { 
+      return new StartTag(t.image, alist); 
+    }
+  } catch (ParseException ex) {
+    token_source.SwitchTo(DEFAULT); 
+    String s = getTokenHtmlText(firstToken, getNextToken());
+    return new TextData(s);
+  }
+}
+
+/** @return the end of a tag */
+Element endHtmlElement() :
+{
+  Token t;
+  Token firstToken = getToken(1);
+}
+{
+  try {
+    <ENDTAG_START> t=<TAG_NAME> <END_OF_TAG>
+    { return new EndTag(t.image); }
+  } catch (ParseException ex) {
+    token_source.SwitchTo(DEFAULT); 
+    String s = getTokenHtmlText(firstToken, getNextToken());
+    return new TextData(s);
+  }
+}
+
+
+Comment commentHtmlElement() :
+{
+  StringBuilder sb = new StringBuilder();
+}
+{
+  <COMMENT_START> ( <COMMENT_WORD> { sb.append(token.image); } )* (<EOF> | <COMMENT_END>)
+  { return new Comment(sb.toString()); }
+}
+
+/** @return the start of a DECLARATION */
+Element decltag() :
+{
+  Token tok = null;
+  Map<String,AttrValue > alist = new HashMap<String,AttrValue>();
+  Token firstToken = getToken(1);
+}
+{
+  try {
+    <DECL_START> tok=<DECL_TAG> (< DECL_ATTR > { alist.put(token.image,new AttrValue()); })* <DECL_END>
+    {
+      return new StartTag(tok.image, alist); 
+    }
+  } catch (ParseException ex) {
+    token_source.SwitchTo(DEFAULT); 
+    String s = getTokenHtmlText(firstToken, getNextToken());
+    return new TextData(s);
+  }
+}

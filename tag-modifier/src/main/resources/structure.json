@@ -1,0 +1,87 @@
+{
+    "a" :{
+        "type" : ["flow","phrasing", "palpable"],
+        "context" : ["phrasing"],
+        "contentModel" : {
+            "type" : "transparent",
+            "reject" : ["interactive"]
+        },
+        "attributeModifier" : {
+            "href" : {
+                "type" : "interactive"
+            }
+        }
+    },
+    "abbr" :{
+        "type" : ["flow","phrasing", "palpable"],
+        "context" : ["phrasing"],
+        "contentModel" : {
+            "type" : "phrasing"
+        }
+    },
+    "address" :{
+        "type" : ["flow", "palpable"],
+        "context" : ["flow"],
+        "contentModel" : {
+            "type" : "flow",
+            "reject" : ["heading", "sectioning"],
+            "rejectTags" : ["header", "footer", "address"]
+        },
+        "attributeModifier" : {
+            "href" : {
+                "type" : "interactive"
+            }
+        }
+    },
+    "article" :{
+        "type" : ["flow", "sectioning", "palpable"],
+        "context" : ["flow"],
+        "contentModel" : {
+            "type" : "flow",
+            "rejectTags" : ["main"]
+        }
+    },
+    "aside" :{
+        "type" : ["flow", "sectioning", "palpable"],
+        "context" : ["flow"],
+        "contentModel" : {
+            "type" : "flow",
+            "rejectTags" : ["main"]
+        }
+    },
+    "audio" :{
+        "type" : ["flow", "phrasing", "embedded"],
+        "context" : ["embedded"],
+        "contentModel" : {
+            "type" : "transparent",
+            "rejectTags" : ["audio", "video"]
+        },
+        "attributeModifier" : {
+            "controls" : {
+                "type" : ["interactive","palpable"]
+            }
+        }
+    },
+    "b" :{
+        "type" : ["flow", "phrasing", "palpable"],
+        "context" : ["phrasing"],
+        "contentModel" : {
+            "type" : "flow",
+            "reject" : ["heading", "sectioning"],
+            "rejectTags" : ["header", "footer", "address"]
+        },
+        "attributeModifier" : {
+            "href" : {
+                "type" : "interactive"
+            }
+        }
+    },
+    "p" :{
+        "type" : ["flow", "palpable"],
+        "context" : ["flow"],
+        "contentModel" : {
+            "type" : "phrasing"
+        }
+    }
+    
+}
