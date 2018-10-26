@@ -24,9 +24,15 @@ public class StartTag implements Element {
 
     private String value;
     private Map<String, AttrValue> attributes = Collections.emptyMap();
+    private boolean selfClosing;
 
     public StartTag(String value, Map<String, AttrValue> attrList) {
+        this(value,attrList,false);
+    }
+    
+    public StartTag(String value, Map<String, AttrValue> attrList, boolean selfClosing) {
         this.value = value;
+        this.selfClosing = selfClosing;
         attributes = attrList;
     }
 
@@ -43,6 +49,10 @@ public class StartTag implements Element {
     @Override
     public boolean supportsAttributes() {
         return true;
+    }
+    
+    public boolean getSelfClosing() {
+        return selfClosing;
     }
 
     @Override

@@ -21,8 +21,8 @@ options {
 PARSER_BEGIN(TagParser)
 package org.apache.sling.tagmodifier.impl;
 
-import com.github.tagstream.*;
-import com.github.tagstream.impl.tag.*;
+import org.apache.sling.tagmodifier.*;
+import org.apache.sling.tagmodifier.impl.tag.*;
 import java.util.*;
 
 public class TagParser {

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.github.htmlparser;
+package org.apache.sling.tagmodifier;
 
 import static org.junit.Assert.assertEquals;
 
