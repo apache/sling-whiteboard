@@ -17,41 +17,41 @@ public interface TagParserConstants {
   /** RegularExpression Id. */
   int NAME_IDENTIFIER = 3;
   /** RegularExpression Id. */
-  int SQUOTE = 4;
+  int TAG_END = 4;
   /** RegularExpression Id. */
-  int DQUOTE = 5;
+  int TAG_SLASHEND = 5;
   /** RegularExpression Id. */
-  int TAG_END = 6;
+  int TAG_START = 6;
   /** RegularExpression Id. */
-  int TAG_SLASHEND = 7;
+  int ENDTAG_START = 7;
   /** RegularExpression Id. */
-  int TAG_START = 8;
+  int COMMENT_START = 8;
   /** RegularExpression Id. */
-  int ENDTAG_START = 9;
+  int DECL_START = 9;
   /** RegularExpression Id. */
-  int COMMENT_START = 10;
+  int RAWTEXT = 10;
   /** RegularExpression Id. */
-  int DECL_START = 11;
+  int TAG_NAME = 11;
   /** RegularExpression Id. */
-  int RAWTEXT = 12;
+  int LST_ERROR = 12;
   /** RegularExpression Id. */
-  int TAG_NAME = 13;
+  int ATTR_NAME = 14;
   /** RegularExpression Id. */
-  int LST_ERROR = 14;
+  int END_OF_TAG = 15;
   /** RegularExpression Id. */
-  int ATTR_NAME = 16;
+  int ATTR_EQ = 16;
   /** RegularExpression Id. */
-  int END_OF_TAG = 17;
+  int LIT_ERROR = 17;
   /** RegularExpression Id. */
-  int ATTR_EQ = 18;
+  int ATTR_VAL = 18;
   /** RegularExpression Id. */
-  int LIT_ERROR = 19;
+  int ERROR = 19;
   /** RegularExpression Id. */
-  int QUOTED_STRING = 20;
+  int STRING = 20;
   /** RegularExpression Id. */
-  int ATTR_VAL = 21;
+  int SQUOTE = 21;
   /** RegularExpression Id. */
-  int ERROR = 22;
+  int DQUOTE = 22;
   /** RegularExpression Id. */
   int COMMENT_END = 23;
   /** RegularExpression Id. */
@@ -84,8 +84,6 @@ public interface TagParserConstants {
     "<SPACE>",
     "<ATTR_IDENTIFIER>",
     "<NAME_IDENTIFIER>",
-    "<SQUOTE>",
-    "<DQUOTE>",
     "\">\"",
     "\"/>\"",
     "\"<\"",
@@ -95,14 +93,16 @@ public interface TagParserConstants {
     "<RAWTEXT>",
     "<TAG_NAME>",
     "<LST_ERROR>",
-    "<token of kind 15>",
+    "<token of kind 13>",
     "<ATTR_NAME>",
     "<END_OF_TAG>",
     "\"=\"",
     "<LIT_ERROR>",
-    "<QUOTED_STRING>",
     "<ATTR_VAL>",
     "<ERROR>",
+    "<STRING>",
+    "<SQUOTE>",
+    "<DQUOTE>",
     "\"-->\"",
     "<COMMENT_WORD>",
     "<DECL_TAG>",

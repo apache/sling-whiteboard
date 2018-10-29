@@ -53,8 +53,6 @@ PARSER_END(TagParser)
   <#SPACE: ( " " | "\t" | "\n" | "\r" | "\u000C" ) >
 | <#ATTR_IDENTIFIER:  (~[" ", "\t", "\n", "\r", "\u000C", "=", "/", ">" ])+ >
 | <#NAME_IDENTIFIER:  (~[" ", "\t", "\n", "\r", "\u000C", "/", ">" ])+ >
-| <#SQUOTE : ( "'" ( ~["'"] )* "'") >
-| <#DQUOTE : ( "\"" ( ~["\""] )* "\"") >
 | <#TAG_END: ">" >
 | <#TAG_SLASHEND: "/>" >
 }
@@ -92,9 +90,15 @@ PARSER_END(TagParser)
 
 <ATTR_VALUE> TOKEN :
 {
-  <QUOTED_STRING : < SQUOTE > | < DQUOTE > >{matchedToken.image = image.substring(1, lengthOfMatch - 1);} : IN_TAG
-| <ATTR_VAL:  ( ~[">", "\"", "'", " ", "\t", "\n", "\r"] )+ > : IN_TAG
+  <ATTR_VAL:  ( ~[">", "\"", "'", " ", "\t", "\n", "\r"] )+ > : IN_TAG
 | <ERROR: ~[]>
+}
+
+<ATTR_VALUE> TOKEN :
+{
+  <STRING:< SQUOTE >|< DQUOTE >> {matchedToken.image = image.substring(1, lengthOfMatch - 1);} : IN_TAG
+| <#SQUOTE :  "'" ( ~["'"] )* "'" >
+| <#DQUOTE : "\"" ( ~["\""] )* "\"" >
 }
 
 <COMMENT> TOKEN : 
@@ -110,7 +114,7 @@ PARSER_END(TagParser)
 
 <IN_DECLARATION> TOKEN :
 {
-  <DECL_ATTR: <QUOTED_STRING> | ( ~[">", "\"", "'", " ", "\t", "\n", "\r"] )+ >
+  <DECL_ATTR: < SQUOTE > | < DQUOTE > | ( ~[">", "\"", "'", " ", "\t", "\n", "\r"] )+ >
 | <DECL_END: <TAG_END> | <TAG_SLASHEND> >  : DEFAULT 
 }
 
@@ -141,7 +145,7 @@ void attribute(Map<String,AttrValue > alist) :
   Token t1, t2=null;
 }
 {
-  t1=<ATTR_NAME> [ <ATTR_EQ> t2= < QUOTED_STRING > | t2 = <ATTR_VAL> ]
+  t1=<ATTR_NAME> [ <ATTR_EQ> t2= < STRING > | t2 = <ATTR_VAL> ]
   {
      if (t2 == null) {
         alist.put(t1.image,new AttrValue());
@@ -174,7 +178,7 @@ Element tag() :
   try {
     <TAG_START> t=<TAG_NAME> alist=attributeList() et=<END_OF_TAG>
     { 
-      return new StartTag(t.image, alist); 
+      return new StartTag(t.image, alist, et.image.equals(">")); 
     }
   } catch (ParseException ex) {
     token_source.SwitchTo(DEFAULT); 

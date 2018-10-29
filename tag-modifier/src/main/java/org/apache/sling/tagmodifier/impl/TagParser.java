@@ -81,7 +81,7 @@ public class TagParser implements TagParserConstants {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case ATTR_EQ:
         jj_consume_token(ATTR_EQ);
-        t2 = jj_consume_token(QUOTED_STRING);
+        t2 = jj_consume_token(STRING);
         break;
       case ATTR_VAL:
         t2 = jj_consume_token(ATTR_VAL);
@@ -130,7 +130,7 @@ public class TagParser implements TagParserConstants {
       t = jj_consume_token(TAG_NAME);
       alist = attributeList();
       et = jj_consume_token(END_OF_TAG);
-      {if (true) return new StartTag(t.image, alist);}
+      {if (true) return new StartTag(t.image, alist, et.image.equals(">"));}
     } catch (ParseException ex) {
     token_source.SwitchTo(DEFAULT);
     String s = getTokenHtmlText(firstToken, getNextToken());
@@ -233,11 +233,6 @@ public class TagParser implements TagParserConstants {
     finally { jj_save(1, xla); }
   }
 
-  private boolean jj_3_1() {
-    if (jj_3R_4()) return true;
-    return false;
-  }
-
   private boolean jj_3_2() {
     if (jj_scan_token(TAG_START)) return true;
     if (jj_scan_token(LST_ERROR)) return true;
@@ -247,6 +242,11 @@ public class TagParser implements TagParserConstants {
   private boolean jj_3R_4() {
     if (jj_scan_token(TAG_START)) return true;
     if (jj_scan_token(TAG_NAME)) return true;
+    return false;
+  }
+
+  private boolean jj_3_1() {
+    if (jj_3R_4()) return true;
     return false;
   }
 
@@ -267,7 +267,7 @@ public class TagParser implements TagParserConstants {
       jj_la1_init_0();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0xe00,0x1001,0x240000,0x240000,0x10000,0x1000000,0x800001,0x4000000,};
+      jj_la1_0 = new int[] {0x380,0x401,0x50000,0x50000,0x4000,0x1000000,0x800001,0x4000000,};
    }
   final private JJCalls[] jj_2_rtns = new JJCalls[2];
   private boolean jj_rescan = false;
