@@ -1,0 +1,2 @@
+org.apache.sling.feature.whitelisting.extensions.BundleMappingHandler
+org.apache.sling.feature.whitelisting.extensions.BundleArtifactFeatureHandler
