@@ -34,7 +34,6 @@ public class BundleMappingHandler extends AbstractHandler implements PostProcess
         if (!"api-regions".equals(extension.getName()))
             return;
 
-
         try {
             File idBSNFile = getDataFile("idbsnver.properties");
             Properties map = loadProperties(idBSNFile);

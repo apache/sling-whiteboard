@@ -34,6 +34,7 @@
                 <configuration>
                     <excludes>
                         <exclude>src/main/resources/META-INF/services/**</exclude>
+                        <exclude>src/test/resources/**</exclude>
                     </excludes>
                 </configuration>
             </plugin>
@@ -56,6 +57,13 @@
             <groupId>org.osgi</groupId>
             <artifactId>osgi.core</artifactId>
             <scope>provided</scope>
+        </dependency>
+
+        <!-- Testing -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
