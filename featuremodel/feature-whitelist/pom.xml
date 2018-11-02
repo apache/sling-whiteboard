@@ -41,12 +41,10 @@
                 <artifactId>maven-bundle-plugin</artifactId>
                 <extensions>true</extensions>
                 <configuration>
-                    <!-- 
                     <instructions>
                         <ExtensionBundle-Activator>org.apache.sling.feature.whitelist.impl.Activator</ExtensionBundle-Activator>
                         <Fragment-Host>system.bundle;extension:=framework</Fragment-Host>
                     </instructions>
-                     -->
                 
                     <!--  Skip baselining for 0.x version -->
                     <skip>true</skip>

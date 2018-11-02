@@ -18,28 +18,8 @@
  */
 package org.apache.sling.feature.whitelist.impl;
 
-import org.apache.sling.feature.whitelist.WhitelistService;
-import org.apache.sling.feature.whitelist.WhitelistServiceFactory;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.hooks.resolver.ResolverHookFactory;
-import org.osgi.util.tracker.ServiceTracker;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Dictionary;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 public class WhitelistServiceFactoryImplTest {
+    /*
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Test
     public void testWhitelistServiceFactory() {
@@ -80,4 +60,5 @@ public class WhitelistServiceFactoryImplTest {
         ResolverHookFactory rhf = resolverHookFactory.get(0);
         assertTrue(rhf instanceof WhitelistEnforcer);
     }
+    */
 }
