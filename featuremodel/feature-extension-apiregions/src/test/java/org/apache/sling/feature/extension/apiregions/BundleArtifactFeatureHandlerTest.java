@@ -21,7 +21,6 @@ import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.whitelisting.extensions.BundleArtifactFeatureHandler;
 import org.junit.Test;
 
 import java.io.FileReader;

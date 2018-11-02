@@ -22,7 +22,7 @@ import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.builder.ArtifactProvider;
-import org.apache.sling.feature.whitelisting.extensions.BundleMappingHandler;
+import org.apache.sling.feature.extension.apiregions.BundleMappingHandler;
 import org.junit.Test;
 
 import java.io.File;

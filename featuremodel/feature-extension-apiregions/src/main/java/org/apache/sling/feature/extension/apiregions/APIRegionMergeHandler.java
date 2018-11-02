@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.feature.whitelisting.extensions;
+package org.apache.sling.feature.extension.apiregions;
 
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.Feature;
@@ -32,7 +32,7 @@ import javax.json.JsonReader;
 import javax.json.JsonValue;
 import javax.json.stream.JsonGenerator;
 
-public class APIRegionHandler implements MergeHandler {
+public class APIRegionMergeHandler implements MergeHandler {
 
     @Override
     public boolean canMerge(Extension extension) {

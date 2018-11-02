@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.feature.whitelisting.extensions;
+package org.apache.sling.feature.extension.apiregions;
 
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.Extension;
