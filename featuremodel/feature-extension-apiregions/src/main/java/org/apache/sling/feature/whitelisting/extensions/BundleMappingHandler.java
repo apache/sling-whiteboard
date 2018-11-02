@@ -56,7 +56,7 @@ public class BundleMappingHandler extends AbstractHandler implements PostProcess
 
             storeProperties(map, idBSNFile);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 }

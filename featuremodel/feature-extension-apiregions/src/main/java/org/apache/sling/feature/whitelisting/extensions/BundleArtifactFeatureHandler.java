@@ -48,8 +48,7 @@ public class BundleArtifactFeatureHandler extends AbstractHandler implements Pos
             writeBundleToFeatureMap(feature);
             writeFeatureToRegionAndPackageMap(feature, extension);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
@@ -90,7 +89,9 @@ public class BundleArtifactFeatureHandler extends AbstractHandler implements Pos
         for (JsonValue jv : ja) {
             if (jv instanceof JsonObject) {
                 JsonObject jo = (JsonObject) jv;
-                String fid = jo.getString("org-feature");
+                String fid = null;
+                if (jo.containsKey("org-feature"))
+                    fid = jo.getString("org-feature");
                 if (fid == null)
                     fid = feature.getId().toMvnId();
 
