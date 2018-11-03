@@ -42,16 +42,15 @@ import java.util.Set;
 import static org.junit.Assert.assertEquals;
 
 public class ResolverHookImplTest {
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Test @Ignore
     public void xxtestFilterMatches() throws Exception {
+        /*
         String f = "gid:aid:0.0.9";
         String f2 = "gid2:aid2:1.0.0-SNAPSHOT";
         String f3 = "gid3:aid3:1.2.3";
         String f4 = "gid4:aid4:1.2.3";
         String f5 = "gid5:aid5:1.2.3";
 
-        /*
         Features fs = Mockito.mock(Features.class);
         Mockito.when(fs.getFeaturesForBundle("a.b.c", new Version(0,0,0)))
             .thenReturn(Collections.singleton(f)); // b7
