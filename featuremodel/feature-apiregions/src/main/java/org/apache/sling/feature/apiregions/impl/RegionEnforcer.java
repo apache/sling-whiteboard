@@ -40,15 +40,16 @@ import java.util.Properties;
 import java.util.Set;
 
 class RegionEnforcer implements ResolverHookFactory {
-    private static final String idbsnverFileName = "idbsnver.properties";
-    private static final String bundleFeatureFileName = "bundles.properties";
-    private static final String regionPackageFileName = "regions.properties";
-    private static final String featureRegionFileName = "features.properties";
+    static final String PROPERTIES_FILE_PREFIX = "whitelisting.";
+    static final String IDBSNVER_FILENAME = "idbsnver.properties";
+    static final String BUNDLE_FEATURE_FILENAME = "bundles.properties";
+    static final String REGION_PACKAGE_FILENAME = "regions.properties";
+    static final String FEATURE_REGION_FILENAME = "features.properties";
 
-    private final Map<Map.Entry<String, Version>, List<String>> bsnVerMap;
-    private final Map<String, Set<String>> bundleFeatureMap;
-    private final Map<String, Set<String>> featureRegionMap;
-    private final Map<String, Set<String>> regionPackageMap;
+    final Map<Map.Entry<String, Version>, List<String>> bsnVerMap;
+    final Map<String, Set<String>> bundleFeatureMap;
+    final Map<String, Set<String>> featureRegionMap;
+    final Map<String, Set<String>> regionPackageMap;
 
     public RegionEnforcer() throws IOException {
         bsnVerMap = populateBSNVerMap();
@@ -58,7 +59,7 @@ class RegionEnforcer implements ResolverHookFactory {
     }
 
     private Map<Map.Entry<String, Version>, List<String>> populateBSNVerMap() throws IOException {
-        File idbsnverFile = getDataFile(idbsnverFileName);
+        File idbsnverFile = getDataFile(IDBSNVER_FILENAME);
         if (idbsnverFile != null && idbsnverFile.exists()) {
             Map<Map.Entry<String, Version>, List<String>> m = new HashMap<>();
 
@@ -75,6 +76,7 @@ class RegionEnforcer implements ResolverHookFactory {
                     l = new ArrayList<>();
                     m.put(key, l);
                 }
+                l.add(n);
             }
 
             Map<Map.Entry<String, Version>, List<String>> m2 = new HashMap<>();
@@ -90,15 +92,15 @@ class RegionEnforcer implements ResolverHookFactory {
     }
 
     private Map<String, Set<String>> populateBundleFeatureMap() throws IOException {
-        return loadMap(bundleFeatureFileName);
+        return loadMap(BUNDLE_FEATURE_FILENAME);
     }
 
     private Map<String, Set<String>> populateFeatureRegionMap() throws IOException {
-        return loadMap(featureRegionFileName);
+        return loadMap(FEATURE_REGION_FILENAME);
     }
 
     private Map<String, Set<String>> populateRegionPackageMap() throws IOException {
-        return loadMap(regionPackageFileName);
+        return loadMap(REGION_PACKAGE_FILENAME);
     }
 
     private Map<String, Set<String>> loadMap(String fileName) throws IOException {
@@ -121,7 +123,7 @@ class RegionEnforcer implements ResolverHookFactory {
     }
 
     private File getDataFile(String name) throws IOException {
-        String fn = System.getProperty("whitelisting." + name);
+        String fn = System.getProperty(PROPERTIES_FILE_PREFIX + name);
         if (fn == null)
             return null;
         return new File(fn);
