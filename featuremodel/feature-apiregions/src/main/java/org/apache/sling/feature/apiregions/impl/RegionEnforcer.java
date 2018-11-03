@@ -43,8 +43,8 @@ class RegionEnforcer implements ResolverHookFactory {
     static final String PROPERTIES_FILE_PREFIX = "whitelisting.";
     static final String IDBSNVER_FILENAME = "idbsnver.properties";
     static final String BUNDLE_FEATURE_FILENAME = "bundles.properties";
-    static final String REGION_PACKAGE_FILENAME = "regions.properties";
     static final String FEATURE_REGION_FILENAME = "features.properties";
+    static final String REGION_PACKAGE_FILENAME = "regions.properties";
 
     final Map<Map.Entry<String, Version>, List<String>> bsnVerMap;
     final Map<String, Set<String>> bundleFeatureMap;
