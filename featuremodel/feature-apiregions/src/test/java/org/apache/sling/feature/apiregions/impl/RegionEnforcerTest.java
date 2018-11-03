@@ -35,6 +35,7 @@ import static org.apache.sling.feature.apiregions.impl.RegionEnforcer.IDBSNVER_F
 import static org.apache.sling.feature.apiregions.impl.RegionEnforcer.PROPERTIES_FILE_PREFIX;
 import static org.apache.sling.feature.apiregions.impl.RegionEnforcer.REGION_PACKAGE_FILENAME;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class RegionEnforcerTest {
     private Properties savedProps;
@@ -112,5 +113,29 @@ public class RegionEnforcerTest {
                 re.regionPackageMap.get("internal"));
         assertEquals(new HashSet<>(Arrays.asList("a.b.c", "d.e.f", "test")),
                 re.regionPackageMap.get("global"));
+    }
+
+    @Test
+    public void testBegin() throws Exception {
+        System.setProperty(PROPERTIES_FILE_PREFIX + IDBSNVER_FILENAME,
+                getClass().getResource("/idbsnver1.properties").getFile());
+        System.setProperty(PROPERTIES_FILE_PREFIX + BUNDLE_FEATURE_FILENAME,
+                getClass().getResource("/bundles1.properties").getFile());
+        System.setProperty(PROPERTIES_FILE_PREFIX + FEATURE_REGION_FILENAME,
+                getClass().getResource("/features1.properties").getFile());
+        System.setProperty(PROPERTIES_FILE_PREFIX + REGION_PACKAGE_FILENAME,
+                getClass().getResource("/regions1.properties").getFile());
+
+        RegionEnforcer re = new RegionEnforcer();
+        assertTrue(re.bsnVerMap.size() > 0);
+        assertTrue(re.bundleFeatureMap.size() > 0);
+        assertTrue(re.featureRegionMap.size() > 0);
+        assertTrue(re.regionPackageMap.size() > 0);
+
+        ResolverHookImpl hook = (ResolverHookImpl) re.begin(null);
+        assertEquals(re.bsnVerMap, hook.bsnVerMap);
+        assertEquals(re.bundleFeatureMap, hook.bundleFeatureMap);
+        assertEquals(re.featureRegionMap, hook.featureRegionMap);
+        assertEquals(re.regionPackageMap, hook.regionPackageMap);
     }
 }

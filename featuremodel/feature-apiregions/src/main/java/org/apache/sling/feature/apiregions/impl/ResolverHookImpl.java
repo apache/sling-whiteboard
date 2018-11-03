@@ -41,10 +41,10 @@ import java.util.logging.Logger;
 class ResolverHookImpl implements ResolverHook {
     private static final Logger LOG = Logger.getLogger(ResolverHookImpl.class.getName());
 
-    private final Map<Map.Entry<String, Version>, List<String>> bsnVerMap;
-    private final Map<String, Set<String>> bundleFeatureMap;
-    private final Map<String, Set<String>> featureRegionMap;
-    private final Map<String, Set<String>> regionPackageMap;
+    final Map<Map.Entry<String, Version>, List<String>> bsnVerMap;
+    final Map<String, Set<String>> bundleFeatureMap;
+    final Map<String, Set<String>> featureRegionMap;
+    final Map<String, Set<String>> regionPackageMap;
 
     public ResolverHookImpl(Map<Entry<String, Version>, List<String>> bsnVerMap, Map<String, Set<String>> bundleFeatureMap,
             Map<String, Set<String>> featureRegionMap, Map<String, Set<String>> regionPackageMap) {
@@ -86,11 +86,11 @@ class ResolverHookImpl implements ResolverHook {
                 reqFeatures.addAll(fid);
         }
 
-        Set<String> regions = new HashSet<>();
+        Set<String> reqRegions = new HashSet<>();
         for (String feature : reqFeatures) {
             Set<String> fr = featureRegionMap.get(feature);
             if (fr != null) {
-                regions.addAll(fr);
+                reqRegions.addAll(fr);
             }
         }
 
@@ -143,11 +143,15 @@ class ResolverHookImpl implements ResolverHook {
                     continue nextCapability;
                 }
 
-                if (featureRegionMap.get(capFeat) == null) {
+                Set<String> capRegions = featureRegionMap.get(capFeat);
+                if (capRegions == null) {
                     // If the feature hosting the capability has no regions defined, everyone can access
                     coveredCaps.add(bc);
                     continue nextCapability;
                 }
+
+                HashSet<String> sharedRegions = new HashSet<String>(reqRegions);
+                sharedRegions.retainAll(capRegions);
 
                 Object pkg = bc.getAttributes().get(PackageNamespace.PACKAGE_NAMESPACE);
                 if (pkg instanceof String) {
@@ -160,7 +164,7 @@ class ResolverHookImpl implements ResolverHook {
                         continue nextCapability;
                     }
 
-                    for (String region : regions) {
+                    for (String region : sharedRegions) {
                         Set<String> regionPackages = regionPackageMap.get(region);
                         if (regionPackages != null && regionPackages.contains(packageName)) {
                             // If the export is in a region that the feature is also in, then allow

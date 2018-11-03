@@ -28,13 +28,23 @@ import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleRequirement;
 import org.osgi.framework.wiring.BundleRevision;
 
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
 
 public class ResolverHookImplTest {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Test @Ignore
-    public void testFilterMatches() throws Exception {
+    public void xxtestFilterMatches() throws Exception {
         String f = "gid:aid:0.0.9";
         String f2 = "gid2:aid2:1.0.0-SNAPSHOT";
         String f3 = "gid3:aid3:1.2.3";
@@ -170,6 +180,56 @@ public class ResolverHookImplTest {
         rh.filterMatches(req12, c12);
         assertEquals(Collections.singletonList(bc12), c12);
         */
+    }
+
+    @Test
+    public void testFilterMatches() {
+        Map<Entry<String, Version>, List<String>> bsnvermap = new HashMap<>();
+        bsnvermap.put(new AbstractMap.SimpleEntry<String,Version>("a.b.c", new Version(0,0,0)),
+                Collections.singletonList("b7"));
+        bsnvermap.put(new AbstractMap.SimpleEntry<String,Version>("a.bundle", new Version(1,0,0)),
+                Collections.singletonList("b8"));
+        bsnvermap.put(new AbstractMap.SimpleEntry<String,Version>("some.other.bundle", new Version(9,9,9,"suffix")),
+                Collections.singletonList("b9"));
+
+        Map<String, Set<String>> bfmap = new HashMap<>();
+        bfmap.put("b7", Collections.singleton("f"));
+        bfmap.put("b8", Collections.singleton("f1"));
+        bfmap.put("b9", Collections.singleton("f2"));
+
+        Map<String, Set<String>> frmap = new HashMap<>();
+        frmap.put("f", new HashSet<>(Arrays.asList("r1", "r2")));
+        frmap.put("f1", Collections.singleton("r1"));
+        frmap.put("f2", Collections.singleton("r2"));
+
+        Map<String, Set<String>> rpmap = new HashMap<>();
+        rpmap.put("r0", Collections.singleton("org.bar"));
+        rpmap.put("r1", new HashSet<>(Arrays.asList("org.blah", "org.foo")));
+        rpmap.put(RegionEnforcer.GLOBAL_REGION, Collections.singleton("org.bar.tar"));
+        rpmap.put("r3", Collections.singleton("xyz"));
+
+        ResolverHookImpl rh = new ResolverHookImpl(bsnvermap, bfmap, frmap, rpmap);
+
+        // Check that we cann get the capability from another bundle in the same region
+        // where that region exports the package
+        // Bundle 7 is in feature f with regions r1, r2. Bundle 8 is in feature f1 with regions r1
+        // r1 exports the org.foo package
+        BundleRequirement req0 = mockRequirement(7, "a.b.c", new Version(0,0,0));
+        BundleCapability bc0 = mockCapability("org.foo", 8, "a.bundle", new Version(1,0,0));
+        List<BundleCapability> candidates0 = new ArrayList<>(Arrays.asList(bc0));
+        rh.filterMatches(req0, candidates0);
+        assertEquals(Collections.singletonList(bc0), candidates0);
+
+        // Check that we cannot get the capability from another bundle in the same region
+        // but that region doesn't export the pacakge.
+        // Bundle 7 is in feature f with regions r1, r2. Bundle 9 is in feature f2 with regions r2
+        // r2 does not export any packages
+        BundleRequirement req1 = mockRequirement(7, "a.b.c", new Version(0,0,0));
+        BundleCapability bc1 = mockCapability("org.foo", 9, "some.other.bundle", new Version(9,9,9,"suffix"));
+        List<BundleCapability> candidates1 = new ArrayList<>(Arrays.asList(bc1));
+        rh.filterMatches(req1, candidates1);
+        assertEquals(Collections.emptyList(), candidates1);
+
     }
 
     private BundleCapability mockCapability(String pkg, long bundleID, String bsn, Version version) {

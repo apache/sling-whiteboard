@@ -40,6 +40,8 @@ import java.util.Properties;
 import java.util.Set;
 
 class RegionEnforcer implements ResolverHookFactory {
+    public static String GLOBAL_REGION = "global";
+
     static final String PROPERTIES_FILE_PREFIX = "whitelisting.";
     static final String IDBSNVER_FILENAME = "idbsnver.properties";
     static final String BUNDLE_FEATURE_FILENAME = "bundles.properties";
