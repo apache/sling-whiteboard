@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.sling.feature.whitelist.impl;
+package org.apache.sling.feature.apiregions.impl;
 
 import org.osgi.framework.Version;
 import org.osgi.framework.hooks.resolver.ResolverHook;

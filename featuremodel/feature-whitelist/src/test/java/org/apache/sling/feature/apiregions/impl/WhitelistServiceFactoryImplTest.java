@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.sling.feature.whitelist.impl;
+package org.apache.sling.feature.apiregions.impl;
 
 public class WhitelistServiceFactoryImplTest {
     /*

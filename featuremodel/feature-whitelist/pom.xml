@@ -17,17 +17,17 @@
     <parent>
         <groupId>org.apache.sling</groupId>
         <artifactId>sling</artifactId>
-        <version>33</version>
+        <version>34</version>
         <relativePath />
     </parent>
 
-    <artifactId>org.apache.sling.feature.whitelist</artifactId>
+    <artifactId>org.apache.sling.feature.apiregions</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>bundle</packaging>
 
-    <name>Apache Sling Feature API Whitelist Runtime</name>
+    <name>Apache Sling Feature API Regions Runtime</name>
     <description>
-        A runtime component to enforce API Whitelisting
+        A runtime component to enforce API Regions
     </description>
 
     <properties>
@@ -42,7 +42,7 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <ExtensionBundle-Activator>org.apache.sling.feature.whitelist.impl.Activator</ExtensionBundle-Activator>
+                        <ExtensionBundle-Activator>org.apache.sling.feature.apiregions.impl.Activator</ExtensionBundle-Activator>
                         <Fragment-Host>system.bundle;extension:=framework</Fragment-Host>
                     </instructions>
                 
