@@ -31,6 +31,7 @@ import org.osgi.framework.wiring.BundleRevision;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -190,16 +191,20 @@ public class ResolverHookImplTest {
                 Collections.singletonList("b8"));
         bsnvermap.put(new AbstractMap.SimpleEntry<String,Version>("some.other.bundle", new Version(9,9,9,"suffix")),
                 Collections.singletonList("b9"));
+        bsnvermap.put(new AbstractMap.SimpleEntry<String,Version>("a.b.c", new Version(1,2,3)),
+                Collections.singletonList("b17"));
 
         Map<String, Set<String>> bfmap = new HashMap<>();
         bfmap.put("b7", Collections.singleton("f"));
         bfmap.put("b8", Collections.singleton("f1"));
         bfmap.put("b9", Collections.singleton("f2"));
+        bfmap.put("b17", Collections.singleton("f3"));
 
         Map<String, Set<String>> frmap = new HashMap<>();
         frmap.put("f", new HashSet<>(Arrays.asList("r1", "r2")));
         frmap.put("f1", Collections.singleton("r1"));
         frmap.put("f2", Collections.singleton("r2"));
+        frmap.put("f3", Collections.singleton("r3"));
 
         Map<String, Set<String>> rpmap = new HashMap<>();
         rpmap.put("r0", Collections.singleton("org.bar"));
@@ -213,8 +218,8 @@ public class ResolverHookImplTest {
         // where that region exports the package
         // Bundle 7 is in feature f with regions r1, r2. Bundle 8 is in feature f1 with regions r1
         // r1 exports the org.foo package
-        BundleRequirement req0 = mockRequirement(7, "a.b.c", new Version(0,0,0));
-        BundleCapability bc0 = mockCapability("org.foo", 8, "a.bundle", new Version(1,0,0));
+        BundleRequirement req0 = mockRequirement("b7", bsnvermap);
+        BundleCapability bc0 = mockCapability("org.foo", "b8", bsnvermap);
         List<BundleCapability> candidates0 = new ArrayList<>(Arrays.asList(bc0));
         rh.filterMatches(req0, candidates0);
         assertEquals(Collections.singletonList(bc0), candidates0);
@@ -223,12 +228,38 @@ public class ResolverHookImplTest {
         // but that region doesn't export the pacakge.
         // Bundle 7 is in feature f with regions r1, r2. Bundle 9 is in feature f2 with regions r2
         // r2 does not export any packages
-        BundleRequirement req1 = mockRequirement(7, "a.b.c", new Version(0,0,0));
-        BundleCapability bc1 = mockCapability("org.foo", 9, "some.other.bundle", new Version(9,9,9,"suffix"));
+        BundleRequirement req1 = mockRequirement("b7", bsnvermap);
+        BundleCapability bc1 = mockCapability("org.foo", "b9", bsnvermap);
         List<BundleCapability> candidates1 = new ArrayList<>(Arrays.asList(bc1));
         rh.filterMatches(req1, candidates1);
         assertEquals(Collections.emptyList(), candidates1);
 
+        // Check that we cannot get the capability from another bundle in a different region
+        // Bundle 9 is in feature f2 with region r2
+        // Bundle 17 is in feature f3 with region r3
+        BundleRequirement req2 = mockRequirement("b9", bsnvermap);
+        BundleCapability bc2 = mockCapability("org.bar", "b17", bsnvermap);
+        Collection<BundleCapability> c2 = new ArrayList<>(Arrays.asList(bc2));
+        rh.filterMatches(req2, c2);
+        assertEquals(0, c2.size());
+
+        // Check that we can get the capability from the same bundle
+        BundleRequirement req3 = mockRequirement("b9", bsnvermap);
+        BundleCapability bc3 = mockCapability("abc.xyz", "b9", bsnvermap);
+        Collection<BundleCapability> c3 = new ArrayList<>(Arrays.asList(bc3));
+        rh.filterMatches(req3, c3);
+        assertEquals(Collections.singletonList(bc3), c3);
+    }
+
+    private BundleCapability mockCapability(String pkgName, String bid, Map<Entry<String, Version>, List<String>> bsnvermap) {
+        for (Map.Entry<Map.Entry<String, Version>, List<String>> entry : bsnvermap.entrySet()) {
+            if (entry.getValue().contains(bid)) {
+                // Remove first letter and use rest as bundle ID
+                long id = Long.parseLong(bid.substring(1));
+                return mockCapability(pkgName, id, entry.getKey().getKey(), entry.getKey().getValue());
+            }
+        }
+        throw new IllegalStateException("Bundle not found " + bid);
     }
 
     private BundleCapability mockCapability(String pkg, long bundleID, String bsn, Version version) {
@@ -248,6 +279,17 @@ public class ResolverHookImplTest {
         Mockito.when(cap.getAttributes()).thenReturn(attrs);
         Mockito.when(cap.getRevision()).thenReturn(br);
         return cap;
+    }
+
+    private BundleRequirement mockRequirement(String bid, Map<Map.Entry<String, Version>, List<String>> bsnvermap) {
+        for (Map.Entry<Map.Entry<String, Version>, List<String>> entry : bsnvermap.entrySet()) {
+            if (entry.getValue().contains(bid)) {
+                // Remove first letter and use rest as bundle ID
+                long id = Long.parseLong(bid.substring(1));
+                return mockRequirement(id, entry.getKey().getKey(), entry.getKey().getValue());
+            }
+        }
+        throw new IllegalStateException("Bundle not found " + bid);
     }
 
     private BundleRequirement mockRequirement(long bundleID, String bsn, Version version) {
