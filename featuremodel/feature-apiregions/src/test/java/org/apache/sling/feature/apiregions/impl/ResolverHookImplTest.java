@@ -191,6 +191,8 @@ public class ResolverHookImplTest {
                 Collections.singletonList("b8"));
         bsnvermap.put(new AbstractMap.SimpleEntry<String,Version>("some.other.bundle", new Version(9,9,9,"suffix")),
                 Collections.singletonList("b9"));
+        bsnvermap.put(new AbstractMap.SimpleEntry<String,Version>("a-bundle", new Version(1,0,0,"SNAPSHOT")),
+                Collections.singletonList("b10"));
         bsnvermap.put(new AbstractMap.SimpleEntry<String,Version>("a.b.c", new Version(1,2,3)),
                 Collections.singletonList("b17"));
 
@@ -198,10 +200,11 @@ public class ResolverHookImplTest {
         bfmap.put("b7", Collections.singleton("f"));
         bfmap.put("b8", Collections.singleton("f1"));
         bfmap.put("b9", Collections.singleton("f2"));
+        bfmap.put("b10", Collections.singleton("f2"));
         bfmap.put("b17", Collections.singleton("f3"));
 
         Map<String, Set<String>> frmap = new HashMap<>();
-        frmap.put("f", new HashSet<>(Arrays.asList("r1", "r2")));
+        frmap.put("f", new HashSet<>(Arrays.asList("r1", "r2", RegionEnforcer.GLOBAL_REGION)));
         frmap.put("f1", Collections.singleton("r1"));
         frmap.put("f2", Collections.singleton("r2"));
         frmap.put("f3", Collections.singleton("r3"));
@@ -249,6 +252,29 @@ public class ResolverHookImplTest {
         Collection<BundleCapability> c3 = new ArrayList<>(Arrays.asList(bc3));
         rh.filterMatches(req3, c3);
         assertEquals(Collections.singletonList(bc3), c3);
+
+        // Check that we can get the capability from the another bundle in the same feature
+        BundleRequirement req4 = mockRequirement("b9", bsnvermap);
+        BundleCapability bc4 = mockCapability("some.cool.package", "b10", bsnvermap);
+        Collection<BundleCapability> c4 = new ArrayList<>(Arrays.asList(bc4));
+        rh.filterMatches(req4, c4);
+        assertEquals(Collections.singletonList(bc4), c4);
+
+        // Check that we can get the capability from another bundle where the capability
+        // is globally visible b7 exposes org.bar.tar in the global region, so b17 can see it
+        BundleRequirement req5 = mockRequirement("b17", bsnvermap);
+        BundleCapability bc5 = mockCapability("org.bar.tar", "b7", bsnvermap);
+        Collection<BundleCapability> c5 = new ArrayList<>(Arrays.asList(bc5));
+        rh.filterMatches(req5, c5);
+        assertEquals(Collections.singletonList(bc5), c5);
+
+        // Check that capabilities in non-package namespaces are ignored
+        BundleRequirement req7 = Mockito.mock(BundleRequirement.class);
+        Mockito.when(req7.getNamespace()).thenReturn("some.other.namespace");
+        BundleCapability bc7 = mockCapability("org.bar", "b17", bsnvermap);
+        Collection<BundleCapability> c7 = new ArrayList<>(Arrays.asList(bc7));
+        rh.filterMatches(req7, c7);
+        assertEquals(Collections.singletonList(bc7), c7);
     }
 
     private BundleCapability mockCapability(String pkgName, String bid, Map<Entry<String, Version>, List<String>> bsnvermap) {

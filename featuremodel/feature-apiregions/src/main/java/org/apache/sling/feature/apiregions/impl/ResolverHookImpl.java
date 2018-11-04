@@ -70,7 +70,6 @@ class ResolverHookImpl implements ResolverHook {
         if (!PackageNamespace.PACKAGE_NAMESPACE.equals(requirement.getNamespace()))
             return;
 
-        System.out.println("*** Filter Matches: " + requirement);
         Bundle reqBundle = requirement.getRevision().getBundle();
         long reqBundleID = reqBundle.getBundleId();
         String reqBundleName = reqBundle.getSymbolicName();
