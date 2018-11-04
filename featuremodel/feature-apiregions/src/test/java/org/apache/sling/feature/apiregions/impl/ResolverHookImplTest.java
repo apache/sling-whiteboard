@@ -37,10 +37,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Map.Entry;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class ResolverHookImplTest {
     @Test @Ignore
@@ -149,8 +149,8 @@ public class ResolverHookImplTest {
         BundleCapability bc8 = mockCapability("xyz", 19, "x.y.z", new Version(9,9,9));
         Collection<BundleCapability> c8 = new ArrayList<>(Arrays.asList(bc8));
         rh.filterMatches(req8, c8);
-
         assertEquals(Collections.singletonList(bc8), c8);
+
         // A requirement from a bundle that has no feature cannot access one in a region
         BundleRequirement req9 = mockRequirement(11, "qqq", new Version(6,6,6));
         BundleCapability bc9 = mockCapability("org.bar", 17, "a.b.c", new Version(1,2,3));
@@ -193,8 +193,14 @@ public class ResolverHookImplTest {
                 Collections.singletonList("b9"));
         bsnvermap.put(new AbstractMap.SimpleEntry<String,Version>("a-bundle", new Version(1,0,0,"SNAPSHOT")),
                 Collections.singletonList("b10"));
+        bsnvermap.put(new AbstractMap.SimpleEntry<String,Version>("not.in.a.feature", new Version(0,0,1)),
+                Collections.singletonList("b11"));
         bsnvermap.put(new AbstractMap.SimpleEntry<String,Version>("a.b.c", new Version(1,2,3)),
                 Collections.singletonList("b17"));
+        bsnvermap.put(new AbstractMap.SimpleEntry<String,Version>("x.y.z", new Version(9,9,9)),
+                Collections.singletonList("b19"));
+        bsnvermap.put(new AbstractMap.SimpleEntry<String,Version>("zzz", new Version(1,0,0)),
+                Collections.singletonList("b20"));
 
         Map<String, Set<String>> bfmap = new HashMap<>();
         bfmap.put("b7", Collections.singleton("f"));
@@ -202,12 +208,15 @@ public class ResolverHookImplTest {
         bfmap.put("b9", Collections.singleton("f2"));
         bfmap.put("b10", Collections.singleton("f2"));
         bfmap.put("b17", Collections.singleton("f3"));
+        bfmap.put("b19", Collections.singleton("f3"));
+        bfmap.put("b20", Collections.singleton("f4"));
 
         Map<String, Set<String>> frmap = new HashMap<>();
         frmap.put("f", new HashSet<>(Arrays.asList("r1", "r2", RegionEnforcer.GLOBAL_REGION)));
         frmap.put("f1", Collections.singleton("r1"));
         frmap.put("f2", Collections.singleton("r2"));
         frmap.put("f3", Collections.singleton("r3"));
+        frmap.put("f4", Collections.singleton("r3"));
 
         Map<String, Set<String>> rpmap = new HashMap<>();
         rpmap.put("r0", Collections.singleton("org.bar"));
@@ -217,7 +226,7 @@ public class ResolverHookImplTest {
 
         ResolverHookImpl rh = new ResolverHookImpl(bsnvermap, bfmap, frmap, rpmap);
 
-        // Check that we cann get the capability from another bundle in the same region
+        // Check that we can get the capability from another bundle in the same region
         // where that region exports the package
         // Bundle 7 is in feature f with regions r1, r2. Bundle 8 is in feature f1 with regions r1
         // r1 exports the org.foo package
@@ -275,6 +284,29 @@ public class ResolverHookImplTest {
         Collection<BundleCapability> c7 = new ArrayList<>(Arrays.asList(bc7));
         rh.filterMatches(req7, c7);
         assertEquals(Collections.singletonList(bc7), c7);
+
+        // Check that we can get the capability from another provider in the same region
+        BundleRequirement req8 = mockRequirement("b20", bsnvermap);
+        BundleCapability bc8 = mockCapability("xyz", "b19", bsnvermap);
+        Collection<BundleCapability> c8 = new ArrayList<>(Arrays.asList(bc8));
+        rh.filterMatches(req8, c8);
+        assertEquals(Collections.singletonList(bc8), c8);
+
+        // A requirement from a bundle that has no feature cannot access one in a region
+        // b17 provides package xyz which is in region r3, but b11 is not in any region.
+        BundleRequirement req9 = mockRequirement("b11", bsnvermap);
+        BundleCapability bc9 = mockCapability("xyz", "b17", bsnvermap);
+        Collection<BundleCapability> c9 = new ArrayList<>(Arrays.asList(bc9));
+        rh.filterMatches(req9, c9);
+        assertEquals(0, c9.size());
+
+        // A requirement from a bundle that has no feature can still access one in the global region
+        // b7 exposes org.bar.tar in the global region, so b11 can see it
+        BundleRequirement req10 = mockRequirement("b11", bsnvermap);
+        BundleCapability bc10 = mockCapability("org.bar.tar", "b7", bsnvermap);
+        Collection<BundleCapability> c10 = new ArrayList<>(Arrays.asList(bc10));
+        rh.filterMatches(req10, c10);
+        assertEquals(Collections.singletonList(bc10), c10);
     }
 
     private BundleCapability mockCapability(String pkgName, String bid, Map<Entry<String, Version>, List<String>> bsnvermap) {
