@@ -47,7 +47,7 @@ public class BundleArtifactFeatureHandlerTest {
         ex.setJSON("[]");
         bafh.postProcess(null, f, ex);
 
-        String p = System.getProperty("whitelisting.bundles.properties");
+        String p = System.getProperty("apiregions.bundles.properties");
         Properties actual = new Properties();
         actual.load(new FileReader(p));
 
@@ -74,7 +74,7 @@ public class BundleArtifactFeatureHandlerTest {
 
         bafh.postProcess(null, f, ex);
 
-        String p = System.getProperty("whitelisting.features.properties");
+        String p = System.getProperty("apiregions.features.properties");
         Properties actual = new Properties();
         actual.load(new FileReader(p));
 
@@ -87,7 +87,7 @@ public class BundleArtifactFeatureHandlerTest {
         assertEquals(new HashSet<>(Arrays.asList(el)), new HashSet<>(Arrays.asList(al)));
         assertEquals(expected, actual);
 
-        String p2 = System.getProperty("whitelisting.regions.properties");
+        String p2 = System.getProperty("apiregions.regions.properties");
         Properties actual2 = new Properties();
         actual2.load(new FileReader(p2));
 

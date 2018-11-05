@@ -29,7 +29,7 @@ import java.util.Date;
 import java.util.Properties;
 
 class AbstractHandler {
-    private static final String FILE_PREFIX = "whitelisting.";
+    private static final String FILE_PREFIX = "apiregions.";
 
     protected File getDataFile(String name) throws IOException {
         Path p = Files.createTempFile(FILE_PREFIX, name);

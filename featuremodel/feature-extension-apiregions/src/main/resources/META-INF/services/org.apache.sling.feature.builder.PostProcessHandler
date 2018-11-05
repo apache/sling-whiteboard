@@ -1,2 +1,2 @@
-org.apache.sling.feature.whitelisting.extensions.BundleMappingHandler
-org.apache.sling.feature.whitelisting.extensions.BundleArtifactFeatureHandler
+org.apache.sling.feature.extension.apiregions.BundleMappingHandler
+org.apache.sling.feature.extension.apiregions.BundleArtifactFeatureHandler

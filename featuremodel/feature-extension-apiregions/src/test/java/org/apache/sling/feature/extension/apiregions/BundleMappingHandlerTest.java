@@ -22,7 +22,6 @@ import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.builder.ArtifactProvider;
-import org.apache.sling.feature.extension.apiregions.BundleMappingHandler;
 import org.junit.Test;
 
 import java.io.File;
@@ -62,7 +61,7 @@ public class BundleMappingHandlerTest {
         f.getBundles().add(b3);
         bmh.postProcess(() -> ap, f, ex);
 
-        String p = System.getProperty("whitelisting.idbsnver.properties");
+        String p = System.getProperty("apiregions.idbsnver.properties");
         Properties actual = new Properties();
         actual.load(new FileReader(p));
 
