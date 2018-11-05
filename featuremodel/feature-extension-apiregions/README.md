@@ -19,6 +19,10 @@ PostProcessHandlers are called when a feature contains an `api-regions` section.
 `BundleMappingHandler` - This handler creates a mapping file `idbsnver.properties` that maps the Artifact ID to a bundle symbolic name and version. A tilde `~` is used in the value of the map to separate BSN and version. 
 
 `BundleArtifactFeatureHandler` - This handler creates 3 mapping files:
-    `bundles.properties`: maps bundles to the original feature they were in. A bundle could be from more then one feature.
-    `features.properties`: maps features to regions. A feature can be in more than one region.
-    `regions.properties`: maps regions to packages. A region can expose more than one package.
+* `bundles.properties`: maps bundles to the original feature they were in. A bundle could be from more then one feature.
+* `features.properties`: maps features to regions. A feature can be in more than one region.
+* `regions.properties`: maps regions to packages. A region can expose more than one package.
+
+The location of the files created by the `BundleArtifactFeatureHandler` handler is stored in a system property with name `apiregions.` + filename. So to obtain the file name of the `bundles.properties` file, make the following call:
+
+    System.getProperty("apiregions.bundles.properties")
