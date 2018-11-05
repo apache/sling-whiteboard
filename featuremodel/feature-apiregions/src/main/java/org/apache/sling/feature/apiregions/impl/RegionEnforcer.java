@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -42,7 +43,7 @@ import java.util.Set;
 class RegionEnforcer implements ResolverHookFactory {
     public static String GLOBAL_REGION = "global";
 
-    static final String PROPERTIES_FILE_PREFIX = "whitelisting.";
+    static final String PROPERTIES_FILE_PREFIX = "apiregions.";
     static final String IDBSNVER_FILENAME = "idbsnver.properties";
     static final String BUNDLE_FEATURE_FILENAME = "bundles.properties";
     static final String FEATURE_REGION_FILENAME = "features.properties";
@@ -53,15 +54,33 @@ class RegionEnforcer implements ResolverHookFactory {
     final Map<String, Set<String>> featureRegionMap;
     final Map<String, Set<String>> regionPackageMap;
 
-    public RegionEnforcer() throws IOException {
-        bsnVerMap = populateBSNVerMap();
-        bundleFeatureMap = populateBundleFeatureMap();
-        featureRegionMap = populateFeatureRegionMap();
-        regionPackageMap = populateRegionPackageMap();
+    public RegionEnforcer(Dictionary<String, Object> regProps) throws IOException {
+        File idbsnverFile = getDataFile(IDBSNVER_FILENAME);
+        bsnVerMap = populateBSNVerMap(idbsnverFile);
+        if (idbsnverFile != null) {
+            regProps.put(IDBSNVER_FILENAME, idbsnverFile.getAbsolutePath());
+        }
+
+        File bundlesFile = getDataFile(BUNDLE_FEATURE_FILENAME);
+        bundleFeatureMap = populateBundleFeatureMap(bundlesFile);
+        if (bundlesFile != null) {
+            regProps.put(BUNDLE_FEATURE_FILENAME, bundlesFile.getAbsolutePath());
+        }
+
+        File featuresFile = getDataFile(FEATURE_REGION_FILENAME);
+        featureRegionMap = populateFeatureRegionMap(featuresFile);
+        if (featuresFile != null) {
+            regProps.put(FEATURE_REGION_FILENAME, featuresFile.getAbsolutePath());
+        }
+
+        File regionsFile = getDataFile(REGION_PACKAGE_FILENAME);
+        regionPackageMap = populateRegionPackageMap(regionsFile);
+        if (regionsFile != null) {
+            regProps.put(REGION_PACKAGE_FILENAME, regionsFile.getAbsolutePath());
+        }
     }
 
-    private Map<Map.Entry<String, Version>, List<String>> populateBSNVerMap() throws IOException {
-        File idbsnverFile = getDataFile(IDBSNVER_FILENAME);
+    private Map<Map.Entry<String, Version>, List<String>> populateBSNVerMap(File idbsnverFile) throws IOException {
         if (idbsnverFile != null && idbsnverFile.exists()) {
             Map<Map.Entry<String, Version>, List<String>> m = new HashMap<>();
 
@@ -93,22 +112,21 @@ class RegionEnforcer implements ResolverHookFactory {
         }
     }
 
-    private Map<String, Set<String>> populateBundleFeatureMap() throws IOException {
-        return loadMap(BUNDLE_FEATURE_FILENAME);
+    private Map<String, Set<String>> populateBundleFeatureMap(File bundlesFile) throws IOException {
+        return loadMap(bundlesFile);
     }
 
-    private Map<String, Set<String>> populateFeatureRegionMap() throws IOException {
-        return loadMap(FEATURE_REGION_FILENAME);
+    private Map<String, Set<String>> populateFeatureRegionMap(File featuresFile) throws IOException {
+        return loadMap(featuresFile);
     }
 
-    private Map<String, Set<String>> populateRegionPackageMap() throws IOException {
-        return loadMap(REGION_PACKAGE_FILENAME);
+    private Map<String, Set<String>> populateRegionPackageMap(File regionsFile) throws IOException {
+        return loadMap(regionsFile);
     }
 
-    private Map<String, Set<String>> loadMap(String fileName) throws IOException {
+    private Map<String, Set<String>> loadMap(File propsFile) throws IOException {
         Map<String, Set<String>> m = new HashMap<>();
 
-        File propsFile = getDataFile(fileName);
         if (propsFile != null && propsFile.exists()) {
             Properties p = new Properties();
             try (InputStream is = new FileInputStream(propsFile)) {

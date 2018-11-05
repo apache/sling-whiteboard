@@ -27,6 +27,7 @@ import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Properties;
 
 import static org.apache.sling.feature.apiregions.impl.RegionEnforcer.BUNDLE_FEATURE_FILENAME;
@@ -54,7 +55,7 @@ public class RegionEnforcerTest {
 
     @Test
     public void testRegionEnforcerNoConfiguration() throws Exception {
-        RegionEnforcer re = new RegionEnforcer();
+        RegionEnforcer re = new RegionEnforcer(new Hashtable<>());
         assertEquals(0, re.bsnVerMap.size());
         assertEquals(0, re.bundleFeatureMap.size());
         assertEquals(0, re.featureRegionMap.size());
@@ -66,12 +67,14 @@ public class RegionEnforcerTest {
         String f = getClass().getResource("/idbsnver1.properties").getFile();
         System.setProperty(PROPERTIES_FILE_PREFIX + IDBSNVER_FILENAME, f);
 
-        RegionEnforcer re = new RegionEnforcer();
+        Hashtable<String, Object> props = new Hashtable<>();
+        RegionEnforcer re = new RegionEnforcer(props);
         assertEquals(2, re.bsnVerMap.size());
         assertEquals(Collections.singletonList("g:b1:1"),
                 re.bsnVerMap.get(new AbstractMap.SimpleEntry<String,Version>("b1", new Version(1,0,0))));
         assertEquals(new HashSet<>(Arrays.asList("g:b2:1.2.3", "g2:b2:1.2.4")),
                 new HashSet<>(re.bsnVerMap.get(new AbstractMap.SimpleEntry<String,Version>("b2", new Version(1,2,3)))));
+        assertEquals(f, props.get(IDBSNVER_FILENAME));
     }
 
     @Test
@@ -79,7 +82,8 @@ public class RegionEnforcerTest {
         String f = getClass().getResource("/bundles1.properties").getFile();
         System.setProperty(PROPERTIES_FILE_PREFIX + BUNDLE_FEATURE_FILENAME, f);
 
-        RegionEnforcer re = new RegionEnforcer();
+        Hashtable<String, Object> props = new Hashtable<>();
+        RegionEnforcer re = new RegionEnforcer(props);
         assertEquals(3, re.bundleFeatureMap.size());
         assertEquals(Collections.singleton("org.sling:something:1.2.3:slingosgifeature:myclassifier"),
                 re.bundleFeatureMap.get("org.sling:b1:1"));
@@ -87,6 +91,7 @@ public class RegionEnforcerTest {
                 re.bundleFeatureMap.get("org.sling:b2:1"));
         assertEquals(new HashSet<>(Arrays.asList("some.other:feature:123", "org.sling:something:1.2.3:slingosgifeature:myclassifier")),
                 re.bundleFeatureMap.get("org.sling:b3:1"));
+        assertEquals(f, props.get(BUNDLE_FEATURE_FILENAME));
     }
 
     @Test
@@ -94,12 +99,14 @@ public class RegionEnforcerTest {
         String f = getClass().getResource("/features1.properties").getFile();
         System.setProperty(PROPERTIES_FILE_PREFIX + FEATURE_REGION_FILENAME, f);
 
-        RegionEnforcer re = new RegionEnforcer();
+        Hashtable<String, Object> props = new Hashtable<>();
+        RegionEnforcer re = new RegionEnforcer(props);
         assertEquals(2, re.featureRegionMap.size());
         assertEquals(Collections.singleton("global"),
                 re.featureRegionMap.get("an.other:feature:123"));
         assertEquals(new HashSet<>(Arrays.asList("global", "internal")),
                 re.featureRegionMap.get("org.sling:something:1.2.3"));
+        assertEquals(f, props.get(FEATURE_REGION_FILENAME));
     }
 
     @Test
@@ -107,12 +114,14 @@ public class RegionEnforcerTest {
         String f = getClass().getResource("/regions1.properties").getFile();
         System.setProperty(PROPERTIES_FILE_PREFIX + REGION_PACKAGE_FILENAME, f);
 
-        RegionEnforcer re = new RegionEnforcer();
+        Hashtable<String, Object> props = new Hashtable<>();
+        RegionEnforcer re = new RegionEnforcer(props);
         assertEquals(2, re.regionPackageMap.size());
         assertEquals(Collections.singleton("xyz"),
                 re.regionPackageMap.get("internal"));
         assertEquals(new HashSet<>(Arrays.asList("a.b.c", "d.e.f", "test")),
                 re.regionPackageMap.get("global"));
+        assertEquals(f, props.get(REGION_PACKAGE_FILENAME));
     }
 
     @Test
@@ -126,7 +135,7 @@ public class RegionEnforcerTest {
         System.setProperty(PROPERTIES_FILE_PREFIX + REGION_PACKAGE_FILENAME,
                 getClass().getResource("/regions1.properties").getFile());
 
-        RegionEnforcer re = new RegionEnforcer();
+        RegionEnforcer re = new RegionEnforcer(new Hashtable<>());
         assertTrue(re.bsnVerMap.size() > 0);
         assertTrue(re.bundleFeatureMap.size() > 0);
         assertTrue(re.featureRegionMap.size() > 0);

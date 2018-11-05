@@ -22,11 +22,15 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.hooks.resolver.ResolverHookFactory;
 
+import java.util.Dictionary;
+import java.util.Hashtable;
+
 public class Activator implements BundleActivator {
     @Override
     public synchronized void start(BundleContext context) throws Exception {
-        RegionEnforcer enforcer = new RegionEnforcer();
-        context.registerService(ResolverHookFactory.class, enforcer, null);
+        Dictionary<String, Object> props = new Hashtable<>();
+        RegionEnforcer enforcer = new RegionEnforcer(props);
+        context.registerService(ResolverHookFactory.class, enforcer, props);
     }
 
     @Override

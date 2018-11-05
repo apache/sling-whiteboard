@@ -75,22 +75,24 @@ class ResolverHookImpl implements ResolverHook {
         String reqBundleName = reqBundle.getSymbolicName();
         Version reqBundleVersion = reqBundle.getVersion();
 
-        List<String> aids = bsnVerMap.get(new AbstractMap.SimpleEntry<String, Version>(reqBundleName, reqBundleVersion));
-        if (aids == null)
-            return; // TODO what to do?
         List<String> reqFeatures = new ArrayList<>();
-        for (String aid : aids) {
-            Set<String> fid = bundleFeatureMap.get(aid);
-            if (fid != null)
-                reqFeatures.addAll(fid);
-        }
-
         Set<String> reqRegions = new HashSet<>();
-        for (String feature : reqFeatures) {
-            Set<String> fr = featureRegionMap.get(feature);
-            if (fr != null) {
-                reqRegions.addAll(fr);
+        List<String> aids = bsnVerMap.get(new AbstractMap.SimpleEntry<String, Version>(reqBundleName, reqBundleVersion));
+        if (aids != null) {
+            for (String aid : aids) {
+                Set<String> fid = bundleFeatureMap.get(aid);
+                if (fid != null)
+                    reqFeatures.addAll(fid);
             }
+
+            for (String feature : reqFeatures) {
+                Set<String> fr = featureRegionMap.get(feature);
+                if (fr != null) {
+                    reqRegions.addAll(fr);
+                }
+            }
+        } else {
+            // Bundle is not coming from a feature
         }
 
         Set<BundleCapability> coveredCaps = new HashSet<>();
