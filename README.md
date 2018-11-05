@@ -1,15 +1,25 @@
-[<img src="http://sling.apache.org/res/logos/sling.png"/>](http://sling.apache.org)
 
- [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+Sling Capabilities - Oak Repository Descriptors
+===============================================
 
-# Apache Sling Whiteboard
+This module is a prototype exposing a select set of Oak Repository Descriptors as [Sling Capabilities](https://github.com/apache/sling-org-apache-sling-capabilities).
 
-This module is part of the [Apache Sling](https://sling.apache.org) project.
+Might make sense to merge it at some point with the [Jcr capabilities module](https://github.com/apache/sling-org-apache-sling-capabilities-jcr)
 
-This is the whiteboard area of Apache Sling. It contains experimental code that is not intended to be used in production.
+Usage
+-----
+The OakDescriptorSource will expose only those repository descriptor keys that are in a configured list (can use regex). So for exposing a descriptor key it must first be added to the OakDescriptorSource.keyWhitelist config.
 
-Sling committers are welcome to use this repository for prototypes and other experimental work. Please separate your code in distinct folders with self-explanatory names so we understand what's in there easily.
+The capabilities call will then return all whitelisted descriptor values, eg:
 
-We currently do not release code from this repository, if a module needs to be released please discuss its "promotion" on the Sling dev list and then move it to its own repository.
+    {
+      "org.apache.sling.capabilities": {
+        "data": {
+          "org.apache.sling.oak.descriptor": {
+            "jcr.repository.name": "Apache Jackrabbit Oak",
+            "jcr.repository.vendor": "The Apache Software Foundation"
+          }
+        }
+      }
+    }
 
-Older whiteboard experiments can be found at https://svn.apache.org/repos/asf/sling/whiteboard/ - the plan is to only move code that's being actively worked on and leave the rest there.
