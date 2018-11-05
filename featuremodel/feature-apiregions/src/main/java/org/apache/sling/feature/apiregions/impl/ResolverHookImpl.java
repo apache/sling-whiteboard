@@ -119,8 +119,11 @@ class ResolverHookImpl implements ResolverHook {
             Version capBundleVersion = capBundle.getVersion();
 
             List<String> capBundleArtifacts = bsnVerMap.get(new AbstractMap.SimpleEntry<String, Version>(capBundleName, capBundleVersion));
-            if (capBundleArtifacts == null)
-                return; // Capability is not in any feature, everyone can access
+            if (capBundleArtifacts == null) {
+                // Capability is not in any feature, everyone can access
+                coveredCaps.add(bc);
+                continue nextCapability;
+            }
 
             List<String> capFeatures = new ArrayList<>();
             for (String ba : capBundleArtifacts) {
