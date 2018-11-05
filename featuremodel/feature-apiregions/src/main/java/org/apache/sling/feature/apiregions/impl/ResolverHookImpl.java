@@ -75,8 +75,8 @@ class ResolverHookImpl implements ResolverHook {
         String reqBundleName = reqBundle.getSymbolicName();
         Version reqBundleVersion = reqBundle.getVersion();
 
-        List<String> reqFeatures = new ArrayList<>();
         Set<String> reqRegions = new HashSet<>();
+        List<String> reqFeatures = new ArrayList<>();
         List<String> aids = bsnVerMap.get(new AbstractMap.SimpleEntry<String, Version>(reqBundleName, reqBundleVersion));
         if (aids != null) {
             for (String aid : aids) {
@@ -120,7 +120,8 @@ class ResolverHookImpl implements ResolverHook {
 
             List<String> capBundleArtifacts = bsnVerMap.get(new AbstractMap.SimpleEntry<String, Version>(capBundleName, capBundleVersion));
             if (capBundleArtifacts == null)
-                return; // TODO what to do?
+                return; // Capability is not in any feature, everyone can access
+
             List<String> capFeatures = new ArrayList<>();
             for (String ba : capBundleArtifacts) {
                 Set<String> capfeats = bundleFeatureMap.get(ba);

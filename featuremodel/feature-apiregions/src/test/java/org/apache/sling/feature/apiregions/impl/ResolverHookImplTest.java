@@ -141,6 +141,13 @@ public class ResolverHookImplTest {
         rh.filterMatches(req5, c5);
         assertEquals(Collections.singletonList(bc5), c5);
 
+        // Check that we cannot get at a capability in a region from a bundle not in a feature
+        BundleRequirement req6 = mockRequirement(6, "bundle.not.in.feature", new Version(2,0,0));
+        BundleCapability bc6 = mockCapability("org.foo", "b9", bsnvermap);
+        Collection<BundleCapability> c6 = new ArrayList<>(Arrays.asList(bc6));
+        rh.filterMatches(req6, c6);
+        assertEquals(0, c6.size());
+
         // Check that capabilities in non-package namespaces are ignored
         BundleRequirement req7 = Mockito.mock(BundleRequirement.class);
         Mockito.when(req7.getNamespace()).thenReturn("some.other.namespace");
@@ -186,6 +193,13 @@ public class ResolverHookImplTest {
         Collection<BundleCapability> c12 = new ArrayList<>(Arrays.asList(bc12));
         rh.filterMatches(req12, c12);
         assertEquals(Collections.singletonList(bc12), c12);
+
+        // Check that anyone can get a capability from a bundle not in a feature
+        BundleRequirement req13 = mockRequirement("b9", bsnvermap);
+        BundleCapability bc13 = mockCapability("some.package", 999, "no.in.any.feature", new Version(1,0,0));
+        Collection<BundleCapability> c13 = new ArrayList<>(Arrays.asList(bc13));
+        rh.filterMatches(req13, c13);
+        assertEquals(Collections.singletonList(bc13), c13);
     }
 
     private BundleCapability mockCapability(String pkgName, String bid, Map<Entry<String, Version>, List<String>> bsnvermap) {
