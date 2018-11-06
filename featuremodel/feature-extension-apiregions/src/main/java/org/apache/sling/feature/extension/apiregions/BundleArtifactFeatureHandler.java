@@ -41,7 +41,7 @@ import javax.json.JsonValue;
 public class BundleArtifactFeatureHandler extends AbstractHandler implements PostProcessHandler {
     @Override
     public void postProcess(HandlerContext context, Feature feature, Extension extension) {
-        if (!"api-regions".equals(extension.getName()))
+        if (!API_REGIONS_NAME.equals(extension.getName()))
             return;
 
         try {
@@ -59,7 +59,7 @@ public class BundleArtifactFeatureHandler extends AbstractHandler implements Pos
         for (Artifact b : feature.getBundles()) {
             String id = b.getId().toMvnId().trim();
 
-            String fid = b.getMetadata().get("org-feature");
+            String fid = b.getMetadata().get(ORG_FEATURE_KEY);
             if (fid == null)
                 fid = feature.getId().toMvnId().trim();
 
@@ -90,8 +90,8 @@ public class BundleArtifactFeatureHandler extends AbstractHandler implements Pos
             if (jv instanceof JsonObject) {
                 JsonObject jo = (JsonObject) jv;
                 String fid = null;
-                if (jo.containsKey("org-feature"))
-                    fid = jo.getString("org-feature");
+                if (jo.containsKey(ORG_FEATURE_KEY))
+                    fid = jo.getString(ORG_FEATURE_KEY);
                 if (fid == null)
                     fid = feature.getId().toMvnId();
 
@@ -100,7 +100,7 @@ public class BundleArtifactFeatureHandler extends AbstractHandler implements Pos
                 if (regions != null) {
                     regionSet.addAll(Arrays.asList(regions.split(",")));
                 }
-                String region = jo.getString("name");
+                String region = jo.getString(NAME_KEY);
                 regionSet.add(region);
 
                 frMap.put(fid, regionSet.stream().collect(Collectors.joining(",")));
@@ -110,7 +110,7 @@ public class BundleArtifactFeatureHandler extends AbstractHandler implements Pos
                 if (packages != null) {
                     packageSet.addAll(Arrays.asList(packages.split(",")));
                 }
-                JsonArray eja = jo.getJsonArray("exports");
+                JsonArray eja = jo.getJsonArray(EXPORTS_KEY);
                 for (int i=0; i < eja.size(); i++) {
                     packageSet.add(eja.getString(i));
                 }

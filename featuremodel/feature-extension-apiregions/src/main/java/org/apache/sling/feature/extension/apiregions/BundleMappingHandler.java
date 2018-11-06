@@ -31,7 +31,7 @@ import java.util.jar.JarFile;
 public class BundleMappingHandler extends AbstractHandler implements PostProcessHandler {
     @Override
     public void postProcess(HandlerContext context, Feature feature, Extension extension) {
-        if (!"api-regions".equals(extension.getName()))
+        if (!API_REGIONS_NAME.equals(extension.getName()))
             return;
 
         try {

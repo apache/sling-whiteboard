@@ -29,6 +29,13 @@ import java.util.Date;
 import java.util.Properties;
 
 class AbstractHandler {
+    static final String API_REGIONS_NAME = "api-regions";
+    static final String GLOBAL_NAME = "global";
+
+    static final String NAME_KEY = "name";
+    static final String EXPORTS_KEY = "exports";
+    static final String ORG_FEATURE_KEY = "org-feature";
+
     private static final String FILE_PREFIX = "apiregions.";
 
     protected File getDataFile(String name) throws IOException {

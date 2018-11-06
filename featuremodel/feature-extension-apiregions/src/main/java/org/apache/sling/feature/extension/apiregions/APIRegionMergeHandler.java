@@ -23,27 +23,37 @@ import org.apache.sling.feature.builder.MergeHandler;
 
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.json.Json;
 import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.json.JsonString;
 import javax.json.JsonValue;
 import javax.json.stream.JsonGenerator;
 
-public class APIRegionMergeHandler implements MergeHandler {
+import static org.apache.sling.feature.extension.apiregions.AbstractHandler.API_REGIONS_NAME;
+import static org.apache.sling.feature.extension.apiregions.AbstractHandler.EXPORTS_KEY;
+import static org.apache.sling.feature.extension.apiregions.AbstractHandler.GLOBAL_NAME;
+import static org.apache.sling.feature.extension.apiregions.AbstractHandler.NAME_KEY;
+import static org.apache.sling.feature.extension.apiregions.AbstractHandler.ORG_FEATURE_KEY;
 
+public class APIRegionMergeHandler implements MergeHandler {
     @Override
     public boolean canMerge(Extension extension) {
-        return "api-regions".equals(extension.getName());
+        return API_REGIONS_NAME.equals(extension.getName());
     }
 
     @Override
     public void merge(HandlerContext context, Feature target, Feature source, Extension targetEx, Extension sourceEx) {
-        if (!sourceEx.getName().equals("api-regions"))
+        if (!sourceEx.getName().equals(API_REGIONS_NAME))
             return;
-        if (targetEx != null && !targetEx.getName().equals("api-regions"))
+        if (targetEx != null && !targetEx.getName().equals(API_REGIONS_NAME))
             return;
 
         JsonReader srcJR = Json.createReader(new StringReader(sourceEx.getJSON()));
@@ -67,13 +77,43 @@ public class APIRegionMergeHandler implements MergeHandler {
             gen.write(jv);
         }
 
+        Map<String, List<String>> inheritedPackages = new LinkedHashMap<>(); // keep the insertion order
         for (int i=0; i < srcJA.size(); i++) {
             gen.writeStartObject();
             JsonObject jo = srcJA.getJsonObject(i);
+            boolean exportsWritten = false;
+            if (!jo.containsKey(ORG_FEATURE_KEY)) {
+                gen.write(ORG_FEATURE_KEY, source.getId().toMvnId());
+
+                List<String> exports = new ArrayList<>();
+                if (jo.containsKey(EXPORTS_KEY)) {
+                    JsonArray ja = jo.getJsonArray(EXPORTS_KEY);
+                    for (JsonValue jv : ja) {
+                        if (jv instanceof JsonString) {
+                            exports.add(((JsonString) jv).getString());
+                        }
+                    }
+                }
+
+                String name = jo.getString(NAME_KEY);
+                if (!GLOBAL_NAME.equals(name)) {
+                    ArrayList<String> localExports = new ArrayList<>(exports);
+                    for (Map.Entry<String, List<String>> entry : inheritedPackages.entrySet()) {
+                        entry.getValue().stream().filter(p -> !exports.contains(p)).forEach(exports::add);
+                    }
+                    inheritedPackages.put(name, localExports);
+
+                    JsonArrayBuilder eab = Json.createArrayBuilder();
+                    exports.stream().forEach(e -> eab.add(e));
+                    gen.write(EXPORTS_KEY, eab.build());
+                    exportsWritten = true;
+                }
+            }
             for (Map.Entry<String, JsonValue> entry : jo.entrySet()) {
+                if (EXPORTS_KEY.equals(entry.getKey()) && exportsWritten)
+                    continue;
                 gen.write(entry.getKey(), entry.getValue());
             }
-            gen.write("org-feature", source.getId().toMvnId());
             gen.writeEnd();
         }
 
