@@ -26,6 +26,7 @@ import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Version;
@@ -37,6 +38,8 @@ import org.slf4j.LoggerFactory;
  * manifest data, start level, bundle contents and installation requirements.
  */
 public class BundleEntry implements Comparable<BundleEntry> {
+    private static final String BUNDLE_SYMBOLIC_NAME = "Bundle-SymbolicName";
+
     private static final Pattern ENTRY_PATTERN = Pattern.compile("resources\\/install\\/\\d{1,2}\\/[\\w\\-\\.]+\\.jar");
 
     private static final Logger log = LoggerFactory.getLogger(BundleEntry.class);
@@ -69,7 +72,11 @@ public class BundleEntry implements Comparable<BundleEntry> {
             Manifest manifest = bundleIs.getManifest();
             Attributes attributes = manifest.getMainAttributes();
 
-            symbolicName = attributes.getValue("Bundle-SymbolicName");
+            if (attributes.getValue(BUNDLE_SYMBOLIC_NAME).contains(";")) {
+                symbolicName = StringUtils.substringBefore(attributes.getValue(BUNDLE_SYMBOLIC_NAME), ";");
+            } else {
+                symbolicName = attributes.getValue(BUNDLE_SYMBOLIC_NAME);
+            }
             log.debug("Loaded symbolic name: {}", symbolicName);
 
             version = new Version(attributes.getValue("Bundle-Version"));
