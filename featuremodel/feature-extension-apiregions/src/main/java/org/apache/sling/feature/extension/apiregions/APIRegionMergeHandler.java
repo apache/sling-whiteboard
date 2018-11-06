@@ -41,14 +41,24 @@ public class APIRegionMergeHandler implements MergeHandler {
 
     @Override
     public void merge(HandlerContext context, Feature target, Feature source, Extension targetEx, Extension sourceEx) {
-        if (!targetEx.getName().equals("api-regions") || !sourceEx.getName().equals("api-regions"))
+        if (!sourceEx.getName().equals("api-regions"))
+            return;
+        if (targetEx != null && !targetEx.getName().equals("api-regions"))
             return;
 
         JsonReader srcJR = Json.createReader(new StringReader(sourceEx.getJSON()));
         JsonArray srcJA = srcJR.readArray();
 
-        JsonReader tgtJR = Json.createReader(new StringReader(targetEx.getJSON()));
-        JsonArray tgtJA = tgtJR.readArray();
+        JsonArray tgtJA;
+        if (targetEx != null) {
+            JsonReader tgtJR = Json.createReader(new StringReader(targetEx.getJSON()));
+            tgtJA = tgtJR.readArray();
+        } else {
+            targetEx = new Extension(sourceEx.getType(), sourceEx.getName(), sourceEx.isRequired());
+            target.getExtensions().add(targetEx);
+
+            tgtJA = Json.createArrayBuilder().build();
+        }
 
         StringWriter sw = new StringWriter();
         JsonGenerator gen = Json.createGenerator(sw);
