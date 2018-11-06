@@ -1,5 +1,0 @@
-{
-	"jcr:primaryType": "sling:Component",
-    "componentType": "SlingCMS-ComponentConfig",
-    "jcr:title": "Sling CMS - Component Configuration"
-}

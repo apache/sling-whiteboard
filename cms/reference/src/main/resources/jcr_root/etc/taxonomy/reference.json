@@ -1,8 +1,0 @@
-{
-	"jcr:primaryType": "sling:Taxonomy",
-	"jcr:title": "Reference",
-	"community": {
-		"jcr:primaryType": "sling:Taxonomy",
-		"jcr:title": "Community"
-	}
-}
