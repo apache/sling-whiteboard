@@ -37,6 +37,7 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.felix.webconsole.AbstractWebConsolePlugin;
 import org.apache.sling.upgrade.BundleEntry;
+import org.apache.sling.upgrade.ConfigEntry;
 import org.apache.sling.upgrade.UpgradeRequest;
 import org.apache.sling.upgrade.UpgradeService;
 import org.osgi.service.component.annotations.Component;
@@ -53,14 +54,14 @@ import org.slf4j.LoggerFactory;
         "felix.webconsole.title=Upgrade", "felix.webconsole.category=Sling" })
 public class UpgradeWebConsole extends AbstractWebConsolePlugin {
 
+    static final String APP_ROOT = "upgrade";
+
+    private static final Logger log = LoggerFactory.getLogger(UpgradeWebConsole.class);
+
     /**
      * 
      */
     private static final long serialVersionUID = 2255746886735460607L;
-
-    static final String APP_ROOT = "upgrade";
-
-    private static final Logger log = LoggerFactory.getLogger(UpgradeWebConsole.class);
 
     @Reference
     private UpgradeService upgradeService;
@@ -118,25 +119,6 @@ public class UpgradeWebConsole extends AbstractWebConsolePlugin {
         }
     }
 
-    private void writeUpgradeInfo(HttpServletResponse resp, InputStream jarIs) throws IOException {
-        Writer out = resp.getWriter();
-        UpgradeRequest request = upgradeService.readSlingJar(jarIs);
-
-        out.write("<h2>" + request.getTitle() + " version " + request.getVersion());
-        out.write("<br/><small>" + request.getVendor() + "</small></h2>");
-
-        out.write("<h3>Startup Bundles</h3><ul>");
-        request.getStartupBundles().forEach(e -> {
-            writeBundle(e, out);
-        });
-
-        out.write("</ul><h3>Install Bundles</h3><ul>");
-        request.getBundles().forEach(e -> {
-            writeBundle(e, out);
-        });
-        out.write("</ul>");
-    }
-
     /*
      * (non-Javadoc)
      *
@@ -144,7 +126,7 @@ public class UpgradeWebConsole extends AbstractWebConsolePlugin {
      */
     @Override
     public String getLabel() {
-        return "fsclassloader";
+        return "upgrade";
     }
 
     /*
@@ -180,28 +162,80 @@ public class UpgradeWebConsole extends AbstractWebConsolePlugin {
     @Override
     protected void renderContent(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
         Writer out = res.getWriter();
-        out.write("<h1>Update Sling</h1>");
+
+        out.write("<table class=\"content\" cellspacing=\"0\" width=\"100%\" cellpadding=\"0\">");
+        out.write("<thead><tr><th class=\"content container\">Update Apache Sling</th></tr></thead>");
+        out.write("<tbody><tr><td  class=\"content\">");
+        out.write("<form method=\"post\" enctype=\"multipart/form-data\">");
         out.write(
-                "<form method=\"post\" enctype=\"multipart/form-data\"><label for=\"jar\">Update Jar File</lable><br/><input type=\"file\" name=\"jar\" accepts=\"application/java-archive\"><input type=\"submit\" /></form>");
+                "<div><label for=\"jar\">Sling Jar</lable><br/><input type=\"file\" name=\"jar\" accepts=\"application/java-archive\"></div>");
+        out.write(
+                "<div><label for=\"action\">Action</lable><br/><select name=\"action\"><option>Upgrade</option><option>Preview</option></div>");
+        out.write("<div><input type=\"submit\" value=\"Upload\" /></div>");
+        out.write("</form></td></tr></tbody></table>");
 
     }
 
     private void writeBundle(BundleEntry be, Writer out) {
         try {
-            out.write("<li>");
-
+            out.write("<tr class=\"content\"><td class=\"content\">");
             if (!be.isInstalled()) {
-                out.write("I ");
+                out.write("Install");
             } else if (be.isUpdated()) {
-                out.write("U ");
+                out.write("Update");
             } else {
-                out.write("N ");
+                out.write("No Action");
             }
 
-            out.write(be.getSymbolicName() + " v" + be.getVersion());
-            out.write("</li>");
+            out.write("<td class=\"content\">" + be.getSymbolicName() + "</td>");
+            out.write("<td class=\"content\">" + be.getVersion() + "</td>");
+            out.write("<td class=\"content\">" + be.getStart() + "</td>");
+            out.write("</tr>");
         } catch (IOException e) {
             log.error("This really shouldn't happen", e);
         }
+    }
+
+    private void writeConfig(ConfigEntry cfg, Writer out) {
+        try {
+            out.write("<tr class=\"content\"><td class=\"content\" colspan=\"4\">" + cfg.getPid() + "</td></tr>");
+            out.write("</tr>");
+        } catch (IOException e) {
+            log.error("This really shouldn't happen", e);
+        }
+    }
+
+    private void writeUpgradeInfo(HttpServletResponse resp, InputStream jarIs) throws IOException {
+        Writer out = resp.getWriter();
+        UpgradeRequest request = upgradeService.readSlingJar(jarIs);
+
+        out.write("<table class=\"content\" cellspacing=\"0\" cellpadding=\"0\">");
+        out.write("<thead><tr><th class=\"content container\" colspan=\"4\">" + request.getTitle() + " version "
+                + request.getVersion());
+        out.write("<br/><small>" + request.getVendor() + "</small></th></tr></thead>");
+
+        out.write("<tbody><tr><th class=\"content container\" colspan=\"4\">Startup Bundles</h3><th></tr>");
+        out.write(
+                "<tr><th class=\"content\">Action</th><th class=\"content\">Bundle</th><th class=\"content\">Version</th><th class=\"content\">Start Level</th></tr>");
+        request.getStartupBundles().forEach(e -> {
+            writeBundle(e, out);
+        });
+        out.write("</tbody>");
+
+        out.write("<tbody><tr><th class=\"content container\" colspan=\"4\">Install Bundles</h3><th></tr>");
+        out.write(
+                "<tr><th class=\"content\">Action</th><th class=\"content\">Bundle</th><th class=\"content\">Version</th><th class=\"content\">Start Level</th></tr>");
+        request.getBundles().forEach(e -> {
+            writeBundle(e, out);
+        });
+
+        out.write("</tbody>");
+
+        out.write("<tbody><tr><th class=\"content container\" colspan=\"4\">Configurations</h3><th></tr>");
+        out.write("<tr><th class=\"content\" colspan=\"4\">Configuration PID</th></tr>");
+        request.getConfigs().forEach(e -> {
+            writeConfig(e, out);
+        });
+        out.write("</tbody></table>");
     }
 }
