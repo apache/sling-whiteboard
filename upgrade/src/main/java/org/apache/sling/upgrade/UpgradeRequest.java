@@ -28,6 +28,7 @@ public class UpgradeRequest {
 
     private final List<BundleEntry> bundles = new ArrayList<>();
     private final List<ConfigEntry> configs = new ArrayList<>();
+    private final List<BundleEntry> startupBundles = new ArrayList<>();
     private final String title;
     private final String vendor;
     private final String version;
@@ -51,6 +52,13 @@ public class UpgradeRequest {
      */
     public List<ConfigEntry> getConfigs() {
         return configs;
+    }
+
+    /**
+     * @return the startupBundles
+     */
+    public List<BundleEntry> getStartupBundles() {
+        return startupBundles;
     }
 
     /**

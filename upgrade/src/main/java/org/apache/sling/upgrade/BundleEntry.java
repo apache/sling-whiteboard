@@ -37,12 +37,11 @@ import org.slf4j.LoggerFactory;
  * manifest data, start level, bundle contents and installation requirements.
  */
 public class BundleEntry implements Comparable<BundleEntry> {
-    private static final Pattern ENTRY_PATTERN = Pattern
-            .compile("resources\\/(bundles|install)\\/\\d{1,2}\\/[\\w\\-\\.]+\\.jar");
+    private static final Pattern ENTRY_PATTERN = Pattern.compile("resources\\/install\\/\\d{1,2}\\/[\\w\\-\\.]+\\.jar");
 
     private static final Logger log = LoggerFactory.getLogger(BundleEntry.class);
 
-    public static final boolean matches(JarEntry entry) {
+    public static boolean matches(JarEntry entry) {
         return ENTRY_PATTERN.matcher(entry.getName()).matches();
     }
 
