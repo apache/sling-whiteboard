@@ -53,8 +53,9 @@ class RegionEnforcer implements ResolverHookFactory {
     final Map<String, Set<String>> bundleFeatureMap;
     final Map<String, Set<String>> featureRegionMap;
     final Map<String, Set<String>> regionPackageMap;
+    final Set<String> enabledRegions;
 
-    public RegionEnforcer(Dictionary<String, Object> regProps) throws IOException {
+    RegionEnforcer(Dictionary<String, Object> regProps, String regionsProp) throws IOException {
         File idbsnverFile = getDataFile(IDBSNVER_FILENAME);
         bsnVerMap = populateBSNVerMap(idbsnverFile);
         if (idbsnverFile != null) {
@@ -78,6 +79,8 @@ class RegionEnforcer implements ResolverHookFactory {
         if (regionsFile != null) {
             regProps.put(REGION_PACKAGE_FILENAME, regionsFile.getAbsolutePath());
         }
+
+        enabledRegions = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(regionsProp.split(","))));
     }
 
     private Map<Map.Entry<String, Version>, List<String>> populateBSNVerMap(File idbsnverFile) throws IOException {
@@ -151,6 +154,8 @@ class RegionEnforcer implements ResolverHookFactory {
 
     @Override
     public ResolverHook begin(Collection<BundleRevision> triggers) {
+        if (enabledRegions.size() == 0)
+            return null;
         return new ResolverHookImpl(bsnVerMap, bundleFeatureMap, featureRegionMap, regionPackageMap);
     }
 }

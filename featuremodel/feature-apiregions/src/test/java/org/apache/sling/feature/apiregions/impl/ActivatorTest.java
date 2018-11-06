@@ -56,6 +56,7 @@ public class ActivatorTest {
         expectedProps.put(FEATURE_REGION_FILENAME, f);
 
         BundleContext bc = Mockito.mock(BundleContext.class);
+        Mockito.when(bc.getProperty(Activator.REGIONS_PROPERTY_NAME)).thenReturn("*");
 
         Activator a = new Activator();
         a.start(bc);

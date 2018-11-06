@@ -26,10 +26,16 @@ import java.util.Dictionary;
 import java.util.Hashtable;
 
 public class Activator implements BundleActivator {
+    static final String REGIONS_PROPERTY_NAME = "org.apache.sling.feature.apiregions.regions";
+
     @Override
     public synchronized void start(BundleContext context) throws Exception {
+        String regions = context.getProperty(REGIONS_PROPERTY_NAME);
+        if (regions == null)
+            return; // Component not enabled
+
         Dictionary<String, Object> props = new Hashtable<>();
-        RegionEnforcer enforcer = new RegionEnforcer(props);
+        RegionEnforcer enforcer = new RegionEnforcer(props, regions);
         context.registerService(ResolverHookFactory.class, enforcer, props);
     }
 

@@ -46,7 +46,7 @@ class ResolverHookImpl implements ResolverHook {
     final Map<String, Set<String>> featureRegionMap;
     final Map<String, Set<String>> regionPackageMap;
 
-    public ResolverHookImpl(Map<Entry<String, Version>, List<String>> bsnVerMap, Map<String, Set<String>> bundleFeatureMap,
+    ResolverHookImpl(Map<Entry<String, Version>, List<String>> bsnVerMap, Map<String, Set<String>> bundleFeatureMap,
             Map<String, Set<String>> featureRegionMap, Map<String, Set<String>> regionPackageMap) {
         this.bsnVerMap = bsnVerMap;
         this.bundleFeatureMap = bundleFeatureMap;
