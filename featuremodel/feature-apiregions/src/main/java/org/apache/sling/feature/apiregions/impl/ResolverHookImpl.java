@@ -30,6 +30,7 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -97,6 +98,7 @@ class ResolverHookImpl implements ResolverHook {
 
         Set<BundleCapability> coveredCaps = new HashSet<>();
 
+        Map<BundleCapability, Set<String>> bcRegionMap = new HashMap<>();
         nextCapability:
         for (BundleCapability bc : candidates) {
             BundleRevision rev = bc.getRevision();
@@ -154,6 +156,7 @@ class ResolverHookImpl implements ResolverHook {
                     coveredCaps.add(bc);
                     continue nextCapability;
                 }
+                bcRegionMap.put(bc, capRegions);
 
                 HashSet<String> sharedRegions = new HashSet<String>(reqRegions);
                 sharedRegions.retainAll(capRegions);
@@ -181,10 +184,28 @@ class ResolverHookImpl implements ResolverHook {
             }
         }
 
+        List<BundleCapability> removedCandidates = new ArrayList<>(candidates);
         // Remove any capabilities that are not covered
         if (candidates.retainAll(coveredCaps)) {
+            removedCandidates.removeAll(candidates);
+
+            StringBuilder sb = new StringBuilder();
+            boolean first = true;
+            for (BundleCapability bc : removedCandidates) {
+                if (first)
+                    first = false;
+                else
+                    sb.append(", ");
+
+                sb.append(bc.toString());
+                sb.append("[Regions: ");
+                sb.append(bcRegionMap.get(bc));
+                sb.append("]");
+            }
+
             LOG.log(Level.INFO,
-                    "Removed one ore more candidates for requirement {0} as they are not in the correct region", requirement);
+                    "API-Regions removed candidates {0} for requirement {1} as the requirement is in the following regions: {2}",
+                    new Object[] {sb, requirement, reqRegions});
         }
     }
 
