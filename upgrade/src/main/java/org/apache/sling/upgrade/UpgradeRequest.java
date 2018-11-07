@@ -20,15 +20,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.stream.Collectors;
 
 /**
  * Represents a request to update Apache Sling.
  */
 public class UpgradeRequest {
 
-    private final List<BundleEntry> bundles = new ArrayList<>();
-    private final List<ConfigEntry> configs = new ArrayList<>();
-    private final List<BundleEntry> startupBundles = new ArrayList<>();
+    private final List<UpgradeEntry> entries = new ArrayList<>();
     private final String title;
     private final String vendor;
     private final String version;
@@ -41,24 +40,15 @@ public class UpgradeRequest {
     }
 
     /**
-     * @return the bundles
+     * @return the entries
      */
-    public List<BundleEntry> getBundles() {
-        return bundles;
+    public List<UpgradeEntry> getEntries() {
+        return entries;
     }
 
-    /**
-     * @return the configs
-     */
-    public List<ConfigEntry> getConfigs() {
-        return configs;
-    }
-
-    /**
-     * @return the startupBundles
-     */
-    public List<BundleEntry> getStartupBundles() {
-        return startupBundles;
+    @SuppressWarnings("unchecked")
+    public <E extends UpgradeEntry> List<E> getEntriesByType(Class<E> type) {
+        return entries.stream().filter(e -> e.getClass().equals(type)).map(e -> (E) e).collect(Collectors.toList());
     }
 
     /**

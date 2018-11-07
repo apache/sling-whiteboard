@@ -20,16 +20,27 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.jar.JarEntry;
 
-import org.osgi.framework.BundleContext;
+import org.apache.commons.io.IOUtils;
 
 /**
- * Represents a bundle entry loaded from a Sling JAR. Contains the bundle
- * manifest data, start level, bundle contents and installation requirements.
+ * Represents an entry loaded from the upgrade JAR.
  */
-public class StartupBundleEntry extends BundleEntry {
+public abstract class UpgradeEntry implements Comparable<UpgradeEntry> {
 
-    public StartupBundleEntry(JarEntry entry, InputStream is, BundleContext bundleContext) throws IOException {
-        super(entry, is, bundleContext);
+    private final byte[] contents;
+
+    private final String originalName;
+
+    public UpgradeEntry(JarEntry entry, InputStream is) throws IOException {
+        originalName = entry.getName();
+        contents = IOUtils.toByteArray(is);
     }
 
+    public byte[] getContents() {
+        return contents;
+    }
+
+    public String getOriginalName() {
+        return originalName;
+    }
 }

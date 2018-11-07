@@ -20,16 +20,28 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.jar.JarEntry;
 
-import org.osgi.framework.BundleContext;
-
 /**
- * Represents a bundle entry loaded from a Sling JAR. Contains the bundle
- * manifest data, start level, bundle contents and installation requirements.
+ * A service factory for Entry handlers to implement. These services are called
+ * to process entries to upgrade an Apache Sling instance.
  */
-public class StartupBundleEntry extends BundleEntry {
+public interface EntryHandlerFactory<E extends UpgradeEntry> {
 
-    public StartupBundleEntry(JarEntry entry, InputStream is, BundleContext bundleContext) throws IOException {
-        super(entry, is, bundleContext);
-    }
+    /**
+     * Returns true if the entry matches the requirements for this entry provider
+     * and should be loaded.
+     * 
+     * @param entry the JarEntry to check
+     * @return true if matches, false otherwise
+     */
+    boolean matches(JarEntry entry);
 
+    /**
+     * Load an upgrade entry from the Specified Jar entry.
+     * 
+     * @param entry the entry to to load the upgrade entry from
+     * @param is    the input stream to load the entry contents from
+     * @return the upgrade entry
+     * @throws IOException 
+     */
+    E loadEntry(JarEntry entry, InputStream is) throws IOException;
 }

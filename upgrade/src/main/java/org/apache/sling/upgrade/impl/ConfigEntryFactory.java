@@ -14,22 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.upgrade;
+package org.apache.sling.upgrade.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.jar.JarEntry;
+import java.util.regex.Pattern;
 
-import org.osgi.framework.BundleContext;
+import org.apache.sling.upgrade.ConfigEntry;
+import org.apache.sling.upgrade.EntryHandlerFactory;
+import org.osgi.service.component.annotations.Component;
 
-/**
- * Represents a bundle entry loaded from a Sling JAR. Contains the bundle
- * manifest data, start level, bundle contents and installation requirements.
- */
-public class StartupBundleEntry extends BundleEntry {
+@Component(service = { EntryHandlerFactory.class }, immediate = true)
+public class ConfigEntryFactory implements EntryHandlerFactory<ConfigEntry> {
 
-    public StartupBundleEntry(JarEntry entry, InputStream is, BundleContext bundleContext) throws IOException {
-        super(entry, is, bundleContext);
+    private static final Pattern ENTRY_PATTERN = Pattern.compile("resources\\/config\\/[\\w\\-\\.]+\\.config");
+
+    @Override
+    public boolean matches(JarEntry entry) {
+        return ENTRY_PATTERN.matcher(entry.getName()).matches();
+    }
+
+    @Override
+    public ConfigEntry loadEntry(JarEntry entry, InputStream is) throws IOException {
+        return new ConfigEntry(entry, is);
     }
 
 }

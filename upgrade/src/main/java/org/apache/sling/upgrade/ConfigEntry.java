@@ -16,12 +16,12 @@
  */
 package org.apache.sling.upgrade;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.jar.JarEntry;
-import java.util.regex.Pattern;
 
-import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,27 +29,27 @@ import org.slf4j.LoggerFactory;
  * Represents a configuration entry loaded from a Sling JAR. Contains the
  * configuration contents and installation requirements.
  */
-public class ConfigEntry {
-    private static final Pattern ENTRY_PATTERN = Pattern.compile("resources\\/config\\/[\\w\\-\\.]+\\.config");
+public class ConfigEntry extends UpgradeEntry {
 
     private static final Logger log = LoggerFactory.getLogger(ConfigEntry.class);
-
-    public static final boolean matches(JarEntry entry) {
-        return ENTRY_PATTERN.matcher(entry.getName()).matches();
-    }
-
-    private final byte[] contents;
 
     private final String pid;
 
     public ConfigEntry(JarEntry entry, InputStream is) throws IOException {
-
+        super(entry, is);
         pid = entry.getName().replace("resources/config/", "");
         log.debug("Reading config {}", pid);
 
-        contents = IOUtils.toByteArray(is);
-        log.debug("Read config contents");
+    }
 
+    @Override
+    public int compareTo(UpgradeEntry o) {
+        if (o instanceof ConfigEntry) {
+            ConfigEntry co = (ConfigEntry) o;
+            return pid.compareTo(co.getPid());
+        } else {
+            return getClass().getName().compareTo(o.getClass().getName());
+        }
     }
 
     /*
@@ -80,17 +80,16 @@ public class ConfigEntry {
     }
 
     /**
-     * @return the contents
-     */
-    public byte[] getContents() {
-        return contents;
-    }
-
-    /**
      * @return the pid
      */
     public String getPid() {
         return pid;
+    }
+
+    public String getPath() {
+        String path = StringUtils.substringBeforeLast(pid, ".");
+        path = path.replace('.', File.separatorChar).replace("-", "%007e");
+        return path + ".config";
     }
 
     /*

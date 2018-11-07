@@ -23,8 +23,16 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import org.apache.sling.settings.SlingSettingsService;
+import org.apache.sling.upgrade.impl.BundleEntryFactory;
+import org.apache.sling.upgrade.impl.ConfigEntryFactory;
+import org.apache.sling.upgrade.impl.StartupBundleEntryFactory;
 import org.apache.sling.upgrade.impl.UpgradeServiceImpl;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,7 +55,8 @@ public class UpgradeServiceTest {
     private UpgradeRequest request;
 
     @Before
-    public void init() throws IOException {
+    public void init() throws IOException, NoSuchFieldException, SecurityException, IllegalArgumentException,
+            IllegalAccessException {
         jar = getClass().getClassLoader().getResourceAsStream("sling.jar");
         upgradeService = new UpgradeServiceImpl();
 
@@ -72,8 +81,27 @@ public class UpgradeServiceTest {
         Bundle[] bundles = new Bundle[] { bundle1, bundle2, bundle3 };
         Mockito.when(bundleContext.getBundles()).thenReturn(bundles);
 
-        // Call the activator
-        ((UpgradeServiceImpl) upgradeService).activate(componentContext);
+        BundleEntryFactory bef = new BundleEntryFactory();
+        bef.activate(componentContext);
+        Field settingsService = bef.getClass().getDeclaredField("settingsService");
+        SlingSettingsService sso = Mockito.mock(SlingSettingsService.class);
+        Set<String> runmodes = new HashSet<>();
+        runmodes.add("oak_tar");
+        Mockito.when(sso.getRunModes()).thenReturn(runmodes);
+        settingsService.setAccessible(true);
+        settingsService.set(bef, sso);
+
+        StartupBundleEntryFactory sbef = new StartupBundleEntryFactory();
+        sbef.activate(componentContext);
+
+        List<EntryHandlerFactory<?>> factories = new ArrayList<>();
+        factories.add(bef);
+        factories.add(sbef);
+        factories.add(new ConfigEntryFactory());
+
+        Field field = upgradeService.getClass().getDeclaredField("entryFactories");
+        field.setAccessible(true);
+        field.set(upgradeService, factories);
 
         // read the request
         this.request = upgradeService.readSlingJar(jar);
@@ -94,7 +122,7 @@ public class UpgradeServiceTest {
     @Test
     public void testUpgradeRequestBundles() throws IOException {
         log.info("testUpgradeRequestBundles");
-        List<BundleEntry> bundles = request.getBundles();
+        List<BundleEntry> bundles = request.getEntriesByType(BundleEntry.class);
         assertNotNull(bundles);
 
         assertTrue(!bundles.isEmpty());
@@ -104,6 +132,7 @@ public class UpgradeServiceTest {
             assertNotNull(bundle.getStart());
             assertNotNull(bundle.getSymbolicName());
             assertNotNull(bundle.getVersion());
+            assertFalse("oak_mongo".equals(bundle.getRunmode()));
             switch (bundle.getSymbolicName()) {
             case "org.apache.sling.jcr.api":
                 assertTrue(bundle.isInstalled());
@@ -131,7 +160,7 @@ public class UpgradeServiceTest {
     @Test
     public void testUpgradeRequestConfigs() throws IOException {
         log.info("testUpgradeRequestConfigs");
-        List<ConfigEntry> configs = request.getConfigs();
+        List<ConfigEntry> configs = request.getEntriesByType(ConfigEntry.class);
         assertNotNull(configs);
 
         assertTrue(!configs.isEmpty());

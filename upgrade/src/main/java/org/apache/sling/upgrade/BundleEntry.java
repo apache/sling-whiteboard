@@ -23,9 +23,7 @@ import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
-import java.util.regex.Pattern;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -37,37 +35,30 @@ import org.slf4j.LoggerFactory;
  * Represents a bundle entry loaded from a Sling JAR. Contains the bundle
  * manifest data, start level, bundle contents and installation requirements.
  */
-public class BundleEntry implements Comparable<BundleEntry> {
+public class BundleEntry extends UpgradeEntry {
     private static final String BUNDLE_SYMBOLIC_NAME = "Bundle-SymbolicName";
-
-    private static final Pattern ENTRY_PATTERN = Pattern.compile("resources\\/install\\/\\d{1,2}\\/[\\w\\-\\.]+\\.jar");
 
     private static final Logger log = LoggerFactory.getLogger(BundleEntry.class);
 
-    public static boolean matches(JarEntry entry) {
-        return ENTRY_PATTERN.matcher(entry.getName()).matches();
-    }
-
-    private final byte[] contents;
-
     private final boolean installed;
-
+    private final String runmode;
     private final int start;
-
     private final String symbolicName;
-
     private final boolean updated;
     private final Version version;
 
     public BundleEntry(JarEntry entry, InputStream is, BundleContext bundleContext) throws IOException {
-        String startStr = entry.getName().split("\\/")[2];
+        super(entry, is);
+        String[] segments = entry.getName().split("\\/");
+        String startStr = segments[2];
+        if (segments[1].contains(".")) {
+            runmode = StringUtils.substringAfter(segments[1], ".");
+        } else {
+            runmode = null;
+        }
         start = Integer.parseInt(startStr, 10);
         log.debug("Loaded start level {}", start);
-
-        log.debug("Reading bundle contents");
-        contents = IOUtils.toByteArray(is);
-        log.debug("Loaded {} bytes", contents.length);
-        try (JarInputStream bundleIs = new JarInputStream(new ByteArrayInputStream(contents))) {
+        try (JarInputStream bundleIs = new JarInputStream(new ByteArrayInputStream(this.getContents()))) {
 
             Manifest manifest = bundleIs.getManifest();
             Attributes attributes = manifest.getMainAttributes();
@@ -103,11 +94,16 @@ public class BundleEntry implements Comparable<BundleEntry> {
     }
 
     @Override
-    public int compareTo(BundleEntry o) {
-        if (this.start != o.start) {
-            return this.start - o.start;
+    public int compareTo(UpgradeEntry o) {
+        if (o instanceof BundleEntry) {
+            BundleEntry bo = (BundleEntry) o;
+            if (this.start != bo.start) {
+                return this.start - bo.start;
+            } else {
+                return symbolicName.compareTo(bo.symbolicName);
+            }
         } else {
-            return symbolicName.compareTo(o.symbolicName);
+            return getClass().getName().compareTo(o.getClass().getName());
         }
     }
 
@@ -138,11 +134,8 @@ public class BundleEntry implements Comparable<BundleEntry> {
         return true;
     }
 
-    /**
-     * @return the contents
-     */
-    public byte[] getContents() {
-        return contents;
+    public String getRunmode() {
+        return runmode;
     }
 
     public int getStart() {

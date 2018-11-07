@@ -23,7 +23,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.nio.charset.Charset;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
@@ -35,9 +39,13 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.text.StrSubstitutor;
 import org.apache.felix.webconsole.AbstractWebConsolePlugin;
 import org.apache.sling.upgrade.BundleEntry;
 import org.apache.sling.upgrade.ConfigEntry;
+import org.apache.sling.upgrade.RepoInitEntry;
+import org.apache.sling.upgrade.StartupBundleEntry;
 import org.apache.sling.upgrade.UpgradeRequest;
 import org.apache.sling.upgrade.UpgradeService;
 import org.osgi.service.component.annotations.Component;
@@ -53,6 +61,10 @@ import org.slf4j.LoggerFactory;
         "service.vendor=The Apache Software Foundation", "felix.webconsole.label=" + UpgradeWebConsole.APP_ROOT,
         "felix.webconsole.title=Upgrade", "felix.webconsole.category=Sling" })
 public class UpgradeWebConsole extends AbstractWebConsolePlugin {
+
+    private static final String CONTENT = "content";
+
+    private static final String TITLE = "title";
 
     static final String APP_ROOT = "upgrade";
 
@@ -163,46 +175,57 @@ public class UpgradeWebConsole extends AbstractWebConsolePlugin {
     protected void renderContent(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
         Writer out = res.getWriter();
 
-        out.write("<table class=\"content\" cellspacing=\"0\" width=\"100%\" cellpadding=\"0\">");
-        out.write("<thead><tr><th class=\"content container\">Update Apache Sling</th></tr></thead>");
-        out.write("<tbody><tr><td  class=\"content\">");
-        out.write("<form method=\"post\" enctype=\"multipart/form-data\">");
-        out.write(
-                "<div><label for=\"jar\">Sling Jar</lable><br/><input type=\"file\" name=\"jar\" accepts=\"application/java-archive\"></div>");
-        out.write(
-                "<div><label for=\"action\">Action</lable><br/><select name=\"action\"><option>Upgrade</option><option>Preview</option></div>");
-        out.write("<div><input type=\"submit\" value=\"Upload\" /></div>");
-        out.write("</form></td></tr></tbody></table>");
+        String template = getTemplate("form.html");
 
+        out.write(template);
     }
 
-    private void writeBundle(BundleEntry be, Writer out) {
+    private static String getTemplate(String name) {
         try {
-            out.write("<tr class=\"content\"><td class=\"content\">");
-            if (!be.isInstalled()) {
-                out.write("Install");
-            } else if (be.isUpdated()) {
-                out.write("Update");
-            } else {
-                out.write("No Action");
+            return IOUtils.toString(UpgradeWebConsole.class.getClassLoader().getResourceAsStream(name));
+        } catch (IOException e) {
+            log.error("Exception loading template", e);
+            return "";
+        }
+    }
+
+    private static String template(String name, Map<String, String> params) {
+        String template = getTemplate(name);
+        StrSubstitutor sub = new StrSubstitutor(params);
+        return sub.replace(template);
+    }
+
+    private static String renderBundle(BundleEntry be) {
+
+        String action;
+        if (!be.isInstalled()) {
+            action = "Install";
+        } else if (be.isUpdated()) {
+            action = "Update";
+        } else {
+            action = "No Action";
+        }
+
+        return template("bundleentry.html", new HashMap<String, String>() {
+            private static final long serialVersionUID = 1L;
+            {
+                put("action", action);
+                put("symbolicName", be.getSymbolicName());
+                put("version", be.getVersion().toString());
+                put("start", String.valueOf(be.getStart()));
             }
-
-            out.write("<td class=\"content\">" + be.getSymbolicName() + "</td>");
-            out.write("<td class=\"content\">" + be.getVersion() + "</td>");
-            out.write("<td class=\"content\">" + be.getStart() + "</td>");
-            out.write("</tr>");
-        } catch (IOException e) {
-            log.error("This really shouldn't happen", e);
-        }
+        });
     }
 
-    private void writeConfig(ConfigEntry cfg, Writer out) {
-        try {
-            out.write("<tr class=\"content\"><td class=\"content\" colspan=\"4\">" + cfg.getPid() + "</td></tr>");
-            out.write("</tr>");
-        } catch (IOException e) {
-            log.error("This really shouldn't happen", e);
-        }
+    private static String renderConfig(ConfigEntry cfg) {
+        return template("configentry.html", new HashMap<String, String>() {
+            private static final long serialVersionUID = 1L;
+            {
+                put("pid", cfg.getPid());
+                put("path", cfg.getPath());
+                put(CONTENT, new String(cfg.getContents(), Charset.defaultCharset()).replace("\n", "<br/>"));
+            }
+        });
     }
 
     private void writeUpgradeInfo(HttpServletResponse resp, InputStream jarIs) throws IOException {
@@ -210,32 +233,66 @@ public class UpgradeWebConsole extends AbstractWebConsolePlugin {
         UpgradeRequest request = upgradeService.readSlingJar(jarIs);
 
         out.write("<table class=\"content\" cellspacing=\"0\" cellpadding=\"0\">");
-        out.write("<thead><tr><th class=\"content container\" colspan=\"4\">" + request.getTitle() + " version "
-                + request.getVersion());
-        out.write("<br/><small>" + request.getVendor() + "</small></th></tr></thead>");
+        out.write(template("header.html", new HashMap<String, String>() {
+            private static final long serialVersionUID = 1L;
+            {
+                put(TITLE, request.getTitle());
+                put("vendor", request.getVendor());
+                put("version", request.getVersion());
+            }
+        }));
 
-        out.write("<tbody><tr><th class=\"content container\" colspan=\"4\">Startup Bundles</h3><th></tr>");
-        out.write(
-                "<tr><th class=\"content\">Action</th><th class=\"content\">Bundle</th><th class=\"content\">Version</th><th class=\"content\">Start Level</th></tr>");
-        request.getStartupBundles().forEach(e -> {
-            writeBundle(e, out);
+        out.write(template("bundles.html", new HashMap<String, String>() {
+            private static final long serialVersionUID = 1L;
+            {
+                put(CONTENT, request.getEntriesByType(StartupBundleEntry.class).stream()
+                        .map(UpgradeWebConsole::renderBundle).collect(Collectors.joining()));
+                put(TITLE, "Startup Bundles");
+            }
+        }));
+
+        out.write(template("bundles.html", new HashMap<String, String>() {
+            private static final long serialVersionUID = 1L;
+            {
+                put(CONTENT, request.getEntriesByType(BundleEntry.class).stream().map(UpgradeWebConsole::renderBundle)
+                        .collect(Collectors.joining()));
+                put(TITLE, "Install Bundles");
+            }
+        }));
+
+        out.write(template("config.html", new HashMap<String, String>() {
+            private static final long serialVersionUID = 1L;
+            {
+                put(CONTENT, request.getEntriesByType(ConfigEntry.class).stream().map(UpgradeWebConsole::renderConfig)
+                        .collect(Collectors.joining()));
+            }
+        }));
+
+        out.write(template("repoinit.html", new HashMap<String, String>() {
+            private static final long serialVersionUID = 1L;
+            {
+                put(CONTENT, request.getEntriesByType(RepoInitEntry.class).stream()
+                        .map(UpgradeWebConsole::renderRepoInit).collect(Collectors.joining()));
+            }
+        }));
+
+        out.write("</table>");
+    }
+
+    private static String renderRepoInit(RepoInitEntry ri) {
+
+        StringBuilder sb = new StringBuilder();
+        ri.getRepoInits().forEach((f, os) -> {
+            StringBuilder oStr = new StringBuilder();
+            os.forEach(o -> oStr.append("<li>" + o + "</li>"));
+            sb.append(template("repoinitentry.html", new HashMap<String, String>() {
+                private static final long serialVersionUID = 1L;
+                {
+                    put("feature", f);
+                    put(CONTENT, oStr.toString());
+                }
+            }));
         });
-        out.write("</tbody>");
-
-        out.write("<tbody><tr><th class=\"content container\" colspan=\"4\">Install Bundles</h3><th></tr>");
-        out.write(
-                "<tr><th class=\"content\">Action</th><th class=\"content\">Bundle</th><th class=\"content\">Version</th><th class=\"content\">Start Level</th></tr>");
-        request.getBundles().forEach(e -> {
-            writeBundle(e, out);
-        });
-
-        out.write("</tbody>");
-
-        out.write("<tbody><tr><th class=\"content container\" colspan=\"4\">Configurations</h3><th></tr>");
-        out.write("<tr><th class=\"content\" colspan=\"4\">Configuration PID</th></tr>");
-        request.getConfigs().forEach(e -> {
-            writeConfig(e, out);
-        });
-        out.write("</tbody></table>");
+        return sb.toString();
     }
 }
