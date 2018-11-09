@@ -23,7 +23,6 @@
 
     <artifactId>org.apache.sling.feature.inventoryservice</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <packaging>jar</packaging>
 
     <name>Apache Sling Feature Inventory Service</name>
     <description>
@@ -49,29 +48,6 @@
                 <groupId>biz.aQute.bnd</groupId>
                 <artifactId>bnd-maven-plugin</artifactId>
                 <version>4.1.0</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>bnd-process</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <bnd><![CDATA[
-                        -exportcontents: ${packages;VERSIONED}
-                        -removeheaders: Private-Package,Include-Resource
-                    ]]></bnd>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.rat</groupId>
-                <artifactId>apache-rat-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>*.md</exclude>
-                        <exclude>src/main/resources/META-INF/services/*</exclude>
-                    </excludes>
-                </configuration>
             </plugin>
         </plugins>
     </build>
