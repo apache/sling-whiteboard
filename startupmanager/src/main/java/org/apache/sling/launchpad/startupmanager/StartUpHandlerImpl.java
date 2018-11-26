@@ -35,7 +35,7 @@ public class StartUpHandlerImpl implements StartupHandler
     @Override
     public StartupMode getMode()
     {
-        return StartupMode.RESTART;
+        return StartupMode.INSTALL;
     }
 
     @Override
