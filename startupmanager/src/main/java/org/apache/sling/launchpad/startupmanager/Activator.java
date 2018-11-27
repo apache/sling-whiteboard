@@ -18,6 +18,8 @@
  */
 package org.apache.sling.launchpad.startupmanager;
 
+import org.apache.sling.launchpad.api.LaunchpadContentProvider;
+import org.apache.sling.launchpad.api.StartupHandler;
 import org.apache.sling.launchpad.api.StartupListener;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -37,40 +39,30 @@ public class Activator implements BundleActivator {
 
     private static final Logger log = LoggerFactory.getLogger(Activator.class);
 
-    private ServiceRegistration<?> mbeanServerReg;
-
-    private ServiceRegistration<StartupListener> mbeanStartupListenerReg;
-
     private StartupListenerTracker startupListenerTracker;
 
     @Override
     public void start(final BundleContext bundleContext) {
         startupListenerTracker = new StartupListenerTracker(bundleContext);
-        mbeanServerReg = registerMBeanServer(bundleContext);
+        registerMBeanServer(bundleContext);
         try {
-            mbeanStartupListenerReg = bundleContext.registerService(StartupListener.class, new MBeanStartupListener(), new Hashtable<String, Object>());
+            registerMBeanStartupListener(bundleContext);
         } catch (MalformedObjectNameException e) {
             log.error("Can't instantiate MBeanStartupListener");
         }
+        registerStartupHandler(bundleContext);
+        registerLaunchpadContentProvider(bundleContext);
     }
 
     @Override
     public void stop(final BundleContext context) {
-        if (mbeanStartupListenerReg != null) {
-            mbeanStartupListenerReg.unregister();
-            mbeanStartupListenerReg = null;
-        }
-        if (mbeanServerReg != null) {
-            mbeanServerReg.unregister();
-            mbeanServerReg = null;
-        }
         if (startupListenerTracker != null) {
             startupListenerTracker.close();
             startupListenerTracker = null;
         }
     }
 
-    private ServiceRegistration<?> registerMBeanServer(final BundleContext bundleContext) {
+    private ServiceRegistration<MBeanServer> registerMBeanServer(final BundleContext bundleContext) {
         // register the platform MBeanServer
         MBeanServer platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
         Hashtable<String, Object> mbeanProps = new Hashtable<String, Object>();
@@ -90,6 +82,18 @@ public class Activator implements BundleActivator {
         } catch (Exception je) {
             log.error("start: Cannot set service properties of Platform MBeanServer service, registering without", je);
         }
-        return bundleContext.registerService(MBeanServer.class.getName(), platformMBeanServer, mbeanProps);
+        return bundleContext.registerService(MBeanServer.class, platformMBeanServer, mbeanProps);
+    }
+
+    private ServiceRegistration<StartupHandler> registerStartupHandler(final BundleContext bundleContext) {
+        return bundleContext.registerService(StartupHandler.class, new StartUpHandlerImpl(bundleContext.getBundle(0)), null);
+    }
+
+    private ServiceRegistration<LaunchpadContentProvider> registerLaunchpadContentProvider(final BundleContext bundleContext) {
+        return bundleContext.registerService(LaunchpadContentProvider.class, new LaunchpadContentProviderImpl(bundleContext.getBundle(0)), null);
+    }
+
+    private ServiceRegistration<StartupListener> registerMBeanStartupListener(final BundleContext bundleContext) throws MalformedObjectNameException {
+        return bundleContext.registerService(StartupListener.class, new MBeanStartupListener(), null);
     }
 }
