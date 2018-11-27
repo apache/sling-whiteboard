@@ -19,6 +19,7 @@ package org.apache.sling.launchpad.startupmanager;
 import org.apache.sling.launchpad.api.StartupHandler;
 import org.apache.sling.launchpad.api.StartupListener;
 import org.apache.sling.launchpad.api.StartupMode;
+import org.apache.sling.launchpad.api.StartupService;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
@@ -30,6 +31,8 @@ import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Hashtable;
 
 public class StartupListenerTracker implements FrameworkListener, BundleListener {
 
@@ -95,6 +98,14 @@ public class StartupListenerTracker implements FrameworkListener, BundleListener
             for (StartupListener listener : tracker.getServices(new StartupListener[0])) {
                 listener.startupFinished(startupMode);
             }
+
+            StartupService startupService = new StartupService() {
+                @Override
+                public StartupMode getStartupMode() {
+                    return startupMode;
+                }
+            };
+            bundleContext.registerService(StartupService.class, startupService, new Hashtable<String, Object>());
         }
     }
 
