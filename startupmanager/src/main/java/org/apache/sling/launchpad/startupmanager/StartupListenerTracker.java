@@ -57,6 +57,7 @@ public class StartupListenerTracker implements FrameworkListener, BundleListener
     StartupListenerTracker(final BundleContext bundleContext) {
         this.bundleContext = bundleContext;
         this.startupMode = StartupMode.INSTALL;
+        this.startLevelBased = Boolean.valueOf(bundleContext.getProperty("sling.launchpad.startlevel.based"));
 
         startLevelServiceReference = bundleContext.getServiceReference(StartLevel.class);
         if (startLevelServiceReference != null) {
@@ -107,7 +108,6 @@ public class StartupListenerTracker implements FrameworkListener, BundleListener
     @Override
     public void frameworkEvent(FrameworkEvent event) {
         if (event.getType() == FrameworkEvent.STARTLEVEL_CHANGED && startLevelService != null) {
-            startLevelBased = true;
             int startLevel = startLevelService.getStartLevel();
             if (startLevel >= TARGET_START_LEVEL) {
                 onFinished();
