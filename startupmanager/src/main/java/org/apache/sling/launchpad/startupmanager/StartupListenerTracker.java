@@ -26,6 +26,7 @@ import org.osgi.framework.BundleListener;
 import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.ServiceReference;
+import org.osgi.service.startlevel.StartLevel;
 import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
 import org.slf4j.Logger;
@@ -37,17 +38,33 @@ public class StartupListenerTracker implements FrameworkListener, BundleListener
 
     private static final Logger log = LoggerFactory.getLogger(StartupListenerTracker.class);
 
+    private static final int TARGET_START_LEVEL = 30;
+
     private final StartupMode startupMode;
 
     private final BundleContext bundleContext;
 
     private final ServiceTracker<StartupListener, StartupListener> tracker;
 
+    private final ServiceReference<StartLevel> startLevelServiceReference;
+
+    private final StartLevel startLevelService;
+
     private volatile boolean frameworkStarted;
+
+    private boolean startLevelBased;
 
     StartupListenerTracker(final BundleContext bundleContext) {
         this.bundleContext = bundleContext;
         this.startupMode = StartupMode.INSTALL;
+
+        startLevelServiceReference = bundleContext.getServiceReference(StartLevel.class);
+        if (startLevelServiceReference != null) {
+            startLevelService = bundleContext.getService(startLevelServiceReference);
+        } else {
+            startLevelService = null;
+        }
+
         tracker = new ServiceTracker<>(bundleContext, StartupListener.class,
                 new ServiceTrackerCustomizer<StartupListener, StartupListener>() {
                     @Override
@@ -82,24 +99,21 @@ public class StartupListenerTracker implements FrameworkListener, BundleListener
         bundleContext.removeFrameworkListener(this);
         bundleContext.removeBundleListener(this);
         tracker.close();
+        if (startLevelServiceReference != null) {
+            bundleContext.ungetService(startLevelServiceReference);
+        }
     }
 
     @Override
     public void frameworkEvent(FrameworkEvent event) {
-        if (event.getType() == FrameworkEvent.STARTED) {
-            frameworkStarted = true;
-            log.info("Startup finished");
-            for (StartupListener listener : tracker.getServices(new StartupListener[0])) {
-                listener.startupFinished(startupMode);
+        if (event.getType() == FrameworkEvent.STARTLEVEL_CHANGED && startLevelService != null) {
+            startLevelBased = true;
+            int startLevel = startLevelService.getStartLevel();
+            if (startLevel >= TARGET_START_LEVEL) {
+                onFinished();
             }
-
-            StartupService startupService = new StartupService() {
-                @Override
-                public StartupMode getStartupMode() {
-                    return startupMode;
-                }
-            };
-            bundleContext.registerService(StartupService.class, startupService, new Hashtable<String, Object>());
+        } else if (event.getType() == FrameworkEvent.STARTED && !startLevelBased) {
+            onFinished();
         }
     }
 
@@ -124,4 +138,22 @@ public class StartupListenerTracker implements FrameworkListener, BundleListener
             }
         }
     }
+
+    private void onFinished() {
+        frameworkStarted = true;
+        log.info("Startup finished");
+        for (StartupListener listener : tracker.getServices(new StartupListener[0])) {
+            listener.startupFinished(startupMode);
+        }
+
+        StartupService startupService = new StartupService() {
+            @Override
+            public StartupMode getStartupMode() {
+                return startupMode;
+            }
+        };
+        bundleContext.registerService(StartupService.class, startupService, new Hashtable<String, Object>());
+    }
+
+
 }
