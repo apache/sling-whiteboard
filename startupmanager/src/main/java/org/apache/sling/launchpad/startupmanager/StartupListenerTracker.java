@@ -16,7 +16,6 @@
  */
 package org.apache.sling.launchpad.startupmanager;
 
-import org.apache.sling.launchpad.api.StartupHandler;
 import org.apache.sling.launchpad.api.StartupListener;
 import org.apache.sling.launchpad.api.StartupMode;
 import org.apache.sling.launchpad.api.StartupService;
@@ -48,12 +47,7 @@ public class StartupListenerTracker implements FrameworkListener, BundleListener
 
     StartupListenerTracker(final BundleContext bundleContext) {
         this.bundleContext = bundleContext;
-
-        final ServiceReference<StartupHandler> startupHandlerServiceReference = bundleContext.getServiceReference(StartupHandler.class);
-        final StartupHandler startupHandler = bundleContext.getService(startupHandlerServiceReference);
-        startupMode = startupHandler.getMode();
-        bundleContext.ungetService(startupHandlerServiceReference);
-
+        this.startupMode = StartupMode.INSTALL;
         tracker = new ServiceTracker<>(bundleContext, StartupListener.class,
                 new ServiceTrackerCustomizer<StartupListener, StartupListener>() {
                     @Override
@@ -71,7 +65,7 @@ public class StartupListenerTracker implements FrameworkListener, BundleListener
                         final StartupListener listener = bundleContext.getService(reference);
                         if (listener != null) {
                             try {
-                                listener.inform(startupHandler.getMode(), frameworkStarted);
+                                listener.inform(startupMode, frameworkStarted);
                             } catch (final Throwable t) {
                                 log.error("Error calling StartupListener {}", listener, t);
                             }
