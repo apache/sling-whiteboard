@@ -1,4 +1,4 @@
 [submodule "scripting-resolver/sling-org-apache-sling-scripting-sightly"]
 	path = scripting-resolver/sling-org-apache-sling-scripting-sightly
-	url = git@github.com:apache/sling-org-apache-sling-scripting-sightly.git
+	url = https://github.com/apache/sling-org-apache-sling-scripting-sightly.git
 	branch = experimental-scripting-resolver
