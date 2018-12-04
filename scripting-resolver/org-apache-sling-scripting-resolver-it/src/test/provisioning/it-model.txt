@@ -34,6 +34,7 @@
   org.apache.sling/org.apache.sling.scripting.examplebundle.precompiled
   org.apache.sling/org.apache.sling.scripting.examplebundle.classic
   org.apache.sling/org.apache.sling.scripting.examplebundle.hi
+  org.apache.sling/org.apache.sling.scripting.examplebundle.ohhi
   org.apache.sling/org.apache.sling.junit.core/1.0.26
 
 [configurations]

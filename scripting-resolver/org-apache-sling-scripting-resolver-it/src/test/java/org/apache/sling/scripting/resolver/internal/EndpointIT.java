@@ -87,4 +87,22 @@ public class EndpointIT extends AbstractEndpointIT {
         Assert.assertTrue(document.body().html().contains("Hallo"));
         Assert.assertFalse(document.body().html().contains("Hello"));
     }
+
+    @Test
+    public void testOhHiEndpoint() throws Exception {
+        Document document = getDocument("content/srr/examples/ohhi.html");
+        Assert.assertEquals("We're testing some serious scripting here", document.select("h2").html());
+        Assert.assertTrue(document.body().html().contains("World"));
+        Assert.assertTrue(document.body().html().contains("Ohhi"));
+        Assert.assertFalse(document.body().html().contains("Hello"));
+    }
+
+    @Test
+    public void testOhHiEndpointV1() throws Exception {
+        Document document = getDocument("content/srr/examples/ohhi-v1.html");
+        Assert.assertEquals("We're testing some serious scripting here", document.select("h2").html());
+        Assert.assertTrue(document.body().html().contains("World"));
+        Assert.assertTrue(document.body().html().contains("Ohhi"));
+        Assert.assertFalse(document.body().html().contains("Hello"));
+    }
 }

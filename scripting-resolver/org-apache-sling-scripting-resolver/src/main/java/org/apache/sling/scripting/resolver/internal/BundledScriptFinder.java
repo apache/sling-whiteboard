@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -31,7 +32,6 @@ import javax.script.ScriptEngineManager;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
-import org.osgi.framework.Bundle;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -48,35 +48,29 @@ public class BundledScriptFinder {
     @Reference
     private ScriptEngineManager scriptEngineManager;
 
-    Executable getScript(SlingHttpServletRequest request, Bundle bundle, boolean precompiledScripts) {
-        return getScript(request, bundle, precompiledScripts,null);
-    }
-
-    Executable getScript(SlingHttpServletRequest request, Bundle bundle, boolean precompiledScripts, String delegatedResourceType) {
+    Executable getScript(SlingHttpServletRequest request, LinkedHashSet<TypeProvider> typeProviders, boolean precompiledScripts) {
         List<String> scriptMatches;
-        if (StringUtils.isEmpty(delegatedResourceType)) {
-            scriptMatches = buildScriptMatches(request);
-        } else {
-            scriptMatches = buildScriptMatches(request, delegatedResourceType);
-        }
-        for (String extension : getScriptEngineExtensions()) {
+        for (TypeProvider provider : typeProviders) {
+            scriptMatches = buildScriptMatches(request, provider.getType());
             for (String match : scriptMatches) {
-                URL bundledScriptURL;
-                if (precompiledScripts) {
-                    String className = fromScriptPathToClassName(match);
-                    try {
-                        Class clazz = bundle.loadClass(className);
-                        return new PrecompiledScript(bundle, scriptEngineManager.getEngineByExtension(extension),
-                                clazz.getDeclaredConstructor().newInstance());
-                    } catch (ClassNotFoundException e) {
-                        // do nothing here
-                    } catch (Exception e) {
-                        throw new RuntimeException("Cannot correctly instantiate class " + className + ".");
-                    }
-                } else {
-                    bundledScriptURL = bundle.getEntry(NS_JAVAX_SCRIPT_CAPABILITY + SLASH + match + DOT + extension);
-                    if (bundledScriptURL != null) {
-                        return new Script(bundle, bundledScriptURL, scriptEngineManager.getEngineByExtension(extension));
+                for (String extension : getScriptEngineExtensions()) {
+                    URL bundledScriptURL;
+                    if (precompiledScripts) {
+                        String className = fromScriptPathToClassName(match);
+                        try {
+                            Class clazz = provider.getBundle().loadClass(className);
+                            return new PrecompiledScript(provider.getBundle(), scriptEngineManager.getEngineByExtension(extension),
+                                    clazz.getDeclaredConstructor().newInstance());
+                        } catch (ClassNotFoundException e) {
+                            // do nothing here
+                        } catch (Exception e) {
+                            throw new RuntimeException("Cannot correctly instantiate class " + className + ".");
+                        }
+                    } else {
+                        bundledScriptURL = provider.getBundle().getEntry(NS_JAVAX_SCRIPT_CAPABILITY + SLASH + match + DOT + extension);
+                        if (bundledScriptURL != null) {
+                            return new Script(provider.getBundle(), bundledScriptURL, scriptEngineManager.getEngineByExtension(extension));
+                        }
                     }
                 }
             }
@@ -84,13 +78,9 @@ public class BundledScriptFinder {
         return null;
     }
 
-    private List<String> buildScriptMatches(SlingHttpServletRequest request) {
-        return buildScriptMatches(request, null);
-    }
-
-    private List<String> buildScriptMatches(SlingHttpServletRequest request, String delegatedResourceType) {
+    private List<String> buildScriptMatches(SlingHttpServletRequest request, String providerType) {
         List<String> matches = new ArrayList<>();
-        String resourceType = StringUtils.isEmpty(delegatedResourceType) ? request.getResource().getResourceType() : delegatedResourceType;
+        String resourceType = providerType;
         String version = null;
         String method = request.getMethod();
         boolean defaultMethod = DEFAULT_METHODS.contains(method);

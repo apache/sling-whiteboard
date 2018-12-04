@@ -20,6 +20,8 @@ package org.apache.sling.scripting.resolver.internal;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -41,16 +43,13 @@ import org.apache.sling.api.request.RequestPathInfo;
 import org.apache.sling.api.scripting.ScriptEvaluationException;
 import org.apache.sling.api.scripting.SlingBindings;
 import org.apache.sling.scripting.core.ScriptHelper;
-import org.osgi.framework.Bundle;
 
 class BundledScriptServlet extends GenericServlet {
 
 
-    private final Bundle m_bundle;
     private final BundledScriptFinder m_bundledScriptFinder;
     private final ScriptContextProvider m_scriptContextProvider;
-    private final String m_delegatedResourceType;
-    private final Set<String> m_wiredResourceTypes;
+    private final LinkedHashSet<TypeProvider> m_wiredTypeProviders;
     private final boolean m_precompiledScripts;
 
     private Map<String, Executable> scriptsMap = new HashMap<>();
@@ -58,18 +57,11 @@ class BundledScriptServlet extends GenericServlet {
 
 
 
-    BundledScriptServlet(BundledScriptFinder bundledScriptFinder, Bundle bundle, ScriptContextProvider scriptContextProvider,
-                         Set<String> wiredResourceTypes, boolean precompiledScripts) {
-        this(bundledScriptFinder, bundle, scriptContextProvider, null, wiredResourceTypes, precompiledScripts);
-    }
-
-    BundledScriptServlet(BundledScriptFinder bundledScriptFinder, Bundle bundle, ScriptContextProvider scriptContextProvider, String
-            overridingResourceType, Set<String> wiredResourceTypes, boolean precompiledScripts) {
-        m_bundle = bundle;
+    BundledScriptServlet(BundledScriptFinder bundledScriptFinder, ScriptContextProvider scriptContextProvider,
+                         LinkedHashSet<TypeProvider> wiredTypeProviders, boolean precompiledScripts) {
         m_bundledScriptFinder = bundledScriptFinder;
         m_scriptContextProvider = scriptContextProvider;
-        m_delegatedResourceType = overridingResourceType;
-        m_wiredResourceTypes = wiredResourceTypes;
+        m_wiredTypeProviders = wiredTypeProviders;
         m_precompiledScripts = precompiledScripts;
     }
 
@@ -100,11 +92,7 @@ class BundledScriptServlet extends GenericServlet {
                     try {
                         executable = scriptsMap.get(scriptsMapKey);
                         if (executable == null) {
-                            if (StringUtils.isEmpty(m_delegatedResourceType)) {
-                                executable = m_bundledScriptFinder.getScript(request, m_bundle, m_precompiledScripts);
-                            } else {
-                                executable = m_bundledScriptFinder.getScript(request, m_bundle, m_precompiledScripts, m_delegatedResourceType);
-                            }
+                            executable = m_bundledScriptFinder.getScript(request, m_wiredTypeProviders, m_precompiledScripts);
                             if (executable != null) {
                                 scriptsMap.put(scriptsMapKey, executable);
                             }
@@ -118,7 +106,11 @@ class BundledScriptServlet extends GenericServlet {
                 lock.readLock().unlock();
             }
             if (executable != null) {
-                RequestWrapper requestWrapper = new RequestWrapper(request, m_wiredResourceTypes);
+                Set<String> wiredResourceTypes = new HashSet<>();
+                for (TypeProvider typeProvider : m_wiredTypeProviders) {
+                    wiredResourceTypes.add(typeProvider.getType());
+                }
+                RequestWrapper requestWrapper = new RequestWrapper(request, wiredResourceTypes);
                 ScriptContext scriptContext = m_scriptContextProvider.prepareScriptContext(requestWrapper, response, executable);
                 try {
                     executable.eval(scriptContext);

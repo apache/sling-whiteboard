@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -78,12 +79,12 @@ import aQute.bnd.annotation.headers.ProvideCapability;
 public class BundledScriptTracker implements BundleTrackerCustomizer<List<ServiceRegistration<Servlet>>> {
     static final String NS_SLING_SCRIPTING_EXTENDER = "sling.scripting";
 
-    private static final String NS_SLING_RESOURCE_TYPE = "sling.resourceType";
+    static final String NS_SLING_RESOURCE_TYPE = "sling.resourceType";
     private static final Logger LOGGER = LoggerFactory.getLogger(BundledScriptTracker.class);
     private static final String AT_SLING_SELECTORS = "sling.resourceType.selectors";
     private static final String AT_SLING_EXTENSIONS = "sling.resourceType.extensions";
     private static final String REGISTERING_BUNDLE = "org.apache.sling.scripting.resolver.internal.BundledScriptTracker.registering_bundle";
-    private static final String AT_VERSION = "version";
+    static final String AT_VERSION = "version";
     private static final String AT_EXTENDS = "extends";
 
     @Reference
@@ -126,14 +127,15 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<List<Servic
 
                     Map<String, Object> attributes = cap.getAttributes();
                     String resourceType = (String) attributes.get(NS_SLING_RESOURCE_TYPE);
+                    String resourceTypeString = resourceType;
 
                     Version version = (Version) attributes.get(AT_VERSION);
 
                     if (version != null) {
-                        resourceType += "/" + version;
+                        resourceTypeString += "/" + version;
                     }
 
-                    properties.put(ServletResolverConstants.SLING_SERVLET_RESOURCE_TYPES, resourceType);
+                    properties.put(ServletResolverConstants.SLING_SERVLET_RESOURCE_TYPES, resourceTypeString);
 
                     Object selectors = attributes.get(AT_SLING_SELECTORS);
                     Set<String> extensions = new HashSet<>(
@@ -157,7 +159,8 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<List<Servic
 
                     if (StringUtils.isNotEmpty(extendsRT)) {
 
-                        LOGGER.debug("Bundle {} extends resource type {} through {}.", bundle.getSymbolicName(), extendsRT, resourceType);
+                        LOGGER.debug("Bundle {} extends resource type {} through {}.", bundle.getSymbolicName(), extendsRT,
+                                resourceTypeString);
                         optionalWire = bundleWiring.getRequiredWires(NS_SLING_RESOURCE_TYPE).stream().filter(
                                 bundleWire -> extendsRT.equals(bundleWire.getCapability().getAttributes().get(NS_SLING_RESOURCE_TYPE)) &&
                                         !bundleWire.getCapability().getAttributes().containsKey(AT_SLING_SELECTORS)
@@ -165,31 +168,30 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<List<Servic
                     }
 
                     List<ServiceRegistration<Servlet>> regs = new ArrayList<>();
-
+                    LinkedHashSet<TypeProvider> wiredProviders = new LinkedHashSet<>();
+                    wiredProviders.add(new TypeProvider(resourceType, bundle));
+                    wiredProviders.add(new TypeProvider(resourceTypeString, bundle));
                     if (optionalWire.isPresent()) {
                         BundleWire extendsWire = optionalWire.get();
+                        Bundle providerBundle = extendsWire.getProvider().getBundle();
                         Map<String, Object> wireCapabilityAttributes = extendsWire.getCapability().getAttributes();
                         String wireResourceType = (String) wireCapabilityAttributes.get(NS_SLING_RESOURCE_TYPE);
                         Version wireResourceTypeVersion = (Version) wireCapabilityAttributes.get(AT_VERSION);
-                        regs.add(bundle.getBundleContext().registerService(
-                                Servlet.class,
-                                new BundledScriptServlet(bundledScriptFinder, optionalWire.get().getProvider().getBundle(),
-                                        scriptContextProvider, wireResourceType + (wireResourceTypeVersion != null ? "/" +
-                                        wireResourceTypeVersion.toString() : ""), getWiredResourceTypes(
-                                        new HashSet<>(Arrays.asList((String) attributes.get(NS_SLING_RESOURCE_TYPE), wireResourceType)),
-                                        new HashSet<>(
-                                                Arrays.asList(resourceType, wireResourceType + (wireResourceTypeVersion != null ? "/" +
-                                                        wireResourceTypeVersion.toString() : ""))),
-                                        bundle, optionalWire.get().getProvider().getBundle()), precompiled),
-                                properties
-                        ));
-                    } else {
-                        regs.add(bundle.getBundleContext()
-                                .registerService(Servlet.class, new BundledScriptServlet(bundledScriptFinder, bundle, scriptContextProvider,
-                                                getWiredResourceTypes(new HashSet<>(Arrays.asList((String) attributes.get(NS_SLING_RESOURCE_TYPE))),
-                                                        new HashSet<>(Arrays.asList(resourceType)), bundle), precompiled),
-                                        properties));
+                        String wireResourceTypeString = wireResourceType + (wireResourceTypeVersion != null ? "/" +
+                                wireResourceTypeVersion.toString() : "");
+
+                        wiredProviders.add(new TypeProvider(wireResourceType, providerBundle));
+                        wiredProviders.add(new TypeProvider(wireResourceTypeString, providerBundle));
+
                     }
+                    populateWiredProviders(wiredProviders);
+                    regs.add(
+                        bundle.getBundleContext().registerService(
+                                Servlet.class,
+                                new BundledScriptServlet(bundledScriptFinder, scriptContextProvider, wiredProviders, precompiled),
+                                properties
+                        )
+                    );
                     return regs.stream();
                 }).collect(Collectors.toList());
                 refreshDispatcher(serviceRegistrations);
@@ -203,23 +205,15 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<List<Servic
     }
 
 
-    private Set<String> getWiredResourceTypes(Set<String> rts, Set<String> initial, Bundle... bundles) {
-        Set<String> wiredResourceTypes = new HashSet<>(initial);
-        wiredResourceTypes.addAll(initial);
+    private void populateWiredProviders(LinkedHashSet<TypeProvider> initialProviders) {
+        Set<String> initialResourceTypes = new HashSet<>(initialProviders.size());
+        Set<Bundle> bundles = new HashSet<>(initialProviders.size());
+        for (TypeProvider provider : initialProviders) {
+            initialResourceTypes.add(provider.getType());
+            bundles.add(provider.getBundle());
+        }
         for (Bundle bundle : bundles) {
             BundleWiring bundleWiring = bundle.adapt(BundleWiring.class);
-            bundleWiring.getCapabilities(BundledScriptTracker.NS_SLING_RESOURCE_TYPE).forEach(
-                    cap ->
-                    {
-                        String resourceType = (String) cap.getAttributes().get(BundledScriptTracker
-                                .NS_SLING_RESOURCE_TYPE);
-                        Version version = (Version) cap.getAttributes().get(BundledScriptTracker
-                                .AT_VERSION);
-                        if (!rts.contains(resourceType)) {
-                            wiredResourceTypes.add(resourceType + (version == null ? "" : "/" + version.toString()));
-                        }
-                    }
-            );
             bundleWiring.getRequiredWires(BundledScriptTracker.NS_SLING_RESOURCE_TYPE).forEach(
                     bundleWire ->
                     {
@@ -227,13 +221,13 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<List<Servic
                                 .NS_SLING_RESOURCE_TYPE);
                         Version version = (Version) bundleWire.getCapability().getAttributes().get(BundledScriptTracker
                                 .AT_VERSION);
-                        if (!rts.contains(resourceType)) {
-                            wiredResourceTypes.add(resourceType + (version == null ? "" : "/" + version.toString()));
+                        if (!initialResourceTypes.contains(resourceType)) {
+                            initialProviders.add(new TypeProvider(resourceType + (version == null ? "" : "/" + version.toString()),
+                                    bundleWire.getProvider().getBundle()));
                         }
                     }
             );
         }
-        return wiredResourceTypes;
     }
 
     private void refreshDispatcher(List<ServiceRegistration<Servlet>> regs) {
@@ -354,12 +348,13 @@ public class BundledScriptTracker implements BundleTrackerCustomizer<List<Servic
                         Hashtable<String, Object> props = toProperties(reg);
                         return getResourceType(props).equals(m_rt) &&
                                 Arrays.asList(PropertiesUtil
-                                .toStringArray(props.get(ServletResolverConstants.SLING_SERVLET_METHODS), new String[]{"GET", "HEAD"}))
-                                .contains(slingRequest.getMethod()) &&
+                                        .toStringArray(props.get(ServletResolverConstants.SLING_SERVLET_METHODS),
+                                                new String[]{"GET", "HEAD"}))
+                                        .contains(slingRequest.getMethod()) &&
                                 Arrays.asList(PropertiesUtil
-                                    .toStringArray(props.get(ServletResolverConstants.SLING_SERVLET_EXTENSIONS), new String[]{"html"}))
-                                    .contains(slingRequest.getRequestPathInfo().getExtension() == null ? "html" :
-                                            slingRequest.getRequestPathInfo().getExtension());
+                                        .toStringArray(props.get(ServletResolverConstants.SLING_SERVLET_EXTENSIONS), new String[]{"html"}))
+                                        .contains(slingRequest.getRequestPathInfo().getExtension() == null ? "html" :
+                                                slingRequest.getRequestPathInfo().getExtension());
                     })
                     .sorted((left, right) ->
                     {
