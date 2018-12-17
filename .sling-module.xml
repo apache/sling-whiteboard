@@ -20,5 +20,9 @@
 <sling-module>
     <jenkins>
         <enabled>true</enabled>
+        <jdks>
+            <jdk>8</jdk>
+            <jdk>9</jdk>
+        </jdks>
     </jenkins>
 </sling-module>
