@@ -19,6 +19,6 @@
 -->
 <sling-module>
     <jenkins>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
     </jenkins>
 </sling-module>
