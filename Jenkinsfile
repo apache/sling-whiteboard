@@ -1,1 +1,1 @@
-slingOsgiBundleBuild('moduleDir': 'mdResourceProvider')
+slingOsgiBundleBuild('moduleDir': 'mdresourceprovider')
