@@ -1,5 +1,6 @@
 {
     "jenkins": {
-        "jdks": [ 8, 9 ]
+        "jdks": [ 8, 9 ],
+        "emailRecipients": ["rombert@apache.org", "rombert@apache.org"]
     }
 }
