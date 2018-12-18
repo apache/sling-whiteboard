@@ -22,7 +22,7 @@
     <artifactId>org.apache.sling.mdresourceprovider</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
-    <name>Apache Sling Markdown Resource Provider</name>
+    <name>Apache Sling Markdown Resource Provider </name>
 
     <build>
         <plugins>
