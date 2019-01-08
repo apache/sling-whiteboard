@@ -25,7 +25,7 @@ The act of defining the type system and using it to drive subsequent domain feat
 
 ## Introduction to Models
 
-[Models](../model/src/main/java/org/apache/sling/modeling/Models.java) is a set of models that are applicable to a particular object.
+[Models](../src/main/java/org/apache/sling/modeling/Models.java) is a set of models that are applicable to a particular object.
 
 Since resource is the main working object in Sling, most likely it is the primary target of modeling.
 
