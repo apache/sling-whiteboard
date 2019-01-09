@@ -19,12 +19,12 @@
         <relativePath />
     </parent>
 
-    <artifactId>org.apache.sling.modeling</artifactId>
+    <artifactId>org.apache.sling.types</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>bundle</packaging>
 
-    <name>Sling Modeling Framework</name>
-    <description>It contains the supporting code to do modeling in Sling.</description>
+    <name>Sling Type System</name>
+    <description>It contains the supporting code to define types in Sling.</description>
 
     <build>
         <plugins>

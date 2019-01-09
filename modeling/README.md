@@ -1,6 +1,6 @@
-# Sling Modeling Framework
+# Sling Type System
 
-This repository is the source code for the development of the modeling approach for Sling.
+This repository is the source code for the development of the type system approach for Sling.
 
 ## Reading List
 

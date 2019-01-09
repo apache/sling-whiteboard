@@ -1,4 +1,4 @@
-# Sling Modeling Framework
+# Sling Type System
 
 ## Status of This Document
 
@@ -21,28 +21,26 @@ When the developers develop using Sling, actually they have resource type defini
 
 The lack of formal resource type definitions can be summarized with the problem where we cannot do *reflection* and *meta programming*. And this is a missed opportunity because we cannot leverage uniform interface to the fullest.
 
-The act of defining the type system and using it to drive subsequent domain features is crudely defined as the act of modeling. Therefore, the primary objective of Sling Modeling Framework is to establish the concept and infrastructure to do modeling in Sling.
+## Introduction to TypeSystem
 
-## Introduction to Models
+[TypeSystem](../src/main/java/org/apache/sling/types/TypeSystem.java) is a set of types that are applicable to a particular object.
 
-[Models](../src/main/java/org/apache/sling/modeling/Models.java) is a set of models that are applicable to a particular object.
+Since resource is the main working object in Sling, most likely it is the primary target of the type system.
 
-Since resource is the main working object in Sling, most likely it is the primary target of modeling.
-
-To get the Models from a resource, simply perform an adaptation to `Models.class`:
+To get the TypeSystem from a resource, simply perform an adaptation to `TypeSystem.class`:
 
 ```java
 Resource resource = slingRequest.getResource();
-Models models = resource.adaptTo(Models.class);
+TypeSystem typeSystem = resource.adaptTo(TypeSystem.class);
 ```
 
-And once the Models object is obtained, it can be used to perform reflection on the resource.
+And once the TypeSystem instance is obtained, it can be used to perform reflection on the resource.
 
-### Alternative Way Getting the Models
+### Alternative Way Getting the TypeSystem
 
 (Note that this approach is not implemented by this POC)
 
-Instead of adapting to `Models.class`, ideally we can enhance the [Adaptable](https://static.javadoc.io/org.apache.sling/org.apache.sling.api/2.20.0/org/apache/sling/api/adapter/Adaptable.html) to allow its client to do reflection on the available adapters:
+Instead of adapting to `TypeSystem.class`, ideally we can enhance the [Adaptable](https://static.javadoc.io/org.apache.sling/org.apache.sling.api/2.20.0/org/apache/sling/api/adapter/Adaptable.html) to allow its client to do reflection on the available adapters:
 
 ```java
 public interface Adaptable {
@@ -50,7 +48,7 @@ public interface Adaptable {
     // ... existing methods ...
 
     @NotNull
-    Collection<@NotNull Class<?>> getAvailableAdapters();
+    TypeSystem getTypeSystem();
 }
 ```
 
@@ -58,16 +56,16 @@ Then use it like the following:
 
 ```java
 Resource resource = slingRequest.getResource();
-Collection<@NotNull Class<?>> adapters = resource.getAvailableAdapters();
+Collection<@NotNull Class<? extends Types>> typesClasses = resource.getTypeSystem().getAvailableTypes();
 
-for (Class<?> clazz : adapters) {
+for (Class<?> clazz : typesClasses) {
     resource.adaptTo(clazz);
 }
 ```
 
-## Introducing DataModel
+## Introducing DataTypes
 
-[DataModel](../src/main/java/org/apache/sling/modeling/data/DataModel.java) is the lowest level model that describes a resource from the perspective of data.
+[DataTypes](../src/main/java/org/apache/sling/types/data/DataTypes.java) is the lowest level types that describes a resource from the perspective of data.
 
 For example, given the following resource:
 
@@ -80,9 +78,9 @@ For example, given the following resource:
   - sling:resourceType = "example/components/page"
 ```
 
-A DataModel can be created for `/libs/example/components/page` resource type to describe its data type:
+A DataTypes can be created for `/libs/example/components/page` resource type to describe its data types:
 
-(Note that the model is described using JSON format for the purpose of this article)
+(Note that the types are described using JSON format for the purpose of this article)
 
 ```json
 {
@@ -116,19 +114,19 @@ A DataModel can be created for `/libs/example/components/page` resource type to 
 }
 ```
 
-When describing the DataModel of `/libs/example/components/page` this way, we are essentially saying that we model the content structure of `/libs/example/components/page`. The resources having `/libs/example/components/page` as their resource types are driven by its models, where DataModel is one of many possible models.
+When describing the DataTypes of `/libs/example/components/page` this way, we are essentially saying that we model the typing system of `/libs/example/components/page`. The resources having `/libs/example/components/page` as their resource types are driven by its types, where DataTypes is one of many possible types.
 
-To get the DataModel of a resource, simply adapt the resource into `DataModel.class`:
+To get the DataTypes of a resource, simply adapt the resource into `DataTypes.class`:
 
 ```java
 Resource resource = slingRequest.getResource();
-DataModel dataModel = resource.adaptTo(DataModel.class);
-// use dataModel accordingly
+DataTypes dataTypes = resource.adaptTo(DataTypes.class);
+// use dataTypes accordingly
 ```
 
-### DataModel's Properties
+### DataTypes' Properties
 
-A DataModel consists of multiple [Properties](../src/main/java/org/apache/sling/modeling/data/Property.java).
+A DataTypes consists of multiple [Properties](../src/main/java/org/apache/sling/types/data/Property.java).
 
 A Property represents the definition of a resource's property.
 The definition is typically just a set of attributes describing the characteristics of the said property.
@@ -140,7 +138,7 @@ The most important attribute is `sling:type` attribute, which represents the typ
 Just like resource types are often used as a hooking mechanic to model the resources,
 the property types are also used as a hooking mechanic to model the properties.
 
-For instance, Sling provides [sling:text](../src/main/java/org/apache/sling/modeling/data/commons/impl/TextPropertyImpl.java) type to represent a simple text property. It defines the following attributes:
+For instance, Sling provides [sling:text](../src/main/java/org/apache/sling/types/data/commons/impl/TextPropertyImpl.java) type to represent a simple text property. It defines the following attributes:
 
 * `sling:id`
 * `sling:name`
@@ -167,7 +165,7 @@ Besides `sling:text`, Sling will provide out-of-the-box types, such as textarea,
 
 ### PropertyHandler
 
-Each property type needs to implement a [PropertyHandler](../src/main/java/org/apache/sling/modeling/data/spi/PropertyHandler.java).
+Each property type needs to implement a [PropertyHandler](../src/main/java/org/apache/sling/types/data/spi/PropertyHandler.java).
 
 The primary purpose of the handler is to be the implementation to retrieve/persist the property's values from/to the persistence layer.
 It is implemented as an OSGi service.
@@ -186,15 +184,15 @@ However, it only covers the "primitive" types, such as String, Long, Calendar, a
 It is not extensible to cover more complex property types, such as path, URI, and JSON.
 ValueMap decision may be based on the types supported by the persistence layer, which is JCR in general.
 
-DataModel is simply ValueMap on steroid, where it allows arbitrary property types to be defined.
+DataTypes is simply ValueMap on steroid, where it allows arbitrary property types to be defined.
 
-PropertyHandler is used as the converter between the DataModel's Property and the persistence layer.
+PropertyHandler is used as the converter between the DataTypes' Property and the persistence layer.
 So, while the persistence layer only allows a certain set of primitive types,
 we can simply define a new property type to represent a more complex type and implement its PropertyHandler to convert between the Java class and the persistence layer's type, which would be a simple String most likely.
 
-### Establishing the DataModels
+### Establishing the DataTypes
 
-To establish the DataModels, app developers need to implement and register [PropertyProviders](../src/main/java/org/apache/sling/modeling/data/spi/PropertyProvider.java),
+To establish the DataTypes, app developers need to implement and register [PropertyProviders](../src/main/java/org/apache/sling/types/data/spi/PropertyProvider.java),
 where the app developers need to associate them with the resource types using OSGi service property.
 
 For example for `/libs/example/components/page` resource type:
@@ -214,7 +212,7 @@ public class PagePropertyProvider implements PropertyProvider {
 }
 ```
 
-### Data Modeling Using JCR Node Types
+### DataTypes Using JCR Node Types
 
 While the resource types are the most common ways to define the types of the resources,
 the typing system of the underlying platform is richer than just resource types alone.
@@ -256,7 +254,7 @@ Unlike Sling, JCR has node type definition. Here is the definition of `cq:PageCo
   - navTitle (string)
 ```
 
-In addition to Sling's resource type, Sling Modeling Framework allows to model the DataModel based on JCR node types as well.
+In addition to Sling's resource type, Sling Type System allows to model the DataTypes based on JCR node types as well.
 This is done by also implementing and registering PropertyProvider with the appropriate OSGi service property.
 
 For example for `cq:PageContent` primary node type:
@@ -293,7 +291,7 @@ public class CreatedPropertyProvider implements PropertyProvider {
 }
 ```
 
-### Data Modeling Using Marker Resources and Properties
+### DataTypes Using Marker Resources and Properties
 
 Content modelers often use marker resources and properties to associate the resources with certain concepts.
 
@@ -350,9 +348,9 @@ public class ConfigPropertyProvider implements PropertyProvider {
 
 ### Modeling the Underlying Platform's Typing System
 
-By establishing the DataModel this way, we are essentially saying that we model the typing system of the underlying platform. Then the models are used to drive the resources and other parts of the application.
+By establishing the DataTypes this way, we are essentially saying that we model the data type system of the underlying platform. Then the types are used to drive the resources and other parts of the application.
 
-For example, if we have the following DataModel definitions:
+For example, if we have the following DataTypes definitions:
 
 * `/libs/example/components/page` resource type having `prop1` and `prop2` properties
 * `mix:created` node type having `jcr:created` and `jcr:createdBy` properties
@@ -369,21 +367,21 @@ Then when we have the following resource:
   - jcr:createdBy = "admin"
 ```
 
-The DataModel of the resource will have `prop1`, `prop2`, `jcr:created`, and `jcr:createdBy` properties.
-The resource itself is also allowed to have those properties as defined by the DataModel.
+The DataTypes of the resource will have `prop1`, `prop2`, `jcr:created`, and `jcr:createdBy` properties.
+The resource itself is also allowed to have those properties as defined by the DataTypes.
 
-### Next Steps for DataModel
+### Next Steps for DataTypes
 
 * Tutorial on how to create a new property type named `example:json`
-* Java Annotations to Define Models
+* Java Annotations to Define Types
 * Automatic Index Management
-* Automatic DataModel Creation Based on JCR Node Type Definitions
+* Automatic DataTypes Creation Based on JCR Node Type Definitions
 
-## Other Models
+## Other Types
 
-Once the concept of modeling is understood, there are many opportunities that can be solved by simply defining models.
+Once the concept of type system is understood, there are many opportunities that can be solved by simply defining types.
 
-These are other known models that can be defined:
+These are other known types that can be defined:
 
 1. FormModel
    * Describes the form definition of a resource.
@@ -408,9 +406,9 @@ These are other known models that can be defined:
    * The API exposing the preferences of the current user.
    * This is related to the FormModel.
 
-## Why Modeling
+## Why Type System
 
-So far many of the efforts done in Sling are focused on the backends, while there is litte fundamental improvements done to support the development of the response to the clients.
+So far many of the efforts done in Sling are focused on the backends, while there is little fundamental improvements done to support the development of the response to the clients.
 
 Sling offers a default JSON servlet—which is just a mere content dump as JSON—and a default POST servlet—which again a content dump in the reverse direction from the clients to the server, and they are used a lot, often as best practice, or even marketed (wrongly) as RESTful.
 
@@ -418,7 +416,7 @@ Both servlets are inadequate, error prone, and unmanageable, creating coupling b
 More importantly, since they are not RESTful, we don't get the desired benefits of RESTful system.
 Meanwhile, there is a great need for standardization, consistency, and fast iteration to develop UI or other client apps. Therefore, there is a need for alternative approach besides them.
 
-With modeling, we can put structures to manage the application code—what to put where—such that software best practices are more easily enforced.
+With typing system, we can put structures to manage the application code—what to put where—such that software best practices are more easily enforced.
 The following diagram is an example of the arrangement that we can have once we have it:
 
-![Modeling Use Cases](modeling-use-cases.png)
+![Type System Use Cases](typesystem-use-cases.png)
