@@ -19,6 +19,7 @@
 package org.apache.sling.modeling;
 
 import java.util.Collection;
+import java.util.Optional;
 
 import org.jetbrains.annotations.NotNull;
 import org.osgi.annotation.versioning.ConsumerType;
@@ -28,4 +29,7 @@ public interface Models {
 
     @NotNull
     Collection<@NotNull Class<? extends Model>> getAvailableModels();
+
+    @NotNull
+    <T extends Model> Optional<T> getModel(@NotNull Class<T> modelClass);
 }

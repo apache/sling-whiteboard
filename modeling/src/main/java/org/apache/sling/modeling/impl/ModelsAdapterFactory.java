@@ -20,6 +20,7 @@ package org.apache.sling.modeling.impl;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -80,6 +81,13 @@ public class ModelsAdapterFactory implements AdapterFactory {
             @NotNull
             public Collection<@NotNull Class<? extends Model>> getAvailableModels() {
                 return models;
+            }
+
+            @SuppressWarnings("null")
+            @Override
+            @NotNull
+            public <T extends Model> Optional<T> getModel(@NotNull Class<T> modelClass) {
+                return Optional.ofNullable(resource.adaptTo(modelClass));
             }
         };
     }
