@@ -47,12 +47,12 @@ public abstract class SimplePropertyHandler<T extends Property> implements Prope
     @SuppressWarnings("null")
     @Override
     @NotNull
-    public Optional<?> getValue(@NotNull Context ctx, @NotNull T property) throws ModelException {
+    public Optional<?> getValue(@NotNull Context<Resource> ctx, @NotNull T property) throws ModelException {
         String name = property.getName();
 
         log.debug("Getting value with name: " + name);
 
-        ValueMap vm = ctx.getResource().getValueMap();
+        ValueMap vm = ctx.getAdaptable().getValueMap();
         return Optional.ofNullable(getValue(property, vm));
     }
 
@@ -60,7 +60,7 @@ public abstract class SimplePropertyHandler<T extends Property> implements Prope
     protected abstract Object getValue(@NotNull T property, @NotNull ValueMap vm) throws ModelException;
 
     @Override
-    public void setValue(@NotNull Context ctx, @NotNull T property, RequestParameter... params) throws ModelException {
+    public void setValue(@NotNull Context<Resource> ctx, @NotNull T property, RequestParameter... params) throws ModelException {
         String name = property.getName();
 
         log.debug("Setting value with name: " + name);
@@ -80,10 +80,10 @@ public abstract class SimplePropertyHandler<T extends Property> implements Prope
         String relPath = ResourceUtil.getParent(normalizedName);
         String propName = ResourceUtil.getName(normalizedName);
 
-        Resource parent = ctx.getResource();
+        Resource parent = ctx.getAdaptable();
         if (relPath != null) {
-            String parentPath = ctx.getResource().getPath() + "/" + relPath;
-            ResourceResolver resolver = ctx.getResource().getResourceResolver();
+            String parentPath = ctx.getAdaptable().getPath() + "/" + relPath;
+            ResourceResolver resolver = ctx.getAdaptable().getResourceResolver();
             try {
                 parent = ResourceUtil.getOrCreateResource(resolver, parentPath, (String) null, null, false);
             } catch (PersistenceException e) {
@@ -109,8 +109,8 @@ public abstract class SimplePropertyHandler<T extends Property> implements Prope
     @SuppressWarnings("null")
     @Override
     @NotNull
-    public List<@NotNull ValidationError> validate(@NotNull Context ctx, @NotNull T property,
-            RequestParameter... params) throws ModelException {
+	public List<@NotNull ValidationError> validate(@NotNull Context<Resource> ctx, @NotNull T property,
+			RequestParameter... params) throws ModelException {
         if (property.isReadonly()) {
             return Collections.emptyList();
         }

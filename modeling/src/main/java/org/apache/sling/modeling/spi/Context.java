@@ -20,20 +20,20 @@ package org.apache.sling.modeling.spi;
 
 import java.util.Locale;
 
-import org.apache.sling.api.resource.Resource;
+import org.apache.sling.api.adapter.Adaptable;
 import org.apache.sling.modeling.Models;
 import org.jetbrains.annotations.NotNull;
 import org.osgi.annotation.versioning.ProviderType;
 
 @ProviderType
-public interface Context {
+public interface Context<T extends Adaptable> {
 
-    @NotNull
-    Resource getResource();
+	@NotNull
+	T getAdaptable();
 
-    @NotNull
-    Models getModels();
+	@NotNull
+	Models getModels();
 
-    @NotNull
-    Locale getLocale();
+	@NotNull
+	Locale getLocale();
 }

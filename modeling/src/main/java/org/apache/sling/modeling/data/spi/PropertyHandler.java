@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.sling.api.request.RequestParameter;
+import org.apache.sling.api.resource.Resource;
 import org.apache.sling.modeling.ModelException;
 import org.apache.sling.modeling.data.Property;
 import org.apache.sling.modeling.data.validation.ValidationError;
@@ -33,17 +34,18 @@ import org.osgi.annotation.versioning.ConsumerType;
 @ConsumerType
 public interface PropertyHandler<T extends Property> {
 
-    String PROPERTY_TYPE = "sling.type";
+	String PROPERTY_TYPE = "sling.type";
 
-    @NotNull
-    Optional<?> getValue(@NotNull Context ctx, @NotNull T property) throws ModelException;
+	@NotNull
+	Optional<?> getValue(@NotNull Context<Resource> ctx, @NotNull T property) throws ModelException;
 
-    void setValue(@NotNull Context ctx, @NotNull T property, RequestParameter... params) throws ModelException;
+	void setValue(@NotNull Context<Resource> ctx, @NotNull T property, RequestParameter... params)
+			throws ModelException;
 
-    @SuppressWarnings("null")
-    @NotNull
-    default List<@NotNull ValidationError> validate(@NotNull Context ctx, @NotNull T property,
-            RequestParameter... params) throws ModelException {
-        return Collections.emptyList();
-    }
+	@SuppressWarnings("null")
+	@NotNull
+	default List<@NotNull ValidationError> validate(@NotNull Context<Resource> ctx, @NotNull T property,
+			RequestParameter... params) throws ModelException {
+		return Collections.emptyList();
+	}
 }
