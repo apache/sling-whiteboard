@@ -27,6 +27,8 @@ import org.osgi.annotation.versioning.ConsumerType;
 @ConsumerType
 public interface ModelProvider extends ExtensionProvider {
 
+	String PROPERTY_RESOURCE_TYPE = "sling.resource.resourceType";
+
     @NotNull
     Collection<@NotNull Class<? extends Model>> getAvailableModels();
 }
