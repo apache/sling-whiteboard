@@ -48,7 +48,7 @@
                 <configuration>
                     <excludes combine.children="append">
                         <exclude>docs/explainer.md</exclude>
-                        <exclude>docs/modeling-use-cases.xml</exclude>
+                        <exclude>docs/typesystem-use-cases.xml</exclude>
                     </excludes>
                 </configuration>
                 <executions>
