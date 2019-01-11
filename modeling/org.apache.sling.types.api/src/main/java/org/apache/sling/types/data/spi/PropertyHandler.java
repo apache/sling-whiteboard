@@ -24,10 +24,10 @@ import java.util.Optional;
 
 import org.apache.sling.api.request.RequestParameter;
 import org.apache.sling.api.resource.Resource;
+import org.apache.sling.types.Context;
 import org.apache.sling.types.TypeException;
 import org.apache.sling.types.data.Property;
 import org.apache.sling.types.data.validation.ValidationError;
-import org.apache.sling.types.spi.Context;
 import org.jetbrains.annotations.NotNull;
 import org.osgi.annotation.versioning.ConsumerType;
 

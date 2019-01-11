@@ -16,12 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.sling.types.spi;
+package org.apache.sling.types;
 
 import java.util.Locale;
 
 import org.apache.sling.api.adapter.Adaptable;
-import org.apache.sling.types.TypeSystem;
 import org.jetbrains.annotations.NotNull;
 import org.osgi.annotation.versioning.ProviderType;
 
