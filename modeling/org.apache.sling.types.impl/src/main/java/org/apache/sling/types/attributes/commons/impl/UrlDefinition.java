@@ -19,7 +19,7 @@
 package org.apache.sling.types.attributes.commons.impl;
 
 import org.apache.sling.types.TypeException;
-import org.apache.sling.types.attributes.spi.AttributeContext;
+import org.apache.sling.types.attributes.AttributeContext;
 import org.apache.sling.types.attributes.spi.AttributeHandler;
 import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Component;

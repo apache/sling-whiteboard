@@ -16,19 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.sling.types.attributes.spi;
+package org.apache.sling.types.attributes.commons;
 
 import org.apache.sling.types.TypeException;
 import org.apache.sling.types.attributes.AttributeContext;
 import org.apache.sling.types.attributes.AttributeDefinition;
 import org.jetbrains.annotations.NotNull;
-import org.osgi.annotation.versioning.ConsumerType;
+import org.osgi.annotation.versioning.ProviderType;
 
-@ConsumerType
-public interface AttributeHandler<T extends AttributeDefinition> {
+@ProviderType
+public interface AttributeService {
 
-    String PROPERTY_TYPE = "sling.type";
-
-    @NotNull
-    Object process(@NotNull AttributeContext ctx, @NotNull T def, @NotNull Object value) throws TypeException;
+	@NotNull
+	Object process(@NotNull AttributeContext ctx, @NotNull AttributeDefinition def, @NotNull Object value)
+			throws TypeException;
 }
