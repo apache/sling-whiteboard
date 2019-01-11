@@ -40,7 +40,7 @@ import org.osgi.service.component.annotations.Reference;
 @Component(
     property = {
         AdapterFactory.ADAPTABLE_CLASSES + "=org.apache.sling.api.resource.Resource",
-        AdapterFactory.ADAPTER_CLASSES + "=org.apache.sling.types.data.DataTypes"
+        AdapterFactory.ADAPTER_CLASSES + "=org.apache.sling.types.data.DataType"
     }
 )
 public class DataTypeAdapterFactory implements AdapterFactory {
