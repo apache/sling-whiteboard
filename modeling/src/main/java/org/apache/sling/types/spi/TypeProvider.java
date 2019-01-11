@@ -20,15 +20,15 @@ package org.apache.sling.types.spi;
 
 import java.util.Collection;
 
-import org.apache.sling.types.Types;
+import org.apache.sling.types.Type;
 import org.jetbrains.annotations.NotNull;
 import org.osgi.annotation.versioning.ConsumerType;
 
 @ConsumerType
-public interface TypesProvider extends ExtensionProvider {
+public interface TypeProvider extends ExtensionProvider {
 
 	String PROPERTY_RESOURCE_TYPE = "sling.resource.resourceType";
 
     @NotNull
-    Collection<@NotNull Class<? extends Types>> getAvailableTypes();
+    Collection<@NotNull Class<? extends Type>> getAvailableTypes();
 }

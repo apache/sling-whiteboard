@@ -27,9 +27,9 @@ import java.util.stream.Stream;
 import org.apache.sling.api.adapter.AdapterFactory;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.types.TypeSystem;
-import org.apache.sling.types.Types;
+import org.apache.sling.types.Type;
 import org.apache.sling.types.spi.ExtensionProviderManager;
-import org.apache.sling.types.spi.TypesProvider;
+import org.apache.sling.types.spi.TypeProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.framework.BundleContext;
@@ -47,7 +47,7 @@ import org.osgi.service.component.annotations.Reference;
 public class TypeSystemAdapterFactory implements AdapterFactory {
 
     @Reference
-    private volatile Collection<ServiceReference<TypesProvider>> providers;
+    private volatile Collection<ServiceReference<TypeProvider>> providers;
 
     @Reference
     private ExtensionProviderManager filters;
@@ -66,28 +66,28 @@ public class TypeSystemAdapterFactory implements AdapterFactory {
         Resource resource = (Resource) adaptable;
 
         @SuppressWarnings("null")
-        Stream<ServiceReference<TypesProvider>> all = filters.filter(providers, resource);
+        Stream<ServiceReference<TypeProvider>> all = filters.filter(providers, resource);
 
         @SuppressWarnings("null")
         @NotNull
-        List<@NotNull Class<? extends Types>> types = all
+        List<@NotNull Class<? extends Type>> types = all
             .map(bundleContext::getService)
-            .map(TypesProvider::getAvailableTypes)
+            .map(TypeProvider::getAvailableTypes)
             .flatMap(Collection::stream)
             .collect(Collectors.toList());
 
         return (AdapterType) new TypeSystem() {
             @Override
             @NotNull
-            public Collection<@NotNull Class<? extends Types>> getAvailableTypes() {
+            public Collection<@NotNull Class<? extends Type>> getAvailableTypes() {
                 return types;
             }
 
             @SuppressWarnings("null")
             @Override
             @NotNull
-            public <T extends Types> Optional<T> getTypes(@NotNull Class<T> typesClass) {
-                return Optional.ofNullable(resource.adaptTo(typesClass));
+            public <T extends Type> Optional<T> getType(@NotNull Class<T> typeClass) {
+                return Optional.ofNullable(resource.adaptTo(typeClass));
             }
         };
     }

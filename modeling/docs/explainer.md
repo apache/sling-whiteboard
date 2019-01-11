@@ -56,16 +56,16 @@ Then use it like the following:
 
 ```java
 Resource resource = slingRequest.getResource();
-Collection<@NotNull Class<? extends Types>> typesClasses = resource.getTypeSystem().getAvailableTypes();
+Collection<@NotNull Class<? extends Type>> typeClasses = resource.getTypeSystem().getAvailableTypes();
 
-for (Class<?> clazz : typesClasses) {
+for (Class<?> clazz : typeClasses) {
     resource.adaptTo(clazz);
 }
 ```
 
-## Introducing DataTypes
+## Introducing DataType
 
-[DataTypes](../src/main/java/org/apache/sling/types/data/DataTypes.java) is the lowest level types that describes a resource from the perspective of data.
+[DataType](../src/main/java/org/apache/sling/types/data/DataType.java) is the lowest level type that describes a resource from the perspective of data.
 
 For example, given the following resource:
 
@@ -78,7 +78,7 @@ For example, given the following resource:
   - sling:resourceType = "example/components/page"
 ```
 
-A DataTypes can be created for `/libs/example/components/page` resource type to describe its data types:
+A DataType can be created for `/libs/example/components/page` resource type to describe its data types:
 
 (Note that the types are described using JSON format for the purpose of this article)
 
@@ -114,19 +114,19 @@ A DataTypes can be created for `/libs/example/components/page` resource type to 
 }
 ```
 
-When describing the DataTypes of `/libs/example/components/page` this way, we are essentially saying that we model the typing system of `/libs/example/components/page`. The resources having `/libs/example/components/page` as their resource types are driven by its types, where DataTypes is one of many possible types.
+When describing the DataType of `/libs/example/components/page` this way, we are essentially saying that we model the typing system of `/libs/example/components/page`. The resources having `/libs/example/components/page` as their resource types are driven by its types, where DataType is one of many possible types.
 
-To get the DataTypes of a resource, simply adapt the resource into `DataTypes.class`:
+To get the DataType of a resource, simply adapt the resource into `DataType.class`:
 
 ```java
 Resource resource = slingRequest.getResource();
-DataTypes dataTypes = resource.adaptTo(DataTypes.class);
-// use dataTypes accordingly
+DataType dataType = resource.adaptTo(DataType.class);
+// use dataType accordingly
 ```
 
-### DataTypes' Properties
+### DataType's Properties
 
-A DataTypes consists of multiple [Properties](../src/main/java/org/apache/sling/types/data/Property.java).
+A DataType consists of multiple [Properties](../src/main/java/org/apache/sling/types/data/Property.java).
 
 A Property represents the definition of a resource's property.
 The definition is typically just a set of attributes describing the characteristics of the said property.
@@ -184,16 +184,16 @@ However, it only covers the "primitive" types, such as String, Long, Calendar, a
 It is not extensible to cover more complex property types, such as path, URI, and JSON.
 ValueMap decision may be based on the types supported by the persistence layer, which is JCR in general.
 
-DataTypes is simply ValueMap on steroid, where it allows arbitrary property types to be defined.
+DataType is simply ValueMap on steroid, where it allows arbitrary property types to be defined.
 
-PropertyHandler is used as the converter between the DataTypes' Property and the persistence layer.
+PropertyHandler is used as the converter between the DataType's Property and the persistence layer.
 So, while the persistence layer only allows a certain set of primitive types,
 we can simply define a new property type to represent a more complex type and implement its PropertyHandler to convert between the Java class and the persistence layer's type, which would be a simple String most likely.
 
-### Establishing the DataTypes
+### Establishing DataTypes
 
 To establish the DataTypes, app developers need to implement and register [PropertyProviders](../src/main/java/org/apache/sling/types/data/spi/PropertyProvider.java),
-where the app developers need to associate them with the resource types using OSGi service property.
+where they need to associate the providers with the resource types using OSGi service property.
 
 For example for `/libs/example/components/page` resource type:
 
@@ -236,7 +236,7 @@ The following example shows a content structure using `cq:Page` and `cq:PageCont
     - sling:resourceType = "weretail/components/structure/page"
 ```
 
-Unlike Sling, JCR has node type definition. Here is the definition of `cq:PageContent`:
+Unlike Sling, JCR has node type definitions. Here is the definition of `cq:PageContent`:
 
 ```
 [cq:PageContent] > cq:OwnerTaggable, cq:ReplicationStatus, mix:created, mix:title, nt:unstructured, sling:Resource, sling:VanityPath
@@ -367,10 +367,10 @@ Then when we have the following resource:
   - jcr:createdBy = "admin"
 ```
 
-The DataTypes of the resource will have `prop1`, `prop2`, `jcr:created`, and `jcr:createdBy` properties.
-The resource itself is also allowed to have those properties as defined by the DataTypes.
+The DataType of the resource will have `prop1`, `prop2`, `jcr:created`, and `jcr:createdBy` properties.
+The resource itself is also allowed to have those properties as defined by the DataType.
 
-### Next Steps for DataTypes
+### Next Steps for DataType
 
 * Tutorial on how to create a new property type named `example:json`
 * Java Annotations to Define Types

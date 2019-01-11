@@ -28,8 +28,8 @@ import org.osgi.annotation.versioning.ConsumerType;
 public interface TypeSystem {
 
     @NotNull
-    Collection<@NotNull Class<? extends Types>> getAvailableTypes();
+    Collection<@NotNull Class<? extends Type>> getAvailableTypes();
 
     @NotNull
-    <T extends Types> Optional<T> getTypes(@NotNull Class<T> typesClass);
+    <T extends Type> Optional<T> getType(@NotNull Class<T> typeClass);
 }

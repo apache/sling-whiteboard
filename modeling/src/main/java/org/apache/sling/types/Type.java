@@ -16,24 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.sling.types.data;
+package org.apache.sling.types;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.apache.sling.types.Types;
-import org.jetbrains.annotations.NotNull;
 import org.osgi.annotation.versioning.ConsumerType;
 
 @ConsumerType
-public interface DataTypes extends Types {
-
-    @NotNull
-    List<@NotNull Property> getProperties();
-
-    @SuppressWarnings("null")
-    @NotNull
-    default Optional<Property> getPropertyById(@NotNull Optional<String> id) {
-        return getProperties().stream().filter(p -> Optional.of(p.getId()).equals(id)).findFirst();
-    }
+public interface Type {
 }

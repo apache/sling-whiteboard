@@ -25,7 +25,7 @@ import java.util.stream.Stream;
 
 import org.apache.sling.api.adapter.AdapterFactory;
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.types.data.DataTypes;
+import org.apache.sling.types.data.DataType;
 import org.apache.sling.types.data.Property;
 import org.apache.sling.types.data.spi.PropertyProvider;
 import org.apache.sling.types.spi.ExtensionProviderManager;
@@ -43,7 +43,7 @@ import org.osgi.service.component.annotations.Reference;
         AdapterFactory.ADAPTER_CLASSES + "=org.apache.sling.types.data.DataTypes"
     }
 )
-public class DataTypesAdapterFactory implements AdapterFactory {
+public class DataTypeAdapterFactory implements AdapterFactory {
 
     @Reference
     private volatile Collection<ServiceReference<PropertyProvider>> providers;
@@ -75,7 +75,7 @@ public class DataTypesAdapterFactory implements AdapterFactory {
             .flatMap(List::stream)
             .collect(Collectors.toList());
 
-        return (AdapterType) new DataTypes() {
+        return (AdapterType) new DataType() {
             @Override
             @NotNull
             public List<@NotNull Property> getProperties() {

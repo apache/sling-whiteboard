@@ -28,7 +28,7 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.commons.osgi.PropertiesUtil;
 import org.apache.sling.types.spi.ExtensionProvider;
 import org.apache.sling.types.spi.ExtensionProviderFilter;
-import org.apache.sling.types.spi.TypesProvider;
+import org.apache.sling.types.spi.TypeProvider;
 import org.jetbrains.annotations.NotNull;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.annotations.Component;
@@ -46,7 +46,7 @@ public class ResourceTypeExtensionProviderFilter implements ExtensionProviderFil
     public <T extends ExtensionProvider> Stream<ServiceReference<T>> filter(
             @NotNull Collection<ServiceReference<T>> refs, @NotNull Resource resource) {
         return refs.stream().filter(r -> {
-            String[] types = PropertiesUtil.toStringArray(r.getProperty(TypesProvider.PROPERTY_RESOURCE_TYPE));
+            String[] types = PropertiesUtil.toStringArray(r.getProperty(TypeProvider.PROPERTY_RESOURCE_TYPE));
             if (types == null) {
                 return false;
             }
