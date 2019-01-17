@@ -41,7 +41,15 @@ public interface EntryHandlerFactory<E extends UpgradeEntry> {
      * @param entry the entry to to load the upgrade entry from
      * @param is    the input stream to load the entry contents from
      * @return the upgrade entry
-     * @throws IOException 
+     * @throws IOException
      */
     E loadEntry(JarEntry entry, InputStream is) throws IOException;
+
+    /**
+     * Process a single upgrade entry and return the result of processing the entry.
+     * 
+     * @param entry the entry to process
+     * @return the result of processing the entry
+     */
+    UpgradeResultEntry<E> processEntry(E entry);
 }

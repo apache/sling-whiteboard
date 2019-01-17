@@ -16,26 +16,46 @@
  */
 package org.apache.sling.upgrade.impl;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.sling.installer.api.OsgiInstaller;
+import org.apache.sling.installer.api.info.InfoProvider;
+import org.apache.sling.installer.api.info.Resource;
 import org.apache.sling.settings.SlingSettingsService;
 import org.apache.sling.upgrade.BundleEntry;
 import org.apache.sling.upgrade.EntryHandlerFactory;
+import org.apache.sling.upgrade.UpgradeResultEntry;
+import org.apache.sling.upgrade.UpgradeResultEntry.RESULT;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component(service = { EntryHandlerFactory.class }, immediate = true)
 public class BundleEntryFactory implements EntryHandlerFactory<BundleEntry> {
 
+    private static final Logger log = LoggerFactory.getLogger(BundleEntryFactory.class);
+
     @Reference
     private SlingSettingsService settingsService;
+
+    @Reference
+    private InfoProvider infoProvider;
+
+    @Reference
+    private OsgiInstaller installer;
 
     private static final Pattern ENTRY_PATTERN = Pattern
             .compile("resources\\/install(.[a-z_]+)?\\/\\d{1,2}\\/[\\w\\-\\.]+\\.jar");
@@ -59,6 +79,28 @@ public class BundleEntryFactory implements EntryHandlerFactory<BundleEntry> {
     @Override
     public BundleEntry loadEntry(JarEntry entry, InputStream is) throws IOException {
         return new BundleEntry(entry, is, bundleContext);
+    }
+
+    @Override
+    public UpgradeResultEntry<BundleEntry> processEntry(BundleEntry entry) {
+        UpgradeResultEntry<BundleEntry> result = null;
+        if (!entry.isInstalled() || entry.isUpdated()) {
+            try {
+                log.debug("Installing bundle {}", entry.getOriginalName());
+                Bundle bundle = bundleContext.installBundle("launchpad:" + entry.getOriginalName(),
+                        new ByteArrayInputStream(entry.getContents()));
+                bundle.start();
+                log.debug("Bundle installed correctly!");
+                result = new UpgradeResultEntry<>(entry);
+
+            } catch (Exception e) {
+                log.error("Exception installing bundle", e);
+                result = new UpgradeResultEntry<>(entry, e);
+            }
+        } else {
+            result = new UpgradeResultEntry<>(entry, null, RESULT.NO_OPERATION);
+        }
+        return result;
     }
 
 }
