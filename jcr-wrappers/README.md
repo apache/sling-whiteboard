@@ -5,6 +5,8 @@ This module provides a set of classes that wrap the JCR API.
 
 The wrappers just pass all calls through to the underlying implementation, they are meant to be extended to customize just the methods that need customizing.
 
+At this point this is **experimental** - the JCR API as rich and sometimes complex semantics which can be tricky to wrap properly. If this module works for your purposes that's great, but don't expect too much!
+
 Use Cases
 ----
 This can be used to interecept calls to the JCR API in a way that's transparent to the clients.
