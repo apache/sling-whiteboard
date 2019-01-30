@@ -17,6 +17,7 @@
         <groupId>org.apache.sling</groupId>
         <artifactId>sling</artifactId>
         <version>33</version>
+        <relativePath/>
     </parent>
 
     <artifactId>org.apache.sling.mdresourceprovider</artifactId>
