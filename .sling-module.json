@@ -1,7 +1,7 @@
 {
     "jenkins": {
         "branches": {
-            "feature/SLING-7245": {
+            "PR-24": {
                 "nodeLabel": "git-websites",
                 "additionalMavenParams": "-Ppublish-site -Dmsg=\"Automatic website deployment\""
             }
