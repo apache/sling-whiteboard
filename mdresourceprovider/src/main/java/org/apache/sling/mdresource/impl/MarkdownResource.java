@@ -56,7 +56,7 @@ public class MarkdownResource extends AbstractResource {
     }
 
     public MarkdownResource(ResourceResolver resourceResolver, String path, File backingFile) {
-        this.resolver = resourceResolver;
+       this.resolver = resourceResolver;
         this.path = path;
         this.backingFile = backingFile;
     }
@@ -172,6 +172,11 @@ public class MarkdownResource extends AbstractResource {
     public String toString() {
         
         return getClass().getSimpleName() + ", path: " + path;
+    }
+
+    public void egregiousBug() {
+        String def = null;
+        System.out.println(def.toString());
     }
 
 	/**
