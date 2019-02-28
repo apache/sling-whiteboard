@@ -30,6 +30,8 @@ import org.apache.sling.feature.io.json.FeatureJSONWriter;
 
 public final class ContentPackage2FeatureModelConverter {
 
+    private static final String FEATURE_CLASSIFIER = "feature";
+
     private static final String JSON_FILE_EXTENSION = ".json";
 
     private final PackageManager packageManager = new PackageManagerImpl();
@@ -73,7 +75,7 @@ public final class ContentPackage2FeatureModelConverter {
             targetFeature = new Feature(new ArtifactId(packageId.getGroup(), 
                                                        packageId.getName(),
                                                        packageId.getVersionString(),
-                                                       null,
+                                                       FEATURE_CLASSIFIER,
                                                        null));
 
             File targetFile = new File(outputDirectory, packageId.getName() + JSON_FILE_EXTENSION);
