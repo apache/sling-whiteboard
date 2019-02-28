@@ -48,6 +48,9 @@ public final class ContentPackage2FeatureModelConverterLauncher implements Runna
     @Option(names = { "-c", "--content-package" }, description = "The content-package input file.", required = true)
     private File contentPackage;
 
+    @Option(names = { "-s", "--strict-validation" }, description = "Flag to mark the content-package input file being strict validated.", required = false)
+    private boolean strictValidation = false;
+
     @Option(names = { "-o", "--output-directory" }, description = "The output directory where the Feature File and the bundles will be deployed.", required = true)
     private File outputDirectory;
 
@@ -60,6 +63,9 @@ public final class ContentPackage2FeatureModelConverterLauncher implements Runna
         } else {
             System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "info");
         }
+        System.setProperty("org.slf4j.simpleLogger.showThreadName", "false");
+        System.setProperty("org.slf4j.simpleLogger.levelInBrackets", "true");
+        System.setProperty("org.slf4j.simpleLogger.showLogName", "false");
 
         String appName = getClass().getAnnotation(Command.class).description()[0];
         final Logger logger = LoggerFactory.getLogger(appName);
@@ -76,8 +82,9 @@ public final class ContentPackage2FeatureModelConverterLauncher implements Runna
         logger.info("");
 
         try {
-            ContentPackage2FeatureModelConverter converter = new ContentPackage2FeatureModelConverter();
-            converter.convert(contentPackage, outputDirectory);
+            new ContentPackage2FeatureModelConverter()
+            .setStrictValidation(strictValidation)
+            .convert(contentPackage, outputDirectory);
 
             logger.info( "+-----------------------------------------------------+" );
             logger.info("{} SUCCESS", appName);

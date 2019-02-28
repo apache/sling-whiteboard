@@ -30,7 +30,9 @@ import org.apache.sling.feature.io.json.FeatureJSONWriter;
 
 public final class ContentPackage2FeatureModelConverter {
 
-    private static final String FEATURE_CLASSIFIER = "feature";
+    private static final String FEATURE_CLASSIFIER = "cp2fm-converted-feature";
+
+    private static final String SLING_OSGI_FEATURE_TILE_TYPE = "slingosgifeature";
 
     private static final String JSON_FILE_EXTENSION = ".json";
 
@@ -72,11 +74,11 @@ public final class ContentPackage2FeatureModelConverter {
             vaultPackage = packageManager.open(contentPackage, strictValidation);
 
             PackageId packageId = vaultPackage.getId();
-            targetFeature = new Feature(new ArtifactId(packageId.getGroup(), 
+            targetFeature = new Feature(new ArtifactId(packageId.getGroup().replace('/', '.'), 
                                                        packageId.getName(),
                                                        packageId.getVersionString(),
                                                        FEATURE_CLASSIFIER,
-                                                       null));
+                                                       SLING_OSGI_FEATURE_TILE_TYPE));
 
             File targetFile = new File(outputDirectory, packageId.getName() + JSON_FILE_EXTENSION);
             try (FileWriter targetWriter = new FileWriter(targetFile)) {
