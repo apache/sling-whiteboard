@@ -16,10 +16,75 @@
  */
 package org.apache.sling.cp2fm;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
+import org.apache.jackrabbit.vault.packaging.PackageId;
+import org.apache.jackrabbit.vault.packaging.PackageManager;
+import org.apache.jackrabbit.vault.packaging.VaultPackage;
+import org.apache.jackrabbit.vault.packaging.impl.PackageManagerImpl;
+import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.io.json.FeatureJSONWriter;
+
 public final class ContentPackage2FeatureModelConverter {
 
-    public void convert() {
-        // TODO
+    private static final String JSON_FILE_EXTENSION = ".json";
+
+    private final PackageManager packageManager = new PackageManagerImpl();
+
+    private boolean strictValidation = false;
+
+    public ContentPackage2FeatureModelConverter setStrictValidation(boolean strictValidation) {
+        this.strictValidation = strictValidation;
+        return this;
+    }
+
+    public void convert(File contentPackage, File outputDirectory) throws IOException {
+        if (contentPackage == null) {
+            throw new IllegalArgumentException("Null content-package can not be converted.");
+        }
+        if (outputDirectory == null) {
+            throw new IllegalArgumentException("Null output directory not supported, it must be specified.");
+        }
+
+        if (!contentPackage.exists() || !contentPackage.isFile()) {
+            throw new IllegalArgumentException("Content-package "
+                                               + contentPackage
+                                               + " does not exist or it is not a valid file.");
+        }
+
+        if (!outputDirectory.exists() && !outputDirectory.mkdirs()) {
+            throw new IllegalStateException("output directory "
+                                            + outputDirectory
+                                            + " does not exist and can not be created, please make sure current user '"
+                                            + System.getProperty("")
+                                            + " has enough rights to write on the File System.");
+        }
+
+        VaultPackage vaultPackage = null;
+        Feature targetFeature = null;
+
+        try {
+            vaultPackage = packageManager.open(contentPackage, strictValidation);
+
+            PackageId packageId = vaultPackage.getId();
+            targetFeature = new Feature(new ArtifactId(packageId.getGroup(), 
+                                                       packageId.getName(),
+                                                       packageId.getVersionString(),
+                                                       null,
+                                                       null));
+
+            File targetFile = new File(outputDirectory, packageId.getName() + JSON_FILE_EXTENSION);
+            try (FileWriter targetWriter = new FileWriter(targetFile)) {
+                FeatureJSONWriter.write(targetWriter, targetFeature);
+            }
+        } finally {
+            if (vaultPackage != null && !vaultPackage.isClosed()) {
+                vaultPackage.close();
+            }
+        }
     }
 
 }

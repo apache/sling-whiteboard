@@ -45,8 +45,11 @@ public final class ContentPackage2FeatureModelConverterLauncher implements Runna
     @Option(names = { "-v", "--version" }, description = "Display version information.")
     private boolean printVersion;
 
-    @Option(names = { "-cp", "--content-package" }, description = "The content-package input file.", required = true)
+    @Option(names = { "-c", "--content-package" }, description = "The content-package input file.", required = true)
     private File contentPackage;
+
+    @Option(names = { "-o", "--output-directory" }, description = "The output directory where the Feature File and the bundles will be deployed.", required = true)
+    private File outputDirectory;
 
     @Override
     public void run() {
@@ -72,14 +75,9 @@ public final class ContentPackage2FeatureModelConverterLauncher implements Runna
         logger.info(appName);
         logger.info("");
 
-        if (!contentPackage.exists() || !contentPackage.isFile()) {
-            logger.error("Content package does not exist or is not a valid file");
-            System.exit(1);
-        }
-
         try {
             ContentPackage2FeatureModelConverter converter = new ContentPackage2FeatureModelConverter();
-            converter.convert();
+            converter.convert(contentPackage, outputDirectory);
 
             logger.info( "+-----------------------------------------------------+" );
             logger.info("{} SUCCESS", appName);
