@@ -27,6 +27,8 @@ import org.apache.jackrabbit.vault.packaging.impl.PackageManagerImpl;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.io.json.FeatureJSONWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class ContentPackage2FeatureModelConverter {
 
@@ -35,6 +37,8 @@ public final class ContentPackage2FeatureModelConverter {
     private static final String SLING_OSGI_FEATURE_TILE_TYPE = "slingosgifeature";
 
     private static final String JSON_FILE_EXTENSION = ".json";
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final PackageManager packageManager = new PackageManagerImpl();
 
@@ -70,8 +74,12 @@ public final class ContentPackage2FeatureModelConverter {
         VaultPackage vaultPackage = null;
         Feature targetFeature = null;
 
+        logger.info("Reading content-package '{}'...", contentPackage);
+
         try {
             vaultPackage = packageManager.open(contentPackage, strictValidation);
+
+            logger.info("content-package '{}' successfully read!", contentPackage);
 
             PackageId packageId = vaultPackage.getId();
             targetFeature = new Feature(new ArtifactId(packageId.getGroup().replace('/', '.'), 
@@ -80,9 +88,17 @@ public final class ContentPackage2FeatureModelConverter {
                                                        FEATURE_CLASSIFIER,
                                                        SLING_OSGI_FEATURE_TILE_TYPE));
 
+            logger.info("Converting content-package '{}' to Feature File '{}'...", packageId, targetFeature.getId());
+
             File targetFile = new File(outputDirectory, packageId.getName() + JSON_FILE_EXTENSION);
+
+            logger.info("Conversion complete!", targetFile);
+            logger.info("Writing resulting Feature File to '{}'...", targetFile);
+
             try (FileWriter targetWriter = new FileWriter(targetFile)) {
                 FeatureJSONWriter.write(targetWriter, targetFeature);
+
+                logger.info("'{}' Feature File successfully written!", targetFile);
             }
         } finally {
             if (vaultPackage != null && !vaultPackage.isClosed()) {
