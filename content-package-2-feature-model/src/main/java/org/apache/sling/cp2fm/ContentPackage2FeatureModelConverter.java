@@ -17,13 +17,25 @@
 package org.apache.sling.cp2fm;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+import java.util.StringTokenizer;
+import java.util.jar.JarEntry;
+import java.util.jar.JarInputStream;
+import java.util.regex.Pattern;
 
-import org.apache.jackrabbit.vault.packaging.PackageId;
+import org.apache.commons.io.IOUtils;
+import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
+import org.apache.jackrabbit.vault.fs.io.Archive;
+import org.apache.jackrabbit.vault.fs.io.Archive.Entry;
 import org.apache.jackrabbit.vault.packaging.PackageManager;
+import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.impl.PackageManagerImpl;
+import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.io.json.FeatureJSONWriter;
@@ -41,6 +53,12 @@ public final class ContentPackage2FeatureModelConverter {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final PackageManager packageManager = new PackageManagerImpl();
+
+    private final Pattern bundlesLocationPattern = Pattern.compile("jcr_root/apps/[^/]+/install/.+\\.jar");
+
+    private final Pattern embeddedPackagesLocationPattern = Pattern.compile("jcr_root/etc/packages/.+\\.zip");
+
+    private final Pattern pomPropertiesPattern = Pattern.compile("META-INF/maven/[^/]+/[^/]+/pom.properties");
 
     private boolean strictValidation = false;
 
@@ -81,16 +99,22 @@ public final class ContentPackage2FeatureModelConverter {
 
             logger.info("content-package '{}' successfully read!", contentPackage);
 
-            PackageId packageId = vaultPackage.getId();
-            targetFeature = new Feature(new ArtifactId(packageId.getGroup().replace('/', '.'), 
-                                                       packageId.getName(),
-                                                       packageId.getVersionString(),
+            PackageProperties packageProperties = vaultPackage.getProperties();
+
+            targetFeature = new Feature(new ArtifactId(packageProperties.getProperty("groupId"), 
+                                                       packageProperties.getProperty(PackageProperties.NAME_NAME),
+                                                       packageProperties.getProperty(PackageProperties.NAME_VERSION),
                                                        FEATURE_CLASSIFIER,
                                                        SLING_OSGI_FEATURE_TILE_TYPE));
 
-            logger.info("Converting content-package '{}' to Feature File '{}'...", packageId, targetFeature.getId());
+            targetFeature.setDescription(packageProperties.getDescription());
 
-            File targetFile = new File(outputDirectory, packageId.getName() + JSON_FILE_EXTENSION);
+            logger.info("Converting content-package '{}' to Feature File '{}'...", vaultPackage.getId(), targetFeature.getId());
+
+            Archive archive = vaultPackage.getArchive();
+            process(archive, outputDirectory, targetFeature);
+
+            File targetFile = new File(outputDirectory, targetFeature.getId().getArtifactId() + JSON_FILE_EXTENSION);
 
             logger.info("Conversion complete!", targetFile);
             logger.info("Writing resulting Feature File to '{}'...", targetFile);
@@ -105,6 +129,90 @@ public final class ContentPackage2FeatureModelConverter {
                 vaultPackage.close();
             }
         }
+    }
+
+    private void process(Archive archive, File outputDirectory, Feature targetFeature) throws IOException {
+        try {
+            archive.open(strictValidation);
+
+            Entry jcrRoot = archive.getJcrRoot();
+            traverse(archive, jcrRoot, outputDirectory, targetFeature);
+        } finally {
+            archive.close();
+        }
+    }
+
+    private void traverse(Archive archive, Entry entry, File outputDirectory, Feature targetFeature) throws IOException {
+        if (entry.isDirectory()) {
+            for (Entry child : entry.getChildren()) {
+                traverse(archive, child, outputDirectory, targetFeature);
+            }
+
+            return;
+        }
+
+        VaultInputSource inputSource = archive.getInputSource(entry);
+        String sourceSystemId = inputSource.getSystemId();
+        logger.info("Found {} entry", sourceSystemId);
+
+        if (bundlesLocationPattern.matcher(sourceSystemId).matches()) {
+            onBundle(archive, entry, outputDirectory, targetFeature);
+        } else if (embeddedPackagesLocationPattern.matcher(sourceSystemId).matches()) {
+            onContentPackage(archive, entry, outputDirectory, targetFeature);
+        } else {
+            // TODO
+        }
+    }
+
+    private void onBundle(Archive archive, Entry entry, File outputDirectory, Feature targetFeature) throws IOException {
+        logger.info("Processing bundle {}...", entry.getName());
+
+        Properties properties = new Properties();
+
+        try (JarInputStream jarInput = new JarInputStream(archive.openInputStream(entry))) {
+            dance: while (jarInput.available() > 0) {
+                JarEntry jarEntry = jarInput.getNextJarEntry();
+
+                if (pomPropertiesPattern.matcher(jarEntry.getName()).matches()) {
+                    properties.load(jarInput);
+                    break dance;
+                }
+            }
+        }
+
+        File target = new File(outputDirectory, "bundles");
+
+        String groupId = getTrimmedProperty(properties, "groupId");
+        StringTokenizer tokenizer = new StringTokenizer(groupId, ".");
+        while (tokenizer.hasMoreTokens()) {
+            String current = tokenizer.nextToken();
+            target = new File(target, current);
+        }
+
+        String artifactId = getTrimmedProperty(properties, "artifactId");
+        target = new File(target, artifactId);
+
+        String version = getTrimmedProperty(properties, "version");
+        target = new File(target, version);
+
+        target.mkdirs();
+
+        target = new File(target, String.format("%s-%s.jar", artifactId, version));
+
+        try (InputStream input = archive.openInputStream(entry);
+                FileOutputStream targetStream = new FileOutputStream(target)) {
+            IOUtils.copy(input, targetStream);
+        }
+
+        targetFeature.getBundles().add(new Artifact(new ArtifactId(groupId, artifactId, version, null, null)));
+    }
+
+    private static String getTrimmedProperty(Properties properties, String name) {
+        return properties.getProperty(name).trim();
+    }
+
+    private void onContentPackage(Archive archive, Entry entry, File outputDirectory, Feature targetFeature) throws IOException {
+        logger.info("Processing content-package {}...", entry.getName());
     }
 
 }
