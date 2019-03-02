@@ -17,17 +17,11 @@
 package org.apache.sling.cp2fm;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-import java.util.StringTokenizer;
-import java.util.jar.JarEntry;
-import java.util.jar.JarInputStream;
-import java.util.regex.Pattern;
+import java.util.Iterator;
+import java.util.ServiceLoader;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.Archive.Entry;
@@ -35,7 +29,7 @@ import org.apache.jackrabbit.vault.packaging.PackageManager;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.impl.PackageManagerImpl;
-import org.apache.sling.feature.Artifact;
+import org.apache.sling.cp2fm.spi.EntryHandler;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.io.json.FeatureJSONWriter;
@@ -54,31 +48,73 @@ public final class ContentPackage2FeatureModelConverter {
 
     private final PackageManager packageManager = new PackageManagerImpl();
 
-    private final Pattern bundlesLocationPattern = Pattern.compile("jcr_root/apps/[^/]+/install/.+\\.jar");
-
-    private final Pattern embeddedPackagesLocationPattern = Pattern.compile("jcr_root/etc/packages/.+\\.zip");
-
-    private final Pattern pomPropertiesPattern = Pattern.compile("META-INF/maven/[^/]+/[^/]+/pom.properties");
+    private final ServiceLoader<EntryHandler> entryHandlers = ServiceLoader.load(EntryHandler.class);
 
     private boolean strictValidation = false;
+
+    private int bundlesStartOrder = 0;
+
+    private File contentPackage;
+
+    private File outputDirectory;
+
+    private VaultPackage vaultPackage = null;
+
+    private Feature targetFeature = null;
 
     public ContentPackage2FeatureModelConverter setStrictValidation(boolean strictValidation) {
         this.strictValidation = strictValidation;
         return this;
     }
 
-    public void convert(File contentPackage, File outputDirectory) throws IOException {
+    public boolean isStrictValidation() {
+        return strictValidation;
+    }
+
+    public ContentPackage2FeatureModelConverter setBundlesStartOrder(int bundlesStartOrder) {
+        this.bundlesStartOrder = bundlesStartOrder;
+        return this;
+    }
+
+    public int getBundlesStartOrder() {
+        return bundlesStartOrder;
+    }
+
+    public ContentPackage2FeatureModelConverter setContentPackage(File contentPackage) {
+        this.contentPackage = contentPackage;
+        return this;
+    }
+
+    public File getContentPackage() {
+        return contentPackage;
+    }
+
+    public ContentPackage2FeatureModelConverter setOutputDirectory(File outputDirectory) {
+        this.outputDirectory = outputDirectory;
+        return this;
+    }
+
+    public File getOutputDirectory() {
+        return outputDirectory;
+    }
+
+    public Feature getTargetFeature() {
+        return targetFeature;
+    }
+
+    public void convert() throws IOException {
         if (contentPackage == null) {
-            throw new IllegalArgumentException("Null content-package can not be converted.");
-        }
-        if (outputDirectory == null) {
-            throw new IllegalArgumentException("Null output directory not supported, it must be specified.");
+            throw new IllegalStateException("Null content-package can not be converted.");
         }
 
         if (!contentPackage.exists() || !contentPackage.isFile()) {
-            throw new IllegalArgumentException("Content-package "
-                                               + contentPackage
-                                               + " does not exist or it is not a valid file.");
+            throw new IllegalStateException("Content-package "
+                                            + contentPackage
+                                            + " does not exist or it is not a valid file.");
+        }
+
+        if (outputDirectory == null) {
+            throw new IllegalStateException("Null output directory not supported, it must be specified.");
         }
 
         if (!outputDirectory.exists() && !outputDirectory.mkdirs()) {
@@ -88,9 +124,6 @@ public final class ContentPackage2FeatureModelConverter {
                                             + System.getProperty("")
                                             + " has enough rights to write on the File System.");
         }
-
-        VaultPackage vaultPackage = null;
-        Feature targetFeature = null;
 
         logger.info("Reading content-package '{}'...", contentPackage);
 
@@ -112,7 +145,7 @@ public final class ContentPackage2FeatureModelConverter {
             logger.info("Converting content-package '{}' to Feature File '{}'...", vaultPackage.getId(), targetFeature.getId());
 
             Archive archive = vaultPackage.getArchive();
-            process(archive, outputDirectory, targetFeature);
+            process(archive);
 
             File targetFile = new File(outputDirectory, targetFeature.getId().getArtifactId() + JSON_FILE_EXTENSION);
 
@@ -131,21 +164,21 @@ public final class ContentPackage2FeatureModelConverter {
         }
     }
 
-    private void process(Archive archive, File outputDirectory, Feature targetFeature) throws IOException {
+    private void process(Archive archive) throws IOException {
         try {
             archive.open(strictValidation);
 
             Entry jcrRoot = archive.getJcrRoot();
-            traverse(archive, jcrRoot, outputDirectory, targetFeature);
+            traverse(archive, jcrRoot);
         } finally {
             archive.close();
         }
     }
 
-    private void traverse(Archive archive, Entry entry, File outputDirectory, Feature targetFeature) throws IOException {
+    private void traverse(Archive archive, Entry entry) throws IOException {
         if (entry.isDirectory()) {
             for (Entry child : entry.getChildren()) {
-                traverse(archive, child, outputDirectory, targetFeature);
+                traverse(archive, child);
             }
 
             return;
@@ -155,64 +188,22 @@ public final class ContentPackage2FeatureModelConverter {
         String sourceSystemId = inputSource.getSystemId();
         logger.info("Found {} entry", sourceSystemId);
 
-        if (bundlesLocationPattern.matcher(sourceSystemId).matches()) {
-            onBundle(archive, entry, outputDirectory, targetFeature);
-        } else if (embeddedPackagesLocationPattern.matcher(sourceSystemId).matches()) {
-            onContentPackage(archive, entry, outputDirectory, targetFeature);
-        } else {
-            // TODO
-        }
-    }
+        boolean found = false;
 
-    private void onBundle(Archive archive, Entry entry, File outputDirectory, Feature targetFeature) throws IOException {
-        logger.info("Processing bundle {}...", entry.getName());
+        Iterator<EntryHandler> entryHandlersIterator = entryHandlers.iterator();
+        dance : while (entryHandlersIterator.hasNext()) {
+            EntryHandler entryHandler = entryHandlersIterator.next();
 
-        Properties properties = new Properties();
-
-        try (JarInputStream jarInput = new JarInputStream(archive.openInputStream(entry))) {
-            dance: while (jarInput.available() > 0) {
-                JarEntry jarEntry = jarInput.getNextJarEntry();
-
-                if (pomPropertiesPattern.matcher(jarEntry.getName()).matches()) {
-                    properties.load(jarInput);
-                    break dance;
-                }
+            if (entryHandler.matches(sourceSystemId)) {
+                found = true;
+                entryHandler.handle(archive, entry, this);
+                break dance;
             }
         }
 
-        File target = new File(outputDirectory, "bundles");
-
-        String groupId = getTrimmedProperty(properties, "groupId");
-        StringTokenizer tokenizer = new StringTokenizer(groupId, ".");
-        while (tokenizer.hasMoreTokens()) {
-            String current = tokenizer.nextToken();
-            target = new File(target, current);
+        if (!found) {
+            // TODO fallback to default action;
         }
-
-        String artifactId = getTrimmedProperty(properties, "artifactId");
-        target = new File(target, artifactId);
-
-        String version = getTrimmedProperty(properties, "version");
-        target = new File(target, version);
-
-        target.mkdirs();
-
-        target = new File(target, String.format("%s-%s.jar", artifactId, version));
-
-        try (InputStream input = archive.openInputStream(entry);
-                FileOutputStream targetStream = new FileOutputStream(target)) {
-            IOUtils.copy(input, targetStream);
-        }
-
-        targetFeature.getBundles().add(new Artifact(new ArtifactId(groupId, artifactId, version, null, null)));
-    }
-
-    private static String getTrimmedProperty(Properties properties, String name) {
-        return properties.getProperty(name).trim();
-    }
-
-    private void onContentPackage(Archive archive, Entry entry, File outputDirectory, Feature targetFeature) throws IOException {
-        logger.info("Processing content-package {}...", entry.getName());
     }
 
 }

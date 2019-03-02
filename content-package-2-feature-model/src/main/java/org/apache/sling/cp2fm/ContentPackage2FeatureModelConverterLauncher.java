@@ -51,6 +51,9 @@ public final class ContentPackage2FeatureModelConverterLauncher implements Runna
     @Option(names = { "-s", "--strict-validation" }, description = "Flag to mark the content-package input file being strict validated.", required = false)
     private boolean strictValidation = false;
 
+    @Option(names = { "-b", "--bundles-start-order" }, description = "The order to start detected bundles.", required = false)
+    private int bundlesStartOrder = 0;
+
     @Option(names = { "-o", "--output-directory" }, description = "The output directory where the Feature File and the bundles will be deployed.", required = true)
     private File outputDirectory;
 
@@ -84,7 +87,10 @@ public final class ContentPackage2FeatureModelConverterLauncher implements Runna
         try {
             new ContentPackage2FeatureModelConverter()
             .setStrictValidation(strictValidation)
-            .convert(contentPackage, outputDirectory);
+            .setBundlesStartOrder(bundlesStartOrder)
+            .setContentPackage(contentPackage)
+            .setOutputDirectory(outputDirectory)
+            .convert();
 
             logger.info( "+-----------------------------------------------------+" );
             logger.info("{} SUCCESS", appName);

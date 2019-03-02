@@ -1,0 +1,2 @@
+org.apache.sling.cp2fm.handlers.BundleEntryHandler
+org.apache.sling.cp2fm.handlers.ContentPackageEntryHandler
