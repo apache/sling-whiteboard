@@ -17,24 +17,45 @@
 package org.apache.sling.cp2fm.handlers;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Dictionary;
+import java.util.Enumeration;
 
+import org.apache.felix.cm.file.ConfigurationHandler;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.Archive.Entry;
-import org.apache.jackrabbit.vault.fs.io.ZipStreamArchive;
 import org.apache.sling.cp2fm.ContentPackage2FeatureModelConverter;
+import org.apache.sling.feature.Configuration;
 
-public final class ContentPackageEntryHandler extends AbstractRegexEntryHandler {
+public final class ConfigurationEntryHandler extends AbstractRegexEntryHandler {
 
-    public ContentPackageEntryHandler() {
-        super("jcr_root/etc/packages/.+\\.zip");
+    public ConfigurationEntryHandler() {
+        super(".+\\.config");
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void handle(Archive archive, Entry entry, ContentPackage2FeatureModelConverter converter) throws IOException {
-        logger.info("Processing sub-content package '{}'...", entry.getName());
+        String name = entry.getName().substring(0, entry.getName().lastIndexOf('.'));
 
-        Archive subArchive = new ZipStreamArchive(archive.openInputStream(entry));
-        converter.process(subArchive);
+        logger.info("Processing configuration '{}'.", name);
+
+        Configuration configuration = new Configuration(name);
+
+        Dictionary<String, Object> parsedConfiguration;
+
+        try (InputStream input = archive.openInputStream(entry)) {
+            parsedConfiguration = ConfigurationHandler.read(input);
+        }
+
+        Enumeration<String> keys = parsedConfiguration.keys();
+        while (keys.hasMoreElements()) {
+            String key = keys.nextElement();
+            Object value = parsedConfiguration.get(key);
+            configuration.getProperties().put(key, value);
+        }
+
+        converter.getTargetFeature().getConfigurations().add(configuration);
     }
 
 }

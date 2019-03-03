@@ -164,7 +164,7 @@ public final class ContentPackage2FeatureModelConverter {
         }
     }
 
-    private void process(Archive archive) throws IOException {
+    public void process(Archive archive) throws IOException {
         try {
             archive.open(strictValidation);
 
@@ -185,8 +185,11 @@ public final class ContentPackage2FeatureModelConverter {
         }
 
         VaultInputSource inputSource = archive.getInputSource(entry);
-        String sourceSystemId = inputSource.getSystemId();
-        logger.info("Found {} entry", sourceSystemId);
+        String id = inputSource.getSystemId();
+
+        if (id == null || id.isEmpty()) {
+            id = entry.getName();
+        }
 
         boolean found = false;
 
@@ -194,9 +197,14 @@ public final class ContentPackage2FeatureModelConverter {
         dance : while (entryHandlersIterator.hasNext()) {
             EntryHandler entryHandler = entryHandlersIterator.next();
 
-            if (entryHandler.matches(sourceSystemId)) {
+            if (entryHandler.matches(id)) {
+                logger.info("Processing entry {}...", id);
+
                 found = true;
                 entryHandler.handle(archive, entry, this);
+
+                logger.info("Entry {} successfully processed.", id);
+
                 break dance;
             }
         }
