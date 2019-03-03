@@ -16,6 +16,8 @@
  */
 package org.apache.sling.cp2fm.handlers;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -32,10 +34,16 @@ import org.apache.jackrabbit.vault.fs.io.Archive.Entry;
 import org.apache.sling.cp2fm.ContentPackage2FeatureModelConverter;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class BundleEntryHandler extends AbstractRegexEntryHandler {
 
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
     private final Pattern pomPropertiesPattern = Pattern.compile("META-INF/maven/[^/]+/[^/]+/pom.properties");
+
+    private final Pattern pomXmlPattern = Pattern.compile("META-INF/maven/[^/]+/[^/]+/pom.xml");
 
     public BundleEntryHandler() {
         super("jcr_root/apps/[^/]+/install/.+\\.jar");
@@ -46,40 +54,52 @@ public final class BundleEntryHandler extends AbstractRegexEntryHandler {
         logger.info("Processing bundle {}...", entry.getName());
 
         Properties properties = new Properties();
+        byte[] pomXml = null;
 
-        try (JarInputStream jarInput = new JarInputStream(archive.openInputStream(entry))) {
-            dance: while (jarInput.available() > 0) {
-                JarEntry jarEntry = jarInput.getNextJarEntry();
+        try (JarInputStream jarInput = new JarInputStream(archive.openInputStream(entry));
+                ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            JarEntry jarEntry;
+            while ((jarEntry = jarInput.getNextJarEntry()) != null) {
+                String entryName = jarEntry.getName();
 
-                if (pomPropertiesPattern.matcher(jarEntry.getName()).matches()) {
+                if (pomPropertiesPattern.matcher(entryName).matches()) {
+                    logger.info("Reading '{}' bundle GAV from {}...", entry.getName(), entryName);
+
                     properties.load(jarInput);
-                    break dance;
+                } else if (pomXmlPattern.matcher(entryName).matches()) {
+                    logger.info("Reading '{}' POM file from {}...", entry.getName(), entryName);
+
+                    IOUtils.copy(jarInput, baos);
+                    pomXml = baos.toByteArray();
                 }
             }
         }
 
-        File target = new File(converter.getOutputDirectory(), "bundles");
+        File targetDir = new File(converter.getOutputDirectory(), "bundles");
 
         String groupId = getTrimmedProperty(properties, "groupId");
         StringTokenizer tokenizer = new StringTokenizer(groupId, ".");
         while (tokenizer.hasMoreTokens()) {
             String current = tokenizer.nextToken();
-            target = new File(target, current);
+            targetDir = new File(targetDir, current);
         }
 
         String artifactId = getTrimmedProperty(properties, "artifactId");
-        target = new File(target, artifactId);
+        targetDir = new File(targetDir, artifactId);
 
         String version = getTrimmedProperty(properties, "version");
-        target = new File(target, version);
+        targetDir = new File(targetDir, version);
 
-        target.mkdirs();
+        targetDir.mkdirs();
 
-        target = new File(target, String.format("%s-%s.jar", artifactId, version));
+        try (InputStream input = archive.openInputStream(entry)) {
+            write(input, targetDir, artifactId, version, "jar");
+        }
 
-        try (InputStream input = archive.openInputStream(entry);
-                FileOutputStream targetStream = new FileOutputStream(target)) {
-            IOUtils.copy(input, targetStream);
+        if (pomXml != null) {
+            try (ByteArrayInputStream input = new ByteArrayInputStream(pomXml)) {
+                write(input, targetDir, artifactId, version, "pom");
+            }
         }
 
         Artifact artifact = new Artifact(new ArtifactId(groupId, artifactId, version, null, null));
@@ -89,6 +109,18 @@ public final class BundleEntryHandler extends AbstractRegexEntryHandler {
 
     private static String getTrimmedProperty(Properties properties, String name) {
         return properties.getProperty(name).trim();
+    }
+
+    private void write(InputStream input, File targetDir, String artifactId, String version, String type) throws IOException {
+        File targetFile = new File(targetDir, String.format("%s-%s.%s", artifactId, version, type));
+
+        logger.info("Writing data to {}...", targetFile);
+
+        try (FileOutputStream targetStream = new FileOutputStream(targetFile)) {
+            IOUtils.copy(input, targetStream);
+        }
+
+        logger.info("Data successfully written to {}.", targetFile);
     }
 
 }
