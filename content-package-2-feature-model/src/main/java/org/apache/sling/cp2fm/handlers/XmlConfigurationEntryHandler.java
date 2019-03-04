@@ -18,7 +18,6 @@ package org.apache.sling.cp2fm.handlers;
 
 import static org.apache.jackrabbit.JcrConstants.JCR_PRIMARYTYPE;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Dictionary;
 import java.util.Hashtable;
@@ -26,7 +25,7 @@ import java.util.Hashtable;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.felix.utils.properties.ConfigurationHandler;
+import org.apache.jackrabbit.vault.util.DocViewProperty;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -35,9 +34,7 @@ public final class XmlConfigurationEntryHandler extends AbstractSingleConfigurat
 
     private static final String JCR_ROOT = "jcr:root";
 
-    private static final String JCR_PREFIX = "jcr:";
-
-    private static final String XMLNS_PREFIX = "xmlns:";
+    private static final String SLING_OSGICONFIG = "sling:OsgiConfig";
 
     private final SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
 
@@ -66,14 +63,25 @@ public final class XmlConfigurationEntryHandler extends AbstractSingleConfigurat
                 throws SAXException {
             String primaryType = attributes.getValue(JCR_PRIMARYTYPE);
 
-            if (JCR_ROOT.equals(qName) && primaryType != null && !primaryType.isEmpty()) {
+            if (JCR_ROOT.equals(qName) && SLING_OSGICONFIG.equals(primaryType)) {
                 for (int i = 0; i < attributes.getLength(); i++) {
                     String attributeQName = attributes.getQName(i);
 
-                    if (!attributeQName.startsWith(JCR_PREFIX) && !attributeQName.startsWith(XMLNS_PREFIX)) {
+                    // ignore jcr: and similar properties
+                    if (attributeQName.indexOf(':') == -1) {
                         String attributeValue = attributes.getValue(i);
 
-                        configuration.put(attributeQName, attributeValue);
+                        if (attributeValue != null && !attributeValue.isEmpty()) {
+                            DocViewProperty property = DocViewProperty.parse(attributeQName, attributeValue);
+
+                            if (property.values.length > 0) {
+                                if (property.isMulti) {
+                                    configuration.put(attributeQName, property.values);
+                                } else {
+                                    configuration.put(attributeQName, property.values[0]);
+                                }
+                            }
+                        }
                     }
                 }
             }
