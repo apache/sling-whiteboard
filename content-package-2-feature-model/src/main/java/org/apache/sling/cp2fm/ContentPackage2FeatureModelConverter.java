@@ -18,7 +18,6 @@ package org.apache.sling.cp2fm;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.ServiceLoader;
 
@@ -102,7 +101,7 @@ public final class ContentPackage2FeatureModelConverter {
         return targetFeature;
     }
 
-    public void convert() throws IOException {
+    public void convert() throws Exception {
         if (contentPackage == null) {
             throw new IllegalStateException("Null content-package can not be converted.");
         }
@@ -164,7 +163,7 @@ public final class ContentPackage2FeatureModelConverter {
         }
     }
 
-    public void process(Archive archive) throws IOException {
+    public void process(Archive archive) throws Exception {
         try {
             archive.open(strictValidation);
 
@@ -175,7 +174,7 @@ public final class ContentPackage2FeatureModelConverter {
         }
     }
 
-    private void traverse(Archive archive, Entry entry) throws IOException {
+    private void traverse(Archive archive, Entry entry) throws Exception {
         if (entry.isDirectory()) {
             for (Entry child : entry.getChildren()) {
                 traverse(archive, child);

@@ -16,8 +16,6 @@
  */
 package org.apache.sling.cp2fm.spi;
 
-import java.io.IOException;
-
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.Archive.Entry;
 import org.apache.sling.cp2fm.ContentPackage2FeatureModelConverter;
@@ -26,6 +24,6 @@ public interface EntryHandler {
 
     boolean matches(String sourceSystemId);
 
-    void handle(Archive archive, Entry entry, ContentPackage2FeatureModelConverter converter) throws IOException;
+    void handle(Archive archive, Entry entry, ContentPackage2FeatureModelConverter converter) throws Exception;
 
 }

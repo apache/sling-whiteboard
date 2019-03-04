@@ -16,18 +16,12 @@
  */
 package org.apache.sling.cp2fm.handlers;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Dictionary;
-import java.util.Enumeration;
 
 import org.apache.felix.cm.file.ConfigurationHandler;
-import org.apache.jackrabbit.vault.fs.io.Archive;
-import org.apache.jackrabbit.vault.fs.io.Archive.Entry;
-import org.apache.sling.cp2fm.ContentPackage2FeatureModelConverter;
-import org.apache.sling.feature.Configuration;
 
-public final class ConfigurationEntryHandler extends AbstractRegexEntryHandler {
+public final class ConfigurationEntryHandler extends AbstractConfigurationEntryHandler {
 
     public ConfigurationEntryHandler() {
         super(".+\\.config");
@@ -35,27 +29,8 @@ public final class ConfigurationEntryHandler extends AbstractRegexEntryHandler {
 
     @Override
     @SuppressWarnings("unchecked")
-    public void handle(Archive archive, Entry entry, ContentPackage2FeatureModelConverter converter) throws IOException {
-        String name = entry.getName().substring(0, entry.getName().lastIndexOf('.'));
-
-        logger.info("Processing configuration '{}'.", name);
-
-        Configuration configuration = new Configuration(name);
-
-        Dictionary<String, Object> parsedConfiguration;
-
-        try (InputStream input = archive.openInputStream(entry)) {
-            parsedConfiguration = ConfigurationHandler.read(input);
-        }
-
-        Enumeration<String> keys = parsedConfiguration.keys();
-        while (keys.hasMoreElements()) {
-            String key = keys.nextElement();
-            Object value = parsedConfiguration.get(key);
-            configuration.getProperties().put(key, value);
-        }
-
-        converter.getTargetFeature().getConfigurations().add(configuration);
+    protected Dictionary<Object, Object> parseConfiguration(InputStream input) throws Exception {
+        return ConfigurationHandler.read(input);
     }
 
 }

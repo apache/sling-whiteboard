@@ -50,7 +50,7 @@ public final class BundleEntryHandler extends AbstractRegexEntryHandler {
     }
 
     @Override
-    public void handle(Archive archive, Entry entry, ContentPackage2FeatureModelConverter converter) throws IOException {
+    public void handle(Archive archive, Entry entry, ContentPackage2FeatureModelConverter converter) throws Exception {
         logger.info("Processing bundle {}...", entry.getName());
 
         Properties properties = new Properties();

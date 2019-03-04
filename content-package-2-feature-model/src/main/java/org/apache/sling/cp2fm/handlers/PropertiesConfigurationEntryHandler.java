@@ -16,23 +16,21 @@
  */
 package org.apache.sling.cp2fm.handlers;
 
-import org.apache.jackrabbit.vault.fs.io.Archive;
-import org.apache.jackrabbit.vault.fs.io.Archive.Entry;
-import org.apache.jackrabbit.vault.fs.io.ZipStreamArchive;
-import org.apache.sling.cp2fm.ContentPackage2FeatureModelConverter;
+import java.io.InputStream;
+import java.util.Dictionary;
 
-public final class ContentPackageEntryHandler extends AbstractRegexEntryHandler {
+import org.apache.felix.utils.properties.ConfigurationHandler;
 
-    public ContentPackageEntryHandler() {
-        super("jcr_root/etc/packages/.+\\.zip");
+public final class PropertiesConfigurationEntryHandler extends AbstractConfigurationEntryHandler {
+
+    public PropertiesConfigurationEntryHandler() {
+        super("[^/]+\\.(cfg|properties)");
     }
 
     @Override
-    public void handle(Archive archive, Entry entry, ContentPackage2FeatureModelConverter converter) throws Exception {
-        logger.info("Processing sub-content package '{}'...", entry.getName());
-
-        Archive subArchive = new ZipStreamArchive(archive.openInputStream(entry));
-        converter.process(subArchive);
+    @SuppressWarnings("unchecked")
+    protected Dictionary<Object, Object> parseConfiguration(InputStream input) throws Exception {
+        return ConfigurationHandler.read(input);
     }
 
 }
