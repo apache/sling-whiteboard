@@ -18,18 +18,20 @@ package org.apache.sling.cp2fm.handlers;
 
 import static org.apache.jackrabbit.JcrConstants.JCR_PRIMARYTYPE;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Dictionary;
-import java.util.Properties;
+import java.util.Hashtable;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.felix.utils.properties.ConfigurationHandler;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-public final class XmlConfigurationEntryHandler extends AbstractConfigurationEntryHandler {
+public final class XmlConfigurationEntryHandler extends AbstractSingleConfigurationEntryHandler {
 
     private static final String JCR_ROOT = "jcr:root";
 
@@ -44,7 +46,7 @@ public final class XmlConfigurationEntryHandler extends AbstractConfigurationEnt
     }
 
     @Override
-    protected Dictionary<Object, Object> parseConfiguration(InputStream input) throws Exception {
+    protected Dictionary<String, Object> parseConfiguration(InputStream input) throws Exception {
         SAXParser saxParser = saxParserFactory.newSAXParser();
         JcrConfigurationHandler configurationHandler = new JcrConfigurationHandler();
         saxParser.parse(input, configurationHandler);
@@ -53,9 +55,9 @@ public final class XmlConfigurationEntryHandler extends AbstractConfigurationEnt
 
     private static final class JcrConfigurationHandler extends DefaultHandler {
 
-        private final Properties configuration = new Properties();
+        private final Dictionary<String, Object> configuration = new Hashtable<>();
 
-        public Properties getConfiguration() {
+        public Dictionary<String, Object> getConfiguration() {
             return configuration;
         }
 
@@ -69,9 +71,9 @@ public final class XmlConfigurationEntryHandler extends AbstractConfigurationEnt
                     String attributeQName = attributes.getQName(i);
 
                     if (!attributeQName.startsWith(JCR_PREFIX) && !attributeQName.startsWith(XMLNS_PREFIX)) {
-                        String attributeVale = attributes.getValue(i);
+                        String attributeValue = attributes.getValue(i);
 
-                        configuration.put(attributeQName, attributeVale);
+                        configuration.put(attributeQName, attributeValue);
                     }
                 }
             }

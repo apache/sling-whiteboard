@@ -21,7 +21,7 @@ import java.util.Dictionary;
 
 import org.apache.felix.utils.properties.ConfigurationHandler;
 
-public final class PropertiesConfigurationEntryHandler extends AbstractConfigurationEntryHandler {
+public final class PropertiesConfigurationEntryHandler extends AbstractSingleConfigurationEntryHandler {
 
     public PropertiesConfigurationEntryHandler() {
         super("[^/]+\\.(cfg|properties)");
@@ -29,7 +29,7 @@ public final class PropertiesConfigurationEntryHandler extends AbstractConfigura
 
     @Override
     @SuppressWarnings("unchecked")
-    protected Dictionary<Object, Object> parseConfiguration(InputStream input) throws Exception {
+    protected Dictionary<String, Object> parseConfiguration(InputStream input) throws Exception {
         return ConfigurationHandler.read(input);
     }
 

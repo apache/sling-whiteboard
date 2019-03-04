@@ -17,20 +17,22 @@
 package org.apache.sling.cp2fm.handlers;
 
 import java.io.InputStream;
-import java.util.Dictionary;
+import java.io.InputStreamReader;
 
-import org.apache.felix.cm.file.ConfigurationHandler;
+import org.apache.sling.feature.Configurations;
+import org.apache.sling.feature.io.json.ConfigurationJSONReader;
 
-public final class ConfigurationEntryHandler extends AbstractSingleConfigurationEntryHandler {
+public final class JsonConfigurationEntryHandler extends AbstractConfigurationEntryHandler {
 
-    public ConfigurationEntryHandler() {
-        super(".+\\.config");
+    public JsonConfigurationEntryHandler() {
+        super("[^/]+\\.cfg\\.json");
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    protected Dictionary<String, Object> parseConfiguration(InputStream input) throws Exception {
-        return ConfigurationHandler.read(input);
+    protected Configurations parseConfigurations(String name, InputStream input) throws Exception {
+        try (InputStreamReader reader = new InputStreamReader(input)) {
+            return ConfigurationJSONReader.read(reader, name);
+        }
     }
 
 }

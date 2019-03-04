@@ -17,13 +17,13 @@
 package org.apache.sling.cp2fm.handlers;
 
 import java.io.InputStream;
-import java.util.Dictionary;
 import java.util.Enumeration;
 
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.Archive.Entry;
 import org.apache.sling.cp2fm.ContentPackage2FeatureModelConverter;
 import org.apache.sling.feature.Configuration;
+import org.apache.sling.feature.Configurations;
 
 abstract class AbstractConfigurationEntryHandler extends AbstractRegexEntryHandler {
 
@@ -37,38 +37,35 @@ abstract class AbstractConfigurationEntryHandler extends AbstractRegexEntryHandl
 
         logger.info("Processing configuration '{}'.", name);
 
-        Dictionary<Object, Object> parsedConfiguration;
+        Configurations parsedConfigurations;
 
         try (InputStream input = archive.openInputStream(entry)) {
-            parsedConfiguration = parseConfiguration(input);
+            parsedConfigurations = parseConfigurations(name, input);
         }
 
-        if (!parsedConfiguration.isEmpty()) {
-            Configuration configuration = null;
+        if (!parsedConfigurations.isEmpty()) {
+            for (Configuration currentConfiguration : parsedConfigurations) {
 
-            dance : for (Configuration addedConfiguration : converter.getTargetFeature().getConfigurations()) {
-                if (name.equals(addedConfiguration.getPid())) {
-                    configuration = addedConfiguration;
-                    break dance;
+                Configuration configuration = converter.getTargetFeature()
+                                                       .getConfigurations()
+                                                       .getConfiguration(currentConfiguration.getPid());
+
+                if (configuration == null) {
+                    converter.getTargetFeature().getConfigurations().add(currentConfiguration);
+                } else {
+                    Enumeration<String> keys = currentConfiguration.getConfigurationProperties().keys();
+                    while (keys.hasMoreElements()) {
+                        String key = keys.nextElement();
+                        Object value = currentConfiguration.getConfigurationProperties().get(key);
+                        configuration.getProperties().put(key, value);
+                    }
                 }
-            }
-
-            if (configuration == null) {
-                configuration = new Configuration(name);
-                converter.getTargetFeature().getConfigurations().add(configuration);
-            }
-
-            Enumeration<Object> keys = parsedConfiguration.keys();
-            while (keys.hasMoreElements()) {
-                String key = keys.nextElement().toString();
-                Object value = parsedConfiguration.get(key);
-                configuration.getProperties().put(key, value);
             }
         } else {
             logger.warn("{} configuration is empty, omitting it from the Feature File", name);
         }
     }
 
-    protected abstract Dictionary<Object, Object> parseConfiguration(InputStream input) throws Exception;
+    protected abstract Configurations parseConfigurations(String name, InputStream input) throws Exception;
 
 }
