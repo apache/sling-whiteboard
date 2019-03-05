@@ -21,13 +21,13 @@ import java.io.FileWriter;
 import java.util.Iterator;
 import java.util.ServiceLoader;
 
-import org.apache.jackrabbit.vault.fs.api.VaultInputSource;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.Archive.Entry;
 import org.apache.jackrabbit.vault.packaging.PackageManager;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.impl.PackageManagerImpl;
+import org.apache.sling.cp2fm.handlers.DefaultEntryHandler;
 import org.apache.sling.cp2fm.spi.EntryHandler;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
@@ -48,6 +48,8 @@ public final class ContentPackage2FeatureModelConverter {
     private final PackageManager packageManager = new PackageManagerImpl();
 
     private final ServiceLoader<EntryHandler> entryHandlers = ServiceLoader.load(EntryHandler.class);
+
+    private final EntryHandler defaultEntryHandler = new DefaultEntryHandler();
 
     private boolean strictValidation = false;
 
@@ -168,49 +170,49 @@ public final class ContentPackage2FeatureModelConverter {
             archive.open(strictValidation);
 
             Entry jcrRoot = archive.getJcrRoot();
-            traverse(archive, jcrRoot);
+            traverse(null, archive, jcrRoot);
         } finally {
             archive.close();
         }
     }
 
-    private void traverse(Archive archive, Entry entry) throws Exception {
+    private void traverse(String path, Archive archive, Entry entry) throws Exception {
+        String entryPath = newPath(path, entry.getName());
+
         if (entry.isDirectory()) {
             for (Entry child : entry.getChildren()) {
-                traverse(archive, child);
+                traverse(entryPath, archive, child);
             }
 
             return;
         }
 
-        VaultInputSource inputSource = archive.getInputSource(entry);
-        String id = inputSource.getSystemId();
+        logger.info("Processing entry {}...", entryPath);
 
-        if (id == null || id.isEmpty()) {
-            id = entry.getName();
+        getEntryHandlerByEntryPath(entryPath).handle(entryPath, archive, entry, this);
+
+        logger.info("Entry {} successfully processed.", entryPath);
+    }
+
+    private static String newPath(String path, String entryName) {
+        if (path == null) {
+            return entryName;
         }
 
-        boolean found = false;
+        return path + '/' + entryName;
+    }
 
+    private EntryHandler getEntryHandlerByEntryPath(String path) {
         Iterator<EntryHandler> entryHandlersIterator = entryHandlers.iterator();
-        dance : while (entryHandlersIterator.hasNext()) {
+        while (entryHandlersIterator.hasNext()) {
             EntryHandler entryHandler = entryHandlersIterator.next();
 
-            if (entryHandler.matches(id)) {
-                logger.info("Processing entry {}...", id);
-
-                found = true;
-                entryHandler.handle(archive, entry, this);
-
-                logger.info("Entry {} successfully processed.", id);
-
-                break dance;
+            if (entryHandler.matches(path)) {
+                return entryHandler;
             }
         }
 
-        if (!found) {
-            // TODO fallback to default action;
-        }
+        return defaultEntryHandler;
     }
 
 }

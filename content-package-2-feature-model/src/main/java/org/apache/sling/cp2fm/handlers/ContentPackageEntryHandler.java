@@ -16,6 +16,8 @@
  */
 package org.apache.sling.cp2fm.handlers;
 
+import java.io.InputStream;
+
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.Archive.Entry;
 import org.apache.jackrabbit.vault.fs.io.ZipStreamArchive;
@@ -28,11 +30,13 @@ public final class ContentPackageEntryHandler extends AbstractRegexEntryHandler 
     }
 
     @Override
-    public void handle(Archive archive, Entry entry, ContentPackage2FeatureModelConverter converter) throws Exception {
+    public void handle(String path, Archive archive, Entry entry, ContentPackage2FeatureModelConverter converter) throws Exception {
         logger.info("Processing sub-content package '{}'...", entry.getName());
 
-        Archive subArchive = new ZipStreamArchive(archive.openInputStream(entry));
-        converter.process(subArchive);
+        try (InputStream input = archive.openInputStream(entry)) {
+            Archive subArchive = new ZipStreamArchive(input);
+            converter.process(subArchive);
+        }
     }
 
 }

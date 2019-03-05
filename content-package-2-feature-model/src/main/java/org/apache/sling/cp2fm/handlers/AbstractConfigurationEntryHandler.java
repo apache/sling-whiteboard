@@ -32,7 +32,7 @@ abstract class AbstractConfigurationEntryHandler extends AbstractRegexEntryHandl
     }
 
     @Override
-    public final void handle(Archive archive, Entry entry, ContentPackage2FeatureModelConverter converter) throws Exception {
+    public final void handle(String path, Archive archive, Entry entry, ContentPackage2FeatureModelConverter converter) throws Exception {
         String name = entry.getName().substring(0, entry.getName().lastIndexOf('.'));
 
         logger.info("Processing configuration '{}'.", name);

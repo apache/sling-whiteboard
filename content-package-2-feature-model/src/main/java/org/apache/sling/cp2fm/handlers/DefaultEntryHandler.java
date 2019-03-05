@@ -14,16 +14,37 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.sling.cp2fm.spi;
+package org.apache.sling.cp2fm.handlers;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.Archive.Entry;
 import org.apache.sling.cp2fm.ContentPackage2FeatureModelConverter;
+import org.apache.sling.cp2fm.spi.EntryHandler;
 
-public interface EntryHandler {
+public final class DefaultEntryHandler implements EntryHandler {
 
-    boolean matches(String path);
+    @Override
+    public boolean matches(String sourceSystemId) {
+        return true;
+    }
 
-    void handle(String path, Archive archive, Entry entry, ContentPackage2FeatureModelConverter converter) throws Exception;
+    @Override
+    public void handle(String path, Archive archive, Entry entry, ContentPackage2FeatureModelConverter converter) throws Exception {
+        File deflatedDir = new File(converter.getOutputDirectory(), "tmp-deflated");
+        File target = new File(deflatedDir, path);
+
+        target.getParentFile().mkdirs();
+
+        try (InputStream input = archive.openInputStream(entry);
+                OutputStream output = new FileOutputStream(target)) {
+            IOUtils.copy(input, output);
+        }
+    }
 
 }

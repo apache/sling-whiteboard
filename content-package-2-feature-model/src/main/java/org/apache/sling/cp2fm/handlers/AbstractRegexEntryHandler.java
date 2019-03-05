@@ -33,8 +33,8 @@ abstract class AbstractRegexEntryHandler implements EntryHandler {
     }
 
     @Override
-    public boolean matches(String sourceSystemId) {
-        return pattern.matcher(sourceSystemId).matches();
+    public boolean matches(String path) {
+        return pattern.matcher(path).matches();
     }
 
 }
