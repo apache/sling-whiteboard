@@ -16,14 +16,15 @@
  */
 package org.apache.sling.cp2fm.handlers;
 
+import static org.apache.sling.cp2fm.ContentPackage2FeatureModelConverter.ARTIFACT_ID;
+import static org.apache.sling.cp2fm.ContentPackage2FeatureModelConverter.GROUP_ID;
+import static org.apache.sling.cp2fm.ContentPackage2FeatureModelConverter.POM_TYPE;
+import static org.apache.sling.cp2fm.ContentPackage2FeatureModelConverter.VERSION;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-import java.util.StringTokenizer;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.regex.Pattern;
@@ -32,12 +33,12 @@ import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.Archive.Entry;
 import org.apache.sling.cp2fm.ContentPackage2FeatureModelConverter;
-import org.apache.sling.feature.Artifact;
-import org.apache.sling.feature.ArtifactId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class BundleEntryHandler extends AbstractRegexEntryHandler {
+
+    private static final String JAR_TYPE = "jar";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -75,52 +76,23 @@ public final class BundleEntryHandler extends AbstractRegexEntryHandler {
             }
         }
 
-        File targetDir = new File(converter.getOutputDirectory(), "bundles");
-
-        String groupId = getTrimmedProperty(properties, "groupId");
-        StringTokenizer tokenizer = new StringTokenizer(groupId, ".");
-        while (tokenizer.hasMoreTokens()) {
-            String current = tokenizer.nextToken();
-            targetDir = new File(targetDir, current);
-        }
-
-        String artifactId = getTrimmedProperty(properties, "artifactId");
-        targetDir = new File(targetDir, artifactId);
-
-        String version = getTrimmedProperty(properties, "version");
-        targetDir = new File(targetDir, version);
-
-        targetDir.mkdirs();
+        String groupId = getTrimmedProperty(properties, GROUP_ID);
+        String artifactId = getTrimmedProperty(properties, ARTIFACT_ID);
+        String version = getTrimmedProperty(properties, VERSION);
 
         try (InputStream input = archive.openInputStream(entry)) {
-            write(input, targetDir, artifactId, version, "jar");
+            converter.deployLocallyAndAttach(input, groupId, artifactId, version, null, JAR_TYPE);
         }
 
         if (pomXml != null) {
             try (ByteArrayInputStream input = new ByteArrayInputStream(pomXml)) {
-                write(input, targetDir, artifactId, version, "pom");
+                converter.deployLocally(input, groupId, artifactId, version, null, POM_TYPE);
             }
         }
-
-        Artifact artifact = new Artifact(new ArtifactId(groupId, artifactId, version, null, null));
-        artifact.setStartOrder(converter.getBundlesStartOrder());
-        converter.getTargetFeature().getBundles().add(artifact);
     }
 
     private static String getTrimmedProperty(Properties properties, String name) {
         return properties.getProperty(name).trim();
-    }
-
-    private void write(InputStream input, File targetDir, String artifactId, String version, String type) throws IOException {
-        File targetFile = new File(targetDir, String.format("%s-%s.%s", artifactId, version, type));
-
-        logger.info("Writing data to {}...", targetFile);
-
-        try (FileOutputStream targetStream = new FileOutputStream(targetFile)) {
-            IOUtils.copy(input, targetStream);
-        }
-
-        logger.info("Data successfully written to {}.", targetFile);
     }
 
 }

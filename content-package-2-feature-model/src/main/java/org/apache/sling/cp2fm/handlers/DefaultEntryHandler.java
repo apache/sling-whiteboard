@@ -29,14 +29,16 @@ import org.apache.sling.cp2fm.spi.EntryHandler;
 
 public final class DefaultEntryHandler implements EntryHandler {
 
+    public static final String TMP_DEFLATED = "tmp-deflated";
+
     @Override
-    public boolean matches(String sourceSystemId) {
+    public boolean matches(String path) {
         return true;
     }
 
     @Override
     public void handle(String path, Archive archive, Entry entry, ContentPackage2FeatureModelConverter converter) throws Exception {
-        File deflatedDir = new File(converter.getOutputDirectory(), "tmp-deflated");
+        File deflatedDir = new File(converter.getOutputDirectory(), TMP_DEFLATED);
         File target = new File(deflatedDir, path);
 
         target.getParentFile().mkdirs();

@@ -17,25 +17,47 @@
 package org.apache.sling.cp2fm;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Iterator;
 import java.util.ServiceLoader;
+import java.util.StringTokenizer;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.Archive.Entry;
 import org.apache.jackrabbit.vault.packaging.PackageManager;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.impl.PackageManagerImpl;
+import org.apache.maven.model.Model;
 import org.apache.sling.cp2fm.handlers.DefaultEntryHandler;
 import org.apache.sling.cp2fm.spi.EntryHandler;
+import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.io.json.FeatureJSONWriter;
+import org.codehaus.plexus.archiver.Archiver;
+import org.codehaus.plexus.archiver.jar.JarArchiver;
+import org.codehaus.plexus.archiver.util.DefaultFileSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class ContentPackage2FeatureModelConverter {
+
+    public static final String POM_TYPE = "pom";
+
+    private static final String ZIP_TYPE = "zip";
+
+    public static final String GROUP_ID = "groupId";
+
+    public static final String ARTIFACT_ID = "artifactId";
+
+    public static final String VERSION = "version";
 
     private static final String FEATURE_CLASSIFIER = "cp2fm-converted-feature";
 
@@ -75,10 +97,6 @@ public final class ContentPackage2FeatureModelConverter {
     public ContentPackage2FeatureModelConverter setBundlesStartOrder(int bundlesStartOrder) {
         this.bundlesStartOrder = bundlesStartOrder;
         return this;
-    }
-
-    public int getBundlesStartOrder() {
-        return bundlesStartOrder;
     }
 
     public ContentPackage2FeatureModelConverter setContentPackage(File contentPackage) {
@@ -148,6 +166,43 @@ public final class ContentPackage2FeatureModelConverter {
             Archive archive = vaultPackage.getArchive();
             process(archive);
 
+            // attach all un matched resources as new content-packge
+
+            File deflatedDir = new File(outputDirectory, DefaultEntryHandler.TMP_DEFLATED);
+
+            if (deflatedDir.listFiles().length > 0) {
+                Archiver archiver = new JarArchiver();
+
+                File destFile = File.createTempFile(targetFeature.getId().getArtifactId(), '.' + ZIP_TYPE);
+
+                archiver.setDestFile(destFile);
+                archiver.addFileSet(new DefaultFileSet(deflatedDir));
+                archiver.createArchive();
+
+                try (InputStream input = new FileInputStream(destFile)) {
+                    deployLocallyAndAttach(input,
+                                           targetFeature.getId().getGroupId(),
+                                           targetFeature.getId().getArtifactId(),
+                                           targetFeature.getId().getVersion(),
+                                           FEATURE_CLASSIFIER,
+                                           ZIP_TYPE);
+                } finally {
+                    destFile.delete();
+                }
+
+                Model model = new Model();
+                model.setGroupId(targetFeature.getId().getGroupId());
+                model.setArtifactId(targetFeature.getId().getArtifactId());
+                model.setVersion(targetFeature.getId().getVersion());
+                model.setPackaging(ZIP_TYPE);
+
+                // TODO deploy the pom in the local dir
+            } else {
+                logger.info("No resources to be repackaged.");
+            }
+
+            // finally serialize the Feature Model file
+
             File targetFile = new File(outputDirectory, targetFeature.getId().getArtifactId() + JSON_FILE_EXTENSION);
 
             logger.info("Conversion complete!", targetFile);
@@ -168,6 +223,9 @@ public final class ContentPackage2FeatureModelConverter {
     public void process(Archive archive) throws Exception {
         try {
             archive.open(strictValidation);
+
+            MetaInf metaInf = archive.getMetaInf();
+            logger.debug("Meta Inf: {}, l'altra metà invece non so cosa sia", metaInf);
 
             Entry jcrRoot = archive.getJcrRoot();
             traverse(null, archive, jcrRoot);
@@ -213,6 +271,61 @@ public final class ContentPackage2FeatureModelConverter {
         }
 
         return defaultEntryHandler;
+    }
+
+    public void deployLocallyAndAttach(InputStream input,
+                                       String groupId,
+                                       String artifactId,
+                                       String version,
+                                       String classifier,
+                                       String type) throws IOException {
+        deployLocally(input, groupId, artifactId, version, classifier, type);
+
+        Artifact artifact = new Artifact(new ArtifactId(groupId, artifactId, version, classifier, type));
+        artifact.setStartOrder(bundlesStartOrder);
+        targetFeature.getBundles().add(artifact);
+    }
+
+    public void deployLocally(InputStream input,
+                              String groupId,
+                              String artifactId,
+                              String version,
+                              String classifier,
+                              String type) throws IOException {
+        File targetDir = new File(outputDirectory, "bundles");
+
+        StringTokenizer tokenizer = new StringTokenizer(groupId, ".");
+        while (tokenizer.hasMoreTokens()) {
+            String current = tokenizer.nextToken();
+            targetDir = new File(targetDir, current);
+        }
+
+        targetDir = new File(targetDir, artifactId);
+
+        targetDir = new File(targetDir, version);
+
+        targetDir.mkdirs();
+
+        StringBuilder nameBuilder = new StringBuilder()
+                                    .append(artifactId)
+                                    .append('-')
+                                    .append(version);
+
+        if (classifier != null) {
+            nameBuilder.append('-').append(classifier);
+        }
+
+        nameBuilder.append('.').append(type);
+
+        File targetFile = new File(targetDir, nameBuilder.toString());
+
+        logger.info("Writing data to {}...", targetFile);
+
+        try (FileOutputStream targetStream = new FileOutputStream(targetFile)) {
+            IOUtils.copy(input, targetStream);
+        }
+
+        logger.info("Data successfully written to {}.", targetFile);
     }
 
 }
