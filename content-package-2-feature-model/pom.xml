@@ -214,6 +214,7 @@
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
       <version>2.25.0</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
@@ -226,6 +227,16 @@
           <excludes>
             <exclude>src/main/legal/NOTICE-with-deps</exclude>
           </excludes>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <systemPropertyVariables>
+            <testDirectory>${project.build.directory}/unit-tests</testDirectory>
+          </systemPropertyVariables>
         </configuration>
       </plugin>
 

@@ -283,7 +283,7 @@ public class ContentPackage2FeatureModelConverter {
 
         Artifact artifact = new Artifact(new ArtifactId(groupId, artifactId, version, classifier, type));
         artifact.setStartOrder(bundlesStartOrder);
-        targetFeature.getBundles().add(artifact);
+        getTargetFeature().getBundles().add(artifact);
     }
 
     public void deployLocally(InputStream input,
@@ -292,7 +292,7 @@ public class ContentPackage2FeatureModelConverter {
                               String version,
                               String classifier,
                               String type) throws IOException {
-        File targetDir = new File(outputDirectory, "bundles");
+        File targetDir = new File(getOutputDirectory(), "bundles");
 
         StringTokenizer tokenizer = new StringTokenizer(groupId, ".");
         while (tokenizer.hasMoreTokens()) {
