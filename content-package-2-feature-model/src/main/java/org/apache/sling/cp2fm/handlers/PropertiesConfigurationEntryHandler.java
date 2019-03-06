@@ -16,6 +16,7 @@
  */
 package org.apache.sling.cp2fm.handlers;
 
+import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.util.Dictionary;
 import java.util.Enumeration;
@@ -31,7 +32,20 @@ public final class PropertiesConfigurationEntryHandler extends AbstractConfigura
     @Override
     protected Dictionary<String, Object> parseConfiguration(String name, InputStream input) throws Exception {
         final Properties properties = new Properties();
-        properties.load(input);
+
+        try (final BufferedInputStream in = new BufferedInputStream(input)) {
+            in.mark(1);
+
+            boolean isXml = '<' == in.read();
+
+            in.reset();
+
+            if (isXml) {
+                properties.loadFromXML(in);
+            } else {
+                properties.load(in);
+            }
+        }
 
         Dictionary<String, Object> configuration = new Hashtable<>();
         final Enumeration<Object> i = properties.keys();

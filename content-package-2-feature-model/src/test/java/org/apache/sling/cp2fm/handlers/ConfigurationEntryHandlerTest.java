@@ -88,7 +88,8 @@ public class ConfigurationEntryHandlerTest {
             { EXPECTED_PID + ".cfg", new PropertiesConfigurationEntryHandler() },
             { EXPECTED_PID + ".cfg.json", new JsonConfigurationEntryHandler() },
             { EXPECTED_PID + ".config", new ConfigurationEntryHandler() },
-            { EXPECTED_PID + ".xml", new XmlConfigurationEntryHandler() }
+            { EXPECTED_PID + ".xml", new XmlConfigurationEntryHandler() },
+            { EXPECTED_PID + ".xml.cfg", new PropertiesConfigurationEntryHandler() }
         });
     }
 
