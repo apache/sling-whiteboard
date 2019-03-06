@@ -30,7 +30,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-public final class XmlConfigurationEntryHandler extends AbstractSingleConfigurationEntryHandler {
+public final class XmlConfigurationEntryHandler extends AbstractConfigurationEntryHandler {
 
     private static final String JCR_ROOT = "jcr:root";
 
@@ -43,7 +43,7 @@ public final class XmlConfigurationEntryHandler extends AbstractSingleConfigurat
     }
 
     @Override
-    protected Dictionary<String, Object> parseConfiguration(InputStream input) throws Exception {
+    protected Dictionary<String, Object> parseConfiguration(String name, InputStream input) throws Exception {
         SAXParser saxParser = saxParserFactory.newSAXParser();
         JcrConfigurationHandler configurationHandler = new JcrConfigurationHandler();
         saxParser.parse(input, configurationHandler);

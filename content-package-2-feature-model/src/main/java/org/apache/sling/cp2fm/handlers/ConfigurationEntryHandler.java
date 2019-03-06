@@ -21,7 +21,7 @@ import java.util.Dictionary;
 
 import org.apache.felix.cm.file.ConfigurationHandler;
 
-public final class ConfigurationEntryHandler extends AbstractSingleConfigurationEntryHandler {
+public final class ConfigurationEntryHandler extends AbstractConfigurationEntryHandler {
 
     public ConfigurationEntryHandler() {
         super(".+\\.config");
@@ -29,7 +29,7 @@ public final class ConfigurationEntryHandler extends AbstractSingleConfiguration
 
     @Override
     @SuppressWarnings("unchecked")
-    protected Dictionary<String, Object> parseConfiguration(InputStream input) throws Exception {
+    protected Dictionary<String, Object> parseConfiguration(String name, InputStream input) throws Exception {
         return ConfigurationHandler.read(input);
     }
 

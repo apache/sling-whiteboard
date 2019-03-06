@@ -17,6 +17,7 @@
 package org.apache.sling.cp2fm.handlers;
 
 import java.io.InputStream;
+import java.util.Dictionary;
 import java.util.Enumeration;
 
 import org.apache.jackrabbit.vault.fs.io.Archive;
@@ -37,35 +38,34 @@ abstract class AbstractConfigurationEntryHandler extends AbstractRegexEntryHandl
 
         logger.info("Processing configuration '{}'.", name);
 
-        Configurations parsedConfigurations;
-
+        Dictionary<String, Object> configurationProperties;
         try (InputStream input = archive.openInputStream(entry)) {
-            parsedConfigurations = parseConfigurations(name, input);
+            configurationProperties = parseConfiguration(name, input);
         }
 
-        if (!parsedConfigurations.isEmpty()) {
-            for (Configuration currentConfiguration : parsedConfigurations) {
+        if (configurationProperties.isEmpty()) {
+            logger.info("No configuration properties found for configuration {}", path);
+            return;
+        }
 
-                Configuration configuration = converter.getTargetFeature()
-                                                       .getConfigurations()
-                                                       .getConfiguration(currentConfiguration.getPid());
+        Configurations configurations = converter.getTargetFeature()
+                                                 .getConfigurations();
 
-                if (configuration == null) {
-                    converter.getTargetFeature().getConfigurations().add(currentConfiguration);
-                } else {
-                    Enumeration<String> keys = currentConfiguration.getConfigurationProperties().keys();
-                    while (keys.hasMoreElements()) {
-                        String key = keys.nextElement();
-                        Object value = currentConfiguration.getConfigurationProperties().get(key);
-                        configuration.getProperties().put(key, value);
-                    }
-                }
-            }
-        } else {
-            logger.warn("{} configuration is empty, omitting it from the Feature File", name);
+        Configuration configuration = configurations.getConfiguration(name);
+
+        if (configuration == null) {
+            configuration = new Configuration(name);
+            configurations.add(configuration);
+        }
+
+        Enumeration<String> keys = configurationProperties.keys();
+        while (keys.hasMoreElements()) {
+            String key = keys.nextElement();
+            Object value = configurationProperties.get(key);
+            configuration.getProperties().put(key, value);
         }
     }
 
-    protected abstract Configurations parseConfigurations(String name, InputStream input) throws Exception;
+    protected abstract Dictionary<String, Object> parseConfiguration(String name, InputStream input) throws Exception;
 
 }

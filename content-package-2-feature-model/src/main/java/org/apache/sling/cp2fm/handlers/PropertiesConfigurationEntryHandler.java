@@ -18,19 +18,29 @@ package org.apache.sling.cp2fm.handlers;
 
 import java.io.InputStream;
 import java.util.Dictionary;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Properties;
 
-import org.apache.felix.utils.properties.ConfigurationHandler;
-
-public final class PropertiesConfigurationEntryHandler extends AbstractSingleConfigurationEntryHandler {
+public final class PropertiesConfigurationEntryHandler extends AbstractConfigurationEntryHandler {
 
     public PropertiesConfigurationEntryHandler() {
         super("[^/]+\\.(cfg|properties)");
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    protected Dictionary<String, Object> parseConfiguration(InputStream input) throws Exception {
-        return ConfigurationHandler.read(input);
+    protected Dictionary<String, Object> parseConfiguration(String name, InputStream input) throws Exception {
+        final Properties properties = new Properties();
+        properties.load(input);
+
+        Dictionary<String, Object> configuration = new Hashtable<>();
+        final Enumeration<Object> i = properties.keys();
+        while (i.hasMoreElements()) {
+            final Object key = i.nextElement();
+            configuration.put(key.toString(), properties.get(key));
+        }
+
+        return configuration;
     }
 
 }

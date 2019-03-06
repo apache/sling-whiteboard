@@ -47,7 +47,7 @@ import org.codehaus.plexus.archiver.util.DefaultFileSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class ContentPackage2FeatureModelConverter {
+public class ContentPackage2FeatureModelConverter {
 
     public static final String POM_TYPE = "pom";
 
