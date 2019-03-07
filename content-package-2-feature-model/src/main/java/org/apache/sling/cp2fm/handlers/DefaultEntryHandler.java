@@ -26,10 +26,14 @@ import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.Archive.Entry;
 import org.apache.sling.cp2fm.ContentPackage2FeatureModelConverter;
 import org.apache.sling.cp2fm.spi.EntryHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class DefaultEntryHandler implements EntryHandler {
 
     public static final String TMP_DEFLATED = "tmp-deflated";
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
     public boolean matches(String path) {
@@ -45,6 +49,8 @@ public final class DefaultEntryHandler implements EntryHandler {
 
         try (InputStream input = archive.openInputStream(entry);
                 OutputStream output = new FileOutputStream(target)) {
+            logger.info("Copying {} archived resource to {}...", path, target);
+
             IOUtils.copy(input, output);
         }
     }
