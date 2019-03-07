@@ -225,6 +225,7 @@
         <artifactId>apache-rat-plugin</artifactId>
           <configuration>
           <excludes>
+            <exclude>src/main/resources/META-INF/services/org.apache.sling.cp2fm.spi.EntryHandler</exclude>
             <exclude>src/main/legal/NOTICE-with-deps</exclude>
           </excludes>
         </configuration>
