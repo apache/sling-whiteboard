@@ -54,7 +54,7 @@ public class ConfigurationEntryHandlerTest {
     @Test
     public void matches() {
         assertFalse(configurationEntryHandler.matches("/this/is/a/path/not/pointing/to/a/valid/configuration.asd"));
-        assertTrue(configurationEntryHandler.matches(resourceConfiguration));
+        assertTrue(resourceConfiguration, configurationEntryHandler.matches(resourceConfiguration));
     }
 
     @Test
@@ -62,7 +62,7 @@ public class ConfigurationEntryHandlerTest {
         Archive archive = mock(Archive.class);
         Entry entry = mock(Entry.class);
 
-        when(entry.getName()).thenReturn(resourceConfiguration);
+        when(entry.getName()).thenReturn(resourceConfiguration.substring(resourceConfiguration.lastIndexOf('/') + 1));
         when(archive.openInputStream(entry)).thenReturn(getClass().getResourceAsStream(resourceConfiguration));
 
         Feature feature = mock(Feature.class);
@@ -78,8 +78,8 @@ public class ConfigurationEntryHandlerTest {
 
         Configuration configuration = configurations.get(0);
 
-        assertTrue(configuration.getPid().startsWith(EXPECTED_PID));
-        assertEquals(2, configuration.getProperties().size());
+        assertTrue(configuration.getPid(), configuration.getPid().startsWith(EXPECTED_PID));
+        assertEquals("Unmatching size: " + configuration.getProperties().size(), 2, configuration.getProperties().size());
     }
 
     @Parameters
@@ -88,7 +88,7 @@ public class ConfigurationEntryHandlerTest {
             { EXPECTED_PID + ".cfg", new PropertiesConfigurationEntryHandler() },
             { EXPECTED_PID + ".cfg.json", new JsonConfigurationEntryHandler() },
             { EXPECTED_PID + ".config", new ConfigurationEntryHandler() },
-            { EXPECTED_PID + ".xml", new XmlConfigurationEntryHandler() },
+            { "jcr_root/apps/asd/config/" + EXPECTED_PID + ".xml", new XmlConfigurationEntryHandler() },
             { EXPECTED_PID + ".xml.cfg", new PropertiesConfigurationEntryHandler() }
         });
     }

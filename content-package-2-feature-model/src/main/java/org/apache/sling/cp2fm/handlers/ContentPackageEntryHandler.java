@@ -33,7 +33,7 @@ public final class ContentPackageEntryHandler extends AbstractRegexEntryHandler 
     private final PackageManager packageManager = new PackageManagerImpl();
 
     public ContentPackageEntryHandler() {
-        super("jcr_root/etc/packages/.+\\.zip");
+        super("(jcr_root)?/etc/packages/.+\\.zip");
     }
 
     @Override

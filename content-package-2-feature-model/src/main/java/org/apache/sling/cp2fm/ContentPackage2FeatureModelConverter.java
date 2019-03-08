@@ -29,6 +29,10 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
+import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
+import org.apache.jackrabbit.vault.fs.config.MetaInf;
+import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.Archive.Entry;
 import org.apache.jackrabbit.vault.packaging.Dependency;
@@ -131,7 +135,7 @@ public class ContentPackage2FeatureModelConverter {
             throw new IllegalStateException("output directory "
                                             + outputDirectory
                                             + " does not exist and can not be created, please make sure current user '"
-                                            + System.getProperty("")
+                                            + System.getProperty("user.name")
                                             + " has enough rights to write on the File System.");
         }
 
@@ -157,7 +161,7 @@ public class ContentPackage2FeatureModelConverter {
 
             process(vaultPackage);
 
-            // attach all un matched resources as new content-packge
+            // attach all unmatched resources as new content-package
 
             File deflatedDir = new File(outputDirectory, DefaultEntryHandler.TMP_DEFLATED);
 
@@ -217,6 +221,16 @@ public class ContentPackage2FeatureModelConverter {
         for (Dependency dependency : vaultPackage.getDependencies()) {
             dependencies.add(dependency.toString());
         }
+
+        AccessControlHandling ach = vaultPackage.getACHandling();
+
+        MetaInf metaInf = vaultPackage.getMetaInf();
+        WorkspaceFilter filter = metaInf.getFilter();
+        for (PathFilterSet pathFilterSet : filter.getFilterSets()) {
+            System.out.println(pathFilterSet.getRoot());
+        }
+
+        PackageProperties properties = vaultPackage.getProperties();
 
         Archive archive = vaultPackage.getArchive();
         try {
