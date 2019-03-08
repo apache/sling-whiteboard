@@ -88,9 +88,8 @@ public final class ContentPackage2FeatureModelConverterLauncher implements Runna
             new ContentPackage2FeatureModelConverter()
             .setStrictValidation(strictValidation)
             .setBundlesStartOrder(bundlesStartOrder)
-            .setContentPackage(contentPackage)
             .setOutputDirectory(outputDirectory)
-            .convert();
+            .convert(contentPackage);
 
             logger.info( "+-----------------------------------------------------+" );
             logger.info("{} SUCCESS", appName);

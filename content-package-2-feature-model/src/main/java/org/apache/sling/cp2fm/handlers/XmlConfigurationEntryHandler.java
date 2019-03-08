@@ -39,7 +39,7 @@ public final class XmlConfigurationEntryHandler extends AbstractConfigurationEnt
     private final SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
 
     public XmlConfigurationEntryHandler() {
-        super("[^._][^/]+\\.xml");
+        super("jcr_root/apps/[^/]+/config/.+\\.xml");
     }
 
     @Override

@@ -22,14 +22,16 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.Archive.Entry;
+import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.PackageManager;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
@@ -73,15 +75,13 @@ public class ContentPackage2FeatureModelConverter {
 
     private final EntryHandler defaultEntryHandler = new DefaultEntryHandler();
 
+    private final Set<String> dependencies = new HashSet<>();
+
     private boolean strictValidation = false;
 
     private int bundlesStartOrder = 0;
 
-    private File contentPackage;
-
     private File outputDirectory;
-
-    private VaultPackage vaultPackage = null;
 
     private Feature targetFeature = null;
 
@@ -99,15 +99,6 @@ public class ContentPackage2FeatureModelConverter {
         return this;
     }
 
-    public ContentPackage2FeatureModelConverter setContentPackage(File contentPackage) {
-        this.contentPackage = contentPackage;
-        return this;
-    }
-
-    public File getContentPackage() {
-        return contentPackage;
-    }
-
     public ContentPackage2FeatureModelConverter setOutputDirectory(File outputDirectory) {
         this.outputDirectory = outputDirectory;
         return this;
@@ -121,9 +112,9 @@ public class ContentPackage2FeatureModelConverter {
         return targetFeature;
     }
 
-    public void convert() throws Exception {
+    public void convert(File contentPackage) throws Exception {
         if (contentPackage == null) {
-            throw new IllegalStateException("Null content-package can not be converted.");
+            throw new IllegalArgumentException("Null content-package can not be converted.");
         }
 
         if (!contentPackage.exists() || !contentPackage.isFile()) {
@@ -146,6 +137,7 @@ public class ContentPackage2FeatureModelConverter {
 
         logger.info("Reading content-package '{}'...", contentPackage);
 
+        VaultPackage vaultPackage = null;
         try {
             vaultPackage = packageManager.open(contentPackage, strictValidation);
 
@@ -163,8 +155,7 @@ public class ContentPackage2FeatureModelConverter {
 
             logger.info("Converting content-package '{}' to Feature File '{}'...", vaultPackage.getId(), targetFeature.getId());
 
-            Archive archive = vaultPackage.getArchive();
-            process(archive);
+            process(vaultPackage);
 
             // attach all un matched resources as new content-packge
 
@@ -220,12 +211,16 @@ public class ContentPackage2FeatureModelConverter {
         }
     }
 
-    public void process(Archive archive) throws Exception {
+    public void process(VaultPackage vaultPackage) throws Exception {
+        dependencies.remove(vaultPackage.getId().toString());
+
+        for (Dependency dependency : vaultPackage.getDependencies()) {
+            dependencies.add(dependency.toString());
+        }
+
+        Archive archive = vaultPackage.getArchive();
         try {
             archive.open(strictValidation);
-
-            MetaInf metaInf = archive.getMetaInf();
-            logger.debug("Meta Inf: {}, l'altra metà invece non so cosa sia", metaInf);
 
             Entry jcrRoot = archive.getJcrRoot();
             traverse(null, archive, jcrRoot);

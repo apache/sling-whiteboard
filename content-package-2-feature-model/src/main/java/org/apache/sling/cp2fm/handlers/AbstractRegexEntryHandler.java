@@ -33,7 +33,7 @@ abstract class AbstractRegexEntryHandler implements EntryHandler {
     }
 
     @Override
-    public boolean matches(String path) {
+    public final boolean matches(String path) {
         return pattern.matcher(path).matches();
     }
 
