@@ -18,9 +18,15 @@ The image is built using `mvn package`. Afterwards it may be run with
     
 This invocation produces a list of available subcommands.
 
-Currently the only implemented command is generating the release vote email, for instance
+## Commands
+
+Generating a release vote email
 
     docker run --env-file=./docker-env apache/sling-cli release prepare-email $STAGING_REPOSITORY_ID
+    
+Generating a release vote result email
+
+    docker run --env-file=./docker-env apache/sling-cli release tally-votes $STAGING_REPOSITORY_ID
     
 ## Assumptions
 
