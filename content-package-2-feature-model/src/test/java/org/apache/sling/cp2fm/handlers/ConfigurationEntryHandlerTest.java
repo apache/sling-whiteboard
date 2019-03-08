@@ -84,12 +84,14 @@ public class ConfigurationEntryHandlerTest {
 
     @Parameters
     public static Collection<Object[]> data() {
+        String path = "jcr_root/apps/asd/config/";
+
         return Arrays.asList(new Object[][] {
-            { EXPECTED_PID + ".cfg", new PropertiesConfigurationEntryHandler() },
-            { EXPECTED_PID + ".cfg.json", new JsonConfigurationEntryHandler() },
-            { EXPECTED_PID + ".config", new ConfigurationEntryHandler() },
-            { "jcr_root/apps/asd/config/" + EXPECTED_PID + ".xml", new XmlConfigurationEntryHandler() },
-            { EXPECTED_PID + ".xml.cfg", new PropertiesConfigurationEntryHandler() }
+            { path + EXPECTED_PID + ".cfg", new PropertiesConfigurationEntryHandler() },
+            { path + EXPECTED_PID + ".cfg.json", new JsonConfigurationEntryHandler() },
+            { path + EXPECTED_PID + ".config", new ConfigurationEntryHandler() },
+            { path + EXPECTED_PID + ".xml", new XmlConfigurationEntryHandler() },
+            { path + EXPECTED_PID + ".xml.cfg", new PropertiesConfigurationEntryHandler() }
         });
     }
 

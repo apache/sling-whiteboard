@@ -26,7 +26,7 @@ import java.util.Properties;
 public final class PropertiesConfigurationEntryHandler extends AbstractConfigurationEntryHandler {
 
     public PropertiesConfigurationEntryHandler() {
-        super("[^/]+\\.(cfg|properties)");
+        super("(cfg|properties)");
     }
 
     @Override

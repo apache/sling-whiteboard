@@ -24,7 +24,7 @@ import org.apache.felix.cm.file.ConfigurationHandler;
 public final class ConfigurationEntryHandler extends AbstractConfigurationEntryHandler {
 
     public ConfigurationEntryHandler() {
-        super(".+\\.config");
+        super("config");
     }
 
     @Override

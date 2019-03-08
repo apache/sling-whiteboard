@@ -22,8 +22,10 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -45,6 +47,7 @@ import org.apache.sling.cp2fm.handlers.DefaultEntryHandler;
 import org.apache.sling.cp2fm.spi.EntryHandler;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.Configurations;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.io.json.FeatureJSONWriter;
 import org.codehaus.plexus.archiver.Archiver;
@@ -78,6 +81,8 @@ public class ContentPackage2FeatureModelConverter {
     private final ServiceLoader<EntryHandler> entryHandlers = ServiceLoader.load(EntryHandler.class);
 
     private final EntryHandler defaultEntryHandler = new DefaultEntryHandler();
+
+    private final Map<String, Configurations> runModes = new HashMap<>();
 
     private final Set<String> dependencies = new HashSet<>();
 
@@ -114,6 +119,10 @@ public class ContentPackage2FeatureModelConverter {
 
     public Feature getTargetFeature() {
         return targetFeature;
+    }
+
+    public Configurations getRunMode(String runMode) {
+        return runModes.computeIfAbsent(runMode, k -> new Configurations());
     }
 
     public void convert(File contentPackage) throws Exception {
@@ -196,22 +205,42 @@ public class ContentPackage2FeatureModelConverter {
                 logger.info("No resources to be repackaged.");
             }
 
-            // finally serialize the Feature Model file
+            // finally serialize the Feature Model(s) file(s)
 
-            File targetFile = new File(outputDirectory, targetFeature.getId().getArtifactId() + JSON_FILE_EXTENSION);
+            seralize(targetFeature);
 
-            logger.info("Conversion complete!", targetFile);
-            logger.info("Writing resulting Feature File to '{}'...", targetFile);
+            if (!runModes.isEmpty()) {
+                for (java.util.Map.Entry<String, Configurations> runMode : runModes.entrySet()) {
+                    Feature runModeFeature = new Feature(new ArtifactId(targetFeature.getId().getGroupId(),
+                                                                        targetFeature.getId().getArtifactId() + '-' + runMode.getKey(),
+                                                                        targetFeature.getId().getVersion(),
+                                                                        targetFeature.getId().getClassifier(),
+                                                                        targetFeature.getId().getType()));
 
-            try (FileWriter targetWriter = new FileWriter(targetFile)) {
-                FeatureJSONWriter.write(targetWriter, targetFeature);
+                    runModeFeature.setDescription(targetFeature.getDescription() + " - " + runMode.getKey());
 
-                logger.info("'{}' Feature File successfully written!", targetFile);
+                    runModeFeature.getConfigurations().addAll(runMode.getValue());
+
+                    seralize(runModeFeature);
+                }
             }
         } finally {
             if (vaultPackage != null && !vaultPackage.isClosed()) {
                 vaultPackage.close();
             }
+        }
+    }
+
+    private void seralize(Feature feature) throws Exception {
+        File targetFile = new File(outputDirectory, feature.getId().getArtifactId() + JSON_FILE_EXTENSION);
+
+        logger.info("Conversion complete!", targetFile);
+        logger.info("Writing resulting Feature File to '{}'...", targetFile);
+
+        try (FileWriter targetWriter = new FileWriter(targetFile)) {
+            FeatureJSONWriter.write(targetWriter, feature);
+
+            logger.info("'{}' Feature File successfully written!", targetFile);
         }
     }
 
@@ -227,7 +256,7 @@ public class ContentPackage2FeatureModelConverter {
         MetaInf metaInf = vaultPackage.getMetaInf();
         WorkspaceFilter filter = metaInf.getFilter();
         for (PathFilterSet pathFilterSet : filter.getFilterSets()) {
-            System.out.println(pathFilterSet.getRoot());
+            // TODO
         }
 
         PackageProperties properties = vaultPackage.getProperties();

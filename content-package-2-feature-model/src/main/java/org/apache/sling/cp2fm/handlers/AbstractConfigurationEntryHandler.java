@@ -19,6 +19,7 @@ package org.apache.sling.cp2fm.handlers;
 import java.io.InputStream;
 import java.util.Dictionary;
 import java.util.Enumeration;
+import java.util.regex.Matcher;
 
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.Archive.Entry;
@@ -28,8 +29,8 @@ import org.apache.sling.feature.Configurations;
 
 abstract class AbstractConfigurationEntryHandler extends AbstractRegexEntryHandler {
 
-    public AbstractConfigurationEntryHandler(String regex) {
-        super(regex);
+    public AbstractConfigurationEntryHandler(String extension) {
+        super("(jcr_root)?/apps/[^/]+/config(\\.([^/]+))?/.+\\." + extension);
     }
 
     @Override
@@ -48,8 +49,18 @@ abstract class AbstractConfigurationEntryHandler extends AbstractRegexEntryHandl
             return;
         }
 
-        Configurations configurations = converter.getTargetFeature()
-                                                 .getConfigurations();
+        Configurations configurations;
+
+        Matcher matcher = getPattern().matcher(path);
+        String runMode = null;
+        // we are pretty sure it matches, here
+        if (matcher.matches() && (runMode = matcher.group(3)) != null) {
+            // there is a specified RunMode
+            configurations = converter.getRunMode(runMode);
+        } else {
+            configurations = converter.getTargetFeature()
+                                      .getConfigurations();
+        }
 
         Configuration configuration = configurations.getConfiguration(name);
 

@@ -32,7 +32,7 @@ import org.apache.felix.configurator.impl.model.ConfigurationFile;
 public final class JsonConfigurationEntryHandler extends AbstractConfigurationEntryHandler {
 
     public JsonConfigurationEntryHandler() {
-        super("[^/]+\\.cfg\\.json");
+        super("cfg\\.json");
     }
 
     @Override

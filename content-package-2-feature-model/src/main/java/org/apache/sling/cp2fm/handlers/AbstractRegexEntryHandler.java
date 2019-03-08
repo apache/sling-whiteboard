@@ -37,4 +37,8 @@ abstract class AbstractRegexEntryHandler implements EntryHandler {
         return pattern.matcher(path).matches();
     }
 
+    protected final Pattern getPattern() {
+        return pattern;
+    }
+
 }
