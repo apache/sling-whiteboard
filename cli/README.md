@@ -21,3 +21,12 @@ This invocation produces a list of available subcommands.
 Currently the only implemented command is generating the release vote email, for instance
 
     docker run --env-file=./docker-env apache/sling-cli release prepare-email $STAGING_REPOSITORY_ID
+    
+## Assumptions
+
+This tool assumes that the name of the staging repository matches the one of the version in Jira. For instance, the
+staging repositories are usually named _Apache Sling Foo 1.2.0_. It is then expected that the Jira version is
+named _Foo 1.2.0_. Otherwise the link between the staging repository and the Jira release can not be found.
+
+It is allowed for staging repository names to have an _RC_ suffix, which may include a number, so that _RC_, _RC1_, _RC25_ are
+all valid suffixes.  
