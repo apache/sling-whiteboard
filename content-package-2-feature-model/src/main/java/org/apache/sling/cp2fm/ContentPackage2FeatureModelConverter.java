@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -40,6 +41,7 @@ import org.apache.jackrabbit.vault.fs.io.Archive.Entry;
 import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.PackageManager;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
+import org.apache.jackrabbit.vault.packaging.PackageType;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.impl.PackageManagerImpl;
 import org.apache.maven.model.Model;
@@ -47,7 +49,6 @@ import org.apache.sling.cp2fm.handlers.DefaultEntryHandler;
 import org.apache.sling.cp2fm.spi.EntryHandler;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
-import org.apache.sling.feature.Configurations;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.io.json.FeatureJSONWriter;
 import org.codehaus.plexus.archiver.Archiver;
@@ -62,11 +63,9 @@ public class ContentPackage2FeatureModelConverter {
 
     private static final String ZIP_TYPE = "zip";
 
-    public static final String GROUP_ID = "groupId";
+    public static final String NAME_GROUP_ID = "groupId";
 
-    public static final String ARTIFACT_ID = "artifactId";
-
-    public static final String VERSION = "version";
+    public static final String NAME_ARTIFACT_ID = "artifactId";
 
     private static final String FEATURE_CLASSIFIER = "cp2fm-converted-feature";
 
@@ -82,7 +81,7 @@ public class ContentPackage2FeatureModelConverter {
 
     private final EntryHandler defaultEntryHandler = new DefaultEntryHandler();
 
-    private final Map<String, Configurations> runModes = new HashMap<>();
+    private final Map<String, Feature> runModes = new HashMap<>();
 
     private final Set<String> dependencies = new HashSet<>();
 
@@ -121,8 +120,16 @@ public class ContentPackage2FeatureModelConverter {
         return targetFeature;
     }
 
-    public Configurations getRunMode(String runMode) {
-        return runModes.computeIfAbsent(runMode, k -> new Configurations());
+    public Feature getRunMode(String runMode) {
+        if (targetFeature == null) {
+            throw new IllegalStateException("Target Feature not initialized yet, please make sure convert() method was invoked.");
+        }
+
+        return runModes.computeIfAbsent(runMode, k -> new Feature(new ArtifactId(targetFeature.getId().getGroupId(),
+                                                                                 targetFeature.getId().getArtifactId() + '-' + runMode,
+                                                                                 targetFeature.getId().getVersion(),
+                                                                                 targetFeature.getId().getClassifier(),
+                                                                                 targetFeature.getId().getType())));
     }
 
     public void convert(File contentPackage) throws Exception {
@@ -158,8 +165,8 @@ public class ContentPackage2FeatureModelConverter {
 
             PackageProperties packageProperties = vaultPackage.getProperties();
 
-            targetFeature = new Feature(new ArtifactId(packageProperties.getProperty("groupId"), 
-                                                       packageProperties.getProperty(PackageProperties.NAME_NAME),
+            targetFeature = new Feature(new ArtifactId(packageProperties.getProperty(NAME_GROUP_ID), 
+                                                       packageProperties.getProperty(NAME_ARTIFACT_ID),
                                                        packageProperties.getProperty(PackageProperties.NAME_VERSION),
                                                        FEATURE_CLASSIFIER,
                                                        SLING_OSGI_FEATURE_TILE_TYPE));
@@ -175,7 +182,31 @@ public class ContentPackage2FeatureModelConverter {
             File deflatedDir = new File(outputDirectory, DefaultEntryHandler.TMP_DEFLATED);
 
             if (deflatedDir.listFiles().length > 0) {
+                /*
+                 * group</td><td>Use <i>group</i> parameter to set</td></tr>
+     * <tr><td>name</td><td>Use <i>name</i> parameter to set</td></tr>
+     * <tr><td>version</td><td>Use <i>version</i> parameter to set</td></tr>
+     * <tr><td>groupId</td><td><i>groupId</i> of the Maven project descriptor</td></tr>
+     * <tr><td>artifactId</td><td><i>artifactId</i> of the Maven project descriptor</td></tr>
+     * <tr><td>dependencies</td><td>Use <i>dependencies</i> parameter to set</td></tr>
+     * <tr><td>createdBy</td><td>The value of the <i>user.name</i> system property</td></tr>
+     * <tr><td>created</td><td>The current system time</td></tr>
+     * <tr><td>requiresRoot</td><td>Use <i>requiresRoot</i> parameter to set</td></tr>
+     * <tr><td>allowIndexDefinitions</td><td>Use <i>allowIndexDefinitions</i> parameter to set</td></tr>
+     * <tr><td>packagePath</td><td>Automatically generated from the group and package name</td></tr>
+     * <tr><td>packageType</td><td>Set via the package type parameter</td></tr>
+     * <tr><td>acHandling</td><td>Use <i>accessControlHandling</i> parameter to set</td></tr>
+                 */
+                Properties properties = new Properties();
+                copyProperty(PackageProperties.NAME_GROUP, packageProperties, properties);
+                properties.setProperty(PackageProperties.NAME_NAME, packageProperties.getProperty(PackageProperties.NAME_NAME) + ' ' + FEATURE_CLASSIFIER);
+                copyProperty(PackageProperties.NAME_VERSION, packageProperties, properties);
+                properties.setProperty(NAME_GROUP_ID, packageProperties.getProperty(NAME_GROUP_ID));
+                
+                properties.setProperty(PackageProperties.NAME_PACKAGE_TYPE, PackageType.APPLICATION.name());
+
                 Archiver archiver = new JarArchiver();
+                archiver.setIncludeEmptyDirs(true);
 
                 File destFile = File.createTempFile(targetFeature.getId().getArtifactId(), '.' + ZIP_TYPE);
 
@@ -210,18 +241,8 @@ public class ContentPackage2FeatureModelConverter {
             seralize(targetFeature);
 
             if (!runModes.isEmpty()) {
-                for (java.util.Map.Entry<String, Configurations> runMode : runModes.entrySet()) {
-                    Feature runModeFeature = new Feature(new ArtifactId(targetFeature.getId().getGroupId(),
-                                                                        targetFeature.getId().getArtifactId() + '-' + runMode.getKey(),
-                                                                        targetFeature.getId().getVersion(),
-                                                                        targetFeature.getId().getClassifier(),
-                                                                        targetFeature.getId().getType()));
-
-                    runModeFeature.setDescription(targetFeature.getDescription() + " - " + runMode.getKey());
-
-                    runModeFeature.getConfigurations().addAll(runMode.getValue());
-
-                    seralize(runModeFeature);
+                for (Feature runMode : runModes.values()) {
+                    seralize(runMode);
                 }
             }
         } finally {
@@ -260,6 +281,7 @@ public class ContentPackage2FeatureModelConverter {
         }
 
         PackageProperties properties = vaultPackage.getProperties();
+        System.out.println(properties.getPackageType());
 
         Archive archive = vaultPackage.getArchive();
         try {
@@ -364,6 +386,10 @@ public class ContentPackage2FeatureModelConverter {
         }
 
         logger.info("Data successfully written to {}.", targetFile);
+    }
+
+    private static void copyProperty(String key, PackageProperties source, Properties target) {
+        target.setProperty(key, source.getProperty(key));
     }
 
 }

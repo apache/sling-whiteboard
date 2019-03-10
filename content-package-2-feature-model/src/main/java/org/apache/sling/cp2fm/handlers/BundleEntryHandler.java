@@ -16,10 +16,11 @@
  */
 package org.apache.sling.cp2fm.handlers;
 
-import static org.apache.sling.cp2fm.ContentPackage2FeatureModelConverter.ARTIFACT_ID;
-import static org.apache.sling.cp2fm.ContentPackage2FeatureModelConverter.GROUP_ID;
+import static org.apache.jackrabbit.vault.packaging.PackageProperties.NAME_VERSION;
+
+import static org.apache.sling.cp2fm.ContentPackage2FeatureModelConverter.NAME_ARTIFACT_ID;
+import static org.apache.sling.cp2fm.ContentPackage2FeatureModelConverter.NAME_GROUP_ID;
 import static org.apache.sling.cp2fm.ContentPackage2FeatureModelConverter.POM_TYPE;
-import static org.apache.sling.cp2fm.ContentPackage2FeatureModelConverter.VERSION;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -76,9 +77,9 @@ public final class BundleEntryHandler extends AbstractRegexEntryHandler {
             }
         }
 
-        String groupId = getTrimmedProperty(properties, GROUP_ID);
-        String artifactId = getTrimmedProperty(properties, ARTIFACT_ID);
-        String version = getTrimmedProperty(properties, VERSION);
+        String groupId = getTrimmedProperty(properties, NAME_GROUP_ID);
+        String artifactId = getTrimmedProperty(properties, NAME_ARTIFACT_ID);
+        String version = getTrimmedProperty(properties, NAME_VERSION);
 
         try (InputStream input = archive.openInputStream(entry)) {
             converter.deployLocallyAndAttach(input, groupId, artifactId, version, null, JAR_TYPE);

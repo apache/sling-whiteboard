@@ -25,7 +25,7 @@ import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.Archive.Entry;
 import org.apache.sling.cp2fm.ContentPackage2FeatureModelConverter;
 import org.apache.sling.feature.Configuration;
-import org.apache.sling.feature.Configurations;
+import org.apache.sling.feature.Feature;
 
 abstract class AbstractConfigurationEntryHandler extends AbstractRegexEntryHandler {
 
@@ -49,24 +49,23 @@ abstract class AbstractConfigurationEntryHandler extends AbstractRegexEntryHandl
             return;
         }
 
-        Configurations configurations;
+        Feature feature;
 
         Matcher matcher = getPattern().matcher(path);
         String runMode = null;
         // we are pretty sure it matches, here
         if (matcher.matches() && (runMode = matcher.group(3)) != null) {
             // there is a specified RunMode
-            configurations = converter.getRunMode(runMode);
+            feature = converter.getRunMode(runMode);
         } else {
-            configurations = converter.getTargetFeature()
-                                      .getConfigurations();
+            feature = converter.getTargetFeature();
         }
 
-        Configuration configuration = configurations.getConfiguration(name);
+        Configuration configuration = feature.getConfigurations().getConfiguration(name);
 
         if (configuration == null) {
             configuration = new Configuration(name);
-            configurations.add(configuration);
+            feature.getConfigurations().add(configuration);
         }
 
         Enumeration<String> keys = configurationProperties.keys();
