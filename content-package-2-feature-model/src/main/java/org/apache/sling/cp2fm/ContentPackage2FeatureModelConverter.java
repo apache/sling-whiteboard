@@ -126,9 +126,9 @@ public class ContentPackage2FeatureModelConverter {
         }
 
         return runModes.computeIfAbsent(runMode, k -> new Feature(new ArtifactId(targetFeature.getId().getGroupId(),
-                                                                                 targetFeature.getId().getArtifactId() + '-' + runMode,
+                                                                                 targetFeature.getId().getArtifactId(),
                                                                                  targetFeature.getId().getVersion(),
-                                                                                 targetFeature.getId().getClassifier(),
+                                                                                 targetFeature.getId().getClassifier() + '-' + runMode,
                                                                                  targetFeature.getId().getType())));
     }
 
@@ -253,7 +253,15 @@ public class ContentPackage2FeatureModelConverter {
     }
 
     private void seralize(Feature feature) throws Exception {
-        File targetFile = new File(outputDirectory, feature.getId().getArtifactId() + JSON_FILE_EXTENSION);
+        StringBuilder fileName = new StringBuilder().append(feature.getId().getArtifactId());
+
+        if (!FEATURE_CLASSIFIER.equals(feature.getId().getClassifier())) {
+            fileName.append(feature.getId().getClassifier().substring(FEATURE_CLASSIFIER.length()));
+        }
+
+        fileName.append(JSON_FILE_EXTENSION);
+
+        File targetFile = new File(outputDirectory, fileName.toString());
 
         logger.info("Conversion complete!", targetFile);
         logger.info("Writing resulting Feature File to '{}'...", targetFile);
