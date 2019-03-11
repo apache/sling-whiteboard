@@ -28,6 +28,8 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collection;
 
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.Archive.Entry;
@@ -35,30 +37,33 @@ import org.apache.sling.cp2fm.ContentPackage2FeatureModelConverter;
 import org.apache.sling.cp2fm.spi.EntryHandler;
 import org.apache.sling.feature.Bundles;
 import org.apache.sling.feature.Feature;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+@RunWith(Parameterized.class)
 public final class BundleEntryHandlerTest {
 
-    private EntryHandler bundleEntryHandler;
+    private final String bundleLocation;
 
-    @Before
-    public void setUp() {
-        bundleEntryHandler = new BundleEntryHandler();
+    private final EntryHandler bundleEntryHandler;
+
+    public BundleEntryHandlerTest(String bundleLocation, EntryHandler bundleEntryHandler) {
+        this.bundleLocation = bundleLocation;
+        this.bundleEntryHandler = bundleEntryHandler;
     }
 
-    @After
-    public void tearDown() {
-        bundleEntryHandler = null;
+    @Test
+    public void doesNotMatch() {
+        assertFalse(bundleEntryHandler.matches("jcr_root/not/a/valid/recognised/bundle.jar"));
     }
 
     @Test
     public void matches() {
-        assertFalse(bundleEntryHandler.matches("jcr_root/not/a/valid/recognised/bundle.jar"));
-        assertTrue(bundleEntryHandler.matches("jcr_root/apps/asd/install/asd.jar"));
+        assertTrue(bundleEntryHandler.matches(bundleLocation));
     }
 
     @Test
@@ -71,14 +76,14 @@ public final class BundleEntryHandlerTest {
 
             @Override
             public InputStream answer(InvocationOnMock invocation) throws Throwable {
-                return getClass().getResourceAsStream("test-framework.jar");
+                return getClass().getResourceAsStream(bundleLocation);
             }
 
         });
 
         ContentPackage2FeatureModelConverter converter = spy(ContentPackage2FeatureModelConverter.class);
 
-        File testDirectory = new File(System.getProperty("testDirectory"), getClass().getName());
+        File testDirectory = new File(System.getProperty("testDirectory"), getClass().getName() + '_' + System.currentTimeMillis());
         when(converter.getOutputDirectory()).thenReturn(testDirectory);
 
         doCallRealMethod().when(converter).deployLocallyAndAttach(any(InputStream.class), anyString(), anyString(), anyString(), anyString(), anyString());
@@ -88,7 +93,7 @@ public final class BundleEntryHandlerTest {
         when(feature.getBundles()).thenReturn(new Bundles());
         when(converter.getTargetFeature()).thenReturn(feature);
 
-        bundleEntryHandler.handle("jcr_root/apps/asd/install/test-framework.jar", archive, entry, converter);
+        bundleEntryHandler.handle(bundleLocation, archive, entry, converter);
 
         assertTrue(new File(testDirectory, "bundles/org/apache/felix/org.apache.felix.framework/6.0.1/org.apache.felix.framework-6.0.1.pom").exists());
         assertTrue(new File(testDirectory, "bundles/org/apache/felix/org.apache.felix.framework/6.0.1/org.apache.felix.framework-6.0.1.jar").exists());
@@ -96,6 +101,17 @@ public final class BundleEntryHandlerTest {
         assertFalse(feature.getBundles().isEmpty());
         assertEquals(1, feature.getBundles().size());
         assertEquals("org.apache.felix:org.apache.felix.framework:6.0.1", feature.getBundles().get(0).getId().toMvnId());
+    }
+
+    @Parameters
+    public static Collection<Object[]> data() {
+        final BundleEntryHandler bundleEntryHandler = new BundleEntryHandler();
+
+        return Arrays.asList(new Object[][] {
+            { "jcr_root/apps/asd/install/test-framework.jar", bundleEntryHandler },
+            { "jcr_root/apps/asd/install.author/test-framework.jar", bundleEntryHandler },
+            { "jcr_root/apps/asd/install.publish/test-framework.jar", bundleEntryHandler }
+        });
     }
 
 }
