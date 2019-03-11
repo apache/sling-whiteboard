@@ -19,6 +19,7 @@ package org.apache.sling.cp2fm.handlers;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -69,6 +70,7 @@ public class ConfigurationEntryHandlerTest {
         when(feature.getConfigurations()).thenReturn(new Configurations());
         ContentPackage2FeatureModelConverter converter = mock(ContentPackage2FeatureModelConverter.class);
         when(converter.getTargetFeature()).thenReturn(feature);
+        when(converter.getRunMode(anyString())).thenReturn(feature);
 
         configurationEntryHandler.handle(resourceConfiguration, archive, entry, converter);
 
@@ -91,7 +93,10 @@ public class ConfigurationEntryHandlerTest {
             { path + EXPECTED_PID + ".cfg.json", new JsonConfigurationEntryHandler() },
             { path + EXPECTED_PID + ".config", new ConfigurationEntryHandler() },
             { path + EXPECTED_PID + ".xml", new XmlConfigurationEntryHandler() },
-            { path + EXPECTED_PID + ".xml.cfg", new PropertiesConfigurationEntryHandler() }
+            { path + EXPECTED_PID + ".xml.cfg", new PropertiesConfigurationEntryHandler() },
+            // runmode aware folders
+            { "jcr_root/apps/asd/config.author/" + EXPECTED_PID + ".config", new ConfigurationEntryHandler() },
+            { "jcr_root/apps/asd/config.publish/" + EXPECTED_PID + ".config", new ConfigurationEntryHandler() },
         });
     }
 
