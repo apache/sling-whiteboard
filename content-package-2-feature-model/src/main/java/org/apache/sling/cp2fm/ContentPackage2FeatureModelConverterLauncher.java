@@ -48,8 +48,11 @@ public final class ContentPackage2FeatureModelConverterLauncher implements Runna
     @Option(names = { "-c", "--content-package" }, description = "The content-package input file.", required = true)
     private File contentPackage;
 
-    @Option(names = { "-s", "--strict-validation" }, description = "Flag to mark the content-package input file being strict validated.", required = false)
+    @Option(names = { "-s", "--strict-validation" }, description = "Flag to mark the content-package input file being strict validated.", required = false, defaultValue = "false")
     private boolean strictValidation = false;
+
+    @Option(names = { "-m", "--merge-configurations" }, description = "Flag to mark OSGi configurations with same PID will be merged, the tool will fail otherwise.", required = false, defaultValue = "false")
+    private boolean mergeConfigurations = false;
 
     @Option(names = { "-b", "--bundles-start-order" }, description = "The order to start detected bundles.", required = false)
     private int bundlesStartOrder = 0;

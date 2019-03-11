@@ -90,6 +90,8 @@ public class ContentPackage2FeatureModelConverter {
 
     private boolean strictValidation = false;
 
+    private boolean mergeConfigurations = false;
+
     private int bundlesStartOrder = 0;
 
     private File outputDirectory;
@@ -263,6 +265,14 @@ public class ContentPackage2FeatureModelConverter {
     }
 
     public void addConfiguration(String runMode, String pid, Dictionary<String, Object> configurationProperties) {
+        if (!mergeConfigurations) {
+            checkConfigurationExist(getTargetFeature(), pid);
+
+            for (Feature runModeFeature : runModes.values()) {
+                checkConfigurationExist(runModeFeature, pid);
+            }
+        }
+
         Feature feature = getRunMode(runMode);
         Configuration configuration = feature.getConfigurations().getConfiguration(pid);
 
@@ -276,6 +286,18 @@ public class ContentPackage2FeatureModelConverter {
             String key = keys.nextElement();
             Object value = configurationProperties.get(key);
             configuration.getProperties().put(key, value);
+        }
+    }
+
+    private static void checkConfigurationExist(Feature feture, String pid) {
+        if (feture != null) {
+            if (feture.getConfigurations().getConfiguration(pid) != null) {
+                throw new IllegalStateException("Cinfiguration '"
+                                                + pid
+                                                + "' already defined in Feature Model '"
+                                                + feture.getId().toMvnId()
+                                                + "', can not be added");
+            }
         }
     }
 
