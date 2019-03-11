@@ -62,8 +62,12 @@ public class ConfigurationEntryHandlerTest {
     }
 
     @Test
-    public void matches() {
+    public void doesNotMatch() {
         assertFalse(configurationEntryHandler.matches("/this/is/a/path/not/pointing/to/a/valid/configuration.asd"));
+    }
+
+    @Test
+    public void matches() {
         assertTrue(resourceConfiguration, configurationEntryHandler.matches(resourceConfiguration));
     }
 
