@@ -16,12 +16,16 @@
  */
 package org.apache.sling.cp2fm;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -32,11 +36,9 @@ import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.jackrabbit.vault.fs.api.PathFilterSet;
-import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
-import org.apache.jackrabbit.vault.fs.config.MetaInf;
 import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.Archive.Entry;
@@ -47,6 +49,7 @@ import org.apache.jackrabbit.vault.packaging.PackageType;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.impl.PackageManagerImpl;
 import org.apache.maven.model.Model;
+import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.apache.sling.cp2fm.handlers.DefaultEntryHandler;
 import org.apache.sling.cp2fm.spi.EntryHandler;
 import org.apache.sling.feature.Artifact;
@@ -70,9 +73,15 @@ public class ContentPackage2FeatureModelConverter {
 
     public static final String NAME_ARTIFACT_ID = "artifactId";
 
+    private static final String NAME_CLASSIFIER = "classifier";
+
+    private static final String NAME_PATH = "path";
+
     private static final String FEATURE_CLASSIFIER = "cp2fm-converted-feature";
 
     private static final String SLING_OSGI_FEATURE_TILE_TYPE = "slingosgifeature";
+
+    private static final String VAULT_PROPERTIES_FILE = "META-INF/vault/properties.xml";
 
     private static final String JSON_FILE_EXTENSION = ".json";
 
@@ -87,6 +96,8 @@ public class ContentPackage2FeatureModelConverter {
     private final Map<String, Feature> runModes = new HashMap<>();
 
     private final Set<String> dependencies = new HashSet<>();
+
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.SZ");
 
     private boolean strictValidation = false;
 
@@ -158,11 +169,13 @@ public class ContentPackage2FeatureModelConverter {
             throw new IllegalStateException("Null output directory not supported, it must be specified.");
         }
 
+        String userName = System.getProperty("user.name");
+
         if (!outputDirectory.exists() && !outputDirectory.mkdirs()) {
             throw new IllegalStateException("output directory "
                                             + outputDirectory
                                             + " does not exist and can not be created, please make sure current user '"
-                                            + System.getProperty("user.name")
+                                            + userName
                                             + " has enough rights to write on the File System.");
         }
 
@@ -193,28 +206,30 @@ public class ContentPackage2FeatureModelConverter {
             File deflatedDir = new File(outputDirectory, DefaultEntryHandler.TMP_DEFLATED);
 
             if (deflatedDir.listFiles().length > 0) {
-                /*
-                 * group</td><td>Use <i>group</i> parameter to set</td></tr>
-     * <tr><td>name</td><td>Use <i>name</i> parameter to set</td></tr>
-     * <tr><td>version</td><td>Use <i>version</i> parameter to set</td></tr>
-     * <tr><td>groupId</td><td><i>groupId</i> of the Maven project descriptor</td></tr>
-     * <tr><td>artifactId</td><td><i>artifactId</i> of the Maven project descriptor</td></tr>
-     * <tr><td>dependencies</td><td>Use <i>dependencies</i> parameter to set</td></tr>
-     * <tr><td>createdBy</td><td>The value of the <i>user.name</i> system property</td></tr>
-     * <tr><td>created</td><td>The current system time</td></tr>
-     * <tr><td>requiresRoot</td><td>Use <i>requiresRoot</i> parameter to set</td></tr>
-     * <tr><td>allowIndexDefinitions</td><td>Use <i>allowIndexDefinitions</i> parameter to set</td></tr>
-     * <tr><td>packagePath</td><td>Automatically generated from the group and package name</td></tr>
-     * <tr><td>packageType</td><td>Set via the package type parameter</td></tr>
-     * <tr><td>acHandling</td><td>Use <i>accessControlHandling</i> parameter to set</td></tr>
-                 */
                 Properties properties = new Properties();
                 copyProperty(PackageProperties.NAME_GROUP, packageProperties, properties);
                 properties.setProperty(PackageProperties.NAME_NAME, packageProperties.getProperty(PackageProperties.NAME_NAME) + ' ' + FEATURE_CLASSIFIER);
                 copyProperty(PackageProperties.NAME_VERSION, packageProperties, properties);
                 properties.setProperty(NAME_GROUP_ID, packageProperties.getProperty(NAME_GROUP_ID));
-                
+                properties.setProperty(NAME_ARTIFACT_ID, packageProperties.getProperty(NAME_ARTIFACT_ID));
+                properties.setProperty(NAME_CLASSIFIER, FEATURE_CLASSIFIER);
+                properties.setProperty(PackageProperties.NAME_DEPENDENCIES, dependencies.stream().collect(Collectors.joining(",")));
+                properties.setProperty(PackageProperties.NAME_CREATED_BY, userName);
+                properties.setProperty(PackageProperties.NAME_CREATED, dateFormat.format(new Date()));
+                properties.setProperty(PackageProperties.NAME_REQUIRES_ROOT, String.valueOf(false));
+                properties.setProperty(NAME_PATH, String.format("/etc/packages/%s/%s-%s.zip",
+                                                                properties.getProperty(PackageProperties.NAME_GROUP),
+                                                                properties.getProperty(NAME_ARTIFACT_ID),
+                                                                FEATURE_CLASSIFIER));
                 properties.setProperty(PackageProperties.NAME_PACKAGE_TYPE, PackageType.APPLICATION.name());
+                properties.setProperty(PackageProperties.NAME_AC_HANDLING, AccessControlHandling.MERGE_PRESERVE.name());
+
+                File xmlProperties = new File(deflatedDir, VAULT_PROPERTIES_FILE);
+                xmlProperties.getParentFile().mkdirs();
+
+                try (FileOutputStream fos = new FileOutputStream(xmlProperties)) {
+                    properties.storeToXML(fos, null);
+                }
 
                 Archiver archiver = new JarArchiver();
                 archiver.setIncludeEmptyDirs(true);
@@ -243,7 +258,18 @@ public class ContentPackage2FeatureModelConverter {
                 model.setVersion(targetFeature.getId().getVersion());
                 model.setPackaging(ZIP_TYPE);
 
-                // TODO deploy the pom in the local dir
+                try (StringWriter stringWriter = new StringWriter()) {
+                    new MavenXpp3Writer().write(stringWriter, model);
+
+                    try (InputStream input = new ByteArrayInputStream(stringWriter.toString().getBytes())) {
+                        deployLocally(input,
+                                      targetFeature.getId().getGroupId(),
+                                      targetFeature.getId().getArtifactId(),
+                                      targetFeature.getId().getVersion(),
+                                      null,
+                                      POM_TYPE);
+                    }
+                }
             } else {
                 logger.info("No resources to be repackaged.");
             }
@@ -328,17 +354,6 @@ public class ContentPackage2FeatureModelConverter {
         for (Dependency dependency : vaultPackage.getDependencies()) {
             dependencies.add(dependency.toString());
         }
-
-        AccessControlHandling ach = vaultPackage.getACHandling();
-
-        MetaInf metaInf = vaultPackage.getMetaInf();
-        WorkspaceFilter filter = metaInf.getFilter();
-        for (PathFilterSet pathFilterSet : filter.getFilterSets()) {
-            // TODO
-        }
-
-        PackageProperties properties = vaultPackage.getProperties();
-        System.out.println(properties.getPackageType());
 
         Archive archive = vaultPackage.getArchive();
         try {
