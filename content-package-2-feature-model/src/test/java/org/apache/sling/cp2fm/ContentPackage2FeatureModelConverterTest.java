@@ -16,6 +16,89 @@
  */
 package org.apache.sling.cp2fm;
 
+import static org.mockito.Mockito.mock;
+
+import java.io.File;
+import java.io.InputStream;
+
+import org.apache.jackrabbit.vault.packaging.VaultPackage;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 public class ContentPackage2FeatureModelConverterTest {
+
+    private ContentPackage2FeatureModelConverter converter;
+
+    @Before
+    public void setUp() {
+        converter = new ContentPackage2FeatureModelConverter();
+    }
+
+    @After
+    public void tearDowd() {
+        converter = null;
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void convertRequiresNonNullPackage() throws Exception {
+        converter.convert(null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void convertRequiresExistingFile() throws Exception {
+        converter.convert(new File("this/file/does/not/exist.zip"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void convertRequiresNotDirectoryFile() throws Exception {
+        File testDirectory = new File(System.getProperty("user.dir"));
+        converter.convert(testDirectory);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void getRunModeRequiresConvertInvoked() {
+        converter.getRunMode(null);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void addConfigurationRequiresConvertInvoked() {
+        converter.setMergeConfigurations(true).getRunMode(null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void processRequiresNotNullPackage() throws Exception {
+        converter.process(null);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void processRequiresConvertInvoked() throws Exception {
+        converter.process(mock(VaultPackage.class));
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void deployLocallyAndAttachRequiresNonNullInput() throws Exception {
+        converter.deployLocallyAndAttach(null, null, null, null, null, null, null);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void deployLocallyAndAttachRequiresNonNullGroupId() throws Exception {
+        converter.deployLocallyAndAttach(null, mock(InputStream.class), null, null, null, null, null);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void deployLocallyAndAttachRequiresNonNullArtifactId() throws Exception {
+        converter.deployLocallyAndAttach(null, mock(InputStream.class), "org.apache.sling", null, null, null, null);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void deployLocallyAndAttachRequiresNonNullVersion() throws Exception {
+        converter.deployLocallyAndAttach(null, mock(InputStream.class), "org.apache.sling", "org.apache.sling.cm2fm", null, null, null);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void deployLocallyAndAttachRequiresNonNullType() throws Exception {
+        converter.deployLocallyAndAttach(null, mock(InputStream.class), "org.apache.sling", "org.apache.sling.cm2fm", "0.0.1", null, null);
+    }
 
 }

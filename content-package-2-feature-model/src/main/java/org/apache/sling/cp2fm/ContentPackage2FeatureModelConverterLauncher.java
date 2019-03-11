@@ -90,6 +90,7 @@ public final class ContentPackage2FeatureModelConverterLauncher implements Runna
         try {
             new ContentPackage2FeatureModelConverter()
             .setStrictValidation(strictValidation)
+            .setMergeConfigurations(mergeConfigurations)
             .setBundlesStartOrder(bundlesStartOrder)
             .setOutputDirectory(outputDirectory)
             .convert(contentPackage);

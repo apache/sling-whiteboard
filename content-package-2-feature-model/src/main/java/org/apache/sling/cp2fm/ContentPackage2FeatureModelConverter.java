@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -118,6 +119,15 @@ public class ContentPackage2FeatureModelConverter {
         return strictValidation;
     }
 
+    public boolean isMergeConfigurations() {
+        return mergeConfigurations;
+    }
+
+    public ContentPackage2FeatureModelConverter setMergeConfigurations(boolean mergeConfigurations) {
+        this.mergeConfigurations = mergeConfigurations;
+        return this;
+    }
+
     public ContentPackage2FeatureModelConverter setBundlesStartOrder(int bundlesStartOrder) {
         this.bundlesStartOrder = bundlesStartOrder;
         return this;
@@ -155,18 +165,16 @@ public class ContentPackage2FeatureModelConverter {
     }
 
     public void convert(File contentPackage) throws Exception {
-        if (contentPackage == null) {
-            throw new IllegalArgumentException("Null content-package can not be converted.");
-        }
+        Objects.requireNonNull(contentPackage , "Null content-package can not be converted.");
 
         if (!contentPackage.exists() || !contentPackage.isFile()) {
-            throw new IllegalStateException("Content-package "
+            throw new IllegalArgumentException("Content-package "
                                             + contentPackage
                                             + " does not exist or it is not a valid file.");
         }
 
         if (outputDirectory == null) {
-            throw new IllegalStateException("Null output directory not supported, it must be specified.");
+            throw new IllegalStateException("Null output directory not supported, it must be set before invoking the convert(File) method.");
         }
 
         String userName = System.getProperty("user.name");
@@ -315,13 +323,13 @@ public class ContentPackage2FeatureModelConverter {
         }
     }
 
-    private static void checkConfigurationExist(Feature feture, String pid) {
-        if (feture != null) {
-            if (feture.getConfigurations().getConfiguration(pid) != null) {
+    private static void checkConfigurationExist(Feature feature, String pid) {
+        if (feature != null) {
+            if (feature.getConfigurations().getConfiguration(pid) != null) {
                 throw new IllegalStateException("Cinfiguration '"
                                                 + pid
                                                 + "' already defined in Feature Model '"
-                                                + feture.getId().toMvnId()
+                                                + feature.getId().toMvnId()
                                                 + "', can not be added");
             }
         }
@@ -349,6 +357,14 @@ public class ContentPackage2FeatureModelConverter {
     }
 
     public void process(VaultPackage vaultPackage) throws Exception {
+        if (vaultPackage == null) {
+            throw new IllegalArgumentException("Impossible to process a null vault package");
+        }
+
+        if (getTargetFeature() == null) {
+            throw new IllegalStateException("Target Feature not initialized yet, please make sure convert() method was invoked first.");
+        }
+
         dependencies.remove(vaultPackage.getId().toString());
 
         for (Dependency dependency : vaultPackage.getDependencies()) {
@@ -425,6 +441,12 @@ public class ContentPackage2FeatureModelConverter {
                               String version,
                               String classifier,
                               String type) throws IOException {
+        Objects.requireNonNull(input, "Null Bundle input stream can not be installed to a Maven repository.");
+        Objects.requireNonNull(groupId, "Bundle can not be installed to a Maven repository without specifying a valid 'groupId'.");
+        Objects.requireNonNull(artifactId, "Bundle can not be installed to a Maven repository without specifying a valid 'artifactId'.");
+        Objects.requireNonNull(version, "Bundle can not be installed to a Maven repository without specifying a valid 'version'.");
+        Objects.requireNonNull(type, "Bundle can not be installed to a Maven repository without specifying a valid 'type'.");
+
         File targetDir = new File(getOutputDirectory(), "bundles");
 
         StringTokenizer tokenizer = new StringTokenizer(groupId, ".");
