@@ -28,6 +28,7 @@ import java.util.Collection;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.Archive.Entry;
 import org.apache.sling.cp2fm.ContentPackage2FeatureModelConverter;
+import org.apache.sling.cp2fm.handlers.DefaultEntryHandler;
 import org.apache.sling.cp2fm.spi.EntryHandler;
 import org.junit.Test;
 import org.junit.runner.RunWith;

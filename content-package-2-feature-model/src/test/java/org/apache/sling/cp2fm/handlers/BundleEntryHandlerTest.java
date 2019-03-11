@@ -34,8 +34,9 @@ import java.util.Collection;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.Archive.Entry;
 import org.apache.sling.cp2fm.ContentPackage2FeatureModelConverter;
+import org.apache.sling.cp2fm.handlers.BundleEntryHandler;
 import org.apache.sling.cp2fm.spi.EntryHandler;
-import org.apache.sling.feature.Bundles;
+import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -86,19 +87,19 @@ public final class BundleEntryHandlerTest {
         File testDirectory = new File(System.getProperty("testDirectory"), getClass().getName() + '_' + System.currentTimeMillis());
         when(converter.getOutputDirectory()).thenReturn(testDirectory);
 
-        doCallRealMethod().when(converter).deployLocallyAndAttach(any(InputStream.class), anyString(), anyString(), anyString(), anyString(), anyString());
+        doCallRealMethod().when(converter).deployLocallyAndAttach(anyString(), any(InputStream.class), anyString(), anyString(), anyString(), anyString(), anyString());
         doCallRealMethod().when(converter).deployLocally(any(InputStream.class), anyString(), anyString(), anyString(), anyString(), anyString());
 
-        Feature feature = mock(Feature.class);
-        when(feature.getBundles()).thenReturn(new Bundles());
+        Feature feature = new Feature(new ArtifactId("org.apache.sling", "org.apache.sling.cp2fm", "0.0.1", null, null));
         when(converter.getTargetFeature()).thenReturn(feature);
+        when(converter.getRunMode(anyString())).thenReturn(feature);
 
         bundleEntryHandler.handle(bundleLocation, archive, entry, converter);
 
         assertTrue(new File(testDirectory, "bundles/org/apache/felix/org.apache.felix.framework/6.0.1/org.apache.felix.framework-6.0.1.pom").exists());
         assertTrue(new File(testDirectory, "bundles/org/apache/felix/org.apache.felix.framework/6.0.1/org.apache.felix.framework-6.0.1.jar").exists());
 
-        assertFalse(feature.getBundles().isEmpty());
+        assertFalse(converter.getTargetFeature().getBundles().isEmpty());
         assertEquals(1, feature.getBundles().size());
         assertEquals("org.apache.felix:org.apache.felix.framework:6.0.1", feature.getBundles().get(0).getId().toMvnId());
     }

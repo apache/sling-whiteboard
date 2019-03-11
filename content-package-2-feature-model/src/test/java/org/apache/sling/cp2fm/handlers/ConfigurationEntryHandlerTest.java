@@ -19,8 +19,11 @@ package org.apache.sling.cp2fm.handlers;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
@@ -29,6 +32,12 @@ import java.util.Collection;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.Archive.Entry;
 import org.apache.sling.cp2fm.ContentPackage2FeatureModelConverter;
+import org.apache.sling.cp2fm.handlers.AbstractConfigurationEntryHandler;
+import org.apache.sling.cp2fm.handlers.ConfigurationEntryHandler;
+import org.apache.sling.cp2fm.handlers.JsonConfigurationEntryHandler;
+import org.apache.sling.cp2fm.handlers.PropertiesConfigurationEntryHandler;
+import org.apache.sling.cp2fm.handlers.XmlConfigurationEntryHandler;
+import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Configuration;
 import org.apache.sling.feature.Configurations;
 import org.apache.sling.feature.Feature;
@@ -66,10 +75,10 @@ public class ConfigurationEntryHandlerTest {
         when(entry.getName()).thenReturn(resourceConfiguration.substring(resourceConfiguration.lastIndexOf('/') + 1));
         when(archive.openInputStream(entry)).thenReturn(getClass().getResourceAsStream(resourceConfiguration));
 
-        Feature feature = mock(Feature.class);
-        when(feature.getConfigurations()).thenReturn(new Configurations());
-        ContentPackage2FeatureModelConverter converter = mock(ContentPackage2FeatureModelConverter.class);
+        Feature feature = new Feature(new ArtifactId("org.apache.sling", "org.apache.sling.cp2fm", "0.0.1", null, null));
+        ContentPackage2FeatureModelConverter converter = spy(ContentPackage2FeatureModelConverter.class);
         when(converter.getTargetFeature()).thenReturn(feature);
+        doCallRealMethod().when(converter).addConfiguration(anyString(), anyString(), any());
         when(converter.getRunMode(anyString())).thenReturn(feature);
 
         configurationEntryHandler.handle(resourceConfiguration, archive, entry, converter);

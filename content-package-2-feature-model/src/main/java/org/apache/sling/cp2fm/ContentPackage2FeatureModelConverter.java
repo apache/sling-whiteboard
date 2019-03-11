@@ -22,6 +22,8 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Dictionary;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -49,6 +51,7 @@ import org.apache.sling.cp2fm.handlers.DefaultEntryHandler;
 import org.apache.sling.cp2fm.spi.EntryHandler;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.Configuration;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.io.json.FeatureJSONWriter;
 import org.codehaus.plexus.archiver.Archiver;
@@ -121,15 +124,21 @@ public class ContentPackage2FeatureModelConverter {
     }
 
     public Feature getRunMode(String runMode) {
-        if (targetFeature == null) {
-            throw new IllegalStateException("Target Feature not initialized yet, please make sure convert() method was invoked.");
+        if (getTargetFeature() == null) {
+            throw new IllegalStateException("Target Feature not initialized yet, please make sure convert() method was invoked first.");
         }
 
-        return runModes.computeIfAbsent(runMode, k -> new Feature(new ArtifactId(targetFeature.getId().getGroupId(),
-                                                                                 targetFeature.getId().getArtifactId(),
-                                                                                 targetFeature.getId().getVersion(),
-                                                                                 targetFeature.getId().getClassifier() + '-' + runMode,
-                                                                                 targetFeature.getId().getType())));
+        if (runMode == null) {
+            return getTargetFeature();
+        }
+
+        ArtifactId id = getTargetFeature().getId();
+
+        return runModes.computeIfAbsent(runMode, k -> new Feature(new ArtifactId(id.getGroupId(),
+                                                                                 id.getArtifactId(),
+                                                                                 id.getVersion(),
+                                                                                 id.getClassifier() + '-' + runMode,
+                                                                                 id.getType())));
     }
 
     public void convert(File contentPackage) throws Exception {
@@ -215,7 +224,8 @@ public class ContentPackage2FeatureModelConverter {
                 archiver.createArchive();
 
                 try (InputStream input = new FileInputStream(destFile)) {
-                    deployLocallyAndAttach(input,
+                    deployLocallyAndAttach(null,
+                                           input,
                                            targetFeature.getId().getGroupId(),
                                            targetFeature.getId().getArtifactId(),
                                            targetFeature.getId().getVersion(),
@@ -249,6 +259,23 @@ public class ContentPackage2FeatureModelConverter {
             if (vaultPackage != null && !vaultPackage.isClosed()) {
                 vaultPackage.close();
             }
+        }
+    }
+
+    public void addConfiguration(String runMode, String pid, Dictionary<String, Object> configurationProperties) {
+        Feature feature = getRunMode(runMode);
+        Configuration configuration = feature.getConfigurations().getConfiguration(pid);
+
+        if (configuration == null) {
+            configuration = new Configuration(pid);
+            feature.getConfigurations().add(configuration);
+        }
+
+        Enumeration<String> keys = configurationProperties.keys();
+        while (keys.hasMoreElements()) {
+            String key = keys.nextElement();
+            Object value = configurationProperties.get(key);
+            configuration.getProperties().put(key, value);
         }
     }
 
@@ -341,7 +368,8 @@ public class ContentPackage2FeatureModelConverter {
         return defaultEntryHandler;
     }
 
-    public void deployLocallyAndAttach(InputStream input,
+    public void deployLocallyAndAttach(String runMode,
+                                       InputStream input,
                                        String groupId,
                                        String artifactId,
                                        String version,
@@ -351,7 +379,7 @@ public class ContentPackage2FeatureModelConverter {
 
         Artifact artifact = new Artifact(new ArtifactId(groupId, artifactId, version, classifier, type));
         artifact.setStartOrder(bundlesStartOrder);
-        getTargetFeature().getBundles().add(artifact);
+        getRunMode(runMode).getBundles().add(artifact);
     }
 
     public void deployLocally(InputStream input,

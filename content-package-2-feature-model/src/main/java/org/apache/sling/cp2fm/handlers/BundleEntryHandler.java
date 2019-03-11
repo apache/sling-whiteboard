@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
@@ -81,8 +82,16 @@ public final class BundleEntryHandler extends AbstractRegexEntryHandler {
         String artifactId = getTrimmedProperty(properties, NAME_ARTIFACT_ID);
         String version = getTrimmedProperty(properties, NAME_VERSION);
 
+        Matcher matcher = getPattern().matcher(path);
+        String runMode = null;
+        // we are pretty sure it matches, here
+        if (matcher.matches()) {
+            // there is a specified RunMode
+            runMode = matcher.group(3);
+        }
+
         try (InputStream input = archive.openInputStream(entry)) {
-            converter.deployLocallyAndAttach(input, groupId, artifactId, version, null, JAR_TYPE);
+            converter.deployLocallyAndAttach(runMode, input, groupId, artifactId, version, null, JAR_TYPE);
         }
 
         if (pomXml != null) {

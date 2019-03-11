@@ -35,13 +35,13 @@ abstract class AbstractConfigurationEntryHandler extends AbstractRegexEntryHandl
 
     @Override
     public final void handle(String path, Archive archive, Entry entry, ContentPackage2FeatureModelConverter converter) throws Exception {
-        String name = entry.getName().substring(0, entry.getName().lastIndexOf('.'));
+        String pid = entry.getName().substring(0, entry.getName().lastIndexOf('.'));
 
-        logger.info("Processing configuration '{}'.", name);
+        logger.info("Processing configuration '{}'.", pid);
 
         Dictionary<String, Object> configurationProperties;
         try (InputStream input = archive.openInputStream(entry)) {
-            configurationProperties = parseConfiguration(name, input);
+            configurationProperties = parseConfiguration(pid, input);
         }
 
         if (configurationProperties.isEmpty()) {
@@ -49,31 +49,15 @@ abstract class AbstractConfigurationEntryHandler extends AbstractRegexEntryHandl
             return;
         }
 
-        Feature feature;
-
         Matcher matcher = getPattern().matcher(path);
         String runMode = null;
         // we are pretty sure it matches, here
-        if (matcher.matches() && (runMode = matcher.group(3)) != null) {
+        if (matcher.matches()) {
             // there is a specified RunMode
-            feature = converter.getRunMode(runMode);
-        } else {
-            feature = converter.getTargetFeature();
+            runMode = matcher.group(3);
         }
 
-        Configuration configuration = feature.getConfigurations().getConfiguration(name);
-
-        if (configuration == null) {
-            configuration = new Configuration(name);
-            feature.getConfigurations().add(configuration);
-        }
-
-        Enumeration<String> keys = configurationProperties.keys();
-        while (keys.hasMoreElements()) {
-            String key = keys.nextElement();
-            Object value = configurationProperties.get(key);
-            configuration.getProperties().put(key, value);
-        }
+        converter.addConfiguration(runMode, pid, configurationProperties);
     }
 
     protected abstract Dictionary<String, Object> parseConfiguration(String name, InputStream input) throws Exception;
