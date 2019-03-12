@@ -16,12 +16,26 @@
  */
 package org.apache.sling.cp2fm;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.InputStream;
+import java.io.Reader;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.StringTokenizer;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
+import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.io.json.FeatureJSONReader;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -99,6 +113,85 @@ public class ContentPackage2FeatureModelConverterTest {
     @Test(expected = NullPointerException.class)
     public void deployLocallyAndAttachRequiresNonNullType() throws Exception {
         converter.deployLocallyAndAttach(null, mock(InputStream.class), "org.apache.sling", "org.apache.sling.cm2fm", "0.0.1", null, null);
+    }
+
+    @Test
+    public void convertContentPackage() throws Exception {
+        URL packageUrl = getClass().getResource("test-content-package.zip");
+        File packageFile = FileUtils.toFile(packageUrl);
+
+        File outputDirectory = new File(System.getProperty("testDirectory"), getClass().getName() + '_' + System.currentTimeMillis());
+
+        converter.setBundlesStartOrder(5).setOutputDirectory(outputDirectory).convert(packageFile);
+
+        verifyFeatureFile(outputDirectory,
+                          "asd.retail.all.json",
+                          "org.apache.sling:asd.retail.all:slingosgifeature:cp2fm-converted-feature:0.0.1",
+                          Arrays.asList("org.apache.felix:org.apache.felix.framework:6.0.1", "org.apache.sling:asd.retail.all:zip:cp2fm-converted-feature:0.0.1"),
+                          Arrays.asList("org.apache.sling.commons.log.LogManager.factory.config-asd-retail"));
+        verifyFeatureFile(outputDirectory,
+                          "asd.retail.all-author.json",
+                          "org.apache.sling:asd.retail.all:slingosgifeature:cp2fm-converted-feature-author:0.0.1",
+                          Arrays.asList("org.apache.sling:org.apache.sling.api:2.20.0"),
+                          Collections.emptyList());
+        verifyFeatureFile(outputDirectory,
+                          "asd.retail.all-publish.json",
+                          "org.apache.sling:asd.retail.all:slingosgifeature:cp2fm-converted-feature-publish:0.0.1",
+                          Arrays.asList("org.apache.sling:org.apache.sling.models.api:1.3.8"),
+                          Arrays.asList("org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended-asd-retail"));
+    }
+
+    private void verifyFeatureFile(File outputDirectory,
+                                   String name,
+                                   String expectedArtifactId,
+                                   List<String> expectedBundles,
+                                   List<String> expectedConfigurations) throws Exception {
+        File featureFile = new File(outputDirectory, name);
+        assertTrue(featureFile + " was not correctly created", featureFile.exists());
+
+        try (Reader reader = new FileReader(featureFile)) {
+            Feature feature = FeatureJSONReader.read(reader, featureFile.getAbsolutePath());
+
+            assertEquals(expectedArtifactId, feature.getId().toMvnId());
+
+            for (String expectedBundle : expectedBundles) {
+                assertTrue(expectedBundle + " not found in Feature " + expectedArtifactId, feature.getBundles().containsExact(ArtifactId.fromMvnId(expectedBundle)));
+                verifyInstalledBundle(outputDirectory, expectedBundle);
+            }
+
+            for (String expectedConfiguration : expectedConfigurations) {
+                assertNotNull(expectedConfiguration + " not found in Feature " + expectedArtifactId, feature.getConfigurations().getConfiguration(expectedConfiguration));
+            }
+        }
+    }
+
+    private void verifyInstalledBundle(File outputDirectory, String coordinates) {
+        ArtifactId bundleId = ArtifactId.fromMvnId(coordinates);
+
+        File bundleDirectory = new File(outputDirectory, "bundles");
+
+        StringTokenizer tokenizer = new StringTokenizer(bundleId.getGroupId(), ".");
+        while (tokenizer.hasMoreTokens()) {
+            bundleDirectory = new File(bundleDirectory, tokenizer.nextToken());
+        }
+
+        bundleDirectory = new File(bundleDirectory, bundleId.getArtifactId());
+        bundleDirectory = new File(bundleDirectory, bundleId.getVersion());
+
+        StringBuilder bundleFileName = new StringBuilder()
+                                       .append(bundleId.getArtifactId())
+                                       .append('-')
+                                       .append(bundleId.getVersion());
+        if (bundleId.getClassifier() != null) {
+            bundleFileName.append('-').append(bundleId.getClassifier());
+        }
+        bundleFileName.append('.').append(bundleId.getType());
+
+        File bundleFile = new File(bundleDirectory, bundleFileName.toString());
+        assertTrue("Bundle " + bundleFile + " does not exist", bundleFile.exists());
+
+        File pomFile = new File(bundleDirectory, String.format("%s-%s.pom", bundleId.getArtifactId(), bundleId.getVersion()));
+        assertTrue("POM file " + pomFile + " does not exist", pomFile.exists());
     }
 
 }

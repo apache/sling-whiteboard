@@ -18,14 +18,11 @@ package org.apache.sling.cp2fm.handlers;
 
 import java.io.InputStream;
 import java.util.Dictionary;
-import java.util.Enumeration;
 import java.util.regex.Matcher;
 
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.Archive.Entry;
 import org.apache.sling.cp2fm.ContentPackage2FeatureModelConverter;
-import org.apache.sling.feature.Configuration;
-import org.apache.sling.feature.Feature;
 
 abstract class AbstractConfigurationEntryHandler extends AbstractRegexEntryHandler {
 

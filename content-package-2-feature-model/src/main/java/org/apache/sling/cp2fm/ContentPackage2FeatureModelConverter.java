@@ -197,9 +197,13 @@ public class ContentPackage2FeatureModelConverter {
 
             PackageProperties packageProperties = vaultPackage.getProperties();
 
-            targetFeature = new Feature(new ArtifactId(packageProperties.getProperty(NAME_GROUP_ID), 
-                                                       packageProperties.getProperty(NAME_ARTIFACT_ID),
-                                                       packageProperties.getProperty(PackageProperties.NAME_VERSION),
+            String groupId = packageProperties.getProperty(NAME_GROUP_ID);
+            String artifactId = packageProperties.getProperty(NAME_ARTIFACT_ID);
+            String version = packageProperties.getProperty(PackageProperties.NAME_VERSION);
+
+            targetFeature = new Feature(new ArtifactId(groupId,
+                                                       artifactId,
+                                                       version,
                                                        FEATURE_CLASSIFIER,
                                                        SLING_OSGI_FEATURE_TILE_TYPE));
 
@@ -218,8 +222,8 @@ public class ContentPackage2FeatureModelConverter {
                 copyProperty(PackageProperties.NAME_GROUP, packageProperties, properties);
                 properties.setProperty(PackageProperties.NAME_NAME, packageProperties.getProperty(PackageProperties.NAME_NAME) + ' ' + FEATURE_CLASSIFIER);
                 copyProperty(PackageProperties.NAME_VERSION, packageProperties, properties);
-                properties.setProperty(NAME_GROUP_ID, packageProperties.getProperty(NAME_GROUP_ID));
-                properties.setProperty(NAME_ARTIFACT_ID, packageProperties.getProperty(NAME_ARTIFACT_ID));
+                copyProperty(NAME_GROUP_ID, packageProperties, properties);
+                copyProperty(NAME_ARTIFACT_ID, packageProperties, properties);
                 properties.setProperty(NAME_CLASSIFIER, FEATURE_CLASSIFIER);
                 properties.setProperty(PackageProperties.NAME_DEPENDENCIES, dependencies.stream().collect(Collectors.joining(",")));
                 properties.setProperty(PackageProperties.NAME_CREATED_BY, userName);
