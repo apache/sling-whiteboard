@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.zip.ZipFile;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
@@ -139,6 +140,20 @@ public class ContentPackage2FeatureModelConverterTest {
                           "org.apache.sling:asd.retail.all:slingosgifeature:cp2fm-converted-feature-publish:0.0.1",
                           Arrays.asList("org.apache.sling:org.apache.sling.models.api:1.3.8"),
                           Arrays.asList("org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended-asd-retail"));
+
+        ZipFile zipFile = new ZipFile(new File(outputDirectory, "bundles/org/apache/sling/asd.retail.all/0.0.1/asd.retail.all-0.0.1-cp2fm-converted-feature.zip"));
+        for (String expectedEntry : new String[] {
+                "jcr_root/content/asd/.content.xml",
+                "jcr_root/content/asd/resources.xml",
+                "jcr_root/apps/.content.xml",
+                "META-INF/vault/properties.xml",
+                "META-INF/vault/config.xml",
+                "META-INF/vault/settings.xml",
+                "META-INF/vault/definition/.content.xml"
+                }) {
+            assertNotNull(zipFile.getEntry(expectedEntry));
+        }
+        zipFile.close();
     }
 
     private void verifyFeatureFile(File outputDirectory,

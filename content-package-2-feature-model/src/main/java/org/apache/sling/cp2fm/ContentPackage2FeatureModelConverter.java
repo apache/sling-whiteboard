@@ -23,6 +23,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Dictionary;
@@ -83,6 +84,8 @@ public class ContentPackage2FeatureModelConverter {
     private static final String VAULT_PROPERTIES_FILE = "META-INF/vault/properties.xml";
 
     private static final String JSON_FILE_EXTENSION = ".json";
+
+    private static final String[] INCLUDE_RESOURCES = { "definition/.content.xml", "config.xml", "settings.xml" };
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -234,12 +237,28 @@ public class ContentPackage2FeatureModelConverter {
                 properties.setProperty(PackageProperties.NAME_PACKAGE_TYPE, PackageType.APPLICATION.name());
                 properties.setProperty(PackageProperties.NAME_AC_HANDLING, AccessControlHandling.MERGE_PRESERVE.name());
 
+                // generate the Vault properties XML file
+
                 File xmlProperties = new File(deflatedDir, VAULT_PROPERTIES_FILE);
                 xmlProperties.getParentFile().mkdirs();
 
                 try (FileOutputStream fos = new FileOutputStream(xmlProperties)) {
                     properties.storeToXML(fos, null);
                 }
+
+                // copy the required resources
+
+                for (String resource : INCLUDE_RESOURCES) {
+                    File targetResource = new File(xmlProperties.getParentFile(), resource);
+                    targetResource.getParentFile().mkdirs();
+
+                    try (InputStream input = getClass().getResourceAsStream(resource);
+                            OutputStream output = new FileOutputStream(targetResource)) {
+                        IOUtils.copy(input, output);
+                    }
+                }
+
+                // create the target archiver
 
                 Archiver archiver = new JarArchiver();
                 archiver.setIncludeEmptyDirs(true);
@@ -261,6 +280,8 @@ public class ContentPackage2FeatureModelConverter {
                 } finally {
                     destFile.delete();
                 }
+
+                // deploy the new zip content-package to the local mvn bundles dir
 
                 String pomModel = MavenPomSupplier.generatePom(targetFeature.getId().getGroupId(),
                                                                targetFeature.getId().getArtifactId(),
