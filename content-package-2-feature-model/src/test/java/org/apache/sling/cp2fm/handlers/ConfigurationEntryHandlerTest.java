@@ -32,11 +32,6 @@ import java.util.Collection;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.Archive.Entry;
 import org.apache.sling.cp2fm.ContentPackage2FeatureModelConverter;
-import org.apache.sling.cp2fm.handlers.AbstractConfigurationEntryHandler;
-import org.apache.sling.cp2fm.handlers.ConfigurationEntryHandler;
-import org.apache.sling.cp2fm.handlers.JsonConfigurationEntryHandler;
-import org.apache.sling.cp2fm.handlers.PropertiesConfigurationEntryHandler;
-import org.apache.sling.cp2fm.handlers.XmlConfigurationEntryHandler;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Configuration;
 import org.apache.sling.feature.Configurations;
@@ -53,11 +48,15 @@ public class ConfigurationEntryHandlerTest {
 
     private final String resourceConfiguration;
 
+    private final int expectedConfigurationsSize;
+
     private final AbstractConfigurationEntryHandler configurationEntryHandler;
 
     public ConfigurationEntryHandlerTest(String resourceConfiguration,
+                                         int expectedConfigurationsSize,
                                          AbstractConfigurationEntryHandler configurationEntryHandler) {
         this.resourceConfiguration = resourceConfiguration;
+        this.expectedConfigurationsSize = expectedConfigurationsSize;
         this.configurationEntryHandler = configurationEntryHandler;
     }
 
@@ -88,13 +87,15 @@ public class ConfigurationEntryHandlerTest {
         configurationEntryHandler.handle(resourceConfiguration, archive, entry, converter);
 
         Configurations configurations = converter.getTargetFeature().getConfigurations();
-        assertFalse(configurations.isEmpty());
-        assertEquals(1, configurations.size());
 
-        Configuration configuration = configurations.get(0);
+        assertEquals(expectedConfigurationsSize, configurations.size());
 
-        assertTrue(configuration.getPid(), configuration.getPid().startsWith(EXPECTED_PID));
-        assertEquals("Unmatching size: " + configuration.getProperties().size(), 2, configuration.getProperties().size());
+        if (expectedConfigurationsSize > 0) {
+            Configuration configuration = configurations.get(0);
+
+            assertTrue(configuration.getPid(), configuration.getPid().startsWith(EXPECTED_PID));
+            assertEquals("Unmatching size: " + configuration.getProperties().size(), 2, configuration.getProperties().size());
+        }
     }
 
     @Parameters
@@ -102,14 +103,24 @@ public class ConfigurationEntryHandlerTest {
         String path = "jcr_root/apps/asd/config/";
 
         return Arrays.asList(new Object[][] {
-            { path + EXPECTED_PID + ".cfg", new PropertiesConfigurationEntryHandler() },
-            { path + EXPECTED_PID + ".cfg.json", new JsonConfigurationEntryHandler() },
-            { path + EXPECTED_PID + ".config", new ConfigurationEntryHandler() },
-            { path + EXPECTED_PID + ".xml", new XmlConfigurationEntryHandler() },
-            { path + EXPECTED_PID + ".xml.cfg", new PropertiesConfigurationEntryHandler() },
+            { path + EXPECTED_PID + ".empty.cfg", 0, new PropertiesConfigurationEntryHandler() },
+            { path + EXPECTED_PID + ".cfg", 1, new PropertiesConfigurationEntryHandler() },
+
+            { path + EXPECTED_PID + ".empty.cfg.json", 0, new JsonConfigurationEntryHandler() },
+            { path + EXPECTED_PID + ".cfg.json", 1, new JsonConfigurationEntryHandler() },
+
+            { path + EXPECTED_PID + ".empty.config", 0, new ConfigurationEntryHandler() },
+            { path + EXPECTED_PID + ".config", 1, new ConfigurationEntryHandler() },
+
+            { path + EXPECTED_PID + ".empty.xml", 0, new XmlConfigurationEntryHandler() },
+            { path + EXPECTED_PID + ".xml", 1, new XmlConfigurationEntryHandler() },
+
+            { path + EXPECTED_PID + ".empty.xml.cfg", 0, new PropertiesConfigurationEntryHandler() },
+            { path + EXPECTED_PID + ".xml.cfg", 1, new PropertiesConfigurationEntryHandler() },
+
             // runmode aware folders
-            { "jcr_root/apps/asd/config.author/" + EXPECTED_PID + ".config", new ConfigurationEntryHandler() },
-            { "jcr_root/apps/asd/config.publish/" + EXPECTED_PID + ".config", new ConfigurationEntryHandler() },
+            { "jcr_root/apps/asd/config.author/" + EXPECTED_PID + ".config", 1, new ConfigurationEntryHandler() },
+            { "jcr_root/apps/asd/config.publish/" + EXPECTED_PID + ".config", 1, new ConfigurationEntryHandler() },
         });
     }
 
