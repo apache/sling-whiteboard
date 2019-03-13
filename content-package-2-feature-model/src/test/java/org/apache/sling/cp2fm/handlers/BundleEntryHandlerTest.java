@@ -109,6 +109,7 @@ public final class BundleEntryHandlerTest {
         final BundleEntryHandler bundleEntryHandler = new BundleEntryHandler();
 
         return Arrays.asList(new Object[][] {
+            { "jcr_root/apps/asd/install/test-framework-no-pom.jar", bundleEntryHandler },
             { "jcr_root/apps/asd/install/test-framework.jar", bundleEntryHandler },
             { "jcr_root/apps/asd/install.author/test-framework.jar", bundleEntryHandler },
             { "jcr_root/apps/asd/install.publish/test-framework.jar", bundleEntryHandler }

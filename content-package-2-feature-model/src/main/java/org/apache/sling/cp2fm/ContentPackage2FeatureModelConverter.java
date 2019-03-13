@@ -23,7 +23,6 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Dictionary;
@@ -49,10 +48,9 @@ import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.PackageType;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.impl.PackageManagerImpl;
-import org.apache.maven.model.Model;
-import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.apache.sling.cp2fm.handlers.DefaultEntryHandler;
 import org.apache.sling.cp2fm.spi.EntryHandler;
+import org.apache.sling.cp2fm.utils.MavenPomSupplier;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Configuration;
@@ -264,23 +262,17 @@ public class ContentPackage2FeatureModelConverter {
                     destFile.delete();
                 }
 
-                Model model = new Model();
-                model.setGroupId(targetFeature.getId().getGroupId());
-                model.setArtifactId(targetFeature.getId().getArtifactId());
-                model.setVersion(targetFeature.getId().getVersion());
-                model.setPackaging(ZIP_TYPE);
-
-                try (StringWriter stringWriter = new StringWriter()) {
-                    new MavenXpp3Writer().write(stringWriter, model);
-
-                    try (InputStream input = new ByteArrayInputStream(stringWriter.toString().getBytes())) {
-                        deployLocally(input,
-                                      targetFeature.getId().getGroupId(),
-                                      targetFeature.getId().getArtifactId(),
-                                      targetFeature.getId().getVersion(),
-                                      null,
-                                      POM_TYPE);
-                    }
+                String pomModel = MavenPomSupplier.generatePom(targetFeature.getId().getGroupId(),
+                                                               targetFeature.getId().getArtifactId(),
+                                                               targetFeature.getId().getVersion(),
+                                                               ZIP_TYPE);
+                try (InputStream input = new ByteArrayInputStream(pomModel.getBytes())) {
+                    deployLocally(input,
+                                  targetFeature.getId().getGroupId(),
+                                  targetFeature.getId().getArtifactId(),
+                                  targetFeature.getId().getVersion(),
+                                  null,
+                                  POM_TYPE);
                 }
             } else {
                 logger.info("No resources to be repackaged.");

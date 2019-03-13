@@ -52,6 +52,12 @@ abstract class AbstractConfigurationEntryHandler extends AbstractRegexEntryHandl
         if (matcher.matches()) {
             // there is a specified RunMode
             runMode = matcher.group(3);
+        } else {
+            throw new IllegalStateException("Something went terribly wrong: pattern '"
+                                            + getPattern().pattern()
+                                            + "' should have matched already with path '"
+                                            + path
+                                            + "' but it does not, currently");
         }
 
         converter.addConfiguration(runMode, pid, configurationProperties);

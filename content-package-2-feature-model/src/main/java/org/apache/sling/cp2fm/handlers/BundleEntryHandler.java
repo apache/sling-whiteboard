@@ -25,6 +25,7 @@ import static org.apache.sling.cp2fm.ContentPackage2FeatureModelConverter.POM_TY
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
@@ -35,6 +36,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.Archive.Entry;
 import org.apache.sling.cp2fm.ContentPackage2FeatureModelConverter;
+import org.apache.sling.cp2fm.utils.MavenPomSupplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,9 +80,9 @@ public final class BundleEntryHandler extends AbstractRegexEntryHandler {
             }
         }
 
-        String groupId = getTrimmedProperty(properties, NAME_GROUP_ID);
-        String artifactId = getTrimmedProperty(properties, NAME_ARTIFACT_ID);
-        String version = getTrimmedProperty(properties, NAME_VERSION);
+        String groupId = getCheckedProperty(properties, NAME_GROUP_ID);
+        String artifactId = getCheckedProperty(properties, NAME_ARTIFACT_ID);
+        String version = getCheckedProperty(properties, NAME_VERSION);
 
         Matcher matcher = getPattern().matcher(path);
         String runMode = null;
@@ -88,21 +90,33 @@ public final class BundleEntryHandler extends AbstractRegexEntryHandler {
         if (matcher.matches()) {
             // there is a specified RunMode
             runMode = matcher.group(3);
+        } else {
+            throw new IllegalStateException("Something went terribly wrong: pattern '"
+                                            + getPattern().pattern()
+                                            + "' should have matched already with path '"
+                                            + path
+                                            + "' but it does not, currently");
         }
 
         try (InputStream input = archive.openInputStream(entry)) {
             converter.deployLocallyAndAttach(runMode, input, groupId, artifactId, version, null, JAR_TYPE);
         }
 
-        if (pomXml != null) {
-            try (ByteArrayInputStream input = new ByteArrayInputStream(pomXml)) {
-                converter.deployLocally(input, groupId, artifactId, version, null, POM_TYPE);
-            }
+        if (pomXml == null) {
+            pomXml = MavenPomSupplier.generatePom(groupId, artifactId, version, JAR_TYPE).getBytes();
+        }
+
+        try (ByteArrayInputStream input = new ByteArrayInputStream(pomXml)) {
+            converter.deployLocally(input, groupId, artifactId, version, null, POM_TYPE);
         }
     }
 
-    private static String getTrimmedProperty(Properties properties, String name) {
-        return properties.getProperty(name).trim();
+    private static String getCheckedProperty(Properties properties, String name) {
+        String property = properties.getProperty(name).trim();
+        Objects.requireNonNull(property, "Bundle can not be defined as a valid Maven artifact without specifying a valid '"
+                                         + name
+                                         + "' property.");
+        return property;
     }
 
 }
