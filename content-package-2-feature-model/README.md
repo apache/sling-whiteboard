@@ -192,8 +192,8 @@ $ cat asd.retail.all-publish.json
   "configurations":{
     "org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended-asd-retail":{
       "user.mapping":[
-        "com.adobe.cq.sample.we.retail.core:orders=[commerce-orders-service]",
-        "com.adobe.cq.sample.we.retail.core:frontend=[content-reader-service]"
+        "com.asd.sample.we.retail.core:orders=[commerce-orders-service]",
+        "com.asd.sample.we.retail.core:frontend=[content-reader-service]"
       ]
     }
   }
