@@ -55,6 +55,9 @@ import org.apache.sling.cp2fm.utils.MavenPomSupplier;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Configuration;
+import org.apache.sling.feature.Extension;
+import org.apache.sling.feature.ExtensionType;
+import org.apache.sling.feature.Extensions;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.io.json.FeatureJSONWriter;
 import org.codehaus.plexus.archiver.Archiver;
@@ -64,6 +67,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ContentPackage2FeatureModelConverter {
+
+    private static final String CONTENT_PACKAGES = "content-packages";
 
     public static final String POM_TYPE = "pom";
 
@@ -448,8 +453,23 @@ public class ContentPackage2FeatureModelConverter {
         deployLocally(input, groupId, artifactId, version, classifier, type);
 
         Artifact artifact = new Artifact(new ArtifactId(groupId, artifactId, version, classifier, type));
-        artifact.setStartOrder(bundlesStartOrder);
-        getRunMode(runMode).getBundles().add(artifact);
+
+        Feature targetFeature = getRunMode(runMode);
+
+        if (ZIP_TYPE.equals(type) ) {
+            Extensions extensions = targetFeature.getExtensions();
+            Extension extension = extensions.getByName(CONTENT_PACKAGES);
+
+            if (extension == null) {
+                extension = new Extension(ExtensionType.ARTIFACTS, CONTENT_PACKAGES, true);
+                extensions.add(extension);
+            }
+
+            extension.getArtifacts().add(artifact);
+        } else {
+            artifact.setStartOrder(bundlesStartOrder);
+            targetFeature.getBundles().add(artifact);
+        }
     }
 
     public void deployLocally(InputStream input,

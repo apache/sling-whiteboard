@@ -158,10 +158,6 @@ $ cat asd.retail.all.json
     {
       "id":"org.apache.felix:org.apache.felix.framework:6.0.1",
       "start-order":"5"
-    },
-    {
-      "id":"org.apache.sling:asd.retail.all:zip:cp2fm-converted-feature:0.0.1",
-      "start-order":"5"
     }
   ],
   "configurations":{
@@ -173,7 +169,10 @@ $ cat asd.retail.all.json
       "org.apache.sling.commons.log.level":"info",
       "org.apache.sling.commons.log.file":"logs/project-we-retail.log"
     }
-  }
+  },
+  "content-packages:ARTIFACTS|true":[
+    "org.apache.sling:asd.retail.all:zip:cp2fm-converted-feature:0.0.1"
+  ]
 }
 ```
 
