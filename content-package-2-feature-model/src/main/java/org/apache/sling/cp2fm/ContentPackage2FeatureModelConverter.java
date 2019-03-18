@@ -16,7 +16,6 @@
  */
 package org.apache.sling.cp2fm;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -50,8 +49,10 @@ import org.apache.jackrabbit.vault.packaging.PackageType;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.impl.PackageManagerImpl;
 import org.apache.sling.cp2fm.handlers.DefaultEntryHandler;
+import org.apache.sling.cp2fm.spi.ArtifactWriter;
 import org.apache.sling.cp2fm.spi.EntryHandler;
-import org.apache.sling.cp2fm.utils.MavenPomSupplier;
+import org.apache.sling.cp2fm.writers.InputStreamArtifactWriter;
+import org.apache.sling.cp2fm.writers.MavenPomSupplierWriter;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Configuration;
@@ -276,7 +277,7 @@ public class ContentPackage2FeatureModelConverter {
 
                 try (InputStream input = new FileInputStream(destFile)) {
                     deployLocallyAndAttach(null,
-                                           input,
+                                           new InputStreamArtifactWriter(input),
                                            targetFeature.getId().getGroupId(),
                                            targetFeature.getId().getArtifactId(),
                                            targetFeature.getId().getVersion(),
@@ -288,18 +289,15 @@ public class ContentPackage2FeatureModelConverter {
 
                 // deploy the new zip content-package to the local mvn bundles dir
 
-                String pomModel = MavenPomSupplier.generatePom(targetFeature.getId().getGroupId(),
-                                                               targetFeature.getId().getArtifactId(),
-                                                               targetFeature.getId().getVersion(),
-                                                               ZIP_TYPE);
-                try (InputStream input = new ByteArrayInputStream(pomModel.getBytes())) {
-                    deployLocally(input,
-                                  targetFeature.getId().getGroupId(),
-                                  targetFeature.getId().getArtifactId(),
-                                  targetFeature.getId().getVersion(),
-                                  null,
-                                  POM_TYPE);
-                }
+                deployLocally(new MavenPomSupplierWriter(targetFeature.getId().getGroupId(),
+                                                         targetFeature.getId().getArtifactId(),
+                                                         targetFeature.getId().getVersion(),
+                                                         ZIP_TYPE),
+                              targetFeature.getId().getGroupId(),
+                              targetFeature.getId().getArtifactId(),
+                              targetFeature.getId().getVersion(),
+                              null,
+                              POM_TYPE);
             } else {
                 logger.info("No resources to be repackaged.");
             }
@@ -444,13 +442,13 @@ public class ContentPackage2FeatureModelConverter {
     }
 
     public void deployLocallyAndAttach(String runMode,
-                                       InputStream input,
+                                       ArtifactWriter artifactWriter,
                                        String groupId,
                                        String artifactId,
                                        String version,
                                        String classifier,
                                        String type) throws IOException {
-        deployLocally(input, groupId, artifactId, version, classifier, type);
+        deployLocally(artifactWriter, groupId, artifactId, version, classifier, type);
 
         Artifact artifact = new Artifact(new ArtifactId(groupId, artifactId, version, classifier, type));
 
@@ -472,13 +470,13 @@ public class ContentPackage2FeatureModelConverter {
         }
     }
 
-    public void deployLocally(InputStream input,
+    public void deployLocally(ArtifactWriter artifactWriter,
                               String groupId,
                               String artifactId,
                               String version,
                               String classifier,
                               String type) throws IOException {
-        Objects.requireNonNull(input, "Null Bundle input stream can not be installed to a Maven repository.");
+        Objects.requireNonNull(artifactWriter, "Null ArtifactWriter can not install an artifact to a Maven repository.");
         Objects.requireNonNull(groupId, "Bundle can not be installed to a Maven repository without specifying a valid 'groupId'.");
         Objects.requireNonNull(artifactId, "Bundle can not be installed to a Maven repository without specifying a valid 'artifactId'.");
         Objects.requireNonNull(version, "Bundle can not be installed to a Maven repository without specifying a valid 'version'.");
@@ -514,7 +512,7 @@ public class ContentPackage2FeatureModelConverter {
         logger.info("Writing data to {}...", targetFile);
 
         try (FileOutputStream targetStream = new FileOutputStream(targetFile)) {
-            IOUtils.copy(input, targetStream);
+            artifactWriter.write(targetStream);
         }
 
         logger.info("Data successfully written to {}.", targetFile);

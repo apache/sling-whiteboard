@@ -23,7 +23,6 @@ import static org.mockito.Mockito.mock;
 
 import java.io.File;
 import java.io.FileReader;
-import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
 import java.util.Arrays;
@@ -34,6 +33,7 @@ import java.util.zip.ZipFile;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
+import org.apache.sling.cp2fm.spi.ArtifactWriter;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.io.json.FeatureJSONReader;
@@ -98,22 +98,22 @@ public class ContentPackage2FeatureModelConverterTest {
 
     @Test(expected = NullPointerException.class)
     public void deployLocallyAndAttachRequiresNonNullGroupId() throws Exception {
-        converter.deployLocallyAndAttach(null, mock(InputStream.class), null, null, null, null, null);
+        converter.deployLocallyAndAttach(null, mock(ArtifactWriter.class), null, null, null, null, null);
     }
 
     @Test(expected = NullPointerException.class)
     public void deployLocallyAndAttachRequiresNonNullArtifactId() throws Exception {
-        converter.deployLocallyAndAttach(null, mock(InputStream.class), "org.apache.sling", null, null, null, null);
+        converter.deployLocallyAndAttach(null, mock(ArtifactWriter.class), "org.apache.sling", null, null, null, null);
     }
 
     @Test(expected = NullPointerException.class)
     public void deployLocallyAndAttachRequiresNonNullVersion() throws Exception {
-        converter.deployLocallyAndAttach(null, mock(InputStream.class), "org.apache.sling", "org.apache.sling.cm2fm", null, null, null);
+        converter.deployLocallyAndAttach(null, mock(ArtifactWriter.class), "org.apache.sling", "org.apache.sling.cm2fm", null, null, null);
     }
 
     @Test(expected = NullPointerException.class)
     public void deployLocallyAndAttachRequiresNonNullType() throws Exception {
-        converter.deployLocallyAndAttach(null, mock(InputStream.class), "org.apache.sling", "org.apache.sling.cm2fm", "0.0.1", null, null);
+        converter.deployLocallyAndAttach(null, mock(ArtifactWriter.class), "org.apache.sling", "org.apache.sling.cm2fm", "0.0.1", null, null);
     }
 
     @Test

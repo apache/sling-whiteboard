@@ -14,47 +14,41 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.sling.cp2fm.utils;
+package org.apache.sling.cp2fm.writers;
 
 import java.io.IOException;
-import java.io.StringWriter;
+import java.io.OutputStream;
 
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.sling.cp2fm.spi.ArtifactWriter;
 
-public final class MavenPomSupplier {
+public final class MavenPomSupplierWriter implements ArtifactWriter {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MavenPomSupplier.class);
+    private final String groupId;
 
-    /**
-     * Hidden constructor, this class can not be directly instantiated.
-     */
-    private MavenPomSupplier() {
-        // do nothing
+    private final String artifactId;
+
+    private final String version;
+
+    private final String type;
+
+    public MavenPomSupplierWriter(String groupId, String artifactId, String version, String type) {
+        this.groupId = groupId;
+        this.artifactId = artifactId;
+        this.version = version;
+        this.type = type;
     }
 
-    public static String generatePom(String groupId,
-                                     String artifactId,
-                                     String version,
-                                     String type) throws IOException {
-        LOGGER.info("Creating synthetic POM file for bundle [{}:{}:{}:{}]",
-                    groupId,
-                    artifactId,
-                    version,
-                    type);
-
+    @Override
+    public void write(OutputStream outputStream) throws IOException {
         Model model = new Model();
         model.setGroupId(groupId);
         model.setArtifactId(artifactId);
         model.setVersion(version);
         model.setPackaging(type);
 
-        try (StringWriter stringWriter = new StringWriter()) {
-            new MavenXpp3Writer().write(stringWriter, model);
-            return stringWriter.toString();
-        }
+        new MavenXpp3Writer().write(outputStream, model);
     }
 
 }

@@ -35,6 +35,7 @@ import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.Archive.Entry;
 import org.apache.sling.cp2fm.ContentPackage2FeatureModelConverter;
 import org.apache.sling.cp2fm.handlers.BundleEntryHandler;
+import org.apache.sling.cp2fm.spi.ArtifactWriter;
 import org.apache.sling.cp2fm.spi.EntryHandler;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
@@ -87,8 +88,8 @@ public final class BundleEntryHandlerTest {
         File testDirectory = new File(System.getProperty("testDirectory"), getClass().getName() + '_' + System.currentTimeMillis());
         when(converter.getOutputDirectory()).thenReturn(testDirectory);
 
-        doCallRealMethod().when(converter).deployLocallyAndAttach(anyString(), any(InputStream.class), anyString(), anyString(), anyString(), anyString(), anyString());
-        doCallRealMethod().when(converter).deployLocally(any(InputStream.class), anyString(), anyString(), anyString(), anyString(), anyString());
+        doCallRealMethod().when(converter).deployLocallyAndAttach(anyString(), any(ArtifactWriter.class), anyString(), anyString(), anyString(), anyString(), anyString());
+        doCallRealMethod().when(converter).deployLocally(any(ArtifactWriter.class), anyString(), anyString(), anyString(), anyString(), anyString());
 
         Feature feature = new Feature(new ArtifactId("org.apache.sling", "org.apache.sling.cp2fm", "0.0.1", null, null));
         when(converter.getTargetFeature()).thenReturn(feature);

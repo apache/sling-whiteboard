@@ -17,7 +17,6 @@
 package org.apache.sling.cp2fm.handlers;
 
 import static org.apache.jackrabbit.vault.packaging.PackageProperties.NAME_VERSION;
-
 import static org.apache.sling.cp2fm.ContentPackage2FeatureModelConverter.NAME_ARTIFACT_ID;
 import static org.apache.sling.cp2fm.ContentPackage2FeatureModelConverter.NAME_GROUP_ID;
 import static org.apache.sling.cp2fm.ContentPackage2FeatureModelConverter.POM_TYPE;
@@ -36,7 +35,9 @@ import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.Archive.Entry;
 import org.apache.sling.cp2fm.ContentPackage2FeatureModelConverter;
-import org.apache.sling.cp2fm.utils.MavenPomSupplier;
+import org.apache.sling.cp2fm.spi.ArtifactWriter;
+import org.apache.sling.cp2fm.writers.InputStreamArtifactWriter;
+import org.apache.sling.cp2fm.writers.MavenPomSupplierWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,16 +100,23 @@ public final class BundleEntryHandler extends AbstractRegexEntryHandler {
         }
 
         try (InputStream input = archive.openInputStream(entry)) {
-            converter.deployLocallyAndAttach(runMode, input, groupId, artifactId, version, null, JAR_TYPE);
+            converter.deployLocallyAndAttach(runMode,
+                                             new InputStreamArtifactWriter(input),
+                                             groupId,
+                                             artifactId,
+                                             version,
+                                             null,
+                                             JAR_TYPE);
         }
 
+        ArtifactWriter pomWriter;
         if (pomXml == null) {
-            pomXml = MavenPomSupplier.generatePom(groupId, artifactId, version, JAR_TYPE).getBytes();
+            pomWriter = new MavenPomSupplierWriter(groupId, artifactId, version, JAR_TYPE);
+        } else {
+            pomWriter = new InputStreamArtifactWriter(new ByteArrayInputStream(pomXml));
         }
 
-        try (ByteArrayInputStream input = new ByteArrayInputStream(pomXml)) {
-            converter.deployLocally(input, groupId, artifactId, version, null, POM_TYPE);
-        }
+        converter.deployLocally(pomWriter, groupId, artifactId, version, null, POM_TYPE);
     }
 
     private static String getCheckedProperty(Properties properties, String name) {
