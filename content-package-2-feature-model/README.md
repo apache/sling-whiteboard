@@ -35,7 +35,6 @@ Archive:  content-package-2-feature-model/src/test/resources/org/apache/sling/cp
         0  03-12-2019 17:06   jcr_root/etc/
         0  03-12-2019 17:06   jcr_root/etc/packages/
         0  03-12-2019 17:30   jcr_root/etc/packages/asd/
-     6148  03-12-2019 17:07   jcr_root/etc/packages/asd/.DS_Store
     34493  03-12-2019 17:30   jcr_root/etc/packages/asd/test-bundles.zip
      8333  03-12-2019 17:09   jcr_root/etc/packages/asd/test-content.zip
      7235  03-12-2019 17:08   jcr_root/etc/packages/asd/test-configurations.zip
@@ -63,27 +62,20 @@ Archive:  test-bundles.zip
         0  03-12-2019 17:30   META-INF/
        69  03-12-2019 17:30   META-INF/MANIFEST.MF
         0  03-11-2019 23:39   jcr_root/
-     6148  03-11-2019 23:38   jcr_root/.DS_Store
         0  03-11-2019 23:31   jcr_root/apps/
         0  03-12-2019 17:26   jcr_root/apps/asd/
         0  03-11-2019 23:32   jcr_root/apps/asd/install/
     13288  12-06-2018 12:30   jcr_root/apps/asd/install/test-framework.jar
-     6148  03-11-2019 23:31   jcr_root/apps/asd/install/.DS_Store
-     6148  03-11-2019 23:35   jcr_root/apps/asd/.DS_Store
         0  03-12-2019 17:16   jcr_root/apps/asd/install.publish/
-     6148  03-12-2019 17:16   jcr_root/apps/asd/install.publish/.DS_Store
      7210  03-12-2019 17:15   jcr_root/apps/asd/install.publish/test-api.jar
         0  03-12-2019 17:18   jcr_root/apps/asd/install.author/
-     6148  03-12-2019 17:18   jcr_root/apps/asd/install.author/.DS_Store
      7735  03-12-2019 17:17   jcr_root/apps/asd/install.author/test-api.jar
-     6148  03-11-2019 23:31   jcr_root/apps/.DS_Store
         0  03-11-2019 23:42   META-INF/maven/
         0  03-11-2019 23:43   META-INF/maven/org.apache.sling/
         0  02-28-2019 14:26   META-INF/maven/org.apache.sling/org.apache.sling.cp2fm.bundles/
      1229  03-12-2019 10:22   META-INF/maven/org.apache.sling/org.apache.sling.cp2fm.bundles/pom.xml
       131  03-12-2019 00:26   META-INF/maven/org.apache.sling/org.apache.sling.cp2fm.bundles/pom.properties
         0  03-12-2019 12:41   META-INF/vault/
-     6148  03-12-2019 12:41   META-INF/vault/.DS_Store
       888  03-12-2019 00:28   META-INF/vault/settings.xml
       954  03-12-2019 15:33   META-INF/vault/properties.xml
      3571  03-12-2019 00:27   META-INF/vault/config.xml
@@ -108,7 +100,6 @@ Archive:  test-configurations.zip
      1228  03-12-2019 10:24   META-INF/maven/org.apache.sling/org.apache.sling.cp2fm.config/pom.xml
       129  03-12-2019 10:22   META-INF/maven/org.apache.sling/org.apache.sling.cp2fm.config/pom.properties
         0  03-12-2019 13:23   META-INF/vault/
-     6148  03-12-2019 13:23   META-INF/vault/.DS_Store
        94  02-28-2019 14:25   META-INF/vault/settings.xml
       664  03-12-2019 15:13   META-INF/vault/properties.xml
      3579  02-28-2019 14:25   META-INF/vault/config.xml
@@ -117,10 +108,8 @@ Archive:  test-configurations.zip
         0  03-12-2019 10:17   jcr_root/apps/
         0  02-28-2019 14:25   jcr_root/apps/asd/
         0  03-12-2019 10:17   jcr_root/apps/asd/config/
-     6148  03-12-2019 10:17   jcr_root/apps/asd/config/.DS_Store
       438  02-28-2019 14:25   jcr_root/apps/asd/config/org.apache.sling.commons.log.LogManager.factory.config-asd-retail.xml
         0  03-12-2019 10:18   jcr_root/apps/asd/config.publish/
-     6148  03-12-2019 10:17   jcr_root/apps/asd/config.publish/.DS_Store
       377  02-28-2019 14:25   jcr_root/apps/asd/config.publish/org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended-asd-retail.xml
       244  02-28-2019 14:25   jcr_root/apps/.content.xml
 ---------                     -------
@@ -142,20 +131,16 @@ Archive:  test-content.zip
      1229  03-12-2019 11:32   META-INF/maven/org.apache.sling/org.apache.sling.cp2fm.content/pom.xml
       131  03-12-2019 11:32   META-INF/maven/org.apache.sling/org.apache.sling.cp2fm.content/pom.properties
         0  03-12-2019 12:40   META-INF/vault/
-     6148  03-12-2019 12:40   META-INF/vault/.DS_Store
       118  02-28-2019 14:26   META-INF/vault/settings.xml
       859  03-12-2019 15:12   META-INF/vault/properties.xml
      3571  03-12-2019 12:42   META-INF/vault/config.xml
       895  03-12-2019 12:57   META-INF/vault/filter.xml
        72  02-28-2019 14:26   META-INF/vault/filter-plugin-generated.xml
         0  03-12-2019 12:30   jcr_root/
-     6148  03-12-2019 12:30   jcr_root/.DS_Store
         0  03-12-2019 12:31   jcr_root/content/
         0  03-12-2019 12:31   jcr_root/content/asd/
-     6148  03-12-2019 12:31   jcr_root/content/asd/.DS_Store
      1021  02-28-2019 14:26   jcr_root/content/asd/.content.xml
      6924  02-28-2019 14:26   jcr_root/content/asd/resources.xml
-     6148  03-12-2019 12:31   jcr_root/content/.DS_Store
 ---------                     -------
     39481                     22 files
 ```
