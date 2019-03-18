@@ -244,6 +244,10 @@ All generally adopted OSGi configuration formats are supported:
 
 As shown above, run modes in the path lead the tool to create a dedicated _Apache Sling Feature_ model file containing all interested OSGi configurations/bundles.
 
+### Known limitations
+
+Multiple Run Modes are not supported yet.
+
 ## Sample APIs
 
 ```java
