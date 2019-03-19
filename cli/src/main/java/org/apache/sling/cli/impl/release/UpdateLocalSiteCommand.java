@@ -21,8 +21,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Locale;
 
 import org.apache.sling.cli.impl.Command;
 import org.apache.sling.cli.impl.jbake.JBakeContentUpdater;
@@ -66,8 +64,8 @@ public class UpdateLocalSiteCommand implements Command {
         
                 Path templatePath = Paths.get(GIT_CHECKOUT, "src", "main", "jbake", "templates", "downloads.tpl");
                 Path releasesPath = Paths.get(GIT_CHECKOUT, "src", "main", "jbake", "content", "releases.md");
-                updater.updateDownloads(templatePath, releaseVersion.getName(), releaseVersion.getVersion());
-                updater.updateReleases(releasesPath, releaseVersion.getName(), releaseVersion.getVersion(), LocalDateTime.now());
+                updater.updateDownloads(templatePath, releaseVersion.getComponent(), releaseVersion.getVersion());
+                updater.updateReleases(releasesPath, releaseVersion.getComponent(), releaseVersion.getVersion(), LocalDateTime.now());
         
                 git.diff()
                     .setOutputStream(System.out)
