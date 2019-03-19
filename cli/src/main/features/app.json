@@ -56,6 +56,18 @@
 		{
 			"id": "com.google.code.gson:gson:2.8.5",
 			"start-level": "3"
+		},
+		{
+			"id": "org.eclipse.jgit:org.eclipse.jgit:5.2.1.201812262042-r",
+			"start-level": "3"
+		},
+		{
+			"id": "com.googlecode.javaewah:JavaEWAH:1.1.6",
+			"start-level": "3"
+		},
+		{
+			"id": "org.apache.servicemix.bundles:org.apache.servicemix.bundles.jsch:0.1.55_1",
+			"start-level": "3"
 		}
 	],
 	"configurations": {
