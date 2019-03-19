@@ -44,10 +44,6 @@ import org.slf4j.LoggerFactory;
 })
 public class UpdateLocalSiteCommand implements Command {
     
-    public static void main(String[] args) {
-        System.out.println(LocalDateTime.now().format(DateTimeFormatter.ofPattern("MMMM uuuu", Locale.ENGLISH)));
-    }
-
     private static final String GIT_CHECKOUT = "/tmp/sling-site";
 
     @Reference
