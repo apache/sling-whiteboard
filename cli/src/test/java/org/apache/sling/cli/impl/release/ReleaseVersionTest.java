@@ -20,12 +20,15 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-public class PrepareVoteEmailCommandTest {
+public class ReleaseVersionTest {
 
     @Test
-    public void cleanVersion() {
+    public void fromRepositoryDescription() {
         
-        assertEquals("Resource Merger 1.3.10", 
-                PrepareVoteEmailCommand.getCleanVersion("Apache Sling Resource Merger 1.3.10 RC1"));
+        ReleaseVersion rel = ReleaseVersion.fromRepositoryDescription("Apache Sling Resource Merger 1.3.10 RC1");
+        
+        assertEquals("Resource Merger 1.3.10", rel.getName());
+        assertEquals("Apache Sling Resource Merger 1.3.10", rel.getFullName());
+        assertEquals("1.3.10", rel.getVersion());
     }
 }

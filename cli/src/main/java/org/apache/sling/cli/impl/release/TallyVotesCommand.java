@@ -42,7 +42,7 @@ public class TallyVotesCommand implements Command {
     private static final String EMAIL_TEMPLATE ="\n" + 
             "\n" + 
             "To: \"Sling Developers List\" <dev@sling.apache.org>\n" + 
-            "Subject: [RESULT] [VOTE] Release Apache Sling ##RELEASE_NAME##\n" + 
+            "Subject: [RESULT] [VOTE] Release ##RELEASE_NAME##\n" + 
             "\n" + 
             "Hi,\n" + 
             "\n" + 
@@ -65,9 +65,8 @@ public class TallyVotesCommand implements Command {
         try {
             
             StagingRepository repository = repoFinder.find(Integer.parseInt(target));
-            // TODO - release name cleanup does not belong here
-            String releaseName = repository.getDescription().replaceFirst(" RC[0-9]+", "");
-            EmailThread voteThread = voteThreadFinder.findVoteThread(releaseName);
+            ReleaseVersion releaseVersion = ReleaseVersion.fromRepositoryDescription(repository.getDescription()); 
+            EmailThread voteThread = voteThreadFinder.findVoteThread(releaseVersion.getFullName());
 
             // TODO - validate which voters are binding and list them separately in the email
             String bindingVoters = voteThread.getEmails().stream()
@@ -76,7 +75,7 @@ public class TallyVotesCommand implements Command {
                 .collect(Collectors.joining(", "));
             
             String email = EMAIL_TEMPLATE
-                .replace("##RELEASE_NAME##", releaseName)
+                .replace("##RELEASE_NAME##", releaseVersion.getFullName())
                 .replace("##BINDING_VOTERS##", bindingVoters);
             
             logger.info(email);

@@ -20,6 +20,10 @@ This invocation produces a list of available subcommands.
 
 ## Commands
 
+Listing active releases
+
+    docker run --env-file=./docker-env apache/sling-cli release list
+
 Generating a release vote email
 
     docker run --env-file=./docker-env apache/sling-cli release prepare-email $STAGING_REPOSITORY_ID
@@ -27,7 +31,7 @@ Generating a release vote email
 Generating a release vote result email
 
     docker run --env-file=./docker-env apache/sling-cli release tally-votes $STAGING_REPOSITORY_ID
-    
+
 ## Assumptions
 
 This tool assumes that the name of the staging repository matches the one of the version in Jira. For instance, the
