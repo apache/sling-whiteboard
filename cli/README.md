@@ -31,6 +31,10 @@ Generating a release vote email
 Generating a release vote result email
 
     docker run --env-file=./docker-env apache/sling-cli release tally-votes $STAGING_REPOSITORY_ID
+    
+Generating the website update (only diff for now)
+
+	docker run --env-file=docker-env apache/sling-cli release update-local-site $STAGING_REPOSITORY_ID
 
 ## Assumptions
 
