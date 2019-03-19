@@ -30,5 +30,6 @@ public class ReleaseVersionTest {
         assertEquals("Resource Merger 1.3.10", rel.getName());
         assertEquals("Apache Sling Resource Merger 1.3.10", rel.getFullName());
         assertEquals("1.3.10", rel.getVersion());
+        assertEquals("Resource Merger", rel.getComponent());
     }
 }

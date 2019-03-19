@@ -27,12 +27,14 @@ public final class ReleaseVersion {
         rel.name = rel.fullName
             .replace("Apache Sling ", ""); // Apache Sling prefix
         rel.version = rel.fullName.substring(rel.fullName.lastIndexOf(' ') + 1);
+        rel.component = rel.name.substring(0, rel.name.lastIndexOf(' '));
         
         return rel;
     }
     
     private String fullName;
     private String name;
+    private String component;
     private String version;
 
     private ReleaseVersion() {
@@ -50,5 +52,8 @@ public final class ReleaseVersion {
     public String getVersion() {
         return version;
     }
-    
+
+    public String getComponent() {
+        return component;
+    }
 }
