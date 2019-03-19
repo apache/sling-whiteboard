@@ -19,6 +19,9 @@ package org.apache.sling.cli.impl.nexus;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -43,6 +46,8 @@ import com.google.gson.Gson;
 )
 @Designate(ocd = StagingRepositoryFinder.Config.class)
 public class StagingRepositoryFinder {
+    
+    private static final String REPOSITORY_PREFIX = "orgapachesling-";
 
     @ObjectClassDefinition
     static @interface Config {
@@ -61,8 +66,30 @@ public class StagingRepositoryFinder {
         credentialsProvider.setCredentials(new AuthScope("repository.apache.org", 443), 
                 new UsernamePasswordCredentials(cfg.username(), cfg.password()));
     }
+    
+    public List<StagingRepository> list() throws IOException {
+        return this. <List<StagingRepository>> withStagingRepositories( reader -> {
+            Gson gson = new Gson();
+            return gson.fromJson(reader, StagingRepositories.class).getData().stream()
+                    .filter( r -> r.getType() == Status.closed)
+                    .filter( r -> r.getRepositoryId().startsWith(REPOSITORY_PREFIX) )
+                    .collect(Collectors.toList());            
+        });
+    }
 
     public StagingRepository find(int stagingRepositoryId) throws IOException {
+        return this.<StagingRepository> withStagingRepositories( reader -> {
+            Gson gson = new Gson();
+            return gson.fromJson(reader, StagingRepositories.class).getData().stream()
+                    .filter( r -> r.getType() == Status.closed)
+                    .filter( r -> r.getRepositoryId().startsWith(REPOSITORY_PREFIX) )
+                    .filter( r -> r.getRepositoryId().endsWith("-" + stagingRepositoryId))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("No repository found with id " + stagingRepositoryId));            
+        });
+    }
+    
+    private <T> T withStagingRepositories(Function<InputStreamReader, T> function) throws IOException {
         try ( CloseableHttpClient client = HttpClients.custom()
                 .setDefaultCredentialsProvider(credentialsProvider)
                 .build() ) {
@@ -73,14 +100,10 @@ public class StagingRepositoryFinder {
                         InputStreamReader reader = new InputStreamReader(content)) {
                     if ( response.getStatusLine().getStatusCode() != 200 )
                         throw new IOException("Status line : " + response.getStatusLine());
-                    Gson gson = new Gson();
-                    return gson.fromJson(reader, StagingRepositories.class).getData().stream()
-                        .filter( r -> r.getType() == Status.closed)
-                        .filter( r -> r.getRepositoryId().endsWith("-" + stagingRepositoryId))
-                        .findFirst()
-                        .orElseThrow(() -> new IllegalArgumentException("No repository found with id " + stagingRepositoryId));
+                    
+                    return function.apply(reader);
                 }
             }
-        }
+        }       
     }
 }

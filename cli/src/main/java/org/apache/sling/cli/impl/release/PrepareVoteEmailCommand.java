@@ -36,7 +36,7 @@ public class PrepareVoteEmailCommand implements Command {
 
     // TODO - replace with file template
     private static final String EMAIL_TEMPLATE ="To: \"Sling Developers List\" <dev@sling.apache.org>\n" + 
-            "Subject: [VOTE] Release Apache Sling ##RELEASE_NAME##\n" + 
+            "Subject: [VOTE] Release ##RELEASE_NAME##\n" + 
             "\n" + 
             "Hi,\n" + 
             "\n" + 
@@ -73,11 +73,11 @@ public class PrepareVoteEmailCommand implements Command {
         try {
             int repoId = Integer.parseInt(target);
             StagingRepository repo = repoFinder.find(repoId);
-            String cleanVersion = getCleanVersion(repo.getDescription());
-            Version version = versionFinder.find(cleanVersion);
+            ReleaseVersion releaseVersion = ReleaseVersion.fromRepositoryDescription(repo.getDescription());
+            Version version = versionFinder.find(releaseVersion.getName());
             
             String emailContents = EMAIL_TEMPLATE
-                    .replace("##RELEASE_NAME##", cleanVersion)
+                    .replace("##RELEASE_NAME##", releaseVersion.getFullName())
                     .replace("##RELEASE_ID##", String.valueOf(repoId))
                     .replace("##VERSION_ID##", String.valueOf(version.getId()))
                     .replace("##FIXED_ISSUES_COUNT##", String.valueOf(version.getIssuesFixedCount()));
@@ -88,11 +88,4 @@ public class PrepareVoteEmailCommand implements Command {
             logger.warn("Failed executing command", e);
         }
     }
-
-    static String getCleanVersion(String repoDescription) {
-        return repoDescription
-                .replace("Apache Sling ", "") // Apache Sling prefix
-                .replaceAll(" RC[0-9]*$", ""); // 'release candidate' suffix 
-    }
-
 }
