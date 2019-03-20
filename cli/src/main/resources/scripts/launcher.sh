@@ -19,6 +19,7 @@ ARGS_PROP="exec.args=$@"
 
 # Use exec to become pid 1, see https://docs.docker.com/develop/develop-images/dockerfile_best-practices/
 exec /usr/bin/java \
+     -Xshare:on \
 	 -Dorg.slf4j.simpleLogger.logFile=/dev/null \
 	 -Dlogback.configurationFile=file:/usr/share/sling-cli/conf/logback-default.xml \
 	 -jar /usr/share/sling-cli/launcher/org.apache.sling.feature.launcher.jar \

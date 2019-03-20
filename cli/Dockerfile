@@ -12,6 +12,10 @@
 
 FROM openjdk:8-jre-alpine
 MAINTAINER dev@sling.apache.org
+
+# Generate class data sharing
+RUN java -Xshare:dump
+
 # escaping required to properly handle arguments with spaces
 ENTRYPOINT ["/usr/share/sling-cli/bin/launcher.sh"]
 
