@@ -107,6 +107,8 @@ public class ContentPackage2FeatureModelConverter {
 
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.SZ");
 
+    private final RegexBasedResourceFilter filter = new RegexBasedResourceFilter();
+
     private boolean strictValidation = false;
 
     private boolean mergeConfigurations = false;
@@ -153,6 +155,15 @@ public class ContentPackage2FeatureModelConverter {
         return targetFeature;
     }
 
+    public void addFilteringPattern(String filteringPattern) {
+        Objects.requireNonNull(filteringPattern, "Null pattern to filter resources out is not a valid filtering pattern");
+        if (filteringPattern.isEmpty()) {
+            throw new IllegalArgumentException("Empty pattern to filter resources out is not a valid filtering pattern");
+        }
+
+        filter.addFilteringPattern(filteringPattern);
+    }
+
     public Feature getRunMode(String runMode) {
         if (getTargetFeature() == null) {
             throw new IllegalStateException("Target Feature not initialized yet, please make sure convert() method was invoked first.");
@@ -169,6 +180,10 @@ public class ContentPackage2FeatureModelConverter {
                                                                                  id.getVersion(),
                                                                                  id.getClassifier() + '-' + runMode,
                                                                                  id.getType())));
+    }
+
+    public VaultPackage openContentPackage(File contentPackage) throws Exception {
+        return packageManager.open(contentPackage, strictValidation);
     }
 
     public void convert(File contentPackage) throws Exception {
@@ -198,7 +213,7 @@ public class ContentPackage2FeatureModelConverter {
 
         VaultPackage vaultPackage = null;
         try {
-            vaultPackage = packageManager.open(contentPackage, strictValidation);
+            vaultPackage = openContentPackage(contentPackage);
 
             logger.info("content-package '{}' successfully read!", contentPackage);
 
@@ -414,6 +429,14 @@ public class ContentPackage2FeatureModelConverter {
         }
 
         logger.info("Processing entry {}...", entryPath);
+
+        if (filter.isFilteredOut(entryPath)) {
+            throw new IllegalArgumentException("Path '"
+                                               + entryPath
+                                               + "' in archive "
+                                               + archive.getMetaInf().getProperties()
+                                               + " not allowed by user configuration, please check configured filtering patterns");
+        }
 
         getEntryHandlerByEntryPath(entryPath).handle(entryPath, archive, entry, this);
 

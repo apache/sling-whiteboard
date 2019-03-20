@@ -219,4 +219,16 @@ public class ContentPackage2FeatureModelConverterTest {
         assertTrue("POM file " + pomFile + " does not exist", pomFile.exists());
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void verifyFilteringOutUndesiredPackages() throws Exception {
+        converter.addFilteringPattern(".*\\/install(?!(\\.runMode1\\/|\\.runMode2\\/|\\/))(.*)(?=\\.zip$).*");
+
+        URL packageUrl = getClass().getResource("test-content-package-unacceptable.zip");
+        File packageFile = FileUtils.toFile(packageUrl);
+
+        File outputDirectory = new File(System.getProperty("testDirectory"), getClass().getName() + '_' + System.currentTimeMillis());
+
+        converter.setBundlesStartOrder(5).setOutputDirectory(outputDirectory).convert(packageFile);
+    }
+
 }

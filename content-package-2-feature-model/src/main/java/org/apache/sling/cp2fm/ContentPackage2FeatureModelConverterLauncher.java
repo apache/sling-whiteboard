@@ -57,6 +57,9 @@ public final class ContentPackage2FeatureModelConverterLauncher implements Runna
     @Option(names = { "-b", "--bundles-start-order" }, description = "The order to start detected bundles.", required = false)
     private int bundlesStartOrder = 0;
 
+    @Option(names = { "-f", "--filtering-patterns" }, description = "Regex based pattern(s) to reject content-package archive entries.", required = false, defaultValue = "")
+    private String[] filteringPatterns;
+
     @Option(names = { "-o", "--output-directory" }, description = "The output directory where the Feature File and the bundles will be deployed.", required = true)
     private File outputDirectory;
 
@@ -88,12 +91,19 @@ public final class ContentPackage2FeatureModelConverterLauncher implements Runna
         logger.info("");
 
         try {
-            new ContentPackage2FeatureModelConverter()
-            .setStrictValidation(strictValidation)
-            .setMergeConfigurations(mergeConfigurations)
-            .setBundlesStartOrder(bundlesStartOrder)
-            .setOutputDirectory(outputDirectory)
-            .convert(contentPackage);
+            ContentPackage2FeatureModelConverter converter = new ContentPackage2FeatureModelConverter()
+                                                             .setStrictValidation(strictValidation)
+                                                             .setMergeConfigurations(mergeConfigurations)
+                                                             .setBundlesStartOrder(bundlesStartOrder)
+                                                             .setOutputDirectory(outputDirectory);
+
+            if (filteringPatterns != null && filteringPatterns.length > 0) {
+                for (String filteringPattern : filteringPatterns) {
+                    converter.addFilteringPattern(filteringPattern);
+                }
+            }
+
+            converter.convert(contentPackage);
 
             logger.info( "+-----------------------------------------------------+" );
             logger.info("{} SUCCESS", appName);
