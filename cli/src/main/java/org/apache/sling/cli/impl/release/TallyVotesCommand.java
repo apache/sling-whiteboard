@@ -41,7 +41,7 @@ public class TallyVotesCommand implements Command {
     // TODO - move to file
     private static final String EMAIL_TEMPLATE =
             "To: \"Sling Developers List\" <dev@sling.apache.org>\n" + 
-            "Subject: [RESULT] [VOTE] Release ##RELEASE_NAME##\n" + 
+            "Subject: [RESULT][VOTE] Release ##RELEASE_NAME##\n" + 
             "\n" + 
             "Hi,\n" + 
             "\n" + 
