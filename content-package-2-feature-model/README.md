@@ -275,6 +275,12 @@ In order to make the tool extensible, the [org.apache.sling.cp2fm.spi.EntryHandl
 
 If users want to handle special resource type, all they have to do is providing their `org.apache.sling.cp2fm.spi.EntryHandler` service implementation and declaring them in the `META-INF/services/org.apache.sling.cp2fm.spi.EntryHandler` classpath resource file, on order to let the `ServiceLoader` including it in the `content-package` scan.
 
+### Bundles deployer
+
+The [org.apache.sling.cp2fm.spi.BundlesDeployer](./src/main/java/org/apache/sling/cp2fm/spi/BundlesDeployer) service is designed to let the conversion tool be integrated in external services, i.e. _Apache Maven_.
+
+The [default implementation](src/main/java/org/apache/sling/cp2fm/DefaultBundlesDeployer.java) just copies bundles in the target output directory, according to the _Apache Maven_ repository layout.
+
 ## The CLI Tool
 
 The tool is distributed with a commodity package containing all is needed in order to launch the `ContentPackage2FeatureModelConverter` form the shell:
