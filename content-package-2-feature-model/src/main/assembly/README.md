@@ -123,3 +123,28 @@ Apache Sling Content Package to Sling Feature converter
   -X, --verbose             Produce execution debug output.
 Copyright(c) 2019 The Apache Software Foundation.
 ```
+
+a sample execution could look like:
+
+```
+$ ./bin/cp2sf -v -b 20 -c /content-package-2-feature-model/src/test/resources/org/apache/sling/cp2fm/test-content-package.zip -o /tmp
+```
+
+### Argument Files for Long Command Lines
+
+```
+# argfile
+# comments are supported
+
+-v
+-b 20
+-c /content-package-2-feature-model/src/test/resources/org/apache/sling/cp2fm/test-content-package.zip
+-o /tmp
+```
+
+then execute the command
+
+```
+$ ./bin/cp2sf @arfile
+````
+
