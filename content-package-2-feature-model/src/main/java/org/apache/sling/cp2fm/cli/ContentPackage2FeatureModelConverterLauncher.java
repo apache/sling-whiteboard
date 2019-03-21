@@ -14,11 +14,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.sling.cp2fm;
+package org.apache.sling.cp2fm.cli;
 
 import java.io.File;
 import java.util.TimeZone;
 
+import org.apache.sling.cp2fm.ContentPackage2FeatureModelConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

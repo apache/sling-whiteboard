@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.sling.cp2fm;
+package org.apache.sling.cp2fm.cli;
 
 import java.util.Date;
 import java.util.Formatter;
