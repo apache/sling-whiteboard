@@ -24,7 +24,6 @@ import java.io.OutputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.Archive.Entry;
-import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.sling.cp2fm.ContentPackage2FeatureModelConverter;
 
 public final class ContentPackageEntryHandler extends AbstractRegexEntryHandler {
@@ -44,15 +43,7 @@ public final class ContentPackageEntryHandler extends AbstractRegexEntryHandler 
             IOUtils.copy(input, output);
         }
 
-        VaultPackage subPackage = null;
-        try {
-            subPackage = converter.openContentPackage(temporaryContentPackage);
-            converter.process(subPackage);
-        } finally {
-            if (subPackage != null) {
-                subPackage.close();
-            }
-        }
+        converter.process(temporaryContentPackage);
     }
 
 }

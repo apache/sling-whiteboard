@@ -32,7 +32,6 @@ import java.util.StringTokenizer;
 import java.util.zip.ZipFile;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.sling.cp2fm.spi.ArtifactWriter;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
@@ -81,14 +80,14 @@ public class ContentPackage2FeatureModelConverterTest {
         converter.setMergeConfigurations(true).getRunMode(null);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = NullPointerException.class)
     public void processRequiresNotNullPackage() throws Exception {
         converter.process(null);
     }
 
     @Test(expected = IllegalStateException.class)
     public void processRequiresConvertInvoked() throws Exception {
-        converter.process(mock(VaultPackage.class));
+        converter.process(mock(File.class));
     }
 
     @Test(expected = NullPointerException.class)

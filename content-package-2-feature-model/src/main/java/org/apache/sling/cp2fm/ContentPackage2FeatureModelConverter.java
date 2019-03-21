@@ -182,10 +182,6 @@ public class ContentPackage2FeatureModelConverter {
                                                                                  id.getType())));
     }
 
-    public VaultPackage openContentPackage(File contentPackage) throws Exception {
-        return packageManager.open(contentPackage, strictValidation);
-    }
-
     public void convert(File contentPackage) throws Exception {
         Objects.requireNonNull(contentPackage , "Null content-package can not be converted.");
 
@@ -213,7 +209,7 @@ public class ContentPackage2FeatureModelConverter {
 
         VaultPackage vaultPackage = null;
         try {
-            vaultPackage = openContentPackage(contentPackage);
+            vaultPackage = packageManager.open(contentPackage, strictValidation);
 
             logger.info("content-package '{}' successfully read!", contentPackage);
 
@@ -391,10 +387,22 @@ public class ContentPackage2FeatureModelConverter {
         }
     }
 
-    public void process(VaultPackage vaultPackage) throws Exception {
-        if (vaultPackage == null) {
-            throw new IllegalArgumentException("Impossible to process a null vault package");
+    public void process(File contentPackage) throws Exception {
+        Objects.requireNonNull(contentPackage, "Impossible to process a null vault package");
+
+        VaultPackage vaultPackage = null;
+        try {
+            vaultPackage = packageManager.open(contentPackage, strictValidation);
+            process(vaultPackage);
+        } finally {
+            if (vaultPackage != null) {
+                vaultPackage.close();
+            }
         }
+    }
+
+    private void process(VaultPackage vaultPackage) throws Exception {
+        Objects.requireNonNull(vaultPackage, "Impossible to process a null vault package");
 
         if (getTargetFeature() == null) {
             throw new IllegalStateException("Target Feature not initialized yet, please make sure convert() method was invoked first.");
