@@ -207,10 +207,7 @@ public class ContentPackage2FeatureModelConverter {
 
         logger.info("Reading content-package '{}'...", contentPackage);
 
-        VaultPackage vaultPackage = null;
-        try {
-            vaultPackage = packageManager.open(contentPackage, strictValidation);
-
+        try (VaultPackage vaultPackage = packageManager.open(contentPackage, strictValidation)) {
             logger.info("content-package '{}' successfully read!", contentPackage);
 
             PackageProperties packageProperties = vaultPackage.getProperties();
@@ -322,10 +319,6 @@ public class ContentPackage2FeatureModelConverter {
                     seralize(runMode);
                 }
             }
-        } finally {
-            if (vaultPackage != null && !vaultPackage.isClosed()) {
-                vaultPackage.close();
-            }
         }
     }
 
@@ -387,17 +380,11 @@ public class ContentPackage2FeatureModelConverter {
         }
     }
 
-    public void process(File contentPackage) throws Exception {
+    public void processSubPackage(File contentPackage) throws Exception {
         Objects.requireNonNull(contentPackage, "Impossible to process a null vault package");
 
-        VaultPackage vaultPackage = null;
-        try {
-            vaultPackage = packageManager.open(contentPackage, strictValidation);
+        try (VaultPackage vaultPackage = packageManager.open(contentPackage, strictValidation)) {
             process(vaultPackage);
-        } finally {
-            if (vaultPackage != null) {
-                vaultPackage.close();
-            }
         }
     }
 

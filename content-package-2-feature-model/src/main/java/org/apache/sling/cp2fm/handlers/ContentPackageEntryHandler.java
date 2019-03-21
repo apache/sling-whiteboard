@@ -43,7 +43,7 @@ public final class ContentPackageEntryHandler extends AbstractRegexEntryHandler 
             IOUtils.copy(input, output);
         }
 
-        converter.process(temporaryContentPackage);
+        converter.processSubPackage(temporaryContentPackage);
     }
 
 }

@@ -82,12 +82,12 @@ public class ContentPackage2FeatureModelConverterTest {
 
     @Test(expected = NullPointerException.class)
     public void processRequiresNotNullPackage() throws Exception {
-        converter.process(null);
+        converter.processSubPackage(null);
     }
 
     @Test(expected = IllegalStateException.class)
     public void processRequiresConvertInvoked() throws Exception {
-        converter.process(mock(File.class));
+        converter.processSubPackage(mock(File.class));
     }
 
     @Test(expected = NullPointerException.class)
