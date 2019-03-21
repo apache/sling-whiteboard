@@ -99,13 +99,27 @@ The subdirectory `${project.build.finalName}` will be created from the archive.
 
 ```
 $ ./cp2sf -h
-Usage: cp2fm [-hqvX] -cp=<contentPackage>
+Usage: cp2fm [-hmqsvX] [-b=<bundlesStartOrder>] -c=<contentPackage>
+             -o=<outputDirectory> [-f=<filteringPatterns>]...
 Apache Sling Content Package to Sling Feature converter
-      -cp, --content-package=<contentPackage>
-                  The content-package input file.
-  -h, --help      Display the usage message.
-  -q, --quiet     Log errors only.
-  -v, --version   Display version information.
-  -X, --verbose   Produce execution debug output.
+  -b, --bundles-start-order=<bundlesStartOrder>
+                            The order to start detected bundles.
+  -c, --content-package=<contentPackage>
+                            The content-package input file.
+  -f, --filtering-patterns=<filteringPatterns>
+                            Regex based pattern(s) to reject content-package archive
+                              entries.
+  -h, --help                Display the usage message.
+  -m, --merge-configurations
+                            Flag to mark OSGi configurations with same PID will be
+                              merged, the tool will fail otherwise.
+  -o, --output-directory=<outputDirectory>
+                            The output directory where the Feature File and the
+                              bundles will be deployed.
+  -q, --quiet               Log errors only.
+  -s, --strict-validation   Flag to mark the content-package input file being strict
+                              validated.
+  -v, --version             Display version information.
+  -X, --verbose             Produce execution debug output.
 Copyright(c) 2019 The Apache Software Foundation.
 ```

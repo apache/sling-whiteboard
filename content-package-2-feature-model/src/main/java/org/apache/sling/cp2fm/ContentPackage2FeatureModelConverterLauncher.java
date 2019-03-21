@@ -57,7 +57,7 @@ public final class ContentPackage2FeatureModelConverterLauncher implements Runna
     @Option(names = { "-b", "--bundles-start-order" }, description = "The order to start detected bundles.", required = false)
     private int bundlesStartOrder = 0;
 
-    @Option(names = { "-f", "--filtering-patterns" }, description = "Regex based pattern(s) to reject content-package archive entries.", required = false, defaultValue = "")
+    @Option(names = { "-f", "--filtering-patterns" }, description = "Regex based pattern(s) to reject content-package archive entries.", required = false)
     private String[] filteringPatterns;
 
     @Option(names = { "-o", "--output-directory" }, description = "The output directory where the Feature File and the bundles will be deployed.", required = true)

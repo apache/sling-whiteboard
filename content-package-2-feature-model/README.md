@@ -339,12 +339,15 @@ once the package is decompressed, open the shell and type:
 ```
 $ ./bin/cp2sf -h
 Usage: cp2fm [-hmqsvX] [-b=<bundlesStartOrder>] -c=<contentPackage>
-             -o=<outputDirectory>
+             -o=<outputDirectory> [-f=<filteringPatterns>]...
 Apache Sling Content Package to Sling Feature converter
   -b, --bundles-start-order=<bundlesStartOrder>
                             The order to start detected bundles.
   -c, --content-package=<contentPackage>
                             The content-package input file.
+  -f, --filtering-patterns=<filteringPatterns>
+                            Regex based pattern(s) to reject content-package archive
+                              entries.
   -h, --help                Display the usage message.
   -m, --merge-configurations
                             Flag to mark OSGi configurations with same PID will be
