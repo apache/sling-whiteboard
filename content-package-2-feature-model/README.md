@@ -271,9 +271,9 @@ new ContentPackage2FeatureModelConverter()
 
 ### Handler Services
 
-In order to make the tool extensible, the `org.apache.sling.cp2fm.spi.EntryHandler` interface is declared to handle different kind of resources, have a look at the `org.apache.sling.cp2fm.handlers` package to see the default ones.
+In order to make the tool extensible, the [org.apache.sling.cp2fm.spi.EntryHandler](./src/main/java/org/apache/sling/cp2fm/spi/EntryHandler.java) interface is declared to handle different kind of resources, have a look at the [org.apache.sling.cp2fm.handlers](src/main/java/org/apache/sling/cp2fm/handlers) package to see the default implementations.
 
-If users want to handle special resource type, all they have to do is providing their implementation and declaring it under the `META-INF/services/org.apache.sling.cp2fm.spi.EntryHandler` classpath resource file, on order to let the `ServiceLoader` including it in the `content-package` scan.
+If users want to handle special resource type, all they have to do is providing their `org.apache.sling.cp2fm.spi.EntryHandler` service implementation and declaring them in the `META-INF/services/org.apache.sling.cp2fm.spi.EntryHandler` classpath resource file, on order to let the `ServiceLoader` including it in the `content-package` scan.
 
 ## The CLI Tool
 
