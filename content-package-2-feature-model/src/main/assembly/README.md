@@ -147,4 +147,3 @@ then execute the command
 ```
 $ ./bin/cp2sf @arfile
 ````
-

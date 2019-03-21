@@ -232,12 +232,14 @@ _Apache Maven GAVs_ are extracted from nested bundles metadata and are renamed a
 
 ### Supported configurations
 
-All generally adopted OSGi configuration formats are supported:
+All OSGi configuration formats are supported:
 
  * _Property_ files, which extensions are `.properties` or `.cfg`, see the related [documentation](https://sling.apache.org/documentation/bundles/configuration-installer-factory.html#property-files-cfg);
  * Configuration Files, which extension is `.config`, see the related [documentation](https://sling.apache.org/documentation/bundles/configuration-installer-factory.html#configuration-files-config);
  * JSON format, which extension is `.cfg.json`, see the related [documentation](https://blog.osgi.org/2018/06/osgi-r7-highlights-configuration-admin.html)
  * `sling:OsgiConfig` content nodes, typically `.xml` files.
+
+During the conversion process, all these formats will be parsed and then added in the `configuration` section of the _Sling Feature Model_ file.
 
 ### Run Modes
 
