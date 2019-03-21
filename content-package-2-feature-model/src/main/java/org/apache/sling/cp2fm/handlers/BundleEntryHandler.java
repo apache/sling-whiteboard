@@ -100,13 +100,19 @@ public final class BundleEntryHandler extends AbstractRegexEntryHandler {
         }
 
         try (InputStream input = archive.openInputStream(entry)) {
-            converter.deployLocallyAndAttach(runMode,
-                                             new InputStreamArtifactWriter(input),
-                                             groupId,
-                                             artifactId,
-                                             version,
-                                             null,
-                                             JAR_TYPE);
+            converter.getArtifactDeployer().deploy(new InputStreamArtifactWriter(input),
+                                                   groupId,
+                                                   artifactId,
+                                                   version,
+                                                   null,
+                                                   JAR_TYPE);
+
+            converter.attach(runMode,
+                             groupId,
+                             artifactId,
+                             version,
+                             null,
+                             JAR_TYPE);
         }
 
         ArtifactWriter pomWriter;
@@ -116,7 +122,7 @@ public final class BundleEntryHandler extends AbstractRegexEntryHandler {
             pomWriter = new InputStreamArtifactWriter(new ByteArrayInputStream(pomXml));
         }
 
-        converter.deployLocally(pomWriter, groupId, artifactId, version, null, POM_TYPE);
+        converter.getArtifactDeployer().deploy(pomWriter, groupId, artifactId, version, null, POM_TYPE);
     }
 
     private static String getCheckedProperty(Properties properties, String name) {

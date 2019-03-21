@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
@@ -35,7 +34,6 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
@@ -49,7 +47,7 @@ import org.apache.jackrabbit.vault.packaging.PackageType;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.impl.PackageManagerImpl;
 import org.apache.sling.cp2fm.handlers.DefaultEntryHandler;
-import org.apache.sling.cp2fm.spi.ArtifactWriter;
+import org.apache.sling.cp2fm.spi.BundlesDeployer;
 import org.apache.sling.cp2fm.spi.EntryHandler;
 import org.apache.sling.cp2fm.writers.InputStreamArtifactWriter;
 import org.apache.sling.cp2fm.writers.MavenPomSupplierWriter;
@@ -108,6 +106,8 @@ public class ContentPackage2FeatureModelConverter {
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.SZ");
 
     private final RegexBasedResourceFilter filter = new RegexBasedResourceFilter();
+
+    private BundlesDeployer artifactDeployer;
 
     private boolean strictValidation = false;
 
@@ -182,6 +182,10 @@ public class ContentPackage2FeatureModelConverter {
                                                                                  id.getType())));
     }
 
+    public BundlesDeployer getArtifactDeployer() {
+        return artifactDeployer;
+    }
+
     public void convert(File contentPackage) throws Exception {
         Objects.requireNonNull(contentPackage , "Null content-package can not be converted.");
 
@@ -193,6 +197,13 @@ public class ContentPackage2FeatureModelConverter {
 
         if (outputDirectory == null) {
             throw new IllegalStateException("Null output directory not supported, it must be set before invoking the convert(File) method.");
+        }
+
+        Iterator<BundlesDeployer> artifactDeployerLoader = ServiceLoader.load(BundlesDeployer.class).iterator();
+        if (!artifactDeployerLoader.hasNext()) {
+            artifactDeployer = new DefaultBundlesDeployer(outputDirectory);
+        } else {
+            artifactDeployer = artifactDeployerLoader.next();
         }
 
         String userName = System.getProperty("user.name");
@@ -284,28 +295,34 @@ public class ContentPackage2FeatureModelConverter {
                 archiver.createArchive();
 
                 try (InputStream input = new FileInputStream(destFile)) {
-                    deployLocallyAndAttach(null,
-                                           new InputStreamArtifactWriter(input),
-                                           targetFeature.getId().getGroupId(),
-                                           targetFeature.getId().getArtifactId(),
-                                           targetFeature.getId().getVersion(),
-                                           FEATURE_CLASSIFIER,
-                                           ZIP_TYPE);
+                    artifactDeployer.deploy(new InputStreamArtifactWriter(input),
+                                            targetFeature.getId().getGroupId(),
+                                            targetFeature.getId().getArtifactId(),
+                                            targetFeature.getId().getVersion(),
+                                            FEATURE_CLASSIFIER,
+                                            ZIP_TYPE);
+
+                    attach(null,
+                           targetFeature.getId().getGroupId(),
+                           targetFeature.getId().getArtifactId(),
+                           targetFeature.getId().getVersion(),
+                           FEATURE_CLASSIFIER,
+                           ZIP_TYPE);
                 } finally {
                     destFile.delete();
                 }
 
                 // deploy the new zip content-package to the local mvn bundles dir
 
-                deployLocally(new MavenPomSupplierWriter(targetFeature.getId().getGroupId(),
-                                                         targetFeature.getId().getArtifactId(),
-                                                         targetFeature.getId().getVersion(),
-                                                         ZIP_TYPE),
-                              targetFeature.getId().getGroupId(),
-                              targetFeature.getId().getArtifactId(),
-                              targetFeature.getId().getVersion(),
-                              null,
-                              POM_TYPE);
+                artifactDeployer.deploy(new MavenPomSupplierWriter(targetFeature.getId().getGroupId(),
+                                                                          targetFeature.getId().getArtifactId(),
+                                                                          targetFeature.getId().getVersion(),
+                                                                          ZIP_TYPE),
+                                               targetFeature.getId().getGroupId(),
+                                               targetFeature.getId().getArtifactId(),
+                                               targetFeature.getId().getVersion(),
+                                               null,
+                                               POM_TYPE);
             } else {
                 logger.info("No resources to be repackaged.");
             }
@@ -459,14 +476,16 @@ public class ContentPackage2FeatureModelConverter {
         return defaultEntryHandler;
     }
 
-    public void deployLocallyAndAttach(String runMode,
-                                       ArtifactWriter artifactWriter,
-                                       String groupId,
-                                       String artifactId,
-                                       String version,
-                                       String classifier,
-                                       String type) throws IOException {
-        deployLocally(artifactWriter, groupId, artifactId, version, classifier, type);
+    public void attach(String runMode,
+                       String groupId,
+                       String artifactId,
+                       String version,
+                       String classifier,
+                       String type) {
+        Objects.requireNonNull(groupId, "Artifact can not be attached to a feature without specifying a valid 'groupId'.");
+        Objects.requireNonNull(artifactId, "Artifact can not be attached to a feature without specifying a valid 'artifactId'.");
+        Objects.requireNonNull(version, "Artifact can not be attached to a feature without specifying a valid 'version'.");
+        Objects.requireNonNull(type, "Artifact can not be attached to a feature without specifying a valid 'type'.");
 
         Artifact artifact = new Artifact(new ArtifactId(groupId, artifactId, version, classifier, type));
 
@@ -486,54 +505,6 @@ public class ContentPackage2FeatureModelConverter {
             artifact.setStartOrder(bundlesStartOrder);
             targetFeature.getBundles().add(artifact);
         }
-    }
-
-    public void deployLocally(ArtifactWriter artifactWriter,
-                              String groupId,
-                              String artifactId,
-                              String version,
-                              String classifier,
-                              String type) throws IOException {
-        Objects.requireNonNull(artifactWriter, "Null ArtifactWriter can not install an artifact to a Maven repository.");
-        Objects.requireNonNull(groupId, "Bundle can not be installed to a Maven repository without specifying a valid 'groupId'.");
-        Objects.requireNonNull(artifactId, "Bundle can not be installed to a Maven repository without specifying a valid 'artifactId'.");
-        Objects.requireNonNull(version, "Bundle can not be installed to a Maven repository without specifying a valid 'version'.");
-        Objects.requireNonNull(type, "Bundle can not be installed to a Maven repository without specifying a valid 'type'.");
-
-        File targetDir = new File(getOutputDirectory(), "bundles");
-
-        StringTokenizer tokenizer = new StringTokenizer(groupId, ".");
-        while (tokenizer.hasMoreTokens()) {
-            String current = tokenizer.nextToken();
-            targetDir = new File(targetDir, current);
-        }
-
-        targetDir = new File(targetDir, artifactId);
-
-        targetDir = new File(targetDir, version);
-
-        targetDir.mkdirs();
-
-        StringBuilder nameBuilder = new StringBuilder()
-                                    .append(artifactId)
-                                    .append('-')
-                                    .append(version);
-
-        if (classifier != null) {
-            nameBuilder.append('-').append(classifier);
-        }
-
-        nameBuilder.append('.').append(type);
-
-        File targetFile = new File(targetDir, nameBuilder.toString());
-
-        logger.info("Writing data to {}...", targetFile);
-
-        try (FileOutputStream targetStream = new FileOutputStream(targetFile)) {
-            artifactWriter.write(targetStream);
-        }
-
-        logger.info("Data successfully written to {}.", targetFile);
     }
 
     private static void copyProperty(String key, PackageProperties source, Properties target) {

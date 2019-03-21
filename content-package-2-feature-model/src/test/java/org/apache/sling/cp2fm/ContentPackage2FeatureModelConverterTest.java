@@ -32,7 +32,6 @@ import java.util.StringTokenizer;
 import java.util.zip.ZipFile;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.sling.cp2fm.spi.ArtifactWriter;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.io.json.FeatureJSONReader;
@@ -92,27 +91,27 @@ public class ContentPackage2FeatureModelConverterTest {
 
     @Test(expected = NullPointerException.class)
     public void deployLocallyAndAttachRequiresNonNullInput() throws Exception {
-        converter.deployLocallyAndAttach(null, null, null, null, null, null, null);
+        converter.attach(null, null, null, null, null, null);
     }
 
     @Test(expected = NullPointerException.class)
     public void deployLocallyAndAttachRequiresNonNullGroupId() throws Exception {
-        converter.deployLocallyAndAttach(null, mock(ArtifactWriter.class), null, null, null, null, null);
+        converter.attach(null, null, null, null, null, null);
     }
 
     @Test(expected = NullPointerException.class)
     public void deployLocallyAndAttachRequiresNonNullArtifactId() throws Exception {
-        converter.deployLocallyAndAttach(null, mock(ArtifactWriter.class), "org.apache.sling", null, null, null, null);
+        converter.attach(null, "org.apache.sling", null, null, null, null);
     }
 
     @Test(expected = NullPointerException.class)
     public void deployLocallyAndAttachRequiresNonNullVersion() throws Exception {
-        converter.deployLocallyAndAttach(null, mock(ArtifactWriter.class), "org.apache.sling", "org.apache.sling.cm2fm", null, null, null);
+        converter.attach(null, "org.apache.sling", "org.apache.sling.cm2fm", null, null, null);
     }
 
     @Test(expected = NullPointerException.class)
     public void deployLocallyAndAttachRequiresNonNullType() throws Exception {
-        converter.deployLocallyAndAttach(null, mock(ArtifactWriter.class), "org.apache.sling", "org.apache.sling.cm2fm", "0.0.1", null, null);
+        converter.attach(null, "org.apache.sling", "org.apache.sling.cm2fm", "0.0.1", null, null);
     }
 
     @Test
