@@ -14,4 +14,8 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
+/**
+ * Definition of services that can be plugged at runtime to extend the converter tool.
+ */
 package org.apache.sling.cp2fm.spi;

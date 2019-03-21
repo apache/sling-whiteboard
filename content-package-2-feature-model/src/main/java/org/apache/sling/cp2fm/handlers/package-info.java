@@ -14,4 +14,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
+/**
+ * Default implementations of the <i>org.apache.sling.cp2fm.spi.EntryHandler</i> service
+ * to handle resources while scanning Apache Jackrabbit Vault packages,
+ * such as OSGi bundles &amp; configurations and nested content packages.
+ */
 package org.apache.sling.cp2fm.handlers;

@@ -14,4 +14,8 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
+/**
+ * Default implementations of the <i>org.apache.sling.cp2fm.spi.ArtifactWriter</i>.
+ */
 package org.apache.sling.cp2fm.writers;
