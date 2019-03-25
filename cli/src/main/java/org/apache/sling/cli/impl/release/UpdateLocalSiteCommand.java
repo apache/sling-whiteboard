@@ -58,14 +58,14 @@ public class UpdateLocalSiteCommand implements Command {
             try ( Git git = Git.open(new File(GIT_CHECKOUT)) ) {
                 
                 StagingRepository repository = repoFinder.find(Integer.parseInt(target));
-                ReleaseVersion releaseVersion = ReleaseVersion.fromRepositoryDescription(repository.getDescription());
+                Release release = Release.fromString(repository.getDescription());
                 
                 JBakeContentUpdater updater = new JBakeContentUpdater();
         
                 Path templatePath = Paths.get(GIT_CHECKOUT, "src", "main", "jbake", "templates", "downloads.tpl");
                 Path releasesPath = Paths.get(GIT_CHECKOUT, "src", "main", "jbake", "content", "releases.md");
-                updater.updateDownloads(templatePath, releaseVersion.getComponent(), releaseVersion.getVersion());
-                updater.updateReleases(releasesPath, releaseVersion.getComponent(), releaseVersion.getVersion(), LocalDateTime.now());
+                updater.updateDownloads(templatePath, release.getComponent(), release.getVersion());
+                updater.updateReleases(releasesPath, release.getComponent(), release.getVersion(), LocalDateTime.now());
         
                 git.diff()
                     .setOutputStream(System.out)
