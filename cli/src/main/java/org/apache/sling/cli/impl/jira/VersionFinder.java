@@ -26,6 +26,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.sling.cli.impl.release.Release;
 import org.osgi.service.component.annotations.Component;
 
 import com.google.gson.Gson;
@@ -57,8 +58,9 @@ public class VersionFinder {
                 Gson gson = new Gson();
                 Type collectionType = TypeToken.getParameterized(List.class, Version.class).getType();
                 List<Version> versions = gson.fromJson(reader, collectionType);
+                Release filter = Release.fromString(versionName);
                 version = versions.stream()
-                    .filter(v -> v.getName().equals(versionName))
+                    .filter(v -> filter.equals(Release.fromString(v.getName())))
                     .findFirst()
                     .orElseThrow( () -> new IllegalArgumentException("No version found with name " + versionName));
             }

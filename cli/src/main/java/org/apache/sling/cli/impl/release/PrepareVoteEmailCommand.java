@@ -73,11 +73,11 @@ public class PrepareVoteEmailCommand implements Command {
         try {
             int repoId = Integer.parseInt(target);
             StagingRepository repo = repoFinder.find(repoId);
-            ReleaseVersion releaseVersion = ReleaseVersion.fromRepositoryDescription(repo.getDescription());
-            Version version = versionFinder.find(releaseVersion.getName());
+            Release release = Release.fromString(repo.getDescription());
+            Version version = versionFinder.find(release.getName());
             
             String emailContents = EMAIL_TEMPLATE
-                    .replace("##RELEASE_NAME##", releaseVersion.getFullName())
+                    .replace("##RELEASE_NAME##", release.getFullName())
                     .replace("##RELEASE_ID##", String.valueOf(repoId))
                     .replace("##VERSION_ID##", String.valueOf(version.getId()))
                     .replace("##FIXED_ISSUES_COUNT##", String.valueOf(version.getIssuesFixedCount()));

@@ -64,8 +64,8 @@ public class TallyVotesCommand implements Command {
         try {
             
             StagingRepository repository = repoFinder.find(Integer.parseInt(target));
-            ReleaseVersion releaseVersion = ReleaseVersion.fromRepositoryDescription(repository.getDescription()); 
-            EmailThread voteThread = voteThreadFinder.findVoteThread(releaseVersion.getFullName());
+            Release release = Release.fromString(repository.getDescription());
+            EmailThread voteThread = voteThreadFinder.findVoteThread(release.getFullName());
 
             // TODO - validate which voters are binding and list them separately in the email
             String bindingVoters = voteThread.getEmails().stream()
@@ -74,7 +74,7 @@ public class TallyVotesCommand implements Command {
                 .collect(Collectors.joining(", "));
             
             String email = EMAIL_TEMPLATE
-                .replace("##RELEASE_NAME##", releaseVersion.getFullName())
+                .replace("##RELEASE_NAME##", release.getFullName())
                 .replace("##BINDING_VOTERS##", bindingVoters);
             
             logger.info(email);
