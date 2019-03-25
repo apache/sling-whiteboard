@@ -18,6 +18,8 @@ package org.apache.sling.cli.impl.release;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.sling.cli.impl.Command;
@@ -26,6 +28,8 @@ import org.apache.sling.cli.impl.mail.EmailThread;
 import org.apache.sling.cli.impl.mail.VoteThreadFinder;
 import org.apache.sling.cli.impl.nexus.StagingRepository;
 import org.apache.sling.cli.impl.nexus.StagingRepositoryFinder;
+import org.apache.sling.cli.impl.people.Member;
+import org.apache.sling.cli.impl.people.MembersFinder;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
@@ -37,7 +41,10 @@ import org.slf4j.LoggerFactory;
     Command.PROPERTY_NAME_SUMMARY+"=Counts votes cast for a release and generates the result email"
 })
 public class TallyVotesCommand implements Command {
-    
+
+    @Reference
+    private MembersFinder membersFinder;
+
     // TODO - move to file
     private static final String EMAIL_TEMPLATE =
             "To: \"Sling Developers List\" <dev@sling.apache.org>\n" + 
@@ -45,12 +52,17 @@ public class TallyVotesCommand implements Command {
             "\n" + 
             "Hi,\n" + 
             "\n" + 
-            "The vote has passed with the following result :\n" + 
+            "The vote has passed with the following result:\n" +
             "\n" + 
             "+1 (binding): ##BINDING_VOTERS##\n" + 
-            "\n" + 
+            "+1 (non-binding): ##NON_BINDING_VOTERS##\n" +
+            "\n" +
             "I will copy this release to the Sling dist directory and\n" + 
-            "promote the artifacts to the central Maven repository.\n";
+            "promote the artifacts to the central Maven repository.\n" +
+            "\n" +
+            "Regards,\n" +
+            "##USER_NAME##\n" +
+            "\n";
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Reference
@@ -67,16 +79,37 @@ public class TallyVotesCommand implements Command {
             Release release = Release.fromString(repository.getDescription());
             EmailThread voteThread = voteThreadFinder.findVoteThread(release.getFullName());
 
-            // TODO - validate which voters are binding and list them separately in the email
-            String bindingVoters = voteThread.getEmails().stream()
-                .filter( e -> isPositiveVote(e) )
-                .map ( e -> e.getFrom().replaceAll("<.*>", "").trim() )
-                .collect(Collectors.joining(", "));
-            
+            Set<String> bindingVoters = new HashSet<>();
+            Set<String> nonBindingVoters = new HashSet<>();
+            for (Email e : voteThread.getEmails()) {
+                if (isPositiveVote(e)) {
+                    String sender = e.getFrom().replaceAll("<.*>", "").trim();
+                    for (Member m : membersFinder.findMembers()) {
+                        if (sender.equals(m.getName())) {
+                            if (m.isPMCMember()) {
+                                bindingVoters.add(sender);
+                            } else {
+                                nonBindingVoters.add(sender);
+                            }
+                        }
+                    }
+                }
+            }
+            String currentUserId = System.getProperty("asf.username");
+            if (currentUserId == null) {
+                currentUserId = System.getenv("ASF_USERNAME");
+            }
+            Member currentUser = membersFinder.getMemberById(currentUserId);
             String email = EMAIL_TEMPLATE
                 .replace("##RELEASE_NAME##", release.getFullName())
-                .replace("##BINDING_VOTERS##", bindingVoters);
-            
+                .replace("##BINDING_VOTERS##", String.join(", ", bindingVoters))
+                .replace("##USER_NAME##", currentUser == null ? "" : currentUser.getName());
+            if (nonBindingVoters.isEmpty()) {
+                email = email.replace("##NON_BINDING_VOTERS##", "none");
+            } else {
+                email = email.replace("##NON_BINDING_VOTERS##", String.join(", ", nonBindingVoters));
+            }
+
             logger.info(email);
             
         } catch (IOException e) {
