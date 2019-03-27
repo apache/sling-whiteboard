@@ -81,12 +81,12 @@ public class ContentPackage2FeatureModelConverterTest {
 
     @Test(expected = NullPointerException.class)
     public void processRequiresNotNullPackage() throws Exception {
-        converter.processSubPackage(null);
+        converter.processSubPackage("", null);
     }
 
     @Test(expected = IllegalStateException.class)
     public void processRequiresConvertInvoked() throws Exception {
-        converter.processSubPackage(mock(File.class));
+        converter.processSubPackage("", mock(File.class));
     }
 
     @Test(expected = NullPointerException.class)
@@ -150,7 +150,10 @@ public class ContentPackage2FeatureModelConverterTest {
                 "META-INF/vault/properties.xml",
                 "META-INF/vault/config.xml",
                 "META-INF/vault/settings.xml",
-                "META-INF/vault/definition/.content.xml"
+                "META-INF/vault/definition/.content.xml",
+                "jcr_root/etc/packages/asd/test-bundles.zip",
+                "jcr_root/etc/packages/asd/test-configurations.zip",
+                "jcr_root/etc/packages/asd/test-content.zip",
                 }) {
             assertNotNull(zipFile.getEntry(expectedEntry));
         }

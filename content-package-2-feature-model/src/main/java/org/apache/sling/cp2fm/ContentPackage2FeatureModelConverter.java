@@ -17,13 +17,7 @@
 package org.apache.sling.cp2fm;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -31,25 +25,20 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.jackrabbit.vault.fs.io.AccessControlHandling;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.Archive.Entry;
 import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.PackageManager;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
-import org.apache.jackrabbit.vault.packaging.PackageType;
 import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.impl.PackageManagerImpl;
-import org.apache.sling.cp2fm.handlers.DefaultEntryHandler;
 import org.apache.sling.cp2fm.spi.BundlesDeployer;
 import org.apache.sling.cp2fm.spi.EntryHandler;
-import org.apache.sling.cp2fm.writers.InputStreamArtifactWriter;
+import org.apache.sling.cp2fm.vltpkg.VaultPackageAssembler;
+import org.apache.sling.cp2fm.writers.FileArtifactWriter;
 import org.apache.sling.cp2fm.writers.MavenPomSupplierWriter;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
@@ -59,9 +48,6 @@ import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.Extensions;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.io.json.FeatureJSONWriter;
-import org.codehaus.plexus.archiver.Archiver;
-import org.codehaus.plexus.archiver.jar.JarArchiver;
-import org.codehaus.plexus.archiver.util.DefaultFileSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,25 +57,17 @@ public class ContentPackage2FeatureModelConverter {
 
     public static final String POM_TYPE = "pom";
 
-    private static final String ZIP_TYPE = "zip";
+    public static final String ZIP_TYPE = "zip";
 
     public static final String NAME_GROUP_ID = "groupId";
 
     public static final String NAME_ARTIFACT_ID = "artifactId";
 
-    private static final String NAME_CLASSIFIER = "classifier";
-
-    private static final String NAME_PATH = "path";
-
-    private static final String FEATURE_CLASSIFIER = "cp2fm-converted-feature";
+    public static final String FEATURE_CLASSIFIER = "cp2fm-converted-feature";
 
     private static final String SLING_OSGI_FEATURE_TILE_TYPE = "slingosgifeature";
 
-    private static final String VAULT_PROPERTIES_FILE = "META-INF/vault/properties.xml";
-
     private static final String JSON_FILE_EXTENSION = ".json";
-
-    private static final String[] INCLUDE_RESOURCES = { "definition/.content.xml", "config.xml", "settings.xml" };
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -97,13 +75,9 @@ public class ContentPackage2FeatureModelConverter {
 
     private final ServiceLoader<EntryHandler> entryHandlers = ServiceLoader.load(EntryHandler.class);
 
-    private final EntryHandler defaultEntryHandler = new DefaultEntryHandler();
-
     private final Map<String, Feature> runModes = new HashMap<>();
 
     private final Set<String> dependencies = new HashSet<>();
-
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.SZ");
 
     private final RegexBasedResourceFilter filter = new RegexBasedResourceFilter();
 
@@ -118,6 +92,8 @@ public class ContentPackage2FeatureModelConverter {
     private File outputDirectory;
 
     private Feature targetFeature = null;
+
+    private VaultPackageAssembler mainPackageAssembler = null;
 
     public ContentPackage2FeatureModelConverter setStrictValidation(boolean strictValidation) {
         this.strictValidation = strictValidation;
@@ -206,13 +182,11 @@ public class ContentPackage2FeatureModelConverter {
             artifactDeployer = artifactDeployerLoader.next();
         }
 
-        String userName = System.getProperty("user.name");
-
         if (!outputDirectory.exists() && !outputDirectory.mkdirs()) {
             throw new IllegalStateException("output directory "
                                             + outputDirectory
                                             + " does not exist and can not be created, please make sure current user '"
-                                            + userName
+                                            + System.getProperty("user.name")
                                             + " has enough rights to write on the File System.");
         }
 
@@ -221,8 +195,9 @@ public class ContentPackage2FeatureModelConverter {
         try (VaultPackage vaultPackage = packageManager.open(contentPackage, strictValidation)) {
             logger.info("content-package '{}' successfully read!", contentPackage);
 
-            PackageProperties packageProperties = vaultPackage.getProperties();
+            mainPackageAssembler = VaultPackageAssembler.create(vaultPackage);
 
+            PackageProperties packageProperties = vaultPackage.getProperties();
             String groupId = packageProperties.getProperty(NAME_GROUP_ID);
             String artifactId = packageProperties.getProperty(NAME_ARTIFACT_ID);
             String version = packageProperties.getProperty(PackageProperties.NAME_VERSION);
@@ -241,91 +216,33 @@ public class ContentPackage2FeatureModelConverter {
 
             // attach all unmatched resources as new content-package
 
-            File deflatedDir = new File(outputDirectory, DefaultEntryHandler.TMP_DEFLATED);
+            File contentPackageArchive = mainPackageAssembler.createPackage(outputDirectory);
 
-            if (deflatedDir.listFiles().length > 0) {
-                Properties properties = new Properties();
-                copyProperty(PackageProperties.NAME_GROUP, packageProperties, properties);
-                properties.setProperty(PackageProperties.NAME_NAME, packageProperties.getProperty(PackageProperties.NAME_NAME) + ' ' + FEATURE_CLASSIFIER);
-                copyProperty(PackageProperties.NAME_VERSION, packageProperties, properties);
-                copyProperty(NAME_GROUP_ID, packageProperties, properties);
-                copyProperty(NAME_ARTIFACT_ID, packageProperties, properties);
-                properties.setProperty(NAME_CLASSIFIER, FEATURE_CLASSIFIER);
-                properties.setProperty(PackageProperties.NAME_DEPENDENCIES, dependencies.stream().collect(Collectors.joining(",")));
-                properties.setProperty(PackageProperties.NAME_CREATED_BY, userName);
-                properties.setProperty(PackageProperties.NAME_CREATED, dateFormat.format(new Date()));
-                properties.setProperty(PackageProperties.NAME_REQUIRES_ROOT, String.valueOf(false));
-                properties.setProperty(NAME_PATH, String.format("/etc/packages/%s/%s-%s.zip",
-                                                                properties.getProperty(PackageProperties.NAME_GROUP),
-                                                                properties.getProperty(NAME_ARTIFACT_ID),
-                                                                FEATURE_CLASSIFIER));
-                properties.setProperty(PackageProperties.NAME_PACKAGE_TYPE, PackageType.APPLICATION.name());
-                properties.setProperty(PackageProperties.NAME_AC_HANDLING, AccessControlHandling.MERGE_PRESERVE.name());
+            // deploy the new zip content-package to the local mvn bundles dir
 
-                // generate the Vault properties XML file
+            artifactDeployer.deploy(new FileArtifactWriter(contentPackageArchive),
+                                                           targetFeature.getId().getGroupId(),
+                                                           targetFeature.getId().getArtifactId(),
+                                                           targetFeature.getId().getVersion(),
+                                                           FEATURE_CLASSIFIER,
+                                                           ZIP_TYPE);
 
-                File xmlProperties = new File(deflatedDir, VAULT_PROPERTIES_FILE);
-                xmlProperties.getParentFile().mkdirs();
+            artifactDeployer.deploy(new MavenPomSupplierWriter(targetFeature.getId().getGroupId(),
+                                                               targetFeature.getId().getArtifactId(),
+                                                               targetFeature.getId().getVersion(),
+                                                               ZIP_TYPE),
+                                    targetFeature.getId().getGroupId(),
+                                    targetFeature.getId().getArtifactId(),
+                                    targetFeature.getId().getVersion(),
+                                    null,
+                                    POM_TYPE);
 
-                try (FileOutputStream fos = new FileOutputStream(xmlProperties)) {
-                    properties.storeToXML(fos, null);
-                }
-
-                // copy the required resources
-
-                for (String resource : INCLUDE_RESOURCES) {
-                    File targetResource = new File(xmlProperties.getParentFile(), resource);
-                    targetResource.getParentFile().mkdirs();
-
-                    try (InputStream input = getClass().getResourceAsStream(resource);
-                            OutputStream output = new FileOutputStream(targetResource)) {
-                        IOUtils.copy(input, output);
-                    }
-                }
-
-                // create the target archiver
-
-                Archiver archiver = new JarArchiver();
-                archiver.setIncludeEmptyDirs(true);
-
-                File destFile = File.createTempFile(targetFeature.getId().getArtifactId(), '.' + ZIP_TYPE);
-
-                archiver.setDestFile(destFile);
-                archiver.addFileSet(new DefaultFileSet(deflatedDir));
-                archiver.createArchive();
-
-                try (InputStream input = new FileInputStream(destFile)) {
-                    artifactDeployer.deploy(new InputStreamArtifactWriter(input),
-                                            targetFeature.getId().getGroupId(),
-                                            targetFeature.getId().getArtifactId(),
-                                            targetFeature.getId().getVersion(),
-                                            FEATURE_CLASSIFIER,
-                                            ZIP_TYPE);
-
-                    attach(null,
-                           targetFeature.getId().getGroupId(),
-                           targetFeature.getId().getArtifactId(),
-                           targetFeature.getId().getVersion(),
-                           FEATURE_CLASSIFIER,
-                           ZIP_TYPE);
-                } finally {
-                    destFile.delete();
-                }
-
-                // deploy the new zip content-package to the local mvn bundles dir
-
-                artifactDeployer.deploy(new MavenPomSupplierWriter(targetFeature.getId().getGroupId(),
-                                                                          targetFeature.getId().getArtifactId(),
-                                                                          targetFeature.getId().getVersion(),
-                                                                          ZIP_TYPE),
-                                               targetFeature.getId().getGroupId(),
-                                               targetFeature.getId().getArtifactId(),
-                                               targetFeature.getId().getVersion(),
-                                               null,
-                                               POM_TYPE);
-            } else {
-                logger.info("No resources to be repackaged.");
-            }
+            attach(null,
+                   targetFeature.getId().getGroupId(),
+                   targetFeature.getId().getArtifactId(),
+                   targetFeature.getId().getVersion(),
+                   FEATURE_CLASSIFIER,
+                   ZIP_TYPE);
 
             // finally serialize the Feature Model(s) file(s)
 
@@ -397,11 +314,15 @@ public class ContentPackage2FeatureModelConverter {
         }
     }
 
-    public void processSubPackage(File contentPackage) throws Exception {
+    public void processSubPackage(String path, File contentPackage) throws Exception {
+        Objects.requireNonNull(path, "Impossible to process a null vault package");
         Objects.requireNonNull(contentPackage, "Impossible to process a null vault package");
 
         try (VaultPackage vaultPackage = packageManager.open(contentPackage, strictValidation)) {
             process(vaultPackage);
+
+            File clonedPackage = VaultPackageAssembler.create(vaultPackage).createPackage();
+            mainPackageAssembler.addEntry(path, clonedPackage);
         }
     }
 
@@ -473,7 +394,7 @@ public class ContentPackage2FeatureModelConverter {
             }
         }
 
-        return defaultEntryHandler;
+        return mainPackageAssembler;
     }
 
     public void attach(String runMode,
@@ -505,10 +426,6 @@ public class ContentPackage2FeatureModelConverter {
             artifact.setStartOrder(bundlesStartOrder);
             targetFeature.getBundles().add(artifact);
         }
-    }
-
-    private static void copyProperty(String key, PackageProperties source, Properties target) {
-        target.setProperty(key, source.getProperty(key));
     }
 
 }
