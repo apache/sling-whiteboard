@@ -95,15 +95,10 @@ public class TallyVotesCommand implements Command {
                     }
                 }
             }
-            String currentUserId = System.getProperty("asf.username");
-            if (currentUserId == null) {
-                currentUserId = System.getenv("ASF_USERNAME");
-            }
-            Member currentUser = membersFinder.getMemberById(currentUserId);
             String email = EMAIL_TEMPLATE
                 .replace("##RELEASE_NAME##", release.getFullName())
                 .replace("##BINDING_VOTERS##", String.join(", ", bindingVoters))
-                .replace("##USER_NAME##", currentUser == null ? "" : currentUser.getName());
+                .replace("##USER_NAME##", membersFinder.getCurrentMember().getName());
             if (nonBindingVoters.isEmpty()) {
                 email = email.replace("##NON_BINDING_VOTERS##", "none");
             } else {

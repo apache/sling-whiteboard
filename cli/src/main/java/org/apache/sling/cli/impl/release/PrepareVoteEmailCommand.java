@@ -23,6 +23,7 @@ import org.apache.sling.cli.impl.jira.Version;
 import org.apache.sling.cli.impl.jira.VersionFinder;
 import org.apache.sling.cli.impl.nexus.StagingRepository;
 import org.apache.sling.cli.impl.nexus.StagingRepositoryFinder;
+import org.apache.sling.cli.impl.people.MembersFinder;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
@@ -33,6 +34,9 @@ import org.slf4j.LoggerFactory;
     Command.PROPERTY_NAME_SUBCOMMAND + "=prepare-email",
     Command.PROPERTY_NAME_SUMMARY + "=Prepares an email vote for the specified release." })
 public class PrepareVoteEmailCommand implements Command {
+
+    @Reference
+    private MembersFinder membersFinder;
 
     // TODO - replace with file template
     private static final String EMAIL_TEMPLATE ="To: \"Sling Developers List\" <dev@sling.apache.org>\n" + 
@@ -58,7 +62,11 @@ public class PrepareVoteEmailCommand implements Command {
             "  [ ]  0 Don't care\n" + 
             "  [ ] -1 Don't release, because ...\n" + 
             "\n" + 
-            "This majority vote is open for at least 72 hours.\n";
+            "This majority vote is open for at least 72 hours.\n" +
+            "\n" +
+            "Regards,\n" +
+            "##USER_NAME##\n" +
+            "\n";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     
@@ -80,7 +88,8 @@ public class PrepareVoteEmailCommand implements Command {
                     .replace("##RELEASE_NAME##", release.getFullName())
                     .replace("##RELEASE_ID##", String.valueOf(repoId))
                     .replace("##VERSION_ID##", String.valueOf(version.getId()))
-                    .replace("##FIXED_ISSUES_COUNT##", String.valueOf(version.getIssuesFixedCount()));
+                    .replace("##FIXED_ISSUES_COUNT##", String.valueOf(version.getIssuesFixedCount()))
+                    .replace("##USER_NAME##", membersFinder.getCurrentMember().getName());
                     
             logger.info(emailContents);
 
