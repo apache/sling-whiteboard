@@ -107,4 +107,18 @@ public class MembersFinder {
         return null;
     }
 
+    public Member getCurrentMember() {
+        final String currentUserId;
+        if (System.getProperty("asf.username") != null) {
+            currentUserId = System.getProperty("asf.username");
+        } else {
+            currentUserId = System.getenv("ASF_USERNAME");
+        }
+        if (currentUserId == null) {
+            throw new IllegalStateException(String.format("Expected to find the current user defined either through the %s system " +
+                    "property or through the %s environment variable.", "asf.username", "ASF_USERNAME"));
+        }
+         return getMemberById(currentUserId);
+    }
+
 }
