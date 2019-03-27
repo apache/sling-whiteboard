@@ -27,7 +27,7 @@
     <relativePath />
   </parent>
 
-  <artifactId>org.apache.sling.cp2fm</artifactId>
+  <artifactId>org.apache.sling.feature.cpconverter</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 
   <name>Apache Sling Content Package to Feature Model converter</name>
@@ -226,7 +226,7 @@
         <artifactId>apache-rat-plugin</artifactId>
           <configuration>
           <excludes>
-            <exclude>src/main/resources/META-INF/services/org.apache.sling.cp2fm.spi.EntryHandler</exclude>
+            <exclude>src/main/resources/META-INF/services/org.apache.sling.feature.cpconverter.spi.EntryHandler</exclude>
             <exclude>src/main/legal/NOTICE-with-deps</exclude>
           </excludes>
         </configuration>
@@ -287,7 +287,7 @@
           <licenseHeaderFile>${basedir}/src/main/legal/license-header</licenseHeaderFile>
           <programs>
             <program>
-              <mainClass>org.apache.sling.cp2fm.cli.ContentPackage2FeatureModelConverterLauncher</mainClass>
+              <mainClass>org.apache.sling.feature.cpconverter.cli.ContentPackage2FeatureModelConverterLauncher</mainClass>
               <name>cp2sf</name>
             </program>
           </programs>

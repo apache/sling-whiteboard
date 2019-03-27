@@ -40,9 +40,9 @@ Archive:  content-package-2-feature-model/src/test/resources/org/apache/sling/cp
      7235  03-12-2019 17:08   jcr_root/etc/packages/asd/test-configurations.zip
         0  03-12-2019 15:28   META-INF/maven/
         0  03-12-2019 15:29   META-INF/maven/org.apache.sling/
-        0  02-28-2019 14:27   META-INF/maven/org.apache.sling/org.apache.sling.cp2fm.all/
-     1231  03-12-2019 15:30   META-INF/maven/org.apache.sling/org.apache.sling.cp2fm.all/pom.xml
-      127  03-12-2019 15:30   META-INF/maven/org.apache.sling/org.apache.sling.cp2fm.all/pom.properties
+        0  02-28-2019 14:27   META-INF/maven/org.apache.sling/org.apache.sling.feature.cpconverter.all/
+     1231  03-12-2019 15:30   META-INF/maven/org.apache.sling/org.apache.sling.feature.cpconverter.all/pom.xml
+      127  03-12-2019 15:30   META-INF/maven/org.apache.sling/org.apache.sling.feature.cpconverter.all/pom.properties
         0  03-12-2019 17:06   META-INF/vault/
       892  03-12-2019 15:32   META-INF/vault/settings.xml
       840  03-12-2019 15:47   META-INF/vault/properties.xml
@@ -72,9 +72,9 @@ Archive:  test-bundles.zip
      7735  03-12-2019 17:17   jcr_root/apps/asd/install.author/test-api.jar
         0  03-11-2019 23:42   META-INF/maven/
         0  03-11-2019 23:43   META-INF/maven/org.apache.sling/
-        0  02-28-2019 14:26   META-INF/maven/org.apache.sling/org.apache.sling.cp2fm.bundles/
-     1229  03-12-2019 10:22   META-INF/maven/org.apache.sling/org.apache.sling.cp2fm.bundles/pom.xml
-      131  03-12-2019 00:26   META-INF/maven/org.apache.sling/org.apache.sling.cp2fm.bundles/pom.properties
+        0  02-28-2019 14:26   META-INF/maven/org.apache.sling/org.apache.sling.feature.cpconverter.bundles/
+     1229  03-12-2019 10:22   META-INF/maven/org.apache.sling/org.apache.sling.feature.cpconverter.bundles/pom.xml
+      131  03-12-2019 00:26   META-INF/maven/org.apache.sling/org.apache.sling.feature.cpconverter.bundles/pom.properties
         0  03-12-2019 12:41   META-INF/vault/
       888  03-12-2019 00:28   META-INF/vault/settings.xml
       954  03-12-2019 15:33   META-INF/vault/properties.xml
@@ -96,9 +96,9 @@ Archive:  test-configurations.zip
        69  03-12-2019 17:08   META-INF/MANIFEST.MF
         0  03-12-2019 10:21   META-INF/maven/
         0  03-12-2019 10:21   META-INF/maven/org.apache.sling/
-        0  02-28-2019 14:25   META-INF/maven/org.apache.sling/org.apache.sling.cp2fm.config/
-     1228  03-12-2019 10:24   META-INF/maven/org.apache.sling/org.apache.sling.cp2fm.config/pom.xml
-      129  03-12-2019 10:22   META-INF/maven/org.apache.sling/org.apache.sling.cp2fm.config/pom.properties
+        0  02-28-2019 14:25   META-INF/maven/org.apache.sling/org.apache.sling.feature.cpconverter.config/
+     1228  03-12-2019 10:24   META-INF/maven/org.apache.sling/org.apache.sling.feature.cpconverter.config/pom.xml
+      129  03-12-2019 10:22   META-INF/maven/org.apache.sling/org.apache.sling.feature.cpconverter.config/pom.properties
         0  03-12-2019 13:23   META-INF/vault/
        94  02-28-2019 14:25   META-INF/vault/settings.xml
       664  03-12-2019 15:13   META-INF/vault/properties.xml
@@ -127,9 +127,9 @@ Archive:  test-content.zip
        69  03-12-2019 17:09   META-INF/MANIFEST.MF
         0  03-12-2019 11:31   META-INF/maven/
         0  03-12-2019 11:31   META-INF/maven/org.apache.sling/
-        0  02-28-2019 14:26   META-INF/maven/org.apache.sling/org.apache.sling.cp2fm.content/
-     1229  03-12-2019 11:32   META-INF/maven/org.apache.sling/org.apache.sling.cp2fm.content/pom.xml
-      131  03-12-2019 11:32   META-INF/maven/org.apache.sling/org.apache.sling.cp2fm.content/pom.properties
+        0  02-28-2019 14:26   META-INF/maven/org.apache.sling/org.apache.sling.feature.cpconverter.content/
+     1229  03-12-2019 11:32   META-INF/maven/org.apache.sling/org.apache.sling.feature.cpconverter.content/pom.xml
+      131  03-12-2019 11:32   META-INF/maven/org.apache.sling/org.apache.sling.feature.cpconverter.content/pom.properties
         0  03-12-2019 12:40   META-INF/vault/
       118  02-28-2019 14:26   META-INF/vault/settings.xml
       859  03-12-2019 15:12   META-INF/vault/properties.xml
@@ -252,7 +252,7 @@ Multiple Run Modes are not supported yet.
 ## Sample APIs
 
 ```java
-import org.apache.sling.cp2fm.ContentPackage2FeatureModelConverter;
+import org.apache.sling.feature.cpconverter.ContentPackage2FeatureModelConverter;
 
 ...
 
@@ -271,13 +271,13 @@ new ContentPackage2FeatureModelConverter()
 
 ### Handler Services
 
-In order to make the tool extensible, the [org.apache.sling.cp2fm.spi.EntryHandler](./src/main/java/org/apache/sling/cp2fm/spi/EntryHandler.java) interface is declared to handle different kind of resources, have a look at the [org.apache.sling.cp2fm.handlers](src/main/java/org/apache/sling/cp2fm/handlers) package to see the default implementations.
+In order to make the tool extensible, the [org.apache.sling.feature.cpconverter.spi.EntryHandler](./src/main/java/org/apache/sling/feature/cpconverter/spi/EntryHandler.java) interface is declared to handle different kind of resources, have a look at the [org.apache.sling.feature.cpconverter.handlers](src/main/java/org/apache/sling/feature/cpconverter/handlers) package to see the default implementations.
 
-If users want to handle special resource type, all they have to do is providing their `org.apache.sling.cp2fm.spi.EntryHandler` service implementation and declaring them in the `META-INF/services/org.apache.sling.cp2fm.spi.EntryHandler` classpath resource file, on order to let the `ServiceLoader` including it in the `content-package` scan.
+If users want to handle special resource type, all they have to do is providing their `org.apache.sling.feature.cpconverter.spi.EntryHandler` service implementation and declaring them in the `META-INF/services/org.apache.sling.feature.cpconverter.spi.EntryHandler` classpath resource file, on order to let the `ServiceLoader` including it in the `content-package` scan.
 
 ### Bundles deployer
 
-The [org.apache.sling.cp2fm.spi.BundlesDeployer](./src/main/java/org/apache/sling/cp2fm/spi/BundlesDeployer) service is designed to let the conversion tool be integrated in external services, i.e. _Apache Maven_.
+The [org.apache.sling.feature.cpconverter.spi.BundlesDeployer](./src/main/java/org/apache/sling/cp2fm/spi/BundlesDeployer) service is designed to let the conversion tool be integrated in external services, i.e. _Apache Maven_.
 
 The [default implementation](src/main/java/org/apache/sling/cp2fm/DefaultBundlesDeployer.java) just copies bundles in the target output directory, according to the _Apache Maven_ repository layout.
 
@@ -286,58 +286,58 @@ The [default implementation](src/main/java/org/apache/sling/cp2fm/DefaultBundles
 The tool is distributed with a commodity package containing all is needed in order to launch the `ContentPackage2FeatureModelConverter` form the shell:
 
 ```
-$ unzip -l org.apache.sling.cp2fm-0.0.1-SNAPSHOT.zip 
-Archive:  org.apache.sling.cp2fm-0.0.1-SNAPSHOT.zip
+$ unzip -l org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT.zip 
+Archive:  org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT.zip
   Length      Date    Time    Name
 ---------  ---------- -----   ----
-        0  03-13-2019 15:58   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/
-        0  03-13-2019 15:58   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/bin/
-        0  03-13-2019 15:58   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/
-     4605  02-27-2019 16:30   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/README.md
-   801904  02-28-2019 14:55   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/jackrabbit-spi-commons-2.19.1.jar
-    14744  02-11-2019 15:44   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/osgi.annotation-6.0.1.jar
-    35919  02-11-2019 15:44   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/org.osgi.service.component.annotations-1.3.0.jar
-    23575  02-11-2019 15:44   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/org.osgi.service.metatype.annotations-1.3.0.jar
-    34518  02-27-2019 15:28   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/org.apache.felix.scr.annotations-1.11.0.jar
-    45199  03-13-2019 15:58   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/org.apache.sling.cp2fm-0.0.1-SNAPSHOT.jar
-    17489  03-13-2019 15:58   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/LICENSE
-   588337  02-11-2019 12:49   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/commons-collections-3.2.2.jar
-   108555  02-11-2019 15:45   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/xz-1.8.jar
-    52873  03-05-2019 17:31   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/plexus-classworlds-2.6.0.jar
-   165965  03-05-2019 18:02   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/maven-model-3.6.0.jar
-      178  02-27-2019 15:56   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/NOTICE
-   745712  02-28-2019 10:02   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/org.apache.jackrabbit.vault-3.2.6.jar
-  2374421  02-27-2019 15:28   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/biz.aQute.bndlib-3.2.0.jar
-     3263  03-13-2019 15:58   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/bin/cp2sf.bat
-    69246  02-11-2019 12:49   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/jcr-2.0.jar
-   113508  02-11-2019 12:36   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/org.apache.felix.converter-1.0.0.jar
-    12548  02-11-2019 12:36   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/org.osgi.util.function-1.0.0.jar
-   176142  02-11-2019 12:35   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/org.apache.felix.utils-1.11.0.jar
-   155618  03-04-2019 00:12   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/org.apache.felix.configadmin-1.9.12.jar
-    75443  03-05-2019 14:58   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/plexus-io-3.1.1.jar
-    57954  02-11-2019 12:39   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/snappy-0.4.jar
-   148098  02-11-2019 12:39   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/xbean-reflect-3.7.jar
-     3808  03-13-2019 15:58   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/bin/cp2sf
-   214788  02-11-2019 15:44   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/commons-io-2.6.jar
-    26081  02-11-2019 12:36   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/geronimo-json_1.0_spec-1.0-alpha-1.jar
-    90358  02-11-2019 12:35   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/johnzon-core-1.0.0.jar
-    14769  02-11-2019 12:35   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/org.osgi.annotation.versioning-1.0.0.jar
-   475256  02-11-2019 12:35   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/osgi.core-6.0.0.jar
-    28688  02-11-2019 12:48   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/slf4j-api-1.7.6.jar
-    28561  02-28-2019 14:55   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/jackrabbit-spi-2.19.1.jar
-   403186  02-28-2019 14:55   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/jackrabbit-jcr-commons-2.19.1.jar
-    49017  03-04-2019 15:12   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/jackrabbit-api-2.19.1.jar
-   260371  03-05-2019 14:58   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/plexus-utils-3.1.1.jar
-   639592  02-11-2019 12:39   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/google-collections-1.0.jar
-    10684  02-11-2019 12:48   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/slf4j-simple-1.7.6.jar
-   164159  02-11-2019 12:48   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/org.apache.sling.feature.io-1.0.0.jar
-   289040  02-11-2019 12:36   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/org.apache.felix.configurator-1.0.4.jar
-   591748  02-11-2019 15:45   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/commons-compress-1.18.jar
-   242435  02-27-2019 15:58   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/picocli-3.6.0.jar
-   115238  02-11-2019 12:48   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/org.apache.sling.feature-1.0.0.jar
-    18587  02-11-2019 15:46   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/annotations-16.0.3.jar
-   191914  03-05-2019 14:58   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/plexus-archiver-4.1.0.jar
-   229982  03-05-2019 17:31   org.apache.sling.cp2fm-0.0.1-SNAPSHOT/lib/plexus-container-default-2.0.0.jar
+        0  03-13-2019 15:58   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/
+        0  03-13-2019 15:58   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/bin/
+        0  03-13-2019 15:58   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/
+     4605  02-27-2019 16:30   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/README.md
+   801904  02-28-2019 14:55   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/jackrabbit-spi-commons-2.19.1.jar
+    14744  02-11-2019 15:44   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/osgi.annotation-6.0.1.jar
+    35919  02-11-2019 15:44   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/org.osgi.service.component.annotations-1.3.0.jar
+    23575  02-11-2019 15:44   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/org.osgi.service.metatype.annotations-1.3.0.jar
+    34518  02-27-2019 15:28   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/org.apache.felix.scr.annotations-1.11.0.jar
+    45199  03-13-2019 15:58   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT.jar
+    17489  03-13-2019 15:58   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/LICENSE
+   588337  02-11-2019 12:49   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/commons-collections-3.2.2.jar
+   108555  02-11-2019 15:45   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/xz-1.8.jar
+    52873  03-05-2019 17:31   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/plexus-classworlds-2.6.0.jar
+   165965  03-05-2019 18:02   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/maven-model-3.6.0.jar
+      178  02-27-2019 15:56   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/NOTICE
+   745712  02-28-2019 10:02   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/org.apache.jackrabbit.vault-3.2.6.jar
+  2374421  02-27-2019 15:28   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/biz.aQute.bndlib-3.2.0.jar
+     3263  03-13-2019 15:58   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/bin/cp2sf.bat
+    69246  02-11-2019 12:49   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/jcr-2.0.jar
+   113508  02-11-2019 12:36   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/org.apache.felix.converter-1.0.0.jar
+    12548  02-11-2019 12:36   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/org.osgi.util.function-1.0.0.jar
+   176142  02-11-2019 12:35   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/org.apache.felix.utils-1.11.0.jar
+   155618  03-04-2019 00:12   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/org.apache.felix.configadmin-1.9.12.jar
+    75443  03-05-2019 14:58   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/plexus-io-3.1.1.jar
+    57954  02-11-2019 12:39   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/snappy-0.4.jar
+   148098  02-11-2019 12:39   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/xbean-reflect-3.7.jar
+     3808  03-13-2019 15:58   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/bin/cp2sf
+   214788  02-11-2019 15:44   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/commons-io-2.6.jar
+    26081  02-11-2019 12:36   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/geronimo-json_1.0_spec-1.0-alpha-1.jar
+    90358  02-11-2019 12:35   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/johnzon-core-1.0.0.jar
+    14769  02-11-2019 12:35   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/org.osgi.annotation.versioning-1.0.0.jar
+   475256  02-11-2019 12:35   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/osgi.core-6.0.0.jar
+    28688  02-11-2019 12:48   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/slf4j-api-1.7.6.jar
+    28561  02-28-2019 14:55   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/jackrabbit-spi-2.19.1.jar
+   403186  02-28-2019 14:55   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/jackrabbit-jcr-commons-2.19.1.jar
+    49017  03-04-2019 15:12   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/jackrabbit-api-2.19.1.jar
+   260371  03-05-2019 14:58   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/plexus-utils-3.1.1.jar
+   639592  02-11-2019 12:39   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/google-collections-1.0.jar
+    10684  02-11-2019 12:48   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/slf4j-simple-1.7.6.jar
+   164159  02-11-2019 12:48   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/org.apache.sling.feature.io-1.0.0.jar
+   289040  02-11-2019 12:36   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/org.apache.felix.configurator-1.0.4.jar
+   591748  02-11-2019 15:45   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/commons-compress-1.18.jar
+   242435  02-27-2019 15:58   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/picocli-3.6.0.jar
+   115238  02-11-2019 12:48   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/org.apache.sling.feature-1.0.0.jar
+    18587  02-11-2019 15:46   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/annotations-16.0.3.jar
+   191914  03-05-2019 14:58   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/plexus-archiver-4.1.0.jar
+   229982  03-05-2019 17:31   org.apache.sling.feature.cpconverter-0.0.1-SNAPSHOT/lib/plexus-container-default-2.0.0.jar
 ---------                     -------
   9914076                     48 files
 ```

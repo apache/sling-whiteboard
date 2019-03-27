@@ -1,6 +1,0 @@
-org.apache.sling.cp2fm.handlers.BundleEntryHandler
-org.apache.sling.cp2fm.handlers.ConfigurationEntryHandler
-org.apache.sling.cp2fm.handlers.ContentPackageEntryHandler
-org.apache.sling.cp2fm.handlers.JsonConfigurationEntryHandler
-org.apache.sling.cp2fm.handlers.PropertiesConfigurationEntryHandler
-org.apache.sling.cp2fm.handlers.XmlConfigurationEntryHandler
