@@ -20,14 +20,16 @@ package org.apache.sling.cli.impl.people;
 
 public class Member {
 
-    private String id;
-    private String name;
-    private boolean isPMCMember;
+    private final String id;
+    private final String name;
+    private final boolean isPMCMember;
+    private final String email;
 
     Member(String id, String name, boolean isPMCMember) {
         this.id = id;
         this.name = name;
         this.isPMCMember = isPMCMember;
+        email = id + "@apache.org";
     }
 
     public String getId() {
@@ -40,6 +42,10 @@ public class Member {
 
     public boolean isPMCMember() {
         return isPMCMember;
+    }
+
+    public String getEmail() {
+        return email;
     }
 
     @Override

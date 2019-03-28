@@ -64,6 +64,9 @@
         {
             "id"         : "org.apache.servicemix.bundles:org.apache.servicemix.bundles.jsch:0.1.55_1",
             "start-level": "3"
+        },
+        {
+            "id":"javax.mail:mail:1.5.0-b01"
         }
     ]
 }
