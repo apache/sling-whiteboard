@@ -30,45 +30,35 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.sling.cli.impl.Credentials;
+import org.apache.sling.cli.impl.CredentialsService;
 import org.apache.sling.cli.impl.nexus.StagingRepository.Status;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.ConfigurationPolicy;
-import org.osgi.service.metatype.annotations.AttributeDefinition;
-import org.osgi.service.metatype.annotations.Designate;
-import org.osgi.service.metatype.annotations.ObjectClassDefinition;
+import org.osgi.service.component.annotations.Reference;
 
 import com.google.gson.Gson;
 
-@Component(
-    configurationPolicy = ConfigurationPolicy.REQUIRE,
-    service = StagingRepositoryFinder.class
-)
-@Designate(ocd = StagingRepositoryFinder.Config.class)
+@Component(service = StagingRepositoryFinder.class)
 public class StagingRepositoryFinder {
     
     private static final String REPOSITORY_PREFIX = "orgapachesling-";
 
-    @ObjectClassDefinition
-    static @interface Config {
-        @AttributeDefinition(name="Username")
-        String username();
-        
-        @AttributeDefinition(name="Password")
-        String password();
-    }
+    @Reference
+    private CredentialsService credentialsService;
 
     private BasicCredentialsProvider credentialsProvider;
     
     @Activate
-    protected void activate(Config cfg) {
+    private void activate() {
+        Credentials credentials = credentialsService.getCredentials();
         credentialsProvider = new BasicCredentialsProvider();
         credentialsProvider.setCredentials(new AuthScope("repository.apache.org", 443), 
-                new UsernamePasswordCredentials(cfg.username(), cfg.password()));
+                new UsernamePasswordCredentials(credentials.getUsername(), credentials.getPassword()));
     }
     
     public List<StagingRepository> list() throws IOException {
-        return this. <List<StagingRepository>> withStagingRepositories( reader -> {
+        return this.withStagingRepositories( reader -> {
             Gson gson = new Gson();
             return gson.fromJson(reader, StagingRepositories.class).getData().stream()
                     .filter( r -> r.getType() == Status.closed)
@@ -78,7 +68,7 @@ public class StagingRepositoryFinder {
     }
 
     public StagingRepository find(int stagingRepositoryId) throws IOException {
-        return this.<StagingRepository> withStagingRepositories( reader -> {
+        return this.withStagingRepositories( reader -> {
             Gson gson = new Gson();
             return gson.fromJson(reader, StagingRepositories.class).getData().stream()
                     .filter( r -> r.getType() == Status.closed)

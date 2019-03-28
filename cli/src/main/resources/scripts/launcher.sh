@@ -18,13 +18,17 @@
 ARGS_PROP="exec.args=$@"
 
 # Use exec to become pid 1, see https://docs.docker.com/develop/develop-images/dockerfile_best-practices/
-exec /usr/bin/java \
-     -Xshare:on \
-	 -Dorg.slf4j.simpleLogger.logFile=/dev/null \
-	 -Dlogback.configurationFile=file:/usr/share/sling-cli/conf/logback-default.xml \
-	 -jar /usr/share/sling-cli/launcher/org.apache.sling.feature.launcher.jar \
-	 -f /usr/share/sling-cli/sling-cli.feature \
-	 -c /usr/share/sling-cli/artifacts \
-	 -D "$ARGS_PROP" \
-	 -V "asf.username=${ASF_USERNAME}" \
-	 -V "asf.password=${ASF_PASSWORD}"
+exec /opt/jre/bin/java \
+    --add-opens=java.base/java.lang=ALL-UNNAMED \
+    --add-opens=java.base/jdk.internal.loader=ALL-UNNAMED \
+    --add-opens=java.base/java.net=ALL-UNNAMED \
+    --add-opens=java.base/java.security=ALL-UNNAMED \
+    -Xshare:on \
+    -Dorg.slf4j.simpleLogger.logFile=/dev/null \
+    -Dlogback.configurationFile=file:/usr/share/sling-cli/conf/logback-default.xml \
+    -jar /usr/share/sling-cli/launcher/org.apache.sling.feature.launcher.jar \
+    -f /usr/share/sling-cli/sling-cli.feature \
+    -c /usr/share/sling-cli/artifacts \
+    -D "$ARGS_PROP" \
+    -V "asf.username=${ASF_USERNAME}" \
+    -V "asf.password=${ASF_PASSWORD}"

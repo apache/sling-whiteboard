@@ -16,8 +16,8 @@
 
     <parent>
         <groupId>org.apache.sling</groupId>
-        <artifactId>sling</artifactId>
-        <version>34</version>
+        <artifactId>sling-bundle-parent</artifactId>
+        <version>35-SNAPSHOT</version>
         <relativePath />
     </parent>
 
@@ -28,6 +28,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <sling.java.version>11</sling.java.version>
     </properties>
 
     <build>
@@ -121,6 +122,14 @@
                     <buildArgs>
                         <FEATURE_FILE>target/artifacts/org/apache/sling/${project.artifactId}/${project.version}/${project.artifactId}-${project.version}-app.slingfeature</FEATURE_FILE>
                     </buildArgs>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-baseline-maven-plugin</artifactId>
+                <configuration>
+                    <!-- We don't export an API, so it should be safe to skip baseline. -->
+                    <skip>true</skip>
                 </configuration>
             </plugin>
         </plugins>
