@@ -1,6 +1,6 @@
 {
     "jenkins": {
-        "jdks": 11,
+        "jdks": [11],
         "sonarCloud": true
     }
 }
