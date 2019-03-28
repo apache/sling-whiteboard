@@ -1,69 +1,69 @@
 {
-	"id": "${project.groupId}:${project.artifactId}:slingfeature:app:${project.version}",
-	"bundles": [
-		{
-			"id": "${project.groupId}:${project.artifactId}:${project.version}",
-			"start-level": "5"
-		},
-		{
-			"id": "org.apache.felix:org.apache.felix.scr:2.1.12",
-			"start-level": "1"
-		},
-		{
-			"id": "org.apache.felix:org.apache.felix.configadmin:1.9.10",
-			"start-level": "1"
-		},
-		{
-			"id": "org.apache.felix:org.apache.felix.log:1.2.0",
-			"start-level": "1"
-		},
-		{
-			"id": "ch.qos.logback:logback-classic:1.2.3",
-			"start-level": "1"
-		},
-		{
-			"id": "ch.qos.logback:logback-core:1.2.3",
-			"start-level": "1"
-		},
-		{
-			"id": "org.slf4j:jul-to-slf4j:1.7.25",
-			"start-level": "1"
-		},
-		{
-			"id": "org.slf4j:jcl-over-slf4j:1.7.25",
-			"start-level": "1"
-		},
-		{
-			"id": "org.slf4j:slf4j-api:1.7.25",
-			"start-level": "1"
-		},
-		{
-			"id": "org.apache.felix:org.apache.felix.logback:1.0.2",
-			"start-level": "1"
-		},
-		{
-			"id": "org.apache.httpcomponents:httpcore-osgi:4.4.11",
-			"start-level": "3"
-		},
-		{
-			"id": "org.apache.httpcomponents:httpclient-osgi:4.5.7",
-			"start-level": "3"
-		},
-		{
-			"id": "com.google.code.gson:gson:2.8.5",
-			"start-level": "3"
-		},
-		{
-			"id": "org.eclipse.jgit:org.eclipse.jgit:5.2.1.201812262042-r",
-			"start-level": "3"
-		},
-		{
-			"id": "com.googlecode.javaewah:JavaEWAH:1.1.6",
-			"start-level": "3"
-		},
-		{
-			"id": "org.apache.servicemix.bundles:org.apache.servicemix.bundles.jsch:0.1.55_1",
-			"start-level": "3"
-		}
-	]
+    "id"     : "${project.groupId}:${project.artifactId}:slingfeature:app:${project.version}",
+    "bundles": [
+        {
+            "id"         : "${project.groupId}:${project.artifactId}:${project.version}",
+            "start-level": "5"
+        },
+        {
+            "id"         : "org.apache.felix:org.apache.felix.scr:2.1.12",
+            "start-level": "1"
+        },
+        {
+            "id"         : "org.apache.felix:org.apache.felix.configadmin:1.9.10",
+            "start-level": "1"
+        },
+        {
+            "id"         : "org.apache.felix:org.apache.felix.log:1.2.0",
+            "start-level": "1"
+        },
+        {
+            "id"         : "ch.qos.logback:logback-classic:1.2.3",
+            "start-level": "1"
+        },
+        {
+            "id"         : "ch.qos.logback:logback-core:1.2.3",
+            "start-level": "1"
+        },
+        {
+            "id"         : "org.slf4j:jul-to-slf4j:1.7.25",
+            "start-level": "1"
+        },
+        {
+            "id"         : "org.slf4j:jcl-over-slf4j:1.7.25",
+            "start-level": "1"
+        },
+        {
+            "id"         : "org.slf4j:slf4j-api:1.7.25",
+            "start-level": "1"
+        },
+        {
+            "id"         : "org.apache.felix:org.apache.felix.logback:1.0.2",
+            "start-level": "1"
+        },
+        {
+            "id"         : "org.apache.httpcomponents:httpcore-osgi:4.4.11",
+            "start-level": "3"
+        },
+        {
+            "id"         : "org.apache.httpcomponents:httpclient-osgi:4.5.7",
+            "start-level": "3"
+        },
+        {
+            "id"         : "com.google.code.gson:gson:2.8.5",
+            "start-level": "3"
+        },
+        {
+            "id"         : "org.eclipse.jgit:org.eclipse.jgit:5.2.1.201812262042-r",
+            "start-level": "3"
+        },
+        {
+            "id"         : "com.googlecode.javaewah:JavaEWAH:1.1.6",
+            "start-level": "3"
+        },
+        {
+            "id"         : "org.apache.servicemix.bundles:org.apache.servicemix.bundles.jsch:0.1.55_1",
+            "start-level": "3"
+        }
+    ]
 }
