@@ -20,16 +20,10 @@ package org.apache.sling.cli.impl.release;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLEngine;
-import javax.net.ssl.SSLSocket;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.AuthScope;
@@ -38,8 +32,6 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.conn.ssl.DefaultHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -79,19 +71,8 @@ public class UpdateReporterCommand implements Command {
         try {
             StagingRepository repository = repoFinder.find(Integer.parseInt(target));
             Release release = Release.fromString(repository.getDescription());
-            SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
-            sslContext.init(null, null, null);
-            SSLContext.setDefault(sslContext);
-            SSLConnectionSocketFactory sslConnectionSocketFactory = new SSLConnectionSocketFactory(
-                    sslContext,
-                    new String[] {"TLSv1.2"},
-                    new String[] {
-                            "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256"
-                    },
-                    new DefaultHostnameVerifier()
-            );
             try (CloseableHttpClient client =
-                         HttpClients.custom().setDefaultCredentialsProvider(credentialsProvider).setSSLSocketFactory(sslConnectionSocketFactory).build()) {
+                         HttpClients.custom().setDefaultCredentialsProvider(credentialsProvider).build()) {
                 HttpPost post = new HttpPost("https://reporter.apache.org/addrelease.py");
                 SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
                 List<NameValuePair> parameters = new ArrayList<>();
@@ -108,7 +89,7 @@ public class UpdateReporterCommand implements Command {
                     }
                 }
             }
-        } catch (IOException | NoSuchAlgorithmException | KeyManagementException e) {
+        } catch (IOException e) {
             LOGGER.error(String.format("Unable to update reporter service; passed command: %s.", target), e);
         }
 
