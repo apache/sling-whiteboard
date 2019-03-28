@@ -9,12 +9,16 @@
 # either express or implied. See the License for the specific language governing permissions
 # and limitations under the License.
 # ----------------------------------------------------------------------------------------
-
-FROM openjdk:8-jre-alpine
+FROM azul/zulu-openjdk-alpine:11 as builder
 MAINTAINER dev@sling.apache.org
+RUN jlink --add-modules java.logging,java.naming,java.xml,java.security.jgss,java.sql,jdk.crypto.ec \
+          --output /opt/jre --strip-debug --compress=2 --no-header-files --no-man-pages
+
+FROM alpine
+COPY --from=builder /opt/jre /opt/jre
 
 # Generate class data sharing
-RUN java -Xshare:dump
+RUN /opt/jre/bin/java -Xshare:dump
 
 # escaping required to properly handle arguments with spaces
 ENTRYPOINT ["/usr/share/sling-cli/bin/launcher.sh"]

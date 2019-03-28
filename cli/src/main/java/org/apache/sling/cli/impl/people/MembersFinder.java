@@ -29,7 +29,9 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.sling.cli.impl.CredentialsService;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +48,9 @@ public class MembersFinder {
     private static final int STALENESS_IN_HOURS = 3;
     private Set<Member> members = Collections.emptySet();
     private long lastCheck = 0;
+
+    @Reference
+    private CredentialsService credentialsService;
 
     public synchronized Set<Member> findMembers() {
         final Set<Member> _members = new HashSet<>();
@@ -108,17 +113,7 @@ public class MembersFinder {
     }
 
     public Member getCurrentMember() {
-        final String currentUserId;
-        if (System.getProperty("asf.username") != null) {
-            currentUserId = System.getProperty("asf.username");
-        } else {
-            currentUserId = System.getenv("ASF_USERNAME");
-        }
-        if (currentUserId == null) {
-            throw new IllegalStateException(String.format("Expected to find the current user defined either through the %s system " +
-                    "property or through the %s environment variable.", "asf.username", "ASF_USERNAME"));
-        }
-         return getMemberById(currentUserId);
+         return getMemberById(credentialsService.getCredentials().getUsername());
     }
 
 }

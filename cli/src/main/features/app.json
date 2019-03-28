@@ -1,9 +1,5 @@
 {
 	"id": "${project.groupId}:${project.artifactId}:slingfeature:app:${project.version}",
-	"variables": {
-    	"asf.username":"change-me",
-    	"asf.password": "change-me"
-    },
 	"bundles": [
 		{
 			"id": "${project.groupId}:${project.artifactId}:${project.version}",
@@ -69,11 +65,5 @@
 			"id": "org.apache.servicemix.bundles:org.apache.servicemix.bundles.jsch:0.1.55_1",
 			"start-level": "3"
 		}
-	],
-	"configurations": {
-		"org.apache.sling.cli.impl.nexus.StagingRepositoryFinder": {
-			"username": "${asf.username}",
-			"password": "${asf.password}"
-		}
-	}
+	]
 }
