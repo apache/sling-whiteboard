@@ -57,16 +57,22 @@ public class CommandProcessor {
         // TODO - remove duplication from CLI parsing code
         CommandKey key = CommandKey.of(ctx.getProperty("exec.args"));
         String target = parseTarget(ctx.getProperty("exec.args"));
-        commands.getOrDefault(key, new CommandWithProps(ignored -> {
-            logger.info("Usage: sling command sub-command [target]");
-            logger.info("");
-            logger.info("Available commands:");
-            commands.forEach((k, c) -> logger.info("{} {}: {}", k.command, k.subCommand, c.summary));
-        }, "")).cmd.execute(target);
         try {
-            ctx.getBundle(Constants.SYSTEM_BUNDLE_LOCATION).adapt(Framework.class).stop();
-        } catch (BundleException e) {
+            commands.getOrDefault(key, new CommandWithProps(ignored -> {
+                logger.info("Usage: sling command sub-command [target]");
+                logger.info("");
+                logger.info("Available commands:");
+                commands.forEach((k, c) -> logger.info("{} {}: {}", k.command, k.subCommand, c.summary));
+            }, "")).cmd.execute(target);
+        } catch (Exception e) {
             logger.warn("Failed running command", e);
+        } finally {
+            try {
+                ctx.getBundle(Constants.SYSTEM_BUNDLE_LOCATION).adapt(Framework.class).stop();
+            } catch (BundleException e) {
+                logger.error("Failed shutting down framework, forcing exit", e);
+                System.exit(1);
+            }
         }
     }
 

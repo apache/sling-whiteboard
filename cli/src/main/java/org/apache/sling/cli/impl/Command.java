@@ -22,5 +22,5 @@ public interface Command {
     String PROPERTY_NAME_SUBCOMMAND = "subcommand";
     String PROPERTY_NAME_SUMMARY = "summary";
 
-    void execute(String target);
+    void execute(String target) throws Exception;
 }
