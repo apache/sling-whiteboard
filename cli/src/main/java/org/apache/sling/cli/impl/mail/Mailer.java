@@ -18,32 +18,38 @@
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 package org.apache.sling.cli.impl.mail;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
-import javax.mail.Authenticator;
+import javax.mail.Address;
 import javax.mail.Message;
 import javax.mail.MessagingException;
-import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
+import org.apache.sling.cli.impl.Credentials;
 import org.apache.sling.cli.impl.CredentialsService;
+import org.apache.sling.cli.impl.people.Member;
 import org.apache.sling.cli.impl.people.MembersFinder;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component(
         service = Mailer.class
 )
 public class Mailer {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(Mailer.class);
+
     private static final Properties SMTP_PROPERTIES = new Properties() {{
         put("mail.smtp.host", "mail-relay.apache.org");
+        put("mail.smtp.port", "465");
         put("mail.smtp.auth", "true");
-        put("mail.smtp.socketFactory.port", 465);
         put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
         put("mail.smtp.socketFactory.fallback", "false");
     }};
@@ -56,22 +62,18 @@ public class Mailer {
 
     public void send(String to, String subject, String body) {
         Properties properties = new Properties(SMTP_PROPERTIES);
-        Session session = Session.getDefaultInstance(properties, new Authenticator() {
-            @Override
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(credentialsService.getCredentials().getUsername(),
-                        credentialsService.getCredentials().getPassword());
-            }
-        });
+        Session session = Session.getInstance(properties);
         try {
             MimeMessage message = new MimeMessage(session);
-            message.setFrom(membersFinder.getCurrentMember().getEmail());
+            Member sender = membersFinder.getCurrentMember();
+            Credentials credentials = credentialsService.getCredentials();
+            message.setFrom(new InternetAddress(sender.getEmail(), sender.getEmail(), StandardCharsets.UTF_8.name()));
             message.setSubject(subject);
             message.setText(body, StandardCharsets.UTF_8.name());
             message.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
-            Transport.send(message);
-        } catch (MessagingException e) {
-
+            Transport.send(message, new Address[] {new InternetAddress(to)}, credentials.getUsername(), credentials.getPassword());
+        } catch (MessagingException | UnsupportedEncodingException e) {
+            LOGGER.error(String.format("Unable to send email with Subject '%s' to '%s'.", subject, to), e);
         }
 
     }

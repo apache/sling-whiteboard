@@ -11,7 +11,7 @@
 # ----------------------------------------------------------------------------------------
 FROM azul/zulu-openjdk-alpine:11 as builder
 MAINTAINER dev@sling.apache.org
-RUN jlink --add-modules java.logging,java.naming,java.xml,java.security.jgss,java.sql,jdk.crypto.ec \
+RUN jlink --add-modules java.logging,java.naming,java.xml,java.security.jgss,java.sql,jdk.crypto.ec,java.desktop \
           --output /opt/jre --strip-debug --compress=2 --no-header-files --no-man-pages
 
 FROM alpine
