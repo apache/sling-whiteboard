@@ -73,9 +73,7 @@ public class ApiRegionsJSONParserTest {
                             "    \"name\":\"extended\",\n" + 
                             "    \"exports\":[\n" + 
                             "      \"org.apache.felix.scr.component\",\n" + 
-                            "      \"org.apache.felix.scr.info\",\n" + 
-                            "      \"org.apache.felix.metatype\",\n" + 
-                            "      \"org.apache.felix.inventory\"\n" + 
+                            "      \"org.apache.felix.scr.info\"\n" + 
                             "    ]\n" + 
                             "  }\n" + 
                             "]");
