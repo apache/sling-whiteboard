@@ -1,0 +1,1993 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+ Commons Mime 2.0.4
+ Commons Testing 2.0.4
+ Extensions Web Console Branding 1.0.0
+ JCR Classloader 2.0.4
+ JCR Jackrabbit Access Manager 2.0.4
+ JCR Jackrabbit Client 2.0.4
+ Launchpad Base 2.2.0
+ Maven JSPC Plugin 2.0.4
+ Scripting JavaScript 2.0.4
+ Servlets Resolver 2.0.6
+ i18n 2.2.0
+API 2.0.2
+API 2.0.4
+API 2.0.6
+API 2.0.8
+API 2.1.0
+API 2.11.0
+API 2.12.0
+API 2.14.0
+API 2.14.2
+API 2.15.0
+API 2.16.0
+API 2.16.2
+API 2.16.4
+API 2.18.0
+API 2.18.2
+API 2.18.4
+API 2.2.0
+API 2.2.2
+API 2.2.4
+API 2.20.0
+API 2.20.2
+API 2.3.0
+API 2.4.0
+API 2.4.2
+API 2.5.0
+API 2.6.0
+API 2.7.0
+API 2.8.0
+API 2.9.0
+Adapter 2.0.10
+Adapter 2.0.12
+Adapter 2.0.14
+Adapter 2.0.16
+Adapter 2.0.2
+Adapter 2.0.4
+Adapter 2.0.6
+Adapter 2.0.8
+Adapter 2.1.0
+Adapter 2.1.10
+Adapter 2.1.2
+Adapter 2.1.4
+Adapter 2.1.6
+Adapter 2.1.8
+Adapter Annotations 1.0.0
+Adapter Annotations 1.0.2
+Apache Sling Capabilities 0.1.0
+Apache Sling Capabilities 0.2.0
+Apache Sling Capabilities 0.4.0
+Apache Sling Capabilities JCR 0.1.0
+Apache Sling Capabilities JCR 0.2.0
+Apache Sling Capabilities JCR 0.4.0
+Apache Sling Server Setup Tools 1.0.0
+Apache Sling Server Setup Tools 1.0.1
+Apache Sling Testing Clients 1.0.0
+Apache Sling Testing Clients 1.0.1
+Apache Sling Testing Clients 1.1.0
+Apache Sling Testing Clients 1.1.12
+Apache Sling Testing Clients 1.1.4
+Apache Sling Testing Clients 1.2.0
+Apache Sling Testing Clients 1.2.2
+Apache Sling Testing Rules 1.0.0
+Apache Sling Testing Rules 1.0.1
+Apache Sling Testing Rules 1.0.10
+Apache Sling Testing Rules 1.0.6
+Apache Sling Testing Rules 1.0.8
+App CMS 0.10.0
+App CMS 0.11.0
+App CMS 0.11.2
+Archetype Parent 1
+Archetype Parent 4
+Archetype Parent 5
+Archetype Parent 6
+Auth Core 1.0.0
+Auth Core 1.0.2
+Auth Core 1.0.4
+Auth Core 1.0.6
+Auth Core 1.1.0
+Auth Core 1.1.2
+Auth Core 1.1.4
+Auth Core 1.1.6
+Auth Core 1.1.8
+Auth Core 1.2.0
+Auth Core 1.3.0
+Auth Core 1.3.10
+Auth Core 1.3.12
+Auth Core 1.3.14
+Auth Core 1.3.16
+Auth Core 1.3.18
+Auth Core 1.3.2
+Auth Core 1.3.20
+Auth Core 1.3.22
+Auth Core 1.3.24
+Auth Core 1.3.26
+Auth Core 1.3.4
+Auth Core 1.3.6
+Auth Core 1.3.8
+Auth Core 1.4.0
+Auth Core 1.4.2
+Auth Core 1.4.4
+Auth Selector 1.0.0
+Auth Selector 1.0.2
+Auth Selector 1.0.4
+Auth Selector 1.0.6
+Auth Selector 1.0.8
+Authentication XING API 0.0.2
+Authentication XING API 0.0.4
+Authentication XING Login 0.0.2
+Authentication XING Login 0.0.4
+Authentication XING OAuth 0.0.2
+Authentication XING OAuth 0.0.4
+Background Servlets 1.0.0
+Background Servlets 1.0.10
+Background Servlets 1.0.2
+Background Servlets 1.0.6
+Background Servlets 1.0.8
+Bundle Archetype 1.0.0
+Bundle Archetype 1.0.2
+Bundle Archetype 1.0.4
+Bundle Archetype 1.0.6
+Bundle Archetype 1.0.8
+Bundle Parent 35
+Bundle Resource 2.0.2
+Bundle Resource 2.0.4
+Bundle Resource 2.0.6
+Bundle Resource 2.1.0
+Bundle Resource 2.1.2
+Bundle Resource 2.2.0
+Bundle Resource 2.3.0
+Bundle Resource 2.3.2
+Clam 1.0.0
+Clam 1.0.2
+Clam 1.1.0
+ClassLoader Leak Detector 1.0.0
+Commons Clam 1.0.0
+Commons Clam 1.0.2
+Commons Clam 2.0.0
+Commons ClassLoader 0.9.0
+Commons ClassLoader 1.0.0
+Commons ClassLoader 1.1.0
+Commons ClassLoader 1.1.2
+Commons ClassLoader 1.1.4
+Commons ClassLoader 1.2.0
+Commons ClassLoader 1.2.2
+Commons ClassLoader 1.2.4
+Commons ClassLoader 1.3.0
+Commons ClassLoader 1.3.2
+Commons ClassLoader 1.3.6
+Commons ClassLoader 1.3.8
+Commons ClassLoader 1.4.0
+Commons ClassLoader 1.4.2
+Commons ClassLoader 1.4.4
+Commons ClassLoader 1.4.6
+Commons Compiler 1.0.0
+Commons Compiler 2.0.0
+Commons Compiler 2.0.2
+Commons Compiler 2.0.4
+Commons Compiler 2.0.6
+Commons Compiler 2.1.0
+Commons Compiler 2.2.0
+Commons Compiler 2.3.0
+Commons Compiler 2.3.2
+Commons Compiler 2.3.4
+Commons Compiler 2.3.6
+Commons Compiler 2.3.8
+Commons HTML 0.9.0
+Commons HTML 1.0.0
+Commons HTML 1.0.2
+Commons HTML 1.1.0
+Commons HTML 1.1.2
+Commons JCR File 1.0.0
+Commons JSON 2.0.10
+Commons JSON 2.0.12
+Commons JSON 2.0.16
+Commons JSON 2.0.18
+Commons JSON 2.0.2
+Commons JSON 2.0.20
+Commons JSON 2.0.4
+Commons JSON 2.0.6
+Commons JSON 2.0.8
+Commons Johnzon 1.0.0
+Commons Johnzon 1.1.0
+Commons Johnzon 1.1.2
+Commons Johnzon 1.1.4
+Commons Log 2.0.2
+Commons Log 2.0.4
+Commons Log 2.0.6
+Commons Log 2.1.0
+Commons Log 2.1.2
+Commons Log 3.0.0
+Commons Log 3.0.2
+Commons Log 4.0.0
+Commons Log 4.0.2
+Commons Log 4.0.4
+Commons Log 4.0.6
+Commons Log 5.0.0
+Commons Log 5.0.2
+Commons Log 5.1.0
+Commons Log 5.1.10
+Commons Log 5.1.12
+Commons Log 5.1.2
+Commons Log 5.1.4
+Commons Log 5.1.6
+Commons Log 5.1.8
+Commons Log Service 1.0.0
+Commons Log Service 1.0.2
+Commons Log Service 1.0.4
+Commons Log Service 1.0.6
+Commons Log Service 1.0.8
+Commons Log WebConsole 1.0.0
+Commons Log WebConsole 1.0.2
+Commons Messaging 1.0.0
+Commons Messaging Mail 1.0.0
+Commons Metrics 1.0.0
+Commons Metrics 1.2.0
+Commons Metrics 1.2.2
+Commons Metrics 1.2.6
+Commons Metrics 1.2.8
+Commons Metrics RRD4J 1.0.0
+Commons Metrics RRD4J 1.0.2
+Commons Metrics RRD4J 1.0.4
+Commons Mime 2.0.2
+Commons Mime 2.1.0
+Commons Mime 2.1.10
+Commons Mime 2.1.2
+Commons Mime 2.1.4
+Commons Mime 2.1.6
+Commons Mime 2.1.8
+Commons Mime 2.2.0
+Commons Mime 2.2.2
+Commons OSGi 2.0.2
+Commons OSGi 2.0.4
+Commons OSGi 2.0.6
+Commons OSGi 2.1.0
+Commons OSGi 2.2.0
+Commons OSGi 2.2.2
+Commons OSGi 2.3.0
+Commons OSGi 2.4.0
+Commons OSGi 2.4.2
+Commons Scheduler 2.0.2
+Commons Scheduler 2.0.4
+Commons Scheduler 2.1.0
+Commons Scheduler 2.2.0
+Commons Scheduler 2.3.0
+Commons Scheduler 2.3.2
+Commons Scheduler 2.3.4
+Commons Scheduler 2.4.0
+Commons Scheduler 2.4.10
+Commons Scheduler 2.4.12
+Commons Scheduler 2.4.14
+Commons Scheduler 2.4.2
+Commons Scheduler 2.4.4
+Commons Scheduler 2.4.6
+Commons Scheduler 2.4.8
+Commons Scheduler 2.5.0
+Commons Scheduler 2.5.2
+Commons Scheduler 2.6.0
+Commons Scheduler 2.6.2
+Commons Scheduler 2.7.0
+Commons Scheduler 2.7.2
+Commons Scheduler 2.7.4
+Commons Testing 2.0.10
+Commons Testing 2.0.12
+Commons Testing 2.0.14
+Commons Testing 2.0.16
+Commons Testing 2.0.18
+Commons Testing 2.0.2
+Commons Testing 2.0.22
+Commons Testing 2.0.24
+Commons Testing 2.0.26
+Commons Testing 2.0.6
+Commons Testing 2.0.8
+Commons Testing 2.1.0
+Commons Testing 2.1.2
+Commons Testing 2.1.4
+Commons Threads 2.0.2
+Commons Threads 2.0.4
+Commons Threads 3.0.0
+Commons Threads 3.0.2
+Commons Threads 3.1.0
+Commons Threads 3.2.0
+Commons Threads 3.2.10
+Commons Threads 3.2.16
+Commons Threads 3.2.18
+Commons Threads 3.2.2
+Commons Threads 3.2.20
+Commons Threads 3.2.4
+Commons Threads 3.2.6
+Content Detection Support 1.0.2
+Content Detection Support 1.0.4
+Content Distribution 0.1.0
+Content Distribution API 0.4.0
+Content Distribution Core 0.1.1
+Content Distribution Core 0.1.10
+Content Distribution Core 0.1.12
+Content Distribution Core 0.1.14
+Content Distribution Core 0.1.16
+Content Distribution Core 0.1.18
+Content Distribution Core 0.1.2
+Content Distribution Core 0.1.4
+Content Distribution Core 0.1.6
+Content Distribution Core 0.1.8
+Content Distribution Core 0.2.0
+Content Distribution Core 0.2.10
+Content Distribution Core 0.2.4
+Content Distribution Core 0.2.6
+Content Distribution Core 0.2.8
+Content Distribution Core 0.3.0
+Content Distribution Core 0.3.4
+Content Distribution Core 0.4.0
+Content Distribution Extensions 0.1.0
+Context-Aware Configuration API 1.0.0
+Context-Aware Configuration API 1.1.0
+Context-Aware Configuration API 1.1.2
+Context-Aware Configuration API 1.1.4
+Context-Aware Configuration Impl 1.0.0
+Context-Aware Configuration Impl 1.1.0
+Context-Aware Configuration Impl 1.2.0
+Context-Aware Configuration Impl 1.3.0
+Context-Aware Configuration Impl 1.3.2
+Context-Aware Configuration Impl 1.4.0
+Context-Aware Configuration Impl 1.4.10
+Context-Aware Configuration Impl 1.4.12
+Context-Aware Configuration Impl 1.4.14
+Context-Aware Configuration Impl 1.4.16
+Context-Aware Configuration Impl 1.4.2
+Context-Aware Configuration Impl 1.4.4
+Context-Aware Configuration Impl 1.4.6
+Context-Aware Configuration Impl 1.4.8
+Context-Aware Configuration Mock Plugin 1.0.0
+Context-Aware Configuration Mock Plugin 1.1.0
+Context-Aware Configuration Mock Plugin 1.2.0
+Context-Aware Configuration Mock Plugin 1.3.0
+Context-Aware Configuration Mock Plugin 1.3.2
+Context-Aware Configuration Mock Plugin 1.3.4
+Context-Aware Configuration SPI 1.0.0
+Context-Aware Configuration SPI 1.1.0
+Context-Aware Configuration SPI 1.2.0
+Context-Aware Configuration SPI 1.3.0
+Context-Aware Configuration SPI 1.3.2
+Context-Aware Configuration SPI 1.3.4
+Context-Aware Configuration SPI 1.3.6
+Context-Aware Configuration bnd Plugin 1.0.0
+Context-Aware Configuration bnd Plugin 1.0.2
+Context-Aware Configuration bnd Plugin 1.0.4
+Crankstart Launcher 2.0.0
+Crankstart Test Services 2.0.0
+DataSource Provider 1.0.0
+DataSource Provider 1.0.2
+DataSource Provider 1.0.4
+DataSource Provider 1.1.0
+Discovery API 1.0.0
+Discovery API 1.0.2
+Discovery API 1.0.4
+Discovery Base 1.0.0
+Discovery Base 1.0.2
+Discovery Base 1.1.0
+Discovery Base 1.1.2
+Discovery Base 1.1.4
+Discovery Base 1.1.6
+Discovery Base 2.0.0
+Discovery Base 2.0.10
+Discovery Base 2.0.4
+Discovery Base 2.0.8
+Discovery Commons 1.0.0
+Discovery Commons 1.0.10
+Discovery Commons 1.0.12
+Discovery Commons 1.0.16
+Discovery Commons 1.0.18
+Discovery Commons 1.0.2
+Discovery Commons 1.0.20
+Discovery Commons 1.0.24
+Discovery Commons 1.0.4
+Discovery Commons 1.0.6
+Discovery Commons 1.0.8
+Discovery Impl 1.0.0
+Discovery Impl 1.0.10
+Discovery Impl 1.0.12
+Discovery Impl 1.0.2
+Discovery Impl 1.0.4
+Discovery Impl 1.0.6
+Discovery Impl 1.0.8
+Discovery Impl 1.1.0
+Discovery Impl 1.1.2
+Discovery Impl 1.1.4
+Discovery Impl 1.1.6
+Discovery Impl 1.1.8
+Discovery Impl 1.2.0
+Discovery Impl 1.2.10
+Discovery Impl 1.2.12
+Discovery Impl 1.2.14
+Discovery Impl 1.2.2
+Discovery Impl 1.2.6
+Discovery Impl 1.2.8
+Discovery Oak 1.0.0
+Discovery Oak 1.0.2
+Discovery Oak 1.1.0
+Discovery Oak 1.2.0
+Discovery Oak 1.2.10
+Discovery Oak 1.2.12
+Discovery Oak 1.2.14
+Discovery Oak 1.2.16
+Discovery Oak 1.2.18
+Discovery Oak 1.2.2
+Discovery Oak 1.2.20
+Discovery Oak 1.2.22
+Discovery Oak 1.2.28
+Discovery Oak 1.2.30
+Discovery Oak 1.2.4
+Discovery Oak 1.2.6
+Discovery Oak 1.2.8
+Discovery Standalone 1.0.0
+Discovery Standalone 1.0.2
+Discovery Standalone 1.0.4
+Discovery Support 1.0.0
+Discovery Support 1.0.4
+Distributed Event Admin 1.0.0
+Distributed Event Admin 1.0.2
+Distributed Event Admin 1.0.4
+Distributed Event Admin 1.1.0
+Distributed Event Admin 1.1.2
+Distributed Event Admin 1.1.4
+Distributed Event Admin 1.1.6
+Distribution Core 0.3.6
+Dynamic Include 3.0.0
+Dynamic Include 3.1.0
+Dynamic Include 3.1.2
+Dynamic Include 3.1.4
+Engine 2.0.2
+Engine 2.0.4
+Engine 2.0.6
+Engine 2.1.0
+Engine 2.2.0
+Engine 2.2.10
+Engine 2.2.2
+Engine 2.2.4
+Engine 2.2.6
+Engine 2.2.8
+Engine 2.3.0
+Engine 2.3.10
+Engine 2.3.2
+Engine 2.3.4
+Engine 2.3.6
+Engine 2.3.8
+Engine 2.4.0
+Engine 2.4.2
+Engine 2.4.4
+Engine 2.4.6
+Engine 2.5.0
+Engine 2.6.0
+Engine 2.6.10
+Engine 2.6.12
+Engine 2.6.14
+Engine 2.6.16
+Engine 2.6.18
+Engine 2.6.2
+Engine 2.6.20
+Engine 2.6.4
+Engine 2.6.6
+Engine 2.6.8
+Event 2.0.2
+Event 2.0.4
+Event 2.0.6
+Event 2.1.0
+Event 2.2.0
+Event 2.3.0
+Event 2.4.0
+Event 2.4.2
+Event 3.0.0
+Event 3.0.2
+Event 3.1.0
+Event 3.1.2
+Event 3.1.4
+Event 3.2.0
+Event 3.3.0
+Event 3.3.10
+Event 3.3.12
+Event 3.3.14
+Event 3.3.2
+Event 3.3.4
+Event 3.3.6
+Event 3.4.0
+Event 3.4.2
+Event 3.4.4
+Event 3.5.0
+Event 3.5.2
+Event 3.5.4
+Event 3.6.0
+Event 3.7.0
+Event 3.7.2
+Event 3.7.4
+Event 3.7.6
+Event 4.0.0
+Event 4.0.2
+Event 4.1.0
+Event 4.2.0
+Event 4.2.10
+Event 4.2.12
+Event 4.2.14
+Event 4.2.2
+Event 4.2.4
+Event 4.2.6
+Event 4.2.8
+Event API 1.0.0
+Event API 1.1.0
+Extensions APT Parser 2.0.2
+Extensions APT Server 2.0.2
+Extensions APT Server 2.0.4
+Extensions Adapter 2.0.2
+Extensions OpenID Authentication 0.9.0
+Extensions Thread Dumper 0.1.2
+Extensions Thread Dumper 0.2.0
+Extensions Thread Dumper 0.2.2
+Extensions Thread Dumper 0.2.4
+Extensions Web Console Branding 1.0.2
+Extensions Web Console Branding 1.0.4
+Extensions httpauth 2.0.2
+Extensions httpauth 2.0.4
+Extensions httpauth 2.0.6
+FTP Server 1.0.0
+Failing Server-Side Tests 1.0.6
+Failing Server-Side Tests 1.0.8
+Feature Flags 1.0.0
+Feature Flags 1.0.2
+Feature Flags 1.1.0
+Feature Flags 1.2.0
+Feature Flags 1.2.2
+Feature Flags 1.2.4
+Feature Model 0.1.0
+Feature Model 0.1.2
+Feature Model 0.2.0
+Feature Model 0.8.0
+Feature Model 1.0.0
+Feature Model 1.0.2
+Feature Model Analyser 0.1.0
+Feature Model Analyser 0.1.2
+Feature Model Analyser 0.2.0
+Feature Model Analyser 0.8.0
+Feature Model Analyser 1.0.0
+Feature Model Converter 0.1.0
+Feature Model Converter 0.1.2
+Feature Model Converter 0.2.0
+Feature Model Converter 0.8.0
+Feature Model Converter 1.0.0
+Feature Model IO 0.1.0
+Feature Model IO 0.1.2
+Feature Model IO 0.2.0
+Feature Model IO 0.8.0
+Feature Model IO 1.0.0
+Feature Model IO 1.0.2
+Feature Model Launcher 0.2.0
+Feature Model Launcher 0.8.0
+Feature Model Launcher 1.0.0
+File Installer 1.0.0
+File Installer 1.0.2
+File Installer 1.0.4
+File Installer 1.1.0
+File Installer 1.1.2
+File Optimization 0.9.2
+File System ClassLoader 1.0.0
+File System ClassLoader 1.0.10
+File System ClassLoader 1.0.2
+File System ClassLoader 1.0.4
+File System ClassLoader 1.0.6
+File System ClassLoader 1.0.8
+File System Resource Provider 0.9.2
+File System Resource Provider 1.0.0
+File System Resource Provider 1.0.2
+File System Resource Provider 1.1.0
+File System Resource Provider 1.1.2
+File System Resource Provider 1.1.4
+File System Resource Provider 1.2.2
+File System Resource Provider 1.3.0
+File System Resource Provider 1.4.0
+File System Resource Provider 1.4.10
+File System Resource Provider 1.4.2
+File System Resource Provider 1.4.4
+File System Resource Provider 1.4.6
+File System Resource Provider 1.4.8
+File System Resource Provider 2.0.0
+File System Resource Provider 2.1.0
+File System Resource Provider 2.1.10
+File System Resource Provider 2.1.12
+File System Resource Provider 2.1.14
+File System Resource Provider 2.1.16
+File System Resource Provider 2.1.2
+File System Resource Provider 2.1.4
+File System Resource Provider 2.1.6
+File System Resource Provider 2.1.8
+Form Based Authentication 1.0.0
+Form Based Authentication 1.0.10
+Form Based Authentication 1.0.12
+Form Based Authentication 1.0.14
+Form Based Authentication 1.0.2
+Form Based Authentication 1.0.4
+Form Based Authentication 1.0.6
+Form Based Authentication 1.0.8
+Framework Extension Fragment Activation 1.0.0
+Framework Extension Fragment Activation 1.0.2
+Framework Extension Fragment Activation 1.0.4
+Framework Extension Fragment Servlet API 1.0.0
+Framework Extension Fragment Transaction 1.0.0
+Framework Extension Fragment Transaction 1.0.2
+Framework Extension Fragment WS 1.0.0
+Framework Extension Fragment WS 1.0.2
+Framework Extension Fragment WS 1.0.4
+Framework Extension Fragment XML 1.0.0
+Framework Extension Fragment XML 1.0.2
+Framework Extension Fragment XML 1.0.4
+GWT Support 3.0.0
+GWT Support 3.0.2
+HApi 1.0.0
+HApi 1.1.0
+HApi Client 1.0.0
+HApi Client 1.0.2
+HTL Maven Plugin 1.0.0
+HTL Maven Plugin 1.0.2
+HTL Maven Plugin 1.0.4
+HTL Maven Plugin 1.0.6
+HTL Maven Plugin 1.0.8
+HTL Maven Plugin 1.1.0
+HTL Maven Plugin 1.1.2
+HTL Maven Plugin 1.1.4-1.3.1
+HTL Maven Plugin 1.1.6-1.4.0
+HTL Maven Plugin 1.1.8-1.4.0
+HTL Maven Plugin 1.2.0-1.4.0
+HTL Maven Plugin 1.2.2-1.4.0
+HTL Maven Plugin 1.2.4-1.4.0
+Health Check API 1.0.0
+Health Check API 1.0.2
+Health Check Annotations 1.0.2
+Health Check Annotations 1.0.4
+Health Check Annotations 1.0.6
+Health Check Core 1.0.4
+Health Check Core 1.0.6
+Health Check Core 1.1.0
+Health Check Core 1.1.2
+Health Check Core 1.2.0
+Health Check Core 1.2.10
+Health Check Core 1.2.12
+Health Check Core 1.2.2
+Health Check Core 1.2.4
+Health Check Core 1.2.6
+Health Check Core 1.2.8
+Health Check JMX 1.0.4
+Health Check JMX 1.0.6
+Health Check JUnit Bridge 1.0.2
+Health Check JUnit Bridge 1.0.4
+Health Check Support 1.0.4
+Health Check Support 1.0.6
+Health Check integration tests 1.0.4
+Health Check integration tests 1.0.6
+Health Check samples 1.0.4
+Health Check samples 1.0.6
+Health Check samples 1.0.8
+Health Check webconsole 1.0.4
+Health Check webconsole 1.1.0
+Health Check webconsole 1.1.2
+Health Check webconsole 1.1.4
+I18n 2.0.2
+I18n 2.0.4
+I18n 2.1.0
+I18n 2.1.2
+Initial Content Archetype 1.0.0
+Initial Content Archetype 1.0.4
+Initial Content Archetype 1.0.6
+Initial Content Archetype 1.0.8
+Installer API 1.0.0
+Installer Configuration Factory 1.0.0
+Installer Configuration Factory 1.0.10
+Installer Configuration Factory 1.0.12
+Installer Configuration Factory 1.0.14
+Installer Configuration Factory 1.0.2
+Installer Configuration Factory 1.0.4
+Installer Configuration Factory 1.0.8
+Installer Configuration Factory 1.1.0
+Installer Configuration Factory 1.1.2
+Installer Configuration Factory 1.2.0
+Installer Configuration Factory 1.2.2
+Installer Console 1.0.0
+Installer Console 1.0.2
+Installer Console 1.0.4
+Installer Core 3.0.0
+Installer Core 3.1.0
+Installer Core 3.1.2
+Installer Core 3.2.0
+Installer Core 3.2.2
+Installer Core 3.3.0
+Installer Core 3.3.2
+Installer Core 3.3.4
+Installer Core 3.3.6
+Installer Core 3.3.8
+Installer Core 3.4.0
+Installer Core 3.4.2
+Installer Core 3.4.4
+Installer Core 3.4.6
+Installer Core 3.5.0
+Installer Core 3.5.2
+Installer Core 3.5.4
+Installer Core 3.6.0
+Installer Core 3.6.2
+Installer Core 3.6.4
+Installer Core 3.6.6
+Installer Core 3.6.8
+Installer Core 3.7.0
+Installer Core 3.8.0
+Installer Core 3.8.10
+Installer Core 3.8.12
+Installer Core 3.8.2
+Installer Core 3.8.6
+Installer Core 3.8.8
+Installer Core 3.9.0
+Installer Core 3.9.2
+Installer Health Checks 1.0.0
+Installer Health Checks 2.0.0
+Installer Health Checks 2.0.2
+Installer Packages Factory 1.0.0
+Installer Subsystem Base Factory 1.0.0
+Installer Subsystems Factory 1.0.0
+Installer Subsystems Factory 1.0.2
+Installer Vault Package Install Hook 1.0.2
+Installer Vault Package Install Hook 1.0.4
+JCR API 2.0.2
+JCR API 2.0.4
+JCR API 2.0.6
+JCR API 2.1.0
+JCR API 2.2.0
+JCR API 2.3.0
+JCR API 2.4.0
+JCR API 2.4.2
+JCR Base 2.0.2
+JCR Base 2.0.4
+JCR Base 2.0.6
+JCR Base 2.1.0
+JCR Base 2.1.2
+JCR Base 2.2.0
+JCR Base 2.2.2
+JCR Base 2.3.0
+JCR Base 2.3.2
+JCR Base 2.4.0
+JCR Base 2.4.2
+JCR Base 3.0.0
+JCR Base 3.0.2
+JCR Base 3.0.4
+JCR Base 3.0.6
+JCR Base 3.0.8
+JCR ClassLoader 3.2.0
+JCR ClassLoader 3.2.2
+JCR ClassLoader 3.2.4
+JCR ClassLoader 3.2.6
+JCR Classloader 2.0.2
+JCR Classloader 2.0.6
+JCR Classloader 3.0.0
+JCR Classloader 3.1.0
+JCR Classloader 3.1.10
+JCR Classloader 3.1.12
+JCR Classloader 3.1.2
+JCR Classloader 3.1.4
+JCR Classloader 3.1.6
+JCR Classloader 3.1.8
+JCR Compiler 1.0.0
+JCR Compiler 2.0.0
+JCR Compiler 2.0.2
+JCR Compiler 2.0.4
+JCR Compiler 2.1.0
+JCR Compiler 2.1.2
+JCR Content Parser 1.0.0
+JCR Content Parser 1.1.0
+JCR Content Parser 1.2.0
+JCR Content Parser 1.2.2
+JCR Content Parser 1.2.4
+JCR Content Parser 1.2.6
+JCR Content Parser 1.2.8
+JCR ContentLoader 2.1.0
+JCR ContentLoader 2.1.10
+JCR ContentLoader 2.1.2
+JCR ContentLoader 2.1.4
+JCR ContentLoader 2.1.6
+JCR ContentLoader 2.1.8
+JCR ContentLoader 2.2.0
+JCR ContentLoader 2.2.2
+JCR ContentLoader 2.2.4
+JCR ContentLoader 2.2.6
+JCR ContentLoader 2.3.0
+JCR ContentLoader 2.3.2
+JCR Contentloader 2.0.2
+JCR Contentloader 2.0.4
+JCR Contentloader 2.0.6
+JCR DavEx 1.0.0
+JCR DavEx 1.1.0
+JCR DavEx 1.2.0
+JCR DavEx 1.2.2
+JCR DavEx 1.3.0
+JCR DavEx 1.3.2
+JCR Davex 1.3.10
+JCR Davex 1.3.12
+JCR Davex 1.3.4
+JCR Davex 1.3.8
+JCR File Transfer 1.0.0
+JCR Installer 3.0.0
+JCR Installer 3.0.2
+JCR Installer 3.0.4
+JCR Installer 3.1.0
+JCR Installer 3.1.14
+JCR Installer 3.1.16
+JCR Installer 3.1.18
+JCR Installer 3.1.2
+JCR Installer 3.1.22
+JCR Installer 3.1.24
+JCR Installer 3.1.26
+JCR Installer 3.1.28
+JCR Installer 3.1.4
+JCR Installer 3.1.6
+JCR Installer 3.1.8
+JCR Jackrabbit API 2.0.2
+JCR Jackrabbit Access Manager 2.0.2
+JCR Jackrabbit Access Manager 2.1.0
+JCR Jackrabbit Access Manager 2.1.2
+JCR Jackrabbit Access Manager 3.0.0
+JCR Jackrabbit Access Manager 3.0.2
+JCR Jackrabbit Access Manager 3.0.4
+JCR Jackrabbit Access Manager 3.0.6
+JCR Jackrabbit Client 2.0.2
+JCR Jackrabbit Server 2.0.2
+JCR Jackrabbit Server 2.0.4
+JCR Jackrabbit Server 2.0.6
+JCR Jackrabbit Server 2.1.0
+JCR Jackrabbit Server 2.1.2
+JCR Jackrabbit Server 2.2.0
+JCR Jackrabbit Server 2.3.0
+JCR Jackrabbit Server 2.3.2
+JCR Jackrabbit User Manager 2.0.2
+JCR Jackrabbit User Manager 2.0.4
+JCR Jackrabbit User Manager 2.1.0
+JCR Jackrabbit User Manager 2.2.0
+JCR Jackrabbit User Manager 2.2.10
+JCR Jackrabbit User Manager 2.2.2
+JCR Jackrabbit User Manager 2.2.4
+JCR Jackrabbit User Manager 2.2.6
+JCR Jackrabbit User Manager 2.2.8
+JCR OCM 2.0.2
+JCR OCM 2.0.4
+JCR OCM 2.0.6
+JCR Oak Server 1.0.0
+JCR Oak Server 1.1.0
+JCR Oak Server 1.1.2
+JCR Oak Server 1.1.4
+JCR Oak Server 1.2.0
+JCR Oak Server 1.2.2
+JCR Oak Server 1.2.4
+JCR Prefs 1.0.0
+JCR Prefs 1.0.2
+JCR Registration 1.0.0
+JCR Registration 1.0.2
+JCR Registration 1.0.4
+JCR Registration 1.0.6
+JCR Registration 1.0.8
+JCR Resource 2.0.10
+JCR Resource 2.0.2
+JCR Resource 2.0.4
+JCR Resource 2.0.6
+JCR Resource 2.0.8
+JCR Resource 2.1.0
+JCR Resource 2.2.0
+JCR Resource 2.2.2
+JCR Resource 2.2.4
+JCR Resource 2.2.6
+JCR Resource 2.2.8
+JCR Resource 2.3.0
+JCR Resource 2.3.10
+JCR Resource 2.3.12
+JCR Resource 2.3.2
+JCR Resource 2.3.4
+JCR Resource 2.3.6
+JCR Resource 2.3.8
+JCR Resource 2.4.2
+JCR Resource 2.4.4
+JCR Resource 2.5.0
+JCR Resource 2.5.2
+JCR Resource 2.5.4
+JCR Resource 2.5.6
+JCR Resource 2.7.0
+JCR Resource 2.7.2
+JCR Resource 2.7.4
+JCR Resource 2.8.0
+JCR Resource 2.8.2
+JCR Resource 2.8.4
+JCR Resource 2.9.0
+JCR Resource 2.9.2
+JCR Resource 3.0.0
+JCR Resource 3.0.10
+JCR Resource 3.0.14
+JCR Resource 3.0.16
+JCR Resource 3.0.18
+JCR Resource 3.0.2
+JCR Resource 3.0.20
+JCR Resource 3.0.4
+JCR Resource 3.0.6
+JCR Resource 3.0.8
+JCR Resource Security 1.0.0
+JCR Resource Security 1.0.2
+JCR Resource Security 1.0.4
+JCR Web Console 1.0.0
+JCR Web Console 1.0.2
+JCR Web Console 1.0.4
+JCR Webdav 2.0.2
+JCR Webdav 2.0.6
+JCR Webdav 2.0.8
+JCR Webdav 2.1.0
+JCR Webdav 2.1.2
+JCR Webdav 2.2.0
+JCR Webdav 2.2.2
+JCR Webdav 2.3.0
+JCR Webdav 2.3.10
+JCR Webdav 2.3.2
+JCR Webdav 2.3.4
+JCR Webdav 2.3.8
+JCR Wrapper 2.0.0
+JCRInstall Bundle Archetype 1.0.0
+JCRInstall Bundle Archetype 1.0.2
+JCRInstall Bundle Archetype 1.0.4
+JCRInstall Bundle Archetype 1.0.6
+JCRInstall Bundle Archetype 1.0.8
+JMX Resource Provider 0.5.0
+JMX Resource Provider 0.6.0
+JMX Resource Provider 1.0.0
+JMX Resource Provider 1.0.2
+JMX Resource Provider 1.0.4
+JUnit Core 1.0.10
+JUnit Core 1.0.12
+JUnit Core 1.0.14
+JUnit Core 1.0.16
+JUnit Core 1.0.18
+JUnit Core 1.0.20
+JUnit Core 1.0.22
+JUnit Core 1.0.23
+JUnit Core 1.0.24
+JUnit Core 1.0.26
+JUnit Core 1.0.6
+JUnit Core 1.0.8
+JUnit Health Check 1.0.6
+JUnit Health Check 1.0.8
+JUnit Remote Test Runners 1.0.12
+JUnit Remote Tests Runners 1.0.10
+JUnit Remote Tests Runners 1.0.6
+JUnit Remote Tests Runners 1.0.8
+JUnit Scriptable Tests Provider 1.0.10
+JUnit Scriptable Tests Provider 1.0.12
+JUnit Scriptable Tests Provider 1.0.6
+JUnit Scriptable Tests Provider 1.0.8
+JUnit Tests Teleporter 1.0.10
+JUnit Tests Teleporter 1.0.12
+JUnit Tests Teleporter 1.0.14
+JUnit Tests Teleporter 1.0.16
+JUnit Tests Teleporter 1.0.18
+JUnit Tests Teleporter 1.0.2
+JUnit Tests Teleporter 1.0.20
+JUnit Tests Teleporter 1.0.4
+JUnit Tests Teleporter 1.0.6
+JUnit Tests Teleporter 1.0.8
+Java Version Maven Plugin 1.0.0
+Java Version Maven Plugin 1.0.2
+Karaf 0.2.0
+Karaf Configs 0.2.0
+Karaf Distribution 0.2.0
+Karaf Features 0.2.0
+Karaf Integration Tests 0.2.0
+Karaf Launchpad Integration Tests (Oak Tar) 0.0.2
+Karaf repoinit 0.2.0
+Karaf repoinit 0.2.2
+Launchpad API 1.0.0
+Launchpad API 1.1.0
+Launchpad API 1.2.0
+Launchpad API 1.2.2
+Launchpad API 1.3.0
+Launchpad App 3
+Launchpad App 5
+Launchpad Base 2.0.2
+Launchpad Base 2.0.4
+Launchpad Base 2.1.0
+Launchpad Base 2.3.0
+Launchpad Base 2.4.0
+Launchpad Base 2.5.0
+Launchpad Base 2.5.2
+Launchpad Base 2.5.4
+Launchpad Base 2.5.6
+Launchpad Base 2.5.8
+Launchpad Base 2.6.0
+Launchpad Base 2.6.10
+Launchpad Base 2.6.12
+Launchpad Base 2.6.14
+Launchpad Base 2.6.16
+Launchpad Base 2.6.18
+Launchpad Base 2.6.2
+Launchpad Base 2.6.20
+Launchpad Base 2.6.22
+Launchpad Base 2.6.24
+Launchpad Base 2.6.26
+Launchpad Base 2.6.28
+Launchpad Base 2.6.30
+Launchpad Base 2.6.32
+Launchpad Base 2.6.34
+Launchpad Base 2.6.36
+Launchpad Base 2.6.4
+Launchpad Base 2.6.6
+Launchpad Base 2.6.8
+Launchpad Builder 6
+Launchpad Builder 7
+Launchpad Builder 8
+Launchpad Builder 9
+Launchpad Bundles 5
+Launchpad Content 2.0.12
+Launchpad Content 2.0.14
+Launchpad Content 2.0.2
+Launchpad Content 2.0.4
+Launchpad Content 2.0.6
+Launchpad Content 2.0.8
+Launchpad Installer 1.0.0
+Launchpad Installer 1.0.2
+Launchpad Installer 1.0.4
+Launchpad Installer 1.0.6
+Launchpad Installer 1.1.0
+Launchpad Installer 1.1.2
+Launchpad Installer 1.1.4
+Launchpad Installer 1.2.0
+Launchpad Installer 1.2.2
+Launchpad Installer 1.2.4
+Launchpad Integration Tests 1.0.0
+Launchpad Integration Tests 1.0.2
+Launchpad Integration Tests 1.0.4
+Launchpad Integration Tests 1.0.6
+Launchpad Integration Tests 1.0.8
+Launchpad Integration Tests 12
+Launchpad Standalone Archetype 1.0.0
+Launchpad Standalone Archetype 1.0.2
+Launchpad Test Fragment 2.0.16
+Launchpad Test Services 2.0.12
+Launchpad Test Services 2.0.14
+Launchpad Test Services 2.0.6
+Launchpad Testing 10
+Launchpad Testing 11
+Launchpad Testing 5
+Launchpad Testing 6
+Launchpad Testing Services 2.0.16
+Launchpad Testing War 10
+Launchpad Testing War 11
+Launchpad Webapp 3
+Launchpad Webapp 5
+Launchpad Webapp Archetype 1.0.0
+Launchpad Webapp Archetype 1.0.2
+Log Tail 1.0.0
+Log Tracer 0.0.2
+Log Tracer 1.0.0
+Log Tracer 1.0.2
+Log Tracer 1.0.4
+Log Tracer 1.0.6
+Log Tracer 1.0.8
+Maven JCROCM Plugin 2.0.2
+Maven JCROCM Plugin 2.0.4
+Maven JCROCM Plugin 2.0.6
+Maven JSPC Plugin 2.0.2
+Maven JSPC Plugin 2.0.6
+Maven JSPC Plugin 2.0.8
+Maven JSPC Plugin 2.1.0
+Maven JSPC Plugin 2.1.2
+Maven Launchpad Plugin 2.0.10
+Maven Launchpad Plugin 2.0.6
+Maven Launchpad Plugin 2.0.8
+Maven Launchpad Plugin 2.1.0
+Maven Launchpad Plugin 2.1.2
+Maven Launchpad Plugin 2.2.0
+Maven Launchpad Plugin 2.3.0
+Maven Launchpad Plugin 2.3.2
+Maven Launchpad Plugin 2.3.4
+Maven Launchpad Plugin 2.3.6
+Maven Sling Plugin 2.0.2
+Maven Sling Plugin 2.0.4
+Maven Sling Plugin 2.0.6
+Maven Sling Plugin 2.1.0
+Maven Sling Plugin 2.1.10
+Maven Sling Plugin 2.1.2
+Maven Sling Plugin 2.1.6
+Maven Sling Plugin 2.1.8
+Maven Sling Plugin 2.2.0
+Maven Sling Plugin 2.2.2
+Maven Sling Plugin 2.3.0
+Maven Sling Plugin 2.3.2
+Maven Sling Plugin 2.3.4
+Maven Sling Plugin 2.3.6
+Maven Sling Plugin 2.3.8
+MoM API 1.0.0
+MoM API 1.0.2
+MoM JMS 1.0.0
+MoM JMS 1.0.2
+MoM Jobs 1.0.0
+MoM Jobs 1.0.2
+Mongo Resource Provider 1.0.0
+NoSQL Couchbase Client 1.0.0
+NoSQL Couchbase Client 1.0.2
+NoSQL Couchbase Client 1.0.4
+NoSQL Couchbase Resource Provider 1.0.0
+NoSQL Couchbase Resource Provider 1.1.0
+NoSQL Couchbase Resource Provider 1.1.2
+NoSQL Generic Resource Provider 1.0.0
+NoSQL Generic Resource Provider 1.1.0
+NoSQL Generic Resource Provider 1.1.2
+NoSQL MongoDB Resource Provider 1.0.0
+NoSQL MongoDB Resource Provider 1.1.0
+NoSQL MongoDB Resource Provider 1.1.2
+Oak Restrictions 1.0.0
+Oak Restrictions 1.0.2
+Oak Restrictions 1.0.4
+OpenID Authentication 1.0.0
+OpenID Authentication 1.0.2
+OpenID Authentication 1.0.4
+OpenID Authentication 1.0.6
+Parent 10
+Parent 11
+Parent 12
+Parent 13
+Parent 14
+Parent 15
+Parent 16
+Parent 17
+Parent 18
+Parent 19
+Parent 20
+Parent 22
+Parent 23
+Parent 24
+Parent 25
+Parent 26
+Parent 27
+Parent 28
+Parent 29
+Parent 30
+Parent 31
+Parent 32
+Parent 33
+Parent 34
+Parent 35
+Parent 5
+Parent 6
+Parent 7
+Parent 8
+Parent 9
+Path Based RTP 2.0.2
+Path based RTP 2.0.4
+Pipes 0.0.10
+Pipes 1.0.4
+Pipes 1.1.0
+Pipes 2.0.2
+Pipes 3.0.2
+Pipes 3.1.0
+Pipes 3.2.0
+Portal Container 1.0.0
+Repoinit JCR 1.0.0
+Repoinit JCR 1.0.2
+Repoinit JCR 1.1.0
+Repoinit JCR 1.1.10
+Repoinit JCR 1.1.2
+Repoinit JCR 1.1.4
+Repoinit JCR 1.1.6
+Repoinit JCR 1.1.8
+Repoinit Parser 1.0.2
+Repoinit Parser 1.0.4
+Repoinit Parser 1.1.0
+Repoinit Parser 1.2.0
+Repoinit Parser 1.2.2
+Repoinit Parser 1.2.4
+Request Analyzer 1.0.0
+Resource Access Security 1.0.0
+Resource Access Security 1.0.2
+Resource Builder 1.0.0
+Resource Builder 1.0.2
+Resource Builder 1.0.4
+Resource Builder 1.0.6
+Resource Collections 1.0.0
+Resource Collections 1.0.2
+Resource Collections 1.0.4
+Resource Editor 1.0.2
+Resource Filter 1.0.0
+Resource Filter 1.0.2
+Resource Inventory 0.5.0
+Resource Inventory 1.0.0
+Resource Inventory 1.0.2
+Resource Inventory 1.0.4
+Resource Inventory 1.0.6
+Resource Inventory 1.0.8
+Resource Merger 1.0.0
+Resource Merger 1.1.0
+Resource Merger 1.1.2
+Resource Merger 1.2.0
+Resource Merger 1.2.10
+Resource Merger 1.2.4
+Resource Merger 1.2.6
+Resource Merger 1.2.8
+Resource Merger 1.3.0
+Resource Merger 1.3.10
+Resource Merger 1.3.2
+Resource Merger 1.3.4
+Resource Merger 1.3.6
+Resource Merger 1.3.8
+Resource Presence 0.0.2
+Resource Presence 0.0.4
+Resource Resolver 1.0.0
+Resource Resolver 1.0.2
+Resource Resolver 1.0.4
+Resource Resolver 1.0.6
+Resource Resolver 1.1.0
+Resource Resolver 1.1.10
+Resource Resolver 1.1.12
+Resource Resolver 1.1.14
+Resource Resolver 1.1.2
+Resource Resolver 1.1.4
+Resource Resolver 1.1.6
+Resource Resolver 1.1.8
+Resource Resolver 1.2.0
+Resource Resolver 1.2.2
+Resource Resolver 1.2.4
+Resource Resolver 1.2.6
+Resource Resolver 1.4.0
+Resource Resolver 1.4.10
+Resource Resolver 1.4.12
+Resource Resolver 1.4.14
+Resource Resolver 1.4.16
+Resource Resolver 1.4.18
+Resource Resolver 1.4.2
+Resource Resolver 1.4.4
+Resource Resolver 1.4.8
+Resource Resolver 1.5.0
+Resource Resolver 1.5.10
+Resource Resolver 1.5.12
+Resource Resolver 1.5.14
+Resource Resolver 1.5.18
+Resource Resolver 1.5.2
+Resource Resolver 1.5.20
+Resource Resolver 1.5.22
+Resource Resolver 1.5.24
+Resource Resolver 1.5.26
+Resource Resolver 1.5.28
+Resource Resolver 1.5.30
+Resource Resolver 1.5.32
+Resource Resolver 1.5.34
+Resource Resolver 1.5.36
+Resource Resolver 1.5.4
+Resource Resolver 1.5.6
+Resource Resolver 1.5.8
+Resource Resolver 1.6.0
+Resource Resolver 1.6.10
+Resource Resolver 1.6.4
+Resource Resolver 1.6.6
+Resource Resolver 1.6.8
+Rewriter 1.0.0
+Rewriter 1.0.2
+Rewriter 1.0.4
+Rewriter 1.1.0
+Rewriter 1.1.2
+Rewriter 1.1.4
+Rewriter 1.2.0
+Rewriter 1.2.2
+Rewriter 1.2.4
+SLF4J MDC Filter 1.0.0
+SLF4J MDC Filter 1.0.2
+Sample Integration Tests 1.0.6
+Sample Integration Tests 1.0.8
+Sample Server-Side Tests 1.0.6
+Sample Server-Side Tests 1.0.8
+Samples Fling 0.0.2
+Samples Simple Demo 2.0.2
+Samples Webloader Service 2.0.2
+Samples Webloader UI 2.0.2
+Scripting API 2.0.2
+Scripting API 2.1.0
+Scripting API 2.1.12
+Scripting API 2.1.2
+Scripting API 2.1.4
+Scripting API 2.1.6
+Scripting API 2.1.8
+Scripting API 2.2.0
+Scripting API 2.2.2
+Scripting Bundle Maven Plugin 0.1.0
+Scripting Bundle Tracker 0.1.0
+Scripting Console 1.0.0
+Scripting Console 1.0.2
+Scripting Core 2.0.10
+Scripting Core 2.0.14
+Scripting Core 2.0.16
+Scripting Core 2.0.18
+Scripting Core 2.0.2
+Scripting Core 2.0.20
+Scripting Core 2.0.22
+Scripting Core 2.0.24
+Scripting Core 2.0.26
+Scripting Core 2.0.28
+Scripting Core 2.0.30
+Scripting Core 2.0.32
+Scripting Core 2.0.34
+Scripting Core 2.0.36
+Scripting Core 2.0.38
+Scripting Core 2.0.4
+Scripting Core 2.0.40
+Scripting Core 2.0.44
+Scripting Core 2.0.46
+Scripting Core 2.0.48
+Scripting Core 2.0.50
+Scripting Core 2.0.52
+Scripting Core 2.0.54
+Scripting Core 2.0.56
+Scripting Core 2.0.58
+Scripting Core 2.0.6
+Scripting Core 2.0.8
+Scripting EL API Wrapper 1.0.0
+Scripting ESX 0.2.0
+Scripting FreeMarker 1.0.0
+Scripting FreeMarker 1.0.2
+Scripting Groovy 1.0.0
+Scripting Groovy 1.0.2
+Scripting Groovy 1.0.4
+Scripting Groovy 1.0.6
+Scripting HTL Compiler 1.0.0
+Scripting HTL Compiler 1.0.10
+Scripting HTL Compiler 1.0.12
+Scripting HTL Compiler 1.0.14
+Scripting HTL Compiler 1.0.16
+Scripting HTL Compiler 1.0.2
+Scripting HTL Compiler 1.0.20-1.3.1
+Scripting HTL Compiler 1.0.22-1.4.0
+Scripting HTL Compiler 1.0.4
+Scripting HTL Compiler 1.0.6
+Scripting HTL Compiler 1.0.8
+Scripting HTL Compiler 1.1.0-1.4.0
+Scripting HTL Compiler 1.1.2-1.4.0
+Scripting HTL Engine 1.0.20
+Scripting HTL Engine 1.0.22
+Scripting HTL Engine 1.0.24
+Scripting HTL Engine 1.0.26
+Scripting HTL Engine 1.0.28
+Scripting HTL Engine 1.0.30
+Scripting HTL Engine 1.0.32
+Scripting HTL Engine 1.0.34
+Scripting HTL Engine 1.0.36
+Scripting HTL Engine 1.0.38
+Scripting HTL Engine 1.0.40
+Scripting HTL Engine 1.0.42
+Scripting HTL Engine 1.0.44
+Scripting HTL Engine 1.0.46
+Scripting HTL Engine 1.0.48-1.3.1
+Scripting HTL Engine 1.0.52-1.3.1
+Scripting HTL Engine 1.0.54-1.4.0
+Scripting HTL Engine 1.0.56-1.4.0
+Scripting HTL Engine 1.1.0-1.4.0
+Scripting HTL Engine 1.1.2-1.4.0
+Scripting HTL JS Use Provider 1.0.12
+Scripting HTL JS Use Provider 1.0.14
+Scripting HTL JS Use Provider 1.0.16
+Scripting HTL JS Use Provider 1.0.18
+Scripting HTL JS Use Provider 1.0.20
+Scripting HTL JS Use Provider 1.0.22
+Scripting HTL JS Use Provider 1.0.24
+Scripting HTL JS Use Provider 1.0.26
+Scripting HTL JS Use Provider 1.0.28
+Scripting HTL Java Compiler 1.0.0
+Scripting HTL Java Compiler 1.0.10
+Scripting HTL Java Compiler 1.0.12
+Scripting HTL Java Compiler 1.0.14
+Scripting HTL Java Compiler 1.0.16
+Scripting HTL Java Compiler 1.0.18
+Scripting HTL Java Compiler 1.0.2
+Scripting HTL Java Compiler 1.0.22-1.3.1
+Scripting HTL Java Compiler 1.0.24-1.4.0
+Scripting HTL Java Compiler 1.0.26-1.4.0
+Scripting HTL Java Compiler 1.0.4
+Scripting HTL Java Compiler 1.0.6
+Scripting HTL Java Compiler 1.0.8
+Scripting HTL Java Compiler 1.1.0-1.4.0
+Scripting HTL Java Compiler 1.1.2-1.4.0
+Scripting HTL Models Use Provider 1.0.2
+Scripting HTL Models Use Provider 1.0.4
+Scripting HTL Models Use Provider 1.0.6
+Scripting HTL Models Use Provider 1.0.8
+Scripting HTL REPL 1.0.4
+Scripting HTL REPL 1.0.6
+Scripting HTL Runtime 1.0.0-1.4.0
+Scripting HTL Runtime 1.1.0-1.4.0
+Scripting HTL Testing 1.0.10-1.4.0
+Scripting HTL Testing 1.0.12-1.4.0
+Scripting HTL Testing 1.0.14-1.4.0
+Scripting HTL Testing 1.0.6-1.3.1
+Scripting HTL Testing 1.0.8-1.3.1
+Scripting HTL Testing Content 1.0.10-1.4.0
+Scripting HTL Testing Content 1.0.12-1.4.0
+Scripting HTL Testing Content 1.0.14-1.4.0
+Scripting HTL Testing Content 1.0.8-1.3.1
+Scripting JSP 2.0.10
+Scripting JSP 2.0.12
+Scripting JSP 2.0.14
+Scripting JSP 2.0.16
+Scripting JSP 2.0.18
+Scripting JSP 2.0.2
+Scripting JSP 2.0.20
+Scripting JSP 2.0.22
+Scripting JSP 2.0.24
+Scripting JSP 2.0.26
+Scripting JSP 2.0.28
+Scripting JSP 2.0.6
+Scripting JSP 2.0.8
+Scripting JSP 2.1.0
+Scripting JSP 2.1.4
+Scripting JSP 2.1.6
+Scripting JSP 2.1.8
+Scripting JSP 2.2.0
+Scripting JSP 2.2.2
+Scripting JSP 2.2.4
+Scripting JSP 2.2.6
+Scripting JSP 2.3.0
+Scripting JSP 2.3.2
+Scripting JSP 2.3.4
+Scripting JSP API Wrapper 1.0.0
+Scripting JSP Taglib 2.2.6
+Scripting JSP Taglib 2.3.0
+Scripting JSP Taglib 2.4.0
+Scripting JSP Taglib 2.4.2
+Scripting JSP Taglib Compat 1.0.0
+Scripting JSP-Atom-Taglib 1.0.0
+Scripting JSP-Taglib 2.0.2
+Scripting JSP-Taglib 2.0.4
+Scripting JSP-Taglib 2.0.6
+Scripting JSP-Taglib 2.1.0
+Scripting JSP-Taglib 2.1.2
+Scripting JSP-Taglib 2.1.6
+Scripting JSP-Taglib 2.1.8
+Scripting JSP-Taglib 2.2.0
+Scripting JSP-Taglib 2.2.2
+Scripting JSP-Taglib 2.2.4
+Scripting JSP-Taglib 2.2.6
+Scripting JST 2.0.4
+Scripting JST 2.0.6
+Scripting JST 2.0.8
+Scripting Java 1.0.0
+Scripting Java 2.0.0
+Scripting Java 2.0.10
+Scripting Java 2.0.12
+Scripting Java 2.0.14
+Scripting Java 2.0.2
+Scripting Java 2.0.4
+Scripting Java 2.0.6
+Scripting Java 2.1.0
+Scripting Java 2.1.2
+Scripting Java 2.1.4
+Scripting JavaScript 2.0.10
+Scripting JavaScript 2.0.12
+Scripting JavaScript 2.0.14
+Scripting JavaScript 2.0.16
+Scripting JavaScript 2.0.18
+Scripting JavaScript 2.0.2
+Scripting JavaScript 2.0.20
+Scripting JavaScript 2.0.22
+Scripting JavaScript 2.0.24
+Scripting JavaScript 2.0.26
+Scripting JavaScript 2.0.28
+Scripting JavaScript 2.0.30
+Scripting JavaScript 2.0.6
+Scripting JavaScript 2.0.8
+Scripting JavaScript 3.0.0
+Scripting JavaScript 3.0.2
+Scripting JavaScript 3.0.4
+Scripting JavaScript 3.0.6
+Scripting Scala 1.0.0
+Scripting Sightly Engine 1.0.0
+Scripting Sightly Engine 1.0.10
+Scripting Sightly Engine 1.0.12
+Scripting Sightly Engine 1.0.14
+Scripting Sightly Engine 1.0.16
+Scripting Sightly Engine 1.0.18
+Scripting Sightly Engine 1.0.2
+Scripting Sightly Engine 1.0.4
+Scripting Sightly Engine 1.0.6
+Scripting Sightly JS Use Provider 1.0.0
+Scripting Sightly JS Use Provider 1.0.10
+Scripting Sightly JS Use Provider 1.0.4
+Scripting Sightly JS Use Provider 1.0.6
+Scripting Sightly JS Use Provider 1.0.8
+Scripting Sightly Models Use Provider 1.0.0
+Scripting Sightly REPL 1.0.0
+Scripting Sightly REPL 1.0.2
+Scripting Thymeleaf 0.0.2
+Scripting Thymeleaf 0.0.4
+Scripting Thymeleaf 0.0.6
+Scripting Thymeleaf 1.0.0
+Scripting Thymeleaf 1.1.0
+Scripting Thymeleaf 2.0.0
+Scripting Thymeleaf 2.0.2
+Scripting Velocity 2.0.0
+Scripting Velocity 2.0.2
+Security 1.0.0
+Security 1.0.10
+Security 1.0.12
+Security 1.0.14
+Security 1.0.16
+Security 1.0.18
+Security 1.0.2
+Security 1.0.4
+Security 1.0.6
+Security 1.0.8
+Security 1.1.0
+Security 1.1.10
+Security 1.1.12
+Security 1.1.16
+Security 1.1.18
+Security 1.1.2
+Security 1.1.4
+Security 1.1.6
+Security 1.1.8
+Service User Mapper 1.0.0
+Service User Mapper 1.0.2
+Service User Mapper 1.0.4
+Service User Mapper 1.1.0
+Service User Mapper 1.2.0
+Service User Mapper 1.2.2
+Service User Mapper 1.2.4
+Service User Mapper 1.2.6
+Service User Mapper 1.3.0
+Service User Mapper 1.3.2
+Service User Mapper 1.3.4
+Service User Mapper 1.3.6
+Service User Mapper 1.4.0
+Service User Mapper 1.4.2
+Service User Mapper 1.4.4
+Service User Mapper 1.4.6
+Service User WebConsole 1.0.2
+Servlet Archetype 1.0.0
+Servlet Archetype 1.0.2
+Servlet Archetype 1.0.4
+Servlet Archetype 1.0.6
+Servlet Helpers 1.0.0
+Servlet Helpers 1.0.2
+Servlet Helpers 1.1.0
+Servlet Helpers 1.1.10
+Servlet Helpers 1.1.12
+Servlet Helpers 1.1.2
+Servlet Helpers 1.1.4
+Servlet Helpers 1.1.6
+Servlet Helpers 1.1.8
+Servlets Compat 1.0.0
+Servlets Get 2.0.2
+Servlets Get 2.0.4
+Servlets Get 2.0.6
+Servlets Get 2.0.8
+Servlets Get 2.1.0
+Servlets Get 2.1.10
+Servlets Get 2.1.12
+Servlets Get 2.1.14
+Servlets Get 2.1.18
+Servlets Get 2.1.2
+Servlets Get 2.1.20
+Servlets Get 2.1.22
+Servlets Get 2.1.24
+Servlets Get 2.1.26
+Servlets Get 2.1.28
+Servlets Get 2.1.30
+Servlets Get 2.1.32
+Servlets Get 2.1.34
+Servlets Get 2.1.36
+Servlets Get 2.1.38
+Servlets Get 2.1.4
+Servlets Get 2.1.40
+Servlets Get 2.1.42
+Servlets Get 2.1.6
+Servlets Get 2.1.8
+Servlets Post 2.0.2
+Servlets Post 2.0.4
+Servlets Post 2.1.0
+Servlets Post 2.1.2
+Servlets Post 2.2.0
+Servlets Post 2.3.0
+Servlets Post 2.3.10
+Servlets Post 2.3.12
+Servlets Post 2.3.14
+Servlets Post 2.3.16
+Servlets Post 2.3.18
+Servlets Post 2.3.2
+Servlets Post 2.3.20
+Servlets Post 2.3.22
+Servlets Post 2.3.24
+Servlets Post 2.3.26
+Servlets Post 2.3.28
+Servlets Post 2.3.30
+Servlets Post 2.3.4
+Servlets Post 2.3.6
+Servlets Post 2.3.8
+Servlets Resolver 2.0.4
+Servlets Resolver 2.0.8
+Servlets Resolver 2.1.0
+Servlets Resolver 2.1.2
+Servlets Resolver 2.2.0
+Servlets Resolver 2.2.4
+Servlets Resolver 2.3.0
+Servlets Resolver 2.3.2
+Servlets Resolver 2.3.4
+Servlets Resolver 2.3.6
+Servlets Resolver 2.3.8
+Servlets Resolver 2.4.0
+Servlets Resolver 2.4.10
+Servlets Resolver 2.4.12
+Servlets Resolver 2.4.14
+Servlets Resolver 2.4.2
+Servlets Resolver 2.4.20
+Servlets Resolver 2.4.22
+Servlets Resolver 2.4.24
+Servlets Resolver 2.4.4
+Servlets Resolver 2.4.6
+Servlets Resolver 2.4.8
+Servlets Resolver 2.5.2
+Settings 1.0.0
+Settings 1.0.2
+Settings 1.1.0
+Settings 1.2.0
+Settings 1.2.2
+Settings 1.3.0
+Settings 1.3.10
+Settings 1.3.12
+Settings 1.3.2
+Settings 1.3.4
+Settings 1.3.6
+Settings 1.3.8
+Sling Eclipse IDE 1.0.0
+Sling Eclipse IDE 1.0.10
+Sling Eclipse IDE 1.0.2
+Sling Eclipse IDE 1.0.4
+Sling Eclipse IDE 1.0.6
+Sling Eclipse IDE 1.0.8
+Sling Eclipse IDE 1.1.0
+Sling Eclipse IDE 1.2.0
+Sling Eclipse IDE 1.2.2
+Sling Eclipse IDE 1.2.4
+Sling Explorer 1.0.0
+Sling Explorer 1.0.2
+Sling Explorer 1.0.4
+Sling Explorer 1.0.6
+Sling JUnit Performance 1.0.2
+Sling JUnit Performance 1.0.4
+Sling Maven Plugin 2.4.0
+Sling Maven Plugin 2.4.2
+Sling Models API 1.0.0
+Sling Models API 1.0.2
+Sling Models API 1.1.0
+Sling Models API 1.2.0
+Sling Models API 1.2.2
+Sling Models API 1.3.0
+Sling Models API 1.3.10
+Sling Models API 1.3.2
+Sling Models API 1.3.4
+Sling Models API 1.3.6
+Sling Models API 1.3.8
+Sling Models Impl 1.2.0
+Sling Models Impl 1.2.2
+Sling Models Impl 1.2.4
+Sling Models Impl 1.2.6
+Sling Models Impl 1.2.8
+Sling Models Impl 1.3.0
+Sling Models Impl 1.3.2
+Sling Models Impl 1.3.4
+Sling Models Impl 1.3.6
+Sling Models Impl 1.3.8
+Sling Models Impl 1.4.0
+Sling Models Impl 1.4.10
+Sling Models Impl 1.4.12
+Sling Models Impl 1.4.2
+Sling Models Impl 1.4.4
+Sling Models Impl 1.4.6
+Sling Models Impl 1.4.8
+Sling Models Implementation 1.0.0
+Sling Models Implementation 1.0.2
+Sling Models Implementation 1.0.4
+Sling Models Implementation 1.0.6
+Sling Models Implementation 1.1.0
+Sling Models Jackson Exporter 1.0.0
+Sling Models Jackson Exporter 1.0.10
+Sling Models Jackson Exporter 1.0.2
+Sling Models Jackson Exporter 1.0.4
+Sling Models Jackson Exporter 1.0.6
+Sling Models Jackson Exporter 1.0.8
+Sling Models Validation Impl 1.0.0
+Sling Models bnd Plugin 1.0.0
+Sling Pax Exam Utilities 1.0.2
+Sling Pax Exam Utilities 1.0.4
+Sling Pax Exam Utilities 1.0.6
+Sling Provisioning Model 1.0.0
+Sling Provisioning Model 1.1.0
+Sling Provisioning Model 1.2.0
+Sling Provisioning Model 1.3.0
+Sling Provisioning Model 1.4.0
+Sling Provisioning Model 1.4.2
+Sling Provisioning Model 1.4.4
+Sling Provisioning Model 1.5.0
+Sling Provisioning Model 1.6.0
+Sling Provisioning Model 1.7.0
+Sling Provisioning Model 1.8.0
+Sling Provisioning Model 1.8.2
+Sling Provisioning Model 1.8.4
+Sling Provisioning Model 1.8.6
+Sling Query 2.0.0
+Sling Query 3.0.0
+Sling Query 4.0.0
+Sling Query 4.0.2
+Sling Query 4.0.4
+Sling Servlet Annotations 1.0.0
+Sling Servlet Annotations 1.1.0
+Sling Servlet Annotations 1.2.4
+Slingshot 0.8.0
+Slingshot 0.9.0
+Slingshot 0.9.2
+Slingstart Archetype 1.0.0
+Slingstart Archetype 1.0.2
+Slingstart Archetype 1.0.6
+Slingstart Archetype 1.0.8
+Slingstart Maven Plugin 1.0.0
+Slingstart Maven Plugin 1.0.2
+Slingstart Maven Plugin 1.0.4
+Slingstart Maven Plugin 1.1.0
+Slingstart Maven Plugin 1.2.0
+Slingstart Maven Plugin 1.3.0
+Slingstart Maven Plugin 1.3.2
+Slingstart Maven Plugin 1.3.4
+Slingstart Maven Plugin 1.3.6
+Slingstart Maven Plugin 1.4.0
+Slingstart Maven Plugin 1.4.2
+Slingstart Maven Plugin 1.4.4
+Slingstart Maven Plugin 1.5.0
+Slingstart Maven Plugin 1.6.0
+Slingstart Maven Plugin 1.7.0
+Slingstart Maven Plugin 1.7.10
+Slingstart Maven Plugin 1.7.14
+Slingstart Maven Plugin 1.7.16
+Slingstart Maven Plugin 1.7.2
+Slingstart Maven Plugin 1.7.4
+Slingstart Maven Plugin 1.7.6
+Slingstart Maven Plugin 1.7.8
+Slingstart Maven Plugin 1.8.2
+Slingstart Maven Plugin 1.8.4
+Starter 10
+Starter 11
+Starter 12
+Starter Content 1.0.0
+Starter Content 1.0.2
+Starter Content 1.0.4
+Starter Startup 1.0.2
+Starter Startup 1.0.4
+Starter Startup 1.0.6
+Starter Startup 1.0.8
+Superimposing Resource Provider 0.2.0
+Superimposing Resource Provider 0.4.0
+Taglib Archetype 1.0.0
+Tenant 1.0.0
+Tenant 1.0.2
+Tenant 1.1.0
+Tenant 1.1.2
+Tenant 1.1.4
+Tenant 1.1.6
+Testing Clients 1.1.6
+Testing Email 1.0.0
+Testing Email 1.0.2
+Testing Hamcrest 1.0.0
+Testing Hamcrest 1.0.2
+Testing Hamcrest 1.0.4
+Testing JCR Mock 1.0.0
+Testing JCR Mock 1.1.0
+Testing JCR Mock 1.1.10
+Testing JCR Mock 1.1.12
+Testing JCR Mock 1.1.14
+Testing JCR Mock 1.1.16
+Testing JCR Mock 1.1.2
+Testing JCR Mock 1.1.4
+Testing JCR Mock 1.1.6
+Testing JCR Mock 1.1.8
+Testing JCR Mock 1.2.0
+Testing JCR Mock 1.3.0
+Testing JCR Mock 1.3.2
+Testing JCR Mock 1.3.4
+Testing JCR Mock 1.3.6
+Testing JCR Mock 1.4.0
+Testing JCR Mock 1.4.2
+Testing JCR Mock 1.4.4
+Testing JCR Mock 1.4.6
+Testing Logging Mock 1.0.0
+Testing Logging Mock 2.0.0
+Testing Logging Mock 2.0.2
+Testing OSGi Mock 1.0.0
+Testing OSGi Mock 1.1.0
+Testing OSGi Mock 1.2.0
+Testing OSGi Mock 1.3.0
+Testing OSGi Mock 1.4.0
+Testing OSGi Mock 1.5.0
+Testing OSGi Mock 1.6.0
+Testing OSGi Mock 1.7.0
+Testing OSGi Mock 1.7.2
+Testing OSGi Mock 1.8.0
+Testing OSGi Mock 1.9.0
+Testing OSGi Mock 1.9.2
+Testing OSGi Mock 1.9.4
+Testing OSGi Mock 1.9.6
+Testing OSGi Mock 1.9.8
+Testing OSGi Mock 2.0.0
+Testing OSGi Mock 2.0.2
+Testing OSGi Mock 2.0.4
+Testing OSGi Mock 2.1.0
+Testing OSGi Mock 2.2.0
+Testing OSGi Mock 2.2.2
+Testing OSGi Mock 2.2.4
+Testing OSGi Mock 2.3.0
+Testing OSGi Mock 2.3.10
+Testing OSGi Mock 2.3.2
+Testing OSGi Mock 2.3.4
+Testing OSGi Mock 2.3.6
+Testing OSGi Mock 2.3.8
+Testing OSGi Mock 2.4.0
+Testing OSGi Mock 2.4.10
+Testing OSGi Mock 2.4.2
+Testing OSGi Mock 2.4.4
+Testing OSGi Mock 2.4.6
+Testing OSGi Mock 2.4.8
+Testing PaxExam 0.0.2
+Testing PaxExam 0.0.4
+Testing PaxExam 1.0.0
+Testing PaxExam 2.0.0
+Testing PaxExam 3.0.0
+Testing ResourceResolver Mock 0.1.0
+Testing ResourceResolver Mock 0.2.0
+Testing ResourceResolver Mock 0.3.0
+Testing ResourceResolver Mock 1.0.0
+Testing ResourceResolver Mock 1.1.0
+Testing ResourceResolver Mock 1.1.10
+Testing ResourceResolver Mock 1.1.12
+Testing ResourceResolver Mock 1.1.14
+Testing ResourceResolver Mock 1.1.16
+Testing ResourceResolver Mock 1.1.18
+Testing ResourceResolver Mock 1.1.2
+Testing ResourceResolver Mock 1.1.20
+Testing ResourceResolver Mock 1.1.22
+Testing ResourceResolver Mock 1.1.24
+Testing ResourceResolver Mock 1.1.26
+Testing ResourceResolver Mock 1.1.4
+Testing ResourceResolver Mock 1.1.6
+Testing ResourceResolver Mock 1.1.8
+Testing Rules 1.0.0
+Testing Sling Mock 1.0.0
+Testing Sling Mock 1.1.0
+Testing Sling Mock 1.1.2
+Testing Sling Mock 1.2.0
+Testing Sling Mock 1.3.0
+Testing Sling Mock 1.4.0
+Testing Sling Mock 1.5.0
+Testing Sling Mock 1.6.0
+Testing Sling Mock 1.6.2
+Testing Sling Mock 1.7.0
+Testing Sling Mock 1.8.0
+Testing Sling Mock 1.9.0
+Testing Sling Mock 1.9.10
+Testing Sling Mock 1.9.12
+Testing Sling Mock 1.9.2
+Testing Sling Mock 1.9.4
+Testing Sling Mock 1.9.6
+Testing Sling Mock 1.9.8
+Testing Sling Mock 2.0.0
+Testing Sling Mock 2.1.0
+Testing Sling Mock 2.1.2
+Testing Sling Mock 2.2.0
+Testing Sling Mock 2.2.10
+Testing Sling Mock 2.2.12
+Testing Sling Mock 2.2.14
+Testing Sling Mock 2.2.16
+Testing Sling Mock 2.2.18
+Testing Sling Mock 2.2.2
+Testing Sling Mock 2.2.20
+Testing Sling Mock 2.2.4
+Testing Sling Mock 2.2.6
+Testing Sling Mock 2.2.8
+Testing Sling Mock 2.3.0
+Testing Sling Mock 2.3.2
+Testing Sling Mock 2.3.4
+Testing Sling Mock 2.3.6
+Testing Sling Mock Jackrabbit 0.1.0
+Testing Sling Mock Jackrabbit 0.1.2
+Testing Sling Mock Jackrabbit 1.0.0
+Testing Sling Mock Oak 1.0.0
+Testing Sling Mock Oak 1.0.2
+Testing Sling Mock Oak 2.0.0
+Testing Sling Mock Oak 2.0.2
+Testing Sling Mock Oak 2.1.0
+Testing Sling Mock Oak 2.1.2
+Testing Sling Mock Oak 2.1.4
+Tooling Support Install 1.0.0
+Tooling Support Install 1.0.2
+Tooling Support Install 1.0.4
+Tooling Support Install 1.0.6
+Tooling Support Source 1.0.0
+Tooling Support Source 1.0.2
+Tooling Support Source 1.0.4
+Tooling Support Source 1.0.6
+URL Rewriter 0.0.2
+URL Rewriter 0.0.4
+Validation 1.0.0
+Validation API 1.0.2
+Validation Core 1.0.4
+Validation Core 1.0.6
+Version App CMS 0.11.4
+Web Console Security Provider 1.0.0
+Web Console Security Provider 1.1.0
+Web Console Security Provider 1.1.2
+Web Console Security Provider 1.1.4
+Web Console Security Provider 1.1.6
+Web Console Security Provider 1.2.0
+Web Console Security Provider 1.2.2
+XSS Protection API 1.0.0
+XSS Protection API 1.0.12
+XSS Protection API 1.0.14
+XSS Protection API 1.0.16
+XSS Protection API 1.0.18
+XSS Protection API 1.0.2
+XSS Protection API 1.0.4
+XSS Protection API 1.0.6
+XSS Protection API 1.0.8
+XSS Protection API 2.0.0
+XSS Protection API 2.0.10
+XSS Protection API 2.0.12
+XSS Protection API 2.0.14
+XSS Protection API 2.0.4
+XSS Protection API 2.0.6
+XSS Protection API 2.0.8
+XSS Protection API 2.1.0
+XSS Protection API 2.1.4
+XSS Protection API 2.2.0
+XSS Protection API Compat 1.1.0
+bnd Plugins 0.0.2
+commons metrics 1.2.4
+i18n 2.2.10
+i18n 2.2.2
+i18n 2.2.4
+i18n 2.2.6
+i18n 2.2.8
+i18n 2.3.2
+i18n 2.4.10
+i18n 2.4.2
+i18n 2.4.4
+i18n 2.4.6
+i18n 2.4.8
+i18n 2.5.0
+i18n 2.5.10
+i18n 2.5.12
+i18n 2.5.14
+i18n 2.5.2
+i18n 2.5.4
+i18n 2.5.6
+i18n 2.5.8
+javax.activation 0.1.0
+javax.activation 0.2.0
+org.apache.sling.testing.tools 1.0.10
+org.apache.sling.testing.tools 1.0.12
+org.apache.sling.testing.tools 1.0.14
+org.apache.sling.testing.tools 1.0.16
+org.apache.sling.testing.tools 1.0.4
+org.apache.sling.testing.tools 1.0.6
+org.apache.sling.testing.tools 1.0.8
+slingfeature-maven-plugin 0.8.0
+slingfeature-maven-plugin 1.0.0

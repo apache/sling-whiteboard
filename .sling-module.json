@@ -1,0 +1,6 @@
+{
+    "jenkins": {
+        "sonarCloud": true
+    }
+}
+

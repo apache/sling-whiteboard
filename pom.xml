@@ -30,7 +30,7 @@
     <groupId>org.apache.sling</groupId>
     <artifactId>sling-whiteboard-builder</artifactId>
     <packaging>pom</packaging>
-    <version>1-SNAPSHOT</version>
+    <version>1</version>
 
     <name>Apache Sling Whiteboard (Builder)</name>
     <description>
@@ -40,6 +40,9 @@
 
     <modules>
           <module>mdresourceprovider</module>
+<!-- disabled until parent pom 35 is released 
+          <module>cli</module>
+-->
     </modules>
 </project>
 
