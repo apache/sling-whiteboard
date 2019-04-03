@@ -33,7 +33,11 @@ public final class FeatureDiff {
             throw new IllegalArgumentException("Feature comparison has to be related to different versions of the same Feature.");
         }
 
-        FeatureDiff featureDiff = new FeatureDiff();
+        if (previous.getId().equals(current.getId())) {
+            throw new IllegalArgumentException("Input Features refer to the the same Feature version.");
+        }
+
+        FeatureDiff featureDiff = new FeatureDiff(previous, current);
 
         featureDiff.addSection(new GenericMapComparator("framework-properties").compare(previous.getFrameworkProperties(), current.getFrameworkProperties()));
         featureDiff.addSection(new ArtifactsComparator("bundles").apply(previous.getBundles(), current.getBundles()));
@@ -45,8 +49,22 @@ public final class FeatureDiff {
 
     private final List<DiffSection> diffSections = new LinkedList<>();
 
-    private FeatureDiff() {
-        // this class can not be instantiated from outside
+    private final Feature previous;
+
+    private final Feature current;
+
+    // this class can not be instantiated from outside
+    private FeatureDiff(Feature previous, Feature current) {
+        this.previous = previous;
+        this.current = current;
+    }
+
+    public Feature getPrevious() {
+        return previous;
+    }
+
+    public Feature getCurrent() {
+        return current;
     }
 
     protected void addSection(DiffSection diffSection) {

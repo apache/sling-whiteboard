@@ -19,6 +19,7 @@ package org.apache.sling.feature.diff;
 import static org.apache.sling.feature.diff.FeatureDiff.compareFeatures;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
@@ -41,6 +42,23 @@ public class FeatureDiffTest {
         Feature previous = new Feature(ArtifactId.fromMvnId("org.apache.sling:org.apache.sling.feature.apiregions:1.0.0"));
         Feature current = new Feature(ArtifactId.fromMvnId("org.apache.sling:org.apache.sling.feature.diff:1.0.0"));
         compareFeatures(previous, current);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void doesNotAcceptSameFeature() {
+        Feature previous = new Feature(ArtifactId.fromMvnId("org.apache.sling:org.apache.sling.feature.diff:1.0.0"));
+        Feature current = new Feature(ArtifactId.fromMvnId("org.apache.sling:org.apache.sling.feature.diff:1.0.0"));
+        compareFeatures(previous, current);
+    }
+
+    @Test
+    public void keepFeatureInputs() {
+        Feature previous = new Feature(ArtifactId.fromMvnId("org.apache.sling:org.apache.sling.feature.diff:0.9.0"));
+        Feature current = new Feature(ArtifactId.fromMvnId("org.apache.sling:org.apache.sling.feature.diff:1.0.0"));
+        FeatureDiff featureDiff = compareFeatures(previous, current);
+        assertTrue(featureDiff.isEmpty());
+        assertEquals(previous, featureDiff.getPrevious());
+        assertEquals(current, featureDiff.getCurrent());
     }
 
     @Test
