@@ -69,6 +69,14 @@
       <scope>provided</scope>
     </dependency>
 
+    <!-- Serialize the JSON FeatureDiff -->
+    <dependency>
+      <groupId>org.apache.geronimo.specs</groupId>
+      <artifactId>geronimo-json_1.0_spec</artifactId>
+      <version>1.0-alpha-1</version>
+      <scope>provided</scope>
+    </dependency>
+
     <!--
      | Test only dependencies
     -->
@@ -78,9 +86,9 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <version>2.25.0</version>
+      <groupId>org.apache.johnzon</groupId>
+      <artifactId>johnzon-core</artifactId>
+      <version>1.0.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

@@ -78,6 +78,22 @@ public final class DiffSection {
         return updates;
     }
 
+    public boolean hasAdded() {
+        return !added.isEmpty();
+    }
+
+    public boolean hasRemoved() {
+        return !removed.isEmpty();
+    }
+
+    public boolean hasUpdatedItems() {
+        return !updatedItems.isEmpty();
+    }
+
+    public boolean hasUpdates() {
+        return !updates.isEmpty();
+    }
+
     public boolean isEmpty() {
         return added.isEmpty()
                 && removed.isEmpty()
