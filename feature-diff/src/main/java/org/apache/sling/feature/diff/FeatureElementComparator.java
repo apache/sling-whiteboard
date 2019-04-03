@@ -20,10 +20,4 @@ import java.util.function.BiFunction;
 
 public interface FeatureElementComparator<T, I extends Iterable<T>> extends BiFunction<I, I, DiffSection> {
 
-    String getId(T item);
-
-    T find(T item, I collection);
-
-    DiffSection compare(T previous, T current);
-
 }

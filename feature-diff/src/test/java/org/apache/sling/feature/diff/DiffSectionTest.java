@@ -16,7 +16,9 @@
  */
 package org.apache.sling.feature.diff;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
@@ -45,9 +47,7 @@ public class DiffSectionTest {
         addedDiff.markAdded(expectedAddedValue);
 
         assertFalse(addedDiff.isEmpty());
-        for (String currentAddedValue : addedDiff.getAdded()) {
-            assertEquals(expectedAddedValue, currentAddedValue);
-        }
+        assertEquals(addedDiff.getAdded().iterator().next(), expectedAddedValue);
     }
 
     @Test(expected = NullPointerException.class)
@@ -59,12 +59,10 @@ public class DiffSectionTest {
     public void validRemovedField() {
         String expectedRemovedValue = "removed";
         DiffSection removedDiff = new DiffSection("removed");
-        removedDiff.markAdded(expectedRemovedValue);
+        removedDiff.markRemoved(expectedRemovedValue);
 
         assertFalse(removedDiff.isEmpty());
-        for (String currentRemovedValue : removedDiff.getRemoved()) {
-            assertEquals(expectedRemovedValue, currentRemovedValue);
-        }
+        assertEquals(removedDiff.getRemoved().iterator().next(), expectedRemovedValue);
     }
 
     @Test(expected = NullPointerException.class)
@@ -80,9 +78,7 @@ public class DiffSectionTest {
         updatedDiff.markItemUpdated(expectedUpdatedItem.getId(), expectedUpdatedItem.getPrevious(), expectedUpdatedItem.getCurrent());
 
         assertFalse(updatedDiff.isEmpty());
-        for (UpdatedItem<?> currentUpdatedItem : updatedDiff.getUpdatedItems()) {
-            assertEquals(currentUpdatedItem, expectedUpdatedItem);
-        }
+        assertEquals(updatedDiff.getUpdatedItems().iterator().next(), expectedUpdatedItem);
     }
 
     @Test(expected = NullPointerException.class)
@@ -97,9 +93,7 @@ public class DiffSectionTest {
         mainDiff.markUpdated(childDiff);
 
         assertFalse(mainDiff.isEmpty());
-        for (DiffSection updatedDiff : mainDiff.getUpdates()) {
-            assertEquals(updatedDiff, childDiff);
-        }
+        assertEquals(mainDiff.getUpdates().iterator().next(), childDiff);
     }
 
 }

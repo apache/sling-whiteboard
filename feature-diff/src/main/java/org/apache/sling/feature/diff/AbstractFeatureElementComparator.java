@@ -16,38 +16,46 @@
  */
 package org.apache.sling.feature.diff;
 
+import static java.util.Objects.requireNonNull;
+
 abstract class AbstractFeatureElementComparator<T, I extends Iterable<T>> implements FeatureElementComparator<T, I> {
 
     private final String id;
 
     public AbstractFeatureElementComparator(String id) {
-        this.id = id;
+        this.id = requireNonNull(id, "Null id can not be used to the create a new comparator");
     }
+
+    protected abstract String getId(T item);
+
+    protected abstract T find(T item, I collection);
+
+    protected abstract DiffSection compare(T previous, T current);
 
     @Override
     public final DiffSection apply(I previouses, I currents) {
         final DiffSection diffDsection = new DiffSection(id);
 
-        previouses.forEach(previous -> {
+        for (T previous : previouses) {
             T current = find(previous, currents);
 
             if (current == null) {
                 diffDsection.markRemoved(getId(previous));
             } else {
                 DiffSection updateSection = compare(previous, current);
-                if (!updateSection.isEmpty()) {
+                if (updateSection != null && !updateSection.isEmpty()) {
                     diffDsection.markUpdated(updateSection);
                 }
             }
-        });
+        }
 
-        currents.forEach(current -> {
+        for (T current : currents) {
             T previous = find(current, previouses);
 
             if (previous == null) {
                 diffDsection.markAdded(getId(current));
             }
-        });
+        };
 
         return diffDsection;
     }

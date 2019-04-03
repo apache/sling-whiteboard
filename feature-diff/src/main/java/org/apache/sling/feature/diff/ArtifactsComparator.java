@@ -21,7 +21,7 @@ import java.util.Objects;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.Artifacts;
 
-public final class ArtifactsComparator extends AbstractFeatureElementComparator<Artifact, Artifacts> {
+final class ArtifactsComparator extends AbstractFeatureElementComparator<Artifact, Artifacts> {
 
     public ArtifactsComparator(String id) {
         super(id);
@@ -39,7 +39,7 @@ public final class ArtifactsComparator extends AbstractFeatureElementComparator<
 
     @Override
     public DiffSection compare(Artifact previous, Artifact current) {
-        DiffSection diffSection = new DiffSection(current.getId().toMvnId());
+        DiffSection diffSection = new DiffSection(getId(current));
 
         String previousVersion = previous.getId().getVersion();
         String currentVersion = current.getId().getVersion();
@@ -51,7 +51,7 @@ public final class ArtifactsComparator extends AbstractFeatureElementComparator<
             diffSection.markItemUpdated("start-order", previous.getStartOrder(), current.getStartOrder());
         }
 
-        return null;
+        return diffSection;
     }
 
 }
