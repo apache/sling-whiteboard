@@ -16,6 +16,10 @@
  */
 package org.apache.sling.feature.diff;
 
+import static java.util.Objects.requireNonNull;
+
+import java.util.Objects;
+
 public final class UpdatedItem<T> {
 
     private final String id;
@@ -25,7 +29,7 @@ public final class UpdatedItem<T> {
     private final T current;
 
     protected UpdatedItem(String id, T previous, T current) {
-        this.id = id;
+        this.id = requireNonNull(id);
         this.previous = previous;
         this.current = current;
     }
@@ -40,6 +44,31 @@ public final class UpdatedItem<T> {
 
     public T getCurrent() {
         return current;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+
+        if (obj == null) {
+            return false;
+        }
+
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+
+        UpdatedItem<?> other = (UpdatedItem<?>) obj;
+        return Objects.equals(id, other.getId())
+                && Objects.equals(previous, other.getPrevious())
+                && Objects.equals(current, other.getCurrent());
+    }
+
+    @Override
+    public String toString() {
+        return "UpdatedItem [id=" + id + ", previous=" + previous + ", current=" + current + "]";
     }
 
 }

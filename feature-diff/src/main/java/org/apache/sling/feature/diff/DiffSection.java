@@ -60,8 +60,8 @@ public final class DiffSection {
     }
 
     protected <T> void markItemUpdated(String id, T previous, T current) {
-        T checkedPrevious = requireNonNull(previous);
-        T checkedCurrent = requireNonNull(current);
+        T checkedPrevious = previous;
+        T checkedCurrent = current;
         updatedItems.add(new UpdatedItem<T>(id, checkedPrevious, checkedCurrent));
     }
 
