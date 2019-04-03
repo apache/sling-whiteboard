@@ -22,9 +22,23 @@ import static org.junit.Assert.assertFalse;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Artifacts;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 public class ArtifactsComparatorTest {
+
+    private ArtifactsComparator comparator;
+
+    @Before
+    public void setUp() {
+        comparator = new ArtifactsComparator("bundles");
+    }
+
+    @After
+    public void tearDown() {
+        comparator = null;
+    }
 
     @Test(expected = NullPointerException.class)
     public void nullIdNotAcceptedByTheConstructor() {
@@ -39,10 +53,10 @@ public class ArtifactsComparatorTest {
 
         Artifacts currentArtifacts = new Artifacts();
 
-        DiffSection artifactsDiff = new ArtifactsComparator("bundles").apply(previousArtifacts, currentArtifacts);
+        DiffSection artifactsDiff = comparator.apply(previousArtifacts, currentArtifacts);
         assertFalse(artifactsDiff.isEmpty());
 
-        assertEquals(artifactsDiff.getRemoved().iterator().next(), previousArtifact.getId().toMvnId());
+        assertEquals(previousArtifact.getId().toMvnId(), artifactsDiff.getRemoved().iterator().next());
     }
 
     @Test
@@ -53,10 +67,10 @@ public class ArtifactsComparatorTest {
         Artifact currentArtifact = new Artifact(ArtifactId.fromMvnId("org.apache.sling:org.apache.sling.feature.diff:1.0.0"));
         currentArtifacts.add(currentArtifact);
 
-        DiffSection artifactsDiff = new ArtifactsComparator("bundles").apply(previousArtifacts, currentArtifacts);
+        DiffSection artifactsDiff = comparator.apply(previousArtifacts, currentArtifacts);
         assertFalse(artifactsDiff.isEmpty());
 
-        assertEquals(artifactsDiff.getAdded().iterator().next(), currentArtifact.getId().toMvnId());
+        assertEquals(currentArtifact.getId().toMvnId(), artifactsDiff.getAdded().iterator().next());
     }
 
     @Test
@@ -69,7 +83,7 @@ public class ArtifactsComparatorTest {
         Artifact currentArtifact = new Artifact(ArtifactId.fromMvnId("org.apache.sling:org.apache.sling.feature.diff:1.0.0"));
         currentArtifacts.add(currentArtifact);
 
-        DiffSection artifactsDiff = new ArtifactsComparator("bundles").apply(previousArtifacts, currentArtifacts);
+        DiffSection artifactsDiff = comparator.apply(previousArtifacts, currentArtifacts);
         assertFalse(artifactsDiff.isEmpty());
 
         DiffSection artifactDiff = artifactsDiff.getUpdates().iterator().next();
