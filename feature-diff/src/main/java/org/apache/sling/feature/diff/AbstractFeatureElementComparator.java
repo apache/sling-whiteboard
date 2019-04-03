@@ -18,7 +18,7 @@ package org.apache.sling.feature.diff;
 
 import static java.util.Objects.requireNonNull;
 
-abstract class AbstractFeatureElementComparator<T, I extends Iterable<T>> implements FeatureElementComparator<T, I> {
+abstract class AbstractFeatureElementComparator<T, I extends Iterable<T>> implements ComplexElementComparator<T, I> {
 
     private final String id;
 
@@ -29,8 +29,6 @@ abstract class AbstractFeatureElementComparator<T, I extends Iterable<T>> implem
     protected abstract String getId(T item);
 
     protected abstract T find(T item, I collection);
-
-    protected abstract DiffSection compare(T previous, T current);
 
     @Override
     public final DiffSection apply(I previouses, I currents) {

@@ -54,8 +54,8 @@ public class ArtifactsComparatorTest {
         Artifacts currentArtifacts = new Artifacts();
 
         DiffSection artifactsDiff = comparator.apply(previousArtifacts, currentArtifacts);
-        assertFalse(artifactsDiff.isEmpty());
 
+        assertFalse(artifactsDiff.isEmpty());
         assertEquals(previousArtifact.getId().toMvnId(), artifactsDiff.getRemoved().iterator().next());
     }
 
@@ -68,8 +68,8 @@ public class ArtifactsComparatorTest {
         currentArtifacts.add(currentArtifact);
 
         DiffSection artifactsDiff = comparator.apply(previousArtifacts, currentArtifacts);
-        assertFalse(artifactsDiff.isEmpty());
 
+        assertFalse(artifactsDiff.isEmpty());
         assertEquals(currentArtifact.getId().toMvnId(), artifactsDiff.getAdded().iterator().next());
     }
 

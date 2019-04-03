@@ -92,10 +92,11 @@ public class ConfigurationsComparatorTest {
         assertEquals("removed", configurationDiff.getRemoved().iterator().next());
         assertEquals("added", configurationDiff.getAdded().iterator().next());
 
-        UpdatedItem<?> updated = configurationDiff.getUpdatedItems().iterator().next();
+        @SuppressWarnings("unchecked") // type known by design
+        UpdatedItem<String[]> updated = (UpdatedItem<String[]>) configurationDiff.getUpdatedItems().iterator().next();
         assertEquals("updated", updated.getId());
-        assertArrayEquals(new String[] { "/log" }, (String[]) updated.getPrevious());
-        assertArrayEquals(new String[] { "/log", "/etc" }, (String[]) updated.getCurrent());
+        assertArrayEquals(new String[] { "/log" }, updated.getPrevious());
+        assertArrayEquals(new String[] { "/log", "/etc" }, updated.getCurrent());
     }
 
 }

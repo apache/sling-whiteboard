@@ -18,6 +18,7 @@ package org.apache.sling.feature.diff;
 
 import java.util.function.BiFunction;
 
-public interface FeatureElementComparator<T, I extends Iterable<T>> extends BiFunction<I, I, DiffSection> {
+public interface ComplexElementComparator<T, I extends Iterable<T>>
+        extends BiFunction<I, I, DiffSection>, ElementComparator<T> {
 
 }
