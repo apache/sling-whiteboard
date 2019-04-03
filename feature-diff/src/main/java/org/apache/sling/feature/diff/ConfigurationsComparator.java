@@ -16,11 +16,10 @@
  */
 package org.apache.sling.feature.diff;
 
-import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
-
 import java.util.Dictionary;
 import java.util.Enumeration;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.sling.feature.Configuration;
 import org.apache.sling.feature.Configurations;
 
@@ -37,14 +36,14 @@ final class ConfigurationsComparator extends AbstractFeatureElementComparator<Co
 
     @Override
     public Configuration find(Configuration configuration, Configurations configurations) {
-        return configurations.getConfiguration(configuration.getPid());
+        return configurations.getConfiguration(getId(configuration));
     }
 
     @Override
     public DiffSection compare(Configuration previous, Configuration current) {
         Dictionary<String, Object> previousProperties = previous.getConfigurationProperties();
         Dictionary<String, Object> currentProperties = current.getConfigurationProperties();
-        final DiffSection dictionaryDiffs = new DiffSection("properties");
+        final DiffSection dictionaryDiffs = new DiffSection(getId(current));
 
         Enumeration<String> previousKeys = previousProperties.keys();
         while (previousKeys.hasMoreElements()) {
@@ -55,7 +54,7 @@ final class ConfigurationsComparator extends AbstractFeatureElementComparator<Co
 
             if (currentValue == null && previousValue != null) {
                 dictionaryDiffs.markRemoved(previousKey);
-            } else if (!reflectionEquals(previousValue, currentValue, true)) {
+            } else if (!new EqualsBuilder().reflectionAppend(previousValue, currentValue).isEquals()) {
                 dictionaryDiffs.markItemUpdated(previousKey, previousValue, currentValue);
             }
         }

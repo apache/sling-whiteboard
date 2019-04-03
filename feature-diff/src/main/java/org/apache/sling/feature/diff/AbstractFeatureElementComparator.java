@@ -55,7 +55,7 @@ abstract class AbstractFeatureElementComparator<T, I extends Iterable<T>> implem
             if (previous == null) {
                 diffDsection.markAdded(getId(current));
             }
-        };
+        }
 
         return diffDsection;
     }
