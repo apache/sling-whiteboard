@@ -21,7 +21,27 @@ import static java.util.Objects.requireNonNull;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.sling.feature.Feature;
+
 public final class FeatureDiff {
+
+    public static FeatureDiff compareFeatures(Feature previous, Feature current) {
+        previous = requireNonNull(previous, "Impossible to compare null previous feature.");
+        current = requireNonNull(current, "Impossible to compare null current feature.");
+
+        if (!previous.getId().isSame(current.getId())) {
+            throw new IllegalArgumentException("Feature comparison has to be related to different versions of the same Feature.");
+        }
+
+        FeatureDiff featureDiff = new FeatureDiff();
+
+        featureDiff.addSection(new GenericMapComparator("framework-properties").compare(previous.getFrameworkProperties(), current.getFrameworkProperties()));
+        featureDiff.addSection(new ArtifactsComparator("bundles").apply(previous.getBundles(), current.getBundles()));
+        featureDiff.addSection(new ConfigurationsComparator().apply(previous.getConfigurations(), current.getConfigurations()));
+        featureDiff.addSection(new ExtensionsComparator().apply(previous.getExtensions(), current.getExtensions()));
+
+        return featureDiff;
+    }
 
     private final List<DiffSection> diffSections = new LinkedList<>();
 
@@ -34,6 +54,10 @@ public final class FeatureDiff {
         if (!diffSection.isEmpty()) {
             diffSections.add(checkedDiffSection);
         }
+    }
+
+    public boolean isEmpty() {
+        return diffSections.isEmpty();
     }
 
     public Iterable<DiffSection> getSections() {
