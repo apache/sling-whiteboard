@@ -17,9 +17,11 @@
 package org.apache.sling.feature.apiregions;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -43,7 +45,7 @@ public class ApiRegionsTest {
         apiRegions = null;
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void canNotCreateRegionWithNullName() {
         apiRegions.addNewRegion(null);
     }
@@ -53,9 +55,9 @@ public class ApiRegionsTest {
         apiRegions.addNewRegion("");
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void impossibleToGetRegionWithNullName() {
-        apiRegions.getByName(null);
+        assertNull(apiRegions.getByName(null));
     }
 
     @Test
@@ -70,9 +72,12 @@ public class ApiRegionsTest {
 
     @Test
     public void getRegionWithRegisteredRegion() {
+        assertTrue(apiRegions.isEmpty());
+
         String regionName = "registered";
         ApiRegion region = apiRegions.addNewRegion(regionName);
         assertNotNull(region);
+        assertFalse(apiRegions.isEmpty());
         assertNotNull(apiRegions.getByName(regionName));
     }
 

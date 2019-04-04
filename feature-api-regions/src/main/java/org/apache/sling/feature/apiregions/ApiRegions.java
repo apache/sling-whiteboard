@@ -16,8 +16,6 @@
  */
 package org.apache.sling.feature.apiregions;
 
-import static java.util.Objects.requireNonNull;
-
 import java.util.Iterator;
 import java.util.Stack;
 
@@ -26,9 +24,7 @@ public final class ApiRegions implements Iterable<ApiRegion> {
     private final Stack<ApiRegion> regions = new Stack<>();
 
     public ApiRegion addNewRegion(String regionName) {
-        requireNonNull(regionName, "Impossible to create a new API Region without specifying the name");
-
-        if (regionName.isEmpty()) {
+        if (regionName == null || regionName.isEmpty()) {
             throw new IllegalArgumentException("Impossible to create a new API Region without specifying a valid name");
         }
 
@@ -38,9 +34,7 @@ public final class ApiRegions implements Iterable<ApiRegion> {
     }
 
     public ApiRegion getByName(String regionName) {
-        requireNonNull(regionName, "Impossible to get an API Region without specifying a valid name");
-
-        if (regionName.isEmpty()) {
+        if (regionName == null || regionName.isEmpty()) {
             return null;
         }
 
@@ -51,6 +45,10 @@ public final class ApiRegions implements Iterable<ApiRegion> {
         }
 
         return null;
+    }
+
+    public boolean isEmpty() {
+        return regions.isEmpty();
     }
 
     @Override
