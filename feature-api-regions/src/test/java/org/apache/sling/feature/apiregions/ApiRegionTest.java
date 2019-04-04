@@ -50,15 +50,22 @@ public class ApiRegionTest {
 
     private void ingnoreApi(String api) {
         ApiRegion testRegion = new ApiRegion(getClass().getName(), null);
-        testRegion.addApi(api);
+        assertFalse(testRegion.addApi(api));
         assertFalse(testRegion.contains(api));
     }
 
     @Test
     public void inheritanceCheck() {
         ApiRegion granpa = new ApiRegion("granpa", null);
+        assertTrue(granpa.addApi("org.apache.sling.feature.apiregions"));
+
         ApiRegion father = new ApiRegion("father", granpa);
+        assertTrue(father.addApi("org.apache.sling.feature.apiregions.io"));
+        assertFalse(father.addApi("org.apache.sling.feature.apiregions")); // inherited by granpa
+
         ApiRegion child = new ApiRegion("child", father);
+        assertFalse(child.addApi("org.apache.sling.feature.apiregions.io")); // inherited by father
+        assertFalse(child.addApi("org.apache.sling.feature.apiregions")); // inherited by granpa
 
         assertSame(father, child.getParent());
         assertSame(granpa, father.getParent());
@@ -77,8 +84,8 @@ public class ApiRegionTest {
         child.addApi("org.apache.sling.feature.apiregions.io.json");
 
         assertTrue(child.contains("org.apache.sling.feature.apiregions.io.json"));
-        assertTrue(child.contains("org.apache.sling.feature.apiregions.io")); // inherited
-        assertTrue(child.contains("org.apache.sling.feature.apiregions")); // inherited-inherited
+        assertTrue(child.contains("org.apache.sling.feature.apiregions.io")); // inherited by father
+        assertTrue(child.contains("org.apache.sling.feature.apiregions")); // inherited by granpa
     }
 
     @Test
