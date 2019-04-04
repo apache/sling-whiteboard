@@ -88,7 +88,7 @@ output is quiet easy to interpret, i.e. from a unit test case:
   "vendorURL":"http://www.apache.org/",
   "generator":"Apache Sling Feature Diff tool",
   "generatorURL":"https://github.com/apache/sling-org-apache-sling-feature-diff",
-  "generatedOn":"2019-04-04T12:24:25 +0200",
+  "generatedOn":"2019-04-04T11:08:51 +0200",
   "id":"org.apache.sling:org.apache.sling.feature.diff:1.0.0",
   "previousVersion":"0.9.0",
   "framework-properties":{
@@ -98,13 +98,12 @@ output is quiet easy to interpret, i.e. from a unit test case:
     "added":[
       "sling.framework.install.startlevel"
     ],
-    "updated":[
-      {
-        "id":"env",
+    "updated":{
+      "env":{
         "previous":"staging",
         "current":"prod"
       }
-    ]
+    }
   },
   "bundles":{
     "removed":[
@@ -113,18 +112,16 @@ output is quiet easy to interpret, i.e. from a unit test case:
     "added":[
       "org.apache.sling:org.apache.sling.feature.diff:added:1.0.0"
     ],
-    "updated":[
-      {
-        "id":"org.apache.sling:org.apache.sling.feature.diff:updated:2.0.0",
-        "updated":[
-          {
-            "id":"version",
+    "updated":{
+      "org.apache.sling:org.apache.sling.feature.diff:updated:2.0.0":{
+        "updated":{
+          "version":{
             "previous":"1.0.0",
             "current":"2.0.0"
           }
-        ]
+        }
       }
-    ]
+    }
   },
   "configurations":{
     "removed":[
@@ -133,24 +130,22 @@ output is quiet easy to interpret, i.e. from a unit test case:
     "added":[
       "org.apache.sling.feature.diff.config.added"
     ],
-    "updated":[
-      {
-        "id":"org.apache.sling.feature.diff.config.updated",
+    "updated":{
+      "org.apache.sling.feature.diff.config.updated":{
         "removed":[
           "it.will.appear.in.the.removed.section"
         ],
         "added":[
           "it.will.appear.in.the.added.section"
         ],
-        "updated":[
-          {
-            "id":"it.will.appear.in.the.updated.section",
+        "updated":{
+          "it.will.appear.in.the.updated.section":{
             "previous":"[{/log}]",
             "current":"[{/log,/etc}]"
           }
-        ]
+        }
       }
-    ]
+    }
   }
 }
 ```

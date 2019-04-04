@@ -65,19 +65,14 @@ public final class FeatureDiffJSONSerializer {
         generator.write("previousVersion", featureDiff.getPrevious().getId().getVersion());
 
         for (DiffSection diffSection : featureDiff.getSections()) {
-            serializeDiffSection(diffSection, true, generator);
+            serializeDiffSection(diffSection, generator);
         }
 
         generator.writeEnd().close();
     }
 
-    private static void serializeDiffSection(DiffSection diffSection, boolean main, JsonGenerator generator) {
-        if (main) {
-            generator.writeStartObject(diffSection.getId());
-        } else {
-            generator.writeStartObject()
-                     .write("id", diffSection.getId());
-        }
+    private static void serializeDiffSection(DiffSection diffSection, JsonGenerator generator) {
+        generator.writeStartObject(diffSection.getId());
 
         if (diffSection.hasRemoved()) {
             writeArray("removed", diffSection.getRemoved(), generator);
@@ -88,17 +83,17 @@ public final class FeatureDiffJSONSerializer {
         }
 
         if (diffSection.hasUpdatedItems() || diffSection.hasUpdates()) {
-            generator.writeStartArray("updated");
+            generator.writeStartObject("updated");
 
             for (UpdatedItem<?> updatedItem : diffSection.getUpdatedItems()) {
-                generator.writeStartObject().write("id", updatedItem.getId());
+                generator.writeStartObject(updatedItem.getId());
                 writeValue("previous", updatedItem.getPrevious(), generator);
                 writeValue("current", updatedItem.getCurrent(), generator);
                 generator.writeEnd();
             }
 
             for (DiffSection updatesDiffSection : diffSection.getUpdates()) {
-                serializeDiffSection(updatesDiffSection, false, generator);
+                serializeDiffSection(updatesDiffSection, generator);
             }
 
             generator.writeEnd();
