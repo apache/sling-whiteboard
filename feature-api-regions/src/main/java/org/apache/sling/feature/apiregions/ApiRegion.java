@@ -148,6 +148,18 @@ public final class ApiRegion implements Iterable<String> {
         return found || apis.contains(api);
     }
 
+    public boolean isEmpty() {
+        if (!apis.isEmpty()) {
+            return false;
+        }
+
+        if (parent != null) {
+            return parent.isEmpty();
+        }
+
+        return true;
+    }
+
     @Override
     public Iterator<String> iterator() {
         List<Iterable<String>> iterators = new LinkedList<>();
