@@ -111,23 +111,27 @@ public final class ApiRegion implements Iterable<String> {
         }
     }
 
-    public void addApi(String api) {
+    public boolean addApi(String api) {
         // ignore null, empty package and non well-formed packages names, i.e. javax.jms.doc-files
         if (api == null
                 || api.isEmpty()
                 || !PACKAGE_NAME_VALIDATION.matcher(api).matches()) {
             // ignore it
-            return;
+            return false;
         }
 
         // ignore packages with reserved keywords, i.e. org.apache.commons.lang.enum
         for (String apiPart : api.split("\\.")) {
             if (KEYWORDS.contains(apiPart)) {
-                return;
+                return false;
             }
         }
 
-        apis.add(api);
+        if (contains(api)) {
+            return false;
+        }
+
+        return apis.add(api);
     }
 
     public boolean contains(String api) {

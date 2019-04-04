@@ -82,6 +82,15 @@ public class ApiRegionTest {
     }
 
     @Test
+    public void inheritanceAvoidsDuplicates() {
+        ApiRegion granpa = new ApiRegion("granpa", null);
+        assertTrue(granpa.addApi("org.apache.sling.feature.apiregions"));
+
+        ApiRegion father = new ApiRegion("father", granpa);
+        assertFalse(father.addApi("org.apache.sling.feature.apiregions"));
+    }
+
+    @Test
     public void inheritanceIteratorCheck() {
         ApiRegion granpa = new ApiRegion("granpa", null);
         granpa.addApi("org.apache.sling.feature.apiregions");
