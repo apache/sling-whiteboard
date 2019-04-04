@@ -107,6 +107,22 @@ public class ApiRegionTest {
     }
 
     @Test
+    public void inheritaceRemove() {
+        ApiRegion father = new ApiRegion("father", null);
+        father.addApi("org.apache.sling.feature.apiregions");
+
+        ApiRegion child = new ApiRegion("child", father);
+        child.addApi("org.apache.sling.feature.apiregions.io");
+
+        assertFalse(child.remove(null));
+        assertFalse(child.remove(""));
+        assertFalse(child.remove("does.not.exist"));
+        assertTrue(child.remove("org.apache.sling.feature.apiregions")); // inherited
+        assertFalse(child.contains("org.apache.sling.feature.apiregions")); // inherited
+        assertFalse(child.contains("org.apache.sling.feature.apiregions"));
+    }
+
+    @Test
     public void inheritanceIteratorCheck() {
         ApiRegion granpa = new ApiRegion("granpa", null);
         granpa.addApi("org.apache.sling.feature.apiregions");

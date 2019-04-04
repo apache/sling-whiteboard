@@ -113,9 +113,7 @@ public final class ApiRegion implements Iterable<String> {
 
     public boolean addApi(String api) {
         // ignore null, empty package and non well-formed packages names, i.e. javax.jms.doc-files
-        if (api == null
-                || api.isEmpty()
-                || !PACKAGE_NAME_VALIDATION.matcher(api).matches()) {
+        if (isEmpty(api) || !PACKAGE_NAME_VALIDATION.matcher(api).matches()) {
             // ignore it
             return false;
         }
@@ -135,7 +133,7 @@ public final class ApiRegion implements Iterable<String> {
     }
 
     public boolean contains(String api) {
-        if (api == null || api.isEmpty()) {
+        if (isEmpty(api)) {
             return false;
         }
 
@@ -158,6 +156,22 @@ public final class ApiRegion implements Iterable<String> {
         }
 
         return true;
+    }
+
+    public boolean remove(String api) {
+        if (isEmpty(api)) {
+            return false;
+        }
+
+        if (apis.remove(api)) {
+            return true;
+        }
+
+        if (parent != null) {
+            return parent.remove(api);
+        }
+
+        return false;
     }
 
     @Override
@@ -195,6 +209,10 @@ public final class ApiRegion implements Iterable<String> {
         formatter.close();
 
         return toString;
+    }
+
+    private static boolean isEmpty(String value) {
+        return value == null || value.isEmpty();
     }
 
 }
