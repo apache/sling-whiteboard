@@ -137,13 +137,15 @@ public final class ApiRegion implements Iterable<String> {
             return false;
         }
 
-        boolean found = false;
-
-        if (parent != null) {
-            found = found || parent.contains(api);
+        if (apis.contains(api)) {
+            return true;
         }
 
-        return found || apis.contains(api);
+        if (parent != null) {
+            return parent.contains(api);
+        }
+
+        return false;
     }
 
     public boolean isEmpty() {
