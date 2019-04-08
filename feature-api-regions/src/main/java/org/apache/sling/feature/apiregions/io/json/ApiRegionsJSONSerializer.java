@@ -47,25 +47,22 @@ public final class ApiRegionsJSONSerializer implements JSONConstants {
         requireNonNull(apiRegions, "Impossible to serialize null api-regions");
         requireNonNull(writer, "Impossible to serialize api-regions to a null stream");
 
-        JsonGenerator generator = GENERATOR_FACTORY.createGenerator(writer);
-        generator.writeStartArray();
+        JsonGenerator generator = GENERATOR_FACTORY.createGenerator(writer)
+                                                   .writeStartArray();
 
         for (ApiRegion apiRegion : apiRegions) {
-            generator.writeStartObject();
+            generator.writeStartObject()
+                     .write(NAME_KEY, apiRegion.getName())
+                     .writeStartArray(EXPORTS_KEY);
 
-            generator.write(NAME_KEY, apiRegion.getName());
-
-            generator.writeStartArray(EXPORTS_KEY);
             for (String api : apiRegion.getExports()) {
                 generator.write(api);
             }
-            generator.writeEnd();
 
-            generator.writeEnd();
+            generator.writeEnd().writeEnd();
         }
 
-        generator.writeEnd();
-        generator.close();
+        generator.writeEnd().close();
     }
 
 }
