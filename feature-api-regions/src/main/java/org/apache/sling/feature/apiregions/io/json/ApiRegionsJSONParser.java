@@ -127,7 +127,7 @@ public final class ApiRegionsJSONParser implements JSONConstants {
                     && apis != null
                     && !apis.isEmpty()) {
                 ApiRegion apiRegion = apiRegions.addNewRegion(regionName);
-                apiRegion.addApis(apis);
+                apiRegion.addAll(apis);
             }
         }
 

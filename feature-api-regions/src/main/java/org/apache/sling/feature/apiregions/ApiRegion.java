@@ -103,15 +103,15 @@ public final class ApiRegion implements Iterable<String> {
         return parent;
     }
 
-    public void addApis(Iterable<String> apis) {
+    public void addAll(Iterable<String> apis) {
         requireNonNull(apis, "Impossible to import null APIs");
 
         for (String api : apis) {
-            addApi(api);
+            add(api);
         }
     }
 
-    public boolean addApi(String api) {
+    public boolean add(String api) {
         // ignore null, empty package and non well-formed packages names, i.e. javax.jms.doc-files
         if (isEmpty(api) || !PACKAGE_NAME_VALIDATION.matcher(api).matches()) {
             // ignore it
