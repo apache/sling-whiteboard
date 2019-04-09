@@ -24,12 +24,15 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
 public final class ApiRegion implements Iterable<String> {
 
     private static final Pattern PACKAGE_NAME_VALIDATION =
             Pattern.compile("^[a-z]+(\\.[a-zA-Z_][a-zA-Z0-9_]*)*$");
+
+    private static final String PACKAGE_DELIM = ".";
 
     private static final Set<String> KEYWORDS = new HashSet<>();
 
@@ -119,7 +122,9 @@ public final class ApiRegion implements Iterable<String> {
         }
 
         // ignore packages with reserved keywords, i.e. org.apache.commons.lang.enum
-        for (String apiPart : api.split("\\.")) {
+        StringTokenizer tokenizer = new StringTokenizer(api, PACKAGE_DELIM);
+        while (tokenizer.hasMoreTokens()) {
+            String apiPart = tokenizer.nextToken();
             if (KEYWORDS.contains(apiPart)) {
                 return false;
             }
