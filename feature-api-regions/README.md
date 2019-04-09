@@ -90,14 +90,14 @@ omit imports for brevity;
 ...
 
 ApiRegions apiRegions = new ApiRegions();
-ApiRegion granpa = apiRegions.addNewRegion("granpa");
-granpa.addApi("org.apache.sling.feature.apiregions");
+ApiRegion granpa = apiRegions.addNew("granpa");
+granpa.add("org.apache.sling.feature.apiregions");
 
-ApiRegion father = apiRegions.addNewRegion("father");
-father.addApi("org.apache.sling.feature.apiregions.io");
+ApiRegion father = apiRegions.addNew("father");
+father.add("org.apache.sling.feature.apiregions.io");
 
-ApiRegion child = apiRegions.addNewRegion("child");
-child.addApi("org.apache.sling.feature.apiregions.io.json");
+ApiRegion child = apiRegions.addNew("child");
+child.add("org.apache.sling.feature.apiregions.io.json");
 
 for (ApiRegion region : apiRegions) {
     System.out.println("-" + region.getName());

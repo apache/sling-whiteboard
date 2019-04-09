@@ -23,7 +23,7 @@ public final class ApiRegions implements Iterable<ApiRegion> {
 
     private final Stack<ApiRegion> regions = new Stack<>();
 
-    public ApiRegion addNewRegion(String regionName) {
+    public ApiRegion addNew(String regionName) {
         if (regionName == null || regionName.isEmpty()) {
             throw new IllegalArgumentException("Impossible to create a new API Region without specifying a valid name");
         }

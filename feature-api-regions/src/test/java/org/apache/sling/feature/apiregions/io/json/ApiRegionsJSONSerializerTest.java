@@ -64,11 +64,11 @@ public final class ApiRegionsJSONSerializerTest {
 
         ApiRegions apiRegions = new ApiRegions();
 
-        ApiRegion base = apiRegions.addNewRegion("base");
+        ApiRegion base = apiRegions.addNew("base");
         base.add("org.apache.felix.inventory");
         base.add("org.apache.felix.metatype");
 
-        ApiRegion extended = apiRegions.addNewRegion("extended");
+        ApiRegion extended = apiRegions.addNew("extended");
         extended.add("org.apache.felix.scr.component");
         extended.add("org.apache.felix.scr.info");
 

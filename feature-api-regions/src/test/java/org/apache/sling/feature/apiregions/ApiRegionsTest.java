@@ -47,12 +47,12 @@ public class ApiRegionsTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void canNotCreateRegionWithNullName() {
-        apiRegions.addNewRegion(null);
+        apiRegions.addNew(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void canNotCreateRegionWithEmptyName() {
-        apiRegions.addNewRegion("");
+        apiRegions.addNew("");
     }
 
     @Test
@@ -75,7 +75,7 @@ public class ApiRegionsTest {
         assertTrue(apiRegions.isEmpty());
 
         String regionName = "registered";
-        ApiRegion region = apiRegions.addNewRegion(regionName);
+        ApiRegion region = apiRegions.addNew(regionName);
         assertNotNull(region);
         assertFalse(apiRegions.isEmpty());
         assertNotNull(apiRegions.getByName(regionName));
@@ -83,9 +83,9 @@ public class ApiRegionsTest {
 
     @Test
     public void sequentialInheritance() {
-        ApiRegion granpa = apiRegions.addNewRegion("granpa");
-        ApiRegion father = apiRegions.addNewRegion("father");
-        ApiRegion child = apiRegions.addNewRegion("child");
+        ApiRegion granpa = apiRegions.addNew("granpa");
+        ApiRegion father = apiRegions.addNew("father");
+        ApiRegion child = apiRegions.addNew("child");
 
         assertSame(father, child.getParent());
         assertSame(granpa, father.getParent());
@@ -94,9 +94,9 @@ public class ApiRegionsTest {
 
     @Test
     public void iteratingOverRegions() {
-        apiRegions.addNewRegion("granpa");
-        apiRegions.addNewRegion("father");
-        apiRegions.addNewRegion("child");
+        apiRegions.addNew("granpa");
+        apiRegions.addNew("father");
+        apiRegions.addNew("child");
 
         List<String> expected = Arrays.asList("granpa", "father", "child");
 
