@@ -19,10 +19,22 @@ package org.apache.sling.feature.apiregions;
 import java.util.Iterator;
 import java.util.Stack;
 
+/**
+ * <code>api-regions</code> in memory representation.
+ */
 public final class ApiRegions implements Iterable<ApiRegion> {
 
     private final Stack<ApiRegion> regions = new Stack<>();
 
+    /**
+     * Creates then adds a new API region, given its name.
+     *
+     * <i>Please note</i>: according the <code>api-regions</code> specifications,
+     * the order in which the regions are created influences the regions hierarchy.
+     *
+     * @param regionName the name of the region to be created, must be not null and not empty.
+     * @return the created region, identified by the passed name.
+     */
     public ApiRegion addNew(String regionName) {
         if (regionName == null || regionName.isEmpty()) {
             throw new IllegalArgumentException("Impossible to create a new API Region without specifying a valid name");
@@ -33,6 +45,12 @@ public final class ApiRegions implements Iterable<ApiRegion> {
         return regions.push(newRegion);
     }
 
+    /**
+     * Search and returns, if found, the region identified by the given name.
+     *
+     * @param regionName the name of the region to find
+     * @return the region identified by the passed name, null if not found or the name is null or empty
+     */
     public ApiRegion getByName(String regionName) {
         if (regionName == null || regionName.isEmpty()) {
             return null;
@@ -47,10 +65,18 @@ public final class ApiRegions implements Iterable<ApiRegion> {
         return null;
     }
 
+    /**
+     * Checks if any region is present
+     *
+     * @return true if there is at least one declared regin, false otherwise.
+     */
     public boolean isEmpty() {
         return regions.isEmpty();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Iterator<ApiRegion> iterator() {
         return regions.iterator();

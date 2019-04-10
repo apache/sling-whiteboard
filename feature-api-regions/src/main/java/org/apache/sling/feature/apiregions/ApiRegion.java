@@ -27,6 +27,9 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
+/**
+ * In-memory representation of a <code>api-regions</code> section.
+ */
 public final class ApiRegion implements Iterable<String> {
 
     private static final Pattern PACKAGE_NAME_VALIDATION =
@@ -98,14 +101,32 @@ public final class ApiRegion implements Iterable<String> {
         this.parent = parent;
     }
 
+    /**
+     * Returns the name identifying this API region.
+     *
+     * @return the name identifying this API region.
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Returns the parent API region which is extended,
+     * <code>null</code> if this region represents the first section in the regions.
+     *
+     * @return the parent API region which is extended,
+     * <code>null</code> if this region represents the first section in the regions.
+     */
     public ApiRegion getParent() {
         return parent;
     }
 
+    /**
+     * Add new API packages iterating over the input collection,
+     * filtering out null, empty or non-conforming to Java packages convention.
+     *
+     * @param apis the input API packages, must be not null.
+     */
     public void addAll(Iterable<String> apis) {
         requireNonNull(apis, "Impossible to import null APIs");
 
@@ -114,6 +135,12 @@ public final class ApiRegion implements Iterable<String> {
         }
     }
 
+    /**
+     * Add a new API package filtering out null, empty or non-conforming to Java packages convention.
+     *
+     * @param api the new API package, must be not null, not empty and conforming to Java packages convention
+     * @return true if the API package is added, false otherwise.
+     */
     public boolean add(String api) {
         // ignore null, empty package and non well-formed packages names, i.e. javax.jms.doc-files
         if (isEmpty(api) || !PACKAGE_NAME_VALIDATION.matcher(api).matches()) {
@@ -137,6 +164,13 @@ public final class ApiRegion implements Iterable<String> {
         return apis.add(api);
     }
 
+    /**
+     * Check is the region contains, across the whole region hierarchy,
+     * if the input API package is contained.
+     * 
+     * @param api the API package to check
+     * @return true, if the API package is contained by this (or parents) region, false otherwise.
+     */
     public boolean contains(String api) {
         if (isEmpty(api)) {
             return false;
@@ -153,6 +187,11 @@ public final class ApiRegion implements Iterable<String> {
         return false;
     }
 
+    /**
+     * Check if this region, across the whole region hierarchy, contains any API.
+     *
+     * @return true if this region, across the whole region hierarchy, contains any API, false otherwise.
+     */
     public boolean isEmpty() {
         if (!apis.isEmpty()) {
             return false;
@@ -165,6 +204,14 @@ public final class ApiRegion implements Iterable<String> {
         return true;
     }
 
+    /**
+     * Removes in this region, or in a region across the whole hierarchy,
+     * the input API package.
+     *
+     * @param api the API package to remove
+     * @return true if the API package was removed in this or one region across the whole region hierarchy,
+     * false othewrwise
+     */
     public boolean remove(String api) {
         if (isEmpty(api)) {
             return false;
@@ -181,6 +228,9 @@ public final class ApiRegion implements Iterable<String> {
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Iterator<String> iterator() {
         List<Iterable<String>> iterators = new LinkedList<>();
@@ -194,6 +244,11 @@ public final class ApiRegion implements Iterable<String> {
         return new JoinedIterator<String>(iterators.iterator());
     }
 
+    /**
+     * Returns the API packages that are stored only in this region.
+     *
+     * @return the API packages that are stored only in this region.
+     */
     public Iterable<String> getExports() {
         return apis;
     }

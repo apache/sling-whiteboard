@@ -34,12 +34,23 @@ import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.apiregions.ApiRegion;
 import org.apache.sling.feature.apiregions.ApiRegions;
 
+/**
+ * <code>api-regions</code> JSON format parser implementation.
+ */
 public final class ApiRegionsJSONParser implements JSONConstants {
 
     private ApiRegionsJSONParser() {
         // this class must not be instantiated from outside
     }
 
+    /**
+     * Extracts and parses an <code>api-regions</code> JSON Extension from a Feature Model,
+     * mapping it to the related in-memory representation.
+     *
+     * @param feature the Feature Model containing the <code>api-regions</code> to parse.
+     * @return the related in-memory representation of the <code>api-regions</code>,
+     * null if the <code>api-regions</code> extension does not exist in the input Feature Model.
+     */
     public static ApiRegions parseApiRegions(Feature feature) {
         requireNonNull(feature, "Impossible to extract api-regions from a null feature");
 
@@ -52,6 +63,12 @@ public final class ApiRegionsJSONParser implements JSONConstants {
         return parseApiRegions(apiRegionsExtension);
     }
 
+    /**
+     * Extracts and parses an <code>api-regions</code> JSON Extension, mapping it to the related in-memory representation.
+     *
+     * @param apiRegionsExtension the <code>api-regions</code> JSON Extension, must named <code>api-regions</code> and of type JSON.
+     * @return the related in-memory representation of the <code>api-regions</code>
+     */
     public static ApiRegions parseApiRegions(Extension apiRegionsExtension) {
         requireNonNull(apiRegionsExtension, "Impossible to extract api-regions from a null extension");
 
@@ -67,6 +84,12 @@ public final class ApiRegionsJSONParser implements JSONConstants {
         return parseApiRegions(apiRegionsExtension.getJSON());
     }
 
+    /**
+     * Parses an <code>api-regions</code> JSON string representation, mapping it to the related in-memory representation.
+     *
+     * @param jsonRepresentation the <code>api-regions</code> JSON string representation
+     * @return the related in-memory representation of the <code>api-regions</code>
+     */
     public static ApiRegions parseApiRegions(String jsonRepresentation) {
         requireNonNull(jsonRepresentation, "Impossible to extract api-regions from a null JSON representation");
 

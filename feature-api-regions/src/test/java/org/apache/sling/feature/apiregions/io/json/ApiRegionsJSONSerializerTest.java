@@ -17,16 +17,58 @@
 package org.apache.sling.feature.apiregions.io.json;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 
+import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.Extension;
+import org.apache.sling.feature.ExtensionType;
+import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.apiregions.ApiRegion;
 import org.apache.sling.feature.apiregions.ApiRegions;
+import org.junit.Before;
 import org.junit.Test;
 
 public final class ApiRegionsJSONSerializerTest {
+
+    private ApiRegions apiRegions;
+
+    private String expected;
+
+    @Before
+    public void setUp() {
+        apiRegions = new ApiRegions();
+
+        ApiRegion base = apiRegions.addNew("base");
+        base.add("org.apache.felix.inventory");
+        base.add("org.apache.felix.metatype");
+
+        ApiRegion extended = apiRegions.addNew("extended");
+        extended.add("org.apache.felix.scr.component");
+        extended.add("org.apache.felix.scr.info");
+
+        expected = "[\n" + 
+                "  {\n" + 
+                "    \"name\":\"base\",\n" + 
+                "    \"exports\":[\n" + 
+                "      \"org.apache.felix.metatype\",\n" + 
+                "      \"org.apache.felix.inventory\"\n" + 
+                "    ]\n" + 
+                "  },\n" + 
+                "  {\n" + 
+                "    \"name\":\"extended\",\n" + 
+                "    \"exports\":[\n" + 
+                "      \"org.apache.felix.scr.component\",\n" + 
+                "      \"org.apache.felix.scr.info\"\n" + 
+                "    ]\n" + 
+                "  }\n" + 
+                "]";
+    }
 
     @Test(expected = NullPointerException.class)
     public void nullOutputStreamNotAccepted() {
@@ -44,40 +86,38 @@ public final class ApiRegionsJSONSerializerTest {
     }
 
     @Test
-    public void serialization() {
-        String expected = "[\n" + 
-                            "  {\n" + 
-                            "    \"name\":\"base\",\n" + 
-                            "    \"exports\":[\n" + 
-                            "      \"org.apache.felix.metatype\",\n" + 
-                            "      \"org.apache.felix.inventory\"\n" + 
-                            "    ]\n" + 
-                            "  },\n" + 
-                            "  {\n" + 
-                            "    \"name\":\"extended\",\n" + 
-                            "    \"exports\":[\n" + 
-                            "      \"org.apache.felix.scr.component\",\n" + 
-                            "      \"org.apache.felix.scr.info\"\n" + 
-                            "    ]\n" + 
-                            "  }\n" + 
-                            "]";
-
-        ApiRegions apiRegions = new ApiRegions();
-
-        ApiRegion base = apiRegions.addNew("base");
-        base.add("org.apache.felix.inventory");
-        base.add("org.apache.felix.metatype");
-
-        ApiRegion extended = apiRegions.addNew("extended");
-        extended.add("org.apache.felix.scr.component");
-        extended.add("org.apache.felix.scr.info");
-
+    public void stringSerialization() {
         StringWriter writer = new StringWriter();
         ApiRegionsJSONSerializer.serializeApiRegions(apiRegions, writer);
 
         String actual = writer.toString();
 
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void extensionCreation() {
+        Extension extension = ApiRegionsJSONSerializer.serializeApiRegions(apiRegions);
+        extensionAssertions(extension);
+    }
+
+    @Test
+    public void addExtensionToFeature() {
+        Feature feature = new Feature(ArtifactId.fromMvnId("org.apache.sling:org.apache.sling.feature.apiregions:1.0.0"));
+
+        ApiRegionsJSONSerializer.serializeApiRegions(apiRegions, feature);
+
+        Extension extension = feature.getExtensions().getByName(JSONConstants.API_REGIONS_KEY);
+        extensionAssertions(extension);
+    }
+
+    private void extensionAssertions(Extension extension) {
+        assertNotNull(extension);
+        assertEquals(ExtensionType.JSON, extension.getType());
+        assertEquals(JSONConstants.API_REGIONS_KEY, extension.getName());
+        assertFalse(extension.isRequired());
+        assertTrue(extension.isOptional());
+        assertEquals(expected, extension.getJSON());
     }
 
 }
