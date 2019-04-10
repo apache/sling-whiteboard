@@ -210,7 +210,7 @@ public final class ApiRegion implements Iterable<String> {
      *
      * @param api the API package to remove
      * @return true if the API package was removed in this or one region across the whole region hierarchy,
-     * false othewrwise
+     * false otherwise
      */
     public boolean remove(String api) {
         if (isEmpty(api)) {
