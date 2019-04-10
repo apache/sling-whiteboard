@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.sling.feature.apiregions.io.json;
+package org.apache.sling.feature.apiregions.model.io.json;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -25,8 +25,9 @@ import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.apiregions.ApiRegion;
-import org.apache.sling.feature.apiregions.ApiRegions;
+import org.apache.sling.feature.apiregions.model.ApiRegion;
+import org.apache.sling.feature.apiregions.model.ApiRegions;
+import org.apache.sling.feature.apiregions.model.io.json.ApiRegionsJSONParser;
 import org.junit.Test;
 
 public class ApiRegionsJSONParserTest {

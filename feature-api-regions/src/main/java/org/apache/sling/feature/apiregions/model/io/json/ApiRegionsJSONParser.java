@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.sling.feature.apiregions.io.json;
+package org.apache.sling.feature.apiregions.model.io.json;
 
 import static org.apache.sling.feature.ExtensionType.JSON;
 
@@ -31,8 +31,8 @@ import static java.util.Objects.requireNonNull;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.Extensions;
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.apiregions.ApiRegion;
-import org.apache.sling.feature.apiregions.ApiRegions;
+import org.apache.sling.feature.apiregions.model.ApiRegion;
+import org.apache.sling.feature.apiregions.model.ApiRegions;
 
 /**
  * <code>api-regions</code> JSON format parser implementation.

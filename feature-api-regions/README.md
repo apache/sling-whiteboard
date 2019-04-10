@@ -38,9 +38,9 @@ then obtaining simple APIs will look like:
 
 ```java
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.apiregions.ApiRegion;
-import org.apache.sling.feature.apiregions.ApiRegions;
-import org.apache.sling.feature.apiregions.io.json.ApiRegionsJSONParser;
+import org.apache.sling.feature.apiregions.model.ApiRegion;
+import org.apache.sling.feature.apiregions.model.ApiRegions;
+import org.apache.sling.feature.apiregions.model.io.json.ApiRegionsJSONParser;
 
 ...
 
@@ -91,13 +91,13 @@ omit imports for brevity;
 
 ApiRegions apiRegions = new ApiRegions();
 ApiRegion granpa = apiRegions.addNew("granpa");
-granpa.add("org.apache.sling.feature.apiregions");
+granpa.add("org.apache.sling.feature.apiregions.model");
 
 ApiRegion father = apiRegions.addNew("father");
-father.add("org.apache.sling.feature.apiregions.io");
+father.add("org.apache.sling.feature.apiregions.model.io");
 
 ApiRegion child = apiRegions.addNew("child");
-child.add("org.apache.sling.feature.apiregions.io.json");
+child.add("org.apache.sling.feature.apiregions.model.io.json");
 
 for (ApiRegion region : apiRegions) {
     System.out.println("-" + region.getName());
@@ -114,23 +114,23 @@ That code will output:
 
 ```
 - granpa
- * org.apache.sling.feature.apiregions
+ * org.apache.sling.feature.apiregions.model
 --------
 - father
- * org.apache.sling.feature.apiregions
- * org.apache.sling.feature.apiregions.io
+ * org.apache.sling.feature.apiregions.model
+ * org.apache.sling.feature.apiregions.model.io
 --------
 - child
- * org.apache.sling.feature.apiregions
- * org.apache.sling.feature.apiregions.io
- * org.apache.sling.feature.apiregions.io.json
+ * org.apache.sling.feature.apiregions.model
+ * org.apache.sling.feature.apiregions.model.io
+ * org.apache.sling.feature.apiregions.model.io.json
 --------
 ```
 
 JSON serialization is available as well:
 
 ```java
-import org.apache.sling.feature.apiregions.io.json.ApiRegionsJSONSerializer
+import org.apache.sling.feature.apiregions.model.io.json.ApiRegionsJSONSerializer
 
 ...
 
@@ -144,19 +144,19 @@ that will output:
   {
     "name":"granpa",
     "exports":[
-      "org.apache.sling.feature.apiregions"
+      "org.apache.sling.feature.apiregions.model"
     ]
   },
   {
     "name":"father",
     "exports":[
-      "org.apache.sling.feature.apiregions.io"
+      "org.apache.sling.feature.apiregions.model.io"
     ]
   },
   {
     "name":"child",
     "exports":[
-      "org.apache.sling.feature.apiregions.io.json"
+      "org.apache.sling.feature.apiregions.model.io.json"
     ]
   }
 ]

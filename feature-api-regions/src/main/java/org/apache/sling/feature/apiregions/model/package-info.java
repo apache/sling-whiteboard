@@ -18,4 +18,4 @@
 /**
  * Basic <code>api-regions</code> APIs.
  */
-package org.apache.sling.feature.apiregions;
+package org.apache.sling.feature.apiregions.model;

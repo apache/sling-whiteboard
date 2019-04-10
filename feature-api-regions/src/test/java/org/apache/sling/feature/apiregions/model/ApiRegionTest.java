@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.sling.feature.apiregions;
+package org.apache.sling.feature.apiregions.model;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -24,6 +24,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.sling.feature.apiregions.model.ApiRegion;
 import org.junit.Test;
 
 public class ApiRegionTest {
