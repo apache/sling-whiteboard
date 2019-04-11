@@ -27,6 +27,9 @@ import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Configuration;
 import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.apiregions.model.ApiRegion;
+import org.apache.sling.feature.apiregions.model.ApiRegions;
+import org.apache.sling.feature.apiregions.model.io.json.ApiRegionsJSONSerializer;
 import org.apache.sling.feature.diff.FeatureDiff;
 import org.junit.Test;
 
@@ -63,7 +66,7 @@ public class FeatureDiffJSONSerializerTest {
 
         JsonNode expectedNode = objectMapper.readTree(getClass().getResourceAsStream("expectedDiff.json"));
 
-        // produce the JSON output
+        // define the previous Feature
 
         Feature previous = new Feature(ArtifactId.fromMvnId("org.apache.sling:org.apache.sling.feature.diff:0.9.0"));
         previous.getFrameworkProperties().put("env", "staging");
@@ -77,6 +80,15 @@ public class FeatureDiffJSONSerializerTest {
         previousConfiguration.getProperties().put("it.will.appear.in.the.updated.section", new String[] { "/log" });
         previous.getConfigurations().add(previousConfiguration);
 
+        ApiRegions previousRegions = new ApiRegions();
+        ApiRegion base = previousRegions.addNew("base");
+        base.add("org.apache.felix.inventory");
+        base.add("org.apache.felix.metatype");
+
+        ApiRegionsJSONSerializer.serializeApiRegions(previousRegions, previous);
+
+        // define the current Feature
+
         Feature current = new Feature(ArtifactId.fromMvnId("org.apache.sling:org.apache.sling.feature.diff:1.0.0"));
         current.getFrameworkProperties().put("env", "prod");
         current.getFrameworkProperties().put("sling.framework.install.startlevel", "1");
@@ -88,6 +100,15 @@ public class FeatureDiffJSONSerializerTest {
         currentConfiguration.getProperties().put("it.will.appear.in.the.updated.section", new String[] { "/log", "/etc" });
         currentConfiguration.getProperties().put("it.will.appear.in.the.added.section", true);
         current.getConfigurations().add(currentConfiguration);
+
+        ApiRegions currentRegions = new ApiRegions();
+        base = currentRegions.addNew("base");
+        base.add("org.apache.felix.inventory");
+        base.add("org.apache.felix.scr.component");
+
+        ApiRegionsJSONSerializer.serializeApiRegions(currentRegions, current);
+
+        // now compare
 
         FeatureDiff featureDiff = compareFeatures(previous, current);
 

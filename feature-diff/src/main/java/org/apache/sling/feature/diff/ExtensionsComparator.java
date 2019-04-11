@@ -16,10 +16,15 @@
  */
 package org.apache.sling.feature.diff;
 
+import static org.apache.sling.feature.apiregions.model.io.json.ApiRegionsJSONParser.parseApiRegions;
+import static java.lang.String.format;
+
 import java.io.IOException;
 
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.Extensions;
+import org.apache.sling.feature.apiregions.model.ApiRegion;
+import org.apache.sling.feature.apiregions.model.ApiRegions;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,6 +32,7 @@ import com.flipkart.zjsonpatch.JsonDiff;
 
 final class ExtensionsComparator extends AbstractFeatureElementComparator<Extension, Extensions> {
 
+    private static final String API_REGIONS = "api-regions";
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public ExtensionsComparator() {
@@ -45,7 +51,8 @@ final class ExtensionsComparator extends AbstractFeatureElementComparator<Extens
 
     @Override
     public DiffSection compare(Extension previous, Extension current) {
-        DiffSection diffSection = new DiffSection(current.getName());
+        String diffName = format("%s:%s|%s", current.getName(), current.getType(), current.isRequired());
+        DiffSection diffSection = new DiffSection(diffName);
 
         if (previous.getType() != current.getType()) {
             diffSection.markItemUpdated("type", previous.getType(), current.getType());
@@ -53,7 +60,9 @@ final class ExtensionsComparator extends AbstractFeatureElementComparator<Extens
 
         switch (previous.getType()) {
             case ARTIFACTS:
-                return new ArtifactsComparator("artifacts").apply(previous.getArtifacts(), current.getArtifacts());
+                diffSection.markUpdated(new ArtifactsComparator("artifacts")
+                                        .apply(previous.getArtifacts(), current.getArtifacts()));
+                break;
 
             case TEXT:
                 if (!previous.getText().equals(previous.getText())) {
@@ -62,24 +71,63 @@ final class ExtensionsComparator extends AbstractFeatureElementComparator<Extens
                 break;
 
             case JSON:
-                String previousJSON = previous.getJSON();
-                String currentJSON = current.getJSON();
+                if (API_REGIONS.equals(current.getName())) {
+                    ApiRegions previousRegions = parseApiRegions(previous);
+                    ApiRegions currentRegions = parseApiRegions(current);
 
-                try {
-                    JsonNode previousNode = objectMapper.readTree(previousJSON);
-                    JsonNode currentNode = objectMapper.readTree(currentJSON); 
-                    JsonNode patchNode = JsonDiff.asJson(previousNode, currentNode); 
+                    for (ApiRegion previousRegion : previousRegions) {
+                        String regionName = previousRegion.getName();
+                        ApiRegion currentRegion = currentRegions.getByName(regionName);
 
-                    if (patchNode.size() != 0) {
-                        diffSection.markItemUpdated("json", previousJSON, currentJSON);
+                        if (currentRegion == null) {
+                            diffSection.markRemoved(regionName);
+                        } else {
+                            DiffSection regionDiff = new DiffSection(regionName);
+
+                            for (String previousApi : previousRegion.getExports()) {
+                                if (!currentRegion.exports(previousApi)) {
+                                    regionDiff.markRemoved(previousApi);
+                                }
+                            }
+
+                            for (String currentApi : currentRegion.getExports()) {
+                                if (!previousRegion.exports(currentApi)) {
+                                    regionDiff.markAdded(currentApi);
+                                }
+                            }
+
+                            diffSection.markUpdated(regionDiff);
+                        }
                     }
-                } catch (IOException e) {
-                    // should not happen
-                    throw new RuntimeException("A JSON parse error occurred while parsing previous '"
-                                               + previousJSON
-                                               + "' and current '"
-                                               + currentJSON
-                                               + "', see nested errors:", e);
+
+                    for (ApiRegion currentRegion : currentRegions) {
+                        String regionName = currentRegion.getName();
+                        ApiRegion previousRegion = previousRegions.getByName(regionName);
+
+                        if (previousRegion == null) {
+                            diffSection.markAdded(regionName);
+                        }
+                    }
+                } else {
+                    String previousJSON = previous.getJSON();
+                    String currentJSON = current.getJSON();
+
+                    try {
+                        JsonNode previousNode = objectMapper.readTree(previousJSON);
+                        JsonNode currentNode = objectMapper.readTree(currentJSON); 
+                        JsonNode patchNode = JsonDiff.asJson(previousNode, currentNode); 
+
+                        if (patchNode.size() != 0) {
+                            diffSection.markItemUpdated("json", previousJSON, currentJSON);
+                        }
+                    } catch (IOException e) {
+                        // should not happen
+                        throw new RuntimeException("A JSON parse error occurred while parsing previous '"
+                                                   + previousJSON
+                                                   + "' and current '"
+                                                   + currentJSON
+                                                   + "', see nested errors:", e);
+                    }
                 }
                 break;
 

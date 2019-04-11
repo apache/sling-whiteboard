@@ -3,7 +3,7 @@
   "vendorURL":"http://www.apache.org/",
   "generator":"Apache Sling Feature Diff tool",
   "generatorURL":"https://github.com/apache/sling-org-apache-sling-feature-diff",
-  "generatedOn":"2019-04-04T11:08:51 +0200",
+  "generatedOn":"2019-04-11T03:12:44 +0200",
   "id":"org.apache.sling:org.apache.sling.feature.diff:1.0.0",
   "previousVersion":"0.9.0",
   "framework-properties":{
@@ -57,6 +57,22 @@
           "it.will.appear.in.the.updated.section":{
             "previous":"[{/log}]",
             "current":"[{/log,/etc}]"
+          }
+        }
+      }
+    }
+  },
+  "extensions":{
+    "updated":{
+      "api-regions:JSON|false":{
+        "updated":{
+          "base":{
+            "removed":[
+              "org.apache.felix.metatype"
+            ],
+            "added":[
+              "org.apache.felix.scr.component"
+            ]
           }
         }
       }
