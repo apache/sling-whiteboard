@@ -59,27 +59,35 @@
 
         <release.plugin.version>2.5.3</release.plugin.version>
         <source.plugin.version>3.0.1</source.plugin.version>
-        <resource.plugin.version>3.0.2</resource.plugin.version>
-        <jar.plugin.version>3.0.2</jar.plugin.version>
-        <enforcer.plugin.version>1.4.1</enforcer.plugin.version>
-        <compiler.plugin.version>3.6.1</compiler.plugin.version>
-        <bundle.plugin.version>2.5.4</bundle.plugin.version>
-        <clean.plugin.version>3.0.0</clean.plugin.version>
-        <installer.plugin.version>2.5.2</installer.plugin.version>
-        <surfire.plugin.version>2.20</surfire.plugin.version>
-        <failsafe.plugin.version>2.20</failsafe.plugin.version>
-        <deploy.plugin.version>2.8.2</deploy.plugin.version>
-        <sling.plugin.version>2.3.2</sling.plugin.version>
-        <dependency.plugin.version>3.0.0</dependency.plugin.version>
+        <resource.plugin.version>3.1.0</resource.plugin.version>
+        <jar.plugin.version>3.1.1</jar.plugin.version>
+        <enforcer.plugin.version>3.0.0-M2</enforcer.plugin.version>
+        <compiler.plugin.version>3.8.0</compiler.plugin.version>
+        <bundle.plugin.version>4.2.0</bundle.plugin.version>
+        <clean.plugin.version>3.1.0</clean.plugin.version>
+        <installer.plugin.version>3.0.0-M1</installer.plugin.version>
+        <surfire.plugin.version>3.0.0-M3</surfire.plugin.version>
+        <failsafe.plugin.version>3.0.0-M3</failsafe.plugin.version>
+        <deploy.plugin.version>3.0.0-M1</deploy.plugin.version>
+        <sling.plugin.version>2.4.0</sling.plugin.version>
+        <dependency.plugin.version>3.1.1</dependency.plugin.version>
         <build.helper.plugin.version>3.0.0</build.helper.plugin.version>
-        <vcmio.plugin.version>1.6.0</vcmio.plugin.version>
-        <filevault-package.plugin.version>1.0.0</filevault-package.plugin.version>
+        <wcmio.plugin.version>1.6.18</wcmio.plugin.version>
+        <filevault-package.plugin.version>1.0.3</filevault-package.plugin.version>
 
+        <osgi.core.version>7.0.0</osgi.core.version>
+        <osgi.annotation.version>7.0.0</osgi.annotation.version>
+        <org.osgi.service.component.annotations.version>1.4.0</org.osgi.service.component.annotations.version>
+        <org.osgi.service.metatype.annotations.version>1.4.0</org.osgi.service.metatype.annotations.version>
+        <org.osgi.compendium.version>5.0.0</org.osgi.compendium.version>
+        <javax.servlet-api.version>3.1.0</javax.servlet-api.version>
+        <javax.inject.version>1</javax.inject.version>
+        <jcr.version>2.0</jcr.version>
         <sling.models.api.version>1.3.6</sling.models.api.version>
         <jetbrains.annotations.version>16.0.2</jetbrains.annotations.version>
-        <sling.settings.version>1.3.8</sling.settings.version>
+        <sling.settings.version>1.3.10</sling.settings.version>
         <sling.commons.osgi.version>2.4.0</sling.commons.osgi.version>
-        <jackrabbit-api.version>2.14.4</jackrabbit-api.version>
+        <jackrabbit-api.version>2.16.3</jackrabbit-api.version>
         <commons-lang.version>2.6</commons-lang.version>
         <jmock-junit4.version>2.8.2</jmock-junit4.version>
     </properties>
@@ -238,7 +246,7 @@
                 <plugin>
                     <groupId>io.wcm.maven.plugins</groupId>
                     <artifactId>wcmio-content-package-maven-plugin</artifactId>
-                    <version>${vcmio.plugin.version}</version>
+                    <version>${wcmio.plugin.version}</version>
                     <configuration>
                         <serviceURL>http://${sling.host}:${sling.port}/bin/cpm/</serviceURL>
                         <userId>${sling.user}</userId>
@@ -280,8 +288,8 @@
             <!-- OSGi Dependencies -->
             <dependency>
                 <groupId>org.osgi</groupId>
-                <artifactId>org.osgi.core</artifactId>
-                <version>6.0.0</version>
+                <artifactId>osgi.core</artifactId>
+                <version>${osgi.core.version}</version>
                 <scope>provided</scope>
             </dependency>
 
@@ -289,7 +297,7 @@
             <dependency>
                 <groupId>org.osgi</groupId>
                 <artifactId>osgi.annotation</artifactId>
-                <version>6.0.1</version>
+                <version>${osgi.annotation.version}</version>
                 <scope>provided</scope>
             </dependency>
 
@@ -297,20 +305,21 @@
             <dependency>
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.service.component.annotations</artifactId>
-                <version>1.3.0</version>
+                <version>${org.osgi.service.component.annotations.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.service.metatype.annotations</artifactId>
-                <version>1.3.0</version>
+                <version>${org.osgi.service.metatype.annotations.version}</version>
                 <scope>provided</scope>
             </dependency>
 
+            <!-- Needs to be placed after 'org.osgi.service.component.annotations' otherwise field @Reference will not work -->
             <dependency>
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.compendium</artifactId>
-                <version>4.2.0</version>
+                <version>${org.osgi.compendium.version}</version>
                 <scope>provided</scope>
             </dependency>
 
@@ -318,7 +327,7 @@
             <dependency>
                 <groupId>javax.servlet</groupId>
                 <artifactId>javax.servlet-api</artifactId>
-                <version>3.1.0</version>
+                <version>${javax.servlet-api.version}</version>
                 <scope>provided</scope>
             </dependency>
 
@@ -326,7 +335,7 @@
             <dependency>
                 <groupId>javax.inject</groupId>
                 <artifactId>javax.inject</artifactId>
-                <version>1</version>
+                <version>$[javax.inject.version</version>
                 <scope>provided</scope>
             </dependency>
 
@@ -334,7 +343,7 @@
             <dependency>
                 <groupId>javax.jcr</groupId>
                 <artifactId>jcr</artifactId>
-                <version>2.0</version>
+                <version>${jcr.version}</version>
                 <scope>provided</scope>
             </dependency>
 

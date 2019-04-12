@@ -38,12 +38,13 @@
     <description>
         This is an empty JCR Package where the JCR Content
         can be deployed with.
-
-        For a "not all" package this JCR Package will embedd
+    </description>
+    <!-- NOTE:
+        For a 'not all' package this JCR Package will embedd
         the "core" bundle. It can be deployed with the
         "autoInstallPackage" profile.
 
-        For an "all" package this only provides the content
+        For an 'all' package this only provides the content
         of the project which is deployed in the root with
         the "autoInstallAll" profile.
 
@@ -51,7 +52,7 @@
         in one manner as deploying bundles inside a package
         and through the System Console can lead to unexpected
         and errorneous situations.
-    </description>
+    -->
 
     <!-- @startForNotAll@ This is used for the Post Generation Handling. Do not alter or remove -->
     <dependencies>

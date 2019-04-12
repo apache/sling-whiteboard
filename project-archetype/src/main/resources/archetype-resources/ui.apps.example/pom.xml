@@ -37,6 +37,8 @@
     <name>\${artifactName} - UI Apps Example</name>
     <description>
         This is the Example Module for the Sample UI Apps module (ui.apps).
+    </description>
+    <!--
         The basic idea is to have a clean 'ui.apps' module in which you
         can choose what examples you want to use rather than having
         to delete a bunch of examples.
@@ -51,7 +53,7 @@
 
         The profile to deploy the bundle is removed to avoid accidental
         deployments.
-    </description>
+    -->
 
     <!-- @startForNotAll@ This is used for the Post Generation Handling. Do not alter or remove -->
     <dependencies>
