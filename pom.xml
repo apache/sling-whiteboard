@@ -43,7 +43,6 @@
 <!-- disabled until parent pom 35 is released 
           <module>cli</module>
 -->
-
     </modules>
 </project>
 
