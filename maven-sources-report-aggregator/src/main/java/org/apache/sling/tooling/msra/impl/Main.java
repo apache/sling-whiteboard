@@ -63,7 +63,11 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
         
-        Main main = new Main("org.apache.sling*");
+        if ( args.length == 0 ) {
+            throw new IllegalArgumentException("Please specify groupId to look for, e.g. org.apache*");
+        }
+        
+        Main main = new Main(args[0]);
         main.loadIndex();
         main.querySlingApiArtifacts();
     }
