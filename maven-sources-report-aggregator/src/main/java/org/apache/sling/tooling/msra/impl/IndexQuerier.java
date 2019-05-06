@@ -109,8 +109,6 @@ public class IndexQuerier {
         // Creators we want to use (search for fields it defines)
         List<IndexCreator> indexers = new ArrayList<>();
         indexers.add(plexusContainer.lookup(IndexCreator.class, "min"));
-        indexers.add(plexusContainer.lookup(IndexCreator.class, "jarContent"));
-        indexers.add(plexusContainer.lookup(IndexCreator.class, "maven-plugin"));
 
         // Create context for central repository index
         centralContext = indexer.createIndexingContext("central-context", "central", centralLocalCache, centralIndexDir,
