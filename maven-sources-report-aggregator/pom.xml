@@ -32,6 +32,7 @@
     <name>Apache Sling - Maven Source Artifacts Report Aggregator</name>
 
     <dependencies>
+        <!--  Main dependency -->
         <dependency>
             <groupId>org.apache.maven.indexer</groupId>
             <artifactId>indexer-core</artifactId>
@@ -69,11 +70,6 @@
             <groupId>org.eclipse.sisu</groupId>
             <artifactId>org.eclipse.sisu.plexus</artifactId>
             <version>0.3.3</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.inject</groupId>
-            <artifactId>guice</artifactId>
-            <version>4.1.0</version>
         </dependency>
     </dependencies>
 
