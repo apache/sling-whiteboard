@@ -29,7 +29,10 @@ import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.launcher.impl.launchers.FrameworkLauncher;
 import org.apache.sling.feature.launcher.spi.LauncherPrepareContext;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleReference;
 import org.osgi.framework.Constants;
+import org.osgi.framework.FrameworkUtil;
 
 public class PojoSRLauncher extends FrameworkLauncher
 {
@@ -109,6 +112,7 @@ public class PojoSRLauncher extends FrameworkLauncher
                     }
                 }
             }
+
             if (!filter.isEmpty()) {
                 filter = "(|" + filter + ")";
                 app.getFrameworkProperties().put("pojosr.filter", filter);
@@ -120,5 +124,39 @@ public class PojoSRLauncher extends FrameworkLauncher
     protected String getFrameworkRunnerClass()
     {
         return PojoSRRunner.class.getName();
+    }
+
+    @Override
+    public LauncherClassLoader createClassLoader()
+    {
+        LauncherClassLoader cl = new PojoSRLauncherClassLoader();
+        cl.addURL(PojoSRLauncher.class.getProtectionDomain().getCodeSource().getLocation());
+        return cl;
+    }
+
+    private class PojoSRLauncherClassLoader extends LauncherClassLoader implements BundleReference {
+
+        @Override
+        public Bundle getBundle()
+        {
+            try
+            {
+                return (Bundle) loadClass(FrameworkUtil.class.getName()).getField("BUNDLE").get(null);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        @Override
+        protected Class<?> findClass(String name) throws ClassNotFoundException
+        {
+            return (name.startsWith("org.osgi.framework.") && !name.startsWith(FrameworkUtil.class.getName())) ||
+                name.startsWith("org.osgi.resource.") ?
+                PojoSRLauncher.class.getClassLoader().loadClass(name) :
+                super.findClass(name);
+        }
     }
 }

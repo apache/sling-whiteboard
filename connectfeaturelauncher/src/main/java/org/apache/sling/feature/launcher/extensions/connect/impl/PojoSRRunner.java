@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.apache.sling.feature.launcher.impl.launchers.FrameworkRunner;
 import org.osgi.framework.BundleException;
+import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.launch.Framework;
 
 public class PojoSRRunner extends FrameworkRunner
@@ -35,6 +36,13 @@ public class PojoSRRunner extends FrameworkRunner
     @Override
     protected void setupFramework(Framework framework, Map<Integer, List<File>> bundlesMap) throws BundleException
     {
+        try
+        {
+            FrameworkUtil.BUNDLE = framework;
+        }
+        catch (Throwable t) {
+            t.printStackTrace();
+        }
         super.setupFramework(framework, framework.getSymbolicName().equals("org.apache.felix.connect") ? Collections.emptyMap() : bundlesMap);
     }
 }
