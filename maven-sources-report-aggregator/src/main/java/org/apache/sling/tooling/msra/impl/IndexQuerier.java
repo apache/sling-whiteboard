@@ -157,12 +157,15 @@ public class IndexQuerier {
         Query groupId = indexer.constructQuery(MAVEN.GROUP_ID, new SourcedSearchExpression(queryGroupId));
         Query packaging = indexer.constructQuery(MAVEN.PACKAGING, new SourcedSearchExpression("pom"));
 
-        BooleanQuery bq = new BooleanQuery.Builder().add(groupId, Occur.MUST).add(packaging, Occur.MUST_NOT).build();
+        BooleanQuery bq = new BooleanQuery.Builder()
+            .add(groupId, Occur.MUST)
+            .add(packaging, Occur.MUST_NOT)
+            .build();
 
         searchAndDump(indexer, "all " + queryGroupId + " artifacts", bq);
     }
 
-    public void searchAndDump(Indexer nexusIndexer, String descr, Query q) throws IOException {
+    private void searchAndDump(Indexer nexusIndexer, String descr, Query q) throws IOException {
         logger.info("Searching for {}", descr);
 
         GroupedSearchResponse response = nexusIndexer
