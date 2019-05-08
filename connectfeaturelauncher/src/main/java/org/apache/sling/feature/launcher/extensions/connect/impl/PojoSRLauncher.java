@@ -106,6 +106,9 @@ public class PojoSRLauncher extends FrameworkLauncher
                                 filter += "(" + Constants.BUNDLE_SYMBOLICNAME + "=" +  bsn + ")";
                             }
                         }
+                        else {
+                            context.addAppJar(file);
+                        }
 
                     } catch (Exception ex) {
                         ex.printStackTrace();
