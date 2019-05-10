@@ -79,9 +79,9 @@ then
     RESP=$(curl -s http://localhost:8080/starter/index.html)
     if [[ "$RESP" == *"Do not remove this comment, used for Starter integration tests"* ]]; then
       echo "Sling Starter started!"
+      break
     else
       echo "Not yet started..."
-      break
     fi
   done
   
@@ -106,16 +106,15 @@ then
   echo "Release ${RELEASE_ID} verified successfully!"
   
   if [[ "$KEEP_RUNNING" == "true" ]]; then
-  	echo "Leaving Sling Starter running for 10 minutes for testing..."
+    TIMEOUT="${RUN_TIMEOUT:=10m}"
+  	echo "Leaving Sling Starter running for $TIMEOUT for testing..."
   	
   	printf "Run the following command to see the URL to connect to the Sling Starter under the PORT parameter:\n"
   	printf "\tdocker ps | grep sling-check-release"
 
-    sleep 10m
+    sleep $TIMEOUT
   fi
 else
-
   echo "Packaging is $MVN_PACKAGING, not bundle"
-  
   echo "Release ${RELEASE_ID} verified successfully!"
 fi
