@@ -7,10 +7,20 @@ curl https://people.apache.org/keys/group/sling.asc --output sling.asc || exit 1
 gpg --import sling.asc || exit 1
 
 echo "Validating release..."
-/bin/bash check_staged_release.sh ${RELEASE_VERSION} tmp || exit 1
+CHECK_RESULT=$(/bin/bash check_staged_release.sh ${RELEASE_ID} tmp)
+printf "\n$CHECK_RESULT\n"
+if [[ "$CHECK_RESULT" == *"BAD"* ]]; then
+  echo "Check(s) Failed!"
+  exit 1
+elif [[ "$CHECK_RESULT" = *"no files found"* ]]; then
+  echo "Staging repository ${RELEASE_ID} not found!"
+  exit 1
+else
+  echo "Check successful!"
+fi
 
 HAS_BUNDLE=false
-for RELEASE_FOLDER in tmp/${RELEASE_VERSION}/org/apache/sling/*
+for RELEASE_FOLDER in tmp/${RELEASE_ID}/org/apache/sling/*
 do
   echo "Running build for $RELEASE_FOLDER"
   
@@ -18,9 +28,14 @@ do
   MVN_PACKAGING=$(mvn/bin/mvn -q -Dexec.executable=echo  -Dexec.args='${project.packaging}' --non-recursive  exec:exec -f $RELEASE_FOLDER/**/*.pom)
   MVN_VERSION=$(mvn/bin/mvn -q -Dexec.executable=echo  -Dexec.args='${project.version}' --non-recursive  exec:exec -f $RELEASE_FOLDER/**/*.pom)
   MVN_ARTIFACT_ID=$(mvn/bin/mvn -q -Dexec.executable=echo  -Dexec.args='${project.artifactId}' --non-recursive  exec:exec -f $RELEASE_FOLDER/**/*.pom)
-  REPO="sling-${MVN_ARTIFACT_ID//\./-}"
+  if [[ $MVN_ARTIFACT_ID == "sling-"* ]]; then
+    echo "Artifact ID starts with sling-, assuming it will not be duplicated..."
+    REPO="${MVN_ARTIFACT_ID//\./-}"
+  else
+    REPO="sling-${MVN_ARTIFACT_ID//\./-}"
+  fi
 
-  echo "Checking out code at ${MVN_VERSION}..."
+  echo "Checking out code from https://github.com/apache/$REPO.git..."
   git clone https://github.com/apache/$REPO.git || exit 1
   cd $REPO
   git checkout $MVN_ARTIFACT_ID-$MVN_VERSION || exit 1
@@ -62,8 +77,7 @@ then
   while true; do
     sleep 30
     RESP=$(curl -s http://localhost:8080/starter/index.html)
-    if [ "$RESP" == *"Do not remove this comment, used for Starter integration tests"* ]
-    then
+    if [[ "$RESP" == *"Do not remove this comment, used for Starter integration tests"* ]]; then
       echo "Sling Starter started!"
     else
       echo "Not yet started..."
@@ -72,11 +86,11 @@ then
   done
   
   echo "Installing bundles..."
-  for RELEASE_FOLDER in tmp/${RELEASE_VERSION}/org/apache/sling/*
+  for RELEASE_FOLDER in tmp/${RELEASE_ID}/org/apache/sling/*
   do
   
     MVN_PACKAGING=$(mvn/bin/mvn -q -Dexec.executable=echo  -Dexec.args='${project.packaging}' --non-recursive  exec:exec -f $RELEASE_FOLDER/**/*.pom)
-    if [ "$MVN_PACKAGING" = "bundle" ] ; then
+    if [[ "$MVN_PACKAGING" = "bundle" ]] ; then
       echo "Installing bundle ${RELEASE_FOLDER}..."
     
       MVN_VERSION=$(mvn/bin/mvn -q -Dexec.executable=echo  -Dexec.args='${project.version}' --non-recursive  exec:exec -f $RELEASE_FOLDER/**/*.pom)
@@ -89,10 +103,9 @@ then
     fi
   done
   
-  echo "Release ${RELEASE_VERSION} verified successfully!"
+  echo "Release ${RELEASE_ID} verified successfully!"
   
-  if [ "$KEEP_RUNNING" == "true" ]
-  then
+  if [[ "$KEEP_RUNNING" == "true" ]]; then
   	echo "Leaving Sling Starter running for 10 minutes for testing..."
   	
   	printf "Run the following command to see the URL to connect to the Sling Starter under the PORT parameter:\n"
@@ -104,5 +117,5 @@ else
 
   echo "Packaging is $MVN_PACKAGING, not bundle"
   
-  echo "Release ${RELEASE_VERSION} verified successfully!"
+  echo "Release ${RELEASE_ID} verified successfully!"
 fi
