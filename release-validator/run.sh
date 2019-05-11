@@ -19,6 +19,28 @@ else
   echo "Check successful!"
 fi
 
+echo "Updating .m2/settings.xml..."
+mkdir ~/.m2
+cat > ~/.m2/settings.xml <<EOF
+<settings>
+ <profiles>
+   <profile>
+     <id>staging</id>
+     <repositories>
+       <repository>
+         <id>my-repo2</id>
+         <name>your custom repo</name>
+         <url>https://repository.apache.org/content/repositories/orgapachesling-$RELEASE_ID</url>
+       </repository>
+     </repositories>
+   </profile>
+ </profiles>
+ <activeProfiles>
+   <activeProfile>staging</activeProfile>
+  </activeProfiles>
+</settings>
+EOF
+
 HAS_BUNDLE=false
 for RELEASE_FOLDER in tmp/${RELEASE_ID}/org/apache/sling/*
 do
@@ -64,12 +86,12 @@ then
   
   echo "Starting Sling Starter..."
 
-  mkdir -p sling/logs
+  mkdir -p run/sling/logs
   (
     (
-      java -server -Xmx1024m -XX:MaxPermSize=256M -Djava.awt.headless=true -jar run/*.jar  -p 8080 &
+      java -server -Xmx1024m -XX:MaxPermSize=256M -Djava.awt.headless=true -jar run/*.jar  -p 8080 -c run/sling &
     echo $! > app.pid
-    ) >> sling/logs/stdout.log 2>&1
+    ) >> run/sling/logs/stdout.log 2>&1
   ) &
   
   echo "Waiting for Sling to fully start..."
@@ -110,7 +132,7 @@ then
   	echo "Leaving Sling Starter running for $TIMEOUT for testing..."
   	
   	printf "Run the following command to see the URL to connect to the Sling Starter under the PORT parameter:\n"
-  	printf "\tdocker ps | grep sling-check-release"
+  	printf "\tdocker ps\n"
 
     sleep $TIMEOUT
   fi
