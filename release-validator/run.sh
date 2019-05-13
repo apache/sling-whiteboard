@@ -95,8 +95,7 @@ done
 
 prints "Build(s) Successful!" "success"
 
-if [ "$HAS_BUNDLE" = true ];
-then
+if [ "$HAS_BUNDLE" = true ]; then
   prints "Bundles found, starting Apache Sling Starter..." "info"
   
   mkdir run
@@ -141,7 +140,10 @@ then
   prints "Installing bundles..." "info"
   for RELEASE_FOLDER in tmp/${RELEASE_ID}/org/apache/sling/*
   do
-  
+    if [[ -f $RELEASE_FOLDER ]]; then
+      continue
+    fi
+    
     MVN_PACKAGING=$(mvn/bin/mvn -q -Dexec.executable=echo  -Dexec.args='${project.packaging}' --non-recursive  exec:exec -f $RELEASE_FOLDER/**/*.pom)
     if [[ "$MVN_PACKAGING" = "bundle" ]]; then
     
@@ -169,7 +171,7 @@ then
       done
       
       if [[ "$STATE" != "Active" ]]; then
-        prints "Failed to start $MVN_ARTIFACT_ID, current state: $STATE"
+        prints "Failed to start $MVN_ARTIFACT_ID, current state: $STATE" "error"
         printf "Imports in error state:\n$IMPORTS_IN_ERROR\n\n"
         BUNDLE_SUCCESS=false
       fi
