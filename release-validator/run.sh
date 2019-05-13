@@ -86,8 +86,7 @@ do
   prints "Building $MVN_ARTIFACT_ID..." "info"
   ../mvn/bin/mvn clean install || exit 1
   
-  if [ "$MVN_PACKAGING" == "bundle" ]
-  then
+  if [[ "$MVN_PACKAGING" == "bundle" ]]; then
   	HAS_BUNDLE=true
   fi
 
