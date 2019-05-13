@@ -158,7 +158,7 @@ then
       while [ $ATTEMPT -lt 12 ]; do
         sleep 10
         BUNDLE_RESPONSE=$(curl -s -u admin:admin http://127.0.0.1:8080/system/console/bundles/$MVN_ARTIFACT_ID.json)
-        let STATE=$(echo $BUNDLE_RESPONSE | jq -r '.data[0].state')
+        STATE=$(echo $BUNDLE_RESPONSE | jq -r '.data[0].state')
         IMPORTS_IN_ERROR=$(echo $BUNDLE_RESPONSE | jq -r '.data[0].props[] | select(.key == "Imported Packages").value[] | select( contains("ERROR") )')
         if [[ "$STATE" == "Active" ]]; then
           prints "Bundle $MVN_ARTIFACT_ID started successfully!" "success"
@@ -192,7 +192,7 @@ then
     CONTAINER_ID=$(cat /etc/hostname)
   	
   	echo "Run the following command to see the URL to connect to the Sling Starter:"
-  	printf "\tdocker port $CONTAINER_ID\n"
+  	printf "\tdocker port $CONTAINER_ID 8080\n"
   	echo "If you are satisfied, the container can be stopped with:"
   	printf "\tdocker stop $CONTAINER_ID\n"
 

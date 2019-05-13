@@ -1,7 +1,6 @@
 # Release Validator
 
 A docker container for validating Apache Sling releases using the release ID. 
-This project assumes you already have docker installed and configured on your local system.
 
 This container will:
 
@@ -10,11 +9,16 @@ This container will:
  1. Build each progress in the release
  1. If any project in the release is in a bundle, start an Apache Sling Starter and install as a bundle
 
+## Setup
+
+This project assumes you have already [installed](https://docs.docker.com/install/) on your local system.
+
+To build the container instance, you must first download the desired JDK. Download the RPM Linux 64 installer
+into the project root directory, then run:
+
+    docker build -t sling-check-release .
+
 ## Commands
-
-To build the instance run:
-
-    docker build -t sling-check-release . 
 
 To run the docker container run:
 

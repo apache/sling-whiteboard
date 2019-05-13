@@ -1,7 +1,17 @@
 #!/bin/bash
 
 echo "Installing dependencies..."
-yum install -y wget openssl git jq
+yum install epel-release -y
+yum install -y wget openssl git jq which
+
+echo "Installing Java..."
+yum localinstall -y *.rpm
+
+echo "Configuring JAVA_HOME..."
+JAVA_VERSION=$(ls /usr/java/ | grep jdk)
+echo export JAVA_HOME="/usr/java/$JAVA_VERSION" >/etc/profile.d/javaenv.sh
+echo 'export PATH=$PATH:$JAVA_HOME' >> /etc/profile.d/javaenv.sh
+chmod 0755 /etc/profile.d/javaenv.sh
 
 echo "Installing Apache Maven..."
 mkdir mvn

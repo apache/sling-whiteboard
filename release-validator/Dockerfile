@@ -1,8 +1,9 @@
-FROM store/oracle/serverjre:8
+FROM centos
 
 WORKDIR /opt
 
 ADD init.sh .
+ADD *.rpm .
 RUN /bin/bash init.sh
 
 EXPOSE 8080
