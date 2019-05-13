@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "Installing dependencies..."
-yum install -y wget openssl git
+yum install -y wget openssl git jq
 
 echo "Installing Apache Maven..."
 mkdir mvn
