@@ -1,17 +1,14 @@
 package org.apache.sling.uca.impl;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 public class Main {
     
-    public static void main(String[] args) {
+    public static void main(String[] args) throws MalformedURLException, IOException {
         
-        Map<String, String> map = new HashMap<>();
-        map.put("foo", "bar");
-        map.put("foo", "baz");
-        
-        System.out.println(map.get("foo"));
+        new URL("http://sling.apache.org").openConnection();
     }
 
 }
