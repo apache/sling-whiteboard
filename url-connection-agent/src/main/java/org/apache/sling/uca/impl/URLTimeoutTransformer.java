@@ -35,8 +35,8 @@ class URLTimeoutTransformer implements ClassFileTransformer {
     private final long connectTimeoutMillis;
 
     public URLTimeoutTransformer(long connectTimeout, long readTimeout) {
-        this.readTimeoutMillis = connectTimeout;
-        this.connectTimeoutMillis = readTimeout;
+        this.connectTimeoutMillis = connectTimeout;
+        this.readTimeoutMillis = readTimeout;
     }
 
     @Override
