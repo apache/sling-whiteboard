@@ -15,6 +15,7 @@ prints() {
   printf "\n\n$STARTCOLOR%b$ENDCOLOR" "$1\n";
 }
 
+RELEASE_ID=$1
 mkdir tmp
 
 prints "Starting Validation for Apache Sling Release #$RELEASE_ID" "info"
@@ -98,20 +99,14 @@ prints "Build(s) Successful!" "success"
 if [ "$HAS_BUNDLE" = true ]; then
   prints "Bundles found, starting Apache Sling Starter..." "info"
   
-  mkdir run
-  
-  echo "Downloading Sling Starter..."
-  mvn/bin/mvn -q dependency:get -DremoteRepositories=https://repository.apache.org/content/groups/snapshots -DgroupId=org.apache.sling -DartifactId=org.apache.sling.starter -Dversion=LATEST -Dtransitive=false
-  mvn/bin/mvn -q dependency:copy -Dartifact=org.apache.sling:org.apache.sling.starter:LATEST -DoutputDirectory=run
-  
   echo "Starting Sling Starter..."
-
-  mkdir -p run/sling/logs
+  git clone https://github.com/apache/sling-org-apache-sling-launchpad-testing.git run
+  mkdir -p run/target/sling/logs
   (
     (
-      java -server -Xmx1024m -XX:MaxPermSize=256M -Djava.awt.headless=true -jar run/*.jar  -p 8080 -c run/sling &
-    echo $! > app.pid
-    ) >> run/sling/logs/stdout.log 2>&1
+      mvn/bin/mvn -q -f run/pom.xml clean install -Dlaunchpad.keep.running=true -Dhttp.port=8080 -Ddebug &
+      echo $! > app.pid
+    ) >> run/target/sling/logs/stdout.log 2>&1
   ) &
   
   echo "Waiting for Sling to fully start..."
@@ -124,6 +119,9 @@ if [ "$HAS_BUNDLE" = true ]; then
     if [[ "$RESP" == *"Do not remove this comment, used for Starter integration tests"* ]]; then
       prints "Sling Starter started!" "success"
       let STARTED=true
+      echo "Installing test services..."
+      ls integration-tests/*
+      curl -u admin:admin -F action=install -F bundlestart=true -F refreshPackages=true -F bundlestartlevel=20 -F bundlefile=@"integration-tests/org.apache.sling.launchpad.test-services*.jar" http://127.0.0.1:8080/system/console/bundles || exit 1
       break
     else
       echo "Not yet started..."
@@ -185,6 +183,10 @@ if [ "$HAS_BUNDLE" = true ]; then
   else 
     prints "Some bundles failed to start" "error"
   fi
+  
+  prints "Running Integration Tests" "info"
+  git clone https://github.com/apache/sling-org-apache-sling-launchpad-integration-tests.git integration-tests
+  mvn/bin/mvn test -f integration-tests/pom.xml -Dhttp.port=8080 || exit 1
   
   if [[ "$KEEP_RUNNING" == "true" ]]; then
     TIMEOUT="${RUN_TIMEOUT:=10m}"

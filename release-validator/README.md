@@ -22,16 +22,15 @@ into the project root directory, then run:
 
 To run the docker container run:
 
-    docker run -e RELEASE_ID=[A_RELEASE_NUMBER] sling-check-release
+    docker run sling-check-release [A_RELEASE_NUMBER]
 
 To keep the docker container up for 10 minutes to ensure the bundle is installed and working, execute:
 
-    docker run -e RELEASE_ID=[A_RELEASE_NUMBER] -e KEEP_RUNNING=true -P sling-check-release
+    docker run -e KEEP_RUNNING=true -P sling-check-release [A_RELEASE_NUMBER]
     
 ## Environment Variables
 
 The following environment variables are supported:
 
  - **KEEP_RUNNING** - If set to true, the Sling instace will be left running, default is false
- - **RELEASE_ID** - The ID of the release to validate, required
  - **RUN_TIMEOUT** - The amount of time for the Sling instance to be left running, default is 10m

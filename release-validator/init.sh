@@ -5,7 +5,7 @@ yum install epel-release -y
 yum install -y wget openssl git jq which
 
 echo "Installing Java..."
-yum localinstall -y *.rpm
+yum localinstall -y $JDK_RPM
 
 echo "Configuring JAVA_HOME..."
 JAVA_VERSION=$(ls /usr/java/ | grep jdk)
