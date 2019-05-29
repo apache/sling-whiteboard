@@ -289,7 +289,7 @@ public class JcrPersistImpl implements JcrPersist {
                 return (String) FieldUtils.readField(pathField, obj, true);
             }
         } catch (IllegalArgumentException | NoSuchMethodException | InvocationTargetException | IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(JcrPersistImpl.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER.warn("exception caught",ex);
         }
         LOGGER.warn("Object of type {} does NOT contain a Path attribute or a path property - multiple instances may conflict", obj.getClass());
         return null;
