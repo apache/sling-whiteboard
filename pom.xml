@@ -40,9 +40,8 @@
 
     <modules>
           <module>mdresourceprovider</module>
-<!-- disabled until parent pom 35 is released 
-          <module>cli</module>
--->
+          <module>maven-central-source-reporter</module>
+          <module>url-connection-agent</module>
     </modules>
 </project>
 
