@@ -71,7 +71,9 @@ public final class DiffSection {
 
     protected void markUpdated(DiffSection diffSection) {
         DiffSection checkedSection = requireNonNull(diffSection);
-        updates.add(checkedSection);
+        if (!diffSection.isEmpty()) {
+            updates.add(checkedSection);
+        }
     }
 
     public Iterable<DiffSection> getUpdates() {

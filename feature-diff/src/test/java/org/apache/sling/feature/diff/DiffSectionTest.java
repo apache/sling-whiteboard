@@ -92,8 +92,7 @@ public class DiffSectionTest {
         DiffSection childDiff = new DiffSection("child");
         mainDiff.markUpdated(childDiff);
 
-        assertFalse(mainDiff.isEmpty());
-        assertEquals(mainDiff.getUpdates().iterator().next(), childDiff);
+        assertTrue(mainDiff.isEmpty());
     }
 
 }

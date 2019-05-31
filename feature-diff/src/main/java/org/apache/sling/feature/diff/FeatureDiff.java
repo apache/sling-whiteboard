@@ -42,7 +42,9 @@ public final class FeatureDiff {
         featureDiff.addSection(new GenericMapComparator("framework-properties").compare(previous.getFrameworkProperties(), current.getFrameworkProperties()));
         featureDiff.addSection(new ArtifactsComparator("bundles").apply(previous.getBundles(), current.getBundles()));
         featureDiff.addSection(new ConfigurationsComparator().apply(previous.getConfigurations(), current.getConfigurations()));
+        featureDiff.addSection(new RequirementsComparator().apply(previous.getRequirements(), current.getRequirements()));
         featureDiff.addSection(new ExtensionsComparator().apply(previous.getExtensions(), current.getExtensions()));
+        featureDiff.addSection(new GenericMapComparator("variables").compare(previous.getVariables(), current.getVariables()));
 
         return featureDiff;
     }
