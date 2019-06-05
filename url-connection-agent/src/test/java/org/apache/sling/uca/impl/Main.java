@@ -24,14 +24,33 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
+import org.apache.commons.httpclient.Header;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpException;
+import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.methods.GetMethod;
+
 public class Main {
 
     public static void main(String[] args) throws MalformedURLException, IOException {
         
-        if ( args.length != 1 )
-            throw new IllegalArgumentException("Usage: java -jar ... <URL>");
+        if ( args.length != 2 )
+            throw new IllegalArgumentException("Usage: java -cp ... " + Main.class.getName() + " <URL> JavaNet|HC3|HC4");
 
-        URLConnection con = new URL(args[0]).openConnection();
+        switch ( args[1] ) {
+            case "JavaNet":
+                runUsingJavaNet(args[0]);
+                break;
+            case "HC3":
+                runUsingHttpClient3(args[0]);
+                break;
+            default:
+                throw new IllegalArgumentException("Usage: java -cp ... " + Main.class.getName() + " <URL> JavaNet|HC3|HC4");
+        }
+    }
+
+    private static void runUsingJavaNet(String targetUrl) throws MalformedURLException, IOException {
+        URLConnection con = new URL(targetUrl).openConnection();
         System.out.println("Connection type is " + con);
         
         try (InputStream in = con.getInputStream();
@@ -41,7 +60,31 @@ public class Main {
             while ( (line = br.readLine()) != null )
                 System.out.println("[WEB] " + line);
         }
-
     }
 
+
+    private static void runUsingHttpClient3(String targetUrl) throws HttpException, IOException {
+        HttpClient client = new HttpClient();
+        HttpMethod get = new GetMethod(targetUrl);
+        
+        client.executeMethod(get);
+        
+        System.out.println("[WEB] " + get.getStatusLine());
+        
+        for ( Header header : get.getResponseHeaders() )
+            System.out.print("[WEB] " + header.toExternalForm());
+        
+        
+        try (InputStream in = get.getResponseBodyAsStream()) {
+            if (in != null) {
+                try (InputStreamReader isr = new InputStreamReader(in); 
+                        BufferedReader br = new BufferedReader(isr)) {
+                    String line;
+                    while ((line = br.readLine()) != null)
+                        System.out.println("[WEB] " + line);
+
+                }
+            }
+        }
+    }
 }
