@@ -16,42 +16,51 @@
  */
 package org.apache.sling.uca.impl;
 
-import static org.junit.Assert.fail;
+import static java.time.Duration.ofSeconds;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTimeout;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@ExtendWith(ServerRule.class)
 public class IntegrationTest {
     
     private static final Logger LOG = LoggerFactory.getLogger(IntegrationTest.class);
-    
-    @Rule
-    public ServerRule server = new ServerRule();
 
-    @Test(expected = IOException.class, timeout = 5000)
+    @Test
     public void connectTimeout() throws IOException {
 
-        runTest(false);
+        SocketTimeoutException exception = assertThrows(SocketTimeoutException.class, 
+            () -> assertTimeout(ofSeconds(5),  () -> runTest(false))
+        );
+        assertEquals("Connect timed out", exception.getMessage());
     }
 
-    @Test(expected = IOException.class, timeout = 15000)
+    @Test
     public void readTimeout() throws IOException {
         
-        runTest(true);
+        SocketTimeoutException exception = assertThrows(SocketTimeoutException.class, 
+            () -> assertTimeout(ofSeconds(10),  () -> runTest(false))
+        );
+        assertEquals("Read timed out", exception.getMessage());
     }
     
 
     private void runTest(boolean shouldConnect) throws MalformedURLException, IOException {
-        URL url = new URL("http://localhost:" + server.getLocalPort());
+        
+        URL url = new URL("http://localhost:" + ServerRule.getLocalPort());
         LOG.info("connecting");
         URLConnection connection = url.openConnection();
         // TODO - remove when running through the harness
