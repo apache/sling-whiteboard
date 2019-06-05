@@ -126,7 +126,7 @@ public class AgentIT {
             "-showversion",
             "-javaagent:" + jar +"=" + TimeUnit.SECONDS.toMillis(connectTimeoutSeconds) +"," + TimeUnit.SECONDS.toMillis(readTimeoutSeconds),
             "-cp",
-            jar.toString(),
+            Paths.get("target", "classes").toString(),
             "org.apache.sling.uca.impl.Main",
             url.toString()
         );
