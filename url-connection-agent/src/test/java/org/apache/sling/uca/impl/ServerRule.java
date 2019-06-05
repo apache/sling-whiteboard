@@ -17,6 +17,10 @@
 package org.apache.sling.uca.impl;
 
 import java.io.IOException;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.ServletException;
@@ -31,25 +35,45 @@ import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.ParameterContext;
+import org.junit.jupiter.api.extension.ParameterResolutionException;
+import org.junit.jupiter.api.extension.ParameterResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class ServerRule implements BeforeAllCallback, AfterAllCallback {
+class ServerRule implements BeforeAllCallback, AfterAllCallback, ParameterResolver, ServerControl {
+    
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.PARAMETER)
+    public @interface MisbehavingServer { }
     
     private final Logger logger = LoggerFactory.getLogger(getClass());
     
-    private static final int LOCAL_PORT = 12312;
-    
-    public static int getLocalPort() {
-        return LOCAL_PORT;
+    public int getLocalPort() {
+        return ((ServerConnector) server.getConnectors()[0]).getLocalPort();
     }
     
     private Server server;
     
     @Override
+    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
+            throws ParameterResolutionException {
+        return parameterContext.isAnnotated(MisbehavingServer.class);
+    }
+    
+    @Override
+    public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
+            throws ParameterResolutionException {
+        if ( parameterContext.getParameter().getType() == ServerControl.class )
+            return this;
+        
+        throw new ParameterResolutionException("Unable to get a Server instance for " + parameterContext);
+    }
+    
+    @Override
     public void beforeAll(ExtensionContext context) throws Exception {
         
-        server = new Server(LOCAL_PORT);
+        server = new Server();
         ServerConnector connector = new ServerConnector(server) {
             @Override
             public void accept(int acceptorID) throws IOException {
@@ -64,7 +88,6 @@ class ServerRule implements BeforeAllCallback, AfterAllCallback {
                 LOG.info("Accepted");
             }
         };
-        connector.setPort(LOCAL_PORT);
         server.setConnectors(new Connector[] { connector });
         server.setHandler(new AbstractHandler() {
             
