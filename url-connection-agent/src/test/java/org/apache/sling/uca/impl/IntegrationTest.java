@@ -43,33 +43,30 @@ public class IntegrationTest {
     public void connectTimeout() throws IOException {
 
         SocketTimeoutException exception = assertThrows(SocketTimeoutException.class, 
-            () -> assertTimeout(ofSeconds(5),  () -> runTest(false))
+            () -> assertTimeout(ofSeconds(5),  () -> runTest("http://sling.apache.org:81"))
         );
-        assertEquals("Connect timed out", exception.getMessage());
+        assertEquals("connect timed out", exception.getMessage());
     }
 
     @Test
     public void readTimeout() throws IOException {
         
         SocketTimeoutException exception = assertThrows(SocketTimeoutException.class, 
-            () -> assertTimeout(ofSeconds(10),  () -> runTest(false))
+            () -> assertTimeout(ofSeconds(10),  () -> runTest("http://localhost:" + ServerRule.getLocalPort()))
         );
         assertEquals("Read timed out", exception.getMessage());
     }
     
 
-    private void runTest(boolean shouldConnect) throws MalformedURLException, IOException {
+    private void runTest(String urlSpec) throws MalformedURLException, IOException {
         
-        URL url = new URL("http://localhost:" + ServerRule.getLocalPort());
-        LOG.info("connecting");
+        URL url = new URL(urlSpec);
+        LOG.info("connecting to {}", url);
         URLConnection connection = url.openConnection();
         // TODO - remove when running through the harness
         connection.setConnectTimeout((int) TimeUnit.SECONDS.toMillis(3));
         connection.setReadTimeout((int) TimeUnit.SECONDS.toMillis(3));
         connection.connect();
-        /*
-         * if ( !shouldConnect ) fail("Connection should not be succesful");
-         */        
         LOG.info("connected");
         try ( InputStream is = connection.getInputStream()) {
             while ( is.read() != -1)

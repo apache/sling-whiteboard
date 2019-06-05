@@ -44,7 +44,6 @@ class ServerRule implements BeforeAllCallback, AfterAllCallback {
     
     private static final int LOCAL_PORT = 12312;
     
-
     public static int getLocalPort() {
         return LOCAL_PORT;
     }
@@ -53,6 +52,7 @@ class ServerRule implements BeforeAllCallback, AfterAllCallback {
     
     @Override
     public void beforeAll(ExtensionContext context) throws Exception {
+        
         server = new Server(LOCAL_PORT);
         ServerConnector connector = new ServerConnector(server) {
             @Override
