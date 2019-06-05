@@ -20,6 +20,7 @@ import static java.time.Duration.ofSeconds;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTimeout;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.ProcessBuilder.Redirect;
 import java.net.SocketTimeoutException;
@@ -27,6 +28,8 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
@@ -88,9 +91,8 @@ public class AgentIT {
     private RecordedThrowable runTest(String urlSpec) throws IOException, InterruptedException {
 
         Process process = runForkedCommandWithAgent(new URL(urlSpec), 3, 3);
-        int exitCode = process.waitFor();
+        boolean done = process.waitFor(10, TimeUnit.SECONDS);
         
-        LOG.info("Exited with code {}", exitCode);
         LOG.info("Dump of stdout: ");
         Files
             .lines(STDOUT)
@@ -101,6 +103,13 @@ public class AgentIT {
             .lines(STDERR)
             .forEach(LOG::info);
 
+        if ( !done ) {
+            process.destroy();
+            throw new IllegalStateException("Terminated process since it did not exit in a reasonable amount of time.");
+        }
+        int exitCode = process.exitValue();
+        LOG.info("Exited with code {}", exitCode);
+        
         if ( exitCode != 0 ) {
             return Files.lines(STDERR)
                 .filter( l -> l.startsWith("Exception in thread \"main\""))
@@ -118,6 +127,8 @@ public class AgentIT {
             .filter( p -> p.getFileName().toString().endsWith("-jar-with-dependencies.jar"))
             .findFirst()
             .orElseThrow( () -> new IllegalStateException("Did not find the agent jar. Did you run mvn package first?"));
+        
+        String classPath = buildClassPath();
 
         String javaHome = System.getProperty("java.home");
         Path javaExe = Paths.get(javaHome, "bin", "java");
@@ -126,9 +137,10 @@ public class AgentIT {
             "-showversion",
             "-javaagent:" + jar +"=" + TimeUnit.SECONDS.toMillis(connectTimeoutSeconds) +"," + TimeUnit.SECONDS.toMillis(readTimeoutSeconds),
             "-cp",
-            Paths.get("target", "classes").toString(),
+            classPath,
             "org.apache.sling.uca.impl.Main",
-            url.toString()
+            url.toString(),
+            "JavaNet"
         );
         
         pb.redirectInput(Redirect.INHERIT);
@@ -138,6 +150,18 @@ public class AgentIT {
         return pb.start();
     }
     
+    private String buildClassPath() throws IOException {
+        
+        List<String> elements = new ArrayList<>();
+        elements.add(Paths.get("target", "test-classes").toString());
+        
+        Files.list(Paths.get("target", "it-dependencies"))
+            .filter( p -> p.getFileName().toString().startsWith("commons-"))
+            .forEach( p -> elements.add(p.toString()));
+        
+        return String.join(File.pathSeparator, elements);
+    }
+
     private RecordedThrowable newRecordedThrowable(String string) {
      
         string = string.replace("Exception in thread \"main\"", "");
