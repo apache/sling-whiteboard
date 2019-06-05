@@ -31,6 +31,11 @@ import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 
 public class Main {
+    
+    // TODO - write help messages with the values from this enum
+    public enum ClientType {
+        JavaNet /* , HC3 */
+    }
 
     public static void main(String[] args) throws MalformedURLException, IOException {
         
