@@ -39,6 +39,17 @@ public class IntegrationTest {
     
     private static final Logger LOG = LoggerFactory.getLogger(IntegrationTest.class);
 
+    /**
+     * Validates that connecting to a unaccessible port on an existing port fails with a connect 
+     * timeout exception
+     * 
+     * <p>It is surprisingly hard to simulate a connnection timeout. The most reliable way seems to
+     * be to get a firewall to drop packets, but this is very hard to do portably and safely
+     * in a unit test. The least bad possible solution is to access an URL that we know will timeout
+     * and that is related to us - the Sling website.</p>
+     * 
+     * @throws IOException various I/O problems 
+     */
     @Test
     public void connectTimeout() throws IOException {
 
@@ -48,6 +59,11 @@ public class IntegrationTest {
         assertEquals("connect timed out", exception.getMessage());
     }
 
+    /**
+     * Validates that connecting to a host that delays the response fails with a read timeout
+     * 
+     * @throws IOException various I/O problems
+     */
     @Test
     public void readTimeout() throws IOException {
         

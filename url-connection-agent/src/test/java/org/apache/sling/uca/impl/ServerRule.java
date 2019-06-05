@@ -17,17 +17,13 @@
 package org.apache.sling.uca.impl;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.eclipse.jetty.io.Connection;
-import org.eclipse.jetty.io.EndPoint;
 import org.eclipse.jetty.server.Connector;
-import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -40,7 +36,7 @@ import org.slf4j.LoggerFactory;
 
 class ServerRule implements BeforeAllCallback, AfterAllCallback {
     
-    private static final Logger LOG = LoggerFactory.getLogger(ServerRule.class);
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     
     private static final int LOCAL_PORT = 12312;
     
@@ -69,43 +65,14 @@ class ServerRule implements BeforeAllCallback, AfterAllCallback {
             }
         };
         connector.setPort(LOCAL_PORT);
-        connector.setConnectionFactories(Collections.singleton(new HttpConnectionFactory() {
-            @Override
-            public Connection newConnection(Connector connector, EndPoint endPoint) {
-                LOG.info("Waiting before creating connection");
-                try {
-                    Thread.sleep(TimeUnit.SECONDS.toMillis(10));
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    throw new RuntimeException("Interrupted");
-                }
-                
-                Connection connection = super.newConnection(connector, endPoint);
-                LOG.info("Connection created");
-                return connection;
-            }
-        }));
-        server.setConnectors(new Connector[] { 
-            connector
-        });
+        server.setConnectors(new Connector[] { connector });
         server.setHandler(new AbstractHandler() {
             
             @Override
             public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
                     throws IOException, ServletException {
-                
-                LOG.info("Waiting before handling");
-                
-                try {
-                    Thread.sleep(TimeUnit.SECONDS.toMillis(10));
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    return;
-                }
-                
                 response.setStatus(HttpServletResponse.SC_NO_CONTENT);
                 baseRequest.setHandled(true);
-                LOG.info("Handled");
             }
         });
         
@@ -114,11 +81,12 @@ class ServerRule implements BeforeAllCallback, AfterAllCallback {
 
     @Override
     public void afterAll(ExtensionContext context) throws Exception {
-        if ( server != null )
-            try {
-                server.stop();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        if ( server == null )
+            return;
+        try {
+            server.stop();
+        } catch (Exception e) {
+            logger.info("Failed shutting down server", e);
+        }
     }
 }
