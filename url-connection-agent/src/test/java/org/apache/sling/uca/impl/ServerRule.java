@@ -32,21 +32,28 @@ import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.AbstractHandler;
-import org.junit.rules.ExternalResource;
+import org.junit.jupiter.api.extension.AfterAllCallback;
+import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class ServerRule extends ExternalResource {
+class ServerRule implements BeforeAllCallback, AfterAllCallback {
     
     private static final Logger LOG = LoggerFactory.getLogger(ServerRule.class);
     
+    private static final int LOCAL_PORT = 12312;
+    
+
+    public static int getLocalPort() {
+        return LOCAL_PORT;
+    }
+    
     private Server server;
     
-    private int localPort = 12312;
-
     @Override
-    protected void before() throws Throwable {
-        server = new Server(localPort);
+    public void beforeAll(ExtensionContext context) throws Exception {
+        server = new Server(LOCAL_PORT);
         ServerConnector connector = new ServerConnector(server) {
             @Override
             public void accept(int acceptorID) throws IOException {
@@ -61,7 +68,7 @@ class ServerRule extends ExternalResource {
                 LOG.info("Accepted");
             }
         };
-        connector.setPort(localPort);
+        connector.setPort(LOCAL_PORT);
         connector.setConnectionFactories(Collections.singleton(new HttpConnectionFactory() {
             @Override
             public Connection newConnection(Connector connector, EndPoint endPoint) {
@@ -104,18 +111,14 @@ class ServerRule extends ExternalResource {
         
         server.start();
     }
-    
+
     @Override
-    protected void after() {
+    public void afterAll(ExtensionContext context) throws Exception {
         if ( server != null )
             try {
                 server.stop();
             } catch (Exception e) {
                 e.printStackTrace();
             }
-    }
-
-    public int getLocalPort() {
-        return localPort;
     }
 }

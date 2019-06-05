@@ -16,10 +16,12 @@
  */
 package org.apache.sling.uca.impl;
 
-import static org.junit.Assert.assertNotNull;
 
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javassist.NotFoundException;
 
@@ -27,7 +29,7 @@ public class UrlTimeoutTransformerTest {
     
     private URLTimeoutTransformer transformer;
 
-    @Before
+    @BeforeEach
     public void initFields() {
         transformer = new URLTimeoutTransformer(1, 1);
     }
@@ -37,11 +39,13 @@ public class UrlTimeoutTransformerTest {
         assertNotNull(transformer.findConnectMethod("sun/net/www/protocol/http/HttpURLConnection"));
     }
 
-    @Test(expected = NotFoundException.class)
+    @Test
     public void findInheritedConnectMethod() throws NotFoundException {
         // do NOT look for inherited methods, as we can only rewrite the precise classes the
         // retransform was triggered for
-        transformer.findConnectMethod("sun/net/www/protocol/https/DelegateHttpsURLConnection");
+        assertThrows( NotFoundException.class,
+            () -> transformer.findConnectMethod("sun/net/www/protocol/https/DelegateHttpsURLConnection")
+        );
     }
     
 }
