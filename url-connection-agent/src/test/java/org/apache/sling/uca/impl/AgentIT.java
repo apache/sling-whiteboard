@@ -32,8 +32,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.jupiter.api.Test;
+import org.apache.sling.uca.impl.Main.ClientType;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,10 +68,11 @@ public class AgentIT {
      * 
      * @throws IOException various I/O problems 
      */
-    @Test
-    public void connectTimeout() throws IOException {
+    @ParameterizedTest
+    @EnumSource(Main.ClientType.class)
+    public void connectTimeout(ClientType clientType) throws IOException {
 
-        RecordedThrowable error = assertTimeout(ofSeconds(5),  () -> runTest("http://repo1.maven.org:81"));
+        RecordedThrowable error = assertTimeout(ofSeconds(5),  () -> runTest("http://repo1.maven.org:81", clientType));
         assertEquals(SocketTimeoutException.class.getName(), error.className);
         assertEquals("connect timed out", error.message);
     }
@@ -79,18 +82,19 @@ public class AgentIT {
      * 
      * @throws IOException various I/O problems
      */
-    @Test
-    public void readTimeout(MisbehavingServerControl server) throws IOException {
+    @ParameterizedTest
+    @EnumSource(Main.ClientType.class)
+    public void readTimeout(ClientType clientType, MisbehavingServerControl server) throws IOException {
         
-        RecordedThrowable error = assertTimeout(ofSeconds(5),  () -> runTest("http://localhost:" + server.getLocalPort()));
+        RecordedThrowable error = assertTimeout(ofSeconds(5),  () -> runTest("http://localhost:" + server.getLocalPort(), clientType));
         assertEquals(SocketTimeoutException.class.getName(), error.className);
         assertEquals("Read timed out", error.message);
     }
     
 
-    private RecordedThrowable runTest(String urlSpec) throws IOException, InterruptedException {
+    private RecordedThrowable runTest(String urlSpec, ClientType clientType) throws IOException, InterruptedException {
 
-        Process process = runForkedCommandWithAgent(new URL(urlSpec), 3, 3);
+        Process process = runForkedCommandWithAgent(new URL(urlSpec), 3, 3, clientType);
         boolean done = process.waitFor(10, TimeUnit.SECONDS);
         
         LOG.info("Dump of stdout: ");
@@ -121,7 +125,7 @@ public class AgentIT {
         return null;
     }
     
-    private Process runForkedCommandWithAgent(URL url, int connectTimeoutSeconds, int readTimeoutSeconds) throws IOException {
+    private Process runForkedCommandWithAgent(URL url, int connectTimeoutSeconds, int readTimeoutSeconds, ClientType clientType) throws IOException {
         
         Path jar = Files.list(Paths.get("target"))
             .filter( p -> p.getFileName().toString().endsWith("-jar-with-dependencies.jar"))
@@ -140,7 +144,7 @@ public class AgentIT {
             classPath,
             "org.apache.sling.uca.impl.Main",
             url.toString(),
-            "JavaNet"
+            clientType.toString()
         );
         
         pb.redirectInput(Redirect.INHERIT);
