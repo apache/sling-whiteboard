@@ -27,6 +27,8 @@ import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
@@ -74,7 +76,19 @@ public class IntegrationTest {
     }
     
 
-    private void runTest(String urlSpec) throws MalformedURLException, IOException {
+    private void runTest(String urlSpec) throws MalformedURLException, IOException, InterruptedException {
+        
+        String javaHome = System.getProperty("java.home");
+        Path javaExe = Paths.get(javaHome, "bin", "java");
+        ProcessBuilder pb = new ProcessBuilder(javaExe.toString(), "-version");
+        pb.inheritIO();
+        Process process = pb.start();
+        
+        process.getInputStream();
+        
+        int exitCode = process.waitFor();
+        
+        LOG.info("Exited with code {}", exitCode);
         
         URL url = new URL(urlSpec);
         LOG.info("connecting to {}", url);
