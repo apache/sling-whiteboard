@@ -48,7 +48,7 @@ public class IntegrationTest {
      * <p>It is surprisingly hard to simulate a connnection timeout. The most reliable way seems to
      * be to get a firewall to drop packets, but this is very hard to do portably and safely
      * in a unit test. The least bad possible solution is to access an URL that we know will timeout
-     * and that is related to us - the Sling website.</p>
+     * and that is able to sustain additional traffic. Maven Central is a good candidate for that.</p>
      * 
      * @throws IOException various I/O problems 
      */
@@ -56,7 +56,7 @@ public class IntegrationTest {
     public void connectTimeout() throws IOException {
 
         SocketTimeoutException exception = assertThrows(SocketTimeoutException.class, 
-            () -> assertTimeout(ofSeconds(5),  () -> runTest("http://sling.apache.org:81"))
+            () -> assertTimeout(ofSeconds(5),  () -> runTest("http://repo1.maven.org:81"))
         );
         assertEquals("connect timed out", exception.getMessage());
     }
