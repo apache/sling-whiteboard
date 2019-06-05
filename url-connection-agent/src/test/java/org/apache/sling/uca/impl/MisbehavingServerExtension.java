@@ -17,10 +17,6 @@
 package org.apache.sling.uca.impl;
 
 import java.io.IOException;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.ServletException;
@@ -41,11 +37,14 @@ import org.junit.jupiter.api.extension.ParameterResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class ServerRule implements BeforeAllCallback, AfterAllCallback, ParameterResolver, ServerControl {
-    
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.PARAMETER)
-    public @interface MisbehavingServer { }
+/**
+ * Provides an Jetty-based local server that can be configured to timeout
+ * 
+ * <p>After extending a JUnit Jupiter test with this extension, any parameter of type {@link MisbehavingServerControl}
+ * will be resolved.</p>
+ *
+ */
+class MisbehavingServerExtension implements BeforeAllCallback, AfterAllCallback, ParameterResolver, MisbehavingServerControl {
     
     private final Logger logger = LoggerFactory.getLogger(getClass());
     
@@ -58,16 +57,16 @@ class ServerRule implements BeforeAllCallback, AfterAllCallback, ParameterResolv
     @Override
     public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
             throws ParameterResolutionException {
-        return parameterContext.isAnnotated(MisbehavingServer.class);
+        return parameterContext.getParameter().getType() == MisbehavingServerControl.class;
     }
     
     @Override
     public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
             throws ParameterResolutionException {
-        if ( parameterContext.getParameter().getType() == ServerControl.class )
+        if ( parameterContext.getParameter().getType() == MisbehavingServerControl.class )
             return this;
         
-        throw new ParameterResolutionException("Unable to get a Server instance for " + parameterContext);
+        throw new ParameterResolutionException("Unable to get a " + MisbehavingServerControl.class.getSimpleName() + " instance for " + parameterContext);
     }
     
     @Override

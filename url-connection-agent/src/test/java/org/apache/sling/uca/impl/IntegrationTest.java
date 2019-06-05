@@ -29,13 +29,12 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.sling.uca.impl.ServerRule.MisbehavingServer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@ExtendWith(ServerRule.class)
+@ExtendWith(MisbehavingServerExtension.class)
 public class IntegrationTest {
     
     private static final Logger LOG = LoggerFactory.getLogger(IntegrationTest.class);
@@ -66,7 +65,7 @@ public class IntegrationTest {
      * @throws IOException various I/O problems
      */
     @Test
-    public void readTimeout(@MisbehavingServer ServerControl server) throws IOException {
+    public void readTimeout(MisbehavingServerControl server) throws IOException {
         
         SocketTimeoutException exception = assertThrows(SocketTimeoutException.class, 
             () -> assertTimeout(ofSeconds(10),  () -> runTest("http://localhost:" + server.getLocalPort()))
