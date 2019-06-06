@@ -38,7 +38,7 @@ import javassist.bytecode.Descriptor;
  * @see URLConnection#getReadTimeout()
  *
  */
-class URLTimeoutTransformer implements ClassFileTransformer {
+class JavaNetTimeoutTransformer implements ClassFileTransformer {
 
     private static final Set<String> CLASSES_TO_TRANSFORM = new HashSet<>();
 
@@ -50,7 +50,7 @@ class URLTimeoutTransformer implements ClassFileTransformer {
     private final long readTimeoutMillis;
     private final long connectTimeoutMillis;
 
-    public URLTimeoutTransformer(long connectTimeout, long readTimeout) {
+    public JavaNetTimeoutTransformer(long connectTimeout, long readTimeout) {
         this.connectTimeoutMillis = connectTimeout;
         this.readTimeoutMillis = readTimeout;
     }

@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.httpclient.ConnectTimeoutException;
 import org.apache.sling.uca.impl.Main.ClientType;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -73,8 +74,12 @@ public class AgentIT {
     public void connectTimeout(ClientType clientType) throws IOException {
 
         RecordedThrowable error = assertTimeout(ofSeconds(5),  () -> runTest("http://repo1.maven.org:81", clientType));
-        assertEquals(SocketTimeoutException.class.getName(), error.className);
-        assertEquals("connect timed out", error.message);
+        
+        Class<?> expectedClass = clientType == ClientType.HC3 ? ConnectTimeoutException.class : SocketTimeoutException.class;
+        String expectedMessage = clientType == ClientType.HC3 ? "The host did not accept the connection within timeout of 3000 ms" : "connect timed out";
+        
+        assertEquals(expectedClass.getName(), error.className);
+        assertEquals(expectedMessage, error.message);
     }
 
     /**
@@ -95,7 +100,7 @@ public class AgentIT {
     private RecordedThrowable runTest(String urlSpec, ClientType clientType) throws IOException, InterruptedException {
 
         Process process = runForkedCommandWithAgent(new URL(urlSpec), 3, 3, clientType);
-        boolean done = process.waitFor(10, TimeUnit.SECONDS);
+        boolean done = process.waitFor(30, TimeUnit.SECONDS);
         
         LOG.info("Dump of stdout: ");
         Files
@@ -160,7 +165,11 @@ public class AgentIT {
         elements.add(Paths.get("target", "test-classes").toString());
         
         Files.list(Paths.get("target", "it-dependencies"))
-            .filter( p -> p.getFileName().toString().startsWith("commons-"))
+            .filter( p -> p.getFileName().toString().equals("commons-httpclient.jar") 
+                    || p.getFileName().toString().equals("commons-codec.jar")
+                    || p.getFileName().toString().equals("slf4j-simple.jar")
+                    || p.getFileName().toString().equals("slf4j-api.jar")
+                    || p.getFileName().toString().equals("jcl-over-slf4j.jar"))
             .forEach( p -> elements.add(p.toString()));
         
         return String.join(File.pathSeparator, elements);

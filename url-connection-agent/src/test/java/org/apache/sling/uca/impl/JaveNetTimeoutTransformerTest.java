@@ -25,13 +25,13 @@ import org.junit.jupiter.api.Test;
 
 import javassist.NotFoundException;
 
-public class UrlTimeoutTransformerTest {
+public class JaveNetTimeoutTransformerTest {
     
-    private URLTimeoutTransformer transformer;
+    private JavaNetTimeoutTransformer transformer;
 
     @BeforeEach
     public void initFields() {
-        transformer = new URLTimeoutTransformer(1, 1);
+        transformer = new JavaNetTimeoutTransformer(1, 1);
     }
 
     @Test

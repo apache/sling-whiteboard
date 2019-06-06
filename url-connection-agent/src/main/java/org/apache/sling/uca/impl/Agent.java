@@ -16,13 +16,14 @@
  */
 package org.apache.sling.uca.impl;
 
+import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
 import java.util.concurrent.TimeUnit;
 
 public class Agent {
 
     public static void premain(String args, Instrumentation inst) {
-
+        
         System.out.println("[AGENT] Loading agent...");
         String[] parsedArgs = args.split(",");
         long connectTimeout =  TimeUnit.MINUTES.toMillis(1);
@@ -34,9 +35,14 @@ public class Agent {
         
         System.out.format("[AGENT] Set connectTimeout : %d, readTimeout: %d%n", connectTimeout, readTimeout);
 
-        URLTimeoutTransformer transformer = new URLTimeoutTransformer(connectTimeout, readTimeout);
+        ClassFileTransformer[] transformers = new ClassFileTransformer[] {
+            new JavaNetTimeoutTransformer(connectTimeout, readTimeout),
+            new HttpClient3TimeoutTransformer(connectTimeout, readTimeout)
+        };
         
-        inst.addTransformer(transformer, true);
+        for ( ClassFileTransformer transformer : transformers )
+            inst.addTransformer(transformer, true);
+
         System.out.println("[AGENT] Loaded agent!");
     }
 

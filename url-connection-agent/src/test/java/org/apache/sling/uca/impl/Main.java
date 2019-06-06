@@ -23,24 +23,30 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Date;
 
+import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.params.HttpClientParams;
+import org.apache.commons.httpclient.params.HttpMethodParams;
 
 public class Main {
     
     // TODO - write help messages with the values from this enum
     public enum ClientType {
-        JavaNet /* , HC3 */
+        JavaNet, HC3
     }
 
     public static void main(String[] args) throws MalformedURLException, IOException {
         
         if ( args.length != 2 )
             throw new IllegalArgumentException("Usage: java -cp ... " + Main.class.getName() + " <URL> JavaNet|HC3|HC4");
+        
+        System.out.println(new Date() + " [WEB] Executing request via " + args[1]);
 
         switch ( args[1] ) {
             case "JavaNet":
@@ -70,14 +76,20 @@ public class Main {
 
     private static void runUsingHttpClient3(String targetUrl) throws HttpException, IOException {
         HttpClient client = new HttpClient();
+        // disable retries, to make sure that we get equivalent behaviour with other implementations
+        client.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler(0, false));
         HttpMethod get = new GetMethod(targetUrl);
-        
+        System.out.format("Connection timeouts: connect: %d, so: %s%n", 
+                client.getHttpConnectionManager().getParams().getConnectionTimeout(),
+                client.getHttpConnectionManager().getParams().getSoTimeout());
+        System.out.format("Client so timeout: %d (raw: %s) %n", client.getParams().getSoTimeout(), 
+                client.getParams().getParameter(HttpClientParams.SO_TIMEOUT));
         client.executeMethod(get);
         
-        System.out.println("[WEB] " + get.getStatusLine());
+        System.out.println(new Date() + " [WEB] " + get.getStatusLine());
         
         for ( Header header : get.getResponseHeaders() )
-            System.out.print("[WEB] " + header.toExternalForm());
+            System.out.print(new Date() + " [WEB] " + header.toExternalForm());
         
         
         try (InputStream in = get.getResponseBodyAsStream()) {
@@ -86,7 +98,7 @@ public class Main {
                         BufferedReader br = new BufferedReader(isr)) {
                     String line;
                     while ((line = br.readLine()) != null)
-                        System.out.println("[WEB] " + line);
+                        System.out.println(new Date() + " [WEB] " + line);
 
                 }
             }
