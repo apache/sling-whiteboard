@@ -33,12 +33,18 @@ import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.httpclient.params.HttpMethodParams;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 
 public class Main {
     
     // TODO - write help messages with the values from this enum
     public enum ClientType {
-        JavaNet, HC3
+        JavaNet, HC3, HC4
     }
 
     public static void main(String[] args) throws MalformedURLException, IOException {
@@ -54,6 +60,9 @@ public class Main {
                 break;
             case "HC3":
                 runUsingHttpClient3(args[0]);
+                break;
+            case "HC4":
+                runUsingHttpClient4(args[0]);
                 break;
             default:
                 throw new IllegalArgumentException("Usage: java -cp ... " + Main.class.getName() + " <URL> JavaNet|HC3|HC4");
@@ -104,4 +113,22 @@ public class Main {
             }
         }
     }
+    
+    private static void runUsingHttpClient4(String targetUrl) throws IOException {
+        // disable retries, to make sure that we get equivalent behaviour with other implementations
+        try ( CloseableHttpClient client = HttpClients.custom().disableAutomaticRetries().build() ) {
+            HttpGet get = new HttpGet(targetUrl);
+            try ( CloseableHttpResponse response = client.execute(get)) {
+                System.out.println("[WEB] " + response.getStatusLine());
+                for ( org.apache.http.Header header : response.getAllHeaders() )
+                    System.out.println("[WEB] " + header);
+                
+                HttpEntity entity = response.getEntity();
+                // TODO - print response body
+                EntityUtils.consume(entity);
+            }
+            
+        }
+    }
+
 }
