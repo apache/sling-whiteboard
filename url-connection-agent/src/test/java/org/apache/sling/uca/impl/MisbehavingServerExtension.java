@@ -94,6 +94,8 @@ class MisbehavingServerExtension implements BeforeAllCallback, AfterAllCallback,
             public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
                     throws IOException, ServletException {
                 response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                if ( baseRequest.getHeader("User-Agent") != null )
+                    response.addHeader("Original-User-Agent", baseRequest.getHeader("User-Agent"));
                 baseRequest.setHandled(true);
             }
         });
