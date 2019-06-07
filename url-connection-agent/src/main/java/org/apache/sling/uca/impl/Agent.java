@@ -24,16 +24,20 @@ public class Agent {
 
     public static void premain(String args, Instrumentation inst) {
         
-        System.out.println("[AGENT] Loading agent...");
         String[] parsedArgs = args != null ? args.split(",") : new String[0];
         long connectTimeout =  TimeUnit.MINUTES.toMillis(1);
         long readTimeout = TimeUnit.MINUTES.toMillis(1);
+        String logSpec = "";
         if ( parsedArgs.length > 0 )
             connectTimeout = Long.parseLong(parsedArgs[0]);
         if ( parsedArgs.length > 1 )
             readTimeout = Long.parseLong(parsedArgs[1]);
+        if ( parsedArgs.length > 2)
+            logSpec = parsedArgs[2];
         
-        System.out.format("[AGENT] Set connectTimeout : %d, readTimeout: %d%n", connectTimeout, readTimeout);
+        Log.configure(logSpec);
+        
+        Log.get().log("Preparing to install URL transformers. Configured timeouts - connectTimeout : %d, readTimeout: %d", connectTimeout, readTimeout);
 
         ClassFileTransformer[] transformers = new ClassFileTransformer[] {
             new JavaNetTimeoutTransformer(connectTimeout, readTimeout),
@@ -44,11 +48,6 @@ public class Agent {
         for ( ClassFileTransformer transformer : transformers )
             inst.addTransformer(transformer, true);
 
-        System.out.println("[AGENT] Loaded agent!");
-    }
-
-    public static void agentmain(String args, Instrumentation inst) {
-        premain(args, inst);
-    }
-    
+        Log.get().log("All transformers installed");
+    }    
 }
