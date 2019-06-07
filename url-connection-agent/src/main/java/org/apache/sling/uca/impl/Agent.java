@@ -25,7 +25,7 @@ public class Agent {
     public static void premain(String args, Instrumentation inst) {
         
         System.out.println("[AGENT] Loading agent...");
-        String[] parsedArgs = args.split(",");
+        String[] parsedArgs = args != null ? args.split(",") : new String[0];
         long connectTimeout =  TimeUnit.MINUTES.toMillis(1);
         long readTimeout = TimeUnit.MINUTES.toMillis(1);
         if ( parsedArgs.length > 0 )
