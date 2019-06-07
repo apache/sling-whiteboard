@@ -19,6 +19,7 @@ package org.apache.sling.uca.impl;
 import static java.time.Duration.ofSeconds;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTimeout;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -75,11 +76,29 @@ public class AgentIT {
 
         RecordedThrowable error = assertTimeout(ofSeconds(5),  () -> runTest("http://repo1.maven.org:81", clientType));
         
-        Class<?> expectedClass = clientType == ClientType.HC3 ? ConnectTimeoutException.class : SocketTimeoutException.class;
-        String expectedMessage = clientType == ClientType.HC3 ? "The host did not accept the connection within timeout of 3000 ms" : "connect timed out";
+        Class<?> expectedClass;
+        String expectedMessageRegex;
+        
+        switch ( clientType ) {
+            case JavaNet:
+                expectedClass= SocketTimeoutException.class;
+                expectedMessageRegex = "connect timed out";
+                break;
+            case HC3:
+                expectedClass = ConnectTimeoutException.class;
+                expectedMessageRegex = "The host did not accept the connection within timeout of 3000 ms";
+                break;
+            case HC4:
+                expectedClass = org.apache.http.conn.ConnectTimeoutException.class;
+                expectedMessageRegex = "Connect to repo1.maven.org:81 \\[.*\\] failed: connect timed out";
+                break;
+            default:
+                throw new AssertionError("Unhandled clientType " + clientType);
+        }
         
         assertEquals(expectedClass.getName(), error.className);
-        assertEquals(expectedMessage, error.message);
+        assertTrue(error.message.matches(expectedMessageRegex), 
+            "Actual message " + error.message + " did not match regex " + expectedMessageRegex);
     }
 
     /**
@@ -169,7 +188,9 @@ public class AgentIT {
                     || p.getFileName().toString().equals("commons-codec.jar")
                     || p.getFileName().toString().equals("slf4j-simple.jar")
                     || p.getFileName().toString().equals("slf4j-api.jar")
-                    || p.getFileName().toString().equals("jcl-over-slf4j.jar"))
+                    || p.getFileName().toString().equals("jcl-over-slf4j.jar")
+                    || p.getFileName().toString().contentEquals("httpclient.jar")
+                    || p.getFileName().toString().contentEquals("httpcore.jar") )
             .forEach( p -> elements.add(p.toString()));
         
         return String.join(File.pathSeparator, elements);
@@ -177,10 +198,12 @@ public class AgentIT {
 
     private RecordedThrowable newRecordedThrowable(String string) {
      
-        string = string.replace("Exception in thread \"main\"", "");
-        String[] parts = string.split(":");
+        string = string.replace("Exception in thread \"main\" ", "");
 
-        return new RecordedThrowable(parts[0].trim(), parts[1].trim());
+        String className = string.substring(0, string.indexOf(':'));
+        String message = string.substring(string.indexOf(':') + 2); // ignore ':' and leading ' '
+
+        return new RecordedThrowable(className, message);
     }
     
     /**

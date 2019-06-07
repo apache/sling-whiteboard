@@ -15,7 +15,7 @@ Build the project with `mvn clean package` and then run a simple connection test
  - `<connect-timeout>` - connection timeout in milliseconds
  - `<read-timeout>`- read timeout in milliseconds
  - `<url>` - the URL to access
- - `<client-type>` - the client type, either `JavaNet` for java.net.URL-based connections or `HC3` for commons-httpclient 3.x
+ - `<client-type>` - the client type, either `JavaNet` for java.net.URL-based connections ,`HC3` for Apache Commons HttpClient 3.x or `HC4` for Apache Commons HttpClient 4.x
  
  
  For a test that always fails, set one of the timeouts to 1. Both executions listed below will typically fail:
@@ -36,3 +36,4 @@ java -javaagent:target/url-connection-agent-0.0.1-SNAPSHOT-jar-with-dependencies
 * openjdk version "1.8.0_212"
 * openjdk version "11.0.2" 2019-01-15
 * commons-httpclient 3.1
+* httpclient 4.5.4
