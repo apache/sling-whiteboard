@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.httpclient.ConnectTimeoutException;
-import org.apache.sling.uca.impl.Main.ClientType;
+import org.apache.sling.uca.impl.HttpClientLauncher.ClientType;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -71,7 +71,7 @@ public class AgentIT {
      * @throws IOException various I/O problems 
      */
     @ParameterizedTest
-    @EnumSource(Main.ClientType.class)
+    @EnumSource(HttpClientLauncher.ClientType.class)
     public void connectTimeout(ClientType clientType) throws IOException {
 
         RecordedThrowable error = assertTimeout(ofSeconds(5),  () -> runTest("http://repo1.maven.org:81", clientType));
@@ -107,7 +107,7 @@ public class AgentIT {
      * @throws IOException various I/O problems
      */
     @ParameterizedTest
-    @EnumSource(Main.ClientType.class)
+    @EnumSource(HttpClientLauncher.ClientType.class)
     public void readTimeout(ClientType clientType, MisbehavingServerControl server) throws IOException {
         
         RecordedThrowable error = assertTimeout(ofSeconds(5),  () -> runTest("http://localhost:" + server.getLocalPort(), clientType));
@@ -165,7 +165,7 @@ public class AgentIT {
             "-javaagent:" + jar +"=" + TimeUnit.SECONDS.toMillis(connectTimeoutSeconds) +"," + TimeUnit.SECONDS.toMillis(readTimeoutSeconds)+",v",
             "-cp",
             classPath,
-            "org.apache.sling.uca.impl.Main",
+            HttpClientLauncher.class.getName(),
             url.toString(),
             clientType.toString()
         );
