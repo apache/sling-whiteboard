@@ -40,7 +40,10 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
-public class Main {
+/**
+ * CLI interface to run HTTP clients
+ */
+public class HttpClientLauncher {
     
     // TODO - write help messages with the values from this enum
     public enum ClientType {
@@ -50,7 +53,7 @@ public class Main {
     public static void main(String[] args) throws MalformedURLException, IOException {
         
         if ( args.length != 2 )
-            throw new IllegalArgumentException("Usage: java -cp ... " + Main.class.getName() + " <URL> JavaNet|HC3|HC4");
+            throw new IllegalArgumentException("Usage: java -cp ... " + HttpClientLauncher.class.getName() + " <URL> JavaNet|HC3|HC4");
         
         System.out.println(new Date() + " [WEB] Executing request via " + args[1]);
 
@@ -65,7 +68,7 @@ public class Main {
                 runUsingHttpClient4(args[0]);
                 break;
             default:
-                throw new IllegalArgumentException("Usage: java -cp ... " + Main.class.getName() + " <URL> JavaNet|HC3|HC4");
+                throw new IllegalArgumentException("Usage: java -cp ... " + HttpClientLauncher.class.getName() + " <URL> JavaNet|HC3|HC4");
         }
     }
 
