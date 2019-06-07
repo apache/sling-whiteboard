@@ -114,7 +114,6 @@ public class AgentIT {
         assertEquals(SocketTimeoutException.class.getName(), error.className);
         assertEquals("Read timed out", error.message);
     }
-    
 
     private RecordedThrowable runTest(String urlSpec, ClientType clientType) throws IOException, InterruptedException {
 
