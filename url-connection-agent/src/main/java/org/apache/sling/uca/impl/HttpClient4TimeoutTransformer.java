@@ -26,6 +26,12 @@ import javassist.CtConstructor;
 import javassist.CtField;
 import javassist.bytecode.Descriptor;
 
+/**
+ * Sets timeouts for HTTP calls done using <em>Apache HttpComponents Client 4.x</em>
+ * 
+ * <p>It inserts two calls to <tt>org.apache.http.client.config.RequestConfig$Builder</tt> that set default
+ * values for <tt>connectTimeout</tt> and <tt>socketTimeout</tt>.</p>
+ */
 public class HttpClient4TimeoutTransformer implements ClassFileTransformer {
 
     // org.apache.http.client.config.RequestConfig.Builder

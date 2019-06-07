@@ -25,6 +25,12 @@ import javassist.CtClass;
 import javassist.CtMethod;
 import javassist.bytecode.Descriptor;
 
+/**
+ * Sets timeouts for HTTP calls done using <em>Apache Commons HttpClient 3.x</em>
+ * 
+ * <p>It inserts two calls in <tt>org.apache.commons.httpclient.params.DefaultHttpParamsFactory.createParams</tt> that set
+ * default values for <tt>http.connection.timeout</tt> and <tt>http.socket.timeout</tt>.</p>
+ */
 public class HttpClient3TimeoutTransformer implements ClassFileTransformer {
     
     private static final String DEFAULT_HTTP_PARAMS_FACTORY_CLASS_NAME = Descriptor.toJvmName("org.apache.commons.httpclient.params.DefaultHttpParamsFactory");

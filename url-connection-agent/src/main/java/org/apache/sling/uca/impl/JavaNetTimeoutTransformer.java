@@ -29,10 +29,10 @@ import javassist.NotFoundException;
 import javassist.bytecode.Descriptor;
 
 /**
- * Transforms well-known HTTP URL connection classes
+ * Sets timeouts for HTTP calls done using <tt>java.net.URL</tt>/<tt>java.net.URLConnection</tt>.
  * 
- * <p>This implementation adds connect and read timeouts to those connections
- * if none are defined.</p>
+ * <p>It transforms calls to <tt>connect</tt> methods of internal URL connection classes to set the
+ * connect and read timeout in case they have the default value of <tt>0</tt>.</p>
  * 
  * @see URLConnection#getConnectTimeout()
  * @see URLConnection#getReadTimeout()
