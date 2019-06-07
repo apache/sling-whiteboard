@@ -60,18 +60,18 @@ class JavaNetTimeoutTransformer implements ClassFileTransformer {
             ProtectionDomain protectionDomain, byte[] classfileBuffer) {
         try {
             if (CLASSES_TO_TRANSFORM.contains(className)) {
-                System.out.println("[AGENT] Asked to transform " + className);
+                Log.get().log("%s asked to transform %s", getClass().getSimpleName(), className);
                 CtMethod connectMethod = findConnectMethod(className);
                 connectMethod.insertBefore("if ( getConnectTimeout() == 0 ) { setConnectTimeout(" + connectTimeoutMillis + "); }");
                 connectMethod.insertBefore("if ( getReadTimeout() == 0 ) { setReadTimeout(" + readTimeoutMillis + "); }");
                 classfileBuffer = connectMethod.getDeclaringClass().toBytecode();
                 connectMethod.getDeclaringClass().detach();
-                System.out.println("[AGENT] Transformation complete!");
+                Log.get().log("Transformation complete.");
             }
             return classfileBuffer;
         } catch (Exception e) {
-            e.printStackTrace(); // ensure _something_ is printed
-            throw new RuntimeException("[AGENT] Transformation failed", e);
+            Log.get().fatal("Transformation failed", e);
+            return null;
         }
     }
     
@@ -80,7 +80,7 @@ class JavaNetTimeoutTransformer implements ClassFileTransformer {
         ClassPool defaultPool = ClassPool.getDefault();
         CtClass cc = defaultPool.get(Descriptor.toJavaName(className));
         if (cc == null) {
-            System.out.println("[AGENT] no class found with name " + className);
+            Log.get().log("No class found with name %s", className);
             return null;
         }
         return cc.getDeclaredMethod("connect");

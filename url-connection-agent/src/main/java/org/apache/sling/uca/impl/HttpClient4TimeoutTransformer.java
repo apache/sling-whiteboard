@@ -51,7 +51,7 @@ public class HttpClient4TimeoutTransformer implements ClassFileTransformer {
             ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
         try {
             if ( REQUEST_CONFIG_BUILDER_CLASS_NAME.equals(className) ) {
-                System.out.println("[AGENT] Asked to transform " + className);
+                Log.get().log("%s asked to transform %s", getClass().getSimpleName(), className);
                 
                 ClassPool defaultPool = ClassPool.getDefault();
                 CtClass cc = defaultPool.get(Descriptor.toJavaName(className));
@@ -65,11 +65,12 @@ public class HttpClient4TimeoutTransformer implements ClassFileTransformer {
                 
                 classfileBuffer = cc.toBytecode();
                 cc.detach();
+                Log.get().log("Transformation complete.");
             }
             return classfileBuffer;
         } catch (Exception e) {
-            e.printStackTrace(); // ensure _something_ is printed
-            throw new RuntimeException("[AGENT] Transformation failed", e);
+            Log.get().fatal("Transformation failed", e);
+            return null;
         }
     }
 

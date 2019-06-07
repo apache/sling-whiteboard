@@ -162,7 +162,7 @@ public class AgentIT {
         ProcessBuilder pb = new ProcessBuilder(
             javaExe.toString(),
             "-showversion",
-            "-javaagent:" + jar +"=" + TimeUnit.SECONDS.toMillis(connectTimeoutSeconds) +"," + TimeUnit.SECONDS.toMillis(readTimeoutSeconds),
+            "-javaagent:" + jar +"=" + TimeUnit.SECONDS.toMillis(connectTimeoutSeconds) +"," + TimeUnit.SECONDS.toMillis(readTimeoutSeconds)+",v",
             "-cp",
             classPath,
             "org.apache.sling.uca.impl.Main",
