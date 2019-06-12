@@ -55,6 +55,7 @@ import org.slf4j.LoggerFactory;
 @ExtendWith(MisbehavingServerExtension.class)
 public class AgentIT {
     
+    private static final String EXCEPTION_MARKER = "Exception in thread \"main\" ";
     private static final Path STDERR = Paths.get("target", "stderr.txt");
     private static final Path STDOUT = Paths.get("target", "stdout.txt");
     private static final Logger LOG = LoggerFactory.getLogger(AgentIT.class);
@@ -195,12 +196,15 @@ public class AgentIT {
         return String.join(File.pathSeparator, elements);
     }
 
-    private RecordedThrowable newRecordedThrowable(String string) {
+    private RecordedThrowable newRecordedThrowable(String line) {
+        
+        if ( !line.startsWith(EXCEPTION_MARKER) )
+            return null;
      
-        string = string.replace("Exception in thread \"main\" ", "");
+        line = line.replace(EXCEPTION_MARKER, "");
 
-        String className = string.substring(0, string.indexOf(':'));
-        String message = string.substring(string.indexOf(':') + 2); // ignore ':' and leading ' '
+        String className = line.substring(0, line.indexOf(':'));
+        String message = line.substring(line.indexOf(':') + 2); // ignore ':' and leading ' '
 
         return new RecordedThrowable(className, message);
     }
