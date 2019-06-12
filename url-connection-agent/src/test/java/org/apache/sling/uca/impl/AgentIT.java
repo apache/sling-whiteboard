@@ -138,15 +138,15 @@ public class AgentIT {
         int exitCode = process.exitValue();
         LOG.info("Exited with code {}", exitCode);
         
-        if ( exitCode != 0 ) {
+        if ( exitCode == 0 ) {
+            throw new RuntimeException("Command terminated successfully. That is unexpected.");
+        } else {
             return Files.lines(STDERR)
                 .filter( l -> l.startsWith("Exception in thread \"main\""))
                 .map( l -> newRecordedThrowable(l) )
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Exit code was zero but did not find any exception information in stderr.txt"));
         }
-        
-        return null;
     }
     
     private Process runForkedCommandWithAgent(URL url, int connectTimeoutSeconds, int readTimeoutSeconds, ClientType clientType) throws IOException {
