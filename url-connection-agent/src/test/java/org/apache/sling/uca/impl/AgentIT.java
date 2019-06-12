@@ -17,6 +17,11 @@
 package org.apache.sling.uca.impl;
 
 import static java.time.Duration.ofSeconds;
+import static java.util.Objects.requireNonNull;
+import static org.apache.sling.uca.impl.HttpClientLauncher.ClientType.HC3;
+import static org.apache.sling.uca.impl.HttpClientLauncher.ClientType.HC4;
+import static org.apache.sling.uca.impl.HttpClientLauncher.ClientType.JavaNet;
+import static org.apache.sling.uca.impl.HttpClientLauncher.ClientType.OkHttp;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTimeout;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -31,8 +36,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -62,7 +69,16 @@ public class AgentIT {
     private static final Path STDERR = Paths.get("target", "stderr.txt");
     private static final Path STDOUT = Paths.get("target", "stdout.txt");
     private static final Logger LOG = LoggerFactory.getLogger(AgentIT.class);
-
+    
+    private static Map<ClientType, ErrorDescriptor> errorDescriptors = new EnumMap<>(ClientType.class);
+    static {
+        errorDescriptors.put(JavaNet, new ErrorDescriptor(SocketTimeoutException.class, "connect timed out", "Read timed out"));
+        errorDescriptors.put(HC3, new ErrorDescriptor(ConnectTimeoutException.class, "The host did not accept the connection within timeout of 3000 ms", "Read timed out"));
+        errorDescriptors.put(HC4, new ErrorDescriptor(org.apache.http.conn.ConnectTimeoutException.class, 
+                "Connect to repo1.maven.org:81 \\[.*\\] failed: connect timed out", "Read timed out"));
+        errorDescriptors.put(OkHttp, new ErrorDescriptor(SocketTimeoutException.class, "connect timed out", "timeout"));
+    }
+    
     /**
      * Validates that connecting to a unaccessible port on an existing port fails with a connect 
      * timeout exception
@@ -78,36 +94,12 @@ public class AgentIT {
     @EnumSource(HttpClientLauncher.ClientType.class)
     public void connectTimeout(ClientType clientType) throws IOException {
 
+        ErrorDescriptor ed =  requireNonNull(errorDescriptors.get(clientType), "Unhandled clientType " + clientType);
         RecordedThrowable error = assertTimeout(ofSeconds(5),  () -> runTest("http://repo1.maven.org:81", clientType));
         
-        Class<?> expectedClass;
-        String expectedMessageRegex;
-        
-        switch ( clientType ) {
-            case JavaNet:
-                expectedClass= SocketTimeoutException.class;
-                expectedMessageRegex = "connect timed out";
-                break;
-            case HC3:
-                expectedClass = ConnectTimeoutException.class;
-                expectedMessageRegex = "The host did not accept the connection within timeout of 3000 ms";
-                break;
-            case HC4:
-                expectedClass = org.apache.http.conn.ConnectTimeoutException.class;
-                expectedMessageRegex = "Connect to repo1.maven.org:81 \\[.*\\] failed: connect timed out";
-                break;
-            case OkHttp:
-                expectedClass = SocketTimeoutException.class;
-                expectedMessageRegex = "connect timed out";
-                break;
-                
-            default:
-                throw new AssertionError("Unhandled clientType " + clientType);
-        }
-        
-        assertEquals(expectedClass.getName(), error.className);
-        assertTrue(error.message.matches(expectedMessageRegex), 
-            "Actual message " + error.message + " did not match regex " + expectedMessageRegex);
+        assertEquals(ed.connectTimeoutClass.getName(), error.className);
+        assertTrue(error.message.matches(ed.connectTimeoutMessageRegex), 
+            "Actual message " + error.message + " did not match regex " + ed.connectTimeoutMessageRegex);
     }
 
     /**
@@ -119,9 +111,11 @@ public class AgentIT {
     @EnumSource(HttpClientLauncher.ClientType.class)
     public void readTimeout(ClientType clientType, MisbehavingServerControl server) throws IOException {
         
+        ErrorDescriptor ed =  requireNonNull(errorDescriptors.get(clientType), "Unhandled clientType " + clientType);
         RecordedThrowable error = assertTimeout(ofSeconds(5),  () -> runTest("http://localhost:" + server.getLocalPort(), clientType));
+        
         assertEquals(SocketTimeoutException.class.getName(), error.className);
-        assertEquals( clientType != ClientType.OkHttp ? "Read timed out" : "timeout", error.message);
+        assertEquals(ed.readTimeoutMessage, error.message);
     }
 
     private RecordedThrowable runTest(String urlSpec, ClientType clientType) throws IOException, InterruptedException {
@@ -219,6 +213,22 @@ public class AgentIT {
 
         return new RecordedThrowable(className, message);
     }
+
+    /**
+     * Data class for defining specific error messages related to individual {@link ClientType client types}. 
+     */
+    static class ErrorDescriptor {
+        private Class<? extends IOException> connectTimeoutClass;
+        private String connectTimeoutMessageRegex;
+        private String readTimeoutMessage;
+
+        public ErrorDescriptor(Class<? extends IOException> connectTimeoutClass, String connectTimeoutMessageRegex,
+                String readTimeoutMessage) {
+            this.connectTimeoutClass = connectTimeoutClass;
+            this.connectTimeoutMessageRegex = connectTimeoutMessageRegex;
+            this.readTimeoutMessage = readTimeoutMessage;
+        }
+    }
     
     /**
      * Basic information about a {@link Throwable} that was recorded in a file
@@ -231,7 +241,5 @@ public class AgentIT {
             this.className = className;
             this.message = message;
         }
-        
-        
     }
 }
