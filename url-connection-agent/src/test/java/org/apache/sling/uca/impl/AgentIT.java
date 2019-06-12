@@ -93,6 +93,11 @@ public class AgentIT {
                 expectedClass = org.apache.http.conn.ConnectTimeoutException.class;
                 expectedMessageRegex = "Connect to repo1.maven.org:81 \\[.*\\] failed: connect timed out";
                 break;
+            case OkHttp:
+                expectedClass = SocketTimeoutException.class;
+                expectedMessageRegex = "connect timed out";
+                break;
+                
             default:
                 throw new AssertionError("Unhandled clientType " + clientType);
         }
@@ -113,7 +118,7 @@ public class AgentIT {
         
         RecordedThrowable error = assertTimeout(ofSeconds(5),  () -> runTest("http://localhost:" + server.getLocalPort(), clientType));
         assertEquals(SocketTimeoutException.class.getName(), error.className);
-        assertEquals("Read timed out", error.message);
+        assertEquals( clientType != ClientType.OkHttp ? "Read timed out" : "timeout", error.message);
     }
 
     private RecordedThrowable runTest(String urlSpec, ClientType clientType) throws IOException, InterruptedException {
@@ -190,7 +195,9 @@ public class AgentIT {
                     || p.getFileName().toString().equals("slf4j-api.jar")
                     || p.getFileName().toString().equals("jcl-over-slf4j.jar")
                     || p.getFileName().toString().contentEquals("httpclient.jar")
-                    || p.getFileName().toString().contentEquals("httpcore.jar") )
+                    || p.getFileName().toString().contentEquals("httpcore.jar")
+                    || p.getFileName().toString().contentEquals("okhttp.jar")
+                    || p.getFileName().toString().contentEquals("okio.jar") )
             .forEach( p -> elements.add(p.toString()));
         
         return String.join(File.pathSeparator, elements);
