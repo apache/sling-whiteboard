@@ -40,6 +40,10 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+
 /**
  * CLI interface to run HTTP clients
  */
@@ -48,7 +52,8 @@ public class HttpClientLauncher {
     public enum ClientType {
         JavaNet(HttpClientLauncher::runUsingJavaNet), 
         HC3(HttpClientLauncher::runUsingHttpClient3),
-        HC4(HttpClientLauncher::runUsingHttpClient4);
+        HC4(HttpClientLauncher::runUsingHttpClient4),
+        OkHttp(HttpClientLauncher::runUsingOkHttp);
         
         private final HttpConsumer consumer;
 
@@ -163,4 +168,18 @@ public class HttpClientLauncher {
         }
     }
 
+    private static void runUsingOkHttp(String targetUrl) throws IOException {
+        OkHttpClient client = new OkHttpClient();
+        
+        Request request = new Request.Builder()
+            .url(targetUrl)
+            .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            System.out.println("[WEB] " + response.code() + " " + response.message());
+            response.headers().toMultimap().forEach( (n, v) -> {
+                System.out.println("[WEB] " + n + ": " + v);
+            });
+        }
+    }
 }

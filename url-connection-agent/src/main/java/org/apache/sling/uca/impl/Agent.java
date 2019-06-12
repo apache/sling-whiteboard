@@ -42,7 +42,8 @@ public class Agent {
         ClassFileTransformer[] transformers = new ClassFileTransformer[] {
             new JavaNetTimeoutTransformer(connectTimeout, readTimeout),
             new HttpClient3TimeoutTransformer(connectTimeout, readTimeout),
-            new HttpClient4TimeoutTransformer(connectTimeout, readTimeout)
+            new HttpClient4TimeoutTransformer(connectTimeout, readTimeout),
+            new OkHttpTimeoutTransformer(connectTimeout, readTimeout)
         };
         
         for ( ClassFileTransformer transformer : transformers )
