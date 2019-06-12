@@ -30,7 +30,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.httpclient.ConnectTimeoutException;
@@ -188,16 +191,20 @@ public class AgentIT {
         List<String> elements = new ArrayList<>();
         elements.add(Paths.get("target", "test-classes").toString());
         
+        Set<String> dependencies = new HashSet<>(Arrays.asList(new String[] {
+            "commons-httpclient.jar",
+            "commons-codec.jar",
+            "slf4j-simple.jar",
+            "slf4j-api.jar",
+            "jcl-over-slf4j.jar",
+            "httpclient.jar",
+            "httpcore.jar",
+            "okhttp.jar",
+            "okio.jar"
+        }));
+        
         Files.list(Paths.get("target", "it-dependencies"))
-            .filter( p -> p.getFileName().toString().equals("commons-httpclient.jar") 
-                    || p.getFileName().toString().equals("commons-codec.jar")
-                    || p.getFileName().toString().equals("slf4j-simple.jar")
-                    || p.getFileName().toString().equals("slf4j-api.jar")
-                    || p.getFileName().toString().equals("jcl-over-slf4j.jar")
-                    || p.getFileName().toString().contentEquals("httpclient.jar")
-                    || p.getFileName().toString().contentEquals("httpcore.jar")
-                    || p.getFileName().toString().contentEquals("okhttp.jar")
-                    || p.getFileName().toString().contentEquals("okio.jar") )
+            .filter( p -> dependencies.contains(p.getFileName().toString()) )
             .forEach( p -> elements.add(p.toString()));
         
         return String.join(File.pathSeparator, elements);
