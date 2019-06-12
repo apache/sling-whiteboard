@@ -20,8 +20,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.stream.Collectors;
@@ -33,7 +33,6 @@ import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.httpclient.params.HttpMethodParams;
-import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -107,15 +106,18 @@ public class HttpClientLauncher {
     }
 
     private static void runUsingJavaNet(String targetUrl) throws IOException  {
-        URLConnection con = new URL(targetUrl).openConnection();
+        HttpURLConnection con = (HttpURLConnection) new URL(targetUrl).openConnection();
         System.out.println("Connection type is " + con);
         
         try (InputStream in = con.getInputStream();
                 InputStreamReader isr = new InputStreamReader(in);
                 BufferedReader br = new BufferedReader(isr)) {
-            String line;
-            while ( (line = br.readLine()) != null )
-                System.out.println("[WEB] " + line);
+            
+            System.out.println("[WEB] "  + con.getResponseCode() + " " + con.getResponseMessage());
+
+            con.getHeaderFields().forEach( (k, v) -> {
+                System.out.println("[WEB] " + k + " : " + v);
+            });
         }
     }
 
@@ -136,19 +138,6 @@ public class HttpClientLauncher {
         
         for ( Header header : get.getResponseHeaders() )
             System.out.print(new Date() + " [WEB] " + header.toExternalForm());
-        
-        
-        try (InputStream in = get.getResponseBodyAsStream()) {
-            if (in != null) {
-                try (InputStreamReader isr = new InputStreamReader(in); 
-                        BufferedReader br = new BufferedReader(isr)) {
-                    String line;
-                    while ((line = br.readLine()) != null)
-                        System.out.println(new Date() + " [WEB] " + line);
-
-                }
-            }
-        }
     }
     
     private static void runUsingHttpClient4(String targetUrl) throws IOException {
@@ -160,11 +149,8 @@ public class HttpClientLauncher {
                 for ( org.apache.http.Header header : response.getAllHeaders() )
                     System.out.println("[WEB] " + header);
                 
-                HttpEntity entity = response.getEntity();
-                // TODO - print response body
-                EntityUtils.consume(entity);
+                EntityUtils.consume(response.getEntity());
             }
-            
         }
     }
 
