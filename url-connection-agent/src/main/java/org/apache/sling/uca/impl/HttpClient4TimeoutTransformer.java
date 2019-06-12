@@ -56,8 +56,7 @@ public class HttpClient4TimeoutTransformer implements ClassFileTransformer {
                 ClassPool defaultPool = ClassPool.getDefault();
                 CtClass cc = defaultPool.get(Descriptor.toJavaName(className));
                 
-                // TODO - access the default constructor explicitly in case it changes
-                CtConstructor noArgCtor =  cc.getConstructors()[0];
+                CtConstructor noArgCtor = cc.getConstructor(Descriptor.ofConstructor(new CtClass[0]));
                 CtField connectTimeout = cc.getDeclaredField("connectTimeout");
                 CtField socketTimeout = cc.getDeclaredField("socketTimeout");
                 noArgCtor.insertAfter("this." + connectTimeout.getName() + " = " + connectTimeoutMillis + ";");
