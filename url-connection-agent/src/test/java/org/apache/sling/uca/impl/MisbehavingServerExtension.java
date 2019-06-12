@@ -28,8 +28,8 @@ import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.AbstractHandler;
-import org.junit.jupiter.api.extension.AfterAllCallback;
-import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory;
  * will be resolved.</p>
  *
  */
-class MisbehavingServerExtension implements BeforeAllCallback, AfterAllCallback, ParameterResolver, MisbehavingServerControl {
+class MisbehavingServerExtension implements BeforeEachCallback, AfterEachCallback, ParameterResolver, MisbehavingServerControl {
     
     private final Logger logger = LoggerFactory.getLogger(getClass());
     
@@ -70,7 +70,7 @@ class MisbehavingServerExtension implements BeforeAllCallback, AfterAllCallback,
     }
     
     @Override
-    public void beforeAll(ExtensionContext context) throws Exception {
+    public void beforeEach(ExtensionContext context) throws Exception {
         
         server = new Server();
         ServerConnector connector = new ServerConnector(server) {
@@ -104,7 +104,7 @@ class MisbehavingServerExtension implements BeforeAllCallback, AfterAllCallback,
     }
 
     @Override
-    public void afterAll(ExtensionContext context) throws Exception {
+    public void afterEach(ExtensionContext context) throws Exception {
         if ( server == null )
             return;
         try {
