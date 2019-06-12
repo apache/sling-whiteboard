@@ -147,7 +147,7 @@ public class AgentIT {
             throw new RuntimeException("Command terminated successfully. That is unexpected.");
         } else {
             return Files.lines(STDERR)
-                .filter( l -> l.startsWith("Exception in thread \"main\""))
+                .filter( l -> l.startsWith(EXCEPTION_MARKER))
                 .map( l -> newRecordedThrowable(l) )
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Exit code was zero but did not find any exception information in stderr.txt"));
@@ -205,9 +205,6 @@ public class AgentIT {
 
     private RecordedThrowable newRecordedThrowable(String line) {
         
-        if ( !line.startsWith(EXCEPTION_MARKER) )
-            return null;
-     
         line = line.replace(EXCEPTION_MARKER, "");
 
         String className = line.substring(0, line.indexOf(':'));
