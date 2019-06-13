@@ -16,14 +16,6 @@
  */
 package org.apache.sling.uca.impl;
 
-import java.lang.instrument.ClassFileTransformer;
-import java.lang.instrument.IllegalClassFormatException;
-import java.security.ProtectionDomain;
-
-import javassist.ClassPool;
-import javassist.CtClass;
-import javassist.CtConstructor;
-import javassist.CtField;
 import javassist.bytecode.Descriptor;
 
 /**
@@ -32,45 +24,14 @@ import javassist.bytecode.Descriptor;
  * <p>It inserts two calls to <tt>org.apache.http.client.config.RequestConfig$Builder</tt> that set default
  * values for <tt>connectTimeout</tt> and <tt>socketTimeout</tt>.</p>
  */
-public class HttpClient4TimeoutTransformer implements ClassFileTransformer {
+public class HttpClient4TimeoutTransformer extends UpdateFieldsInConstructorTimeoutTransformer {
 
     // org.apache.http.client.config.RequestConfig.Builder
     
     private static final String REQUEST_CONFIG_BUILDER_CLASS_NAME = Descriptor.toJvmName("org.apache.http.client.config.RequestConfig$Builder");
     
-    private final long connectTimeoutMillis;
-    private final long readTimeoutMillis;
-    
     public HttpClient4TimeoutTransformer(long connectTimeoutMillis, long readTimeoutMillis) {
-        this.connectTimeoutMillis = connectTimeoutMillis;
-        this.readTimeoutMillis = readTimeoutMillis;
+        super(REQUEST_CONFIG_BUILDER_CLASS_NAME, "connectTimeout", "socketTimeout",
+            connectTimeoutMillis, readTimeoutMillis);
     }
-
-    @Override
-    public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
-            ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
-        try {
-            if ( REQUEST_CONFIG_BUILDER_CLASS_NAME.equals(className) ) {
-                Log.get().log("%s asked to transform %s", getClass().getSimpleName(), className);
-                
-                ClassPool defaultPool = ClassPool.getDefault();
-                CtClass cc = defaultPool.get(Descriptor.toJavaName(className));
-                
-                CtConstructor noArgCtor = cc.getConstructor(Descriptor.ofConstructor(new CtClass[0]));
-                CtField connectTimeout = cc.getDeclaredField("connectTimeout");
-                CtField socketTimeout = cc.getDeclaredField("socketTimeout");
-                noArgCtor.insertAfter("this." + connectTimeout.getName() + " = " + connectTimeoutMillis + ";");
-                noArgCtor.insertAfter("this." + socketTimeout.getName() + " = " + readTimeoutMillis + ";");
-                
-                classfileBuffer = cc.toBytecode();
-                cc.detach();
-                Log.get().log("Transformation complete.");
-            }
-            return classfileBuffer;
-        } catch (Exception e) {
-            Log.get().fatal("Transformation failed", e);
-            return null;
-        }
-    }
-
 }
