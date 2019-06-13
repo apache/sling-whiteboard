@@ -13,3 +13,5 @@ Sling committers are welcome to use this repository for prototypes and other exp
 We currently do not release code from this repository, if a module needs to be released please discuss its "promotion" on the Sling dev list and then move it to its own repository.
 
 Older whiteboard experiments can be found at https://svn.apache.org/repos/asf/sling/whiteboard/ - the plan is to only move code that's being actively worked on and leave the rest there.
+
+And another test!
