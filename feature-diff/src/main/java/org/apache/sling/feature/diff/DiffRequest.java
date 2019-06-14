@@ -14,14 +14,23 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.sling.feature.diff.spi;
+package org.apache.sling.feature.diff;
 
+import java.util.Set;
+
+import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
 
-public interface FeatureElementComparator {
+public interface DiffRequest {
 
-    String getId();
+    Feature getPrevious();
 
-    public void computeDiff(Feature previous, Feature current, Feature target);
+    Feature getCurrent();
+
+    ArtifactId getResultId();
+
+    Set<String> getIncludeComparators();
+
+    Set<String> getExcludeComparators();
 
 }
