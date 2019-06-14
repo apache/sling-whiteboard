@@ -29,16 +29,16 @@ import javassist.NotFoundException;
 import javassist.bytecode.Descriptor;
 
 /**
- * Transforms well-known HTTP URL connection classes
+ * Sets timeouts for HTTP calls done using <tt>java.net.URL</tt>/<tt>java.net.URLConnection</tt>.
  * 
- * <p>This implementation adds connect and read timeouts to those connections
- * if none are defined.</p>
+ * <p>It transforms calls to <tt>connect</tt> methods of internal URL connection classes to set the
+ * connect and read timeout in case they have the default value of <tt>0</tt>.</p>
  * 
  * @see URLConnection#getConnectTimeout()
  * @see URLConnection#getReadTimeout()
  *
  */
-class URLTimeoutTransformer implements ClassFileTransformer {
+class JavaNetTimeoutTransformer implements ClassFileTransformer {
 
     private static final Set<String> CLASSES_TO_TRANSFORM = new HashSet<>();
 
@@ -50,7 +50,7 @@ class URLTimeoutTransformer implements ClassFileTransformer {
     private final long readTimeoutMillis;
     private final long connectTimeoutMillis;
 
-    public URLTimeoutTransformer(long connectTimeout, long readTimeout) {
+    public JavaNetTimeoutTransformer(long connectTimeout, long readTimeout) {
         this.connectTimeoutMillis = connectTimeout;
         this.readTimeoutMillis = readTimeout;
     }
@@ -60,18 +60,18 @@ class URLTimeoutTransformer implements ClassFileTransformer {
             ProtectionDomain protectionDomain, byte[] classfileBuffer) {
         try {
             if (CLASSES_TO_TRANSFORM.contains(className)) {
-                System.out.println("[AGENT] Asked to transform " + className);
+                Log.get().log("%s asked to transform %s", getClass().getSimpleName(), className);
                 CtMethod connectMethod = findConnectMethod(className);
                 connectMethod.insertBefore("if ( getConnectTimeout() == 0 ) { setConnectTimeout(" + connectTimeoutMillis + "); }");
                 connectMethod.insertBefore("if ( getReadTimeout() == 0 ) { setReadTimeout(" + readTimeoutMillis + "); }");
                 classfileBuffer = connectMethod.getDeclaringClass().toBytecode();
                 connectMethod.getDeclaringClass().detach();
-                System.out.println("[AGENT] Transformation complete!");
+                Log.get().log("Transformation complete.");
             }
             return classfileBuffer;
         } catch (Exception e) {
-            e.printStackTrace(); // ensure _something_ is printed
-            throw new RuntimeException("[AGENT] Transformation failed", e);
+            Log.get().fatal("Transformation failed", e);
+            return null;
         }
     }
     
@@ -80,7 +80,7 @@ class URLTimeoutTransformer implements ClassFileTransformer {
         ClassPool defaultPool = ClassPool.getDefault();
         CtClass cc = defaultPool.get(Descriptor.toJavaName(className));
         if (cc == null) {
-            System.out.println("[AGENT] no class found with name " + className);
+            Log.get().log("No class found with name %s", className);
             return null;
         }
         return cc.getDeclaredMethod("connect");
