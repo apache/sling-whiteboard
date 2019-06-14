@@ -25,6 +25,11 @@ import org.apache.sling.feature.diff.spi.FeatureElementComparator;
 final class ConfigurationsComparator implements FeatureElementComparator {
 
     @Override
+    public String getId() {
+        return "configurations";
+    }
+
+    @Override
     public void computeDiff(Feature previous, Feature current, Feature target) {
         computeDiff(previous.getConfigurations(), current.getConfigurations(), target);
     }

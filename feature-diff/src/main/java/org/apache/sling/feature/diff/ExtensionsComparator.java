@@ -35,6 +35,11 @@ final class ExtensionsComparator implements FeatureElementComparator {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
+    public String getId() {
+        return "extensions";
+    }
+
+    @Override
     public void computeDiff(Feature previous, Feature current, Feature target) {
         computeDiff(previous.getExtensions(), current.getExtensions(), target);
     }

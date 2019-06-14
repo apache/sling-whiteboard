@@ -24,6 +24,11 @@ import org.apache.sling.feature.diff.spi.FeatureElementComparator;
 final class ArtifactsComparator implements FeatureElementComparator {
 
     @Override
+    public String getId() {
+        return "artifacts";
+    }
+
+    @Override
     public void computeDiff(Feature previous, Feature current, Feature target) {
         computeDiff(previous.getBundles(), current.getBundles(), target);
     }

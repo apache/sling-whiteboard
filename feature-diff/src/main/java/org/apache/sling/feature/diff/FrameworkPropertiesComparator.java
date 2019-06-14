@@ -27,6 +27,11 @@ import org.apache.sling.feature.diff.spi.FeatureElementComparator;
 final class FrameworkPropertiesComparator implements FeatureElementComparator {
 
     @Override
+    public String getId() {
+        return "framework-properties";
+    }
+
+    @Override
     public void computeDiff(Feature previous, Feature current, Feature target) {
         computeDiff(previous.getFrameworkProperties(), current.getFrameworkProperties(), target);
     }

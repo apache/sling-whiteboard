@@ -26,22 +26,16 @@ import org.apache.sling.feature.diff.spi.FeatureElementComparator;
 
 public final class FeatureDiff {
 
-    public static Feature compareFeatures(Feature previous, Feature current, String resultId) {
-        resultId = requireNonNull(resultId, "Impossible to create the Feature diff with a null id");
-
-        ArtifactId id = ArtifactId.parse(resultId);
-        return compareFeatures(previous, current, id);
-    }
-
-    public static Feature compareFeatures(Feature previous, Feature current, ArtifactId resultId) {
-        previous = requireNonNull(previous, "Impossible to compare null previous feature.");
-        current = requireNonNull(current, "Impossible to compare null current feature.");
+    public static Feature compareFeatures(DiffRequest diffRequest) {
+        requireNonNull(diffRequest, "");
+        Feature previous = requireNonNull(diffRequest.getPrevious(), "Impossible to compare null previous feature.");
+        Feature current = requireNonNull(diffRequest.getCurrent(), "Impossible to compare null current feature.");
 
         if (previous.getId().equals(current.getId())) {
             throw new IllegalArgumentException("Input Features refer to the the same Feature version.");
         }
 
-        resultId = requireNonNull(resultId, "Impossible to create the Feature diff with a null id");
+        ArtifactId resultId = requireNonNull(diffRequest.getResultId(), "Impossible to create the Feature diff with a null id");
 
         Feature target = new Feature(resultId);
         target.setTitle(previous.getId() + " to " + current.getId());
@@ -51,7 +45,12 @@ public final class FeatureDiff {
         target.setPrototype(prototype);
 
         for (FeatureElementComparator comparator : load(FeatureElementComparator.class)) {
-            comparator.computeDiff(previous, current, target);
+            boolean included = !diffRequest.getIncludeComparators().isEmpty() ? diffRequest.getIncludeComparators().contains(comparator.getId()) : true;
+            boolean excluded = diffRequest.getExcludeComparators().contains(comparator.getId());
+
+            if (included && !excluded) {
+                comparator.computeDiff(previous, current, target);
+            }
         }
 
         return target;
