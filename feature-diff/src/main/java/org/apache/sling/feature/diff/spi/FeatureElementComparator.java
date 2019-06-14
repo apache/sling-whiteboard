@@ -14,11 +14,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.sling.feature.diff;
+package org.apache.sling.feature.diff.spi;
 
-import java.util.function.BiFunction;
+import org.apache.sling.feature.Feature;
 
-public interface ComplexElementComparator<T, I extends Iterable<T>>
-        extends BiFunction<I, I, DiffSection>, ElementComparator<T> {
+public interface FeatureElementComparator {
+
+    public void computeDiff(Feature previous, Feature current, Feature target);
 
 }

@@ -18,31 +18,18 @@ package org.apache.sling.feature.diff;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Artifacts;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
-public class ArtifactsComparatorTest {
+public class ArtifactsComparatorTest extends AbstractComparatorTest<ArtifactsComparator> {
 
-    private ArtifactsComparator comparator;
-
-    @Before
-    public void setUp() {
-        comparator = new ArtifactsComparator("bundles");
-    }
-
-    @After
-    public void tearDown() {
-        comparator = null;
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void nullIdNotAcceptedByTheConstructor() {
-        new ArtifactsComparator(null);
+    @Override
+    protected ArtifactsComparator newComparatorInstance() {
+        return new ArtifactsComparator();
     }
 
     @Test
@@ -53,10 +40,10 @@ public class ArtifactsComparatorTest {
 
         Artifacts currentArtifacts = new Artifacts();
 
-        DiffSection artifactsDiff = comparator.apply(previousArtifacts, currentArtifacts);
+        comparator.computeDiff(previousArtifacts, currentArtifacts, targetFeature);
 
-        assertFalse(artifactsDiff.isEmpty());
-        assertEquals(previousArtifact.getId().toMvnId(), artifactsDiff.getRemoved().iterator().next());
+        assertFalse(targetFeature.getPrototype().getBundleRemovals().isEmpty());
+        assertEquals(previousArtifact.getId(), targetFeature.getPrototype().getBundleRemovals().iterator().next());
     }
 
     @Test
@@ -67,10 +54,10 @@ public class ArtifactsComparatorTest {
         Artifact currentArtifact = new Artifact(ArtifactId.fromMvnId("org.apache.sling:org.apache.sling.feature.diff:1.0.0"));
         currentArtifacts.add(currentArtifact);
 
-        DiffSection artifactsDiff = comparator.apply(previousArtifacts, currentArtifacts);
+        comparator.computeDiff(previousArtifacts, currentArtifacts, targetFeature);
 
-        assertFalse(artifactsDiff.isEmpty());
-        assertEquals(currentArtifact.getId().toMvnId(), artifactsDiff.getAdded().iterator().next());
+        assertTrue(targetFeature.getPrototype().getBundleRemovals().isEmpty());
+        assertEquals(currentArtifact.getId(), targetFeature.getBundles().iterator().next().getId());
     }
 
     @Test
@@ -83,19 +70,13 @@ public class ArtifactsComparatorTest {
         Artifact currentArtifact = new Artifact(ArtifactId.fromMvnId("org.apache.sling:org.apache.sling.feature.diff:1.0.0"));
         currentArtifacts.add(currentArtifact);
 
-        DiffSection artifactsDiff = comparator.apply(previousArtifacts, currentArtifacts);
-        assertFalse(artifactsDiff.isEmpty());
+        comparator.computeDiff(previousArtifacts, currentArtifacts, targetFeature);
 
-        DiffSection artifactDiff = artifactsDiff.getUpdates().iterator().next();
-        for (UpdatedItem<?> updatedItem : artifactDiff.getUpdatedItems()) {
-            if ("version".equals(updatedItem.getId())) {
-                assertEquals(previousArtifact.getId().getVersion(), updatedItem.getPrevious());
-                assertEquals(currentArtifact.getId().getVersion(), updatedItem.getCurrent());
-            } else if ("start-order".equals(updatedItem.getId())) {
-                assertEquals(previousArtifact.getStartOrder(), updatedItem.getPrevious());
-                assertEquals(currentArtifact.getStartOrder(), updatedItem.getCurrent());
-            }
-        }
+        assertFalse(targetFeature.getPrototype().getBundleRemovals().isEmpty());
+        assertEquals(previousArtifact.getId(), targetFeature.getPrototype().getBundleRemovals().iterator().next());
+
+        assertFalse(targetFeature.getBundles().isEmpty());
+        assertEquals(currentArtifact.getId(), targetFeature.getBundles().iterator().next().getId());
     }
 
 }

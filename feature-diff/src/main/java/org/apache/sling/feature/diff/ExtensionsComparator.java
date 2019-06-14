@@ -16,118 +16,109 @@
  */
 package org.apache.sling.feature.diff;
 
-import static org.apache.sling.feature.apiregions.model.io.json.ApiRegionsJSONParser.parseApiRegions;
-import static java.lang.String.format;
-
 import java.io.IOException;
+import java.util.LinkedList;
 
+import org.apache.sling.feature.Artifact;
+import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.Extensions;
-import org.apache.sling.feature.apiregions.model.ApiRegion;
-import org.apache.sling.feature.apiregions.model.ApiRegions;
+import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.diff.spi.FeatureElementComparator;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flipkart.zjsonpatch.JsonDiff;
 
-final class ExtensionsComparator extends AbstractFeatureElementComparator<Extension, Extensions> {
+final class ExtensionsComparator implements FeatureElementComparator {
 
-    private static final String API_REGIONS = "api-regions";
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public ExtensionsComparator() {
-        super("extensions");
+    @Override
+    public void computeDiff(Feature previous, Feature current, Feature target) {
+        computeDiff(previous.getExtensions(), current.getExtensions(), target);
     }
 
-    @Override
-    public String getId(Extension extension) {
-        return extension.getName();
-    }
+    private void computeDiff(Extensions previousExtensions, Extensions currentExtensions, Feature target) {
+        for (Extension previousExtension : previousExtensions) {
+            Extension currentExtension = currentExtensions.getByName(previousExtension.getName());
 
-    @Override
-    public Extension find(Extension extension, Extensions extensions) {
-        return extensions.getByName(extension.getName());
-    }
-
-    @Override
-    public DiffSection compare(Extension previous, Extension current) {
-        String diffName = format("%s:%s|%s", current.getName(), current.getType(), current.isRequired());
-        DiffSection diffSection = new DiffSection(diffName);
-
-        if (previous.getType() != current.getType()) {
-            diffSection.markItemUpdated("type", previous.getType(), current.getType());
+            if (currentExtension == null) {
+                target.getPrototype().getExtensionRemovals().add(previousExtension.getName());
+            } else {
+                computeDiff(previousExtension, currentExtension, target);
+            }
         }
 
-        switch (previous.getType()) {
+        for (Extension currentExtension : currentExtensions) {
+            Extension previousConfiguration = previousExtensions.getByName(currentExtension.getName());
+
+            if (previousConfiguration == null) {
+                target.getExtensions().add(currentExtension);
+            }
+        }
+    }
+
+    public void computeDiff(Extension previousExtension, Extension currentExtension, Feature target) {
+        switch (previousExtension.getType()) {
             case ARTIFACTS:
-                diffSection.markUpdated(new ArtifactsComparator("artifacts")
-                                        .apply(previous.getArtifacts(), current.getArtifacts()));
+                Extension targetExtension = new Extension(previousExtension.getType(), previousExtension.getName(), previousExtension.isRequired());
+
+                for (Artifact previous : previousExtension.getArtifacts()) {
+                    Artifact current = currentExtension.getArtifacts().getSame(previous.getId());
+
+                    boolean add = false;
+
+                    if (current == null || (add = !previous.getId().equals(current.getId()))) {
+                        target.getPrototype().getArtifactExtensionRemovals()
+                                             .computeIfAbsent(previousExtension.getName(), k -> new LinkedList<ArtifactId>())
+                                             .add(previous.getId());
+                    }
+
+                    if (add) {
+                        targetExtension.getArtifacts().add(current);
+                    }
+                }
+
+                for (Artifact current : currentExtension.getArtifacts()) {
+                    Artifact previous = previousExtension.getArtifacts().getSame(current.getId());
+
+                    if (previous == null) {
+                        targetExtension.getArtifacts().add(current);
+                    }
+                }
+
+                if (!targetExtension.getArtifacts().isEmpty()) {
+                    target.getExtensions().add(targetExtension);
+                }
+
                 break;
 
             case TEXT:
-                if (!previous.getText().equals(previous.getText())) {
-                    diffSection.markItemUpdated("text", previous.getType(), current.getType());
-                } 
+                if (!previousExtension.getText().equals(currentExtension.getText())) {
+                    target.getExtensions().add(currentExtension);
+                }
                 break;
 
             case JSON:
-                if (API_REGIONS.equals(current.getName())) {
-                    ApiRegions previousRegions = parseApiRegions(previous);
-                    ApiRegions currentRegions = parseApiRegions(current);
+                String previousJSON = previousExtension.getJSON();
+                String currentJSON = currentExtension.getJSON();
 
-                    for (ApiRegion previousRegion : previousRegions) {
-                        String regionName = previousRegion.getName();
-                        ApiRegion currentRegion = currentRegions.getByName(regionName);
+                try {
+                    JsonNode previousNode = objectMapper.readTree(previousJSON);
+                    JsonNode currentNode = objectMapper.readTree(currentJSON); 
+                    JsonNode patchNode = JsonDiff.asJson(previousNode, currentNode); 
 
-                        if (currentRegion == null) {
-                            diffSection.markRemoved(regionName);
-                        } else {
-                            DiffSection regionDiff = new DiffSection(regionName);
-
-                            for (String previousApi : previousRegion.getExports()) {
-                                if (!currentRegion.exports(previousApi)) {
-                                    regionDiff.markRemoved(previousApi);
-                                }
-                            }
-
-                            for (String currentApi : currentRegion.getExports()) {
-                                if (!previousRegion.exports(currentApi)) {
-                                    regionDiff.markAdded(currentApi);
-                                }
-                            }
-
-                            diffSection.markUpdated(regionDiff);
-                        }
+                    if (patchNode.size() != 0) {
+                        target.getExtensions().add(currentExtension);
                     }
-
-                    for (ApiRegion currentRegion : currentRegions) {
-                        String regionName = currentRegion.getName();
-                        ApiRegion previousRegion = previousRegions.getByName(regionName);
-
-                        if (previousRegion == null) {
-                            diffSection.markAdded(regionName);
-                        }
-                    }
-                } else {
-                    String previousJSON = previous.getJSON();
-                    String currentJSON = current.getJSON();
-
-                    try {
-                        JsonNode previousNode = objectMapper.readTree(previousJSON);
-                        JsonNode currentNode = objectMapper.readTree(currentJSON); 
-                        JsonNode patchNode = JsonDiff.asJson(previousNode, currentNode); 
-
-                        if (patchNode.size() != 0) {
-                            diffSection.markItemUpdated("json", previousJSON, currentJSON);
-                        }
-                    } catch (IOException e) {
-                        // should not happen
-                        throw new RuntimeException("A JSON parse error occurred while parsing previous '"
-                                                   + previousJSON
-                                                   + "' and current '"
-                                                   + currentJSON
-                                                   + "', see nested errors:", e);
-                    }
+                } catch (IOException e) {
+                    // should not happen
+                    throw new RuntimeException("A JSON parse error occurred while parsing previous '"
+                                               + previousJSON
+                                               + "' and current '"
+                                               + currentJSON
+                                               + "', see nested errors:", e);
                 }
                 break;
 
@@ -135,8 +126,6 @@ final class ExtensionsComparator extends AbstractFeatureElementComparator<Extens
             default:
                 break;
         }
-
-        return diffSection;
     }
 
 }

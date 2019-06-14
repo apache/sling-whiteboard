@@ -16,6 +16,6 @@
  */
 
 /**
- * Core APIs to compare different Apache Sling Feature Model versions.
+ * Core APIs to compare different Apache Sling Feature models.
  */
 package org.apache.sling.feature.diff;

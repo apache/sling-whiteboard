@@ -19,25 +19,19 @@ package org.apache.sling.feature.diff;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Dictionary;
 
 import org.apache.sling.feature.Configuration;
 import org.apache.sling.feature.Configurations;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
-public class ConfigurationsComparatorTest {
+public class ConfigurationsComparatorTest extends AbstractComparatorTest<ConfigurationsComparator> {
 
-    private ConfigurationsComparator comparator;
-
-    @Before
-    public void setUp() {
-        comparator = new ConfigurationsComparator();
-    }
-
-    @After
-    public void tearDown() {
-        comparator = null;
+    @Override
+    protected ConfigurationsComparator newComparatorInstance() {
+        return new ConfigurationsComparator();
     }
 
     @Test
@@ -48,10 +42,11 @@ public class ConfigurationsComparatorTest {
 
         Configurations currentConfigurations = new Configurations();
 
-        DiffSection configurationsDiff = comparator.apply(previousConfigurations, currentConfigurations);
-        assertFalse(configurationsDiff.isEmpty());
+        comparator.computeDiff(previousConfigurations, currentConfigurations, targetFeature);
 
-        assertEquals(previousConfiguration.getPid(), configurationsDiff.getRemoved().iterator().next());
+        assertFalse(targetFeature.getPrototype().getConfigurationRemovals().isEmpty());
+        assertEquals(previousConfiguration.getPid(), targetFeature.getPrototype().getConfigurationRemovals().iterator().next());
+        assertTrue(targetFeature.getConfigurations().isEmpty());
     }
 
     @Test
@@ -62,10 +57,12 @@ public class ConfigurationsComparatorTest {
         Configurations currentConfigurations = new Configurations();
         currentConfigurations.add(currentConfiguration);
 
-        DiffSection configurationsDiff = comparator.apply(previousConfigurations, currentConfigurations);
-        assertFalse(configurationsDiff.isEmpty());
+        comparator.computeDiff(previousConfigurations, currentConfigurations, targetFeature);
 
-        assertEquals(currentConfiguration.getPid(), configurationsDiff.getAdded().iterator().next());
+        assertTrue(targetFeature.getPrototype().getConfigurationRemovals().isEmpty());
+        assertFalse(targetFeature.getConfigurations().isEmpty());
+
+        assertEquals(currentConfiguration.getPid(), targetFeature.getConfigurations().iterator().next().getPid());
     }
 
     @Test
@@ -84,19 +81,16 @@ public class ConfigurationsComparatorTest {
         Configurations currentConfigurations = new Configurations();
         currentConfigurations.add(currentConfiguration);
 
-        DiffSection configurationsDiff = comparator.apply(previousConfigurations, currentConfigurations);
-        assertFalse(configurationsDiff.isEmpty());
+        comparator.computeDiff(previousConfigurations, currentConfigurations, targetFeature);
 
-        DiffSection configurationDiff = configurationsDiff.getUpdates().iterator().next();
+        assertTrue(targetFeature.getPrototype().getConfigurationRemovals().isEmpty());
+        assertFalse(targetFeature.getConfigurations().isEmpty());
 
-        assertEquals("removed", configurationDiff.getRemoved().iterator().next());
-        assertEquals("added", configurationDiff.getAdded().iterator().next());
+        assertEquals(currentConfiguration.getPid(), targetFeature.getConfigurations().iterator().next().getPid());
+        Dictionary<String, Object> properties = targetFeature.getConfigurations().iterator().next().getConfigurationProperties();
 
-        @SuppressWarnings("unchecked") // type known by design
-        UpdatedItem<String[]> updated = (UpdatedItem<String[]>) configurationDiff.getUpdatedItems().iterator().next();
-        assertEquals("updated", updated.getId());
-        assertArrayEquals(new String[] { "/log" }, updated.getPrevious());
-        assertArrayEquals(new String[] { "/log", "/etc" }, updated.getCurrent());
+        assertTrue((boolean) properties.get("added"));
+        assertArrayEquals(new String[] { "/log", "/etc" }, (String[]) properties.get("updated"));
     }
 
 }

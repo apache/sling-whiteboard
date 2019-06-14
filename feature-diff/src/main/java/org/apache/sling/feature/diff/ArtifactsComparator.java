@@ -16,42 +16,40 @@
  */
 package org.apache.sling.feature.diff;
 
-import java.util.Objects;
-
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.Artifacts;
+import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.diff.spi.FeatureElementComparator;
 
-final class ArtifactsComparator extends AbstractFeatureElementComparator<Artifact, Artifacts> {
-
-    public ArtifactsComparator(String id) {
-        super(id);
-    }
+final class ArtifactsComparator implements FeatureElementComparator {
 
     @Override
-    public String getId(Artifact artifact) {
-        return artifact.getId().toMvnId();
+    public void computeDiff(Feature previous, Feature current, Feature target) {
+        computeDiff(previous.getBundles(), current.getBundles(), target);
     }
 
-    @Override
-    public Artifact find(Artifact artifact, Artifacts artifacts) {
-        return artifacts.getSame(artifact.getId());
-    }
+    protected void computeDiff(Artifacts previouses, Artifacts currents, Feature target) {
+        for (Artifact previous : previouses) {
+            Artifact current = currents.getSame(previous.getId());
 
-    @Override
-    public DiffSection compare(Artifact previous, Artifact current) {
-        DiffSection diffSection = new DiffSection(getId(current));
+            boolean add = false;
 
-        String previousVersion = previous.getId().getVersion();
-        String currentVersion = current.getId().getVersion();
-        if (!Objects.equals(previousVersion, currentVersion)) {
-            diffSection.markItemUpdated("version", previousVersion, currentVersion);
+            if (current == null || (add = !previous.getId().equals(current.getId()))) {
+                target.getPrototype().getBundleRemovals().add(previous.getId());
+            }
+
+            if (add) {
+                target.getBundles().add(current);
+            }
         }
 
-        if (previous.getStartOrder() != current.getStartOrder()) {
-            diffSection.markItemUpdated("start-order", previous.getStartOrder(), current.getStartOrder());
-        }
+        for (Artifact current : currents) {
+            Artifact previous = previouses.getSame(current.getId());
 
-        return diffSection;
+            if (previous == null) {
+                target.getBundles().add(current);
+            }
+        }
     }
 
 }

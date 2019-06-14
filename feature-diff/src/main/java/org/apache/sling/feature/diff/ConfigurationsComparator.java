@@ -16,62 +16,39 @@
  */
 package org.apache.sling.feature.diff;
 
-import java.util.Dictionary;
-import java.util.Enumeration;
-
-import org.apache.commons.lang3.builder.EqualsBuilder;
+import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
 import org.apache.sling.feature.Configuration;
 import org.apache.sling.feature.Configurations;
+import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.diff.spi.FeatureElementComparator;
 
-final class ConfigurationsComparator extends AbstractFeatureElementComparator<Configuration, Configurations> {
-
-    public ConfigurationsComparator() {
-        super("configurations");
-    }
+final class ConfigurationsComparator implements FeatureElementComparator {
 
     @Override
-    public String getId(Configuration configuration) {
-        return configuration.getPid();
+    public void computeDiff(Feature previous, Feature current, Feature target) {
+        computeDiff(previous.getConfigurations(), current.getConfigurations(), target);
     }
 
-    @Override
-    public Configuration find(Configuration configuration, Configurations configurations) {
-        return configurations.getConfiguration(getId(configuration));
-    }
+    protected void computeDiff(Configurations previouses, Configurations currents, Feature target) {
+        for (Configuration previousConfiguration : previouses) {
+            Configuration currentConfiguration = currents.getConfiguration(previousConfiguration.getPid());
 
-    @Override
-    public DiffSection compare(Configuration previous, Configuration current) {
-        Dictionary<String, Object> previousProperties = previous.getConfigurationProperties();
-        Dictionary<String, Object> currentProperties = current.getConfigurationProperties();
-        final DiffSection dictionaryDiffs = new DiffSection(getId(current));
-
-        Enumeration<String> previousKeys = previousProperties.keys();
-        while (previousKeys.hasMoreElements()) {
-            String previousKey = previousKeys.nextElement();
-
-            Object previousValue = previousProperties.get(previousKey);
-            Object currentValue = currentProperties.get(previousKey);
-
-            if (currentValue == null && previousValue != null) {
-                dictionaryDiffs.markRemoved(previousKey);
-            } else if (!new EqualsBuilder().reflectionAppend(previousValue, currentValue).isEquals()) {
-                dictionaryDiffs.markItemUpdated(previousKey, previousValue, currentValue);
+            if (currentConfiguration == null) {
+                target.getPrototype().getConfigurationRemovals().add(previousConfiguration.getPid());
+            } else if (!reflectionEquals(previousConfiguration.getConfigurationProperties(),
+                                         currentConfiguration.getConfigurationProperties(),
+                                         true)) {
+                target.getConfigurations().add(currentConfiguration);
             }
         }
 
-        Enumeration<String> currentKeys = currentProperties.keys();
-        while (currentKeys.hasMoreElements()) {
-            String currentKey = currentKeys.nextElement();
+        for (Configuration currentConfiguration : currents) {
+            Configuration previousConfiguration = previouses.getConfiguration(currentConfiguration.getPid());
 
-            Object previousValue = previousProperties.get(currentKey);
-            Object currentValue = currentProperties.get(currentKey);
-
-            if (previousValue == null && currentValue != null) {
-                dictionaryDiffs.markAdded(currentKey);
+            if (previousConfiguration == null) {
+                target.getConfigurations().add(currentConfiguration);
             }
         }
-
-        return dictionaryDiffs;
     }
 
 }

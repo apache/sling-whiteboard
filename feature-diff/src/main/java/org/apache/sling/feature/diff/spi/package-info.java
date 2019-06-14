@@ -14,29 +14,8 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.sling.feature.diff;
 
-import static org.junit.Assert.assertEquals;
-
-import org.junit.Test;
-
-public class UpdatedItemTest {
-
-    @Test(expected = NullPointerException.class)
-    public void requiresIdNotNull() {
-        new UpdatedItem<Object>(null, null, null);
-    }
-
-    @Test
-    public void expectedFields() {
-        String expectedId = "expectedId";
-        String expectedPrevious = "expectedPrevious";
-        String expectedCurrent = "expectedCurrent";
-        UpdatedItem<String> item = new UpdatedItem<String>(expectedId, expectedPrevious, expectedCurrent);
-
-        assertEquals(expectedId, item.getId());
-        assertEquals(expectedPrevious, item.getPrevious());
-        assertEquals(expectedCurrent, item.getCurrent());
-    }
-
-}
+/**
+ * APIs to compare different Apache Sling Feature Model versions.
+ */
+package org.apache.sling.feature.diff.spi;

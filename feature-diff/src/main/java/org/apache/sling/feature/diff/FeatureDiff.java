@@ -17,71 +17,51 @@
 package org.apache.sling.feature.diff;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.ServiceLoader.load;
 
-import java.util.LinkedList;
-import java.util.List;
-
+import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.Prototype;
+import org.apache.sling.feature.diff.spi.FeatureElementComparator;
 
 public final class FeatureDiff {
 
-    public static FeatureDiff compareFeatures(Feature previous, Feature current) {
+    public static Feature compareFeatures(Feature previous, Feature current, String resultId) {
+        resultId = requireNonNull(resultId, "Impossible to create the Feature diff with a null id");
+
+        ArtifactId id = ArtifactId.parse(resultId);
+        return compareFeatures(previous, current, id);
+    }
+
+    public static Feature compareFeatures(Feature previous, Feature current, ArtifactId resultId) {
         previous = requireNonNull(previous, "Impossible to compare null previous feature.");
         current = requireNonNull(current, "Impossible to compare null current feature.");
-
-        if (!previous.getId().isSame(current.getId())) {
-            throw new IllegalArgumentException("Feature comparison has to be related to different versions of the same Feature.");
-        }
 
         if (previous.getId().equals(current.getId())) {
             throw new IllegalArgumentException("Input Features refer to the the same Feature version.");
         }
 
-        FeatureDiff featureDiff = new FeatureDiff(previous, current);
+        resultId = requireNonNull(resultId, "Impossible to create the Feature diff with a null id");
 
-        featureDiff.addSection(new GenericMapComparator("framework-properties").compare(previous.getFrameworkProperties(), current.getFrameworkProperties()));
-        featureDiff.addSection(new ArtifactsComparator("bundles").apply(previous.getBundles(), current.getBundles()));
-        featureDiff.addSection(new ConfigurationsComparator().apply(previous.getConfigurations(), current.getConfigurations()));
-        featureDiff.addSection(new RequirementsComparator().apply(previous.getRequirements(), current.getRequirements()));
-        featureDiff.addSection(new ExtensionsComparator().apply(previous.getExtensions(), current.getExtensions()));
-        featureDiff.addSection(new GenericMapComparator("variables").compare(previous.getVariables(), current.getVariables()));
+        Feature target = new Feature(resultId);
+        target.setTitle(previous.getId() + " to " + current.getId());
+        target.setDescription(previous.getId() + " to " + current.getId() + " Feature upgrade");
 
-        return featureDiff;
-    }
+        Prototype prototype = new Prototype(previous.getId());
+        target.setPrototype(prototype);
 
-    private final List<DiffSection> diffSections = new LinkedList<>();
-
-    private final Feature previous;
-
-    private final Feature current;
-
-    // this class can not be instantiated from outside
-    private FeatureDiff(Feature previous, Feature current) {
-        this.previous = previous;
-        this.current = current;
-    }
-
-    public Feature getPrevious() {
-        return previous;
-    }
-
-    public Feature getCurrent() {
-        return current;
-    }
-
-    protected void addSection(DiffSection diffSection) {
-        DiffSection checkedDiffSection = requireNonNull(diffSection, "Null diff section can not be added to the resulting diff");
-        if (!diffSection.isEmpty()) {
-            diffSections.add(checkedDiffSection);
+        for (FeatureElementComparator comparator : load(FeatureElementComparator.class)) {
+            comparator.computeDiff(previous, current, target);
         }
+
+        return target;
     }
 
-    public boolean isEmpty() {
-        return diffSections.isEmpty();
-    }
-
-    public Iterable<DiffSection> getSections() {
-        return diffSections;
+    /**
+     * this class must not be instantiated directly
+     */
+    private FeatureDiff() {
+        // do nothing
     }
 
 }
