@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.sling.feature.diff;
+package org.apache.sling.feature.diff.comparators;
 
 import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
 
@@ -26,11 +26,13 @@ import org.apache.sling.feature.Configurations;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.diff.spi.FeatureElementComparator;
 
-final class ConfigurationsComparator implements FeatureElementComparator {
+import com.google.auto.service.AutoService;
 
-    @Override
-    public String getId() {
-        return "configurations";
+@AutoService(FeatureElementComparator.class)
+public final class ConfigurationsComparator extends AbstractFeatureElementComparator {
+
+    public ConfigurationsComparator() {
+        super("configurations");
     }
 
     @Override

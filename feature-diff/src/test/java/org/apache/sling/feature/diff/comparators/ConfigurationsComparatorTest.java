@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.sling.feature.diff;
+package org.apache.sling.feature.diff.comparators;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -25,6 +25,7 @@ import java.util.Dictionary;
 
 import org.apache.sling.feature.Configuration;
 import org.apache.sling.feature.Configurations;
+import org.apache.sling.feature.diff.comparators.ConfigurationsComparator;
 import org.junit.Test;
 
 public class ConfigurationsComparatorTest extends AbstractComparatorTest<ConfigurationsComparator> {

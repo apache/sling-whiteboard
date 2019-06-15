@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.sling.feature.diff;
+package org.apache.sling.feature.diff.comparators;
 
 import java.util.Map;
 import java.util.Map.Entry;
@@ -23,11 +23,13 @@ import java.util.Objects;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.diff.spi.FeatureElementComparator;
 
-final class FrameworkPropertiesComparator implements FeatureElementComparator {
+import com.google.auto.service.AutoService;
 
-    @Override
-    public String getId() {
-        return "framework-properties";
+@AutoService(FeatureElementComparator.class)
+public final class FrameworkPropertiesComparator extends AbstractFeatureElementComparator {
+
+    public FrameworkPropertiesComparator() {
+        super("framework-properties");
     }
 
     @Override

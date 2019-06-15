@@ -19,6 +19,9 @@ package org.apache.sling.feature.diff;
 import static java.util.Objects.requireNonNull;
 import static java.util.ServiceLoader.load;
 
+import java.util.Collection;
+import java.util.LinkedList;
+
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.Prototype;
@@ -44,16 +47,26 @@ public final class FeatureDiff {
         Prototype prototype = new Prototype(previous.getId());
         target.setPrototype(prototype);
 
+        for (FeatureElementComparator comparator : loadComparators(diffRequest)) {
+            comparator.computeDiff(previous, current, target);
+        }
+
+        return target;
+    }
+
+    protected static Iterable<FeatureElementComparator> loadComparators(DiffRequest diffRequest) {
+        Collection<FeatureElementComparator> filteredComparators = new LinkedList<>();
+
         for (FeatureElementComparator comparator : load(FeatureElementComparator.class)) {
             boolean included = !diffRequest.getIncludeComparators().isEmpty() ? diffRequest.getIncludeComparators().contains(comparator.getId()) : true;
             boolean excluded = diffRequest.getExcludeComparators().contains(comparator.getId());
 
             if (included && !excluded) {
-                comparator.computeDiff(previous, current, target);
+                filteredComparators.add(comparator);
             }
         }
 
-        return target;
+        return filteredComparators;
     }
 
     /**

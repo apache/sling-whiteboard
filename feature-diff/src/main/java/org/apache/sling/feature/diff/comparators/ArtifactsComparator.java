@@ -14,18 +14,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.sling.feature.diff;
+package org.apache.sling.feature.diff.comparators;
 
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.Artifacts;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.diff.spi.FeatureElementComparator;
 
-final class ArtifactsComparator implements FeatureElementComparator {
+import com.google.auto.service.AutoService;
 
-    @Override
-    public String getId() {
-        return "artifacts";
+@AutoService(FeatureElementComparator.class)
+public final class ArtifactsComparator extends AbstractFeatureElementComparator {
+
+    public ArtifactsComparator() {
+        super("artifacts");
     }
 
     @Override

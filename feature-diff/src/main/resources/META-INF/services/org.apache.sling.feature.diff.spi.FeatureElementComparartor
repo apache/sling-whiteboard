@@ -1,4 +1,0 @@
-org.apache.sling.feature.diff.ArtifactsComparator
-org.apache.sling.feature.diff.ConfigurationsComparator
-org.apache.sling.feature.diff.FrameworkPropertiesComparator
-org.apache.sling.feature.diff.ExtensionsComparator

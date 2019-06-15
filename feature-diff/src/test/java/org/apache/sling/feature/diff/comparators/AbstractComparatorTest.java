@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.sling.feature.diff;
+package org.apache.sling.feature.diff.comparators;
 
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;

@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.sling.feature.diff;
+package org.apache.sling.feature.diff.comparators;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -29,14 +29,15 @@ import org.apache.sling.feature.diff.spi.FeatureElementComparator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flipkart.zjsonpatch.JsonDiff;
+import com.google.auto.service.AutoService;
 
-final class ExtensionsComparator implements FeatureElementComparator {
+@AutoService(FeatureElementComparator.class)
+public final class ExtensionsComparator extends AbstractFeatureElementComparator {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Override
-    public String getId() {
-        return "extensions";
+    public ExtensionsComparator() {
+        super("extensions");
     }
 
     @Override
