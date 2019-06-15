@@ -17,6 +17,10 @@
 package org.apache.sling.feature.diff;
 
 import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
+
+import java.util.Dictionary;
+import java.util.Enumeration;
+
 import org.apache.sling.feature.Configuration;
 import org.apache.sling.feature.Configurations;
 import org.apache.sling.feature.Feature;
@@ -40,10 +44,8 @@ final class ConfigurationsComparator implements FeatureElementComparator {
 
             if (currentConfiguration == null) {
                 target.getPrototype().getConfigurationRemovals().add(previousConfiguration.getPid());
-            } else if (!reflectionEquals(previousConfiguration.getConfigurationProperties(),
-                                         currentConfiguration.getConfigurationProperties(),
-                                         true)) {
-                target.getConfigurations().add(currentConfiguration);
+            } else {
+                computeDiff(previousConfiguration, currentConfiguration, target);
             }
         }
 
@@ -53,6 +55,42 @@ final class ConfigurationsComparator implements FeatureElementComparator {
             if (previousConfiguration == null) {
                 target.getConfigurations().add(currentConfiguration);
             }
+        }
+    }
+
+    protected void computeDiff(Configuration previous, Configuration current, Feature target) {
+        Dictionary<String, Object> previousProperties = previous.getProperties();
+        Dictionary<String, Object> currentProperties = current.getProperties();
+
+        Configuration targetConfiguration = new Configuration(previous.getPid());
+        Dictionary<String, Object> targetProperties = targetConfiguration.getProperties();
+
+        Enumeration<String> previousKeys = previousProperties.keys();
+        while (previousKeys.hasMoreElements()) {
+            String previousKey = previousKeys.nextElement();
+
+            Object previousValue = previousProperties.get(previousKey);
+            Object currentValue = currentProperties.get(previousKey);
+
+            if (currentValue != null && !reflectionEquals(previousValue, currentValue, true)) {
+                targetProperties.put(previousKey, currentValue);
+            }
+        }
+
+        Enumeration<String> currentKeys = currentProperties.keys();
+        while (currentKeys.hasMoreElements()) {
+            String currentKey = currentKeys.nextElement();
+
+            Object previousValue = previousProperties.get(currentKey);
+            Object currentValue = currentProperties.get(currentKey);
+
+            if (previousValue == null && currentValue != null) {
+                targetProperties.put(currentKey, currentValue);
+            }
+        }
+
+        if (!targetProperties.isEmpty()) {
+            target.getConfigurations().add(targetConfiguration);
         }
     }
 

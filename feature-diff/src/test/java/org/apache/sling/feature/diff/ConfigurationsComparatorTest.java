@@ -87,7 +87,7 @@ public class ConfigurationsComparatorTest extends AbstractComparatorTest<Configu
         assertFalse(targetFeature.getConfigurations().isEmpty());
 
         assertEquals(currentConfiguration.getPid(), targetFeature.getConfigurations().iterator().next().getPid());
-        Dictionary<String, Object> properties = targetFeature.getConfigurations().iterator().next().getConfigurationProperties();
+        Dictionary<String, Object> properties = targetFeature.getConfigurations().iterator().next().getProperties();
 
         assertTrue((boolean) properties.get("added"));
         assertArrayEquals(new String[] { "/log", "/etc" }, (String[]) properties.get("updated"));

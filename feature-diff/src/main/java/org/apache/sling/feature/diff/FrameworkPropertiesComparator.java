@@ -16,10 +16,9 @@
  */
 package org.apache.sling.feature.diff;
 
-import static java.util.Objects.deepEquals;
-
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.diff.spi.FeatureElementComparator;
@@ -47,7 +46,7 @@ final class FrameworkPropertiesComparator implements FeatureElementComparator {
                 String currentValue = current.get(previousKey);
 
                 // override the previous set value
-                if (!deepEquals(previousValue, currentValue)) {
+                if (!Objects.equals(previousValue, currentValue)) {
                     target.getFrameworkProperties().put(previousKey, currentValue);
                 }
             }
