@@ -16,61 +16,10 @@
  */
 package org.apache.sling.feature.r2f;
 
-import static java.util.Objects.requireNonNull;
-
-import java.util.stream.Stream;
-
-import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
-import org.osgi.service.cm.Configuration;
-import org.osgi.service.cm.ConfigurationAdmin;
 
-public final class RuntimeEnvironment2FeatureModel {
+public interface RuntimeEnvironment2FeatureModel {
 
-    public static Feature scanAndAssemble(ConversionRequest conversionRequest) {
-        ArtifactId resultId = requireNonNull(conversionRequest.getResultId(), "Impossible to create the Feature with a null id");
-        BundleContext bundleContext = requireNonNull(conversionRequest.getBundleContext(), "Impossible to create the Feature from a null BundleContext");
-
-        Feature targetFeature = new Feature(resultId);
-
-        // collect all bundles
-
-        Bundle[] bundles = bundleContext.getBundles();
-        if (bundles != null) {
-            Bundle2ArtifactMapper mapper = new Bundle2ArtifactMapper(targetFeature);
-
-            Stream.of(bundles).map(mapper).forEach(mapper);
-        }
-
-        // collect all configurations
-
-        ServiceReference<ConfigurationAdmin> configurationAdminReference = bundleContext.getServiceReference(ConfigurationAdmin.class);
-        if (configurationAdminReference != null) {
-            ConfigurationAdmin configurationAdmin = bundleContext.getService(configurationAdminReference);
-            try {
-                Configuration[] configurations = configurationAdmin.listConfigurations(null);
-                if (configurations != null) {
-                    OSGiConfiguration2FeatureConfigurationMapper mapper = new OSGiConfiguration2FeatureConfigurationMapper(targetFeature);
-
-                    Stream.of(configurations).map(mapper).forEach(mapper);
-                }
-            } catch (Exception e) {
-                // that should not happen
-                throw new RuntimeException("Something went wrong while iterating over all available Configurations", e);
-            }
-        }
-
-        return targetFeature;
-    }
-
-    /**
-     * This class must not be instantiated from outside.
-     */
-    private RuntimeEnvironment2FeatureModel() {
-        // do nothing
-    }
+    Feature scanAndAssemble(ConversionRequest conversionRequest);
 
 }

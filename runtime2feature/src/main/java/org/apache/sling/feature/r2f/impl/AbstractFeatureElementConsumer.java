@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.sling.feature.r2f;
+package org.apache.sling.feature.r2f.impl;
 
 import java.util.function.Consumer;
 
