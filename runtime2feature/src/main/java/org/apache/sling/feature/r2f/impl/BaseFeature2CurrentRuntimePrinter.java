@@ -16,6 +16,11 @@
  */
 package org.apache.sling.feature.r2f.impl;
 
+import static org.apache.sling.feature.io.json.FeatureJSONReader.read;
+
+import java.io.IOException;
+import java.io.StringReader;
+
 import static org.apache.sling.feature.diff.FeatureDiff.compareFeatures;
 
 import org.apache.sling.feature.ArtifactId;
@@ -32,8 +37,31 @@ public class BaseFeature2CurrentRuntimePrinter extends AbstractRuntimeEnvironmen
 
     @Override
     protected Feature compute(Feature currentFeature) {
-        // TODO
         Feature previousFeature = null;
+        Object previousFeatureObject = getBundleContext().getProperty("sling.feature");
+
+        if (previousFeatureObject == null) {
+            throw new IllegalStateException("'sling.feature' framework-property is not available");
+        }
+
+        if (previousFeatureObject instanceof String) {
+            String previousFeatureString = (String) previousFeatureObject;
+            try (StringReader reader = new StringReader(previousFeatureString)) {
+                previousFeature = read(reader, "framework-properties.sling.feature");
+            } catch (IOException e) {
+                throw new RuntimeException("An error occurred while reading 'sling.feature' framework-property "
+                                           + previousFeatureObject
+                                           + ", see causing error(s):",
+                                           e);
+            }
+        } else if (previousFeatureObject instanceof Feature) {
+            previousFeature = (Feature) previousFeatureObject;
+        } else {
+            throw new RuntimeException("'sling.feature' framework property "
+                                       + previousFeatureObject
+                                       + " is of unmanagede type "
+                                       + previousFeatureObject.getClass());
+        }
 
         StringBuilder classifier = new StringBuilder()
                                    .append(previousFeature.getId().getVersion())
