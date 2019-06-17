@@ -16,14 +16,21 @@
  */
 package org.apache.sling.feature.r2f.impl;
 
+import static org.apache.felix.inventory.InventoryPrinter.NAME;
+import static org.apache.felix.inventory.InventoryPrinter.TITLE;
+import static org.osgi.framework.Constants.BUNDLE_VENDOR;
+import static org.osgi.framework.Constants.SERVICE_DESCRIPTION;
+import static org.osgi.framework.Constants.SERVICE_VENDOR;
+
 import java.util.Dictionary;
 import java.util.Hashtable;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.felix.inventory.InventoryPrinter;
 import org.apache.sling.feature.r2f.RuntimeEnvironment2FeatureModel;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceRegistration;
 
 public final class RuntimeEnvironment2FeatureModelActivator implements BundleActivator {
@@ -32,30 +39,54 @@ public final class RuntimeEnvironment2FeatureModelActivator implements BundleAct
 
     private static final String SERVICE_NAME = "r2f";
 
-    private ServiceRegistration<RuntimeEnvironment2FeatureModel> converterRegistration;
+    private static final String RUNTIME_GENERATOR = " - Runtime Generator";
 
-    private ServiceRegistration<InventoryPrinter> printerRegistration;
+    private static final String BASE_2_RUNTIME_DIFF_GENERATOR = " - Base 2 Runtime diff Generator";
+
+    private final List<ServiceRegistration<?>> registrations = new LinkedList<>();
 
     @Override
-    public void start(BundleContext context) throws Exception {
-        final Dictionary<String, Object> properties = new Hashtable<>();
-        properties.put(Constants.SERVICE_VENDOR, context.getBundle().getHeaders(Constants.BUNDLE_VENDOR));
-        properties.put(Constants.SERVICE_DESCRIPTION, SERVICE_TITLE);
+    public void start(BundleContext bundleContext) throws Exception {
+        RuntimeEnvironment2FeatureModel generator = new RuntimeEnvironment2FeatureModelService();
+        registerService(bundleContext, RuntimeEnvironment2FeatureModel.class, generator, null);
 
-        RuntimeEnvironment2FeatureModel converter = new RuntimeEnvironment2FeatureModelService();
+        InventoryPrinter runtimePrinter = new RuntimeEnvironment2FeatureModelPrinter(generator, bundleContext);
+        registerService(bundleContext, InventoryPrinter.class, runtimePrinter, RUNTIME_GENERATOR);
 
-        properties.put(InventoryPrinter.NAME, SERVICE_NAME);
-        properties.put(InventoryPrinter.TITLE, SERVICE_TITLE);
-        InventoryPrinter printer = new RuntimeEnvironment2FeatureModelPrinter(converter, context);
+        InventoryPrinter base2RuntimePrinter = new BaseFeature2CurrentRuntimePrinter(generator, bundleContext);
+        registerService(bundleContext, InventoryPrinter.class, base2RuntimePrinter, BASE_2_RUNTIME_DIFF_GENERATOR);
+    }
 
-        converterRegistration = context.registerService(RuntimeEnvironment2FeatureModel.class, converter, properties);
-        printerRegistration = context.registerService(InventoryPrinter.class, printer, properties);
+    private <S> void registerService(BundleContext bundleContext, Class<S> type, S service, String classifier) {
+        Dictionary<String, Object> properties = new Hashtable<>();
+        properties.put(SERVICE_VENDOR, bundleContext.getBundle().getHeaders(BUNDLE_VENDOR));
+        putProperty(SERVICE_DESCRIPTION, SERVICE_TITLE, classifier, properties);
+        putProperty(SERVICE_DESCRIPTION, SERVICE_TITLE, classifier, properties);
+        putProperty(NAME, SERVICE_NAME, classifier, properties);
+        putProperty(TITLE, SERVICE_TITLE, classifier, properties);
+
+        registrations.add(bundleContext.registerService(type, service, properties));
+    }
+
+    private static void putProperty(String key, String value, String classifier, Dictionary<String, Object> properties) {
+        String finalValue;
+
+        if (classifier != null && !classifier.isEmpty()) {
+            finalValue = value.concat(classifier);
+        } else {
+            finalValue = value;
+        }
+
+        properties.put(key, finalValue);
     }
 
     @Override
     public void stop(BundleContext context) throws Exception {
-        converterRegistration.unregister();
-        printerRegistration.unregister();
+        for (ServiceRegistration<?> registration : registrations) {
+            registration.unregister();
+        }
+
+        registrations.clear();
     }
 
 }

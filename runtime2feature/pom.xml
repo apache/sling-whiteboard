@@ -39,6 +39,9 @@
   </properties>
 
   <dependencies>
+    <!--
+     | core OSGi APIs
+    -->
     <dependency>
       <groupId>org.osgi</groupId>
       <artifactId>osgi.core</artifactId>
@@ -50,6 +53,9 @@
       <version>5.0.0</version>
       <scope>provided</scope>
     </dependency>
+    <!--
+     | Apache Sling Feature APIs
+    -->
     <dependency>
       <groupId>org.apache.sling</groupId>
       <artifactId>org.apache.sling.feature</artifactId>
@@ -62,6 +68,14 @@
       <version>1.0.2</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.feature.diff</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+    <!--
+     | Apache Felix Inventory Printer
+    -->
     <dependency>
       <groupId>org.apache.felix</groupId>
       <artifactId>org.apache.felix.inventory</artifactId>

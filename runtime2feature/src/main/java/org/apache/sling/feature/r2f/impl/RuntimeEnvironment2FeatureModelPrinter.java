@@ -16,53 +16,19 @@
  */
 package org.apache.sling.feature.r2f.impl;
 
-import static org.apache.sling.feature.io.json.FeatureJSONWriter.write;
-
-import java.io.IOException;
-import java.io.PrintWriter;
-
-import org.apache.felix.inventory.Format;
-import org.apache.felix.inventory.InventoryPrinter;
-import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.r2f.ConversionRequest;
-import org.apache.sling.feature.r2f.DefaultConversionRequest;
 import org.apache.sling.feature.r2f.RuntimeEnvironment2FeatureModel;
 import org.osgi.framework.BundleContext;
 
-public final class RuntimeEnvironment2FeatureModelPrinter implements InventoryPrinter {
-
-    private final RuntimeEnvironment2FeatureModel converter;
-
-    private final BundleContext bundleContext;
+public final class RuntimeEnvironment2FeatureModelPrinter extends AbstractRuntimeEnvironment2FeatureModelPrinter {
 
     public RuntimeEnvironment2FeatureModelPrinter(RuntimeEnvironment2FeatureModel converter, BundleContext bundleContext) {
-        this.converter = converter;
-        this.bundleContext = bundleContext;
+        super(converter, bundleContext);
     }
 
     @Override
-    public void print(PrintWriter printWriter, Format format, boolean isZip) {
-        // TODO
-        String groupId = bundleContext.getProperty(null);
-        String artifactId = bundleContext.getProperty(null);
-        String version = bundleContext.getProperty(null);
-        String classifier = bundleContext.getProperty(null);
-
-        ConversionRequest request = new DefaultConversionRequest()
-                                    .setBundleContext(bundleContext)
-                                    .setResultId(new ArtifactId(groupId, artifactId, version, classifier, null));
-        Feature currentFeature = converter.scanAndAssemble(request);
-
-        try {
-            write(printWriter, currentFeature);
-        } catch (IOException e) {
-            printWriter.append("An error occured while searlizing ")
-                       .append(currentFeature.toString())
-                       .append(":\n");
-
-            e.printStackTrace(printWriter);
-        }
+    protected Feature compute(Feature currentFeature) {
+        return currentFeature;
     }
 
 }
