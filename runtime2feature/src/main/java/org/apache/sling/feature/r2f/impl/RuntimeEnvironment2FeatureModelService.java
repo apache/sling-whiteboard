@@ -29,9 +29,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
-import org.osgi.service.component.annotations.Component;
 
-@Component
 public final class RuntimeEnvironment2FeatureModelService implements RuntimeEnvironment2FeatureModel {
 
     public Feature scanAndAssemble(ConversionRequest conversionRequest) {

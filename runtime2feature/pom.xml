@@ -45,12 +45,6 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.felix</groupId>
-      <artifactId>org.apache.felix.scr.ds-annotations</artifactId>
-      <version>1.2.10</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>org.osgi</groupId>
       <artifactId>org.osgi.compendium</artifactId>
       <version>5.0.0</version>
@@ -60,6 +54,18 @@
       <groupId>org.apache.sling</groupId>
       <artifactId>org.apache.sling.feature</artifactId>
       <version>1.0.2</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.feature.io</artifactId>
+      <version>1.0.2</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.felix</groupId>
+      <artifactId>org.apache.felix.inventory</artifactId>
+      <version>1.0.6</version>
       <scope>provided</scope>
     </dependency>
 
@@ -77,7 +83,13 @@
     <plugins>
       <plugin>
         <groupId>org.apache.felix</groupId>
-        <artifactId>maven-scr-plugin</artifactId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <extensions>true</extensions>
+        <configuration>
+          <instructions>
+              <Bundle-Activator>org.apache.sling.feature.r2f.impl.RuntimeEnvironment2FeatureModelActivator</Bundle-Activator>
+          </instructions>
+        </configuration>
       </plugin>
     </plugins>
   </build>
