@@ -26,7 +26,7 @@
         <version>35</version>
         <relativePath/>
     </parent>
-    <artifactId>url-connection-agent</artifactId>
+    <artifactId>org.apache.sling.connection-timeout-agent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
     <build>
@@ -45,7 +45,6 @@
                             <archiveBaseDirectory>${project.basedir}</archiveBaseDirectory>
                             <archive>
                                 <manifestEntries>
-                                    <Agent-Class>org.apache.sling.uca.impl.Agent</Agent-Class>
                                     <Premain-Class>org.apache.sling.uca.impl.Agent</Premain-Class>
                                     <Can-Redefine-Classes>true</Can-Redefine-Classes>
                                     <Can-Retransform-Classes>true</Can-Retransform-Classes>
@@ -77,7 +76,7 @@
                 </configuration>
             </plugin>
             <plugin>
-                <!-- Run certain ITs in the integration-test phase, once the agent jar is packaged -->
+                <!-- Run ITs in the integration-test phase, once the agent jar is packaged -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <executions>

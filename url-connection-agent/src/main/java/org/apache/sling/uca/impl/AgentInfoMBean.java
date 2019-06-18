@@ -16,21 +16,37 @@
  */
 package org.apache.sling.uca.impl;
 
-import javassist.bytecode.Descriptor;
-
 /**
- * Sets timeouts for HTTP calls done using <em>OkHttp 3.x</em>
- * 
- * <p>It inserts two calls to <tt>okhttp3.OkHttpClient$Builder</tt> that set default
- * values for <tt>connectTimeout</tt> and <tt>readTimeout</tt>.</p>
+ * Exposes runtime information about the agent using <tt>JMX</tt>.
+ *
  */
-public class OkHttpTimeoutTransformer extends UpdateFieldsInConstructorTimeoutTransformer {
+public interface AgentInfoMBean {
 
-    private static final String REQUEST_CONFIG_BUILDER_CLASS_NAME = Descriptor.toJvmName("okhttp3.OkHttpClient$Builder");
+    /**
+     * Returns the connect timeout
+     * 
+     * @return the connect timeout as configured, in milliseconds
+     */
+    long getConnectTimeoutMillis();
+
+    /**
+     * Returns the read timeout
+     * 
+     * @return the read timeout as configured, in milliseconds
+     */
+    long getReadTimeoutMillis();
     
-    public OkHttpTimeoutTransformer(long connectTimeoutMillis, long readTimeoutMillis, AgentInfo agentInfoMBean) {
-        
-        super(REQUEST_CONFIG_BUILDER_CLASS_NAME, "connectTimeout", "readTimeout", 
-            connectTimeoutMillis, readTimeoutMillis, agentInfoMBean);
-    }
+    /**
+     * Returns the active transformers
+     * 
+     * @return the active transformers
+     */
+    String[] getTransformers();
+    
+    /**
+     * Returns the classes that were transformed to enforce global timeout defaults
+     * 
+     * @return the classes that were transformed
+     */
+    String[] getTransformedClasses();
 }
