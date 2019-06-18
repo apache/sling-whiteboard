@@ -49,10 +49,13 @@ class JavaNetTimeoutTransformer implements ClassFileTransformer {
 
     private final long readTimeoutMillis;
     private final long connectTimeoutMillis;
+    private final AgentInfo agentInfoMBean;
 
-    public JavaNetTimeoutTransformer(long connectTimeout, long readTimeout) {
+    public JavaNetTimeoutTransformer(long connectTimeout, long readTimeout, AgentInfo agentInfoMBean) {
         this.connectTimeoutMillis = connectTimeout;
         this.readTimeoutMillis = readTimeout;
+        this.agentInfoMBean = agentInfoMBean;
+        this.agentInfoMBean.registerTransformer(getClass());
     }
 
     @Override
@@ -67,6 +70,8 @@ class JavaNetTimeoutTransformer implements ClassFileTransformer {
                 classfileBuffer = connectMethod.getDeclaringClass().toBytecode();
                 connectMethod.getDeclaringClass().detach();
                 Log.get().log("Transformation complete.");
+                
+                this.agentInfoMBean.registerTransformedClass(className);
             }
             return classfileBuffer;
         } catch (Exception e) {
