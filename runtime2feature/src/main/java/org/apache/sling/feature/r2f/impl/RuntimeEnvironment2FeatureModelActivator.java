@@ -16,6 +16,8 @@
  */
 package org.apache.sling.feature.r2f.impl;
 
+import static org.apache.felix.inventory.Format.JSON;
+import static org.apache.felix.inventory.InventoryPrinter.FORMAT;
 import static org.apache.felix.inventory.InventoryPrinter.NAME;
 import static org.apache.felix.inventory.InventoryPrinter.TITLE;
 import static org.osgi.framework.Constants.BUNDLE_VENDOR;
@@ -62,8 +64,12 @@ public final class RuntimeEnvironment2FeatureModelActivator implements BundleAct
         properties.put(SERVICE_VENDOR, bundleContext.getBundle().getHeaders(BUNDLE_VENDOR));
         putProperty(SERVICE_DESCRIPTION, SERVICE_TITLE, classifier, properties);
         putProperty(SERVICE_DESCRIPTION, SERVICE_TITLE, classifier, properties);
-        putProperty(NAME, SERVICE_NAME, classifier, properties);
-        putProperty(TITLE, SERVICE_TITLE, classifier, properties);
+
+        if (InventoryPrinter.class.isAssignableFrom(type)) {
+            putProperty(NAME, SERVICE_NAME, classifier, properties);
+            putProperty(TITLE, SERVICE_TITLE, classifier, properties);
+            putProperty(FORMAT, JSON.toString(), classifier, properties);
+        }
 
         registrations.add(bundleContext.registerService(type, service, properties));
     }
