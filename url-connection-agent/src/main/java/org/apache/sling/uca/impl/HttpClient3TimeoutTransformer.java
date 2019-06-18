@@ -18,7 +18,6 @@ package org.apache.sling.uca.impl;
 
 import java.util.Collections;
 
-import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
 import javassist.bytecode.Descriptor;
@@ -43,10 +42,7 @@ public class HttpClient3TimeoutTransformer extends MBeanAwareTimeoutTransformer 
     }
 
     @Override
-    protected byte[] doTransformClass(String className) throws Exception {
-        
-        ClassPool defaultPool = ClassPool.getDefault();
-        CtClass cc = defaultPool.get(Descriptor.toJavaName(className));
+    protected byte[] doTransformClass(CtClass cc) throws Exception {
         
         CtMethod getSoTimeout =  cc.getDeclaredMethod("createParams");
         // javassist seems unable to resolve the constant values, so just inline them

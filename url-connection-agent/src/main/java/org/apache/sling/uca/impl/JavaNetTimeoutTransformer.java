@@ -20,10 +20,8 @@ import java.net.URLConnection;
 import java.util.HashSet;
 import java.util.Set;
 
-import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
-import javassist.NotFoundException;
 import javassist.bytecode.Descriptor;
 
 /**
@@ -55,25 +53,13 @@ class JavaNetTimeoutTransformer extends MBeanAwareTimeoutTransformer {
         this.readTimeoutMillis = readTimeout;
     }
 
-    protected byte[] doTransformClass(String className) throws Exception {
-        CtMethod connectMethod = findConnectMethod(className);
+    protected byte[] doTransformClass(CtClass cc) throws Exception {
+        CtMethod connectMethod = cc.getDeclaredMethod("connect");
         connectMethod.insertBefore("if ( getConnectTimeout() == 0 ) { setConnectTimeout(" + connectTimeoutMillis + "); }");
         connectMethod.insertBefore("if ( getReadTimeout() == 0 ) { setReadTimeout(" + readTimeoutMillis + "); }");
         byte[] classfileBuffer = connectMethod.getDeclaringClass().toBytecode();
         connectMethod.getDeclaringClass().detach();
         return classfileBuffer;
-    }
-    
-    CtMethod findConnectMethod(String className) throws NotFoundException {
-        
-        ClassPool defaultPool = ClassPool.getDefault();
-        CtClass cc = defaultPool.get(Descriptor.toJavaName(className));
-        if (cc == null) {
-            Log.get().log("No class found with name %s", className);
-            return null;
-        }
-        return cc.getDeclaredMethod("connect");
-
     }
 
 }
