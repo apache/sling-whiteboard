@@ -16,15 +16,7 @@
  */
 package org.apache.sling.feature.r2f.impl;
 
-import static java.nio.file.Files.newBufferedReader;
 import static org.apache.sling.feature.diff.FeatureDiff.compareFeatures;
-import static org.apache.sling.feature.io.json.FeatureJSONReader.read;
-
-import java.io.IOException;
-import java.io.Reader;
-import java.net.URI;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
@@ -34,36 +26,12 @@ import org.osgi.framework.BundleContext;
 
 public class BaseFeature2CurrentRuntimePrinter extends AbstractRuntimeEnvironment2FeatureModelPrinter {
 
-    private static final String SLING_FEATURE_PROPERTY_NAME = "sling.feature";
-
     public BaseFeature2CurrentRuntimePrinter(RuntimeEnvironment2FeatureModel generator, BundleContext bundleContext) {
         super(generator, bundleContext);
     }
 
     @Override
-    protected Feature compute(Feature currentFeature) {
-        String previousFeatureLocation = getBundleContext().getProperty(SLING_FEATURE_PROPERTY_NAME);
-        URI previousFeatureURI = URI.create(previousFeatureLocation);
-        Path previousFeaturePath = Paths.get(previousFeatureURI);
-        Feature previousFeature = null;
-
-        try (Reader reader = newBufferedReader(previousFeaturePath)) {
-            previousFeature = read(reader, previousFeatureLocation);
-        } catch (IOException e) {
-            throw new RuntimeException("An error occurred while reading 'sling.feature' framework-property "
-                    + previousFeatureLocation
-                    + ", see causing error(s):",
-                    e);
-        }
-
-        StringBuilder classifier = new StringBuilder()
-                                   .append(previousFeature.getId().getVersion())
-                                   .append("-to-")
-                                   .append(currentFeature.getId().getVersion())
-                                   .append('-')
-                                   .append(currentFeature.getId().getClassifier())
-                                   .append("-upgrade");
-
+    protected Feature compute(Feature previousFeature, Feature currentFeature) {
         Feature featureDiff = compareFeatures(new DefaultDiffRequest()
                                               .setPrevious(previousFeature)
                                               .setCurrent(currentFeature)
@@ -72,7 +40,7 @@ public class BaseFeature2CurrentRuntimePrinter extends AbstractRuntimeEnvironmen
                                               .setResultId(new ArtifactId(currentFeature.getId().getGroupId(),
                                                            currentFeature.getId().getArtifactId(), 
                                                            currentFeature.getId().getVersion(),
-                                                           classifier.toString(),
+                                                           currentFeature.getId().getClassifier() + "_upgrade",
                                                            currentFeature.getId().getType())));
 
         return featureDiff;

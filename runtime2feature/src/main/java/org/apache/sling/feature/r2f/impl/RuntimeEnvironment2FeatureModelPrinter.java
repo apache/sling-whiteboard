@@ -27,7 +27,7 @@ public final class RuntimeEnvironment2FeatureModelPrinter extends AbstractRuntim
     }
 
     @Override
-    protected Feature compute(Feature currentFeature) {
+    protected Feature compute(Feature previousFeature, Feature currentFeature) {
         return currentFeature;
     }
 
