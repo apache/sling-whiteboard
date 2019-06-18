@@ -82,7 +82,7 @@ public class HttpClientLauncher {
     }
     
     /**
-     * A <tt>Consumer</tt> that allows throwing checked exceptions.</p>
+     * Thin wrapper for various http client abstractions
      *
      */
     @FunctionalInterface
