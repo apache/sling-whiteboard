@@ -23,14 +23,14 @@ import static org.junit.Assert.assertTrue;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Artifacts;
-import org.apache.sling.feature.diff.comparators.ArtifactsComparator;
+import org.apache.sling.feature.diff.comparators.BundlesComparator;
 import org.junit.Test;
 
-public class ArtifactsComparatorTest extends AbstractComparatorTest<ArtifactsComparator> {
+public class BundlesComparatorTest extends AbstractComparatorTest<BundlesComparator> {
 
     @Override
-    protected ArtifactsComparator newComparatorInstance() {
-        return new ArtifactsComparator();
+    protected BundlesComparator newComparatorInstance() {
+        return new BundlesComparator();
     }
 
     @Test

@@ -9,143 +9,52 @@ This tool aims to provide to Apache Sling users an easy-to-use tool which is abl
 Given two different versions of the same `org.apache.sling.feature.Feature`, all we need to do is comparing them
 
 ```java
+import static org.apache.sling.feature.diff.FeatureDiff.compareFeatures;
+
 import org.apache.sling.feature.Feature
-import org.apache.sling.feature.diff.*;
+import org.apache.sling.feature.diff.DiffRequest;
+import org.apache.sling.feature.diff.DefaultDiffRequest;
 
 ...
 
 Feature previous = // somehow obtained
 Feature current = // somehow obtained
-FeatureDiff featureDiff = FeatureDiff.compareFeatures(previous, current);
 
-// check which section(s) are detected during the comparison
+DiffRequest diffRequest = new DefaultDiffRequest()
+                          .setPrevious(previous)
+                          .setCurrent(current)
+                          .setResultId("org.apache.sling:org.apache.sling.diff:1.0.0");
 
-for (DiffSection diffSection : featureDiff.getSections()) {
-    System.out.println(diffSection.getId());
-
-    // Removed items from the current version, but present in the previous
-    if (diffSection.hasRemoved()) {
-        System.out.println(" - Removed");
-
-        for (String value : diffSection.getRemoved()) {
-            System.out.println("   * " + value);
-        }
-    }
-
-    // Added items to the current version, but not present in the previous
-    if (diffSection.hasAdded()) {
-        System.out.println(" - Added");
-
-        for (String value : diffSection.getAdded()) {
-            System.out.println("   * " + value);
-        }
-    }
-
-    // updated items from the previous to the current version
-    if (diffSection.hasUpdatedItems() || diffSection.hasUpdates()) {
-        System.out.println(" - Updated");
-
-        for (UpdatedItem<?> updatedItem : diffSection.getUpdatedItems()) {
-            System.out.println("   * " + updatedItem.getId() + " from " + updatedItem.getPrevious() + " to " + updatedItem.getCurrent());
-        }
-
-        for (DiffSection updatesDiffSection : diffSection.getUpdates()) {
-            // there could be iteratively complex sub-sections
-        }
-    }
-}
+Feature featureDiff = compareFeatures(previous, current);
 ```
 
-Please note that the `FeatureDiff.compareFeatures(Feature, Feature)` rejects (aka throws an `IllegalArgumentException`) `Feature` inputs that:
+The resulting `featureDiff` is a new `Feature` instance which prototypes from `previous` and where necessary removals sections are populated and new elements may be added.
+
+###Please note
+
+The `FeatureDiff.compareFeatures(Feature, Feature)` rejects (aka throws an `IllegalArgumentException`) `Feature` inputs that:
 
  * are `null` (bien sûr);
- * refer to completely unrelated, different `Feature`;
  * refer exactly to the same `Feature`.
 
-## JSON representation
+## Excluding sections
 
-The `feature-diff` APIs contain a JSON serializer implementation, `org.apache.sling.feature.diff.io.json.FeatureDiffJSONSerializer`, which use is extremely simple:
+The `DiffRequest` data object can be configured in order to include/exclude one ore more Feature section(s), available are:
 
-```java
-import org.apache.sling.feature.Feature
-import org.apache.sling.feature.diff.FeatureDiff;
-import org.apache.sling.feature.diff.io.json.FeatureDiffJSONSerializer;
+ * `bundles`
+ * `configurations`
+ * `extensions`
+ * `framework-properties`
 
-...
+Users can simply add via the include/exclude methods the section(s) they are interested:
 
-Feature previous = // somehow obtained
-Feature current = // somehow obtained
-FeatureDiff featureDiff = FeatureDiff.compareFeatures(previous, current);
-
-FeatureDiffJSONSerializer.serializeFeatureDiff(featureDiff, System.out);
 ```
+DiffRequest diffRequest = new DefaultDiffRequest()
+                          .setPrevious(previous)
+                          .setCurrent(current)
+                          .addIncludeComparator("bundles")
+                          .addIncludeComparator("configurations")
+                          .setResultId("org.apache.sling:org.apache.sling.diff:1.0.0");
 
-output is quiet easy to interpret, i.e. from a unit test case:
-
-```json
-{
-  "vendor":"The Apache Software Foundation",
-  "vendorURL":"http://www.apache.org/",
-  "generator":"Apache Sling Feature Diff tool",
-  "generatorURL":"https://github.com/apache/sling-org-apache-sling-feature-diff",
-  "generatedOn":"2019-04-04T11:08:51 +0200",
-  "id":"org.apache.sling:org.apache.sling.feature.diff:1.0.0",
-  "previousVersion":"0.9.0",
-  "framework-properties":{
-    "removed":[
-      "sling.framework.install.incremental"
-    ],
-    "added":[
-      "sling.framework.install.startlevel"
-    ],
-    "updated":{
-      "env":{
-        "previous":"staging",
-        "current":"prod"
-      }
-    }
-  },
-  "bundles":{
-    "removed":[
-      "org.apache.sling:org.apache.sling.feature.diff:removed:1.0.0"
-    ],
-    "added":[
-      "org.apache.sling:org.apache.sling.feature.diff:added:1.0.0"
-    ],
-    "updated":{
-      "org.apache.sling:org.apache.sling.feature.diff:updated:2.0.0":{
-        "updated":{
-          "version":{
-            "previous":"1.0.0",
-            "current":"2.0.0"
-          }
-        }
-      }
-    }
-  },
-  "configurations":{
-    "removed":[
-      "org.apache.sling.feature.diff.config.removed"
-    ],
-    "added":[
-      "org.apache.sling.feature.diff.config.added"
-    ],
-    "updated":{
-      "org.apache.sling.feature.diff.config.updated":{
-        "removed":[
-          "it.will.appear.in.the.removed.section"
-        ],
-        "added":[
-          "it.will.appear.in.the.added.section"
-        ],
-        "updated":{
-          "it.will.appear.in.the.updated.section":{
-            "previous":"[{/log}]",
-            "current":"[{/log,/etc}]"
-          }
-        }
-      }
-    }
-  }
-}
+Feature featureDiff = compareFeatures(previous, current);
 ```

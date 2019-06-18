@@ -24,10 +24,10 @@ import org.apache.sling.feature.diff.spi.FeatureElementComparator;
 import com.google.auto.service.AutoService;
 
 @AutoService(FeatureElementComparator.class)
-public final class ArtifactsComparator extends AbstractFeatureElementComparator {
+public final class BundlesComparator extends AbstractFeatureElementComparator {
 
-    public ArtifactsComparator() {
-        super("artifacts");
+    public BundlesComparator() {
+        super("bundles");
     }
 
     @Override
