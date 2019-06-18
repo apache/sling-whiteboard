@@ -126,6 +126,7 @@
           <instructions>
             <Export-Package>org.apache.sling.feature.diff*;version=${project.version}</Export-Package>
             <Import-Package>
+              org.apache.sling.feature*,
               org.apache.commons.collections4*,
               org.apache.commons.io*
             </Import-Package>
