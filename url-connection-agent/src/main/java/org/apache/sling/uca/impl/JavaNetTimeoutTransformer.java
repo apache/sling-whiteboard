@@ -16,9 +16,7 @@
  */
 package org.apache.sling.uca.impl;
 
-import java.lang.instrument.ClassFileTransformer;
 import java.net.URLConnection;
-import java.security.ProtectionDomain;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -38,9 +36,9 @@ import javassist.bytecode.Descriptor;
  * @see URLConnection#getReadTimeout()
  *
  */
-class JavaNetTimeoutTransformer implements ClassFileTransformer {
+class JavaNetTimeoutTransformer extends MBeanAwareTimeoutTransformer {
 
-    private static final Set<String> CLASSES_TO_TRANSFORM = new HashSet<>();
+    static final Set<String> CLASSES_TO_TRANSFORM = new HashSet<>();
 
     static {
         CLASSES_TO_TRANSFORM.add(Descriptor.toJvmName("sun.net.www.protocol.http.HttpURLConnection"));
@@ -49,35 +47,21 @@ class JavaNetTimeoutTransformer implements ClassFileTransformer {
 
     private final long readTimeoutMillis;
     private final long connectTimeoutMillis;
-    private final AgentInfo agentInfoMBean;
-
-    public JavaNetTimeoutTransformer(long connectTimeout, long readTimeout, AgentInfo agentInfoMBean) {
+    public JavaNetTimeoutTransformer(long connectTimeout, long readTimeout, AgentInfo agentInfo) {
+        
+        super(agentInfo, CLASSES_TO_TRANSFORM);
+        
         this.connectTimeoutMillis = connectTimeout;
         this.readTimeoutMillis = readTimeout;
-        this.agentInfoMBean = agentInfoMBean;
-        this.agentInfoMBean.registerTransformer(getClass());
     }
 
-    @Override
-    public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
-            ProtectionDomain protectionDomain, byte[] classfileBuffer) {
-        try {
-            if (CLASSES_TO_TRANSFORM.contains(className)) {
-                Log.get().log("%s asked to transform %s", getClass().getSimpleName(), className);
-                CtMethod connectMethod = findConnectMethod(className);
-                connectMethod.insertBefore("if ( getConnectTimeout() == 0 ) { setConnectTimeout(" + connectTimeoutMillis + "); }");
-                connectMethod.insertBefore("if ( getReadTimeout() == 0 ) { setReadTimeout(" + readTimeoutMillis + "); }");
-                classfileBuffer = connectMethod.getDeclaringClass().toBytecode();
-                connectMethod.getDeclaringClass().detach();
-                Log.get().log("Transformation complete.");
-                
-                this.agentInfoMBean.registerTransformedClass(className);
-            }
-            return classfileBuffer;
-        } catch (Exception e) {
-            Log.get().fatal("Transformation failed", e);
-            return null;
-        }
+    protected byte[] doTransformClass(String className) throws Exception {
+        CtMethod connectMethod = findConnectMethod(className);
+        connectMethod.insertBefore("if ( getConnectTimeout() == 0 ) { setConnectTimeout(" + connectTimeoutMillis + "); }");
+        connectMethod.insertBefore("if ( getReadTimeout() == 0 ) { setReadTimeout(" + readTimeoutMillis + "); }");
+        byte[] classfileBuffer = connectMethod.getDeclaringClass().toBytecode();
+        connectMethod.getDeclaringClass().detach();
+        return classfileBuffer;
     }
     
     CtMethod findConnectMethod(String className) throws NotFoundException {
