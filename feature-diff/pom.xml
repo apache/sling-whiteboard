@@ -29,6 +29,7 @@
 
   <artifactId>org.apache.sling.feature.diff</artifactId>
   <version>0.0.1-SNAPSHOT</version>
+  <packaging>bundle</packaging>
 
   <name>Apache Sling Feature Model diff tool</name>
   <description>Feature Model diff tool for Apache Sling</description>
@@ -89,5 +90,15 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <extensions>true</extensions>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>

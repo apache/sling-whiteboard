@@ -29,6 +29,7 @@
 
   <artifactId>org.apache.sling.feature.r2f</artifactId>
   <version>0.0.1-SNAPSHOT</version>
+  <packaging>bundle</packaging>
 
   <name>Apache Sling Feature Model runtime creator</name>
   <description>Feature Model runtime creator tool for Apache Sling</description>
