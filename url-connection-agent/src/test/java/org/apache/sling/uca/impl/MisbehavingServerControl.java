@@ -16,6 +16,8 @@
  */
 package org.apache.sling.uca.impl;
 
+import java.time.Duration;
+
 /**
  * Allows control of a local server
  *
@@ -28,4 +30,16 @@ public interface MisbehavingServerControl {
      * @return the port
      */
     int getLocalPort();
+
+    /**
+     * Sets a new value for the handleDelay parameter
+     * 
+     * <p>This value reflects how long the HTTP handler will wait before handling the client request.</p>
+     * 
+     * <p>The value only takes effect for the current test method invocation and will be reset
+     * for the next one.</p>
+     * 
+     * @param handleDelay the new duration
+     */
+    void setHandleDelay(Duration handleDelay);
 }
