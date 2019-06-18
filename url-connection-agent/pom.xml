@@ -76,7 +76,7 @@
                 </configuration>
             </plugin>
             <plugin>
-                <!-- Run certain ITs in the integration-test phase, once the agent jar is packaged -->
+                <!-- Run ITs in the integration-test phase, once the agent jar is packaged -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <executions>
