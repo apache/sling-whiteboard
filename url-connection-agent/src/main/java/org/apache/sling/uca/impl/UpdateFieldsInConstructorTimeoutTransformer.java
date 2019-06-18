@@ -18,7 +18,6 @@ package org.apache.sling.uca.impl;
 
 import java.util.Collections;
 
-import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtConstructor;
 import javassist.CtField;
@@ -46,9 +45,7 @@ public abstract class UpdateFieldsInConstructorTimeoutTransformer extends MBeanA
     }
     
     @Override
-    protected byte[] doTransformClass(String className) throws Exception {
-        ClassPool defaultPool = ClassPool.getDefault();
-        CtClass cc = defaultPool.get(Descriptor.toJavaName(className));
+    protected byte[] doTransformClass(CtClass cc) throws Exception {
         
         CtConstructor noArgCtor = cc.getConstructor(Descriptor.ofConstructor(new CtClass[0]));
         CtField connectTimeout = cc.getDeclaredField(connectTimeoutFieldName);

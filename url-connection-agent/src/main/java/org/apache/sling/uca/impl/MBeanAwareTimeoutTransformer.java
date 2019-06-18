@@ -20,6 +20,10 @@ import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
 import java.util.Set;
 
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.bytecode.Descriptor;
+
 /**
  * Support class for transformers that expose runtime information through JMX
  * 
@@ -42,10 +46,15 @@ public abstract class MBeanAwareTimeoutTransformer implements ClassFileTransform
         try {
             if (classesToTransform.contains(className)) {
                 Log.get().log("%s asked to transform %s", getClass().getSimpleName(), className);
-                classfileBuffer = doTransformClass(className);
-                Log.get().log("Transformation complete.");
-                
-                this.agentInfo.registerTransformedClass(className);
+                ClassPool defaultPool = ClassPool.getDefault();
+                CtClass cc = defaultPool.get(Descriptor.toJavaName(className));
+                if ( cc == null ) {
+                    Log.get().log("Could not find a class for %s in the default class pool, skipping transformation", className);
+                } else {
+                    classfileBuffer = doTransformClass(cc);
+                    Log.get().log("Transformation of %s complete", className);
+                    this.agentInfo.registerTransformedClass(className);
+                }
             }
             return classfileBuffer;
         } catch (Exception e) {
@@ -54,6 +63,13 @@ public abstract class MBeanAwareTimeoutTransformer implements ClassFileTransform
         }
     }
 
-    protected abstract byte[] doTransformClass(String className) throws Exception;
+    /**
+     * Transform a class that is guaranteed to exist and in scope of this agent instance
+     * 
+     * @param cc the class
+     * @return the new class definition
+     * @throws Exception in case of any problems while transforming
+     */
+    protected abstract byte[] doTransformClass(CtClass cc) throws Exception;
 
 }
