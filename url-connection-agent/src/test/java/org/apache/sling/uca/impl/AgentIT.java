@@ -62,7 +62,7 @@ import org.slf4j.LoggerFactory;
 @ExtendWith(MisbehavingServerExtension.class)
 public class AgentIT {
     
-    static final int EXECUTION_TIMEOUT_SECONDS = 5;
+    static final int EXECUTION_TIMEOUT_SECONDS = 7;
     static final int CONNECT_TIMEOUT_SECONDS = 3;
     static final int READ_TIMEOUT_SECONDS = 3;
     
