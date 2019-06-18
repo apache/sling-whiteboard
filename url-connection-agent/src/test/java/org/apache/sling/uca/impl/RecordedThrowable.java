@@ -16,30 +16,25 @@
  */
 package org.apache.sling.uca.impl;
 
-import java.time.Duration;
-
 /**
- * Allows control of a local server
- *
+ * Basic information about a {@link Throwable} that was recorded in a file
  */
-public interface MisbehavingServerControl {
+class RecordedThrowable {
+    
+    static RecordedThrowable fromLine(String line) {
+        line = line.replace(AgentIT.EXCEPTION_MARKER, "");
 
-    /**
-     * Returns the port on which the local server is bound
-     * 
-     * @return the port
-     */
-    int getLocalPort();
+        String className = line.substring(0, line.indexOf(':'));
+        String message = line.substring(line.indexOf(':') + 2); // ignore ':' and leading ' '
 
-    /**
-     * Sets a new value for the handleDelay parameter
-     * 
-     * <p>This value reflects how long the HTTP handler will wait before handling the client request.</p>
-     * 
-     * <p>The value only takes effect for the current test method invocation and will be reset
-     * for the next one.</p>
-     * 
-     * @param handleDelay the new duration
-     */
-    void setHandleDelay(Duration handleDelay);
+        return new RecordedThrowable(className, message);
+    }
+    
+    String className;
+    String message;
+
+    public RecordedThrowable(String className, String message) {
+        this.className = className;
+        this.message = message;
+    }
 }

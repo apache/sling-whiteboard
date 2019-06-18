@@ -16,30 +16,22 @@
  */
 package org.apache.sling.uca.impl;
 
-import java.time.Duration;
+import java.io.IOException;
+
+import org.apache.sling.uca.impl.HttpClientLauncher.ClientType;
 
 /**
- * Allows control of a local server
- *
+ * Data class for defining specific error messages related to individual {@link ClientType client types}. 
  */
-public interface MisbehavingServerControl {
+class ErrorDescriptor {
+    Class<? extends IOException> connectTimeoutClass;
+    String connectTimeoutMessageRegex;
+    String readTimeoutMessage;
 
-    /**
-     * Returns the port on which the local server is bound
-     * 
-     * @return the port
-     */
-    int getLocalPort();
-
-    /**
-     * Sets a new value for the handleDelay parameter
-     * 
-     * <p>This value reflects how long the HTTP handler will wait before handling the client request.</p>
-     * 
-     * <p>The value only takes effect for the current test method invocation and will be reset
-     * for the next one.</p>
-     * 
-     * @param handleDelay the new duration
-     */
-    void setHandleDelay(Duration handleDelay);
+    public ErrorDescriptor(Class<? extends IOException> connectTimeoutClass, String connectTimeoutMessageRegex,
+            String readTimeoutMessage) {
+        this.connectTimeoutClass = connectTimeoutClass;
+        this.connectTimeoutMessageRegex = connectTimeoutMessageRegex;
+        this.readTimeoutMessage = readTimeoutMessage;
+    }
 }

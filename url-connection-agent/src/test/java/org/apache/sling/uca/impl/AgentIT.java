@@ -26,28 +26,26 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTimeout;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.File;
 import java.io.IOException;
-import java.lang.ProcessBuilder.Redirect;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.EnumMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.httpclient.ConnectTimeoutException;
 import org.apache.sling.uca.impl.HttpClientLauncher.ClientType;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,12 +58,15 @@ import org.slf4j.LoggerFactory;
  * 
  * <p>It does so by reusing the same JVM as the one running the test. Validation is done by looking for a
  * Throwable information in the stderr and recording the exception class name and the message.</p>
- *
  */
 @ExtendWith(MisbehavingServerExtension.class)
 public class AgentIT {
     
-    private static final String EXCEPTION_MARKER = "Exception in thread \"main\" ";
+    static final int EXECUTION_TIMEOUT_SECONDS = 7;
+    static final int CONNECT_TIMEOUT_SECONDS = 3;
+    static final int READ_TIMEOUT_SECONDS = 3;
+    
+    static final String EXCEPTION_MARKER = "Exception in thread \"main\" ";
     private static final Path STDERR = Paths.get("target", "stderr.txt");
     private static final Path STDOUT = Paths.get("target", "stdout.txt");
     private static final Logger LOG = LoggerFactory.getLogger(AgentIT.class);
@@ -78,6 +79,37 @@ public class AgentIT {
                 "Connect to repo1.maven.org:81 \\[.*\\] failed: connect timed out", "Read timed out"));
         errorDescriptors.put(OkHttp, new ErrorDescriptor(SocketTimeoutException.class, "connect timed out", "timeout"));
     }
+
+    /**
+     * Creates a matrix of all arguments to use for the read and connect timeout tests
+     * 
+     * <p>This matrix uses all client types and pairs them with each of the timeouts, for now:
+     * 
+     * <ol>
+     *   <li>default timeouts, which mean the agent-set default timeout will kick in</li>
+     *   <li>lower client API timeouts, which mean that the client-enforced timeouts will be applied</li>
+     * </ol>
+     * 
+     * </p>
+     * 
+     * @return a list of arguments to use for the tests
+     */
+    static List<Arguments> argumentsMatrix() {
+        
+        List<Arguments> args = new ArrayList<Arguments>();
+        
+        TestTimeouts clientLower = new TestTimeouts.Builder()
+            .agentTimeouts(Duration.ofMinutes(1), Duration.ofMinutes(1))
+            .clientTimeouts(Duration.ofSeconds(CONNECT_TIMEOUT_SECONDS), Duration.ofSeconds(READ_TIMEOUT_SECONDS))
+            .build();
+    
+        for ( ClientType client : ClientType.values() )
+            for ( TestTimeouts timeout : new TestTimeouts[] { TestTimeouts.DEFAULT, clientLower } )
+                args.add(Arguments.of(client, timeout));
+        
+        return args;
+    }
+
     
     /**
      * Validates that connecting to a unaccessible port on an existing port fails with a connect 
@@ -91,11 +123,12 @@ public class AgentIT {
      * @throws IOException various I/O problems 
      */
     @ParameterizedTest
-    @EnumSource(HttpClientLauncher.ClientType.class)
-    public void connectTimeout(ClientType clientType) throws IOException {
+    @MethodSource("argumentsMatrix")
+    public void connectTimeout(ClientType clientType, TestTimeouts timeouts) throws IOException {
 
         ErrorDescriptor ed =  requireNonNull(errorDescriptors.get(clientType), "Unhandled clientType " + clientType);
-        RecordedThrowable error = assertTimeout(ofSeconds(5),  () -> runTest("http://repo1.maven.org:81", clientType));
+        RecordedThrowable error = assertTimeout(ofSeconds(EXECUTION_TIMEOUT_SECONDS),  
+            () -> runTest("http://repo1.maven.org:81", clientType, timeouts, false));
         
         assertEquals(ed.connectTimeoutClass.getName(), error.className);
         assertTrue(error.message.matches(ed.connectTimeoutMessageRegex), 
@@ -106,22 +139,35 @@ public class AgentIT {
      * Validates that connecting to a host that delays the response fails with a read timeout
      * 
      * @throws IOException various I/O problems
+     * @throws InterruptedException 
      */
     @ParameterizedTest
-    @EnumSource(HttpClientLauncher.ClientType.class)
-    public void readTimeout(ClientType clientType, MisbehavingServerControl server) throws IOException {
+    @MethodSource("argumentsMatrix")
+    public void readTimeout(ClientType clientType, TestTimeouts timeouts, MisbehavingServerControl server) throws IOException, InterruptedException {
         
         ErrorDescriptor ed =  requireNonNull(errorDescriptors.get(clientType), "Unhandled clientType " + clientType);
-        RecordedThrowable error = assertTimeout(ofSeconds(5),  () -> runTest("http://localhost:" + server.getLocalPort(), clientType));
-        
+        RecordedThrowable error = assertTimeout(ofSeconds(EXECUTION_TIMEOUT_SECONDS),
+           () -> runTest("http://localhost:" + server.getLocalPort(), clientType, timeouts, false));
+
         assertEquals(SocketTimeoutException.class.getName(), error.className);
         assertEquals(ed.readTimeoutMessage, error.message);
     }
+    
+    @ParameterizedTest
+    @EnumSource(HttpClientLauncher.ClientType.class)
+    public void connectAndReadSuccess(ClientType clientType, MisbehavingServerControl server) throws IOException, InterruptedException {
+        
+        // set a small accept delay for the server so the requests have time to complete
+        server.setHandleDelay(Duration.ofMillis(100));
+        
+        assertTimeout(ofSeconds(EXECUTION_TIMEOUT_SECONDS),
+                () ->runTest("http://localhost:" + server.getLocalPort(), clientType, TestTimeouts.DEFAULT, true));
+    }
 
-    private RecordedThrowable runTest(String urlSpec, ClientType clientType) throws IOException, InterruptedException {
+    private RecordedThrowable runTest(String urlSpec, ClientType clientType, TestTimeouts timeouts, boolean expectSuccess) throws IOException, InterruptedException {
 
-        Process process = runForkedCommandWithAgent(new URL(urlSpec), 3, 3, clientType);
-        boolean done = process.waitFor(30, TimeUnit.SECONDS);
+        Process process = new AgentLauncher(new URL(urlSpec), timeouts, clientType, STDOUT, STDERR).launch();
+        boolean done = process.waitFor(timeouts.executionTimeout.toMillis(), TimeUnit.MILLISECONDS);
         
         LOG.info("Dump of stdout: ");
         Files
@@ -135,111 +181,26 @@ public class AgentIT {
 
         if ( !done ) {
             process.destroy();
-            throw new IllegalStateException("Terminated process since it did not exit in a reasonable amount of time.");
+            throw new IllegalStateException("Terminated process since it did not complete within " + timeouts.executionTimeout.toMillis() + " milliseconds");
         }
         int exitCode = process.exitValue();
         LOG.info("Exited with code {}", exitCode);
+        
+        if ( expectSuccess ) {
+            if ( exitCode != 0 )
+                throw new RuntimeException("Expected success, but command exited with code " + exitCode);
+            
+            return null;
+        }
         
         if ( exitCode == 0 ) {
             throw new RuntimeException("Command terminated successfully. That is unexpected.");
         } else {
             return Files.lines(STDERR)
                 .filter( l -> l.startsWith(EXCEPTION_MARKER))
-                .map( l -> newRecordedThrowable(l) )
+                .map( RecordedThrowable::fromLine )
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("Exit code was zero but did not find any exception information in stderr.txt"));
-        }
-    }
-    
-    private Process runForkedCommandWithAgent(URL url, int connectTimeoutSeconds, int readTimeoutSeconds, ClientType clientType) throws IOException {
-        
-        Path jar = Files.list(Paths.get("target"))
-            .filter( p -> p.getFileName().toString().endsWith("-jar-with-dependencies.jar"))
-            .findFirst()
-            .orElseThrow( () -> new IllegalStateException("Did not find the agent jar. Did you run mvn package first?"));
-        
-        String classPath = buildClassPath();
-
-        String javaHome = System.getProperty("java.home");
-        Path javaExe = Paths.get(javaHome, "bin", "java");
-        ProcessBuilder pb = new ProcessBuilder(
-            javaExe.toString(),
-            "-showversion",
-            "-javaagent:" + jar +"=" + TimeUnit.SECONDS.toMillis(connectTimeoutSeconds) +"," + TimeUnit.SECONDS.toMillis(readTimeoutSeconds)+",v",
-            "-cp",
-            classPath,
-            HttpClientLauncher.class.getName(),
-            url.toString(),
-            clientType.toString()
-        );
-        
-        pb.redirectInput(Redirect.INHERIT);
-        pb.redirectOutput(STDOUT.toFile());
-        pb.redirectError(STDERR.toFile());
-        
-        return pb.start();
-    }
-    
-    private String buildClassPath() throws IOException {
-        
-        List<String> elements = new ArrayList<>();
-        elements.add(Paths.get("target", "test-classes").toString());
-        
-        Set<String> dependencies = new HashSet<>(Arrays.asList(new String[] {
-            "commons-httpclient.jar",
-            "commons-codec.jar",
-            "slf4j-simple.jar",
-            "slf4j-api.jar",
-            "jcl-over-slf4j.jar",
-            "httpclient.jar",
-            "httpcore.jar",
-            "okhttp.jar",
-            "okio.jar"
-        }));
-        
-        Files.list(Paths.get("target", "it-dependencies"))
-            .filter( p -> dependencies.contains(p.getFileName().toString()) )
-            .forEach( p -> elements.add(p.toString()));
-        
-        return String.join(File.pathSeparator, elements);
-    }
-
-    private RecordedThrowable newRecordedThrowable(String line) {
-        
-        line = line.replace(EXCEPTION_MARKER, "");
-
-        String className = line.substring(0, line.indexOf(':'));
-        String message = line.substring(line.indexOf(':') + 2); // ignore ':' and leading ' '
-
-        return new RecordedThrowable(className, message);
-    }
-
-    /**
-     * Data class for defining specific error messages related to individual {@link ClientType client types}. 
-     */
-    static class ErrorDescriptor {
-        private Class<? extends IOException> connectTimeoutClass;
-        private String connectTimeoutMessageRegex;
-        private String readTimeoutMessage;
-
-        public ErrorDescriptor(Class<? extends IOException> connectTimeoutClass, String connectTimeoutMessageRegex,
-                String readTimeoutMessage) {
-            this.connectTimeoutClass = connectTimeoutClass;
-            this.connectTimeoutMessageRegex = connectTimeoutMessageRegex;
-            this.readTimeoutMessage = readTimeoutMessage;
-        }
-    }
-    
-    /**
-     * Basic information about a {@link Throwable} that was recorded in a file
-     */
-    static class RecordedThrowable {
-        String className;
-        String message;
-
-        public RecordedThrowable(String className, String message) {
-            this.className = className;
-            this.message = message;
+                .orElseThrow(() -> new RuntimeException("Exit code was not zero ( " + exitCode + " ) but did not find any exception information in stderr.txt"));
         }
     }
 }

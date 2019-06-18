@@ -15,16 +15,20 @@ It currently supports setting timeouts for HTTP connections done using:
 
 ## Validation
 
-Build the project with `mvn clean package` and then run a simple connection test with 
+In addition to running the integration tests, you can also build the project with `mvn clean package` and then run a simple connection test with 
 
-    java -javaagent:target/org.apache.sling.connection-timeout-agent-0.0.1-SNAPSHOT-jar-with-dependencies.jar=<connect-timeout>,<read-timeout> -cp target/test-classes:target/it-dependencies/* org.apache.sling.uca.impl.HttpClientLauncher <url> <client-type>
+    java -javaagent:target/org.apache.sling.connection-timeout-agent-0.0.1-SNAPSHOT-jar-with-dependencies.jar=<agent-connect-timeout>,<agent-read-timeout> -cp target/test-classes:target/it-dependencies/* org.apache.sling.uca.impl.HttpClientLauncher <url> <client-type> [<client-connect-timeout> <client-read-timeout>]
     
  The parameters are as follows:
  
- - `<connect-timeout>` - connection timeout in milliseconds
- - `<read-timeout>`- read timeout in milliseconds
+ - `<agent-connect-timeout>` - connection timeout in milliseconds to apply via the agent
+ - `<agent-read-timeout>`- read timeout in milliseconds to apply via the agent
  - `<url>` - the URL to access
  - `<client-type>` - the client type, either `JavaNet` for java.net.URL-based connections ,`HC3` for Apache Commons HttpClient 3.x, `HC4` for Apache Commons HttpClient 4.x or `OkHttp` for OK HTTP.
+ - `<client-connect-timeout>` (optional) - the connection timeout in milliseconds to apply via client APIs
+ - `<client-read-timeout>` (optional) - the read timeout in milliseconds to apply via client APIs
+ 
+The read and connect timeouts may be specified for both the agent and client APIs. The reason is that the agent should not change the timeout defaults if they are already set. Therefore, setting the agent timeouts to a very high value and the client API timeouts to a very low value ( e.g. 1 millisecond ) should still result in a timeout. 
  
  
  For a test that always fails, set one of the timeouts to 1. Both executions listed below will typically fail:

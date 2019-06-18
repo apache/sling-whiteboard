@@ -22,7 +22,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Date;
+import java.time.Duration;
 import java.util.EnumSet;
 import java.util.stream.Collectors;
 
@@ -32,7 +32,10 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.params.HttpClientParams;
+import org.apache.commons.httpclient.params.HttpConnectionParams;
 import org.apache.commons.httpclient.params.HttpMethodParams;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.config.RequestConfig.Builder;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -79,92 +82,126 @@ public class HttpClientLauncher {
     }
     
     /**
-     * A <tt>Consumer</tt> that allows throwing checked exceptions.</p>
+     * Thin wrapper for various http client abstractions
      *
      */
     @FunctionalInterface
     interface HttpConsumer {
-        void accept(String http) throws Exception;
+        void accept(String http, int connectTimeoutSeconds, int readTimeoutSeconds) throws Exception;
     }
 
     public static void main(String[] args) throws Exception {
         
-        if ( args.length != 2 )
+        if ( args.length < 2 )
             throw new IllegalArgumentException(usage());
         
         ClientType type = ClientType.fromString(args[1]);
         if ( type == null )
             throw new IllegalArgumentException(usage());
         
-        System.out.println("[WEB] Executing request via " + type);
+        log("Executing request via " + type);
         
-        type.consumer.accept(args[0]);
+        int connectTimeout = args.length > 2 ? Integer.parseInt(args[2]) : 0;
+        int readTimeout = args.length > 3 ? Integer.parseInt(args[3]) : 0;
+        
+        log("Client API configured timeouts: " + connectTimeout + "/" + readTimeout);
+        
+        type.consumer.accept(args[0], connectTimeout, readTimeout);
     }
 
     private static String usage() {
         return "Usage: java -cp ... " + HttpClientLauncher.class.getName() + " <URL> " + ClientType.pipeSeparatedString();
     }
+    
+    private static void log(String msg, Object... args) {
+        System.out.format("[LAUNCHER] " + msg + "%n", args);
+    }
 
-    private static void runUsingJavaNet(String targetUrl) throws IOException  {
+    private static void runUsingJavaNet(String targetUrl, int connectTimeoutMillis, int readTimeoutMillis) throws IOException  {
         HttpURLConnection con = (HttpURLConnection) new URL(targetUrl).openConnection();
-        System.out.println("Connection type is " + con);
+        log("Connection type is %s", con);
+        
+        con.setConnectTimeout(connectTimeoutMillis);
+        con.setReadTimeout(readTimeoutMillis);
         
         try (InputStream in = con.getInputStream();
                 InputStreamReader isr = new InputStreamReader(in);
                 BufferedReader br = new BufferedReader(isr)) {
             
-            System.out.println("[WEB] "  + con.getResponseCode() + " " + con.getResponseMessage());
+            log(con.getResponseCode() + " " + con.getResponseMessage());
 
             con.getHeaderFields().forEach( (k, v) -> {
-                System.out.println("[WEB] " + k + " : " + v);
+                log(k + " : " + v);
             });
         }
     }
 
 
-    private static void runUsingHttpClient3(String targetUrl) throws IOException {
+    private static void runUsingHttpClient3(String targetUrl, int connectTimeoutMillis, int readTimeoutMillis) throws IOException {
         HttpClient client = new HttpClient();
         // disable retries, to make sure that we get equivalent behaviour with other implementations
         client.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler(0, false));
+        
+        if ( connectTimeoutMillis != 0 )
+            client.getParams().setParameter(HttpConnectionParams.CONNECTION_TIMEOUT, Integer.valueOf(connectTimeoutMillis));
+        if ( readTimeoutMillis != 0 )
+            client.getParams().setParameter(HttpMethodParams.SO_TIMEOUT, Integer.valueOf(readTimeoutMillis));
+        
         HttpMethod get = new GetMethod(targetUrl);
-        System.out.format("Connection timeouts: connect: %d, so: %s%n", 
+        log("Connection timeouts: connect: %d, so: %s", 
                 client.getHttpConnectionManager().getParams().getConnectionTimeout(),
                 client.getHttpConnectionManager().getParams().getSoTimeout());
-        System.out.format("Client so timeout: %d (raw: %s) %n", client.getParams().getSoTimeout(), 
+        log("Client so timeout: %d (raw: %s)", client.getParams().getSoTimeout(), 
                 client.getParams().getParameter(HttpClientParams.SO_TIMEOUT));
         client.executeMethod(get);
         
-        System.out.println(new Date() + " [WEB] " + get.getStatusLine());
+        log(get.getStatusLine().toString());
         
         for ( Header header : get.getResponseHeaders() )
-            System.out.print(new Date() + " [WEB] " + header.toExternalForm());
+            log(header.toExternalForm());
     }
     
-    private static void runUsingHttpClient4(String targetUrl) throws IOException {
+    private static void runUsingHttpClient4(String targetUrl, int connectTimeoutMillis, int readTimeoutMillis) throws IOException {
         // disable retries, to make sure that we get equivalent behaviour with other implementations
-        try ( CloseableHttpClient client = HttpClients.custom().disableAutomaticRetries().build() ) {
+        
+        Builder config = RequestConfig.custom();
+        if ( connectTimeoutMillis != 0 )
+            config.setConnectTimeout(connectTimeoutMillis);
+        if ( readTimeoutMillis != 0 )
+            config.setSocketTimeout(readTimeoutMillis);
+        
+        try ( CloseableHttpClient client = HttpClients.custom()
+                .setDefaultRequestConfig(config.build())
+                .disableAutomaticRetries().build() ) {
+            
             HttpGet get = new HttpGet(targetUrl);
             try ( CloseableHttpResponse response = client.execute(get)) {
-                System.out.println("[WEB] " + response.getStatusLine());
+                log(response.getStatusLine().toString());
                 for ( org.apache.http.Header header : response.getAllHeaders() )
-                    System.out.println("[WEB] " + header);
+                    log(header.toString());
                 
                 EntityUtils.consume(response.getEntity());
             }
         }
     }
 
-    private static void runUsingOkHttp(String targetUrl) throws IOException {
-        OkHttpClient client = new OkHttpClient();
+    private static void runUsingOkHttp(String targetUrl, int connectTimeoutSeconds, int readTimeoutSeconds) throws IOException {
+        OkHttpClient.Builder clientBuilder = new OkHttpClient().newBuilder();
+        if ( connectTimeoutSeconds != 0 )
+            clientBuilder.connectTimeout(Duration.ofMillis(connectTimeoutSeconds));
+        if ( readTimeoutSeconds != 0 )
+            clientBuilder.readTimeout(Duration.ofMillis(readTimeoutSeconds));
+        
+        OkHttpClient client = clientBuilder.build();
         
         Request request = new Request.Builder()
             .url(targetUrl)
             .build();
 
         try (Response response = client.newCall(request).execute()) {
-            System.out.println("[WEB] " + response.code() + " " + response.message());
+            log("%s %s", response.code(), response.message());
             response.headers().toMultimap().forEach( (n, v) -> {
-                System.out.println("[WEB] " + n + ": " + v);
+                log("%s : %s", n, v);
             });
         }
     }
