@@ -16,12 +16,13 @@
  */
 package org.apache.sling.feature.r2f.impl;
 
-import java.io.IOException;
+import static org.osgi.framework.wiring.BundleWiring.LISTRESOURCES_RECURSE;
+
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Enumeration;
+import java.util.Collection;
 import java.util.Properties;
 import java.util.function.Function;
 
@@ -30,12 +31,13 @@ import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.startlevel.BundleStartLevel;
+import org.osgi.framework.wiring.BundleWiring;
 
 final class Bundle2ArtifactMapper extends AbstractFeatureElementConsumer<Artifact> implements Function<Bundle, Artifact> {
 
-    private static final String POM_PROPERTIES_RESOURCE_NAME = "pom.properties";
+    private static final String MAVEN_METADATA_PATH = "/META-INF/maven";
 
-    private static final String MAVEN_METADATA_PATH = "META-INF/maven";
+    private static final String POM_PROPERTIES_RESOURCE_NAME = "pom.properties";
 
     private static final String GROUP_ID = "groupId";
 
@@ -53,28 +55,34 @@ final class Bundle2ArtifactMapper extends AbstractFeatureElementConsumer<Artifac
     public Artifact apply(Bundle bundle) {
         Properties pomProperties = new Properties();
 
-        Enumeration<URL> pomPropertiesURLs = bundle.findEntries(MAVEN_METADATA_PATH, POM_PROPERTIES_RESOURCE_NAME, true);
-        if (pomPropertiesURLs.hasMoreElements()) {
-            URL pomPropertiesURL = pomPropertiesURLs.nextElement();
+        BundleWiring bundleWiring = bundle.adapt(BundleWiring.class);
+        Collection<String> pomPropertiesResources = bundleWiring.listResources(MAVEN_METADATA_PATH, POM_PROPERTIES_RESOURCE_NAME, LISTRESOURCES_RECURSE);
 
-            try {
-                URLConnection connection = pomPropertiesURL.openConnection();
-                connection.connect();
+        if (pomPropertiesResources == null || pomPropertiesResources.isEmpty()) {
+            return null;
+        }
 
-                try (InputStream inStream = connection.getInputStream()) {
-                    pomProperties.load(inStream);
-                }
+        URL pomPropertiesURL = getPomPropertiesURL(pomPropertiesResources, bundle);
+        if (pomPropertiesURL == null) {
+            return null;
+        }
 
-                if (connection instanceof HttpURLConnection) {
-                    ((HttpURLConnection) connection).disconnect();
-                }
-            } catch (IOException e) {
-                throw new RuntimeException("An error occurred while reading "
-                                           + pomPropertiesURL
-                                           + " properties file from Bundle "
-                                           + bundle.getSymbolicName()
-                                           + " does not export valid Maven metadata", e);
+        try {
+            URLConnection connection = pomPropertiesURL.openConnection();
+            connection.connect();
+
+            try (InputStream inStream = connection.getInputStream()) {
+                pomProperties.load(inStream);
             }
+
+            if (connection instanceof HttpURLConnection) {
+                ((HttpURLConnection) connection).disconnect();
+            }
+        } catch (Throwable t) {
+            throw new RuntimeException("An error occurred while reading "
+                                       + pomPropertiesURL
+                                       + " properties file from Bundle "
+                                       + bundle.getSymbolicName(), t);
         }
 
         if (pomProperties.isEmpty()) {
@@ -97,9 +105,23 @@ final class Bundle2ArtifactMapper extends AbstractFeatureElementConsumer<Artifac
         return artifact;
     }
 
+    private static URL getPomPropertiesURL(Collection<String> pomPropertiesResources, Bundle bundle) {
+        for (String pomPropertiesResource : pomPropertiesResources) {
+            URL pomPropertiesURL = bundle.getEntry(pomPropertiesResource);
+
+            if (pomPropertiesURL != null) {
+                return pomPropertiesURL;
+            }
+        }
+
+        return null;
+    }
+
     @Override
     public void accept(Artifact artifact) {
-        getTargetFeature().getBundles().add(artifact);
+        if (artifact != null) {
+            getTargetFeature().getBundles().add(artifact);
+        }
     }
 
 }
