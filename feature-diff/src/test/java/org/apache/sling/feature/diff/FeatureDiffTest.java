@@ -38,11 +38,11 @@ public final class FeatureDiffTest {
     @Test
     public void loadIncludedComparators() {
         Set<String> comparators = filterComparators(new DefaultDiffRequest()
-                                                    .addIncludeComparator("artifacts")
+                                                    .addIncludeComparator("bundles")
                                                     .addIncludeComparator("configurations"));
 
         assertFalse(comparators.isEmpty());
-        assertFalse(comparators.contains("artifacts"));
+        assertFalse(comparators.contains("bundles"));
         assertFalse(comparators.contains("configurations"));
         assertTrue(comparators.contains("extensions"));
         assertTrue(comparators.contains("framework-properties"));
@@ -51,11 +51,11 @@ public final class FeatureDiffTest {
     @Test
     public void loadExcludedComparators() {
         Set<String> comparators = filterComparators(new DefaultDiffRequest()
-                                                    .addExcludeComparator("artifacts")
+                                                    .addExcludeComparator("bundles")
                                                     .addExcludeComparator("configurations"));
 
         assertFalse(comparators.isEmpty());
-        assertTrue(comparators.contains("artifacts"));
+        assertTrue(comparators.contains("bundles"));
         assertTrue(comparators.contains("configurations"));
         assertFalse(comparators.contains("extensions"));
         assertFalse(comparators.contains("framework-properties"));
@@ -63,7 +63,7 @@ public final class FeatureDiffTest {
 
     private Set<String> filterComparators(DiffRequest diffRequest) {
         Set<String> comparators = new HashSet<>();
-        comparators.add("artifacts");
+        comparators.add("bundles");
         comparators.add("configurations");
         comparators.add("extensions");
         comparators.add("framework-properties");
