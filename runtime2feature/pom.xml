@@ -74,15 +74,6 @@
       <artifactId>org.apache.sling.feature.diff</artifactId>
       <version>0.0.1-SNAPSHOT</version>
     </dependency>
-    <!--
-     | Apache Felix Inventory Printer
-    -->
-    <dependency>
-      <groupId>org.apache.felix</groupId>
-      <artifactId>org.apache.felix.inventory</artifactId>
-      <version>1.0.6</version>
-      <scope>provided</scope>
-    </dependency>
 
     <!--
      | Test only dependencies
