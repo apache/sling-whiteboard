@@ -45,7 +45,6 @@
                             <archiveBaseDirectory>${project.basedir}</archiveBaseDirectory>
                             <archive>
                                 <manifestEntries>
-                                    <Agent-Class>org.apache.sling.uca.impl.Agent</Agent-Class>
                                     <Premain-Class>org.apache.sling.uca.impl.Agent</Premain-Class>
                                     <Can-Redefine-Classes>true</Can-Redefine-Classes>
                                     <Can-Retransform-Classes>true</Can-Retransform-Classes>
