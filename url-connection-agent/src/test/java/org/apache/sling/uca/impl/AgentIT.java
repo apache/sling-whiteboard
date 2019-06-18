@@ -26,9 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTimeout;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.File;
 import java.io.IOException;
-import java.lang.ProcessBuilder.Redirect;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -36,13 +34,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.EnumMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.httpclient.ConnectTimeoutException;
@@ -67,11 +61,11 @@ import org.slf4j.LoggerFactory;
 @ExtendWith(MisbehavingServerExtension.class)
 public class AgentIT {
     
-    private static final int EXECUTION_TIMEOUT_SECONDS = 5;
-    private static final int CONNECT_TIMEOUT_SECONDS = 3;
-    private static final int READ_TIMEOUT_SECONDS = 3;
+    static final int EXECUTION_TIMEOUT_SECONDS = 5;
+    static final int CONNECT_TIMEOUT_SECONDS = 3;
+    static final int READ_TIMEOUT_SECONDS = 3;
     
-    private static final String EXCEPTION_MARKER = "Exception in thread \"main\" ";
+    static final String EXCEPTION_MARKER = "Exception in thread \"main\" ";
     private static final Path STDERR = Paths.get("target", "stderr.txt");
     private static final Path STDOUT = Paths.get("target", "stdout.txt");
     private static final Logger LOG = LoggerFactory.getLogger(AgentIT.class);
@@ -159,7 +153,7 @@ public class AgentIT {
 
     private RecordedThrowable runTest(String urlSpec, ClientType clientType, TestTimeouts timeouts) throws IOException, InterruptedException {
 
-        Process process = runForkedCommandWithAgent(new URL(urlSpec), timeouts, clientType);
+        Process process = new AgentLauncher(new URL(urlSpec), timeouts, clientType, STDOUT, STDERR).launch();
         boolean done = process.waitFor(timeouts.executionTimeout.toMillis(), TimeUnit.MILLISECONDS);
         
         LOG.info("Dump of stdout: ");
@@ -184,147 +178,9 @@ public class AgentIT {
         } else {
             return Files.lines(STDERR)
                 .filter( l -> l.startsWith(EXCEPTION_MARKER))
-                .map( l -> newRecordedThrowable(l) )
+                .map( RecordedThrowable::fromLine )
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Exit code was not zero ( " + exitCode + " ) but did not find any exception information in stderr.txt"));
-        }
-    }
-    
-    private Process runForkedCommandWithAgent(URL url, TestTimeouts timeouts, ClientType clientType) throws IOException {
-        
-        Path jar = Files.list(Paths.get("target"))
-            .filter( p -> p.getFileName().toString().endsWith("-jar-with-dependencies.jar"))
-            .findFirst()
-            .orElseThrow( () -> new IllegalStateException("Did not find the agent jar. Did you run mvn package first?"));
-        
-        String classPath = buildClassPath();
-
-        String javaHome = System.getProperty("java.home");
-        Path javaExe = Paths.get(javaHome, "bin", "java");
-        ProcessBuilder pb = new ProcessBuilder(
-            javaExe.toString(),
-            "-showversion",
-            "-javaagent:" + jar +"=" + timeouts.agentConnectTimeout.toMillis() +"," + timeouts.agentReadTimeout.toMillis()+",v",
-            "-cp",
-            classPath,
-            HttpClientLauncher.class.getName(),
-            url.toString(),
-            clientType.toString(),
-            String.valueOf(timeouts.clientConnectTimeout.toMillis()),
-            String.valueOf(timeouts.clientReadTimeout.toMillis())
-        );
-        
-        pb.redirectInput(Redirect.INHERIT);
-        pb.redirectOutput(STDOUT.toFile());
-        pb.redirectError(STDERR.toFile());
-        
-        return pb.start();
-    }
-    
-    private String buildClassPath() throws IOException {
-        
-        List<String> elements = new ArrayList<>();
-        elements.add(Paths.get("target", "test-classes").toString());
-        
-        Set<String> dependencies = new HashSet<>(Arrays.asList(new String[] {
-            "commons-httpclient.jar",
-            "commons-codec.jar",
-            "slf4j-simple.jar",
-            "slf4j-api.jar",
-            "jcl-over-slf4j.jar",
-            "httpclient.jar",
-            "httpcore.jar",
-            "okhttp.jar",
-            "okio.jar"
-        }));
-        
-        Files.list(Paths.get("target", "it-dependencies"))
-            .filter( p -> dependencies.contains(p.getFileName().toString()) )
-            .forEach( p -> elements.add(p.toString()));
-        
-        return String.join(File.pathSeparator, elements);
-    }
-
-    private RecordedThrowable newRecordedThrowable(String line) {
-        
-        line = line.replace(EXCEPTION_MARKER, "");
-
-        String className = line.substring(0, line.indexOf(':'));
-        String message = line.substring(line.indexOf(':') + 2); // ignore ':' and leading ' '
-
-        return new RecordedThrowable(className, message);
-    }
-    
-    /**
-     * Data class for defining specific error messages related to individual {@link ClientType client types}. 
-     */
-    static class ErrorDescriptor {
-        private Class<? extends IOException> connectTimeoutClass;
-        private String connectTimeoutMessageRegex;
-        private String readTimeoutMessage;
-
-        public ErrorDescriptor(Class<? extends IOException> connectTimeoutClass, String connectTimeoutMessageRegex,
-                String readTimeoutMessage) {
-            this.connectTimeoutClass = connectTimeoutClass;
-            this.connectTimeoutMessageRegex = connectTimeoutMessageRegex;
-            this.readTimeoutMessage = readTimeoutMessage;
-        }
-    }
-    
-    /**
-     * Basic information about a {@link Throwable} that was recorded in a file
-     */
-    static class RecordedThrowable {
-        String className;
-        String message;
-
-        public RecordedThrowable(String className, String message) {
-            this.className = className;
-            this.message = message;
-        }
-    }
-    
-    /**
-     * Data class for holding information about various timeouts set in the tests
-     */
-    static class TestTimeouts {
-        
-        private Duration executionTimeout = Duration.ofSeconds(EXECUTION_TIMEOUT_SECONDS);
-        private Duration agentConnectTimeout = Duration.ofSeconds(CONNECT_TIMEOUT_SECONDS);
-        private Duration agentReadTimeout = Duration.ofSeconds(READ_TIMEOUT_SECONDS);
-        private Duration clientConnectTimeout = Duration.ZERO;
-        private Duration clientReadTimeout = Duration.ZERO;
-        
-        public static TestTimeouts DEFAULT = new TestTimeouts();
-        
-        static class Builder {
-            private TestTimeouts timeouts = new TestTimeouts();
-            
-            public Builder executionTimeout(Duration duration) {
-                timeouts.executionTimeout = Objects.requireNonNull(duration);
-                return this;
-            }
-
-            public Builder agentTimeouts(Duration connectTimeout, Duration readTimeout) {
-                timeouts.agentConnectTimeout = Objects.requireNonNull(connectTimeout);
-                timeouts.agentReadTimeout = Objects.requireNonNull(readTimeout);
-                return this;
-            }
-            
-            public Builder clientTimeouts(Duration connectTimeout, Duration readTimeout) {
-                timeouts.clientConnectTimeout = Objects.requireNonNull(connectTimeout);
-                timeouts.clientReadTimeout = Objects.requireNonNull(readTimeout);
-                return this;
-            }
-            
-            public TestTimeouts build() {
-                return timeouts;
-            }
-        }
-        
-        @Override
-        public String toString() {
-            return getClass().getSimpleName() + ": execution " + executionTimeout + ", agent: " + agentConnectTimeout + "/" + agentReadTimeout + ", client : " + clientConnectTimeout + "/" + clientReadTimeout;
         }
     }
 }
