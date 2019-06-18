@@ -37,10 +37,13 @@ public class HttpClient3TimeoutTransformer implements ClassFileTransformer {
     
     private final long connectTimeoutMillis;
     private final long readTimeoutMillis;
+    private final AgentInfo agentInfoMbean;
     
-    public HttpClient3TimeoutTransformer(long connectTimeoutMillis, long readTimeoutMillis) {
+    public HttpClient3TimeoutTransformer(long connectTimeoutMillis, long readTimeoutMillis, AgentInfo agentInfoMBean) {
         this.connectTimeoutMillis = connectTimeoutMillis;
         this.readTimeoutMillis = readTimeoutMillis;
+        this.agentInfoMbean = agentInfoMBean;
+        this.agentInfoMbean.registerTransformer(getClass());
     }
 
     @Override
@@ -64,6 +67,8 @@ public class HttpClient3TimeoutTransformer implements ClassFileTransformer {
                 classfileBuffer = cc.toBytecode();
                 cc.detach();
                 Log.get().log("Transformation complete.");
+                
+                agentInfoMbean.registerTransformedClass(className);
             }
             return classfileBuffer;
         } catch (Exception e) {

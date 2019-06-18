@@ -36,15 +36,18 @@ public abstract class UpdateFieldsInConstructorTimeoutTransformer implements Cla
     private final String readTimeoutFieldName;
     private final long connectTimeoutMillis;
     private final long readTimeoutMillis;
+    private final AgentInfo agentInfoMBean;
 
     public UpdateFieldsInConstructorTimeoutTransformer(String className, String connectTimeoutFieldName,
-            String readTimeoutFieldName, long connectTimeoutMillis, long readTimeoutMillis) {
+            String readTimeoutFieldName, long connectTimeoutMillis, long readTimeoutMillis, AgentInfo agentInfoMBean) {
 
         this.className = className;
         this.connectTimeoutFieldName = connectTimeoutFieldName;
         this.readTimeoutFieldName = readTimeoutFieldName;
         this.connectTimeoutMillis = connectTimeoutMillis;
         this.readTimeoutMillis = readTimeoutMillis;
+        this.agentInfoMBean = agentInfoMBean;
+        this.agentInfoMBean.registerTransformer(getClass());
     }
 
     @Override
@@ -66,6 +69,7 @@ public abstract class UpdateFieldsInConstructorTimeoutTransformer implements Cla
                 classfileBuffer = cc.toBytecode();
                 cc.detach();
                 Log.get().log("Transformation complete.");
+                this.agentInfoMBean.registerTransformedClass(className);
             }
             return classfileBuffer;
         } catch (Exception e) {

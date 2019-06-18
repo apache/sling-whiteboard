@@ -30,8 +30,8 @@ public class HttpClient4TimeoutTransformer extends UpdateFieldsInConstructorTime
     
     private static final String REQUEST_CONFIG_BUILDER_CLASS_NAME = Descriptor.toJvmName("org.apache.http.client.config.RequestConfig$Builder");
     
-    public HttpClient4TimeoutTransformer(long connectTimeoutMillis, long readTimeoutMillis) {
+    public HttpClient4TimeoutTransformer(long connectTimeoutMillis, long readTimeoutMillis, AgentInfo agentInfoMBean) {
         super(REQUEST_CONFIG_BUILDER_CLASS_NAME, "connectTimeout", "socketTimeout",
-            connectTimeoutMillis, readTimeoutMillis);
+            connectTimeoutMillis, readTimeoutMillis, agentInfoMBean);
     }
 }

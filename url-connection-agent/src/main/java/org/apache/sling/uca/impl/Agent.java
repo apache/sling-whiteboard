@@ -18,7 +18,14 @@ package org.apache.sling.uca.impl;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
+import java.lang.management.ManagementFactory;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.MBeanRegistrationException;
+import javax.management.NotCompliantMBeanException;
 
 public class Agent {
 
@@ -39,15 +46,26 @@ public class Agent {
         
         Log.get().log("Preparing to install URL transformers. Configured timeouts - connectTimeout : %d, readTimeout: %d", connectTimeout, readTimeout);
 
+        AgentInfo agentInfoMBean = new AgentInfo(connectTimeout, readTimeout);
+        
         ClassFileTransformer[] transformers = new ClassFileTransformer[] {
-            new JavaNetTimeoutTransformer(connectTimeout, readTimeout),
-            new HttpClient3TimeoutTransformer(connectTimeout, readTimeout),
-            new HttpClient4TimeoutTransformer(connectTimeout, readTimeout),
-            new OkHttpTimeoutTransformer(connectTimeout, readTimeout)
+            new JavaNetTimeoutTransformer(connectTimeout, readTimeout, agentInfoMBean),
+            new HttpClient3TimeoutTransformer(connectTimeout, readTimeout, agentInfoMBean),
+            new HttpClient4TimeoutTransformer(connectTimeout, readTimeout, agentInfoMBean),
+            new OkHttpTimeoutTransformer(connectTimeout, readTimeout, agentInfoMBean)
         };
         
-        for ( ClassFileTransformer transformer : transformers )
+        List<String> transformerNames = new ArrayList<>();
+        for ( ClassFileTransformer transformer : transformers ) {
             inst.addTransformer(transformer, true);
+            transformerNames.add(transformer.getClass().getName());
+        }
+        
+        try {
+            ManagementFactory.getPlatformMBeanServer().registerMBean(agentInfoMBean, AgentInfo.NAME);
+        } catch (InstanceAlreadyExistsException | MBeanRegistrationException | NotCompliantMBeanException e) {
+            Log.get().log("Failed registering MBean: %s", e.getMessage());
+        }
 
         Log.get().log("All transformers installed");
     }    

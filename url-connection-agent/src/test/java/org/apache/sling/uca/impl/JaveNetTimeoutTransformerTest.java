@@ -31,7 +31,7 @@ public class JaveNetTimeoutTransformerTest {
 
     @BeforeEach
     public void initFields() {
-        transformer = new JavaNetTimeoutTransformer(1, 1);
+        transformer = new JavaNetTimeoutTransformer(1, 1, new AgentInfo(1, 1));
     }
 
     @Test
