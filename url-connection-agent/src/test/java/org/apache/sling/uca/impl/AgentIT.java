@@ -44,6 +44,7 @@ import org.apache.sling.uca.impl.HttpClientLauncher.ClientType;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -127,7 +128,7 @@ public class AgentIT {
 
         ErrorDescriptor ed =  requireNonNull(errorDescriptors.get(clientType), "Unhandled clientType " + clientType);
         RecordedThrowable error = assertTimeout(ofSeconds(EXECUTION_TIMEOUT_SECONDS),  
-            () -> runTest("http://repo1.maven.org:81", clientType, timeouts));
+            () -> runTest("http://repo1.maven.org:81", clientType, timeouts, false));
         
         assertEquals(ed.connectTimeoutClass.getName(), error.className);
         assertTrue(error.message.matches(ed.connectTimeoutMessageRegex), 
@@ -138,20 +139,32 @@ public class AgentIT {
      * Validates that connecting to a host that delays the response fails with a read timeout
      * 
      * @throws IOException various I/O problems
+     * @throws InterruptedException 
      */
     @ParameterizedTest
     @MethodSource("argumentsMatrix")
-    public void readTimeout(ClientType clientType, TestTimeouts timeouts, MisbehavingServerControl server) throws IOException {
+    public void readTimeout(ClientType clientType, TestTimeouts timeouts, MisbehavingServerControl server) throws IOException, InterruptedException {
         
         ErrorDescriptor ed =  requireNonNull(errorDescriptors.get(clientType), "Unhandled clientType " + clientType);
         RecordedThrowable error = assertTimeout(ofSeconds(EXECUTION_TIMEOUT_SECONDS),
-           () -> runTest("http://localhost:" + server.getLocalPort(), clientType, timeouts));
-        
+           () -> runTest("http://localhost:" + server.getLocalPort(), clientType, timeouts, false));
+
         assertEquals(SocketTimeoutException.class.getName(), error.className);
         assertEquals(ed.readTimeoutMessage, error.message);
     }
+    
+    @ParameterizedTest
+    @EnumSource(HttpClientLauncher.ClientType.class)
+    public void connectAndReadSuccess(ClientType clientType, MisbehavingServerControl server) throws IOException, InterruptedException {
+        
+        // set a small accept delay for the server so the requests have time to complete
+        server.setHandleDelay(Duration.ofMillis(100));
+        
+        assertTimeout(ofSeconds(EXECUTION_TIMEOUT_SECONDS),
+                () ->runTest("http://localhost:" + server.getLocalPort(), clientType, TestTimeouts.DEFAULT, true));
+    }
 
-    private RecordedThrowable runTest(String urlSpec, ClientType clientType, TestTimeouts timeouts) throws IOException, InterruptedException {
+    private RecordedThrowable runTest(String urlSpec, ClientType clientType, TestTimeouts timeouts, boolean expectSuccess) throws IOException, InterruptedException {
 
         Process process = new AgentLauncher(new URL(urlSpec), timeouts, clientType, STDOUT, STDERR).launch();
         boolean done = process.waitFor(timeouts.executionTimeout.toMillis(), TimeUnit.MILLISECONDS);
@@ -172,6 +185,13 @@ public class AgentIT {
         }
         int exitCode = process.exitValue();
         LOG.info("Exited with code {}", exitCode);
+        
+        if ( expectSuccess ) {
+            if ( exitCode != 0 )
+                throw new RuntimeException("Expected success, but command exited with code " + exitCode);
+            
+            return null;
+        }
         
         if ( exitCode == 0 ) {
             throw new RuntimeException("Command terminated successfully. That is unexpected.");

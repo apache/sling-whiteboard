@@ -17,13 +17,12 @@
 package org.apache.sling.uca.impl;
 
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -46,6 +45,8 @@ import org.slf4j.LoggerFactory;
  */
 class MisbehavingServerExtension implements BeforeEachCallback, AfterEachCallback, ParameterResolver, MisbehavingServerControl {
     
+    private static final Duration DEFAULT_HANDLE_DELAY = Duration.ofSeconds(10);
+    
     private final Logger logger = LoggerFactory.getLogger(getClass());
     
     public int getLocalPort() {
@@ -53,6 +54,8 @@ class MisbehavingServerExtension implements BeforeEachCallback, AfterEachCallbac
     }
     
     private Server server;
+    
+    private Duration handleDelay = DEFAULT_HANDLE_DELAY;
     
     @Override
     public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
@@ -72,31 +75,28 @@ class MisbehavingServerExtension implements BeforeEachCallback, AfterEachCallbac
     @Override
     public void beforeEach(ExtensionContext context) throws Exception {
         
-        server = new Server();
-        ServerConnector connector = new ServerConnector(server) {
-            @Override
-            public void accept(int acceptorID) throws IOException {
-                LOG.info("Waiting before accepting");
-                try {
-                    Thread.sleep(TimeUnit.SECONDS.toMillis(10));
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    return;
-                }
-                super.accept(acceptorID);
-                LOG.info("Accepted");
-            }
-        };
-        server.setConnectors(new Connector[] { connector });
+        // reset the delay before each execution to make test logic simpler 
+        handleDelay = DEFAULT_HANDLE_DELAY;
+        
+        server = new Server(0);
         server.setHandler(new AbstractHandler() {
             
             @Override
             public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
                     throws IOException, ServletException {
+                logger.info("Waiting for " + handleDelay + " before handling");
+                try {
+                    Thread.sleep(handleDelay.toMillis());
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+
                 response.setStatus(HttpServletResponse.SC_NO_CONTENT);
                 if ( baseRequest.getHeader("User-Agent") != null )
                     response.addHeader("Original-User-Agent", baseRequest.getHeader("User-Agent"));
                 baseRequest.setHandled(true);
+                logger.info("Handled");
             }
         });
         
@@ -112,5 +112,10 @@ class MisbehavingServerExtension implements BeforeEachCallback, AfterEachCallbac
         } catch (Exception e) {
             logger.info("Failed shutting down server", e);
         }
+    }
+    
+    @Override
+    public void setHandleDelay(Duration handleDelay) {
+        this.handleDelay = handleDelay;
     }
 }
