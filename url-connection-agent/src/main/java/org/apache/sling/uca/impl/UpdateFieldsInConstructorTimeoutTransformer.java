@@ -16,9 +16,7 @@
  */
 package org.apache.sling.uca.impl;
 
-import java.lang.instrument.ClassFileTransformer;
-import java.lang.instrument.IllegalClassFormatException;
-import java.security.ProtectionDomain;
+import java.util.Collections;
 
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -29,52 +27,39 @@ import javassist.bytecode.Descriptor;
 /**
  * Support class for transformers that update the timeout fields in the default constructor
  */
-public abstract class UpdateFieldsInConstructorTimeoutTransformer implements ClassFileTransformer {
+public abstract class UpdateFieldsInConstructorTimeoutTransformer extends MBeanAwareTimeoutTransformer {
 
-    private final String className;
     private final String connectTimeoutFieldName;
     private final String readTimeoutFieldName;
     private final long connectTimeoutMillis;
     private final long readTimeoutMillis;
-    private final AgentInfo agentInfoMBean;
 
     public UpdateFieldsInConstructorTimeoutTransformer(String className, String connectTimeoutFieldName,
-            String readTimeoutFieldName, long connectTimeoutMillis, long readTimeoutMillis, AgentInfo agentInfoMBean) {
+            String readTimeoutFieldName, long connectTimeoutMillis, long readTimeoutMillis, AgentInfo agentInfo) {
 
-        this.className = className;
+        super(agentInfo, Collections.singleton(className));
+        
         this.connectTimeoutFieldName = connectTimeoutFieldName;
         this.readTimeoutFieldName = readTimeoutFieldName;
         this.connectTimeoutMillis = connectTimeoutMillis;
         this.readTimeoutMillis = readTimeoutMillis;
-        this.agentInfoMBean = agentInfoMBean;
-        this.agentInfoMBean.registerTransformer(getClass());
+    }
+    
+    @Override
+    protected byte[] doTransformClass(String className) throws Exception {
+        ClassPool defaultPool = ClassPool.getDefault();
+        CtClass cc = defaultPool.get(Descriptor.toJavaName(className));
+        
+        CtConstructor noArgCtor = cc.getConstructor(Descriptor.ofConstructor(new CtClass[0]));
+        CtField connectTimeout = cc.getDeclaredField(connectTimeoutFieldName);
+        CtField readTimeout = cc.getDeclaredField(readTimeoutFieldName);
+        noArgCtor.insertAfter("this." + connectTimeout.getName() + " = " + connectTimeoutMillis + ";");
+        noArgCtor.insertAfter("this." + readTimeout.getName() + " = " + readTimeoutMillis + ";");
+        
+        byte[] classfileBuffer = cc.toBytecode();
+        cc.detach();
+        
+        return classfileBuffer;
     }
 
-    @Override
-    public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
-            ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
-        try {
-            if ( this.className.equals(className) ) {
-                Log.get().log("%s asked to transform %s", getClass().getSimpleName(), className);
-                
-                ClassPool defaultPool = ClassPool.getDefault();
-                CtClass cc = defaultPool.get(Descriptor.toJavaName(className));
-                
-                CtConstructor noArgCtor = cc.getConstructor(Descriptor.ofConstructor(new CtClass[0]));
-                CtField connectTimeout = cc.getDeclaredField(connectTimeoutFieldName);
-                CtField readTimeout = cc.getDeclaredField(readTimeoutFieldName);
-                noArgCtor.insertAfter("this." + connectTimeout.getName() + " = " + connectTimeoutMillis + ";");
-                noArgCtor.insertAfter("this." + readTimeout.getName() + " = " + readTimeoutMillis + ";");
-                
-                classfileBuffer = cc.toBytecode();
-                cc.detach();
-                Log.get().log("Transformation complete.");
-                this.agentInfoMBean.registerTransformedClass(className);
-            }
-            return classfileBuffer;
-        } catch (Exception e) {
-            Log.get().fatal("Transformation failed", e);
-            return null;
-        }
-    }
 }

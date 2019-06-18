@@ -16,9 +16,7 @@
  */
 package org.apache.sling.uca.impl;
 
-import java.lang.instrument.ClassFileTransformer;
-import java.lang.instrument.IllegalClassFormatException;
-import java.security.ProtectionDomain;
+import java.util.Collections;
 
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -31,49 +29,37 @@ import javassist.bytecode.Descriptor;
  * <p>It inserts two calls in <tt>org.apache.commons.httpclient.params.DefaultHttpParamsFactory.createParams</tt> that set
  * default values for <tt>http.connection.timeout</tt> and <tt>http.socket.timeout</tt>.</p>
  */
-public class HttpClient3TimeoutTransformer implements ClassFileTransformer {
+public class HttpClient3TimeoutTransformer extends MBeanAwareTimeoutTransformer {
     
     private static final String DEFAULT_HTTP_PARAMS_FACTORY_CLASS_NAME = Descriptor.toJvmName("org.apache.commons.httpclient.params.DefaultHttpParamsFactory");
     
     private final long connectTimeoutMillis;
     private final long readTimeoutMillis;
-    private final AgentInfo agentInfoMbean;
     
     public HttpClient3TimeoutTransformer(long connectTimeoutMillis, long readTimeoutMillis, AgentInfo agentInfoMBean) {
+        super(agentInfoMBean, Collections.singleton(DEFAULT_HTTP_PARAMS_FACTORY_CLASS_NAME));
         this.connectTimeoutMillis = connectTimeoutMillis;
         this.readTimeoutMillis = readTimeoutMillis;
-        this.agentInfoMbean = agentInfoMBean;
-        this.agentInfoMbean.registerTransformer(getClass());
     }
 
     @Override
-    public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
-            ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
-        try {
-            if ( DEFAULT_HTTP_PARAMS_FACTORY_CLASS_NAME.equals(className) ) {
-                Log.get().log("%s asked to transform %s", getClass().getSimpleName(), className);
-                
-                ClassPool defaultPool = ClassPool.getDefault();
-                CtClass cc = defaultPool.get(Descriptor.toJavaName(className));
-                
-                CtMethod getSoTimeout =  cc.getDeclaredMethod("createParams");
-                // javassist seems unable to resolve the constant values, so just inline them
-                // also, unable to resolve calls to setParameter with int values (no boxing?)
-                // HttpConnectionParams.CONNECTION_TIMEOUT
-                getSoTimeout.insertAfter("$_.setParameter(\"http.connection.timeout\", Integer.valueOf(" + connectTimeoutMillis + "));");
-                // HttpMethodParams.SO_TIMEOUT
-                getSoTimeout.insertAfter("$_.setParameter(\"http.socket.timeout\", Integer.valueOf(" + readTimeoutMillis + "));");
-                
-                classfileBuffer = cc.toBytecode();
-                cc.detach();
-                Log.get().log("Transformation complete.");
-                
-                agentInfoMbean.registerTransformedClass(className);
-            }
-            return classfileBuffer;
-        } catch (Exception e) {
-            Log.get().fatal("Transformation failed", e);
-            return null;
-        }
+    protected byte[] doTransformClass(String className) throws Exception {
+        
+        ClassPool defaultPool = ClassPool.getDefault();
+        CtClass cc = defaultPool.get(Descriptor.toJavaName(className));
+        
+        CtMethod getSoTimeout =  cc.getDeclaredMethod("createParams");
+        // javassist seems unable to resolve the constant values, so just inline them
+        // also, unable to resolve calls to setParameter with int values (no boxing?)
+        // HttpConnectionParams.CONNECTION_TIMEOUT
+        getSoTimeout.insertAfter("$_.setParameter(\"http.connection.timeout\", Integer.valueOf(" + connectTimeoutMillis + "));");
+        // HttpMethodParams.SO_TIMEOUT
+        getSoTimeout.insertAfter("$_.setParameter(\"http.socket.timeout\", Integer.valueOf(" + readTimeoutMillis + "));");
+        
+        byte[] classfileBuffer = cc.toBytecode();
+        cc.detach();
+        
+        return classfileBuffer;
     }
+
 }
