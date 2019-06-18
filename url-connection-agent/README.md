@@ -17,7 +17,7 @@ It currently supports setting timeouts for HTTP connections done using:
 
 Build the project with `mvn clean package` and then run a simple connection test with 
 
-    java -javaagent:target/url-connection-agent-0.0.1-SNAPSHOT-jar-with-dependencies.jar=<connect-timeout>,<read-timeout> -cp target/test-classes:target/it-dependencies/* org.apache.sling.uca.impl.HttpClientLauncher <url> <client-type>
+    java -javaagent:target/org.apache.sling.connection-timeout-agent-0.0.1-SNAPSHOT-jar-with-dependencies.jar=<connect-timeout>,<read-timeout> -cp target/test-classes:target/it-dependencies/* org.apache.sling.uca.impl.HttpClientLauncher <url> <client-type>
     
  The parameters are as follows:
  
@@ -30,14 +30,14 @@ Build the project with `mvn clean package` and then run a simple connection test
  For a test that always fails, set one of the timeouts to 1. Both executions listed below will typically fail:
  
  ```
-java -javaagent:target/url-connection-agent-0.0.1-SNAPSHOT-jar-with-dependencies.jar=1,1000 -cp target/test-classes:target/it-dependencies/* org.apache.sling.uca.impl.HttpClientLauncher https://sling.apache.org JavaNet
-java -javaagent:target/url-connection-agent-0.0.1-SNAPSHOT-jar-with-dependencies.jar=1000,1 -cp target/test-classes:target/it-dependencies/* org.apache.sling.uca.impl.HttpClientLauncher https://sling.apache.org JavaNet
+java -javaagent:target/org.apache.sling.connection-timeout-agent-0.0.1-SNAPSHOT-jar-with-dependencies.jar=1,1000 -cp target/test-classes:target/it-dependencies/* org.apache.sling.uca.impl.HttpClientLauncher https://sling.apache.org JavaNet
+java -javaagent:target/org.apache.sling.connection-timeout-agent-0.0.1-SNAPSHOT-jar-with-dependencies.jar=1000,1 -cp target/test-classes:target/it-dependencies/* org.apache.sling.uca.impl.HttpClientLauncher https://sling.apache.org JavaNet
  ```
  
 In contrast, the execution below should succeed:
 
 ```
-java -javaagent:target/url-connection-agent-0.0.1-SNAPSHOT-jar-with-dependencies.jar=1000,1000 -cp target/test-classes:target/it-dependencies/* org.apache.sling.uca.impl.HttpClientLauncher https://sling.apache.org JavaNet
+java -javaagent:target/org.apache.sling.connection-timeout-agent-0.0.1-SNAPSHOT-jar-with-dependencies.jar=1000,1000 -cp target/test-classes:target/it-dependencies/* org.apache.sling.uca.impl.HttpClientLauncher https://sling.apache.org JavaNet
 ```
 
 To use this in your own project you should 
