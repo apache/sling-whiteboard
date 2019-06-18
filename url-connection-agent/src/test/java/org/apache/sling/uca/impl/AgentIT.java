@@ -65,6 +65,10 @@ import org.slf4j.LoggerFactory;
 @ExtendWith(MisbehavingServerExtension.class)
 public class AgentIT {
     
+    private static final int EXECUTION_TIMEOUT_SECONDS = 5;
+    private static final int CONNECT_TIMEOUT_SECONDS = 3;
+    private static final int READ_TIMEOUT_SECONDS = 3;
+    
     private static final String EXCEPTION_MARKER = "Exception in thread \"main\" ";
     private static final Path STDERR = Paths.get("target", "stderr.txt");
     private static final Path STDOUT = Paths.get("target", "stdout.txt");
@@ -95,7 +99,7 @@ public class AgentIT {
     public void connectTimeout(ClientType clientType) throws IOException {
 
         ErrorDescriptor ed =  requireNonNull(errorDescriptors.get(clientType), "Unhandled clientType " + clientType);
-        RecordedThrowable error = assertTimeout(ofSeconds(5),  () -> runTest("http://repo1.maven.org:81", clientType));
+        RecordedThrowable error = assertTimeout(ofSeconds(EXECUTION_TIMEOUT_SECONDS),  () -> runTest("http://repo1.maven.org:81", clientType));
         
         assertEquals(ed.connectTimeoutClass.getName(), error.className);
         assertTrue(error.message.matches(ed.connectTimeoutMessageRegex), 
@@ -112,7 +116,7 @@ public class AgentIT {
     public void readTimeout(ClientType clientType, MisbehavingServerControl server) throws IOException {
         
         ErrorDescriptor ed =  requireNonNull(errorDescriptors.get(clientType), "Unhandled clientType " + clientType);
-        RecordedThrowable error = assertTimeout(ofSeconds(5),  () -> runTest("http://localhost:" + server.getLocalPort(), clientType));
+        RecordedThrowable error = assertTimeout(ofSeconds(EXECUTION_TIMEOUT_SECONDS),  () -> runTest("http://localhost:" + server.getLocalPort(), clientType));
         
         assertEquals(SocketTimeoutException.class.getName(), error.className);
         assertEquals(ed.readTimeoutMessage, error.message);
@@ -120,8 +124,8 @@ public class AgentIT {
 
     private RecordedThrowable runTest(String urlSpec, ClientType clientType) throws IOException, InterruptedException {
 
-        Process process = runForkedCommandWithAgent(new URL(urlSpec), 3, 3, clientType);
-        boolean done = process.waitFor(30, TimeUnit.SECONDS);
+        Process process = runForkedCommandWithAgent(new URL(urlSpec), CONNECT_TIMEOUT_SECONDS, READ_TIMEOUT_SECONDS, clientType);
+        boolean done = process.waitFor(EXECUTION_TIMEOUT_SECONDS, TimeUnit.SECONDS);
         
         LOG.info("Dump of stdout: ");
         Files
@@ -135,7 +139,7 @@ public class AgentIT {
 
         if ( !done ) {
             process.destroy();
-            throw new IllegalStateException("Terminated process since it did not exit in a reasonable amount of time.");
+            throw new IllegalStateException("Terminated process since it did not complete within " + EXECUTION_TIMEOUT_SECONDS + " seconds");
         }
         int exitCode = process.exitValue();
         LOG.info("Exited with code {}", exitCode);
@@ -147,7 +151,7 @@ public class AgentIT {
                 .filter( l -> l.startsWith(EXCEPTION_MARKER))
                 .map( l -> newRecordedThrowable(l) )
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("Exit code was zero but did not find any exception information in stderr.txt"));
+                .orElseThrow(() -> new RuntimeException("Exit code was not zero ( " + exitCode + " ) but did not find any exception information in stderr.txt"));
         }
     }
     
