@@ -23,7 +23,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.Duration;
-import java.util.Date;
 import java.util.EnumSet;
 import java.util.stream.Collectors;
 
@@ -100,10 +99,12 @@ public class HttpClientLauncher {
         if ( type == null )
             throw new IllegalArgumentException(usage());
         
-        System.out.println("[WEB] Executing request via " + type);
+        log("Executing request via " + type);
         
         int connectTimeout = args.length > 2 ? Integer.parseInt(args[2]) : 0;
         int readTimeout = args.length > 3 ? Integer.parseInt(args[3]) : 0;
+        
+        log("Client API configured timeouts: " + connectTimeout + "/" + readTimeout);
         
         type.consumer.accept(args[0], connectTimeout, readTimeout);
     }
@@ -111,10 +112,14 @@ public class HttpClientLauncher {
     private static String usage() {
         return "Usage: java -cp ... " + HttpClientLauncher.class.getName() + " <URL> " + ClientType.pipeSeparatedString();
     }
+    
+    private static void log(String msg, Object... args) {
+        System.out.format("[LAUNCHER] " + msg + "%n", args);
+    }
 
     private static void runUsingJavaNet(String targetUrl, int connectTimeoutMillis, int readTimeoutMillis) throws IOException  {
         HttpURLConnection con = (HttpURLConnection) new URL(targetUrl).openConnection();
-        System.out.println("Connection type is " + con);
+        log("Connection type is %s", con);
         
         con.setConnectTimeout(connectTimeoutMillis);
         con.setReadTimeout(readTimeoutMillis);
@@ -123,10 +128,10 @@ public class HttpClientLauncher {
                 InputStreamReader isr = new InputStreamReader(in);
                 BufferedReader br = new BufferedReader(isr)) {
             
-            System.out.println("[WEB] "  + con.getResponseCode() + " " + con.getResponseMessage());
+            log(con.getResponseCode() + " " + con.getResponseMessage());
 
             con.getHeaderFields().forEach( (k, v) -> {
-                System.out.println("[WEB] " + k + " : " + v);
+                log(k + " : " + v);
             });
         }
     }
@@ -143,17 +148,17 @@ public class HttpClientLauncher {
             client.getParams().setParameter(HttpMethodParams.SO_TIMEOUT, Integer.valueOf(readTimeoutMillis));
         
         HttpMethod get = new GetMethod(targetUrl);
-        System.out.format("Connection timeouts: connect: %d, so: %s%n", 
+        log("Connection timeouts: connect: %d, so: %s", 
                 client.getHttpConnectionManager().getParams().getConnectionTimeout(),
                 client.getHttpConnectionManager().getParams().getSoTimeout());
-        System.out.format("Client so timeout: %d (raw: %s) %n", client.getParams().getSoTimeout(), 
+        log("Client so timeout: %d (raw: %s)", client.getParams().getSoTimeout(), 
                 client.getParams().getParameter(HttpClientParams.SO_TIMEOUT));
         client.executeMethod(get);
         
-        System.out.println(new Date() + " [WEB] " + get.getStatusLine());
+        log(get.getStatusLine().toString());
         
         for ( Header header : get.getResponseHeaders() )
-            System.out.print(new Date() + " [WEB] " + header.toExternalForm());
+            log(header.toExternalForm());
     }
     
     private static void runUsingHttpClient4(String targetUrl, int connectTimeoutMillis, int readTimeoutMillis) throws IOException {
@@ -171,9 +176,9 @@ public class HttpClientLauncher {
             
             HttpGet get = new HttpGet(targetUrl);
             try ( CloseableHttpResponse response = client.execute(get)) {
-                System.out.println("[WEB] " + response.getStatusLine());
+                log(response.getStatusLine().toString());
                 for ( org.apache.http.Header header : response.getAllHeaders() )
-                    System.out.println("[WEB] " + header);
+                    log(header.toString());
                 
                 EntityUtils.consume(response.getEntity());
             }
@@ -194,9 +199,9 @@ public class HttpClientLauncher {
             .build();
 
         try (Response response = client.newCall(request).execute()) {
-            System.out.println("[WEB] " + response.code() + " " + response.message());
+            log("%s %s", response.code(), response.message());
             response.headers().toMultimap().forEach( (n, v) -> {
-                System.out.println("[WEB] " + n + ": " + v);
+                log("%s : %s", n, v);
             });
         }
     }
