@@ -17,6 +17,7 @@
 package org.apache.sling.feature.r2f.impl;
 
 import static java.nio.file.Files.newBufferedReader;
+import static org.apache.sling.feature.diff.FeatureDiff.compareFeatures;
 import static org.apache.sling.feature.io.json.FeatureJSONReader.read;
 
 import java.io.BufferedReader;
@@ -29,6 +30,7 @@ import java.util.stream.Stream;
 
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.diff.DiffRequest;
 import org.apache.sling.feature.r2f.RuntimeEnvironment2FeatureModel;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -119,6 +121,22 @@ public class RuntimeEnvironment2FeatureModelService implements RuntimeEnvironmen
         }
 
         return targetFeature;
+    }
+
+    @Override
+    public Feature getLaunch2RuntimeUpgradingFeature() {
+        Feature runtimeFeature = getRuntimeFeature();
+
+        return compareFeatures(new DiffRequest()
+                              .setPrevious(launchFeature)
+                              .setCurrent(runtimeFeature)
+                              .addIncludeComparator("bundles")
+                              .addIncludeComparator("configurations")
+                              .setResultId(new ArtifactId(runtimeFeature.getId().getGroupId(),
+                                                          runtimeFeature.getId().getArtifactId(), 
+                                                          runtimeFeature.getId().getVersion(),
+                                                          runtimeFeature.getId().getClassifier() + "_updater",
+                                                          runtimeFeature.getId().getType())));
     }
 
 }

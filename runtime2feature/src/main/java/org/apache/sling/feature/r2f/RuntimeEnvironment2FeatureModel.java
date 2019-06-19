@@ -24,4 +24,6 @@ public interface RuntimeEnvironment2FeatureModel {
 
     Feature getRuntimeFeature();
 
+    Feature getLaunch2RuntimeUpgradingFeature();
+
 }
