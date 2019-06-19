@@ -102,16 +102,19 @@ public class RuntimeEnvironment2FeatureModelService implements RuntimeEnvironmen
         ServiceReference<ConfigurationAdmin> configurationAdminReference = bundleContext.getServiceReference(ConfigurationAdmin.class);
         if (configurationAdminReference != null) {
             ConfigurationAdmin configurationAdmin = bundleContext.getService(configurationAdminReference);
-            try {
-                Configuration[] configurations = configurationAdmin.listConfigurations(null);
-                if (configurations != null) {
-                    OSGiConfiguration2FeatureConfigurationMapper mapper = new OSGiConfiguration2FeatureConfigurationMapper(targetFeature);
 
-                    Stream.of(configurations).map(mapper).forEach(mapper);
+            if (configurationAdmin != null) {
+                try {
+                    Configuration[] configurations = configurationAdmin.listConfigurations(null);
+                    if (configurations != null) {
+                        OSGiConfiguration2FeatureConfigurationMapper mapper = new OSGiConfiguration2FeatureConfigurationMapper(targetFeature);
+
+                        Stream.of(configurations).map(mapper).forEach(mapper);
+                    }
+                } catch (Exception e) {
+                    // that should not happen
+                    throw new RuntimeException("Something went wrong while iterating over all available Configurations", e);
                 }
-            } catch (Exception e) {
-                // that should not happen
-                throw new RuntimeException("Something went wrong while iterating over all available Configurations", e);
             }
         }
 
