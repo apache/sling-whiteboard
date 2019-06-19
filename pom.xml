@@ -41,7 +41,6 @@
     <modules>
           <module>mdresourceprovider</module>
           <module>maven-central-source-reporter</module>
-          <module>url-connection-agent</module>
     </modules>
 </project>
 
