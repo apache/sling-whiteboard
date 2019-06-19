@@ -25,7 +25,7 @@ import java.util.LinkedList;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.Prototype;
-import org.apache.sling.feature.diff.spi.FeatureElementComparator;
+import org.apache.sling.feature.diff.impl.FeatureElementComparator;
 
 public final class FeatureDiff {
 

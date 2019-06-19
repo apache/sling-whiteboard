@@ -19,7 +19,6 @@ package org.apache.sling.feature.diff.impl;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.Artifacts;
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.diff.spi.FeatureElementComparator;
 
 import com.google.auto.service.AutoService;
 

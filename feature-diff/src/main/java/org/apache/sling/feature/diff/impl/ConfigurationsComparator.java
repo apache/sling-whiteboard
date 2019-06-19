@@ -24,7 +24,6 @@ import java.util.Enumeration;
 import org.apache.sling.feature.Configuration;
 import org.apache.sling.feature.Configurations;
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.diff.spi.FeatureElementComparator;
 
 import com.google.auto.service.AutoService;
 

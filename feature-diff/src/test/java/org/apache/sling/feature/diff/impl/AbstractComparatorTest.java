@@ -19,7 +19,6 @@ package org.apache.sling.feature.diff.impl;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.Prototype;
-import org.apache.sling.feature.diff.spi.FeatureElementComparator;
 import org.junit.After;
 import org.junit.Before;
 

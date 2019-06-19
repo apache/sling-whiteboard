@@ -21,7 +21,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.diff.spi.FeatureElementComparator;
 
 import com.google.auto.service.AutoService;
 

@@ -28,7 +28,6 @@ import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.Extensions;
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.diff.spi.FeatureElementComparator;
 
 import com.google.auto.service.AutoService;
 

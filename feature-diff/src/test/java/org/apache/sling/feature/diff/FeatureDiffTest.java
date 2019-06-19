@@ -23,7 +23,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.sling.feature.diff.spi.FeatureElementComparator;
+import org.apache.sling.feature.diff.impl.FeatureElementComparator;
 import org.junit.Test;
 
 public final class FeatureDiffTest {

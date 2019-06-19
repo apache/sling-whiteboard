@@ -16,8 +16,6 @@
  */
 package org.apache.sling.feature.diff.impl;
 
-import org.apache.sling.feature.diff.spi.FeatureElementComparator;
-
 abstract class AbstractFeatureElementComparator implements FeatureElementComparator {
 
     private final String id;
