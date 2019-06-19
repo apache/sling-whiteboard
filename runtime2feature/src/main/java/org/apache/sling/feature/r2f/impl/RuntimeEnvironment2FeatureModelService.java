@@ -16,8 +16,16 @@
  */
 package org.apache.sling.feature.r2f.impl;
 
+import static java.nio.file.Files.newBufferedReader;
 import static java.util.Objects.requireNonNull;
+import static org.apache.sling.feature.io.json.FeatureJSONReader.read;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.stream.Stream;
 
 import org.apache.sling.feature.ArtifactId;
@@ -32,7 +40,28 @@ import org.osgi.service.cm.ConfigurationAdmin;
 
 public final class RuntimeEnvironment2FeatureModelService implements RuntimeEnvironment2FeatureModel {
 
-    public Feature scanAndAssemble(ConversionRequest conversionRequest) {
+    private static final String SLING_FEATURE_PROPERTY_NAME = "sling.feature";
+
+    @Override
+    public Feature getLaunchFeature(BundleContext bundleContext) {
+        String launchFeatureLocation = bundleContext.getProperty(SLING_FEATURE_PROPERTY_NAME);
+
+        if (launchFeatureLocation == null) {
+            throw new IllegalStateException("Framework property 'sling.feature' is not set, impossible to assemble the launch Feature");
+        }
+
+        URI launchFeatureURI = URI.create(launchFeatureLocation);
+        Path launchFeaturePath = Paths.get(launchFeatureURI);
+
+        try (BufferedReader reader = newBufferedReader(launchFeaturePath)) {
+            return read(reader, launchFeatureLocation);
+        } catch (IOException cause) {
+            throw new UncheckedIOException(cause);
+        }
+    }
+
+    @Override
+    public Feature getRuntimeFeature(ConversionRequest conversionRequest) {
         ArtifactId resultId = requireNonNull(conversionRequest.getResultId(), "Impossible to create the Feature with a null id");
         BundleContext bundleContext = requireNonNull(conversionRequest.getBundleContext(), "Impossible to create the Feature from a null BundleContext");
 

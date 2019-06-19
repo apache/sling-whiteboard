@@ -19,9 +19,26 @@ RuntimeEnvironment2FeatureModel generator;
 ConversionRequest conversionRequest = new DefaultConversionRequest()
                                       .setResultId("org.apache.sling:org.apache.sling.r2e:jar:RUNTIME:1.0.0")
                                       .setBundleContext(bundleContext);
-Feature runtimeFeature = generator.scanAndAssemble(conversionRequest)
+Feature runtimeFeature = generator.getRuntimeFeature(conversionRequest)
 ```
 
 ## Please Note
 
 Currently version will include in the generated Feature Model `bundles` and `configurations` only, which are the only informations that can be extracted from a `BundleContext` instance.
+
+## Launch Feature
+
+The `RuntimeEnvironment2FeatureModel` OSGi service is also able to retrieve the (assembled) Feature used to launch the platform:
+
+```
+import org.apache.sling.feature.r2f.*;
+
+@Activate
+BundleContext bundleContext;
+
+@Reference
+RuntimeEnvironment2FeatureModel generator;
+
+...
+Feature launchFeature = generator.getLaunchFeature(bundleContext)
+```
