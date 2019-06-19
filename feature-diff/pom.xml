@@ -41,6 +41,11 @@
   </properties>
 
   <dependencies>
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.annotation.versioning</artifactId>
+      <scope>provided</scope>
+    </dependency>
     <!--
      | utilities
     -->
@@ -124,7 +129,7 @@
         <extensions>true</extensions>
         <configuration>
           <instructions>
-            <Export-Package>org.apache.sling.feature.diff*;version=${project.version}</Export-Package>
+            <Export-Package>org.apache.sling.feature.diff*</Export-Package>
             <Import-Package>
               org.apache.sling.feature*,
               org.apache.commons.collections4*,
