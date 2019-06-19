@@ -30,14 +30,14 @@ public final class FeatureDiffTest {
 
     @Test
     public void loadAllComparators() {
-        Set<String> comparators = filterComparators(new DefaultDiffRequest());
+        Set<String> comparators = filterComparators(new DiffRequest());
 
         assertTrue(comparators.isEmpty());
     }
 
     @Test
     public void loadIncludedComparators() {
-        Set<String> comparators = filterComparators(new DefaultDiffRequest()
+        Set<String> comparators = filterComparators(new DiffRequest()
                                                     .addIncludeComparator("bundles")
                                                     .addIncludeComparator("configurations"));
 
@@ -50,7 +50,7 @@ public final class FeatureDiffTest {
 
     @Test
     public void loadExcludedComparators() {
-        Set<String> comparators = filterComparators(new DefaultDiffRequest()
+        Set<String> comparators = filterComparators(new DiffRequest()
                                                     .addExcludeComparator("bundles")
                                                     .addExcludeComparator("configurations"));
 
