@@ -16,8 +16,12 @@
  */
 package org.apache.sling.feature.diff.impl;
 
-import java.io.IOException;
+import static javax.json.Json.createReader;
+
+import java.io.StringReader;
 import java.util.LinkedList;
+
+import javax.json.JsonValue;
 
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
@@ -26,15 +30,10 @@ import org.apache.sling.feature.Extensions;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.diff.spi.FeatureElementComparator;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.flipkart.zjsonpatch.JsonDiff;
 import com.google.auto.service.AutoService;
 
 @AutoService(FeatureElementComparator.class)
 public final class ExtensionsComparator extends AbstractFeatureElementComparator {
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public ExtensionsComparator() {
         super("extensions");
@@ -111,20 +110,19 @@ public final class ExtensionsComparator extends AbstractFeatureElementComparator
                 String currentJSON = currentExtension.getJSON();
 
                 try {
-                    JsonNode previousNode = objectMapper.readTree(previousJSON);
-                    JsonNode currentNode = objectMapper.readTree(currentJSON); 
-                    JsonNode patchNode = JsonDiff.asJson(previousNode, currentNode); 
+                    JsonValue previousNode = parseJSON(previousJSON);
+                    JsonValue currentNode = parseJSON(currentJSON); 
 
-                    if (patchNode.size() != 0) {
+                    if (previousNode.equals(currentNode)) {
                         target.getExtensions().add(currentExtension);
                     }
-                } catch (IOException e) {
+                } catch (Throwable t) {
                     // should not happen
                     throw new RuntimeException("A JSON parse error occurred while parsing previous '"
                                                + previousJSON
                                                + "' and current '"
                                                + currentJSON
-                                               + "', see nested errors:", e);
+                                               + "', see nested errors:", t);
                 }
                 break;
 
@@ -132,6 +130,10 @@ public final class ExtensionsComparator extends AbstractFeatureElementComparator
             default:
                 break;
         }
+    }
+
+    private static JsonValue parseJSON(String json) {
+        return createReader(new StringReader(json)).read();
     }
 
 }

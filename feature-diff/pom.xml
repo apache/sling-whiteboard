@@ -29,7 +29,6 @@
 
   <artifactId>org.apache.sling.feature.diff</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <packaging>bundle</packaging>
 
   <name>Apache Sling Feature Model diff tool</name>
   <description>Feature Model diff tool for Apache Sling</description>
@@ -41,11 +40,6 @@
   </properties>
 
   <dependencies>
-    <dependency>
-      <groupId>org.osgi</groupId>
-      <artifactId>org.osgi.annotation.versioning</artifactId>
-      <scope>provided</scope>
-    </dependency>
     <!--
      | utilities
     -->
@@ -61,12 +55,6 @@
       <version>3.8.1</version>
       <scope>provided</scope>
     </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-collections4</artifactId>
-      <version>4.1</version>
-      <scope>provided</scope>
-    </dependency>
 
     <!--
      | Sling Feature Model libraries
@@ -74,6 +62,11 @@
     <dependency>
       <groupId>org.osgi</groupId>
       <artifactId>osgi.core</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.annotation.versioning</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -87,27 +80,9 @@
      | JSON patch
     -->
     <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-      <version>${jackson.version}</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.commons</groupId>
-          <artifactId>commons-collections4</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-core</artifactId>
-      <version>${jackson.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.flipkart.zjsonpatch</groupId>
-      <artifactId>zjsonpatch</artifactId>
-      <version>0.4.8</version>
+      <groupId>org.apache.geronimo.specs</groupId>
+      <artifactId>geronimo-json_1.0_spec</artifactId>
+      <version>1.0-alpha-1</version>
       <scope>provided</scope>
     </dependency>
 
@@ -124,25 +99,18 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.felix</groupId>
-        <artifactId>maven-bundle-plugin</artifactId>
-        <extensions>true</extensions>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
         <configuration>
-          <instructions>
-            <Export-Package>org.apache.sling.feature.diff*</Export-Package>
-            <Import-Package>
-              org.apache.sling.feature*,
-              org.apache.commons.collections4*,
-              org.apache.commons.io*
-            </Import-Package>
-            <Embed-Dependency>
-              jackson-core;inline=true,
-              jackson-databind;inline=true,
-              zjsonpatch;inline=true
-            </Embed-Dependency>
-            <Embed-Transitive>false</Embed-Transitive>
-          </instructions>
+          <archive>
+            <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+          </archive>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>biz.aQute.bnd</groupId>
+        <artifactId>bnd-maven-plugin</artifactId>
+        <version>4.1.0</version>
       </plugin>
     </plugins>
   </build>
