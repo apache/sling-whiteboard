@@ -17,12 +17,11 @@
 package org.apache.sling.feature.r2f;
 
 import org.apache.sling.feature.Feature;
-import org.osgi.framework.BundleContext;
 
 public interface RuntimeEnvironment2FeatureModel {
 
-    Feature getLaunchFeature(BundleContext bundleContext);
+    Feature getLaunchFeature();
 
-    Feature getRuntimeFeature(ConversionRequest conversionRequest);
+    Feature getRuntimeFeature();
 
 }

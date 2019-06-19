@@ -17,7 +17,6 @@
 package org.apache.sling.feature.r2f.impl;
 
 import static java.nio.file.Files.newBufferedReader;
-import static java.util.Objects.requireNonNull;
 import static org.apache.sling.feature.io.json.FeatureJSONReader.read;
 
 import java.io.BufferedReader;
@@ -30,20 +29,29 @@ import java.util.stream.Stream;
 
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.r2f.ConversionRequest;
 import org.apache.sling.feature.r2f.RuntimeEnvironment2FeatureModel;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 
-public final class RuntimeEnvironment2FeatureModelService implements RuntimeEnvironment2FeatureModel {
+@Component(service = RuntimeEnvironment2FeatureModel.class)
+public class RuntimeEnvironment2FeatureModelService implements RuntimeEnvironment2FeatureModel {
 
     private static final String SLING_FEATURE_PROPERTY_NAME = "sling.feature";
 
-    @Override
-    public Feature getLaunchFeature(BundleContext bundleContext) {
+    protected BundleContext bundleContext;
+
+    private Feature launchFeature;
+
+    @Activate
+    public void start(BundleContext bundleContext) {
+        this.bundleContext = bundleContext;
+
         String launchFeatureLocation = bundleContext.getProperty(SLING_FEATURE_PROPERTY_NAME);
 
         if (launchFeatureLocation == null) {
@@ -54,18 +62,31 @@ public final class RuntimeEnvironment2FeatureModelService implements RuntimeEnvi
         Path launchFeaturePath = Paths.get(launchFeatureURI);
 
         try (BufferedReader reader = newBufferedReader(launchFeaturePath)) {
-            return read(reader, launchFeatureLocation);
+            launchFeature = read(reader, launchFeatureLocation);
         } catch (IOException cause) {
             throw new UncheckedIOException(cause);
         }
     }
 
-    @Override
-    public Feature getRuntimeFeature(ConversionRequest conversionRequest) {
-        ArtifactId resultId = requireNonNull(conversionRequest.getResultId(), "Impossible to create the Feature with a null id");
-        BundleContext bundleContext = requireNonNull(conversionRequest.getBundleContext(), "Impossible to create the Feature from a null BundleContext");
+    @Deactivate
+    public void stop() {
+        bundleContext = null;
+        launchFeature = null;
+    }
 
-        Feature targetFeature = new Feature(resultId);
+    @Override
+    public Feature getLaunchFeature() {
+        return launchFeature;
+    }
+
+    @Override
+    public Feature getRuntimeFeature() {
+        String groupId = launchFeature.getId().getGroupId();
+        String artifactId = launchFeature.getId().getArtifactId();
+        String version = launchFeature.getId().getArtifactId();
+        String classifier = launchFeature.getId().getArtifactId() + "-RUNTIME";
+
+        Feature targetFeature = new Feature(new ArtifactId(groupId, artifactId, version, classifier, null));
 
         // collect all bundles
 
