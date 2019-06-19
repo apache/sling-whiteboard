@@ -14,4 +14,26 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.sling.feature.diff.comparators;
+package org.apache.sling.feature.diff.impl;
+
+import org.apache.sling.feature.diff.spi.FeatureElementComparator;
+
+abstract class AbstractFeatureElementComparator implements FeatureElementComparator {
+
+    private final String id;
+
+    public AbstractFeatureElementComparator(String id) {
+        this.id = id;
+    }
+
+    @Override
+    public final String getId() {
+        return id;
+    }
+
+    @Override
+    public String toString() {
+        return "FeatureElementComparator [id=" + id + "]";
+    }
+
+}
