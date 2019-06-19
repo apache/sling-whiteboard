@@ -43,7 +43,7 @@ public final class ExtensionsComparator extends AbstractFeatureElementComparator
         computeDiff(previous.getExtensions(), current.getExtensions(), target);
     }
 
-    private void computeDiff(Extensions previousExtensions, Extensions currentExtensions, Feature target) {
+    protected void computeDiff(Extensions previousExtensions, Extensions currentExtensions, Feature target) {
         for (Extension previousExtension : previousExtensions) {
             Extension currentExtension = currentExtensions.getByName(previousExtension.getName());
 
@@ -63,7 +63,7 @@ public final class ExtensionsComparator extends AbstractFeatureElementComparator
         }
     }
 
-    public void computeDiff(Extension previousExtension, Extension currentExtension, Feature target) {
+    protected void computeDiff(Extension previousExtension, Extension currentExtension, Feature target) {
         switch (previousExtension.getType()) {
             case ARTIFACTS:
                 Extension targetExtension = new Extension(previousExtension.getType(), previousExtension.getName(), previousExtension.isRequired());
@@ -112,7 +112,7 @@ public final class ExtensionsComparator extends AbstractFeatureElementComparator
                     JsonValue previousNode = parseJSON(previousJSON);
                     JsonValue currentNode = parseJSON(currentJSON); 
 
-                    if (previousNode.equals(currentNode)) {
+                    if (!previousNode.equals(currentNode)) {
                         target.getExtensions().add(currentExtension);
                     }
                 } catch (Throwable t) {
