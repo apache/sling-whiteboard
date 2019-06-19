@@ -127,18 +127,13 @@ public class RuntimeEnvironment2FeatureModelService implements RuntimeEnvironmen
     public Feature getLaunch2RuntimeUpgradingFeature() {
         Feature runtimeFeature = getRuntimeFeature();
 
+        // framework-properties can not be scanned in the BundleContext ATM
+        // extensions can not be computed at runtime
         return compareFeatures(new DiffRequest()
                                .setPrevious(launchFeature)
                                .setCurrent(runtimeFeature)
                                .addIncludeComparator("bundles")
-                               .addIncludeComparator("configurations")
-                               // framework-properties can not be scanned in the BundleContext ATM
-                               // extensions can not be computed at runtime
-                               .setResultId(new ArtifactId(runtimeFeature.getId().getGroupId(),
-                                                           runtimeFeature.getId().getArtifactId(), 
-                                                           runtimeFeature.getId().getVersion(),
-                                                           runtimeFeature.getId().getClassifier() + "_updater",
-                                                           runtimeFeature.getId().getType())));
+                               .addIncludeComparator("configurations"));
     }
 
 }

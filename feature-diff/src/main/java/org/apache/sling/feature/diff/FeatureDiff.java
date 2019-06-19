@@ -30,7 +30,7 @@ import org.apache.sling.feature.diff.impl.FeatureElementComparator;
 public final class FeatureDiff {
 
     public static Feature compareFeatures(DiffRequest diffRequest) {
-        requireNonNull(diffRequest, "");
+        requireNonNull(diffRequest, "Impossible to compare features without specifying them.");
         Feature previous = requireNonNull(diffRequest.getPrevious(), "Impossible to compare null previous feature.");
         Feature current = requireNonNull(diffRequest.getCurrent(), "Impossible to compare null current feature.");
 
@@ -38,11 +38,15 @@ public final class FeatureDiff {
             throw new IllegalArgumentException("Input Features refer to the the same Feature version.");
         }
 
-        ArtifactId resultId = requireNonNull(diffRequest.getResultId(), "Impossible to create the Feature diff with a null id");
+        ArtifactId resultId = new ArtifactId(current.getId().getGroupId(),
+                                             current.getId().getArtifactId(), 
+                                             current.getId().getVersion(),
+                                             current.getId().getClassifier() + "_updater",
+                                             current.getId().getType());
 
         Feature target = new Feature(resultId);
         target.setTitle(previous.getId() + " to " + current.getId());
-        target.setDescription(previous.getId() + " to " + current.getId() + " Feature upgrade");
+        target.setDescription("Computed " + previous.getId() + " to " + current.getId() + " Feature update");
 
         Prototype prototype = new Prototype(previous.getId());
         target.setPrototype(prototype);

@@ -21,7 +21,6 @@ import static java.util.Objects.requireNonNull;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
 
 public final class DiffRequest {
@@ -33,8 +32,6 @@ public final class DiffRequest {
     private Feature previous;
 
     private Feature current;
-
-    private ArtifactId resultId;
 
     public Feature getPrevious() {
         return previous;
@@ -51,20 +48,6 @@ public final class DiffRequest {
 
     public DiffRequest setCurrent(Feature current) {
         this.current = requireNonNull(current, "Impossible to compare null current feature.");
-        return this;
-    }
-
-    public ArtifactId getResultId() {
-        return resultId;
-    }
-
-    public DiffRequest setResultId(String resultId) {
-        resultId = requireNonNull(resultId, "Impossible to create the Feature diff with a null id");
-        return setResultId(ArtifactId.parse(resultId));
-    }
-
-    public DiffRequest setResultId(ArtifactId resultId) {
-        this.resultId = requireNonNull(resultId, "Impossible to create the Feature diff with a null id");
         return this;
     }
 
