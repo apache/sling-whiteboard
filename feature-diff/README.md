@@ -13,14 +13,14 @@ import static org.apache.sling.feature.diff.FeatureDiff.compareFeatures;
 
 import org.apache.sling.feature.Feature
 import org.apache.sling.feature.diff.DiffRequest;
-import org.apache.sling.feature.diff.DefaultDiffRequest;
+import org.apache.sling.feature.diff.DiffRequest;
 
 ...
 
 Feature previous = // somehow obtained
 Feature current = // somehow obtained
 
-DiffRequest diffRequest = new DefaultDiffRequest()
+DiffRequest diffRequest = new DiffRequest()
                           .setPrevious(previous)
                           .setCurrent(current)
                           .setResultId("org.apache.sling:org.apache.sling.diff:1.0.0");
@@ -49,7 +49,7 @@ The `DiffRequest` data object can be configured in order to include/exclude one 
 Users can simply add via the include/exclude methods the section(s) they are interested:
 
 ```
-DiffRequest diffRequest = new DefaultDiffRequest()
+DiffRequest diffRequest = new DiffRequest()
                           .setPrevious(previous)
                           .setCurrent(current)
                           .addIncludeComparator("bundles")
