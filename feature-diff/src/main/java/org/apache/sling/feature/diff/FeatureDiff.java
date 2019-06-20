@@ -29,6 +29,8 @@ import org.apache.sling.feature.diff.impl.FeatureElementComparator;
 
 public final class FeatureDiff {
 
+    private static final String UPDATER_CLASSIFIER = "updater";
+
     public static Feature compareFeatures(DiffRequest diffRequest) {
         requireNonNull(diffRequest, "Impossible to compare features without specifying them.");
         Feature previous = requireNonNull(diffRequest.getPrevious(), "Impossible to compare null previous feature.");
@@ -38,10 +40,17 @@ public final class FeatureDiff {
             throw new IllegalArgumentException("Input Features refer to the the same Feature version.");
         }
 
+        StringBuilder classifier = new StringBuilder();
+        if (current.getId().getClassifier() != null && !current.getId().getClassifier().isEmpty()) {
+            classifier.append(current.getId().getClassifier())
+                      .append('_');
+        }
+        classifier.append(UPDATER_CLASSIFIER);
+
         ArtifactId resultId = new ArtifactId(current.getId().getGroupId(),
                                              current.getId().getArtifactId(), 
                                              current.getId().getVersion(),
-                                             current.getId().getClassifier() + "_updater",
+                                             classifier.toString(),
                                              current.getId().getType());
 
         Feature target = new Feature(resultId);
