@@ -2,7 +2,7 @@
 
 # Apache Sling OSGi runtime environment to Feature Model generator
 
-## Runtime Feature
+## Running Feature
 
 This is a simple OSGi service which is able to convert, given a `BundleContext` instance, a currently running OSGi container to an Apache Sling Feature Model definition.
 
@@ -15,7 +15,7 @@ import org.apache.sling.feature.r2f.*;
 RuntimeEnvironment2FeatureModel generator;
 
 ...
-Feature runtimeFeature = generator.getRuntimeFeature();
+Feature runtimeFeature = generator.getRunningFeature();
 ```
 
 ## Please Note
@@ -49,3 +49,18 @@ RuntimeEnvironment2FeatureModel generator;
 ...
 Feature launchFeature = generator.getLaunch2RuntimeUpgradingFeature();
 ```
+
+## The effective Runtime Feature
+
+Finally, the `RuntimeEnvironment2FeatureModel` OSGi service is also able to compute the real runtime Feature which is assembled from the Feature used to launch the platform and that targets the runtime Feature:
+
+```
+import org.apache.sling.feature.r2f.*;
+
+@Reference
+RuntimeEnvironment2FeatureModel generator;
+
+...
+Feature launchFeature = generator.getLaunch2RuntimeUpgradingFeature();
+```
+

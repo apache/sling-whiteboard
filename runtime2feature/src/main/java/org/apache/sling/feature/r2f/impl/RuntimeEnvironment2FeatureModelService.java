@@ -17,6 +17,7 @@
 package org.apache.sling.feature.r2f.impl;
 
 import static java.nio.file.Files.newBufferedReader;
+import static org.apache.sling.feature.builder.FeatureBuilder.assemble;
 import static org.apache.sling.feature.diff.FeatureDiff.compareFeatures;
 import static org.apache.sling.feature.io.json.FeatureJSONReader.read;
 
@@ -30,6 +31,9 @@ import java.util.stream.Stream;
 
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.Prototype;
+import org.apache.sling.feature.builder.BuilderContext;
+import org.apache.sling.feature.builder.FeatureProvider;
 import org.apache.sling.feature.diff.DiffRequest;
 import org.apache.sling.feature.r2f.RuntimeEnvironment2FeatureModel;
 import org.osgi.framework.Bundle;
@@ -42,9 +46,15 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 
 @Component(service = RuntimeEnvironment2FeatureModel.class)
-public class RuntimeEnvironment2FeatureModelService implements RuntimeEnvironment2FeatureModel {
+public class RuntimeEnvironment2FeatureModelService implements RuntimeEnvironment2FeatureModel, FeatureProvider {
 
     private static final String SLING_FEATURE_PROPERTY_NAME = "sling.feature";
+
+    private static final String RUNNING_CLASSIFIER = "running";
+
+    private static final String RUNTIME_CLASSIFIER = "runtime";
+
+    private static final String PACKAGING_FEATURE = "slingosgifeature";
 
     protected BundleContext bundleContext;
 
@@ -82,13 +92,8 @@ public class RuntimeEnvironment2FeatureModelService implements RuntimeEnvironmen
     }
 
     @Override
-    public Feature getRuntimeFeature() {
-        String groupId = launchFeature.getId().getGroupId();
-        String artifactId = launchFeature.getId().getArtifactId();
-        String version = launchFeature.getId().getArtifactId();
-        String classifier = launchFeature.getId().getArtifactId() + "-RUNTIME";
-
-        Feature targetFeature = new Feature(new ArtifactId(groupId, artifactId, version, classifier, null));
+    public Feature getRunningFeature() {
+        Feature targetFeature = new Feature(newId(RUNNING_CLASSIFIER));
 
         // collect all bundles
 
@@ -124,16 +129,53 @@ public class RuntimeEnvironment2FeatureModelService implements RuntimeEnvironmen
     }
 
     @Override
-    public Feature getLaunch2RuntimeUpgradingFeature() {
-        Feature runtimeFeature = getRuntimeFeature();
+    public Feature getLaunch2RunningUpgradingFeature() {
+        Feature runningFeature = getRunningFeature();
 
         // framework-properties can not be scanned in the BundleContext ATM
         // extensions can not be computed at runtime
         return compareFeatures(new DiffRequest()
                                .setPrevious(launchFeature)
-                               .setCurrent(runtimeFeature)
+                               .setCurrent(runningFeature)
                                .addIncludeComparator("bundles")
                                .addIncludeComparator("configurations"));
+    }
+
+    @Override
+    public Feature getRuntimeFeature() {
+        Feature launch2RunningUpgradingFeature = getLaunch2RunningUpgradingFeature();
+        Prototype prototype = launch2RunningUpgradingFeature.getPrototype();
+
+        // if there are no differences, no need to assemble the new Feature, it is a vanilla Feature
+
+        if (launch2RunningUpgradingFeature.getBundles().isEmpty()
+                && launch2RunningUpgradingFeature.getConfigurations().isEmpty()
+                && prototype.getBundleRemovals().isEmpty()
+                && prototype.getConfigurationRemovals().isEmpty()) {
+            return launchFeature;
+        }
+
+        ArtifactId runtimeId = newId(RUNTIME_CLASSIFIER);
+
+        BuilderContext context = new BuilderContext(this);
+
+        return assemble(runtimeId, context, launch2RunningUpgradingFeature);
+    }
+
+    @Override
+    public Feature provide(ArtifactId id) {
+        if (launchFeature.getId().equals(id)) {
+            return launchFeature;
+        }
+        return null;
+    }
+
+    private ArtifactId newId(String classifier) {
+        String groupId = launchFeature.getId().getGroupId();
+        String artifactId = launchFeature.getId().getArtifactId();
+        String version = launchFeature.getId().getVersion();
+
+        return new ArtifactId(groupId, artifactId, version, classifier, PACKAGING_FEATURE);
     }
 
 }
