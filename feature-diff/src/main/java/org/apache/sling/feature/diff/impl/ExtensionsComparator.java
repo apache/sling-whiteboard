@@ -133,7 +133,7 @@ public final class ExtensionsComparator extends AbstractFeatureElementComparator
         }
 
         if (replace) {
-            target.getPrototype().getConfigurationRemovals().add(currentExtension.getName());
+            target.getPrototype().getExtensionRemovals().add(currentExtension.getName());
             target.getExtensions().add(currentExtension);
         }
     }

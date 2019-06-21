@@ -94,9 +94,9 @@ public class ExtensionsComparatorTest extends AbstractComparatorTest<ExtensionsC
 
         Extension current = new Extension(TEXT, "repoinit", true);
         current.setText("create path /content/example.com(mixin mix:referenceable)\ncreate path (nt:unstructured) /var");
-
         comparator.computeDiff(previous, current, targetFeature);
 
+        assertTrue(targetFeature.getPrototype().getExtensionRemovals().contains(current.getName()));
         assertEquals(current.getText(), targetFeature.getExtensions().getByName(current.getName()).getText());
     }
 
@@ -107,9 +107,9 @@ public class ExtensionsComparatorTest extends AbstractComparatorTest<ExtensionsC
 
         Extension current = new Extension(JSON, "api-regions", true);
         current.setJSON("{\"name\": \"deprecated\"}");
-
         comparator.computeDiff(previous, current, targetFeature);
 
+        assertTrue(targetFeature.getPrototype().getExtensionRemovals().contains(current.getName()));
         assertEquals(current.getJSON(), targetFeature.getExtensions().getByName(current.getName()).getJSON());
     }
 
