@@ -64,6 +64,8 @@ public final class ExtensionsComparator extends AbstractFeatureElementComparator
     }
 
     protected void computeDiff(Extension previousExtension, Extension currentExtension, Feature target) {
+        boolean replace = false;
+
         switch (previousExtension.getType()) {
             case ARTIFACTS:
                 Extension targetExtension = new Extension(previousExtension.getType(), previousExtension.getName(), previousExtension.isRequired());
@@ -100,7 +102,7 @@ public final class ExtensionsComparator extends AbstractFeatureElementComparator
 
             case TEXT:
                 if (!previousExtension.getText().equals(currentExtension.getText())) {
-                    target.getExtensions().add(currentExtension);
+                    replace = true;
                 }
                 break;
 
@@ -113,7 +115,7 @@ public final class ExtensionsComparator extends AbstractFeatureElementComparator
                     JsonValue currentNode = parseJSON(currentJSON); 
 
                     if (!previousNode.equals(currentNode)) {
-                        target.getExtensions().add(currentExtension);
+                        replace = true;
                     }
                 } catch (Throwable t) {
                     // should not happen
@@ -128,6 +130,11 @@ public final class ExtensionsComparator extends AbstractFeatureElementComparator
             // it doesn't happen
             default:
                 break;
+        }
+
+        if (replace) {
+            target.getPrototype().getConfigurationRemovals().add(currentExtension.getName());
+            target.getExtensions().add(currentExtension);
         }
     }
 
