@@ -16,10 +16,14 @@
  */
 package org.apache.sling.feature.diff.impl;
 
-import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
+import static java.util.Objects.deepEquals;
 
+import java.util.Collection;
 import java.util.Dictionary;
 import java.util.Enumeration;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 
 import org.apache.sling.feature.Configuration;
 import org.apache.sling.feature.Configurations;
@@ -70,11 +74,14 @@ public final class ConfigurationsComparator extends AbstractFeatureElementCompar
         while (previousKeys.hasMoreElements()) {
             String previousKey = previousKeys.nextElement();
 
-            Object previousValue = previousProperties.get(previousKey);
-            Object currentValue = currentProperties.get(previousKey);
+            // no other way to check if a key was removed in a dictionary
+            if (hasKey(previousKey, currentProperties.keys())) {
+                Object previousValue = previousProperties.get(previousKey);
+                Object currentValue = currentProperties.get(previousKey);
 
-            if (currentValue != null && !reflectionEquals(previousValue, currentValue, true)) {
-                targetProperties.put(previousKey, currentValue);
+                if (!areEquals(previousValue, currentValue)) {
+                    targetProperties.put(previousKey, currentValue);
+                }
             }
         }
 
@@ -93,6 +100,96 @@ public final class ConfigurationsComparator extends AbstractFeatureElementCompar
         if (!targetProperties.isEmpty()) {
             target.getConfigurations().add(targetConfiguration);
         }
+    }
+
+    private static boolean areEquals(Object lhs, Object rhs) {
+        if (lhs == rhs) {
+            return true;
+        }
+
+        if (lhs == null ^ rhs == null) {
+            return false;
+        }
+
+        // Find the leaf class since there may be transients in the leaf
+        // class or in classes between the leaf and root.
+        // If we are not testing transients or a subclass has no ivars,
+        // then a subclass can test equals to a superclass.
+        final Class<?> lhsClass = lhs.getClass();
+        final Class<?> rhsClass = rhs.getClass();
+        Class<?> testClass;
+
+        if (lhsClass.isInstance(rhs)) {
+            testClass = lhsClass;
+            if (!rhsClass.isInstance(lhs)) {
+                // rhsClass is a subclass of lhsClass
+                testClass = rhsClass;
+            }
+        } else if (rhsClass.isInstance(lhs)) {
+            testClass = rhsClass;
+            if (!lhsClass.isInstance(rhs)) {
+                // lhsClass is a subclass of rhsClass
+                testClass = lhsClass;
+            }
+        } else {
+            // The two classes are not related.
+            return false;
+        }
+
+        if (testClass.isArray()) {
+            return deepEquals(lhs, rhs);
+        } else if (Collection.class.isAssignableFrom(testClass)) {
+            return areEquals((Collection<?>) lhs, (Collection<?>) rhs);
+        } else if (Map.class.isAssignableFrom(testClass)) {
+            return areEquals((Map<?, ?>) lhs, (Map<?, ?>) rhs);
+        }
+
+        return Objects.equals(lhs, rhs);
+    }
+
+    private static boolean areEquals(Collection<?> lhs, Collection<?> rhs) {
+        if (lhs.size() != rhs.size()) {
+            return false;
+        }
+
+        return deepEquals(lhs.toArray(), rhs.toArray());
+    }
+
+    private static boolean areEquals(Map<?, ?> lhs, Map<?, ?> rhs) {
+        for (Entry<?, ?> previousEntry : lhs.entrySet()) {
+            Object previousKey = previousEntry.getKey();
+
+            if (!rhs.containsKey(previousKey)) {
+                return false;
+            } else {
+                Object previousValue = previousEntry.getValue();
+                Object currentValue = rhs.get(previousKey);
+
+                if (!areEquals(previousValue, currentValue)) {
+                    return false;
+                }
+            }
+        }
+
+        for (Object currentKey : rhs.keySet()) {
+            if (!lhs.containsKey(currentKey)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static boolean hasKey(String key, Enumeration<String> keys) {
+        while (keys.hasMoreElements()) {
+            String current = keys.nextElement();
+
+            if (key.equals(current)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
 }

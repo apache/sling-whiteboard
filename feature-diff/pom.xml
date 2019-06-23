@@ -49,12 +49,6 @@
       <version>1.0-rc5</version>
       <scope>provided</scope>
     </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
-      <version>3.8.1</version>
-      <scope>provided</scope>
-    </dependency>
 
     <!--
      | Sling Feature Model libraries
