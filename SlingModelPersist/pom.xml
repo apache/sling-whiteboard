@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.apache.sling</groupId>
-    <artifactId>SlingModelPersist</artifactId>
+    <artifactId>org.apache.sling.models.persist</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>bundle</packaging>
 
