@@ -8,7 +8,7 @@ This is a simple OSGi service which is able to convert, given a `BundleContext` 
 
 APIs are really simple: it is necessary first to obtain the `RuntimeEnvironment2FeatureModel` instance from the OSGi Service Registry, then 
 
-```
+```java
 import org.apache.sling.feature.r2f.*;
 
 @Reference
@@ -26,7 +26,7 @@ Currently version will include in the generated Feature Model `bundles` and `con
 
 The `RuntimeEnvironment2FeatureModel` OSGi service is also able to retrieve the (assembled) Feature used to launch the platform:
 
-```
+```java
 import org.apache.sling.feature.r2f.*;
 
 @Reference
@@ -40,7 +40,7 @@ Feature launchFeature = generator.getLaunchFeature();
 
 The `RuntimeEnvironment2FeatureModel` OSGi service is also able to compute the upgrade Feature which prototypes from the Feature used to launch the platform and that targets the runtime Feature:
 
-```
+```java
 import org.apache.sling.feature.r2f.*;
 
 @Reference
@@ -54,7 +54,7 @@ Feature launchFeature = generator.getLaunch2RuntimeUpgradingFeature();
 
 Finally, the `RuntimeEnvironment2FeatureModel` OSGi service is also able to compute the real runtime Feature which is assembled from the Feature used to launch the platform and that targets the runtime Feature:
 
-```
+```java
 import org.apache.sling.feature.r2f.*;
 
 @Reference

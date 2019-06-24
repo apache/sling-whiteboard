@@ -48,7 +48,7 @@ The `DiffRequest` data object can be configured in order to include/exclude one 
 
 Users can simply add via the include/exclude methods the section(s) they are interested:
 
-```
+```java
 DiffRequest diffRequest = new DiffRequest()
                           .setPrevious(previous)
                           .setCurrent(current)
