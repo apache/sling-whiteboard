@@ -17,71 +17,76 @@
 package org.apache.sling.feature.diff;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.ServiceLoader.load;
 
+import java.util.Collection;
 import java.util.LinkedList;
-import java.util.List;
 
+import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.Prototype;
+import org.apache.sling.feature.diff.impl.FeatureElementComparator;
 
 public final class FeatureDiff {
 
-    public static FeatureDiff compareFeatures(Feature previous, Feature current) {
-        previous = requireNonNull(previous, "Impossible to compare null previous feature.");
-        current = requireNonNull(current, "Impossible to compare null current feature.");
+    private static final String UPDATER_CLASSIFIER = "updater";
 
-        if (!previous.getId().isSame(current.getId())) {
-            throw new IllegalArgumentException("Feature comparison has to be related to different versions of the same Feature.");
-        }
+    public static Feature compareFeatures(DiffRequest diffRequest) {
+        requireNonNull(diffRequest, "Impossible to compare features without specifying them.");
+        Feature previous = requireNonNull(diffRequest.getPrevious(), "Impossible to compare null previous feature.");
+        Feature current = requireNonNull(diffRequest.getCurrent(), "Impossible to compare null current feature.");
 
         if (previous.getId().equals(current.getId())) {
             throw new IllegalArgumentException("Input Features refer to the the same Feature version.");
         }
 
-        FeatureDiff featureDiff = new FeatureDiff(previous, current);
-
-        featureDiff.addSection(new GenericMapComparator("framework-properties").compare(previous.getFrameworkProperties(), current.getFrameworkProperties()));
-        featureDiff.addSection(new ArtifactsComparator("bundles").apply(previous.getBundles(), current.getBundles()));
-        featureDiff.addSection(new ConfigurationsComparator().apply(previous.getConfigurations(), current.getConfigurations()));
-        featureDiff.addSection(new RequirementsComparator().apply(previous.getRequirements(), current.getRequirements()));
-        featureDiff.addSection(new ExtensionsComparator().apply(previous.getExtensions(), current.getExtensions()));
-        featureDiff.addSection(new GenericMapComparator("variables").compare(previous.getVariables(), current.getVariables()));
-
-        return featureDiff;
-    }
-
-    private final List<DiffSection> diffSections = new LinkedList<>();
-
-    private final Feature previous;
-
-    private final Feature current;
-
-    // this class can not be instantiated from outside
-    private FeatureDiff(Feature previous, Feature current) {
-        this.previous = previous;
-        this.current = current;
-    }
-
-    public Feature getPrevious() {
-        return previous;
-    }
-
-    public Feature getCurrent() {
-        return current;
-    }
-
-    protected void addSection(DiffSection diffSection) {
-        DiffSection checkedDiffSection = requireNonNull(diffSection, "Null diff section can not be added to the resulting diff");
-        if (!diffSection.isEmpty()) {
-            diffSections.add(checkedDiffSection);
+        StringBuilder classifier = new StringBuilder();
+        if (current.getId().getClassifier() != null && !current.getId().getClassifier().isEmpty()) {
+            classifier.append(current.getId().getClassifier())
+                      .append('_');
         }
+        classifier.append(UPDATER_CLASSIFIER);
+
+        ArtifactId resultId = new ArtifactId(current.getId().getGroupId(),
+                                             current.getId().getArtifactId(), 
+                                             current.getId().getVersion(),
+                                             classifier.toString(),
+                                             current.getId().getType());
+
+        Feature target = new Feature(resultId);
+        target.setTitle(previous.getId() + " to " + current.getId());
+        target.setDescription("Computed " + previous.getId() + " to " + current.getId() + " Feature update");
+
+        Prototype prototype = new Prototype(previous.getId());
+        target.setPrototype(prototype);
+
+        for (FeatureElementComparator comparator : loadComparators(diffRequest)) {
+            comparator.computeDiff(previous, current, target);
+        }
+
+        return target;
     }
 
-    public boolean isEmpty() {
-        return diffSections.isEmpty();
+    protected static Iterable<FeatureElementComparator> loadComparators(DiffRequest diffRequest) {
+        Collection<FeatureElementComparator> filteredComparators = new LinkedList<>();
+
+        for (FeatureElementComparator comparator : load(FeatureElementComparator.class)) {
+            boolean included = !diffRequest.getIncludeComparators().isEmpty() ? diffRequest.getIncludeComparators().contains(comparator.getId()) : true;
+            boolean excluded = diffRequest.getExcludeComparators().contains(comparator.getId());
+
+            if (included && !excluded) {
+                filteredComparators.add(comparator);
+            }
+        }
+
+        return filteredComparators;
     }
 
-    public Iterable<DiffSection> getSections() {
-        return diffSections;
+    /**
+     * this class must not be instantiated directly
+     */
+    private FeatureDiff() {
+        // do nothing
     }
 
 }

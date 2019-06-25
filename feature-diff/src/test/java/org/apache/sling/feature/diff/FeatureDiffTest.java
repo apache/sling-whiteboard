@@ -16,70 +16,63 @@
  */
 package org.apache.sling.feature.diff;
 
-import static org.apache.sling.feature.diff.FeatureDiff.compareFeatures;
-import static org.junit.Assert.assertEquals;
+import static org.apache.sling.feature.diff.FeatureDiff.loadComparators;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import org.apache.sling.feature.ArtifactId;
-import org.apache.sling.feature.Feature;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.apache.sling.feature.diff.impl.FeatureElementComparator;
 import org.junit.Test;
 
-public class FeatureDiffTest {
+public final class FeatureDiffTest {
 
-    @Test(expected = NullPointerException.class)
-    public void doesNotAcceptNullPreviousFeature() {
-        compareFeatures(null, null);
-    }
+    @Test
+    public void loadAllComparators() {
+        Set<String> comparators = filterComparators(new DiffRequest());
 
-    @Test(expected = NullPointerException.class)
-    public void doesNotAcceptNullCurrentFeature() {
-        compareFeatures(new Feature(ArtifactId.fromMvnId("org.apache.sling:org.apache.sling.feature.diff:1.0.0")), null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void doesNotAcceptDifferentFeatures() {
-        Feature previous = new Feature(ArtifactId.fromMvnId("org.apache.sling:org.apache.sling.feature.apiregions:1.0.0"));
-        Feature current = new Feature(ArtifactId.fromMvnId("org.apache.sling:org.apache.sling.feature.diff:1.0.0"));
-        compareFeatures(previous, current);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void doesNotAcceptSameFeature() {
-        Feature previous = new Feature(ArtifactId.fromMvnId("org.apache.sling:org.apache.sling.feature.diff:1.0.0"));
-        Feature current = new Feature(ArtifactId.fromMvnId("org.apache.sling:org.apache.sling.feature.diff:1.0.0"));
-        compareFeatures(previous, current);
+        assertTrue(comparators.isEmpty());
     }
 
     @Test
-    public void keepFeatureInputs() {
-        Feature previous = new Feature(ArtifactId.fromMvnId("org.apache.sling:org.apache.sling.feature.diff:0.9.0"));
-        Feature current = new Feature(ArtifactId.fromMvnId("org.apache.sling:org.apache.sling.feature.diff:1.0.0"));
-        FeatureDiff featureDiff = compareFeatures(previous, current);
-        assertTrue(featureDiff.isEmpty());
-        assertEquals(previous, featureDiff.getPrevious());
-        assertEquals(current, featureDiff.getCurrent());
+    public void loadIncludedComparators() {
+        Set<String> comparators = filterComparators(new DiffRequest()
+                                                    .addIncludeComparator("bundles")
+                                                    .addIncludeComparator("configurations"));
+
+        assertFalse(comparators.isEmpty());
+        assertFalse(comparators.contains("bundles"));
+        assertFalse(comparators.contains("configurations"));
+        assertTrue(comparators.contains("extensions"));
+        assertTrue(comparators.contains("framework-properties"));
     }
 
     @Test
-    public void frameworkPropertiesUpdated() {
-        Feature previous = new Feature(ArtifactId.fromMvnId("org.apache.sling:org.apache.sling.feature.diff:0.9.0"));
-        previous.getFrameworkProperties().put("env", "staging");
+    public void loadExcludedComparators() {
+        Set<String> comparators = filterComparators(new DiffRequest()
+                                                    .addExcludeComparator("bundles")
+                                                    .addExcludeComparator("configurations"));
 
-        Feature current = new Feature(ArtifactId.fromMvnId("org.apache.sling:org.apache.sling.feature.diff:1.0.0"));
-        current.getFrameworkProperties().put("env", "prod");
+        assertFalse(comparators.isEmpty());
+        assertTrue(comparators.contains("bundles"));
+        assertTrue(comparators.contains("configurations"));
+        assertFalse(comparators.contains("extensions"));
+        assertFalse(comparators.contains("framework-properties"));
+    }
 
-        FeatureDiff diff = compareFeatures(previous, current);
-        assertFalse(diff.isEmpty());
+    private Set<String> filterComparators(DiffRequest diffRequest) {
+        Set<String> comparators = new HashSet<>();
+        comparators.add("bundles");
+        comparators.add("configurations");
+        comparators.add("extensions");
+        comparators.add("framework-properties");
 
-        DiffSection fwPropertiesDiff = diff.getSections().iterator().next();
-        assertFalse(fwPropertiesDiff.isEmpty());
+        for (FeatureElementComparator comparator : loadComparators(diffRequest)) {
+            comparators.remove(comparator.getId());
+        }
 
-        @SuppressWarnings("unchecked") // known type
-        UpdatedItem<String> updated = (UpdatedItem<String>) fwPropertiesDiff.getUpdatedItems().iterator().next();
-        assertEquals("env", updated.getId());
-        assertEquals("staging", updated.getPrevious());
-        assertEquals("prod", updated.getCurrent());
+        return comparators;
     }
 
 }

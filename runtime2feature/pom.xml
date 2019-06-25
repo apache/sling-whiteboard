@@ -27,31 +27,20 @@
     <relativePath />
   </parent>
 
-  <artifactId>org.apache.sling.feature.diff</artifactId>
+  <artifactId>org.apache.sling.feature.r2f</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 
-  <name>Apache Sling Feature Model diff tool</name>
-  <description>Feature Model diff tool for Apache Sling</description>
+  <name>Apache Sling Feature Model runtime creator</name>
+  <description>Feature Model runtime creator tool for Apache Sling</description>
 
   <properties>
     <sling.java.version>8</sling.java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <jackson.version>2.9.8</jackson.version>
   </properties>
 
   <dependencies>
     <!--
-     | utilities
-    -->
-    <dependency>
-      <groupId>com.google.auto.service</groupId>
-      <artifactId>auto-service</artifactId>
-      <version>1.0-rc5</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <!--
-     | Sling Feature Model libraries
+     | core OSGi APIs
     -->
     <dependency>
       <groupId>org.osgi</groupId>
@@ -60,24 +49,39 @@
     </dependency>
     <dependency>
       <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.compendium</artifactId>
+      <version>5.0.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.osgi</groupId>
       <artifactId>org.osgi.annotation.versioning</artifactId>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.service.component.annotations</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <!--
+     | Apache Sling Feature APIs
+    -->
     <dependency>
       <groupId>org.apache.sling</groupId>
       <artifactId>org.apache.sling.feature</artifactId>
       <version>1.0.4</version>
       <scope>provided</scope>
     </dependency>
-
-    <!--
-     | JSON patch
-    -->
     <dependency>
-      <groupId>org.apache.geronimo.specs</groupId>
-      <artifactId>geronimo-json_1.0_spec</artifactId>
-      <version>1.0-alpha-1</version>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.feature.io</artifactId>
+      <version>1.0.4</version>
       <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.feature.diff</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
     </dependency>
 
     <!--
@@ -86,12 +90,6 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.johnzon</groupId>
-      <artifactId>johnzon-core</artifactId>
-      <version>1.0.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

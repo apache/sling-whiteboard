@@ -14,9 +14,24 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.sling.feature.diff.impl;
 
-/**
- * Core APIs to compare different Apache Sling Feature models.
- */
-@org.osgi.annotation.versioning.Version("1.0.0")
-package org.apache.sling.feature.diff;
+abstract class AbstractFeatureElementComparator implements FeatureElementComparator {
+
+    private final String id;
+
+    public AbstractFeatureElementComparator(String id) {
+        this.id = id;
+    }
+
+    @Override
+    public final String getId() {
+        return id;
+    }
+
+    @Override
+    public String toString() {
+        return "FeatureElementComparator [id=" + id + "]";
+    }
+
+}

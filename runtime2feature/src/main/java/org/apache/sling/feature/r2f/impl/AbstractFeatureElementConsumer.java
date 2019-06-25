@@ -14,9 +14,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.sling.feature.r2f.impl;
 
-/**
- * Core APIs to compare different Apache Sling Feature models.
- */
-@org.osgi.annotation.versioning.Version("1.0.0")
-package org.apache.sling.feature.diff;
+import java.util.function.Consumer;
+
+import org.apache.sling.feature.Feature;
+
+abstract class AbstractFeatureElementConsumer<T> implements Consumer<T> {
+
+    private final Feature targetFeature;
+
+    public AbstractFeatureElementConsumer(Feature targetFeature) {
+        this.targetFeature = targetFeature;
+    }
+
+    protected final Feature getTargetFeature() {
+        return targetFeature;
+    }
+
+}

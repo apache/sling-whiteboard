@@ -14,9 +14,18 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.sling.feature.r2f;
 
-/**
- * Core APIs to compare different Apache Sling Feature models.
- */
-@org.osgi.annotation.versioning.Version("1.0.0")
-package org.apache.sling.feature.diff;
+import org.apache.sling.feature.Feature;
+
+public interface RuntimeEnvironment2FeatureModel {
+
+    Feature getLaunchFeature();
+
+    Feature getRunningFeature();
+
+    Feature getLaunch2RunningUpgradingFeature();
+
+    Feature getRuntimeFeature();
+
+}

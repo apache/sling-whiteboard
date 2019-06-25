@@ -14,9 +14,30 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.sling.feature.diff.impl;
+
+import org.apache.sling.feature.Feature;
 
 /**
- * Core APIs to compare different Apache Sling Feature models.
+ * A simple service to compare a specific Feature section.
  */
-@org.osgi.annotation.versioning.Version("1.0.0")
-package org.apache.sling.feature.diff;
+public interface FeatureElementComparator {
+
+    /**
+     * Returns a short id which identifies the Feature section for which differences will be computed.
+     *
+     * @return a short id which identifies the Feature section for which differences will be computed.
+     */
+    String getId();
+
+    /**
+     * Compares a specific Feature sections between the previous and the current,
+     * reporting additions/updates/removals in the target.
+     *
+     * @param previous
+     * @param current
+     * @param target
+     */
+    public void computeDiff(Feature previous, Feature current, Feature target);
+
+}

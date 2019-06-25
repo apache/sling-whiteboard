@@ -15,8 +15,5 @@
  * the License.
  */
 
-/**
- * Core APIs to compare different Apache Sling Feature models.
- */
 @org.osgi.annotation.versioning.Version("1.0.0")
-package org.apache.sling.feature.diff;
+package org.apache.sling.feature.r2f;
