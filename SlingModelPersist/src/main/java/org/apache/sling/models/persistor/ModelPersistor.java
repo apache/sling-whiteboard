@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.sling.models.persist;
+package org.apache.sling.models.persistor;
 
 import javax.jcr.RepositoryException;
 import org.apache.sling.api.resource.PersistenceException;
@@ -24,9 +24,9 @@ import org.apache.sling.api.resource.ResourceResolver;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Definition of Model Persist service
+ * Definition of Model Persistor service
  */
-public interface ModelPersist {
+public interface ModelPersistor {
 
     void persist(@NotNull Object object, @NotNull ResourceResolver resourceResolver) throws RepositoryException, PersistenceException, IllegalArgumentException, IllegalAccessException;
 

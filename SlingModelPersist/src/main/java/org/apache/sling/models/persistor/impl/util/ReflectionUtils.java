@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.sling.models.persist.impl.util;
+package org.apache.sling.models.persistor.impl.util;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
@@ -41,12 +41,13 @@ import java.util.Map;
 import java.util.Set;
 import javax.inject.Named;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.models.annotations.Via;
-import org.apache.sling.models.persist.ModelPersist;
-import org.apache.sling.models.persist.annotations.Ignore;
+import org.apache.sling.models.persistor.annotations.Ignore;
+import org.apache.sling.models.persistor.ModelPersistor;
 
 /**
  * Utility methods around object reflection.
@@ -127,7 +128,7 @@ public class ReflectionUtils {
 
         // Any field with this type will be ignored
         UNSUPPORTED_CLASSES.add(Resource.class);
-        UNSUPPORTED_CLASSES.add(ModelPersist.class);
+        UNSUPPORTED_CLASSES.add(ModelPersistor.class);
         UNSUPPORTED_PACKAGES.add("javax.jcr");
         UNSUPPORTED_PACKAGES.add("com.day.cq");
         UNSUPPORTED_PACKAGES.add("org.apache.sling.api");
@@ -229,7 +230,7 @@ public class ReflectionUtils {
         }
 
         Field[] array = clazz.getDeclaredFields();
-        if (AssertUtils.isNotEmpty(array)) {
+        if (ArrayUtils.isNotEmpty(array)) {
             fields.addAll(Arrays.asList(array));
         }
 

@@ -16,34 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.sling.models.persist.impl.util;
+package org.apache.sling.models.persistor.annotations;
 
-/**
- * Simple assertion functions.
- *
- * Part of the code of this class has been borrowed from the open-source project
- * <code>jerry-core</code> from https://github.com/sangupta/jerry-core.
- *
- */
-public class AssertUtils {
-    private AssertUtils() {
-        // Utility class cannot be instantiated
-    }
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-    public static boolean isEmpty(String str) {
-        return str == null || str.isEmpty();
-    }
-
-    public static boolean isEmpty(Object[] array) {
-        return array == null || array.length == 0;
-    }
-
-    public static boolean isNotEmpty(String str) {
-        return !isEmpty(str);
-    }
-
-    public static boolean isNotEmpty(Object[] array) {
-        return !isEmpty(array);
-    }
-
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE, ElementType.FIELD, ElementType.METHOD})
+public @interface ChildType {
+    String value() default "";
 }

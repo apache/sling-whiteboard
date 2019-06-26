@@ -20,7 +20,7 @@
 import javax.inject.Inject;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.models.annotations.Model;
-import org.apache.sling.models.persist.annotations.ChildType;
+import org.apache.sling.models.persistor.annotations.ChildType;
 
 /**
  * Example of bean with getPath method that stores the path in a field

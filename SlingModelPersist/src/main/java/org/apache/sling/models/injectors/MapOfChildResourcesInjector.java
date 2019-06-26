@@ -33,7 +33,7 @@ import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.models.persist.annotations.DirectDescendants;
+import org.apache.sling.models.persistor.annotations.DirectDescendants;
 import org.apache.sling.models.spi.AcceptsNullName;
 import org.apache.sling.models.spi.DisposalCallbackRegistry;
 import org.apache.sling.models.spi.Injector;

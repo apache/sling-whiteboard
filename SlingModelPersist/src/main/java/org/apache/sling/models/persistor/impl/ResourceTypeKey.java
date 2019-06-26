@@ -15,15 +15,15 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- */package org.apache.sling.models.persist.impl;
+ */package org.apache.sling.models.persistor.impl;
 
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.sling.models.annotations.Model;
-import org.apache.sling.models.persist.annotations.ChildType;
-import org.apache.sling.models.persist.annotations.ResourceType;
+import org.apache.sling.models.persistor.annotations.ChildType;
+import org.apache.sling.models.persistor.annotations.ResourceType;
 
-import static org.apache.sling.models.persist.impl.util.ReflectionUtils.getAnnotatedValue;
+import static org.apache.sling.models.persistor.impl.util.ReflectionUtils.getAnnotatedValue;
 
 /**
  * Represents primary/child pair type

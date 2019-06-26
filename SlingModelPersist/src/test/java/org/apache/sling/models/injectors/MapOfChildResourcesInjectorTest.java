@@ -21,8 +21,7 @@ import javax.jcr.RepositoryException;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.models.persist.ModelPersist;
-import org.apache.sling.models.persist.impl.ModelPersistImpl;
+import org.apache.sling.models.persistor.impl.ModelPersistorImpl;
 import org.apache.sling.models.spi.Injector;
 import org.apache.sling.testing.mock.sling.junit.SlingContext;
 import org.junit.Before;
@@ -30,6 +29,8 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+
+import org.apache.sling.models.persistor.ModelPersistor;
 
 /**
  *
@@ -40,14 +41,14 @@ public class MapOfChildResourcesInjectorTest {
     public final SlingContext context = new SlingContext();
 
     ResourceResolver rr;
-    ModelPersist jcrPersist;
+    ModelPersistor jcrPersist;
 
     @Before
     public void setUp() {
         rr = context.resourceResolver();
         context.addModelsForPackage(this.getClass().getPackage().getName());
         context.registerService(Injector.class, new MapOfChildResourcesInjector());
-        jcrPersist = new ModelPersistImpl();
+        jcrPersist = new ModelPersistorImpl();
     }
 
     @Test

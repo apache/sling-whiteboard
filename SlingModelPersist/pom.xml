@@ -3,11 +3,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.apache.sling</groupId>
-    <artifactId>org.apache.sling.models.persist</artifactId>
+    <artifactId>org.apache.sling.models.persistor</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>bundle</packaging>
 
-    <name>Sling Model Persist OSGi Bundle</name>
+    <name>Sling Model Persistor</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

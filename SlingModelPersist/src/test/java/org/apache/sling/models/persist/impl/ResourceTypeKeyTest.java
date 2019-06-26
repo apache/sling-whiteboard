@@ -18,6 +18,7 @@
  */
 package org.apache.sling.models.persist.impl;
 
+import org.apache.sling.models.persistor.impl.ResourceTypeKey;
 import org.apache.sling.models.persist.bean.BeanWithPathField;
 import org.junit.Before;
 import org.junit.Test;

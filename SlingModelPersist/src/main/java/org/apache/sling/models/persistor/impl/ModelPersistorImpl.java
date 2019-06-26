@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.sling.models.persist.impl;
+package org.apache.sling.models.persistor.impl;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.StreamSupport;
 import javax.jcr.RepositoryException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.apache.sling.api.resource.ModifiableValueMap;
@@ -38,35 +39,31 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceUtil;
 import org.apache.sling.models.annotations.Path;
-import org.apache.sling.models.persist.annotations.DirectDescendants;
-import org.apache.sling.models.persist.impl.util.AssertUtils;
-import org.apache.sling.models.persist.impl.util.ReflectionUtils;
+import org.apache.sling.models.persistor.ModelPersistor;
+import org.apache.sling.models.persistor.annotations.DirectDescendants;
+import org.apache.sling.models.persistor.impl.util.ReflectionUtils;
+import org.jetbrains.annotations.NotNull;
+import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.osgi.service.component.annotations.Component;
 
-
-import org.jetbrains.annotations.NotNull;
-
-import static org.apache.sling.models.persist.impl.util.ReflectionUtils.getAnnotatedValue;
-
-import org.apache.sling.models.persist.ModelPersist;
+import static org.apache.sling.models.persistor.impl.util.ReflectionUtils.getAnnotatedValue;
 
 /**
- * Code to persist a given object instance to a JCR node.
+ * Code to persist a given object graph to a sling resource tree.
  *
  */
-@Component(service =ModelPersist.class)
-public class ModelPersistImpl implements ModelPersist {
+@Component(service = ModelPersistor.class)
+public class ModelPersistorImpl implements ModelPersistor {
 
-    public ModelPersistImpl() {
+    public ModelPersistorImpl() {
         // Utility class, cannot be instantiated
     }
 
     /**
      * My private logger
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(ModelPersistImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ModelPersistorImpl.class);
 
     static final Map<String, Object> RESOURCE_TYPE_NT_UNSTRUCTURED = new HashMap<>();
 
@@ -78,25 +75,28 @@ public class ModelPersistImpl implements ModelPersist {
         RESOURCE_TYPE_NT_UNSTRUCTURED.put(JCR_PRIMARYTYPE, NT_UNSTRUCTURED);
     }
 
-    public  void persist(final @NotNull Object instance, @NotNull ResourceResolver resourceResolver) throws PersistenceException, IllegalArgumentException, IllegalAccessException, RepositoryException {
-        persist (instance, resourceResolver, true);
+    @Override
+    public void persist(final @NotNull Object instance, @NotNull ResourceResolver resourceResolver) throws PersistenceException, IllegalArgumentException, IllegalAccessException, RepositoryException {
+        persist(instance, resourceResolver, true);
     }
 
-    public  void persist(final @NotNull Object instance, @NotNull ResourceResolver resourceResolver, boolean deepPersist) throws RepositoryException, PersistenceException, IllegalArgumentException, IllegalAccessException {
+    @Override
+    public void persist(final @NotNull Object instance, @NotNull ResourceResolver resourceResolver, boolean deepPersist) throws RepositoryException, PersistenceException, IllegalArgumentException, IllegalAccessException {
         String path = getJcrPath(instance);
         persist(path, instance, resourceResolver, deepPersist);
     }
 
-    public  void persist(final @NotNull String nodePath, final @NotNull Object instance,
+    @Override
+    public void persist(final @NotNull String nodePath, final @NotNull Object instance,
             @NotNull ResourceResolver resourceResolver) throws PersistenceException, IllegalArgumentException, IllegalAccessException, RepositoryException {
-        persist (nodePath, instance, resourceResolver, true);
+        persist(nodePath, instance, resourceResolver, true);
     }
 
-
-    public  void persist(final @NotNull String nodePath, final @NotNull Object instance,
+    @Override
+    public void persist(final @NotNull String nodePath, final @NotNull Object instance,
             @NotNull ResourceResolver resourceResolver, boolean deepPersist)
-                    throws RepositoryException, PersistenceException, IllegalArgumentException, IllegalAccessException {
-        if (nodePath == null || nodePath.trim().isEmpty()) {
+            throws RepositoryException, PersistenceException, IllegalArgumentException, IllegalAccessException {
+        if (StringUtils.isBlank(nodePath)) {
             throw new IllegalArgumentException("Node path cannot be null/empty");
         }
 
@@ -114,7 +114,7 @@ public class ModelPersistImpl implements ModelPersist {
         // let's create the resource first
         LOGGER.debug("Creating node at: {} of type: {}", nodePath, resourceType.primaryType);
         resource = ResourceUtil.getOrCreateResource(resourceResolver, nodePath, resourceType.primaryType, NT_UNSTRUCTURED, true);
-        if (AssertUtils.isNotEmpty(resourceType.childType)) {
+        if (StringUtils.isNotEmpty(resourceType.childType)) {
             LOGGER.debug("Needs a child node, creating node at: {} of type: {}", nodePath, resourceType.childType);
             resource = ResourceUtil.getOrCreateResource(resourceResolver, nodePath + "/" + JCR_CONTENT, resourceType.childType, NT_UNSTRUCTURED, true);
         }
@@ -140,7 +140,7 @@ public class ModelPersistImpl implements ModelPersist {
         resourceResolver.commit();
     }
 
-    private  void persistField(@NotNull Resource resource, @NotNull Object instance, Field field, boolean deepPersist) {
+    private void persistField(@NotNull Resource resource, @NotNull Object instance, Field field, boolean deepPersist) {
         try {
             // read the existing resource map
             ModifiableValueMap values = resource.adaptTo(ModifiableValueMap.class);
@@ -171,7 +171,7 @@ public class ModelPersistImpl implements ModelPersist {
         }
     }
 
-    private  void persistComplexValue(Object obj, Boolean implicitCollection, String nodePath, final String fieldName, Resource resource) throws RepositoryException, IllegalAccessException, IllegalArgumentException, PersistenceException {
+    private void persistComplexValue(Object obj, Boolean implicitCollection, String nodePath, final String fieldName, Resource resource) throws RepositoryException, IllegalAccessException, IllegalArgumentException, PersistenceException {
         if (obj == null) {
             return;
         }
@@ -194,7 +194,7 @@ public class ModelPersistImpl implements ModelPersist {
         }
     }
 
-    private  void persistCollection(final String collectionRoot, final Collection collection, ResourceResolver resourceResolver) throws PersistenceException, RepositoryException, IllegalArgumentException, IllegalAccessException {
+    private void persistCollection(final String collectionRoot, final Collection collection, ResourceResolver resourceResolver) throws PersistenceException, RepositoryException, IllegalArgumentException, IllegalAccessException {
         // now for each child in the collection - create a new node
         Set<String> childNodes = new HashSet<>();
         if (collection != null) {
@@ -216,11 +216,11 @@ public class ModelPersistImpl implements ModelPersist {
         deleteOrphanNodes(resourceResolver, collectionRoot, childNodes);
     }
 
-    private  <K, V> void persistMap(final String collectionRoot, final Map<K,V> collection, ResourceResolver resourceResolver) throws PersistenceException, RepositoryException, IllegalArgumentException, IllegalAccessException {
+    private <K, V> void persistMap(final String collectionRoot, final Map<K, V> collection, ResourceResolver resourceResolver) throws PersistenceException, RepositoryException, IllegalArgumentException, IllegalAccessException {
         // now for each child in the collection - create a new node
         Set<String> childNodes = new HashSet<>();
         if (collection != null) {
-            for (Map.Entry<K,V> childObject : collection.entrySet()) {
+            for (Map.Entry<K, V> childObject : collection.entrySet()) {
                 String childName = String.valueOf(childObject.getKey());
                 String childPath = collectionRoot + "/" + childName;
                 childNodes.add(childPath);
@@ -288,7 +288,7 @@ public class ModelPersistImpl implements ModelPersist {
                 return (String) FieldUtils.readField(pathField, obj, true);
             }
         } catch (IllegalArgumentException | NoSuchMethodException | InvocationTargetException | IllegalAccessException ex) {
-            LOGGER.warn("exception caught",ex);
+            LOGGER.warn("exception caught", ex);
         }
         LOGGER.warn("Object of type {} does NOT contain a Path attribute or a path property - multiple instances may conflict", obj.getClass());
         return null;

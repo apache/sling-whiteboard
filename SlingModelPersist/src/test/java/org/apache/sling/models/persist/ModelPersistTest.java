@@ -18,6 +18,7 @@
  */
 package org.apache.sling.models.persist;
 
+import org.apache.sling.models.persistor.ModelPersistor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Arrays;
@@ -35,7 +36,7 @@ import org.apache.sling.models.persist.bean.BeanWithPathField;
 import org.apache.sling.models.persist.bean.BeanWithPathGetter;
 import org.apache.sling.models.persist.bean.ComplexBean;
 import org.apache.sling.models.persist.bean.MappedChildren;
-import org.apache.sling.models.persist.impl.ModelPersistImpl;
+import org.apache.sling.models.persistor.impl.ModelPersistorImpl;
 import org.apache.sling.testing.mock.sling.junit.SlingContext;
 import org.junit.Before;
 import org.junit.Rule;
@@ -53,7 +54,7 @@ public class ModelPersistTest {
     public final SlingContext context = new SlingContext();
 
     ResourceResolver rr;
-    ModelPersist jcrPersist = new ModelPersistImpl();
+    ModelPersistor jcrPersist = new ModelPersistorImpl();
 
     @Before
     public void setUp() {
