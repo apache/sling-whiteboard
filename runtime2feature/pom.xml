@@ -22,8 +22,8 @@
 
   <parent>
     <groupId>org.apache.sling</groupId>
-    <artifactId>sling</artifactId>
-    <version>34</version>
+    <artifactId>sling-bundle-parent</artifactId>
+    <version>35</version>
     <relativePath />
   </parent>
 
@@ -36,6 +36,7 @@
   <properties>
     <sling.java.version>8</sling.java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <bnd.baseline.skip>true</bnd.baseline.skip>
   </properties>
 
   <dependencies>
@@ -63,6 +64,7 @@
       <artifactId>org.osgi.service.component.annotations</artifactId>
       <scope>provided</scope>
     </dependency>
+
     <!--
      | Apache Sling Feature APIs
     -->
@@ -93,24 +95,5 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <configuration>
-          <archive>
-            <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
-          </archive>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>biz.aQute.bnd</groupId>
-        <artifactId>bnd-maven-plugin</artifactId>
-        <version>4.1.0</version>
-      </plugin>
-    </plugins>
-  </build>
 
 </project>
