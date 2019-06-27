@@ -23,13 +23,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <artifactId>sling-cpconverter-maven-plugin-test-no-param</artifactId>
+        <artifactId>sling-cpconverter-maven-plugin-test-target-mode</artifactId>
         <groupId>org.apache.sling</groupId>
         <version>1.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>sling-cpconverter-maven-plugin-test-no-param.ui.apps</artifactId>
+    <artifactId>sling-cpconverter-maven-plugin-test-target-mode.ui.apps</artifactId>
     <packaging>content-package</packaging>
 
     <name>CQ Converter Test - UI Apps</name>
@@ -54,7 +54,7 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>sling-cpconverter-maven-plugin-test-no-param.core</artifactId>
+            <artifactId>sling-cpconverter-maven-plugin-test-target-mode.core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -75,27 +75,11 @@
                     <embeddeds>
                         <embedded>
                             <groupId>${project.groupId}</groupId>
-                            <artifactId>sling-cpconverter-maven-plugin-test-no-param.core</artifactId>
+                            <artifactId>sling-cpconverter-maven-plugin-test-target-mode.core</artifactId>
                             <filter>true</filter>
                         </embedded>
                     </embeddeds>
                 </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>@project.groupId@</groupId>
-                <artifactId>@project.artifactId@</artifactId>
-                <version>@project.version@</version>
-                <extensions>true</extensions>
-                <executions>
-                    <execution>
-                        <id>convert-cp</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>convert-cp</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

@@ -23,13 +23,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <artifactId>sling-cpconverter-maven-plugin-test</artifactId>
+        <artifactId>sling-cpconverter-maven-plugin-test-with-param</artifactId>
         <groupId>org.apache.sling</groupId>
         <version>1.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>sling-cpconverter-maven-plugin-test.ui.apps</artifactId>
+    <artifactId>sling-cpconverter-maven-plugin-test-with-param.ui.apps</artifactId>
     <packaging>content-package</packaging>
 
     <name>CQ Converter Test - UI Apps</name>
@@ -54,7 +54,7 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>sling-cpconverter-maven-plugin-test.core</artifactId>
+            <artifactId>sling-cpconverter-maven-plugin-test-with-param.core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -75,7 +75,7 @@
                     <embeddeds>
                         <embedded>
                             <groupId>${project.groupId}</groupId>
-                            <artifactId>sling-cpconverter-maven-plugin-test.core</artifactId>
+                            <artifactId>sling-cpconverter-maven-plugin-test-with-param.core</artifactId>
                             <filter>true</filter>
                         </embedded>
                     </embeddeds>

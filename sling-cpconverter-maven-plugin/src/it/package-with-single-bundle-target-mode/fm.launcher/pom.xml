@@ -23,14 +23,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <artifactId>sling-cpconverter-maven-plugin-test-no-param</artifactId>
+        <artifactId>sling-cpconverter-maven-plugin-test-target-mode</artifactId>
         <groupId>org.apache.sling</groupId>
         <version>1.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>sling-cpconverter-maven-plugin-test-no-param.ui.apps</artifactId>
-    <packaging>content-package</packaging>
+    <artifactId>sling-cpconverter-maven-plugin-test-target-mode.fm.launcher</artifactId>
+    <packaging>jar</packaging>
 
     <name>CQ Converter Test - UI Apps</name>
     <description>
@@ -54,8 +54,9 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>sling-cpconverter-maven-plugin-test-no-param.core</artifactId>
+            <artifactId>sling-cpconverter-maven-plugin-test-target-mode.ui.apps</artifactId>
             <version>${project.version}</version>
+            <type>zip</type>
         </dependency>
         <dependency>
             <groupId>org.apache.sling</groupId>
@@ -66,22 +67,6 @@
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.jackrabbit</groupId>
-                <artifactId>filevault-package-maven-plugin</artifactId>
-                <configuration>
-                    <filterSource>${basedir}/src/main/content/META-INF/vault/filter.xml</filterSource>
-                    <embeddedTarget>/apps/cqconverter/install</embeddedTarget>
-                    <embeddeds>
-                        <embedded>
-                            <groupId>${project.groupId}</groupId>
-                            <artifactId>sling-cpconverter-maven-plugin-test-no-param.core</artifactId>
-                            <filter>true</filter>
-                        </embedded>
-                    </embeddeds>
-                </configuration>
-            </plugin>
-
             <plugin>
                 <groupId>@project.groupId@</groupId>
                 <artifactId>@project.artifactId@</artifactId>
@@ -94,31 +79,20 @@
                         <goals>
                             <goal>convert-cp</goal>
                         </goals>
+                        <configuration>
+                            <!-- NOTE: ${} is replaced no matter what so this trick seems to work by adding a zero-width-whitespace character (&#8203;)-->
+                            <artifactIdOverride>$&#8203;{project.groupId}:$&#8203;{project.artifactId}:slingosgifeature:@project.artifactId@:$&#8203;{project.version}</artifactIdOverride>
+                            <installConvertedPackage>true</installConvertedPackage>
+                            <contentPackages>
+                                <contentPackage>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>sling-cpconverter-maven-plugin-test-target-mode.ui.apps</artifactId>
+                                </contentPackage>
+                            </contentPackages>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
         </plugins>
     </build>
-    <profiles>
-        <!-- ATTENTION: It is highly recomended not to deploy this with this Profile if this Package was or will be deployed with the All package -->
-        <profile>
-            <id>autoInstallPackage</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>io.wcm.maven.plugins</groupId>
-                        <artifactId>wcmio-content-package-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>install-package</id>
-                                <goals>
-                                    <goal>install</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>

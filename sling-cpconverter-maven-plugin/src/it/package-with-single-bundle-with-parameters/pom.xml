@@ -14,10 +14,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.apache.sling</groupId>
-    <artifactId>sling-cpconverter-maven-plugin-test</artifactId>
+    <artifactId>sling-cpconverter-maven-plugin-test-with-param</artifactId>
     <packaging>pom</packaging>
     <version>1.0.0-SNAPSHOT</version>
-    <name>Apache Sling Features Maven plugin test</name>
+    <name>Apache Sling Features Maven plugin test - with parameter</name>
     <description>This is just an Apache Sling Content Package Maven plugin test to convert a package with a single
         bundle
     </description>

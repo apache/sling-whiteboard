@@ -19,18 +19,19 @@ import java.util.*;
 import org.codehaus.plexus.util.*;
 
     boolean check() {
-        String projectName = "sling-cpconverter-maven-plugin-test-no-param.ui.apps";
-        String projectCoreName = "sling-cpconverter-maven-plugin-test-no-param.core";
+        String projectName = "sling-cpconverter-maven-plugin-test-target-mode.ui.apps";
+        String projectCoreName = "sling-cpconverter-maven-plugin-test-target-mode.core";
         String projectVersion = "1.0.0-SNAPSHOT";
         String projectGroup = "org.apache.sling";
         String projectGroupPath = projectGroup.replaceAll("\\.", "/");
 
-        File targetFolder = new File(basedir, "ui.apps/target");
-        File packageFile = new File(targetFolder, projectName + "-" + projectVersion + ".zip");
+        File cpTargetFolder = new File(basedir, "ui.apps/target");
+        File packageFile = new File(cpTargetFolder, projectName + "-" + projectVersion + ".zip");
         if(!packageFile.exists()) {
             System.out.println("Content Package was not created: " + packageFile);
             return false;
         }
+        File targetFolder = new File(basedir, "fm.launcher/target");
         File outputFolder = new File(targetFolder, "cp-conversion");
         File featureModelFolder = new File(outputFolder, "fm.out");
         if(!featureModelFolder.exists()) {
@@ -45,7 +46,7 @@ import org.codehaus.plexus.util.*;
         String log = FileUtils.fileRead(featureModelFile);
         System.out.println("Feature Model File Content: " + log);
         String[] values = {
-            "\"id\":\"" + projectGroup + ":" + projectName + ":slingosgifeature:" + projectVersion + "\"",
+            "\"id\":\"$​{project.groupId}:$​{project.artifactId}:slingosgifeature:sling-cpconverter-maven-plugin:$​{project.version}\"",
             "\"bundles\":[",
             "\"id\":\"" + projectGroup + ":" + projectCoreName + ":" + projectVersion + "\"",
             "\"content-packages:ARTIFACTS|true\":[",

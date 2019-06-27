@@ -19,8 +19,8 @@ import java.util.*;
 import org.codehaus.plexus.util.*;
 
     boolean check() {
-        String projectName = "sling-cpconverter-maven-plugin-test.ui.apps";
-        String projectCoreName = "sling-cpconverter-maven-plugin-test.core";
+        String projectName = "sling-cpconverter-maven-plugin-test-with-param.ui.apps";
+        String projectCoreName = "sling-cpconverter-maven-plugin-test-with-param.core";
         String projectVersion = "1.0.0-SNAPSHOT";
         String projectGroup = "org.apache.sling";
         String projectGroupPath = projectGroup.replaceAll("\\.", "/");
@@ -31,8 +31,8 @@ import org.codehaus.plexus.util.*;
             System.out.println("Content Package was not created: " + packageFile);
             return false;
         }
-        File outputFolder = new File(targetFolder, "classes");
-        File featureModelFolder = new File(outputFolder, "cp-conversion");
+        File outputFolder = new File(targetFolder, "cp-conversion");
+        File featureModelFolder = new File(outputFolder, "fm.out");
         if(!featureModelFolder.exists()) {
             System.out.println("Feature Model Folder was not created" + featureModelFolder);
             return false;

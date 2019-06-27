@@ -20,6 +20,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -36,6 +37,7 @@ import org.apache.sling.feature.cpconverter.acl.DefaultAclManager;
 import org.apache.sling.feature.cpconverter.artifacts.DefaultArtifactsDeployer;
 import org.apache.sling.feature.cpconverter.features.DefaultFeaturesManager;
 import org.apache.sling.feature.cpconverter.handlers.DefaultEntryHandlersManager;
+import org.codehaus.plexus.util.FileUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -68,7 +70,9 @@ public final class ConvertCPMojo extends AbstractMojo {
 
     public static final String CFG_CONVERTED_CP_OUTPUT_DIRECTORY = "convertedContentPackageOutputDirectory";
 
-    public static final String CFG_SYSTEM_PROPERTIES = "cp.system.properties";
+    public static final String CFG_SYSTEM_PROPERTIES = "cpSystemProperties";
+
+    public static final String CFG_CONTENT_PACKAGES = "packages";
 
     public static final boolean DEFAULT_STRING_VALIDATION = false;
 
@@ -78,9 +82,9 @@ public final class ConvertCPMojo extends AbstractMojo {
 
     public static final boolean DEFAULT_INSTALL_CONVERTED_PACKAGE = true;
 
-    public static final String DEFAULT_FM_OUTPUT_DIRECTORY = "${project.build.outputDirectory}/cp-conversion";
+    public static final String DEFAULT_CONVERTED_CP_OUTPUT_DIRECTORY = "${project.build.directory}/cp-conversion";
 
-    public static final String DEFAULT_CONVERTED_CP_OUTPUT_DIRECTORY = "${project.build.outputDirectory}";
+    public static final String DEFAULT_FM_OUTPUT_DIRECTORY = DEFAULT_CONVERTED_CP_OUTPUT_DIRECTORY + "/fm.out";
 
     /**
      * If set to {@code true} the Content Package is strictly validated.
@@ -131,6 +135,11 @@ public final class ConvertCPMojo extends AbstractMojo {
     @Parameter(property = CFG_SYSTEM_PROPERTIES)
     private List<String> systemProperties;
 
+    /**
+     * List of Content Packages to be converted
+     */
+    @Parameter(property = CFG_CONTENT_PACKAGES)
+    private List<ContentPackage> contentPackages;
     /**
      * The Maven project.
      */
@@ -188,39 +197,68 @@ public final class ConvertCPMojo extends AbstractMojo {
                     new DefaultAclManager()
                 );
 
-            getLog().info("Artifact File: " + project.getArtifact());
-            getLog().info("Final Name: " + project.getModel().getBuild().getFinalName());
-            String targetPath = project.getModel().getBuild().getDirectory() + "/"
-                + project.getModel().getBuild().getFinalName()
-                + "." + ZIP_TYPE;
-            File targetFile = new File(targetPath);
-            if(targetFile.exists() && targetFile.isFile() && targetFile.canRead()) {
-                converter.convert(project.getArtifact().getFile());
+            if(contentPackages == null || contentPackages.isEmpty()) {
+                getLog().info("Project Artifact File: " + project.getArtifact());
+                String targetPath = project.getModel().getBuild().getDirectory() + "/"
+                    + project.getModel().getBuild().getFinalName()
+                    + "." + ZIP_TYPE;
+                File targetFile = new File(targetPath);
+                if (targetFile.exists() && targetFile.isFile() && targetFile.canRead()) {
+                    converter.convert(project.getArtifact().getFile());
+                    Artifact convertedPackage = new DefaultArtifact(
+                        project.getGroupId(), project.getArtifactId(), project.getVersion(),
+                        "compile", ZIP_TYPE, PACKAGE_CLASSIFIER, artifactHandlerManager.getArtifactHandler(ZIP_TYPE)
+                    );
+                    installConvertedCP(convertedPackage);
+                } else {
+                    getLog().error("Artifact is not found: " + targetPath);
+                }
             } else {
-                getLog().error("Artifact is not found: " + targetPath);
+                for(ContentPackage contentPackage: contentPackages) {
+                    getLog().info("Content Package Artifact File: " + contentPackage.toString());
+                    contentPackage.setExcludeTransitive(true);
+                    final Collection<Artifact> artifacts = contentPackage.getMatchingArtifacts(project);
+                    if (artifacts.isEmpty()) {
+                        getLog().warn("No matching artifacts for " + contentPackage);
+                        continue;
+                    }
+                    getLog().info("Target Convert CP of --- " + contentPackage + " ---");
+                    for (final Artifact artifact : artifacts) {
+                        final File source = artifact.getFile();
+                        if (source.exists() && source.isFile() && source.canRead()) {
+                            converter.convert(source);
+                            Artifact convertedPackage = new DefaultArtifact(
+                                artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(),
+                                "compile", ZIP_TYPE, PACKAGE_CLASSIFIER, artifactHandlerManager.getArtifactHandler(ZIP_TYPE)
+                            );
+                            installConvertedCP(convertedPackage);
+                        } else {
+                            getLog().error("Artifact is not found: " + artifact);
+                        }
+                    }
+                }
             }
         } catch (Throwable t) {
             throw new MojoExecutionException("Content Package Converter Exception", t);
         }
 
+    }
+
+    private void installConvertedCP(Artifact artifact) throws MojoFailureException, MojoExecutionException {
         if(installConvertedCP) {
             Collection<Artifact> artifacts = Collections.synchronizedCollection(new ArrayList<>());
-            Artifact convertedPackage = new DefaultArtifact(
-                project.getGroupId(), project.getArtifactId(), project.getVersion(),
-                "compile", ZIP_TYPE, PACKAGE_CLASSIFIER, artifactHandlerManager.getArtifactHandler(ZIP_TYPE)
-            );
             // Rebuild the converted package path
-            String convertedPackagePath = project.getGroupId().replaceAll("\\.", "/")
-                + "/" + project.getArtifactId()
-                + "/" + project.getVersion()
-                + "/" + project.getArtifactId()
-                + "-" + project.getVersion()
+            String convertedPackagePath = artifact.getGroupId().replaceAll("\\.", "/")
+                + "/" + artifact.getArtifactId()
+                + "/" + artifact.getVersion()
+                + "/" + artifact.getArtifactId()
+                + "-" + artifact.getVersion()
                 + "-" + PACKAGE_CLASSIFIER
                 + "." + ZIP_TYPE;
             File convertedPackageFile = new File(convertedCPOutput, convertedPackagePath);
             if(convertedPackageFile.exists() && convertedPackageFile.canRead()) {
-                convertedPackage.setFile(convertedPackageFile);
-                artifacts.add(convertedPackage);
+                artifact.setFile(convertedPackageFile);
+                artifacts.add(artifact);
                 installArtifact(mavenSession.getProjectBuildingRequest(), artifacts);
             } else {
                 getLog().error("Could not find Converted Package: " + convertedPackageFile);

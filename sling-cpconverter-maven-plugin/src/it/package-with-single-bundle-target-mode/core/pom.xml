@@ -22,13 +22,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <artifactId>sling-cpconverter-maven-plugin-test-with-param</artifactId>
+        <artifactId>sling-cpconverter-maven-plugin-test-target-mode</artifactId>
         <groupId>org.apache.sling</groupId>
         <version>1.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>sling-cpconverter-maven-plugin-test-with-param.core</artifactId>
+    <artifactId>sling-cpconverter-maven-plugin-test-target-mode.core</artifactId>
     <packaging>bundle</packaging>
 
     <name>CQ Converter Test - Core</name>
