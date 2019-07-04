@@ -7,11 +7,11 @@
 #
 # Then, build the image with:
 #
-# docker build -f src/main/docker/Dockerfile.native -t quarkus/org.apache.sling.serverless.osgimocks .
+# docker build -f src/main/docker/Dockerfile.native -t quarkus/org.apache.sling.graalvm.experiments .
 #
 # Then run the container using:
 #
-# docker run -i --rm -p 8080:8080 quarkus/org.apache.sling.serverless.osgimocks
+# docker run -i --rm -p 8080:8080 quarkus/org.apache.sling.graalvm.experiments
 #
 ###
 FROM registry.access.redhat.com/ubi8/ubi-minimal
