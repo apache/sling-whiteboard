@@ -1,5 +1,7 @@
 # sling-graalvm
-Experimenting with GraalVM to run Apache Sling modules
+Experimenting with GraalVM to run a useful subset of Apache Sling modules, focusing on request processing, resource resolution and servlet resolution and execution for now.
+
+See also [SLING-8556](https://issues.apache.org/jira/browse/SLING-8556).
 
 To build and run the native version, setup GraalVM to get something like this:
 
