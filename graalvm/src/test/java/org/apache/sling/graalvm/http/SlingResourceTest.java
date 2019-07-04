@@ -16,15 +16,13 @@ public class SlingResourceTest {
     public void testSlingResourceEndpoint() {
         final String prefix = "/sling/";
         final String path = "chouc/route";
-        final String resourceType = "mock/resource";
 
         given()
           .when().get(prefix + path)
           .then()
              .statusCode(200)
              .contentType(MediaType.APPLICATION_JSON)
-             .body("path", equalTo(prefix + path))
-             .body("resourceType", equalTo(resourceType));
+             .body("path", equalTo(prefix + path));
     }
 
 }

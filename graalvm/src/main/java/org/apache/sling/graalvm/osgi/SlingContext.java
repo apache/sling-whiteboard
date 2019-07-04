@@ -29,7 +29,7 @@ public class SlingContext {
         final MockResourceProvider mrp = new MockResourceProvider();
         result.registerInjectActivateService(new MockResourceResolver(mrp));
         result.registerInjectActivateService(mrp);
-        result.registerInjectActivateService(new SlingRequestProcessorWrapper());
+        result.registerInjectActivateService(new SlingRequestProcessorWrapper(result.bundleContext()));
         return result;
     }
 }
