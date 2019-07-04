@@ -10,7 +10,11 @@ To build and run the native version, setup GraalVM to get something like this:
     OpenJDK Runtime Environment (build 1.8.0_212-20190523183630.graal2.jdk8u-src-tar-gz-b03)
     OpenJDK 64-Bit GraalVM CE 19.0.2 (build 25.212-b03-jvmci-19-b04, mixed mode)
 
-Then build with 
+Then install the `native-image` tool:
+
+    gu install native-image
+
+And build with 
 
     export GRAALVM_HOME=$JAVA_HOME
     mvn clean install -Pnative
@@ -19,12 +23,18 @@ And run with
 
     ./target/org.apache.sling.graalvm.experiments-1.0-SNAPSHOT-runner
     
-At which point the `/hello` path works:
+At which point the server should work:
 
-    curl http://localhost:8080/hello
-    Hello, at Mon Jul 01 17:38:00 CEST 2019
+    $ curl -s http://localhost:8080/sling/chouc/route
+    {
+      "path": "/sling/chouc/route",
+      "metadata": {
+        "sling.resolutionPath": "/sling/chouc/route",
+        "sling.resolutionPathInfo": "/sling/chouc/route"
+      }
+    }
 
-To run as a Docker container see `src/main/docker/Dockerfile.native`
+To run as a Docker container see the [Dockerfile.native](./src/main/docker/Dockerfile.native) file.
 
 ## TODO
 Running in **quarkus:dev mode fails so far** ("no SCR metadata found"), even if 
