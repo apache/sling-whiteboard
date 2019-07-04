@@ -23,3 +23,12 @@ At which point the `/hello` path works:
     Hello, at Mon Jul 01 17:38:00 CEST 2019
 
 To run as a Docker container see `src/main/docker/Dockerfile.native`
+
+## TODO
+Running in **quarkus:dev mode fails so far** ("no SCR metadata found"), even if 
+using 
+
+    mvn clean compile bnd:bnd-process quarkus:dev
+
+The **native startup time** is about 5 seconds on my box, but just a few
+milliseconds when runnning in a Docker image.
