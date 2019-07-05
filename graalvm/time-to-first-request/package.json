@@ -9,7 +9,7 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "docker-cli-js": "^2.5.2",
+    "dockerode": "^2.5.8",
     "elapsed-time": "0.0.1",
     "http-proxy": "^1.17.0",
     "wait-on": "^3.2.0"
