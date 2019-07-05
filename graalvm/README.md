@@ -36,6 +36,9 @@ At which point the server should work:
 
 To run as a Docker container see the [Dockerfile.native](./src/main/docker/Dockerfile.native) file.
 
+The `time-to-first-request` utility is used to measure the time needed
+by that container + our app to start up.
+
 ## TODO
 Running in **quarkus:dev mode fails so far** ("no SCR metadata found"), even if 
 using 

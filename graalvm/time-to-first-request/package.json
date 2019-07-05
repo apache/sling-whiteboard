@@ -1,0 +1,17 @@
+{
+  "name": "node-proxy",
+  "version": "1.0.0",
+  "description": "node-proxy ====",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "docker-cli-js": "^2.5.2",
+    "elapsed-time": "0.0.1",
+    "http-proxy": "^1.17.0",
+    "wait-on": "^3.2.0"
+  }
+}
