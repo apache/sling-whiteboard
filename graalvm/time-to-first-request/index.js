@@ -11,6 +11,9 @@
 // so the reported time is a realistic "time to first request" 
 // value.
 //
+// The "docker events" command also provides useful information
+// in terms of container startup time.
+//
 const http = require('http');
 const httpProxy = require('http-proxy');
 const { Docker } = require('docker-cli-js');
