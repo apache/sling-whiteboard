@@ -46,22 +46,58 @@ const waitOpts = {
 };
 
 const docker = new Docker();
+const actions = {};
 
-var server = http.createServer(function(req, res) {
+const getContainer = (async imageName => {
+  const containers = await docker.listContainers();
+  return containers.find(container => {
+    return container.Image == imageName;
+  });
+});
+
+var server = http.createServer(async (req, res) => {
   const et = elapsedTime.new().start();
-  // TODO detect if container is already running, instead of blind catch
-  // (maybe use node-docker-api instead)
+  existingContainer = await getContainer(dockerImage);
 
-  console.log(`Starting container ${dockerImage}(${et.getValue()})`);
-  docker.run(dockerImage, null, process.stderr, dockerStartOptions);
+  if(existingContainer) {
+    console.log(`Container is already running: ${dockerImage}(${et.getValue()})`);
+  } else {
+    actions.startedContainer = true;
+    console.log(`Starting container: ${dockerImage}(${et.getValue()})`);
+    docker.run(dockerImage, null, null, dockerStartOptions);
+  }
+
+  // No need to wait for async call, just wait for our URL
   console.log(`Waiting on ${waitOpts.resources[0]} (${et.getValue()})`);
   waitOn(waitOpts).then(() =>{
-    console.log(`Time to first request to ${waitUrl}: (${et.getValue()})`);
+    console.log(`Time to wait for ${waitUrl}: (${et.getValue()})`);
     console.log(`Proxying ${req.url} (${et.getValue()})`);
     proxy.web(req, res, { target: targetUrl });
     console.log(`Done proxying (${et.getValue()})`);
   });  
 });
 
+const cleanup = async () => {
+  if(!actions.startedContainer) {
+    console.log('Did not start container, nothing to cleanup');
+  } else {
+    const runningContainer = await getContainer(dockerImage);
+    if(runningContainer) {
+      console.log(`cleanup: killing container ${dockerImage}/${runningContainer.Id.substring(0,12)} ...`);
+      const container = await docker.getContainer(runningContainer.Id);
+      await container.kill();
+      console.log('killed');
+    }
+  }
+  process.exit();
+} 
+
+[
+  'SIGINT',
+  'SIGTERM',
+].forEach(signal => {
+  process.on(signal, cleanup);
+})
+
 console.log(`listening on port ${listenPort}, proxying to ${targetUrl}`);
-server.listen(listenPort);
+server.listen(listenPort)
