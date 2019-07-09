@@ -83,7 +83,7 @@ const cleanup = async () => {
   } else {
     const runningContainer = await getContainer(dockerImage);
     if(runningContainer) {
-      console.log(`cleanup: killing container ${dockerImage}/${runningContainer.Id.substring(0,12)} ...`);
+      console.log(`Killing container ${dockerImage}/${runningContainer.Id.substring(0,12)} ...`);
       const container = await docker.getContainer(runningContainer.Id);
       await container.kill();
       console.log('killed');
