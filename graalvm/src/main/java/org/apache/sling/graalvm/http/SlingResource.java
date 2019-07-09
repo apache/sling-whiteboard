@@ -25,7 +25,13 @@ public class SlingResource {
     @Context
     private HttpServletRequest request;
 
-    @GET
+    static class HttpResponse extends MockSlingHttpServletResponse {
+        @Override
+        public void setContentLength(int length) {
+        }
+    }
+
+     @GET
     public Response sling(@PathParam("resourcePath") String resourcePath) throws IOException {
         final SlingRequestProcessor p = SlingContext.get().getService(SlingRequestProcessor.class);
         assert (p != null);
@@ -33,7 +39,7 @@ public class SlingResource {
         assert (resolver != null);
 
         try {
-            p.processRequest(request, new MockSlingHttpServletResponse(), resolver);
+            p.processRequest(request, new HttpResponse(), resolver);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
