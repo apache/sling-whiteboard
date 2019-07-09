@@ -13,10 +13,12 @@ import javax.ws.rs.core.Response;
 
 import org.apache.sling.graalvm.osgi.SlingContext;
 import org.apache.sling.graalvm.sling.MockServletResolver;
+import org.apache.sling.api.request.RequestProgressTracker;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.commons.testing.sling.MockSlingHttpServletResponse;
 import org.apache.sling.engine.SlingRequestProcessor;
+import org.apache.sling.engine.impl.request.SlingRequestProgressTracker;
 
 @Path("/sling/{resourcePath: [^/][a-zA-Z/_0-9\\.]*}")
 @Produces(MediaType.APPLICATION_JSON)
@@ -37,6 +39,7 @@ public class SlingResource {
         assert (p != null);
         final ResourceResolver resolver = SlingContext.get().getService(ResourceResolver.class);
         assert (resolver != null);
+        request.setAttribute(RequestProgressTracker.class.getName(), new SlingRequestProgressTracker(request));
 
         try {
             p.processRequest(request, new HttpResponse(), resolver);
