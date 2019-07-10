@@ -2,7 +2,11 @@ package org.apache.sling.graalvm.osgi;
 
 import org.apache.sling.engine.impl.SlingRequestProcessorWrapper;
 import org.apache.sling.graalvm.sling.MockResourceProvider;
-import org.apache.sling.graalvm.sling.MockResourceResolver;
+import org.apache.sling.graalvm.sling.MockServiceUserMapper;
+import org.apache.sling.graalvm.sling.ResourceResolverFactoryService;
+import org.apache.sling.resourceresolver.impl.ResourceAccessSecurityTracker;
+import org.apache.sling.resourceresolver.impl.ResourceResolverFactoryActivator;
+import org.apache.sling.testing.mock.osgi.MockEventAdmin;
 import org.apache.sling.testing.mock.osgi.junit5.OsgiContext;
 
 public class SlingContext {
@@ -26,10 +30,25 @@ public class SlingContext {
      */
     private static OsgiContext initialize() {
         final OsgiContext result = new OsgiContext();
+
+        // This would be automatic in a JUnit environment
+        result.registerInjectActivateService(new MockEventAdmin());
+
+        // Our minimal resource provider
         final MockResourceProvider mrp = new MockResourceProvider();
-        result.registerInjectActivateService(new MockResourceResolver(mrp));
         result.registerInjectActivateService(mrp);
+
+        // SlingRequestProcessor
         result.registerInjectActivateService(new SlingRequestProcessorWrapper(result.bundleContext()));
+
+        // ResourceResolver
+        //result.registerInjectActivateService(new MockResourceResolver(mrp));
+        result.registerInjectActivateService(new MockServiceUserMapper());
+        result.registerInjectActivateService(new ResourceAccessSecurityTracker());
+        final ResourceResolverFactoryActivator rrfa = new ResourceResolverFactoryActivator();
+        result.registerInjectActivateService(rrfa);
+        result.registerInjectActivateService(new ResourceResolverFactoryService(rrfa));
+
         return result;
     }
 }

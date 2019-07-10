@@ -8,7 +8,7 @@ import org.apache.sling.graalvm.sling.MockServletResolver;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Component;
 
-/** TODO hack: using the engine.impl package to access package private methods... */
+/** HACK: using the engine.impl package to access package private methods... */
 @Component(service=SlingRequestProcessor.class)
 public class SlingRequestProcessorWrapper extends SlingRequestProcessorImpl {
     public SlingRequestProcessorWrapper(BundleContext bc) {

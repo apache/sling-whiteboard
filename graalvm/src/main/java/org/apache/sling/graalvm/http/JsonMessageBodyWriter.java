@@ -14,6 +14,8 @@ import javax.ws.rs.ext.Provider;
 
 import com.google.gson.Gson;
 
+import org.apache.sling.graalvm.sling.MockResource;
+
 @Provider
 @Produces(MediaType.APPLICATION_JSON)
 public class JsonMessageBodyWriter implements MessageBodyWriter<Object> {
@@ -27,6 +29,7 @@ public class JsonMessageBodyWriter implements MessageBodyWriter<Object> {
     public void writeTo(Object data, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType,
             MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream)
             throws IOException, WebApplicationException {
+        data = new MockResource(null, "/TODO/avoid/nonexistent/resource");                
         entityStream.write(new Gson().toJson(data).getBytes("UTF-8"));
     }
 
