@@ -21,11 +21,11 @@ package org.apache.sling.contentparser.json.internal;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -40,7 +40,6 @@ import javax.json.JsonValue;
 import javax.json.stream.JsonParsingException;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.CharEncoding;
 import org.apache.sling.contentparser.api.ContentHandler;
 import org.apache.sling.contentparser.api.ContentParser;
 import org.apache.sling.contentparser.api.JsonParserFeature;
@@ -88,7 +87,7 @@ public class JsonContentParser implements ContentParser {
     private JsonObject toJsonObjectWithJsonTicks(JsonReaderFactory jsonReaderFactory, InputStream is) {
         String jsonString;
         try {
-            jsonString = IOUtils.toString(is, CharEncoding.UTF_8);
+            jsonString = IOUtils.toString(is, StandardCharsets.UTF_8);
         } catch (IOException ex) {
             throw new ParseException("Error getting JSON string.", ex);
         }

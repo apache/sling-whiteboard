@@ -17,13 +17,14 @@
     specific language governing permissions and limitations
     under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.apache.sling</groupId>
         <artifactId>sling-bundle-parent</artifactId>
         <version>35</version>
-        <relativePath />
+        <relativePath/>
     </parent>
 
     <artifactId>org.apache.sling.contentparser.api</artifactId>
@@ -31,21 +32,16 @@
 
     <name>Apache Sling Content Parser API</name>
     <description>
-        API for parsing Apache Sling Resource trees stored in files (e.g. JSON, FileVault XML, etc.).
+        API for parsing Apache Sling Resource trees stored in files (e.g. JSON, FileVault XML, etc.)
     </description>
 
     <scm>
         <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-contentparser-api.git</connection>
         <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-contentparser-api.git</developerConnection>
         <url>https://gitbox.apache.org/repos/asf?p=sling-org-apache-sling-contentparser-api.git</url>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
 
-    <build>
-        <plugins>
-            
-        </plugins>
-    </build>
     <dependencies>
         <dependency>
             <groupId>org.osgi</groupId>
