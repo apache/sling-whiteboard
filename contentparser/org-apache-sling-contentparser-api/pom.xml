@@ -31,7 +31,7 @@
 
     <name>Apache Sling Content Parser API</name>
     <description>
-        Parser API Apache Sling Resource trees stored in files (e.g. JSON, FileVault XML, etc.).
+        API for parsing Apache Sling Resource trees stored in files (e.g. JSON, FileVault XML, etc.).
     </description>
 
     <scm>

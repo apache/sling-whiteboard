@@ -74,6 +74,8 @@ public final class ParserHelper {
      *
      * @param values the multi-value property's values
      * @return an object representation of the multi-value property
+     * @throws ParseException when the provided {@code values} array contains null values, {@link Map} values, or the values are not of the
+     *                        same type
      */
     public static Object convertSingleTypeArray(Object[] values) {
         if (values.length == 0) {
@@ -90,7 +92,7 @@ public final class ParserHelper {
             if (itemType == null) {
                 itemType = value.getClass();
             } else if (itemType != value.getClass()) {
-                throw new ParseException("Multivalue array must not contain values with different types "
+                throw new ParseException("Multi-value array must not contain values with different types "
                         + "(" + itemType.getName() + ", " + value.getClass().getName() + ").");
             }
         }

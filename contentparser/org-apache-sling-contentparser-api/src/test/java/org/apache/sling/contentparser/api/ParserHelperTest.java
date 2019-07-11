@@ -19,13 +19,17 @@
 package org.apache.sling.contentparser.api;
 
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Test;
 
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertNull;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class ParserHelperTest {
 
@@ -53,5 +57,44 @@ public class ParserHelperTest {
 
             }
         }
+    }
+
+    @Test
+    public void convertSingleTypeArray() {
+        Object[] empty = new Object[]{};
+        assertEquals(empty, ParserHelper.convertSingleTypeArray(empty));
+
+        Object[] nullValues = new Object[] {"string", null};
+        ParseException nullValuesException = null;
+        try {
+            ParserHelper.convertSingleTypeArray(nullValues);
+        } catch (ParseException e) {
+            nullValuesException = e;
+        }
+        assertNotNull("Expected a ParseException when the Object array contains multiple types.", nullValuesException);
+
+        Object[] maps = new Object[] {Collections.emptyMap()};
+        ParseException mapsException = null;
+        try {
+            ParserHelper.convertSingleTypeArray(maps);
+        } catch (ParseException e) {
+            mapsException = e;
+        }
+        assertNotNull("Expected a ParseException when the Object array contains Map objects.", mapsException);
+
+        Object[] differentTypes = new Object[] {"string", 1, 1L, 1F, Boolean.TRUE};
+        ParseException differentTypesException = null;
+        try {
+            ParserHelper.convertSingleTypeArray(differentTypes);
+        } catch (ParseException e) {
+            differentTypesException = e;
+        }
+        assertNotNull("Expected a ParseException when the Object array contains multiple types.", differentTypesException);
+
+        Object[] values = new Object[] {1, 2, 3, 4, 5};
+        Object result = ParserHelper.convertSingleTypeArray(values);
+        assertTrue("Expected the resulting object to be an Integer array.", result instanceof Integer[]);
+        Integer[] typedResult = (Integer[]) result;
+        assertArrayEquals("Expected the arrays to be equal.", new Integer[] {1, 2, 3, 4, 5}, typedResult);
     }
 }
