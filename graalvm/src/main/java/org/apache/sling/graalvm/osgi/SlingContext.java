@@ -45,8 +45,8 @@ public class SlingContext {
         //result.registerInjectActivateService(new MockResourceResolver(mrp));
         result.registerInjectActivateService(new MockServiceUserMapper());
         result.registerInjectActivateService(new ResourceAccessSecurityTracker());
-        final ResourceResolverFactoryActivator rrfa = null; // NATIVE new ResourceResolverFactoryActivator();
-        // NATIVE result.registerInjectActivateService(rrfa);
+        final ResourceResolverFactoryActivator rrfa = new ResourceResolverFactoryActivator();
+        result.registerInjectActivateService(rrfa);
         result.registerInjectActivateService(new ResourceResolverFactoryService(rrfa));
 
         return result;
