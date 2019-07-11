@@ -82,7 +82,6 @@ public class PojoSRLauncher extends FrameworkLauncher
                                             try
                                             {
                                                 String urlString = "jar:" + IOUtils.getFileFromURL(getJarFileURL(url, content), true, null).toURI().toURL() + "!/";
-                                                System.out.println(urlString);
                                                 context.addAppJar(new URL(urlString));
                                             }
                                             catch (Exception ex)
