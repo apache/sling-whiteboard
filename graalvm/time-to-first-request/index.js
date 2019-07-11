@@ -20,6 +20,8 @@ const Docker = require('dockerode');
 const waitOn = require('wait-on');
 const elapsedTime = require('elapsed-time')
 
+// A number of things are hardcoded below that you may want to
+// adapt (or make configurable - patches welcome)
 const listenPort = 9000;
 const targetUrl = 'http://127.0.0.1:8080';
 const waitUrl = `${targetUrl}/sling/chouc/route`;
