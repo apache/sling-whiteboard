@@ -16,7 +16,7 @@
  */
 package org.apache.sling.feature.launcher.extensions.connect.impl;
 
-import java.io.File;
+import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -28,13 +28,13 @@ import org.osgi.framework.launch.Framework;
 
 public class PojoSRRunner extends FrameworkRunner
 {
-    public PojoSRRunner(Map<String, String> frameworkProperties, Map<Integer, List<File>> bundlesMap, List<Object[]> configurations, List<File> installables) throws Exception
+    public PojoSRRunner(Map<String, String> frameworkProperties, Map<Integer, List<URL>> bundlesMap, List<Object[]> configurations, List<URL> installables) throws Exception
     {
         super(frameworkProperties, bundlesMap, configurations, installables);
     }
 
     @Override
-    protected void setupFramework(Framework framework, Map<Integer, List<File>> bundlesMap) throws BundleException
+    protected void setupFramework(Framework framework, Map<Integer, List<URL>> bundlesMap) throws BundleException
     {
         try
         {
