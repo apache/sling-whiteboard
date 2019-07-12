@@ -16,7 +16,7 @@
  ~ specific language governing permissions and limitations
  ~ under the License.
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-package org.apache.sling.contentparser.json.internal;
+package org.apache.sling.contentparser.testutils;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -27,8 +27,8 @@ import java.nio.charset.StandardCharsets;
 
 import org.apache.sling.contentparser.api.ContentParser;
 import org.apache.sling.contentparser.api.ParserOptions;
-import org.apache.sling.contentparser.json.internal.mapsupport.ContentElement;
-import org.apache.sling.contentparser.json.internal.mapsupport.ContentElementHandler;
+import org.apache.sling.contentparser.testutils.mapsupport.ContentElement;
+import org.apache.sling.contentparser.testutils.mapsupport.ContentElementHandler;
 
 public final class TestUtils {
     
@@ -36,11 +36,11 @@ public final class TestUtils {
         // static methods only
     }
 
-    static ContentElement parse(ContentParser contentParser, File file) throws IOException {
+    public static ContentElement parse(ContentParser contentParser, File file) throws IOException {
         return parse(contentParser, new ParserOptions(), file);
     }
 
-    static ContentElement parse(ContentParser contentParser, ParserOptions parserOptions, File file) throws IOException {
+    public static ContentElement parse(ContentParser contentParser, ParserOptions parserOptions, File file) throws IOException {
         try (FileInputStream fis = new FileInputStream(file);
              BufferedInputStream bis = new BufferedInputStream(fis)) {
             ContentElementHandler handler = new ContentElementHandler();
@@ -49,7 +49,7 @@ public final class TestUtils {
         }
     }
     
-    static ContentElement parse(ContentParser contentParser, String jsonContent) throws IOException {
+    public static ContentElement parse(ContentParser contentParser, String jsonContent) throws IOException {
         try (ByteArrayInputStream is = new ByteArrayInputStream(jsonContent.getBytes(StandardCharsets.UTF_8))) {
             ContentElementHandler handler = new ContentElementHandler();
             contentParser.parse(handler, is, new ParserOptions());

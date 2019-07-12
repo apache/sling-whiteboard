@@ -16,7 +16,7 @@
  ~ specific language governing permissions and limitations
  ~ under the License.
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-package org.apache.sling.contentparser.json.internal.mapsupport;
+package org.apache.sling.contentparser.testutils.mapsupport;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
