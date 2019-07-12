@@ -41,6 +41,7 @@
     <modules>
           <module>mdresourceprovider</module>
           <module>maven-central-source-reporter</module>
+          <module>SlingModelPersist</module>
     </modules>
 </project>
 
