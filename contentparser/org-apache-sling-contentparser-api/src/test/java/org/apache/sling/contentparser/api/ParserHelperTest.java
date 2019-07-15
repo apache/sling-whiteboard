@@ -46,6 +46,7 @@ public class ParserHelperTest {
             if (dateAsInts == null) {
                 assertNull("Expected a null return value for string " + entry.getKey(), calendar);
             } else {
+                assertNotNull("Unexpected parser failure for input " + entry.getKey(), calendar);
                 assertEquals(dateAsInts[0], calendar.get(Calendar.DAY_OF_MONTH));
                 assertEquals(dateAsInts[1], calendar.get(Calendar.MONTH) + 1);
                 assertEquals(dateAsInts[2], calendar.get(Calendar.YEAR));

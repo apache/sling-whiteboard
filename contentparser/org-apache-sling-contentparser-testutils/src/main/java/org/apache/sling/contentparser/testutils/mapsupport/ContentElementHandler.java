@@ -28,7 +28,7 @@ import org.apache.sling.contentparser.api.ContentHandler;
 /**
  * {@link ContentHandler} implementation that produces a tree of {@link ContentElement} items.
  */
-public class ContentElementHandler implements ContentHandler {
+public final class ContentElementHandler implements ContentHandler {
     
     private ContentElement root;
     private Pattern PATH_PATTERN = Pattern.compile("^((/[^/]+)*)(/([^/]+))$"); 
@@ -36,7 +36,7 @@ public class ContentElementHandler implements ContentHandler {
     @Override
     public void resource(String path, Map<String, Object> properties) {
         if (StringUtils.equals(path, "/")) {
-            root = new ContentElementImpl(null, properties);
+            root = new ContentElement(null, properties);
         }
         else {
             if (root == null) {
@@ -58,7 +58,7 @@ public class ContentElementHandler implements ContentHandler {
             if (parent == null) {
                 throw new RuntimeException("Parent '" + relativeParentPath + "' does not exist.");
             }
-            parent.getChildren().put(name, new ContentElementImpl(name, properties));
+            parent.getChildren().put(name, new ContentElement(name, properties));
         }
     }
     

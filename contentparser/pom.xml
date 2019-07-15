@@ -37,6 +37,7 @@
         <module>org-apache-sling-contentparser-api</module>
         <module>org-apache-sling-contentparser-json</module>
         <module>org-apache-sling-contentparser-xml</module>
+        <module>org-apache-sling-contentparser-xml-jcr</module>
         <module>org-apache-sling-contentparser-testutils</module>
     </modules>
 </project>

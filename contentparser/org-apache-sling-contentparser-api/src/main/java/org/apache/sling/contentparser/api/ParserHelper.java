@@ -20,7 +20,7 @@ package org.apache.sling.contentparser.api;
 
 import java.lang.reflect.Array;
 import java.time.Instant;
-import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Calendar;
@@ -34,11 +34,11 @@ import org.osgi.annotation.versioning.ConsumerType;
 @ConsumerType
 public final class ParserHelper {
 
-    public static final String ECMA_DATE_FORMAT = "EEE MMM dd yyyy HH:mm:ss 'GMT'Z";
-    public static final String ISO_8601_MILLISECONDS_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSVV";
-    public static final Locale DATE_FORMAT_LOCALE = Locale.US;
-    public static final DateTimeFormatter ECMA_DATE_FORMATTER = DateTimeFormatter.ofPattern(ECMA_DATE_FORMAT, DATE_FORMAT_LOCALE);
-    public static final DateTimeFormatter ISO_8601_MILLISECONDS_DATE_FORMATTER =
+    private static final String ECMA_DATE_FORMAT = "EEE MMM dd yyyy HH:mm:ss 'GMT'Z";
+    private static final String ISO_8601_MILLISECONDS_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSVV";
+    private static final Locale DATE_FORMAT_LOCALE = Locale.US;
+    private static final DateTimeFormatter ECMA_DATE_FORMATTER = DateTimeFormatter.ofPattern(ECMA_DATE_FORMAT, DATE_FORMAT_LOCALE);
+    private static final DateTimeFormatter ISO_8601_MILLISECONDS_DATE_FORMATTER =
             DateTimeFormatter.ofPattern(ISO_8601_MILLISECONDS_DATE_FORMAT,
                     DATE_FORMAT_LOCALE);
 
@@ -50,23 +50,15 @@ public final class ParserHelper {
      * @return a {@link Calendar} containing the parsed date or {@code null}, if the parsing failed
      */
     public static Calendar parseDate(String string) {
-        Calendar calendar = Calendar.getInstance();
         try {
-            final OffsetDateTime offsetDateTime = OffsetDateTime.parse(string, ISO_8601_MILLISECONDS_DATE_FORMATTER);
-            final Instant instant = offsetDateTime.toInstant();
-            calendar.setTime(Date.from(instant));
-            calendar.setTimeZone(TimeZone.getTimeZone(offsetDateTime.getOffset()));
+            return parseDate(string, ISO_8601_MILLISECONDS_DATE_FORMATTER);
         } catch (DateTimeParseException e) {
             try {
-                final OffsetDateTime offsetDateTime = OffsetDateTime.parse(string, ECMA_DATE_FORMATTER);
-                final Instant instant = offsetDateTime.toInstant();
-                calendar.setTime(Date.from(instant));
-                calendar.setTimeZone(TimeZone.getTimeZone(offsetDateTime.getOffset()));
+                return parseDate(string, ECMA_DATE_FORMATTER);
             } catch (DateTimeParseException ee) {
-                calendar = null;
+                return null;
             }
         }
-        return calendar;
     }
 
     /**
@@ -101,6 +93,15 @@ public final class ParserHelper {
             Array.set(convertedArray, i, values[i]);
         }
         return convertedArray;
+    }
+
+    private static Calendar parseDate(String string, DateTimeFormatter formatter) throws DateTimeParseException {
+        final ZonedDateTime zonedDateTime = ZonedDateTime.parse(string, formatter);
+        final Instant instant = zonedDateTime.toInstant();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(Date.from(instant));
+        calendar.setTimeZone(TimeZone.getTimeZone(zonedDateTime.getOffset()));
+        return calendar;
     }
 
 }

@@ -18,35 +18,71 @@
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 package org.apache.sling.contentparser.testutils.mapsupport;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
- * Represents a resource or node in the content hierarchy.
+ * Implements support for a {@link org.apache.sling.contentparser.api.ContentHandler} parsed resource to use during
+ * {@link org.apache.sling.contentparser.api.ContentParser} tests.
  */
-public interface ContentElement {
+public final class ContentElement {
+
+    private final String name;
+    private final Map<String, Object> properties;
+    private final Map<String, ContentElement> children = new LinkedHashMap<>();
+
+    ContentElement(String name, Map<String, Object> properties) {
+        this.name = name;
+        this.properties = properties;
+    }
 
     /**
-     * @return Resource name. The root resource has no name (null).
+     * Returns the name of the resource.
+     *
+     * @return resource name; the root resource has no name (null).
      */
-    String getName();
-    
+    public String getName() {
+        return name;
+    }
+
     /**
      * Properties of this resource.
-     * @return Properties (keys, values)
+     *
+     * @return this resource's properties (keys, values)
      */
-    Map<String, Object> getProperties();
-    
+    public Map<String, Object> getProperties() {
+        return properties;
+    }
+
     /**
-     * Get children of current resource. The Map preserves the ordering of children.
-     * @return Children (child names, child objects)
+     * Returns the children of this resource. The Map preserves the children's ordering.
+     *
+     * @return the children of this resource (child names, child objects)
      */
-    Map<String, ContentElement> getChildren();
-    
+    public Map<String, ContentElement> getChildren() {
+        return children;
+    }
+
     /**
-     * Get child or descendant
-     * @param path Relative path to address child or one of it's descendants (use "/" as hierarchy separator).
-     * @return Child or null if no child found with this path
+     * Returns the child with the specified {@code path}.
+     *
+     * @param path relative path to address child or one of its descendants (use "/" as hierarchy separator)
+     * @return child or {@code null} if no child was found for the specified {@code path}
      */
-    ContentElement getChild(String path);
-    
+    public ContentElement getChild(String path) {
+        String name = StringUtils.substringBefore(path, "/");
+        ContentElement child = children.get(name);
+        if (child == null) {
+            return null;
+        }
+        String remainingPath = StringUtils.substringAfter(path, "/");
+        if (StringUtils.isEmpty(remainingPath)) {
+            return child;
+        } else {
+            return child.getChild(remainingPath);
+        }
+    }
+
 }

@@ -59,8 +59,7 @@ final class JsonTicksConverter {
                     if (in == '"') {
                         if (quoted) {
                             quoted = false;
-                        }
-                        else if (tickQuoted) {
+                        } else {
                             output.append("\\");
                         }
                     }
