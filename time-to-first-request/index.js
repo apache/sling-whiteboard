@@ -46,8 +46,6 @@ const argv = yargs
 })
 .argv
 
-// A number of things are hardcoded below that you may want to
-// adapt (or make configurable - patches welcome)
 const listenPort = argv.listen;
 const targetUrl = `http://127.0.0.1:${argv.dockerHostPort}`;
 const waitUrl = `${targetUrl}/${argv.waitOn}`;
@@ -59,7 +57,6 @@ dockerStartOptions['PortBindings'][`${argv.dockerContainerPort}/tcp`] =
         "HostIP":"0.0.0.0",
         "HostPort": `${argv.dockerHostPort}`
   }];
-console.log(dockerStartOptions);
 
 const proxy = httpProxy.createProxyServer({});
 
