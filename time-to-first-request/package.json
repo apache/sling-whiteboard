@@ -12,6 +12,7 @@
     "dockerode": "^2.5.8",
     "elapsed-time": "0.0.1",
     "http-proxy": "^1.17.0",
-    "wait-on": "^3.2.0"
+    "wait-on": "^3.2.0",
+    "yargs": "^13.2.4"
   }
 }

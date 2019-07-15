@@ -19,21 +19,47 @@ const httpProxy = require('http-proxy');
 const Docker = require('dockerode');
 const waitOn = require('wait-on');
 const elapsedTime = require('elapsed-time')
+const yargs = require('yargs')
+
+const argv = yargs
+.usage('$0 <cmd> [args]')
+.help()
+.option('listen', { 
+  default: 9000,
+  describe: 'port on which to listen'
+})
+.option('waitOn', {
+  default: '/index.html',
+  describe: 'path for testing server readiness'
+})
+.option('image', {
+  default: 'httpd:2.4.39-alpine',
+  describe: 'Docker image to start (get it first with docker pull)'
+})
+.option('dockerHostPort', {
+  default: 8080,
+  describe: 'Docker host port for our container'
+})
+.option('dockerContainerPort', {
+  default: 80,
+  describe: 'Port exposed by our image'
+})
+.argv
 
 // A number of things are hardcoded below that you may want to
 // adapt (or make configurable - patches welcome)
-const listenPort = 9000;
-const targetUrl = 'http://127.0.0.1:8080';
-const waitUrl = `${targetUrl}/sling/chouc/route`;
-const dockerImage = 'quarkus/org.apache.sling.graalvm.experiments';
-const dockerStartOptions = {
-  PortBindings: {
-    "8080/tcp": [{
+const listenPort = argv.listen;
+const targetUrl = `http://127.0.0.1:${argv.dockerHostPort}`;
+const waitUrl = `${targetUrl}/${argv.waitOn}`;
+const dockerImage = argv.image;
+const dockerStartOptions = {};
+dockerStartOptions['PortBindings'] = {}
+dockerStartOptions['PortBindings'][`${argv.dockerContainerPort}/tcp`] =
+  [{
         "HostIP":"0.0.0.0",
-        "HostPort": "8080"
-    }],
-  },
-};
+        "HostPort": `${argv.dockerHostPort}`
+  }];
+console.log(dockerStartOptions);
 
 const proxy = httpProxy.createProxyServer({});
 
@@ -101,5 +127,5 @@ const cleanup = async () => {
   process.on(signal, cleanup);
 })
 
-console.log(`listening on port ${listenPort}, proxying to ${targetUrl}`);
+console.log(`listening on port ${listenPort}, proxying to ${targetUrl} with ${dockerImage} on port ${argv.dockerHostPort}/${argv.dockerContainerPort}`);
 server.listen(listenPort)
