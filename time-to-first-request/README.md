@@ -9,6 +9,4 @@ Used to measure the time-to-first-request on our native image.
 To run this use:
 
     npm install
-    node index.js
-    
-See [index.js](./index.js) for more details - a number of things (Docker image name, ports etc.) are hardcoded in there.
+    node index.js --help
