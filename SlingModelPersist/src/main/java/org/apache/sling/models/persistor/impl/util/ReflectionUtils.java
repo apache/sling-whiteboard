@@ -46,8 +46,8 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.models.annotations.Via;
-import org.apache.sling.models.persistor.annotations.Ignore;
 import org.apache.sling.models.persistor.ModelPersistor;
+import org.apache.sling.models.persistor.annotations.Ignore;
 
 /**
  * Utility methods around object reflection.
@@ -154,14 +154,22 @@ public class ReflectionUtils {
      * @return <code>false</code> if field is to be considered transient,
      * <code>true</code> otherwise
      */
-    public static boolean isNotTransient(Field field) {
-        if (field != null && Modifier.isTransient(field.getModifiers())) {
+    public static boolean isNotTransient(Field field, boolean isUpdate) {
+        if (field == null) {
+            return true;
+        }
+        if (Modifier.isTransient(field.getModifiers())) {
             // if property is covered using @Named annotation it shall not be excluded
             Named aemProperty = field.getAnnotation(Named.class);
             return aemProperty != null;
         } else {
             // is the property annotated with @Ignore?
-            return field == null || field.getAnnotation(Ignore.class) == null;
+            Ignore ignore = field.getAnnotation(Ignore.class);
+            if (ignore == null) {
+                return true;
+            } else {
+                return isUpdate ? !ignore.onUpdate() : !ignore.onCreate();
+            }
         }
     }
 

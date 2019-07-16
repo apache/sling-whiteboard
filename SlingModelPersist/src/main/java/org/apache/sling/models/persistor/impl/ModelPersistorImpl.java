@@ -113,6 +113,7 @@ public class ModelPersistorImpl implements ModelPersistor {
 
         // let's create the resource first
         LOGGER.debug("Creating node at: {} of type: {}", nodePath, resourceType.primaryType);
+        boolean isUpdate = resourceResolver.getResource(nodePath) != null;
         resource = ResourceUtil.getOrCreateResource(resourceResolver, nodePath, resourceType.primaryType, NT_UNSTRUCTURED, true);
         if (StringUtils.isNotEmpty(resourceType.childType)) {
             LOGGER.debug("Needs a child node, creating node at: {} of type: {}", nodePath, resourceType.childType);
@@ -129,7 +130,7 @@ public class ModelPersistorImpl implements ModelPersistor {
             } else {
                 Resource r = resource;
                 fields.stream()
-                        .filter(ReflectionUtils::isNotTransient)
+                        .filter(field->ReflectionUtils.isNotTransient(field, isUpdate))
                         .filter(ReflectionUtils::isSupportedType)
                         .filter(f -> ReflectionUtils.hasNoTransientGetter(f.getName(), instance.getClass()))
                         .forEach(field -> persistField(r, instance, field, deepPersist));
