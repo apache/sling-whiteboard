@@ -13,7 +13,8 @@ to select the appropriate file format (see `ContentParser.JSON_CONTENT_TYPE`, `C
 3. as a consequence of 2., the `ParserOptions` are now passed directly to the `ContentParser#parse` method.
 
 Implementations of the API are made available from separate bundles:
-1. JSON - `org.apache.sling.contentparser.json`
-2. XML - `org.apache.sling.contentparser.xml`
-3. JackRabbit FileVault XML - `org.apache.sling.contentparser.xml-jcr` (the only module depending on the JCR / JackRabbit APIs)
+1. JSON - [`org.apache.sling.contentparser.json`](https://github.com/apache/sling-whiteboard/tree/master/contentparser/org-apache-sling-contentparser-json)
+2. XML - [`org.apache.sling.contentparser.xml`](https://github.com/apache/sling-whiteboard/tree/master/contentparser/org-apache-sling-contentparser-xml)
+3. JackRabbit FileVault XML - [`org.apache.sling.contentparser.xml-jcr`](https://github.com/apache/sling-whiteboard/tree/master/contentparser/org-apache-sling-contentparser-xml-jcr) (the only module depending on the JCR / 
+JackRabbit APIs)
 
