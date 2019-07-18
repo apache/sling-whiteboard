@@ -24,6 +24,10 @@ import java.util.EnumSet;
 import org.apache.sling.contentparser.api.ParserOptions;
 import org.osgi.annotation.versioning.ConsumerType;
 
+/**
+ * Defines specific JSON parser options which can be used with the JSON {@link org.apache.sling.contentparser.api.ContentParser}
+ * implementations provided by this bundle.
+ */
 @ConsumerType
 public final class JSONParserOptions extends ParserOptions {
 
@@ -36,22 +40,34 @@ public final class JSONParserOptions extends ParserOptions {
     private EnumSet<JSONParserFeature> features = DEFAULT_JSON_PARSER_FEATURES;
 
     /**
-     * Set set of features the JSON parser should apply when parsing files.
+     * Set the features the JSON parser should apply when parsing files.
      *
      * @param value JSON parser features
      * @return this
      */
     public JSONParserOptions withFeatures(EnumSet<JSONParserFeature> value) {
-        this.features = value;
+        this.features = EnumSet.copyOf(value);
         return this;
     }
 
+    /**
+     * Set the features the JSON parser should apply when parsing files.
+     *
+     * @param value JSON parser features
+     * @return this
+     */
     public JSONParserOptions withFeatures(JSONParserFeature... value) {
         this.features = EnumSet.copyOf(Arrays.asList(value));
         return this;
     }
 
+    /**
+     * Returns a copy of the features encapsulated by this instance. For modifying the set of features please use the {@code withFeatures}
+     * fluid methods.
+     *
+     * @return the features the JSON parser should apply when parsing files
+     */
     public EnumSet<JSONParserFeature> getFeatures() {
-        return features;
+        return EnumSet.copyOf(features);
     }
 }
