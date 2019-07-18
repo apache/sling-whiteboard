@@ -9,6 +9,6 @@ To obtain a reference to the XML content parser just filter on the `ContentParse
 property:
 
 ```java
-    @Reference(target = "(" + ContentParser.SERVICE_PROPERTY_CONTENT_TYPE + "=" + ContentParser.XML_CONTENT_TYPE + ")")
+    @Reference(target = "(" + ContentParser.SERVICE_PROPERTY_CONTENT_TYPE + "=xml)")
     private ContentParser xmlParser;
 ``` 

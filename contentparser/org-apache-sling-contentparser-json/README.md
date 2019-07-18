@@ -9,6 +9,6 @@ To obtain a reference to the JSON content parser just filter on the `ContentPars
 property:
 
 ```java
-    @Reference(target = "(" + ContentParser.SERVICE_PROPERTY_CONTENT_TYPE + "=" + ContentParser.JSON_CONTENT_TYPE + ")")
+    @Reference(target = "(" + ContentParser.SERVICE_PROPERTY_CONTENT_TYPE + "=json)")
     private ContentParser jsonParser;
 ``` 

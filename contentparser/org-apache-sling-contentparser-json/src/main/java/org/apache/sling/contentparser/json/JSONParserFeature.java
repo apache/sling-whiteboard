@@ -16,12 +16,12 @@
  ~ specific language governing permissions and limitations
  ~ under the License.
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-package org.apache.sling.contentparser.api;
+package org.apache.sling.contentparser.json;
 
 /**
  * Feature flags for parsing JSON files.
  */
-public enum JsonParserFeature {
+public enum JSONParserFeature {
 
     /**
      * Support comments (&#47;* ... *&#47;) in JSON files.

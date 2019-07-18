@@ -29,9 +29,9 @@ package org.apache.sling.contentparser.json.internal;
  *     After the conversion they are always escaped.</li>
  * </ul>
  */
-final class JsonTicksConverter {
+final class JSONTicksConverter {
     
-    private JsonTicksConverter() {
+    private JSONTicksConverter() {
         // static methods only
     }
     

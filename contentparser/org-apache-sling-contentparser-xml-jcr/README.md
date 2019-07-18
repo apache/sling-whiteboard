@@ -9,6 +9,6 @@ To obtain a reference to the JackRabbit FileVault XMLL content parser just filte
 property:
 
 ```java
-    @Reference(target = "(" + ContentParser.SERVICE_PROPERTY_CONTENT_TYPE + "=" + ContentParser.JCR_XML_CONTENT_TYPE + ")")
+    @Reference(target = "(" + ContentParser.SERVICE_PROPERTY_CONTENT_TYPE + "=jcr-xml)")
     private ContentParser jcrXmlParser;
 ``` 

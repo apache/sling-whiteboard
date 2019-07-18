@@ -8,8 +8,7 @@ continuation of the one provided by the [Apache Sling JCR Content Parser](https:
 1. the API is now available in the `org.apache.sling.contentparser.api` package;
 2. there is no replacement for the `org.apache.sling.jcr.contentparser.ContentParserFactory`; to obtain a `ContentParser`, given that 
 they are exposed as OSGi services, one has to filter on the `ContentParser.SERVICE_PROPERTY_CONTENT_TYPE` service registration property,
-to select the appropriate file format (see `ContentParser.JSON_CONTENT_TYPE`, `ContentParser.XML_CONTENT_TYPE` and
-`ContentParser.JCR_XML_CONTENT_TYPE`);
+to select the appropriate file format;
 3. as a consequence of 2., the `ParserOptions` are now passed directly to the `ContentParser#parse` method.
 
 Implementations of the API are made available from separate bundles:

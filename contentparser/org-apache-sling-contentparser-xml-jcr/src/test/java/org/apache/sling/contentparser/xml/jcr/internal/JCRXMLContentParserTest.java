@@ -41,7 +41,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-public class JcrXmlContentParserTest {
+public class JCRXMLContentParserTest {
 
     private File file;
     private ContentParser underTest;
@@ -49,7 +49,7 @@ public class JcrXmlContentParserTest {
     @Before
     public void setUp() {
         file = new File("src/test/resources/content-test/content.jcr.xml");
-        underTest = new JcrXmlContentParser();
+        underTest = new JCRXMLContentParser();
     }
 
     @Test
@@ -96,8 +96,8 @@ public class JcrXmlContentParserTest {
 
     @Test
     public void testDecodeName() {
-        assertEquals("jcr:title", JcrXmlContentParser.decodeName("jcr:" + ISO9075.encode("title")));
-        assertEquals("sling:123", JcrXmlContentParser.decodeName("sling:" + ISO9075.encode("123")));
+        assertEquals("jcr:title", JCRXMLContentParser.decodeName("jcr:" + ISO9075.encode("title")));
+        assertEquals("sling:123", JCRXMLContentParser.decodeName("sling:" + ISO9075.encode("123")));
     }
 
     @Test
