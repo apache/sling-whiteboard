@@ -16,7 +16,7 @@
  ~ specific language governing permissions and limitations
  ~ under the License.
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-@Version("1.0.0")
+@Version("2.0.0")
 package org.apache.sling.contentparser.json;
 
 import org.osgi.annotation.versioning.Version;
