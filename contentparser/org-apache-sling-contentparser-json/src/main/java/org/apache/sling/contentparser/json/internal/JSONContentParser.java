@@ -42,22 +42,32 @@ import javax.json.stream.JsonParsingException;
 import org.apache.commons.io.IOUtils;
 import org.apache.sling.contentparser.api.ContentHandler;
 import org.apache.sling.contentparser.api.ContentParser;
-import org.apache.sling.contentparser.api.JsonParserFeature;
 import org.apache.sling.contentparser.api.ParseException;
 import org.apache.sling.contentparser.api.ParserHelper;
 import org.apache.sling.contentparser.api.ParserOptions;
+import org.apache.sling.contentparser.json.JSONParserFeature;
+import org.apache.sling.contentparser.json.JSONParserOptions;
 import org.osgi.service.component.annotations.Component;
 
 @Component(
         property = {
-                ContentParser.SERVICE_PROPERTY_CONTENT_TYPE + "=" + ContentParser.JSON_CONTENT_TYPE
+                ContentParser.SERVICE_PROPERTY_CONTENT_TYPE + "=json"
         }
 )
-public class JsonContentParser implements ContentParser {
+public class JSONContentParser implements ContentParser {
 
     @Override
     public void parse(ContentHandler handler, InputStream is, ParserOptions parserOptions) throws ParseException {
-        final boolean jsonQuoteTicks = parserOptions.getJsonParserFeatures().contains(JsonParserFeature.QUOTE_TICK);
+        final boolean jsonQuoteTicks;
+        final boolean supportComments;
+        if (parserOptions instanceof JSONParserOptions) {
+            JSONParserOptions jsonParserOptions = (JSONParserOptions) parserOptions;
+            jsonQuoteTicks = jsonParserOptions.getFeatures().contains(JSONParserFeature.QUOTE_TICK);
+            supportComments = jsonParserOptions.getFeatures().contains(JSONParserFeature.COMMENTS);
+        } else {
+            jsonQuoteTicks = false;
+            supportComments = false;
+        }
 
         /*
          * Implementation note: This parser uses JsonReader instead of the (more memory-efficient)
@@ -66,7 +76,7 @@ public class JsonContentParser implements ContentParser {
          */
         final JsonReaderFactory jsonReaderFactory =
                 Json.createReaderFactory(
-                        parserOptions.getJsonParserFeatures().contains(JsonParserFeature.COMMENTS) ?
+                        supportComments ?
                                 new HashMap<String, Object>() {{
                                     put("org.apache.johnzon.supports-comments", true);
                                 }} :
@@ -93,7 +103,7 @@ public class JsonContentParser implements ContentParser {
         }
 
         // convert ticks to double quotes
-        jsonString = JsonTicksConverter.tickToDoubleQuote(jsonString);
+        jsonString = JSONTicksConverter.tickToDoubleQuote(jsonString);
 
         try (JsonReader reader = jsonReaderFactory.createReader(new StringReader(jsonString))) {
             return reader.readObject();

@@ -17,6 +17,6 @@
  ~ under the License.
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 @Version("2.0.0")
-package org.apache.sling.contentparser.api;
+package org.apache.sling.contentparser.json;
 
 import org.osgi.annotation.versioning.Version;

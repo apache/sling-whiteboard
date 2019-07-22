@@ -31,37 +31,23 @@ import org.osgi.annotation.versioning.ProviderType;
 @ProviderType
 public interface ContentParser {
 
-    /**
-     * JSON content descriptor file.
-     *
-     * @see <a href="https://sling.apache.org/documentation/bundles/content-loading-jcr-contentloader.html#json-descriptor-files">JCR
-     * ContentLoader JSON descriptor files</a>
-     */
-    String JSON_CONTENT_TYPE = "json";
 
     /**
-     * XML content descriptor file.
+     * OSGi service registration property indicating the content type this {@code ContentParser} supports. The simplest way to retrieve a
+     * {@code ContentParser} for a certain content type is to apply a filter on the service reference:
      *
-     * @see <a href="https://sling.apache.org/documentation/bundles/content-loading-jcr-contentloader.html#xml-descriptor-files">JCR
-     * ContentLoader XML descriptor files</a>
-     */
-    String XML_CONTENT_TYPE = "xml";
-
-    /**
-     * JCR XML content (FileVault XML),aAlso known as extended document view XML. Extends the regular document view as specified by JCR 2.0
-     * with specifics like multi-value and type information.
+     * <pre>
+     *    {@literal @}Reference(target = "(" + ContentParser.SERVICE_PROPERTY_CONTENT_TYPE + "=" + _value_ + ")")
+     *     private ContentParser parser;
+     * </pre>
      *
-     * @see <a href="https://docs.adobe.com/content/docs/en/spec/jcr/2.0/7_Export.html#7.3%20Document%20View">JCR 2.0, 7.3 Document View</a>
-     * @see <a href="http://jackrabbit.apache.org/filevault/">Jackrabbit FileVault</a>
-     */
-    String JCR_XML_CONTENT_TYPE = "jcr.xml";
-
-    /**
-     * OSGi service registration property indicating the content type this {@code ContentParser} supports.
+     * If multiple services are registered for the same content type, the above code snippet will provide you with the service
+     * implementation with the highest ranking. However, if a certain implementation is needed, an additional filter can be added:
      *
-     * @see #JSON_CONTENT_TYPE
-     * @see #XML_CONTENT_TYPE
-     * @see #JCR_XML_CONTENT_TYPE
+     * <pre>
+     *     {@literal @}Reference(target = "(&amp;(" + ContentParser.SERVICE_PROPERTY_CONTENT_TYPE + "=" + _value_ + ")(component.name=" + _class_name_ + "))")
+     *      private ContentParser parser;
+     * </pre>
      */
     String SERVICE_PROPERTY_CONTENT_TYPE = "org.apache.sling.contentparser.content_type";
 

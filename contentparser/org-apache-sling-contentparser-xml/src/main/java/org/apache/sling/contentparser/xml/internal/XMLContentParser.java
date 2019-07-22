@@ -49,15 +49,15 @@ import org.xml.sax.SAXException;
  */
 @Component(
         property = {
-                ContentParser.SERVICE_PROPERTY_CONTENT_TYPE + "=" + ContentParser.XML_CONTENT_TYPE
+                ContentParser.SERVICE_PROPERTY_CONTENT_TYPE + "=xml"
         }
 )
-public final class XmlContentParser implements ContentParser {
+public final class XMLContentParser implements ContentParser {
 
     private static final String JCR_PRIMARY_TYPE = "jcr:primaryType";
     private final DocumentBuilderFactory documentBuilderFactory;
 
-    public XmlContentParser() {
+    public XMLContentParser() {
         documentBuilderFactory = DocumentBuilderFactory.newInstance();
     }
 

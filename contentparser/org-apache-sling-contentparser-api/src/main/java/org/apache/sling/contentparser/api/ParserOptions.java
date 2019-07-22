@@ -20,17 +20,17 @@ package org.apache.sling.contentparser.api;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
- * Options for content parsers.
+ * Generic options for content parsers. Parser implementations can extend this class to provide additional options, valid only in the
+ * context of those implementations.
  */
 @ProviderType
-public final class ParserOptions {
+public class ParserOptions {
 
     /**
      * Default primary type.
@@ -57,18 +57,13 @@ public final class ParserOptions {
             "security:principals"
     )));
 
-    /**
-     * List of JSON parser features activated by default.
-     */
-    public static final EnumSet<JsonParserFeature> DEFAULT_JSON_PARSER_FEATURES
-            = EnumSet.of(JsonParserFeature.COMMENTS);
+
 
     private String defaultPrimaryType = DEFAULT_PRIMARY_TYPE;
     private boolean detectCalendarValues;
     private Set<String> ignorePropertyNames = Collections.emptySet();
     private Set<String> ignoreResourceNames = DEFAULT_IGNORE_RESOURCE_NAMES;
     private Set<String> removePropertyNamePrefixes = DEFAULT_REMOVE_PROPERTY_NAME_PREFIXES;
-    private EnumSet<JsonParserFeature> jsonParserFeatures = DEFAULT_JSON_PARSER_FEATURES;
 
     /**
      * Default "jcr:primaryType" property for resources that have no explicit value for this value.
@@ -148,24 +143,6 @@ public final class ParserOptions {
         return removePropertyNamePrefixes;
     }
 
-    /**
-     * Set set of features the JSON parser should apply when parsing files.
-     *
-     * @param value JSON parser features
-     * @return this
-     */
-    public ParserOptions jsonParserFeatures(EnumSet<JsonParserFeature> value) {
-        this.jsonParserFeatures = value;
-        return this;
-    }
 
-    public ParserOptions jsonParserFeatures(JsonParserFeature... value) {
-        this.jsonParserFeatures = EnumSet.copyOf(Arrays.asList(value));
-        return this;
-    }
-
-    public EnumSet<JsonParserFeature> getJsonParserFeatures() {
-        return jsonParserFeatures;
-    }
 
 }

@@ -46,14 +46,14 @@ import org.xml.sax.helpers.DefaultHandler;
 @Component(
         service = ContentParser.class,
         property = {
-                ContentParser.SERVICE_PROPERTY_CONTENT_TYPE + "=" + ContentParser.JCR_XML_CONTENT_TYPE
+                ContentParser.SERVICE_PROPERTY_CONTENT_TYPE + "=jcr-xml"
         }
 )
-public final class JcrXmlContentParser implements ContentParser {
+public final class JCRXMLContentParser implements ContentParser {
 
     private final SAXParserFactory saxParserFactory;
 
-    public JcrXmlContentParser() {
+    public JCRXMLContentParser() {
         saxParserFactory = SAXParserFactory.newInstance();
         saxParserFactory.setNamespaceAware(true);
     }
