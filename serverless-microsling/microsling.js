@@ -29,7 +29,7 @@ function main (params) {
     content: {}
   };
 
-  return new Promise(function (resolve) {
+  return new Promise(function (resolvePromise) {
     if(debug) console.log(`start: ${JSON.stringify(context, 2, null)}`);
     resolveContent(context)
     .then(context => {
@@ -38,11 +38,11 @@ function main (params) {
     })
     .then(context => {
       if(debug) console.log(`pre-resolve: ${JSON.stringify(context, 2, null)}`);
-      return resolve(context.response);
+      return resolvePromise(context.response);
     })
     .catch(e => {
       if(e.httpStatus) {
-        return resolve({ status: e.httpStatus, body: e.message});
+        return resolvePromise({ status: e.httpStatus, body: e.message});
       } else {
         throw e;
       }
