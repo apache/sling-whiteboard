@@ -1,11 +1,20 @@
 #!/bin/bash
 
-echo installing the microsling code using 'wsk'...
+function fatal() {
+  echo $* >&2
+  exit 1
+}
 
-# TODO check for npm install
+export ACTION=microsling
+export ZIP=openwhisk_action.zip
+export ACTION_FILES="package.json node_modules *.js foo"
 
-zip -r openwhisk_action.zip package.json node_modules *.js \
-&& wsk action update microsling openwhisk_action.zip \
---web true --kind nodejs:10
+[[ -d node_modules ]] || fatal "node_modules folder not found, please run 'npm install'"
 
-echo "Microsling is available at at $(wsk -i action get microsling --url | grep http)"
+echo Preparing $ZIP ... \
+&& zip -r $ZIP $ACTION_FILES > /dev/null \
+&& echo "$ZIP: $(du -h $ZIP | cut -f1)" \
+&& echo "Updating action '$ACTION...'" \
+&& wsk action update $ACTION $ZIP --web true --kind nodejs:10
+
+echo "Microsling is available at at $(wsk -i action get $ACTION --url | grep http)"
