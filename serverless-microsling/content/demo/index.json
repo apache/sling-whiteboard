@@ -1,0 +1,5 @@
+{
+    "resourceType": "microsling/demo",
+    "title": "Demo root resource",
+    "body": "This is the content of the demo root resource"
+}

@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
+ /* eslint-disable no-console */
+
 async function render(context) {
   const resource = context.content.resource.content;
+  console.log(resource);
   const markup = `
     <html>
     <head>

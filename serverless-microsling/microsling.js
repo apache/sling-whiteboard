@@ -20,27 +20,31 @@ const { resolveContent } = require('./lib/resolve-content.js');
 const { render } = require('./lib/render.js');
 
 function main (params) {
+  const { debug } = params;
   const context = {
     request : {
       path: params.__ow_path,
     },
     response: {},
-    content: {},
+    content: {}
   };
 
   return new Promise(function (resolve) {
+    if(debug) console.log(`start: ${JSON.stringify(context, 2, null)}`);
     resolveContent(context)
     .then(context => {
+      if(debug) console.log(`pre-render: ${JSON.stringify(context, 2, null)}`);
       return render(context);
     })
     .then(context => {
-        return resolve(context.response);
+      if(debug) console.log(`pre-resolve: ${JSON.stringify(context, 2, null)}`);
+      return resolve(context.response);
     })
     .catch(e => {
       if(e.httpStatus) {
         return resolve({ status: e.httpStatus, body: e.message});
       } else {
-        return resolve({ status: 500, body: JSON.stringify(e, 2, null)});
+        throw e;
       }
     })
   })
@@ -58,6 +62,7 @@ if (require.main === module) {
     // eslint-disable-next-line no-undef
     __ow_path: process.argv[2],
     __ow_method: 'get',
+    debug: false
   });
 }
 

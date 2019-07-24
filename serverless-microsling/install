@@ -7,7 +7,7 @@ function fatal() {
 
 export ACTION=microsling
 export ZIP=openwhisk_action.zip
-export ACTION_FILES="package.json node_modules *.js lib/* foo"
+export ACTION_FILES="package.json node_modules *.js lib content"
 
 [[ -d node_modules ]] || fatal "node_modules folder not found, please run 'npm install'"
 

@@ -14,22 +14,29 @@
  * limitations under the License.
  */
 
+/* eslint-disable no-console */
+
+const fs = require('fs');
+
 async function resolveContent(context) {
-  if(!context.request.path.startsWith('/demo/')) {
-    throw {
-      httpStatus: 404,
-      message: `path not found: ${context.request.path}`,
-    };
-  }
-  context.content["resource"] = {
-    path: context.request.path,
-    resourceType: 'microsling/demo',
-    content: {
-      title: `This is a demo resource at ${context.request.path}`,
-      body: "Here's the body of the demo resource"
+  const filePath = `../content${context.request.path}`;
+  return new Promise(resolve => {
+    try {
+      fs.readFile(require.resolve(filePath), (err, text) => {
+        context.content.resource = {
+          path: context.request.path,
+          content: JSON.parse(text)
+        };
+        return resolve(context);
+    
+      });
+    } catch(e) {
+      throw {
+        httpStatus: 404,
+        message: `path not found: ${context.request.path}`,
+      };
     }
-  }
-  return context;
+  });
 }
 
 module.exports.resolveContent = resolveContent;
