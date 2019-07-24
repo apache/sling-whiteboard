@@ -1,0 +1,11 @@
+#!/bin/bash
+
+echo installing the microsling code using 'wsk'...
+
+# TODO check for npm install
+
+zip -r openwhisk_action.zip package.json node_modules *.js \
+&& wsk action update microsling openwhisk_action.zip \
+--web true --kind nodejs:10
+
+echo "Microsling is available at at $(wsk -i action get microsling --url | grep http)"
