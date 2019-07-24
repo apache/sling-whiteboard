@@ -14,6 +14,14 @@ How to run this on Apache OpenWhisk
 Assuming `wsk` is setup as per the [OpenWhisk docs](openwhisk.apache.org), the
 `install` script installs this code as an OpenWhisk action named `microsling`.
 
+The script outputs the URL at which the action is available:
+
+    Microsling is available at at https://openwhisk.example.com/YOURNAME/default/microsling
+
+To which you need to append the path of the content that you want to read (from `./content` for now) so for example:
+
+     https://openwhisk.example.com/YOURNAME/default/microsling/demo/index.json
+
 To see what happened after executing the action you can use:
 
     wsk -i activation get --last
