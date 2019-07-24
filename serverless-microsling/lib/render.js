@@ -14,22 +14,26 @@
  * limitations under the License.
  */
 
-async function resolveContent(context) {
-  if(!context.request.path.startsWith('/demo/')) {
-    throw {
-      httpStatus: 404,
-      message: `path not found: ${context.request.path}`,
-    };
-  }
-  context.content["resource"] = {
-    path: context.request.path,
-    resourceType: 'microsling/demo',
-    content: {
-      title: `This is a demo resource at ${context.request.path}`,
-      body: "Here's the body of the demo resource"
-    }
-  }
+async function render(context) {
+  const resource = context.content.resource.content;
+  const markup = `
+    <html>
+    <head>
+    <title>${resource.title}</title>
+    </head>
+    <body>
+    <h1>
+        ${resource.title}
+    </h1>
+    <div>${resource.body}</div>
+    </body>
+    </html>
+  `;
+  context.response.body = markup;
+  context.response.headers = {
+    'Content-Type': 'text/html',
+  };
   return context;
 }
 
-module.exports.resolveContent = resolveContent;
+module.exports.render = render;

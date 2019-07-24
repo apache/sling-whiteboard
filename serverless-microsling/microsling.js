@@ -14,24 +14,33 @@
  * limitations under the License.
  */
 
+ /* eslint-disable no-console */
+
 const { resolveContent } = require('./lib/resolve-content.js');
+const { render } = require('./lib/render.js');
 
 function main (params) {
   const context = {
-    path: params.__ow_path,
+    request : {
+      path: params.__ow_path,
+    },
+    response: {},
     content: {},
   };
 
-  return new Promise(function (resolve, reject) {
+  return new Promise(function (resolve) {
     resolveContent(context)
     .then(context => {
-      return resolve({body: context});
+      return render(context);
+    })
+    .then(context => {
+        return resolve(context.response);
     })
     .catch(e => {
       if(e.httpStatus) {
         return resolve({ status: e.httpStatus, body: e.message});
       } else {
-        return resolve({ status: 500, body: e});
+        return resolve({ status: 500, body: JSON.stringify(e, 2, null)});
       }
     })
   })
@@ -46,6 +55,7 @@ const shellExec= async (input) => {
 
 if (require.main === module) {
   shellExec({
+    // eslint-disable-next-line no-undef
     __ow_path: process.argv[2],
     __ow_method: 'get',
   });
