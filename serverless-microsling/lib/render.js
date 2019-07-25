@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+ const { openWhiskRenderer } = require('./openwhisk-renderer');
+
  /* eslint-disable no-console */
 
 const defaultTextRenderer = {
@@ -59,6 +61,7 @@ const defaultHtmlRenderer = {
 }
 
 const renderers = [
+  openWhiskRenderer,
   defaultTextRenderer,
   defaultHtmlRenderer,
   defaultJsonRenderer
@@ -69,14 +72,11 @@ async function render(context) {
   if(context.debug) {
     console.log(`rendering for resourceType ${resource.resourceType} extension ${context.request.extension}`);
   }
-  renderers
-  .filter(r => r.appliesTo(resource.resourceType, context.request.extension))
-  .forEach(r => {
-    context.response.body = r.render(resource);
-    context.response.headers = {
-      'Content-Type': r.contentType
-    };
-  });
+  const renderer = renderers.find(r => r.appliesTo(resource.resourceType, context.request.extension));
+  context.response.body = renderer.render(resource);
+  context.response.headers = {
+    'Content-Type': renderer.contentType
+  };
   return context;
 }
 
