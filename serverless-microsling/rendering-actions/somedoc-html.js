@@ -21,10 +21,18 @@ function main (params) {
   const markup = `<html>
   <head>
   <title>${resource.title}</title>
+  <style type="text/css">
+  body {
+    background-color:  #fcf3cf;
+  }
+  h1 {
+    color: blue;
+  }
+  </style>
   </head>
   <body>
   <h1>
-      ${resource.title}
+      ${resource.title}, with a custom rendering!
   </h1>
   <div>${resource.body}</div>
   <div><em>This is the somedoc-html rendering</em></div>
