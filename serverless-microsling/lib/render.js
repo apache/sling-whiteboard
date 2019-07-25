@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+'use strict';
+
  const { openWhiskRenderer } = require('./openwhisk-renderer');
 
  /* eslint-disable no-console */
@@ -61,22 +63,52 @@ const defaultHtmlRenderer = {
 }
 
 const renderers = [
-  openWhiskRenderer,
+  //openWhiskRenderer,
   defaultTextRenderer,
   defaultHtmlRenderer,
   defaultJsonRenderer
 ];
 
+async function getRendererInfo(resourceType, extension) {
+  return new Promise(async resolve => {
+    let i;
+    let resolved;
+    for(i in renderers) {
+      const applyContext = await renderers[i].appliesTo(resourceType, extension);
+      if(applyContext) {
+        resolve({
+          'renderer': renderers[i],
+          'applyContext': applyContext,
+        });
+        resolved = true;
+        break;
+      }
+    }
+    if(!resolved) {
+      resolve();
+    }
+  })
+}
+
 async function render(context) {
   const resource = context.content.resource.content;
+  const { resourceType } = resource;
+  const { extension } = context.request;
   if(context.debug) {
-    console.log(`rendering for resourceType ${resource.resourceType} extension ${context.request.extension}`);
+    console.log(`rendering for resourceType ${resourceType} extension ${extension}`);
   }
-  const renderer = renderers.find(r => r.appliesTo(resource.resourceType, context.request.extension));
-  context.response.body = renderer.render(resource);
+  const rendererInfo = await getRendererInfo(resourceType, extension);
+  if(context.debug) {
+    console.log(rendererInfo);
+  }
+  if(!rendererInfo) {
+    throw Error(`Renderer not found for ${resourceType} extension ${extension}`);
+  }
+  context.response.body = rendererInfo.renderer.render(resource, rendererInfo.applyContext);
   context.response.headers = {
-    'Content-Type': renderer.contentType
+    'Content-Type': rendererInfo.renderer.contentType
   };
+
   return context;
 }
 
