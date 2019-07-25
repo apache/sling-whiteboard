@@ -20,24 +20,24 @@ const { resolveContent } = require('./lib/resolve-content.js');
 const { render } = require('./lib/render.js');
 
 function main (params) {
-  const { debug } = params;
   const context = {
     request : {
       path: params.__ow_path,
     },
     response: {},
-    content: {}
+    content: {},
+    debug: params.debug
   };
 
   return new Promise(function (resolvePromise) {
-    if(debug) console.log(`start: ${JSON.stringify(context, 2, null)}`);
+    if(context.debug) console.log(`start: ${JSON.stringify(context, 2, null)}`);
     resolveContent(context)
     .then(context => {
-      if(debug) console.log(`pre-render: ${JSON.stringify(context, 2, null)}`);
+      if(context.debug) console.log(`pre-render: ${JSON.stringify(context, 2, null)}`);
       return render(context);
     })
     .then(context => {
-      if(debug) console.log(`pre-resolve: ${JSON.stringify(context, 2, null)}`);
+      if(context.debug) console.log(`pre-resolve: ${JSON.stringify(context, 2, null)}`);
       return resolvePromise(context.response);
     })
     .catch(e => {
@@ -60,9 +60,10 @@ const shellExec= async (input) => {
 if (require.main === module) {
   shellExec({
     // eslint-disable-next-line no-undef
+    debug: process.argv[3] || false,
+    // eslint-disable-next-line no-undef
     __ow_path: process.argv[2],
     __ow_method: 'get',
-    debug: false
   });
 }
 

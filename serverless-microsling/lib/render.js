@@ -16,10 +16,33 @@
 
  /* eslint-disable no-console */
 
-async function render(context) {
-  const resource = context.content.resource.content;
-  console.log(resource);
-  const markup = `
+const defaultTextRenderer = {
+  contentType: 'text/plain',
+  appliesTo : (resourceType, extension) => {
+    return extension == 'txt';
+  },
+  render : (resource) => {
+    return `${resource.title}\n${resource.body}\n`;
+  },
+}
+
+const defaultJsonRenderer = {
+  contentType: 'application/json',
+  appliesTo : (resourceType, extension) => {
+    return extension == 'json';
+  },
+  render : (resource) => {
+    return JSON.stringify(resource, 2, null);
+  },
+}
+
+const defaultHtmlRenderer = {
+  contentType: 'text/html',
+  appliesTo : (resourceType, extension) => {
+    return extension == 'html';
+  },
+  render : (resource) => {
+    return `
     <html>
     <head>
     <title>${resource.title}</title>
@@ -32,10 +55,28 @@ async function render(context) {
     </body>
     </html>
   `;
-  context.response.body = markup;
-  context.response.headers = {
-    'Content-Type': 'text/html',
-  };
+  },
+}
+
+const renderers = [
+  defaultTextRenderer,
+  defaultHtmlRenderer,
+  defaultJsonRenderer
+];
+
+async function render(context) {
+  const resource = context.content.resource.content;
+  if(context.debug) {
+    console.log(`rendering for resourceType ${resource.resourceType} extension ${context.request.extension}`);
+  }
+  renderers
+  .filter(r => r.appliesTo(resource.resourceType, context.request.extension))
+  .forEach(r => {
+    context.response.body = r.render(resource);
+    context.response.headers = {
+      'Content-Type': r.contentType
+    };
+  });
   return context;
 }
 
