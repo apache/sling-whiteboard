@@ -63,7 +63,7 @@ const defaultHtmlRenderer = {
 }
 
 const renderers = [
-  //openWhiskRenderer,
+  openWhiskRenderer,
   defaultTextRenderer,
   defaultHtmlRenderer,
   defaultJsonRenderer

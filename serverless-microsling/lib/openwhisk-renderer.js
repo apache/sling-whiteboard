@@ -23,22 +23,37 @@ const getAnnotation = (act, key) => {
   return annotation ? annotation.value : undefined;
 }
 
- const renderer = {
-  contentType: 'text/html_TODO',
-  appliesTo : async (resourceType, extension) => {
-    return new Promise(resolve => {
-      openwhisk().actions.list()
-      .then(actions => {
-        const act = actions.find(act => {
-          return resourceType == getAnnotation(act, 'sling:resourceType') && extension == getAnnotation(act, 'sling:extensions')
-        })
-        resolve(act);
-      });
+const getAction = async (resourceType, extension) => {
+  return new Promise(resolve => {
+    var ow = openwhisk();
+    ow.actions.list()
+    .then(actions => {
+      const act = actions.find(act => {
+        return resourceType == getAnnotation(act, 'sling:resourceType') && extension == getAnnotation(act, 'sling:extensions')
+      })
+      resolve(act);
     })
+    .catch(e => {
+      throw e;
+    })
+  })
+};
+
+ const renderer = {
+  contentType: 'text/html',
+  appliesTo : async (resourceType, extension) => { 
+    return getAction(resourceType, extension)
   },
   render : (resource, action) => {
-    console.log(`TODO: render using ${action}`);
+    return `TODO: render using ${action ? action.name : null}`;
   },
 }
 
+function main () {
+  return new Promise(resolve => {
+    resolve(getAction('microsling/somedoc', 'html'));
+  });
+}
+
 module.exports.openWhiskRenderer = renderer;
+module.exports.main = main;
