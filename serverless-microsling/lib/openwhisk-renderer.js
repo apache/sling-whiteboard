@@ -39,19 +39,33 @@ const getAction = async (resourceType, extension) => {
   })
 };
 
+const render = (resource, action) => {
+  const name = action.name;
+  const blocking = true, result = true
+  const params = {
+    resource: resource
+  }
+  var ow = openwhisk();
+  return ow.actions.invoke({name, blocking, result, params});
+};
+
  const renderer = {
   contentType: 'text/html',
   appliesTo : async (resourceType, extension) => { 
     return getAction(resourceType, extension)
   },
   render : (resource, action) => {
-    return `TODO: render using ${action ? action.name : null}`;
+    return render(resource, action);
   },
 }
 
 function main () {
-  return new Promise(resolve => {
-    resolve(getAction('microsling/somedoc', 'html'));
+  return new Promise(async resolve => {
+    const resource = {
+      title: 'cmdline title test',
+      body: 'cmdline body test',
+    }
+    resolve(render(resource, getAction('microsling/somedoc', 'html')));
   });
 }
 

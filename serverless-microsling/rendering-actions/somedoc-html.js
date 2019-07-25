@@ -21,7 +21,6 @@ function main (params) {
   const markup = `<html>
   <head>
   <title>${resource.title}</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"/>
   </head>
   <body>
   <h1>

@@ -26,7 +26,7 @@ const defaultTextRenderer = {
     return extension == 'txt';
   },
   render : (resource) => {
-    return `${resource.title}\n${resource.body}\n`;
+    return { output: `${resource.title}\n${resource.body}\n` };
   },
 }
 
@@ -36,7 +36,7 @@ const defaultJsonRenderer = {
     return extension == 'json';
   },
   render : (resource) => {
-    return JSON.stringify(resource, 2, null);
+    return { output: JSON.stringify(resource, 2, null) };
   },
 }
 
@@ -46,7 +46,7 @@ const defaultHtmlRenderer = {
     return extension == 'html';
   },
   render : (resource) => {
-    return `
+    return { output: `
     <html>
     <head>
     <title>${resource.title}</title>
@@ -58,7 +58,7 @@ const defaultHtmlRenderer = {
     <div>${resource.body}</div>
     </body>
     </html>
-  `;
+  `};
   },
 }
 
@@ -104,7 +104,11 @@ async function render(context) {
   if(!rendererInfo) {
     throw Error(`Renderer not found for ${resourceType} extension ${extension}`);
   }
-  context.response.body = rendererInfo.renderer.render(resource, rendererInfo.applyContext);
+  const rendered = await rendererInfo.renderer.render(resource, rendererInfo.applyContext);
+  if(!rendered.output) {
+    throw Error('Renderer generated no output');
+  }
+  context.response.body = rendered.output;
   context.response.headers = {
     'Content-Type': rendererInfo.renderer.contentType
   };
