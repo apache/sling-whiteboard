@@ -33,10 +33,14 @@ const getActionInfo = async (resourceType, extension) => {
       const act = actions.find(act => {
         return resourceType == getAnnotation(act, 'sling:resourceType') && extension == getAnnotation(act, 'sling:extensions')
       })
-      resolve({
-        action: act,
-        contentType: getAnnotation(act, 'sling:contentType'),
-      });
+      let result;
+      if(act) {
+        result = {
+          action: act,
+          contentType: getAnnotation(act, 'sling:contentType'),
+        };
+      }
+      resolve(result);
     })
     .catch(e => {
       throw e;
