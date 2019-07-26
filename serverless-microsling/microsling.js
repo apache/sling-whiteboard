@@ -29,15 +29,12 @@ function main (params) {
     debug: params.debug
   };
 
-  return new Promise(function (resolvePromise, reject) {
-    if(context.debug) console.log(`start: ${JSON.stringify(context, 2, null)}`);
+  return new Promise(function (resolvePromise) {
     resolveContent(context)
     .then(context => {
-      if(context.debug) console.log(`pre-render: ${JSON.stringify(context, 2, null)}`);
       return render(context);
     })
     .then(context => {
-      if(context.debug) console.log(`pre-resolve: ${JSON.stringify(context, 2, null)}`);
       return resolvePromise(context.response);
     })
     .catch(e => {
