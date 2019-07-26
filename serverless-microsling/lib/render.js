@@ -14,59 +14,18 @@
  * limitations under the License.
  */
 
-'use strict';
-
- const { openWhiskRenderer } = require('./openwhisk-renderer');
-
  /* eslint-disable no-console */
+ 'use strict';
 
-const defaultTextRenderer = {
-  contentType: 'text/plain',
-  getRendererInfo : (resourceType, extension) => {
-    return extension == 'txt';
-  },
-  render : (resource) => {
-    return { output: `${resource.title}\n${resource.body}\n` };
-  },
-}
+const { openWhiskRenderer } = require('./openwhisk-renderer');
+const defaultRenderers = require('./default-renderers');
 
-const defaultJsonRenderer = {
-  contentType: 'application/json',
-  getRendererInfo : (resourceType, extension) => {
-    return extension == 'json';
-  },
-  render : (resource) => {
-    return { output: JSON.stringify(resource, 2, null) };
-  },
-}
-
-const defaultHtmlRenderer = {
-  contentType: 'text/html',
-  getRendererInfo : (resourceType, extension) => {
-    return extension == 'html';
-  },
-  render : (resource) => {
-    return { output: `
-    <html>
-    <head>
-    <title>${resource.title}</title>
-    </head>
-    <body>
-    <h1>
-        ${resource.title}
-    </h1>
-    <div>${resource.body}</div>
-    </body>
-    </html>
-  `};
-  },
-}
-
+// Ordered list of renderers, first ones get preference
 const renderers = [
   openWhiskRenderer,
-  defaultTextRenderer,
-  defaultHtmlRenderer,
-  defaultJsonRenderer
+  defaultRenderers.renderers.json,
+  defaultRenderers.renderers.html,
+  defaultRenderers.renderers.text,
 ];
 
 async function selectRendererInfo(resourceType, extension) {
