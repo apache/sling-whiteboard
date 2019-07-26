@@ -19,27 +19,24 @@
 
 module.exports.renderers = {
    text: {
-    contentType: 'text/plain',
     getRendererInfo : (resourceType, extension) => {
-      return extension == 'txt';
+      return extension == 'txt' ? { contentType : 'text/plain' } : null;
     },
     render : (resource) => {
       return { output: `${resource.title}\n${resource.body}\n` };
     },
   },
   json: {
-    contentType: 'application/json',
     getRendererInfo : (resourceType, extension) => {
-      return extension == 'json';
+      return extension == 'json' ? { contentType : 'application/json' } : null;
     },
     render : (resource) => {
       return { output: JSON.stringify(resource, 2, null) };
     },
   },
   html: {
-    contentType: 'text/html',
     getRendererInfo : (resourceType, extension) => {
-      return extension == 'html';
+      return extension == 'html' ? { contentType : 'text/html' } : null;
     },
     render : (resource) => {
       return { output: `

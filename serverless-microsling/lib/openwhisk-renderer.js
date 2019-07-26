@@ -19,11 +19,13 @@
  const openwhisk = require('openwhisk');
 
 const getAnnotation = (act, key) => {
-  const annotation = act.annotations.find(ann => key == ann.key);
-  return annotation ? annotation.value : undefined;
+  if(act != null) {
+    const annotation = act.annotations.find(ann => key == ann.key);
+    return annotation ? annotation.value : undefined;
+  }
 }
 
-const getAction = async (resourceType, extension) => {
+const getActionInfo = async (resourceType, extension) => {
   return new Promise(resolve => {
     var ow = openwhisk();
     ow.actions.list()
@@ -31,7 +33,10 @@ const getAction = async (resourceType, extension) => {
       const act = actions.find(act => {
         return resourceType == getAnnotation(act, 'sling:resourceType') && extension == getAnnotation(act, 'sling:extensions')
       })
-      resolve(act);
+      resolve({
+        action: act,
+        contentType: getAnnotation(act, 'sling:contentType'),
+      });
     })
     .catch(e => {
       throw e;
@@ -39,8 +44,11 @@ const getAction = async (resourceType, extension) => {
   })
 };
 
-const renderWithAction = (resource, action) => {
-  const name = action.name;
+const renderWithAction = (resource, actionInfo) => {
+  if(!actionInfo.action) {
+    throw Error("No Action provided, cannot render");
+  }
+  const name = actionInfo.action.name;
   const blocking = true, result = true
   const params = {
     resource: resource
@@ -50,9 +58,8 @@ const renderWithAction = (resource, action) => {
 };
 
  const renderer = {
-  contentType: 'text/html',
   getRendererInfo : async (resourceType, extension) => { 
-    return getAction(resourceType, extension)
+    return getActionInfo(resourceType, extension);
   },
   render : (resource, action) => {
     return renderWithAction(resource, action);
@@ -60,14 +67,30 @@ const renderWithAction = (resource, action) => {
 }
 
 // For testing as a standalone OpenWhisk action
+// (requires installing the action with -a provide-api-key true)
+// or from the command line
 function main () {
-  return new Promise(async resolve => {
+  return new Promise(async (resolve, reject) => {
     const resource = {
       title: 'cmdline title test',
       body: 'cmdline body test',
     }
-    resolve(renderWithAction(resource, getAction('microsling/somedoc', 'html')));
+    try {
+      const actionInfo = await getActionInfo('microsling/somedoc', 'html');
+      console.log(`actionInfo=${JSON.stringify(actionInfo, 2, null)}`);
+      const rendered = await renderWithAction(resource, actionInfo);
+      console.log(`rendered=${JSON.stringify(rendered, 2, null)}`);
+      resolve(rendered);
+    } catch(e) {
+      reject(e);
+    }
   });
+}
+
+// From the command line, __OW_API_HOST and __OW_API_KEY environment
+// variables must be set
+if (require.main === module) {
+  main();
 }
 
 module.exports.openWhiskRenderer = renderer;

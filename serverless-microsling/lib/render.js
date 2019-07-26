@@ -31,21 +31,18 @@ const renderers = [
 async function selectRendererInfo(resourceType, extension) {
   return new Promise(async resolve => {
     let i;
-    let resolved;
+    let result;
     for(i in renderers) {
       const rendererInfo = await renderers[i].getRendererInfo(resourceType, extension);
       if(rendererInfo) {
-        resolve({
+        result = {
           'renderer': renderers[i],
-          'rendererInfo': rendererInfo,
-        });
-        resolved = true;
+          'info': rendererInfo,
+        };
         break;
       }
     }
-    if(!resolved) {
-      resolve();
-    }
+    resolve(result);
   })
 }
 
@@ -63,13 +60,13 @@ async function render(context) {
   if(!rendererInfo) {
     throw Error(`Renderer not found for ${resourceType} extension ${extension}`);
   }
-  const rendered = await rendererInfo.renderer.render(resource, rendererInfo.rendererInfo);
+  const rendered = await rendererInfo.renderer.render(resource, rendererInfo.info);
   if(!rendered.output) {
     throw Error('Renderer generated no output');
   }
   context.response.body = rendered.output;
   context.response.headers = {
-    'Content-Type': rendererInfo.renderer.contentType
+    'Content-Type': rendererInfo.contentType
   };
 
   return context;

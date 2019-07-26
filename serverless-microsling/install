@@ -15,7 +15,7 @@ echo Preparing $ZIP ... \
 && zip -r $ZIP $ACTION_FILES > /dev/null \
 && echo "$ZIP: $(du -h $ZIP | cut -f1)" \
 && echo "Updating action '$ACTION...'" \
-&& wsk action update $ACTION $ZIP --web true --kind nodejs:10 --param debug true
+&& wsk action update $ACTION $ZIP --web true --kind nodejs:10 --param debug true -a provide-api-key true
 
 echo "Installing rendering actions..."
 wsk action update somedoc-rendering rendering-actions/somedoc-html.js -a sling:resourceType microsling/somedoc -a sling:extensions html
