@@ -13,7 +13,7 @@ implemented by independent OpenWhisk functions (in the same namespace) works. Se
 Prerequisite: Apache OpenWhisk
 ---
 To run this prototype you'll need the OpenWhisk `wsk` command to be is setup as per 
-the [OpenWhisk docs](openwhisk.apache.org).
+the [OpenWhisk docs](http://openwhisk.apache.org).
 
 A simple way to play with OpenWhisk is to use its [standalone runnable jar](https://github.com/apache/incubator-openwhisk/pull/4516). That's not released as I write
 this but you can download a build from [Chetan's repository](https://github.com/chetanmeh/incubator-openwhisk/releases/tag/v0.10), which has been tested with this code.
@@ -52,7 +52,7 @@ These action annotations are set by the `install` script but you can change them
       -a sling:resourceType microsling/somedoc \
       -a sling:contentType text/html -a sling:extensions html
 
-To create new renderers see the examples in the [rendering-actions](.rendering-actions/) folder and how
+To create new renderers see the examples in the [rendering-actions](./rendering-actions/) folder and how
 they are setup by the [install](./install) script.
 
 Troubleshooting
