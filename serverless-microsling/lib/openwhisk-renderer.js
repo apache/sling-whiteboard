@@ -31,7 +31,9 @@ const getActionInfo = async (resourceType, extension) => {
     ow.actions.list()
     .then(actions => {
       const act = actions.find(act => {
-        return resourceType == getAnnotation(act, 'sling:resourceType') && extension == getAnnotation(act, 'sling:extensions')
+        const rtAnnotation = getAnnotation(act, 'sling:resourceType');
+        return ('*' == rtAnnotation || resourceType ==  rtAnnotation)
+          && extension == getAnnotation(act, 'sling:extensions');
       })
       let result;
       if(act) {

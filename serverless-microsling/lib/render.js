@@ -55,7 +55,7 @@ async function render(context) {
   }
   const rendererInfo = await selectRendererInfo(resourceType, extension);
   if(context.debug) {
-    console.log(rendererInfo);
+    console.log(`rendererInfo: ${JSON.stringify(rendererInfo, 2, null)}`);
   }
   if(!rendererInfo) {
     throw Error(`Renderer not found for ${resourceType} extension ${extension}`);
@@ -66,7 +66,7 @@ async function render(context) {
   }
   context.response.body = rendered.output;
   context.response.headers = {
-    'Content-Type': rendererInfo.contentType
+    'Content-Type': rendererInfo.info.contentType
   };
 
   return context;

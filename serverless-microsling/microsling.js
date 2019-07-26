@@ -29,7 +29,7 @@ function main (params) {
     debug: params.debug
   };
 
-  return new Promise(function (resolvePromise) {
+  return new Promise(function (resolvePromise, reject) {
     if(context.debug) console.log(`start: ${JSON.stringify(context, 2, null)}`);
     resolveContent(context)
     .then(context => {
@@ -42,9 +42,9 @@ function main (params) {
     })
     .catch(e => {
       if(e.httpStatus) {
-        return resolvePromise({ status: e.httpStatus, body: e.message});
+        return resolvePromise({ statusCode: e.httpStatus, body: e.message});
       } else {
-        throw e;
+        return resolvePromise({ statusCode: 500, body: `${e.stack}\n`});
       }
     })
   })
