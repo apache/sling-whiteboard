@@ -39,7 +39,7 @@ const getAction = async (resourceType, extension) => {
   })
 };
 
-const render = (resource, action) => {
+const renderWithAction = (resource, action) => {
   const name = action.name;
   const blocking = true, result = true
   const params = {
@@ -55,7 +55,7 @@ const render = (resource, action) => {
     return getAction(resourceType, extension)
   },
   render : (resource, action) => {
-    return render(resource, action);
+    return renderWithAction(resource, action);
   },
 }
 
@@ -66,7 +66,7 @@ function main () {
       title: 'cmdline title test',
       body: 'cmdline body test',
     }
-    resolve(render(resource, getAction('microsling/somedoc', 'html')));
+    resolve(renderWithAction(resource, getAction('microsling/somedoc', 'html')));
   });
 }
 
