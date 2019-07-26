@@ -22,7 +22,7 @@
 
 const defaultTextRenderer = {
   contentType: 'text/plain',
-  appliesTo : (resourceType, extension) => {
+  getRendererInfo : (resourceType, extension) => {
     return extension == 'txt';
   },
   render : (resource) => {
@@ -32,7 +32,7 @@ const defaultTextRenderer = {
 
 const defaultJsonRenderer = {
   contentType: 'application/json',
-  appliesTo : (resourceType, extension) => {
+  getRendererInfo : (resourceType, extension) => {
     return extension == 'json';
   },
   render : (resource) => {
@@ -42,7 +42,7 @@ const defaultJsonRenderer = {
 
 const defaultHtmlRenderer = {
   contentType: 'text/html',
-  appliesTo : (resourceType, extension) => {
+  getRendererInfo : (resourceType, extension) => {
     return extension == 'html';
   },
   render : (resource) => {
@@ -69,16 +69,16 @@ const renderers = [
   defaultJsonRenderer
 ];
 
-async function getRendererInfo(resourceType, extension) {
+async function selectRendererInfo(resourceType, extension) {
   return new Promise(async resolve => {
     let i;
     let resolved;
     for(i in renderers) {
-      const applyContext = await renderers[i].appliesTo(resourceType, extension);
-      if(applyContext) {
+      const rendererInfo = await renderers[i].getRendererInfo(resourceType, extension);
+      if(rendererInfo) {
         resolve({
           'renderer': renderers[i],
-          'applyContext': applyContext,
+          'rendererInfo': rendererInfo,
         });
         resolved = true;
         break;
@@ -97,14 +97,14 @@ async function render(context) {
   if(context.debug) {
     console.log(`rendering for resourceType ${resourceType} extension ${extension}`);
   }
-  const rendererInfo = await getRendererInfo(resourceType, extension);
+  const rendererInfo = await selectRendererInfo(resourceType, extension);
   if(context.debug) {
     console.log(rendererInfo);
   }
   if(!rendererInfo) {
     throw Error(`Renderer not found for ${resourceType} extension ${extension}`);
   }
-  const rendered = await rendererInfo.renderer.render(resource, rendererInfo.applyContext);
+  const rendered = await rendererInfo.renderer.render(resource, rendererInfo.rendererInfo);
   if(!rendered.output) {
     throw Error('Renderer generated no output');
   }

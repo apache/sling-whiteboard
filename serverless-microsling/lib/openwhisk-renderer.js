@@ -51,7 +51,7 @@ const render = (resource, action) => {
 
  const renderer = {
   contentType: 'text/html',
-  appliesTo : async (resourceType, extension) => { 
+  getRendererInfo : async (resourceType, extension) => { 
     return getAction(resourceType, extension)
   },
   render : (resource, action) => {
@@ -59,6 +59,7 @@ const render = (resource, action) => {
   },
 }
 
+// For testing as a standalone OpenWhisk action
 function main () {
   return new Promise(async resolve => {
     const resource = {
