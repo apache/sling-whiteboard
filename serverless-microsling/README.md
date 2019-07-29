@@ -3,7 +3,11 @@ Serverless Microsling
 
 This prototype, created for the [adaptTo() 2019 conference](https://adapt.to/2019/en/schedule/sling-and-serverless-best-friends-forever.html), implements a minimal Sling-like request processing pipeline in a serverless environment.
 
+It reproduces (the basics of) the way Sling mechanism dynamically selects rendering pipeline components, using [annotations on OpenWisk Actions](./lib/openwhisk-renderer.js) to indicate what they can do, which resource types they process etc.
+
 Its name comes from the [historical microsling project](https://grep.codeconsult.ch/2007/10/12/microsling-yet-another-cool-web-applications-framework/) from 2007, which served as the basis of today's Sling architecture and naming.
+
+I don't have that much flight hours with JavaScript, please bear with me (or send patches) if you see ugly code in there.
 
 Status
 ----
