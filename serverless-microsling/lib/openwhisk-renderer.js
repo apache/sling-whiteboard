@@ -16,7 +16,11 @@
 
  /* eslint-disable no-console */
 
- const openwhisk = require('openwhisk');
+/** Proxy renderer which uses an OpenWhisk action for
+ *  rendering, if one matches the current request's
+ *  resource type and extension.
+ */
+const openwhisk = require('openwhisk');
 
 const getAnnotation = (act, key) => {
   if(act != null) {
@@ -25,6 +29,13 @@ const getAnnotation = (act, key) => {
   }
 }
 
+// If an action matches the specified resource type (*)
+// and extension (*), return its info and the content-type
+// that it provides (*).
+// Items marked with (*) are defined by OpenWhisk annotations
+// on the actions.
+// A "sling:resourceType" annotation with value "*" matches all
+// resource types.
 const getActionInfo = async (resourceType, extension) => {
   return new Promise(resolve => {
     var ow = openwhisk();
