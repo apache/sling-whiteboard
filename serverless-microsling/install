@@ -1,0 +1,34 @@
+#!/bin/bash
+
+function fatal() {
+  echo $* >&2
+  exit 1
+}
+
+export ACTION=microsling
+export ZIP=openwhisk_action.zip
+export ACTION_FILES="package.json node_modules *.js lib content"
+
+[[ -d node_modules ]] || fatal "node_modules folder not found, please run 'npm install'"
+
+echo Preparing $ZIP ... \
+&& zip -r $ZIP $ACTION_FILES > /dev/null \
+&& echo "$ZIP: $(du -h $ZIP | cut -f1)" \
+&& echo "Updating action '$ACTION...'" \
+&& wsk action update $ACTION $ZIP --web true --kind nodejs:10 --param debug true -a provide-api-key true
+
+echo "Installing rendering actions..."
+wsk action update somedoc-html rendering-actions/somedoc-html.js -a sling:resourceType microsling/somedoc -a sling:contentType text/html -a sling:extensions html
+wsk action update markdown-default rendering-actions/markdown-default.js -a sling:resourceType '*' -a sling:contentType text/markdown -a sling:extensions md
+
+export URL=$(wsk -i action get $ACTION --url | grep http)
+echo "Microsling is available at at $URL"
+echo "Interesting test URLs are:"
+for f in demo/index demo/docs/somedoc
+do
+  for x in json txt html md
+  do
+    echo "open $URL/$f.$x"
+  done
+done
+

@@ -1,0 +1,30 @@
+{
+  "name": "serverless-microsling",
+  "version": "0.0.1",
+  "description": "Minimal Sling-like request processing pipeline",
+  "main": "microsling.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/apache/sling-whiteboard.git"
+  },
+  "keywords": [
+    "sling"
+  ],
+  "author": "The Apache Sling project",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/apache/sling-whiteboard/issues"
+  },
+  "homepage": "https://github.com/apache/sling-whiteboard#readme",
+  "devDependencies": {
+    "eslint": "^5.16.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.17.3"
+  },
+  "dependencies": {
+    "openwhisk": "^3.18.0"
+  }
+}
