@@ -15,113 +15,104 @@ prints() {
   printf "\n\n$STARTCOLOR%b$ENDCOLOR" "$1\n";
 }
 
-RELEASE_ID=$1
-mkdir tmp
+try() { 
+  "$@"
+  local EXIT_CODE=$?
 
-prints "Starting Validation for Apache Sling Release #$RELEASE_ID" "info"
-
-prints "Loading PGP Keys..." "info"
-curl https://people.apache.org/keys/group/sling.asc --output sling.asc || exit 1
-gpg --import sling.asc || exit 1
-
-prints "Validating release signatures..." "info"
-CHECK_RESULT=$(/bin/bash check_staged_release.sh $RELEASE_ID tmp)
-printf "\n$CHECK_RESULT\n"
-if [[ "$CHECK_RESULT" == *"BAD"* ]]; then
-  prints "Loading PGP Keys..." "error"
-  echo "Check(s) Failed!"
-  exit 1
-elif [[ "$CHECK_RESULT" = *"no files found"* ]]; then
-  prints "Staging repository ${RELEASE_ID} not found!" "error"
-  exit 1
-else
-  prints "Release signatures check successful!" "success"
-fi
-
-mkdir ~/.m2
-cat > ~/.m2/settings.xml <<EOF
-<settings>
- <profiles>
-   <profile>
-     <id>staging</id>
-     <repositories>
-       <repository>
-         <id>staging-repo</id>
-         <name>your custom repo</name>
-         <url>https://repository.apache.org/content/repositories/orgapachesling-$RELEASE_ID</url>
-       </repository>
-     </repositories>
-   </profile>
- </profiles>
- <activeProfiles>
-   <activeProfile>staging</activeProfile>
-  </activeProfiles>
-</settings>
-EOF
-
-HAS_BUNDLE=false
-for RELEASE_FOLDER in tmp/${RELEASE_ID}/org/apache/sling/*
-do
-  if [[ -f $RELEASE_FOLDER ]]; then
-    continue
+  if [[ $EXIT_CODE -ne 0 ]]; then
+    prints "Failed to execute command: $@" "error"
+    exit 1
   fi
-  prints "Running build for $RELEASE_FOLDER" "info"
+}
+
+# Downloads the Sling PGP Keys and validates the release artifacts
+validate_signatures () {
+  prints "Validating signatures..." "info"
+
+  mkdir release
   
-  echo "Resolving Maven Variables..."
-  MVN_PACKAGING=$(mvn/bin/mvn -q -Dexec.executable=echo  -Dexec.args='${project.packaging}' --non-recursive  exec:exec -f $RELEASE_FOLDER/**/*.pom)
-  MVN_VERSION=$(mvn/bin/mvn -q -Dexec.executable=echo  -Dexec.args='${project.version}' --non-recursive  exec:exec -f $RELEASE_FOLDER/**/*.pom)
-  MVN_ARTIFACT_ID=$(mvn/bin/mvn -q -Dexec.executable=echo  -Dexec.args='${project.artifactId}' --non-recursive  exec:exec -f $RELEASE_FOLDER/**/*.pom)
-  if [[ $MVN_ARTIFACT_ID == "sling-"* ]]; then
-    echo "Artifact ID starts with sling-, assuming it will not be duplicated..."
-    REPO="${MVN_ARTIFACT_ID//\./-}"
+  echo "Loading PGP Keys..."
+  try curl https://people.apache.org/keys/group/sling.asc --output sling.asc
+  try gpg --import sling.asc
+
+  prints "Validating release signatures..." "info"
+  CHECK_RESULT=$(/bin/bash check_staged_release.sh $RELEASE_ID release)
+  printf "\n$CHECK_RESULT\n"
+  if [[ "$CHECK_RESULT" == *"BAD"* ]]; then
+    prints "Check(s) Failed!" "error"
+    exit 1
+  elif [[ "$CHECK_RESULT" = *"no files found"* ]]; then
+    prints "Staging repository ${RELEASE_ID} not found!" "error"
+    exit 1
   else
-    REPO="sling-${MVN_ARTIFACT_ID//\./-}"
+    prints "Release signatures validated successful!" "success"
   fi
-  printf "Resolved Variables:\n\tArtifact ID: $MVN_ARTIFACT_ID\n\tPackaging: $MVN_PACKAGING\n\tRepo Slug: $REPO\n\tVersion: $MVN_VERSION\n"
+}
 
-  prints "Checking out code from https://github.com/apache/$REPO.git..." "info"
-  git clone https://github.com/apache/$REPO.git || exit 1
-  cd $REPO
-  git checkout $MVN_ARTIFACT_ID-$MVN_VERSION || exit 1
+# Build the release artifacts using Apache Maven
+build_releases () {
+  for RELEASE_FOLDER in release/${RELEASE_ID}/org/apache/sling/*
+  do
+    if [[ -f $RELEASE_FOLDER ]]; then
+      continue
+    fi
+    prints "Running build for $RELEASE_FOLDER" "info"
 
-  prints "Building $MVN_ARTIFACT_ID..." "info"
-  ../mvn/bin/mvn clean install || exit 1
+    echo "Resolving Maven Variables..."
+    MVN_PACKAGING=$($MVN_EXEC -q -Dexec.executable=echo  -Dexec.args='${project.packaging}' --non-recursive  exec:exec -f $RELEASE_FOLDER/**/*.pom)
+    MVN_VERSION=$($MVN_EXEC -q -Dexec.executable=echo  -Dexec.args='${project.version}' --non-recursive  exec:exec -f $RELEASE_FOLDER/**/*.pom)
+    MVN_ARTIFACT_ID=$($MVN_EXEC -q -Dexec.executable=echo  -Dexec.args='${project.artifactId}' --non-recursive  exec:exec -f $RELEASE_FOLDER/**/*.pom)
+    REPO=$($MVN_EXEC -q -Dexec.executable=echo  -Dexec.args='${project.scm.developerConnection}' --non-recursive  exec:exec -f $RELEASE_FOLDER/**/*.pom)
+    REPO=${REPO/scm:git:/}
+
+    if [[ $REPO != *.git ]]; then
+      prints "Skipping sub-module ${MVN_ARTIFACT_ID}..." "info"
+      continue
+    fi
+    printf "Resolved Variables:\n\tArtifact ID: $MVN_ARTIFACT_ID\n\tPackaging: $MVN_PACKAGING\n\tSCM Repository: $REPO\n\tVersion: $MVN_VERSION\n"
+
+    prints "Checking out code from $REPO..." "info"
+    try git clone "$REPO" "build/$MVN_ARTIFACT_ID"
+    cd build/$MVN_ARTIFACT_ID
+    try git checkout $MVN_ARTIFACT_ID-$MVN_VERSION
+
+    prints "Building $MVN_ARTIFACT_ID..." "info"
+    try $MVN_EXEC clean install
+
+    if [[ "$MVN_PACKAGING" == "bundle" ]]; then
+      echo "Found bundle artifact..."
+      HAS_BUNDLE=true
+    fi
+
+    cd /opt
+  done
+  prints "Build(s) Successful!" "success"
+}
+
+# Starts up Apache Sling using the Integration Testing project
+start_sling () {
+  echo "Downloading latest Sling Starter..."
+  try $MVN_EXEC -q -U dependency:copy -Dartifact=org.apache.sling:org.apache.sling.starter:LATEST -DoutputDirectory=run
   
-  if [[ "$MVN_PACKAGING" == "bundle" ]]; then
-  	HAS_BUNDLE=true
-  fi
-
-  cd ..  
-done
-
-prints "Build(s) Successful!" "success"
-
-if [ "$HAS_BUNDLE" = true ]; then
-  prints "Bundles found, starting Apache Sling Starter..." "info"
-  
-  echo "Starting Sling Starter..."
-  git clone https://github.com/apache/sling-org-apache-sling-launchpad-testing.git run
-  mkdir -p run/target/sling/logs
+  prints "Starting Sling Starter..." "info"
+  mkdir -p run/sling/logs
   (
     (
-      mvn/bin/mvn -q -f run/pom.xml clean install -Dlaunchpad.keep.running=true -Dhttp.port=8080 -Ddebug &
-      echo $! > app.pid
-    ) >> run/target/sling/logs/stdout.log 2>&1
+      java -jar run/org.apache.sling.starter-*.jar -c run/sling &
+      echo $! > run/app.pid
+    ) >> run/sling/logs/stdout.log 2>&1
   ) &
   
   echo "Waiting for Sling to fully start..."
 
   STARTED=false
   ATTEMPT=0
-  while [ $ATTEMPT -lt 5 ]; do
-    sleep 30
+  while [ $ATTEMPT -lt 10 ]; do
+    sleep 60
     RESP=$(curl -s http://localhost:8080/starter/index.html)
     if [[ "$RESP" == *"Do not remove this comment, used for Starter integration tests"* ]]; then
       prints "Sling Starter started!" "success"
       let STARTED=true
-      echo "Installing test services..."
-      ls integration-tests/*
-      curl -u admin:admin -F action=install -F bundlestart=true -F refreshPackages=true -F bundlestartlevel=20 -F bundlefile=@"integration-tests/org.apache.sling.launchpad.test-services*.jar" http://127.0.0.1:8080/system/console/bundles || exit 1
       break
     else
       echo "Not yet started..."
@@ -133,24 +124,33 @@ if [ "$HAS_BUNDLE" = true ]; then
     prints "Sling failed to start!" "error"
     exit 1
   fi
-  
+}
+
+install_bundles () {
   BUNDLE_SUCCESS=true
   prints "Installing bundles..." "info"
-  for RELEASE_FOLDER in tmp/${RELEASE_ID}/org/apache/sling/*
+  for RELEASE_FOLDER in release/${RELEASE_ID}/org/apache/sling/*
   do
     if [[ -f $RELEASE_FOLDER ]]; then
       continue
     fi
+    echo "Checking release folder ${RELEASE_FOLDER}..."
     
-    MVN_PACKAGING=$(mvn/bin/mvn -q -Dexec.executable=echo  -Dexec.args='${project.packaging}' --non-recursive  exec:exec -f $RELEASE_FOLDER/**/*.pom)
+    MVN_PACKAGING=$($MVN_EXEC -q -Dexec.executable=echo  -Dexec.args='${project.packaging}' --non-recursive  exec:exec -f $RELEASE_FOLDER/**/*.pom)
     if [[ "$MVN_PACKAGING" = "bundle" ]]; then
     
-      MVN_VERSION=$(mvn/bin/mvn -q -Dexec.executable=echo  -Dexec.args='${project.version}' --non-recursive  exec:exec -f $RELEASE_FOLDER/**/*.pom)
-      MVN_ARTIFACT_ID=$(mvn/bin/mvn -q -Dexec.executable=echo  -Dexec.args='${project.artifactId}' --non-recursive  exec:exec -f $RELEASE_FOLDER/**/*.pom)
+      MVN_VERSION=$($MVN_EXEC -q -Dexec.executable=echo  -Dexec.args='${project.version}' --non-recursive  exec:exec -f $RELEASE_FOLDER/**/*.pom)
+      MVN_ARTIFACT_ID=$($MVN_EXEC -q -Dexec.executable=echo  -Dexec.args='${project.artifactId}' --non-recursive  exec:exec -f $RELEASE_FOLDER/**/*.pom)
       REPO="sling-${MVN_ARTIFACT_ID//\./-}"
+      ARTIFACT="/opt/build/${MVN_ARTIFACT_ID}/target/${MVN_ARTIFACT_ID}-${MVN_VERSION}.jar"
       
-      echo "Installing / starting bundle $REPO/target/$MVN_ARTIFACT_ID-$MVN_VERSION.jar..."
-      curl -u admin:admin -F action=install -F bundlestart=true -F refreshPackages=true -F bundlestartlevel=20 -F bundlefile=@"$REPO/target/$MVN_ARTIFACT_ID-$MVN_VERSION.jar" http://127.0.0.1:8080/system/console/bundles || exit 1
+      if [ ! -f "${ARTIFACT}" ]; then
+        prints "Skipping ${RELEASE_FOLDER} not find expected artifact: ${ARTIFACT}" "error"
+        continue
+      fi
+      
+      prints "Installing / starting bundle ${ARTIFACT}..." "info"
+      try curl -u admin:admin -F action=install -F bundlestart=true -F refreshPackages=true -F bundlestartlevel=20 -F bundlefile=@"${ARTIFACT}" http://127.0.0.1:8080/system/console/bundles
       
       STATE=""
       ATTEMPT=0
@@ -179,29 +179,57 @@ if [ "$HAS_BUNDLE" = true ]; then
   done
   
   if [[ $BUNDLE_SUCCESS == true ]]; then
-    prints "Release ${RELEASE_ID} verified successfully!" "success"
+    prints "All bundes in release #${RELEASE_ID} installed successfully!" "success"
   else 
     prints "Some bundles failed to start" "error"
   fi
-  
-  prints "Running Integration Tests" "info"
-  git clone https://github.com/apache/sling-org-apache-sling-launchpad-integration-tests.git integration-tests
-  mvn/bin/mvn test -f integration-tests/pom.xml -Dhttp.port=8080 || exit 1
-  
-  if [[ "$KEEP_RUNNING" == "true" ]]; then
-    TIMEOUT="${RUN_TIMEOUT:=10m}"
-  	echo "Leaving Sling Starter running for $TIMEOUT for testing..."
-    
-    CONTAINER_ID=$(cat /etc/hostname)
-  	
-  	echo "Run the following command to see the URL to connect to the Sling Starter:"
-  	printf "\tdocker port $CONTAINER_ID 8080\n"
-  	echo "If you are satisfied, the container can be stopped with:"
-  	printf "\tdocker stop $CONTAINER_ID\n"
+}
 
-    sleep $TIMEOUT
-  fi
+# Set variables
+MVN_EXEC=/opt/mvn/bin/mvn
+/etc/profile.d/javaenv.sh
+RELEASE_ID=$1
+HAS_BUNDLE=false
+
+# Set the Maven repo so that we can pull the other release artifacts in a multi-artifact release
+mkdir ~/.m2
+cat > ~/.m2/settings.xml <<EOF
+<settings>
+ <profiles>
+   <profile>
+     <id>staging</id>
+     <repositories>
+       <repository>
+         <id>staging-repo</id>
+         <name>your custom repo</name>
+         <url>https://repository.apache.org/content/repositories/orgapachesling-$RELEASE_ID</url>
+       </repository>
+     </repositories>
+   </profile>
+ </profiles>
+ <activeProfiles>
+   <activeProfile>staging</activeProfile>
+  </activeProfiles>
+</settings>
+EOF
+
+# Start of the release process
+prints "Starting Validation for Apache Sling Release #$RELEASE_ID" "info"
+
+validate_signatures
+
+build_releases
+
+if [ "$HAS_BUNDLE" = true ]; then
+  prints "Bundles found, starting Apache Sling Starter..." "info"
+  
+  start_sling
+  
+  install_bundles
+  
+  prints "Release #$RELEASE_ID verified successfully!" "success"
+  
 else
-  echo "Packaging is $MVN_PACKAGING, not bundle"
-  prints "Release $RELEASE_ID verified successfully!" "success"
+  echo "No bundles found in built artifacts..."
+  prints "Release #$RELEASE_ID verified successfully!" "success"
 fi

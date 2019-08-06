@@ -13,8 +13,7 @@ This container will:
 
 This project assumes you have already [installed](https://docs.docker.com/install/) on your local system.
 
-To build the container instance, you must first download the desired JDK. Download the RPM Linux 64 installer
-into the project root directory, then run:
+To build the container instance, run:
 
     docker build -t sling-check-release .
 
