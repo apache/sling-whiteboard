@@ -229,7 +229,18 @@ if [ "$HAS_BUNDLE" = true ]; then
   
   prints "Release #$RELEASE_ID verified successfully!" "success"
   
+  if [ "$KEEP_RUNNING" == "true" ]
+  then
+  	echo "Leaving Sling Starter running for ${RUN_TIMEOUT:=10m} for testing..."
+
+   	printf "Run the following command to see the URL to connect to the Sling Starter under the PORT parameter:\n"
+  	printf "\tdocker ps | grep sling-check-release"
+
+     sleep ${RUN_TIMEOUT}
+  fi
+  
 else
   echo "No bundles found in built artifacts..."
   prints "Release #$RELEASE_ID verified successfully!" "success"
 fi
+
