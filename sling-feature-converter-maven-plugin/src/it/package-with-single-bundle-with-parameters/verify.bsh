@@ -45,7 +45,7 @@ import org.codehaus.plexus.util.*;
         String log = FileUtils.fileRead(featureModelFile);
         System.out.println("Feature Model File Content: " + log);
         String[] values = {
-            "\"id\":\"$​{project.groupId}:$​{project.artifactId}:slingosgifeature:sling-cpconverter-maven-plugin:$​{project.version}\"",
+            "\"id\":\"$​{project.groupId}:$​{project.artifactId}:slingosgifeature:sling-feature-converter-maven-plugin:$​{project.version}\"",
             "\"bundles\":[",
             "\"id\":\"" + projectGroup + ":" + projectCoreName + ":" + projectVersion + "\"",
             "\"content-packages:ARTIFACTS|true\":[",

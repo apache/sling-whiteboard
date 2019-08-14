@@ -21,15 +21,15 @@
         <relativePath />
     </parent>
 
-    <artifactId>sling-cpconverter-maven-plugin</artifactId>
+    <artifactId>sling-feature-converter-maven-plugin</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
 
-    <name>Apache Sling Content Package to Feature Model Converter Plugin</name>
+    <name>Apache Sling Feature Model Converter Plugin</name>
     <description>
-        Maven Plugin to convert Content Packages to Feature Models
+        Maven Plugin to convert Configurations / Packages to Feature Model format
     </description>
-    <url>https://sling.apache.org/components/sling-cpconverter-maven-plugin/</url>
+    <url>https://sling.apache.org/components/sling-feature-converter-maven-plugin/</url>
 
     <properties>
         <sling.java.version>8</sling.java.version>
@@ -158,9 +158,25 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
+            <groupId>org.apache.jackrabbit</groupId>
+            <artifactId>jackrabbit-spi-commons</artifactId>
+            <version>2.19.1</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.feature.cpconverter</artifactId>
-            <version>0.0.3-SNAPSHOT</version>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.sling</groupId>
+            <artifactId>org.apache.sling.feature.launcher</artifactId>
+            <version>1.0.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.sling</groupId>
+            <artifactId>org.apache.sling.feature.modelconverter</artifactId>
+            <version>1.0.4</version>
         </dependency>
         <dependency>
             <groupId>org.apache.sling</groupId>
@@ -176,6 +192,22 @@
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.feature.analyser</artifactId>
             <version>1.0.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.sling</groupId>
+            <artifactId>org.apache.sling.provisioning.model</artifactId>
+            <version>1.8.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jackrabbit</groupId>
+            <artifactId>jackrabbit-api</artifactId>
+            <version>2.19.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jackrabbit.vault</groupId>
+            <artifactId>org.apache.jackrabbit.vault</artifactId>
+            <version>3.2.8</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>

@@ -1,0 +1,275 @@
+#set($h1 = '#')
+#set($h2 = '##')
+#set($h3 = '###')
+#set($h4 = '####')
+#set($sp = '${')
+#set($ep = '}')
+
+
+$h2 Usage
+
+$h3 Converting Sling, Project Content Packages and Lauch it
+
+**Note**: In this sample we use Maven variables like **project.groupId** instead of a static value assuming
+that the project is within the same project that creates the content packages. Adjust that as needed.
+**Note**: Because we generate Feature Model files here the feature model files are in **target/fm**. We use **fm**
+instead of **features** to avoid confusion with the default feature source of **src/main/features**.
+
+First we need to define the Content Packages that are converted
+
+```
+<dependencies>
+...
+    <dependency>
+        <groupId>${sp}project.groupId${ep}</groupId>
+        <artifactId>my-content-package</artifactId>
+        <version>${sp}project.version${ep}</version>
+        <type>zip</type>
+    </dependency>
+```
+
+Then we need to include the JCR Package Init to deploy the packages when
+the project is launched:
+
+```
+    <dependency>
+        <groupId>org.apache.sling</groupId>
+        <artifactId>org.apache.sling.jcr.packageinit</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+...
+</dependencies>
+```
+
+Then we need to include the package init feature model file which must
+here is placed in the **src/main/resouces/fm** folder named **sling_packageinit.json**:
+
+```
+{
+    "id":"${sp}project.groupId${ep}:${sp}project.artifactId${ep}:slingfeature:sling_packageinit:${sp}project.version${ep}",
+    "variables":{
+    },
+    "bundles":[
+        {
+            "id":"org.apache.sling:org.apache.sling.jcr.packageinit:0.0.1-SNAPSHOT",
+            "start-level":"10"
+        }
+    ]
+}
+```
+
+We need to cpy this file into our target folder because this is not a regular JAR build
+and so the copy of the resources is not done automatically:
+
+```
+<build>
+...
+    <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-resources-plugin</artifactId>
+            <version>3.1.0</version>
+            <configuration>
+                <outputDirectory>${sp}project.build.directory}</outputDirectory>
+                <resources>
+                    <resource>
+                        <directory>src/main/resources</directory>
+                    </resource>
+                </resources>
+            </configuration>
+            <executions>
+                <execution>
+                    <id>copy-frm-resource</id>
+                    <phase>process-resources</phase>
+                    <goals>
+                        <goal>copy-resources</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+```
+
+Now we setup this Plugin and set the features folder to **target/fm** (keep in mind this path has to
+be relative to the basedir and cannot be absolute):
+
+```
+        <plugin>
+            <groupId>org.apache.sling</groupId>
+            <artifactId>slingfeature-maven-plugin</artifactId>
+            <version>1.0.5-SNAPSHOT</version>
+            <extensions>true</extensions>
+            <configuration>
+                <features>target/fm</features>
+            </configuration>
+```
+
+First we convert the Sling Provisioning Files to Feature Model files. For that the caller has to provide
+a property called **sling.starter.folder** with the absolute path to the Sling Starter Project:
+
+```
+            <executions>
+                <execution>
+                    <id>convert-pm</id>
+                    <phase>process-classes</phase>
+                    <goals>
+                        <goal>convert-pm</goal>
+                    </goals>
+                    <configuration>
+                        <!-- Absolute Path to the Sling Starter Project Provisioning Folder -->
+                        <inputFolder>${sp}sling.starter.folder${ep}/src/main/provisioning</inputFolder>
+                        <!-- Relative path (to basedir) to the output folder. It will be created if needed -->
+                        <outputFolder>target/fm</outputFolder>
+                        <!-- Instead of a fixed Feature Id we set placeholder here -->
+                        <groupId>${sp}{project.groupId}${ep}</groupId>
+                        <artifactId>${sp}{project.artifactId}${ep}</artifactId>
+                        <version>${sp}{project.version}${ep}</version>
+                        <!-- Add Framework Properties to the Launchpad FM to make JRE archives accessible -->
+                        <frameworkProperties>
+                            launchpad:felix.systempackages.substitution=true,
+                            launchpad:felix.systempackages.calculate.uses=true
+                        </frameworkProperties>
+                        <!-- Exclude certain bundles that conflict with the Launch of Feature Models -->
+                        <excludeBundles>
+                            org.apache.sling.launchpad.installer,
+                            org.apache.sling.jcr.repoinit.impl.RepositoryInitializer
+                        </excludeBundles>
+                        <!-- Only add run modes of type 'oak_tar' and 'standalone'. Feature Model Projects do
+                             not support runmodes anymore as each of them represents one particular set -->
+                        <runModes>
+                            oak_tar,
+                            :standalone
+                        </runModes>
+                    </configuration>
+                </execution>
+```
+
+Convert the Content Packages of this project and prefix the files names to avoid conflicts and make it easier to indentify them:
+
+```
+                <execution>
+                    <id>convert-cp</id>
+                    <phase>process-classes</phase>
+                    <goals>
+                        <goal>convert-cp</goal>
+                    </goals>
+                    <configuration>
+                        <!-- NOTE: ${{ / }} is a way to encode placeholders that should not be interpolated in Maven in this call
+                                   and ${{{ / }}} is used to make it a CP Conversion Placeholder }-->
+                        <artifactIdOverride>${sp}{project.groupId}${ep}:${sp}{project.artifactId}${ep}:slingosgifeature:${sp}{{filename}}${ep}:${sp}{project.version}${ep}</artifactIdOverride>
+                        <!-- Install the Converted Content Package into the local Maven Repositorires. Without the launch
+                             will fail -->
+                        <installConvertedCP>true</installConvertedCP>
+                        <!-- Set the output folder for the converted packages -->
+                        <convertedCPOutput>${sp}project.build.directory${ep}/fm.out</convertedCPOutput>
+                        <!-- Set the output folder for the converted Feature Model files -->
+                        <fmOutput>${sp}project.build.directory${ep}/fm</fmOutput>
+                        <!-- Prefix the files to easily identify them -->
+                        <fmPrefix>my-project-</fmPrefix>
+                        <contentPackages>
+                            <!-- each of these entries must have a dependency listed above -->
+                            <contentPackage>
+                                <groupId>${sp}project.groupId${ep}</groupId>
+                                <artifactId>my-content-package</artifactId>
+                            </contentPackage>
+...
+                        </contentPackages>
+                    </configuration>
+                </execution>
+```
+
+Now we aggregate, collect them into a single FM file (attach) and verify all the generated Feature Model files:
+
+```
+                <execution>
+                    <id>aggregate-base-feature</id>
+                    <phase>generate-test-sources</phase>
+                    <goals>
+                        <goal>aggregate-features</goal>
+                    </goals>
+                    <configuration>
+                        <aggregates>
+                            <aggregate>
+                                <classifier>example-runtime</classifier>
+                                <filesInclude>**/*.json</filesInclude>
+                            </aggregate>
+                        </aggregates>
+                    </configuration>
+                </execution>
+                <execution>
+                    <id>attach-base-feature</id>
+                    <phase>process-test-sources</phase>
+                    <goals>
+                        <goal>attach-features</goal>
+                    </goals>
+                </execution>
+                <execution>
+                    <id>verify-analyze</id>
+                    <phase>generate-test-resources</phase>
+                    <goals>
+                        <goal>analyse-features</goal>
+                    </goals>
+                    <configuration>
+                        <framework>
+                            <groupId>org.apache.felix</groupId>
+                            <artifactId>org.apache.felix.framework</artifactId>
+                            <version>6.0.1</version>
+                        </framework>
+                        <scans>
+                            <scan>
+                                <includeClassifier>example-runtime</includeClassifier>
+                                <includeTasks>
+                                    <includeTask>bundle-packages</includeTask>
+                                </includeTasks>
+                            </scan>
+                        </scans>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
+...
+    </plugins>
+</build>
+```
+
+Finally we can define a profile to launch the Feature Model based project. With that the launch is only done
+if the project is buil with goal **install** and profile **launch** (mvn install -P launch):
+
+```
+<profiles>
+    <profile>
+        <id>launch</id>
+        <build>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.sling</groupId>
+                    <artifactId>slingfeature-maven-plugin</artifactId>
+                    <version>${project.version}</version>
+                    <extensions>true</extensions>
+                    <executions>
+                        <execution>
+                            <id>launch-it</id>
+                            <phase>install</phase>
+                            <goals>
+                                <goal>launch-features</goal>
+                            </goals>
+                            <configuration>
+                                <featureFile>${sp}project.build.directory${ep}/slingfeature-tmp/feature-example-runtime.json</featureFile>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </build>
+    </profile>
+</profiles>
+```
+
+The execution of a conversion and launch would look like this:
+
+```
+mvn \
+    clean \
+    install \
+    -P launch \
+    -Dsling.starter.folder=/sling.dev/sling-org-apache-sling-starter
+```
