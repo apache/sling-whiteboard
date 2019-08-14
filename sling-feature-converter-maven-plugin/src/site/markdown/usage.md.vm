@@ -3,6 +3,8 @@
 #set($h3 = '###')
 #set($h4 = '####')
 #set($sp = '${')
+#set($sp2 = '${{')
+#set($sp3 = '${{{')
 #set($ep = '}')
 
 
@@ -88,6 +90,80 @@ and so the copy of the resources is not done automatically:
             </executions>
         </plugin>
 ```
+Then we need to setup the Sling Feature Converter Maven Plugin to convert Sling into its Feature Model
+equivalent so that we can launch it together with the converter CP packages later:
+
+```
+         <plugin>
+            <groupId>org.apache.sling</groupId>
+            <artifactId>sling-feature-converter-maven-plugin</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <extensions>true</extensions>
+            <executions>
+                <execution>
+                    <id>convert-pm</id>
+                    <phase>process-classes</phase>
+                    <goals>
+                        <goal>convert-pm</goal>
+                    </goals>
+                    <configuration>
+                        <inputFolder>src/main/resources/sling/provisioning</inputFolder>
+                        <outputFolder>target/fm</outputFolder>
+                        <groupId>${sp}{project.groupId}}</groupId>
+                        <artifactId>${sp}{project.artifactId}}</artifactId>
+                        <version>${sp}{project.version}}</version>
+                        <frameworkProperties>
+                            launchpad:felix.systempackages.substitution=true,
+                            launchpad:felix.systempackages.calculate.uses=true
+                        </frameworkProperties>
+                        <excludeBundles>
+                            org.apache.sling.launchpad.installer,
+                            org.apache.sling.jcr.repoinit.impl.RepositoryInitializer
+                        </excludeBundles>
+                        <runModes>
+                            oak_tar,
+                            :standalone
+                        </runModes>
+                    </configuration>
+                </execution>
+```
+
+In this scenario the Sling Provisioning Models are copied into the source folder.
+The **Launchpad Installer** and the **Repository Initializer** do not work together with Sling FM so
+they are excluded here. Then we select **oak_tar and :standalone** as the runmodes for this instance.
+
+Then we convert the Content Package:
+
+```
+                <execution>
+                    <id>convert-cp</id>
+                    <phase>process-classes</phase>
+                    <goals>
+                        <goal>convert-cp</goal>
+                    </goals>
+                    <configuration>
+                        <!-- NOTE: ${sp2} / }} is a way to encode placeholders that should not be interpolated in Maven in this call
+                                   and ${sp3} / }}} is used to make it a CP Conversion Placeholder -->
+                        <artifactIdOverride>${sp2}project.groupId}}:${sp2}project.artifactId}}:slingosgifeature:${sp3}filename}}}:${sp2}project.version}}</artifactIdOverride>
+                        <installConvertedCP>true</installConvertedCP>
+                        <!-- Attention: because of the hack to deal with the overrides in the local Repo the generated files must be placed locally and not in the local Maven repo -->
+                        <convertedCPOutput>${sp}project.build.directory}/fm.out</convertedCPOutput>
+                        <fmOutput>${sp}project.build.directory}/fm</fmOutput>
+                        <fmPrefix>test-ui-apps-</fmPrefix>
+                        <contentPackages>
+                            <contentPackage>
+                                <groupId>org.apache.sling.test</groupId>
+                                <artifactId>ui.apps</artifactId>
+                            </contentPackage>
+                        </contentPackages>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
+```
+
+Here we override the Feature Id to a more generic version, mark that we want to intall the converted files into
+our local Maven repo and that we prefix the converted FM file with **test-ui-apps-**.
 
 Now we setup this Plugin and set the features folder to **target/fm** (keep in mind this path has to
 be relative to the basedir and cannot be absolute):
@@ -103,81 +179,7 @@ be relative to the basedir and cannot be absolute):
             </configuration>
 ```
 
-First we convert the Sling Provisioning Files to Feature Model files. For that the caller has to provide
-a property called **sling.starter.folder** with the absolute path to the Sling Starter Project:
-
-```
-            <executions>
-                <execution>
-                    <id>convert-pm</id>
-                    <phase>process-classes</phase>
-                    <goals>
-                        <goal>convert-pm</goal>
-                    </goals>
-                    <configuration>
-                        <!-- Absolute Path to the Sling Starter Project Provisioning Folder -->
-                        <inputFolder>${sp}sling.starter.folder${ep}/src/main/provisioning</inputFolder>
-                        <!-- Relative path (to basedir) to the output folder. It will be created if needed -->
-                        <outputFolder>target/fm</outputFolder>
-                        <!-- Instead of a fixed Feature Id we set placeholder here -->
-                        <groupId>${sp}{project.groupId}${ep}</groupId>
-                        <artifactId>${sp}{project.artifactId}${ep}</artifactId>
-                        <version>${sp}{project.version}${ep}</version>
-                        <!-- Add Framework Properties to the Launchpad FM to make JRE archives accessible -->
-                        <frameworkProperties>
-                            launchpad:felix.systempackages.substitution=true,
-                            launchpad:felix.systempackages.calculate.uses=true
-                        </frameworkProperties>
-                        <!-- Exclude certain bundles that conflict with the Launch of Feature Models -->
-                        <excludeBundles>
-                            org.apache.sling.launchpad.installer,
-                            org.apache.sling.jcr.repoinit.impl.RepositoryInitializer
-                        </excludeBundles>
-                        <!-- Only add run modes of type 'oak_tar' and 'standalone'. Feature Model Projects do
-                             not support runmodes anymore as each of them represents one particular set -->
-                        <runModes>
-                            oak_tar,
-                            :standalone
-                        </runModes>
-                    </configuration>
-                </execution>
-```
-
-Convert the Content Packages of this project and prefix the files names to avoid conflicts and make it easier to indentify them:
-
-```
-                <execution>
-                    <id>convert-cp</id>
-                    <phase>process-classes</phase>
-                    <goals>
-                        <goal>convert-cp</goal>
-                    </goals>
-                    <configuration>
-                        <!-- NOTE: ${{ / }} is a way to encode placeholders that should not be interpolated in Maven in this call
-                                   and ${{{ / }}} is used to make it a CP Conversion Placeholder }-->
-                        <artifactIdOverride>${sp}{project.groupId}${ep}:${sp}{project.artifactId}${ep}:slingosgifeature:${sp}{{filename}}${ep}:${sp}{project.version}${ep}</artifactIdOverride>
-                        <!-- Install the Converted Content Package into the local Maven Repositorires. Without the launch
-                             will fail -->
-                        <installConvertedCP>true</installConvertedCP>
-                        <!-- Set the output folder for the converted packages -->
-                        <convertedCPOutput>${sp}project.build.directory${ep}/fm.out</convertedCPOutput>
-                        <!-- Set the output folder for the converted Feature Model files -->
-                        <fmOutput>${sp}project.build.directory${ep}/fm</fmOutput>
-                        <!-- Prefix the files to easily identify them -->
-                        <fmPrefix>my-project-</fmPrefix>
-                        <contentPackages>
-                            <!-- each of these entries must have a dependency listed above -->
-                            <contentPackage>
-                                <groupId>${sp}project.groupId${ep}</groupId>
-                                <artifactId>my-content-package</artifactId>
-                            </contentPackage>
-...
-                        </contentPackages>
-                    </configuration>
-                </execution>
-```
-
-Now we aggregate, collect them into a single FM file (attach) and verify all the generated Feature Model files:
+Now we can aggregate, collect them into a single FM file (attach) and verify all the generated Feature Model files:
 
 ```
                 <execution>
@@ -270,6 +272,5 @@ The execution of a conversion and launch would look like this:
 mvn \
     clean \
     install \
-    -P launch \
-    -Dsling.starter.folder=/sling.dev/sling-org-apache-sling-starter
+    -P launch
 ```
