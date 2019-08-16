@@ -19,28 +19,12 @@ package org.apache.sling.transformer.impl;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
-import java.util.Iterator;
-import java.util.List;
 
-import org.apache.sling.adapter.annotations.Adaptable;
-import org.apache.sling.adapter.annotations.Adapter;
-import org.apache.sling.api.SlingException;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.wrappers.SlingHttpServletResponseWrapper;
-import org.apache.sling.transformer.ProcessingContext;
 import org.apache.sling.transformer.Processor;
-import org.apache.sling.transformer.ProcessorConfiguration;
-import org.apache.sling.transformer.ProcessorManager;
-import org.xml.sax.ContentHandler;
 
-/**
- * This response is used to pass the output through the rewriter pipeline.
- */
-@Adaptable(adaptableClass=SlingHttpServletResponse.class, adapters={
-    @Adapter(value=ContentHandler.class,
-            condition="When the response is being processed through the Sling Rewriter filter.")
-})
 class RewriterResponse
     extends SlingHttpServletResponseWrapper {
 
@@ -56,19 +40,14 @@ class RewriterResponse
     /** response content type */
     private String contentType;
 
-    /** The processor manager. */
-    private final ProcessorManager processorManager;
-
     /**
      * Initializes a new instance.
      * @param request The sling request.
      * @param delegatee The SlingHttpServletResponse wrapped by this instance.
      */
     public RewriterResponse(SlingHttpServletRequest request,
-                            SlingHttpServletResponse delegatee,
-                            ProcessorManager processorManager) {
+                            SlingHttpServletResponse delegatee) {
         super(delegatee);
-        this.processorManager = processorManager;
         this.request = request;
     }
 
@@ -107,13 +86,7 @@ class RewriterResponse
              });
         }
         if (writer == null) {
-            this.processor = this.getProcessor();
-            if ( this.processor != null ) {
-                this.writer = this.processor.getWriter();
-            }
-            if ( this.writer == null ) {
-                this.writer = super.getWriter();
-            }
+       
         }
         return writer;
     }
@@ -140,49 +113,4 @@ class RewriterResponse
         }
     }
 
-    /**
-     * If we have a pipeline configuration for the current request,
-     * we can adapt this response to a content handler.
-     * @see org.apache.sling.api.adapter.Adaptable#adaptTo(java.lang.Class)
-     */
-    public <T> T adaptTo(Class<T> type) {
-        if ( type == ContentHandler.class ) {
-            this.processor = this.getProcessor();
-            if ( this.processor != null ) {
-                @SuppressWarnings("unchecked")
-                final T object = (T)this.processor.getContentHandler();
-                return object;
-            }
-        }
-        return super.adaptTo(type);
-    }
-
-    /**
-     * Search the first matching processor
-     */
-    private Processor getProcessor() {
-        final ProcessingContext processorContext = new ServletProcessingContext(this.request, this, this.getSlingResponse(), this.contentType);
-        Processor found = null;
-        final List<ProcessorConfiguration> processorConfigs = this.processorManager.getProcessorConfigurations();
-        final Iterator<ProcessorConfiguration> i = processorConfigs.iterator();
-        while ( found == null && i.hasNext() ) {
-            final ProcessorConfiguration config = i.next();
-            if ( config.match(processorContext) ) {
-                try {
-                    found = this.processorManager.getProcessor(config, processorContext);
-                    this.request.getRequestProgressTracker().log("Found processor for post processing {0}", config);
-                } catch (final SlingException se) {
-                    // if an exception occurs during setup of the pipeline and we are currently
-                    // already processing an error, we ignore this!
-                    if ( processorContext.getRequest().getAttribute("javax.servlet.error.status_code") != null ) {
-                        this.request.getRequestProgressTracker().log("Ignoring found processor for post processing {0}" +
-                                " as an error occured ({1}) during setup while processing another error.", config, se);
-                    } else {
-                        throw se;
-                    }
-                }
-            }
-        }
-        return found;
-    }
 }

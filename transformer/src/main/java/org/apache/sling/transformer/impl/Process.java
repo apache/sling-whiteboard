@@ -18,10 +18,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
+import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.api.SlingHttpServletResponse;
+import org.apache.sling.commons.html.Html;
 import org.apache.sling.commons.html.HtmlElement;
 import org.osgi.annotation.versioning.ProviderType;
 
@@ -39,9 +40,13 @@ public class Process {
 
     private List<HtmlElement> list = new ArrayList<>();
     private Map<String,Object> context = new HashMap<>();
+    private SlingHttpServletRequest request;
+    private SlingHttpServletResponse response;
     
 
-    private Process() {
+    private Process(SlingHttpServletRequest request, SlingHttpServletResponse response) {
+        this.request = request;
+        this.response = response;
     }
 
     /**
@@ -52,22 +57,24 @@ public class Process {
     public void next(HtmlElement... elements) {
         Collections.addAll(list, elements);
     }
-
-    Function<HtmlElement, Stream<HtmlElement>> createFlatMap(BiConsumer<HtmlElement, Process> consumer, Process mapper) {
-        return element -> {
-            list.clear();
-            consumer.accept(element, mapper);
-            return list.stream();
-        };
-    }
-
-    public static Function<HtmlElement, Stream<HtmlElement>> map(BiConsumer<HtmlElement, Process> consumer) {
-        Process mapper = new Process();
-        return mapper.createFlatMap(consumer, mapper);
+    
+    public void next(String html) {
+        Collections.addAll(list, Html.stream(html).toArray(HtmlElement[]::new));
     }
 
     public Stream<HtmlElement> getElements() {
         return list.stream();
     }
+    
+    public Map<String,Object> getContext(){
+        return context;
+    }
+    
+    public SlingHttpServletResponse getResponse() {
+        return response;
+    }
 
+    public SlingHttpServletRequest getRequest() {
+        return request;
+    }
 }
