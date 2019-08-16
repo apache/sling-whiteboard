@@ -39,11 +39,6 @@ public interface ProcessingContext {
     SlingHttpServletResponse getResponse();
 
     /**
-     * The content type of the response.
-     */
-    String getContentType();
-
-    /**
      * The writer.
      */
     PrintWriter getWriter() throws IOException;

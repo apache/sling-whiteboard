@@ -27,7 +27,7 @@ import javax.servlet.ServletResponse;
 
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
-import org.apache.sling.transformer.ProcessorManager;
+import org.apache.sling.transformer.TransformationStep;
 import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -48,7 +48,7 @@ import org.osgi.service.component.annotations.Reference;
 public class TransformationFilter implements Filter {
 
     @Reference
-    private ProcessorManager pipelineManager;
+    private TransformationStep pipelineManager;
 
     /**
      * @see javax.servlet.Filter#init(javax.servlet.FilterConfig)
@@ -80,8 +80,8 @@ public class TransformationFilter implements Filter {
         final SlingHttpServletRequest slingRequest = (SlingHttpServletRequest) request;
         final SlingHttpServletResponse slingResponse = (SlingHttpServletResponse) response;
 
-        final RewriterResponse rewriterResponse =
-                new RewriterResponse(slingRequest, slingResponse, this.pipelineManager);
+        final TransformerResponse rewriterResponse =
+                new TransformerResponse(slingRequest, slingResponse);
         boolean errorOccured = true;
         try {
             chain.doFilter(request, rewriterResponse);
