@@ -18,39 +18,39 @@ import java.util.Base64;
 
 public class Base64EncryptionProvider implements EncryptionProvider {
 
-	private static String ID = "|";
-	
-	@Override
-	public byte[] encrypt(byte[] toEncode, byte[] aad) throws EncryptionException {
-		return Base64.getEncoder().encode(toEncode);
-	}
+    private static final String ID = "|";
 
-	@Override
-	public byte[] decrypt(byte[] toDecode, byte[] aad) throws EncryptionException {
-		return Base64.getDecoder().decode(toDecode);
-	}
+    @Override
+    public byte[] encrypt(byte[] toEncode, byte[] aad) throws EncryptionException {
+        return Base64.getEncoder().encode(toEncode);
+    }
 
-	@Override
-	public String encrypt(String toEncode, String aad) throws EncryptionException {
-		try {
-			return ID + new String(encrypt(toEncode.getBytes("UTF-8"), aad.getBytes("UTF-8")),"UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw new EncryptionException(e);
-		}
-	}
+    @Override
+    public byte[] decrypt(byte[] toDecode, byte[] aad) throws EncryptionException {
+        return Base64.getDecoder().decode(toDecode);
+    }
 
-	@Override
-	public String decrypt(String toDecode, String aad) throws EncryptionException {
-		try {
-			return new String(decrypt(toDecode.substring(1).getBytes("UTF-8"), aad.getBytes("UTF-8")),"UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw new EncryptionException(e);
-		}
-	}
+    @Override
+    public String encrypt(String toEncode, String aad) throws EncryptionException {
+        try {
+            return ID + new String(encrypt(toEncode.getBytes("UTF-8"), aad.getBytes("UTF-8")), "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new EncryptionException(e);
+        }
+    }
 
-	@Override
-	public boolean isEncrypted(String property) {
-		return property.startsWith(ID);
-	}
+    @Override
+    public String decrypt(String toDecode, String aad) throws EncryptionException {
+        try {
+            return new String(decrypt(toDecode.substring(1).getBytes("UTF-8"), aad.getBytes("UTF-8")), "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new EncryptionException(e);
+        }
+    }
+
+    @Override
+    public boolean isEncrypted(String property) {
+        return property.startsWith(ID);
+    }
 
 }

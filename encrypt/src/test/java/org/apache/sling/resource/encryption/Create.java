@@ -29,26 +29,26 @@ import javax.crypto.spec.SecretKeySpec;
  */
 public class Create {
 
-	private static String KEY_ALGORITHM = "AES";
-	
-	public static void main(String[] args) throws GeneralSecurityException, IOException {
-		KeyStore ks = KeyStore.getInstance("JCEKS");
-		ks.load(null);
-		char[] password = "secret".toCharArray();
-		ks.setKeyEntry("old", getCipher1(),password,(Certificate[])null);
-		ks.setKeyEntry("new", getCipher2(),password,(Certificate[])null);
-		FileOutputStream writeStream = new FileOutputStream("./src/test/resources/keystore.jks");
-		ks.store(writeStream, password);
-		writeStream.close();
-		System.out.println(new File("./keystore").getAbsolutePath());
-	}
-	
-	private static Key getCipher1() throws GeneralSecurityException {
-		return new SecretKeySpec("passwordpassword".getBytes(), KEY_ALGORITHM);
-	}
-	
-	private static Key getCipher2() throws GeneralSecurityException {
-		return new SecretKeySpec("password2passwor".getBytes(), KEY_ALGORITHM);
-	}
+    private static String KEY_ALGORITHM = "AES";
+
+    public static void main(String[] args) throws GeneralSecurityException, IOException {
+        KeyStore ks = KeyStore.getInstance("JCEKS");
+        ks.load(null);
+        char[] password = "secret".toCharArray();
+        ks.setKeyEntry("old", getCipher1(), password, (Certificate[]) null);
+        ks.setKeyEntry("new", getCipher2(), password, (Certificate[]) null);
+        FileOutputStream writeStream = new FileOutputStream("./src/test/resources/keystore.jks");
+        ks.store(writeStream, password);
+        writeStream.close();
+        System.out.println(new File("./keystore").getAbsolutePath());
+    }
+
+    private static Key getCipher1() throws GeneralSecurityException {
+        return new SecretKeySpec("passwordpassword".getBytes(), KEY_ALGORITHM);
+    }
+
+    private static Key getCipher2() throws GeneralSecurityException {
+        return new SecretKeySpec("password2passwor".getBytes(), KEY_ALGORITHM);
+    }
 
 }

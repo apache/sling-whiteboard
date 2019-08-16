@@ -30,104 +30,103 @@ import org.junit.Before;
 
 public class EncryptionKeyStoreTest extends BaseEncryptionTest {
 
-	private static String START_PATH = "/content/sample/en";
-	
-	@SuppressWarnings("serial")
-	@Before
-	public synchronized void setUp()
-			throws  GeneralSecurityException, IOException {
+    private static String START_PATH = "/content/sample/en";
 
-		context.load().json("/data2.json", START_PATH);
-		
-		JCEKSKeyProvider kp = new JCEKSKeyProvider();
-		kp.init(getConfig());
-		
-		AesGcmEncryptionProvider encryptionProvider = new AesGcmEncryptionProvider();
-		injectKeyProvider(encryptionProvider, kp);
-		encryptionProvider.init(new Configuration() {
-			
-			@Override
-			public Class<? extends Annotation> annotationType() {
-				// TODO Auto-generated method stub
-				return null;
-			}
-			
-			@Override
-			public String keyProvider_target() {
-				return null;
-			}
-			
-			@Override
-			public String encryptionPrefix() {
-				return "\uD83D\uDD12";
-			}
-		});
-		
-		context.registerService(EncryptionProvider.class, encryptionProvider);
-	
+    @SuppressWarnings("serial")
+    @Before
+    public synchronized void setUp() throws GeneralSecurityException, IOException {
 
-		context.registerService(AdapterFactory.class, adapterFactory(encryptionProvider), new HashMap<String, Object>() {
-			{
-				put(AdapterFactory.ADAPTABLE_CLASSES, new String[] { Resource.class.getName() });
-				put(AdapterFactory.ADAPTER_CLASSES, new String[] { EncryptableValueMap.class.getName() });
-			}
-		});
-		this.encryptedProperty = "bar";
-	}
+        context.load().json("/data2.json", START_PATH);
 
-	private AdapterFactory adapterFactory(EncryptionProvider ep) {
-		return new AdapterFactory() {
-			@SuppressWarnings("unchecked")
-			public <AdapterType> AdapterType getAdapter(Object adaptable, Class<AdapterType> type) {
-				ValueMap map = ((Resource) adaptable).adaptTo(ModifiableValueMap.class);
-				if (map == null) {
-					map = ((Resource) adaptable).adaptTo(ValueMap.class);
-				}
-				return (AdapterType) new EncryptableValueMapDecorator(map, ep);
-			}
-		};
-	}
-	
-	private void injectKeyProvider(EncryptionProvider ep, KeyProvider key) {
-		Class<?> resolverClass = ep.getClass();
-		java.lang.reflect.Field resolverField;
-		try {
-			resolverField = resolverClass.getDeclaredField("keyProvider");
-			resolverField.setAccessible(true);
-			resolverField.set(ep, key);
-		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-			e.printStackTrace();
-		}
+        JCEKSKeyProvider kp = new JCEKSKeyProvider();
+        kp.init(getConfig());
 
-	}
-	
-	private JCEKSKeyProvider.Configuration getConfig(){
-		return new JCEKSKeyProvider.Configuration() {
+        AesGcmEncryptionProvider encryptionProvider = new AesGcmEncryptionProvider();
+        injectKeyProvider(encryptionProvider, kp);
+        encryptionProvider.init(new Configuration() {
 
-			@Override
-			public Class<? extends Annotation> annotationType() {
-				// TODO Auto-generated method stub
-				return null;
-			}
+            @Override
+            public Class<? extends Annotation> annotationType() {
+                return null;
+            }
 
-			@Override
-			public String path() {
-				return "./src/test/resources/keystore.jks";
-			}
+            @Override
+            public String keyProvider_target() {
+                return null;
+            }
 
-			@Override
-			public String password() {
-				return "secret";
-			}
+            @Override
+            public String encryptionPrefix() {
+                return "\uD83D\uDD12";
+            }
+        });
 
-			@Override
-			public String primaryAlias() {
-				return "new";
-			}
+        context.registerService(EncryptionProvider.class, encryptionProvider);
 
-			@Override
-			public String[] secondaryAliases() {
-				return new String[] {"old"};
-			}};
-	}
+        context.registerService(AdapterFactory.class, adapterFactory(encryptionProvider),
+                new HashMap<String, Object>() {
+                    {
+                        put(AdapterFactory.ADAPTABLE_CLASSES, new String[] { Resource.class.getName() });
+                        put(AdapterFactory.ADAPTER_CLASSES, new String[] { EncryptableValueMap.class.getName() });
+                    }
+                });
+        this.encryptedProperty = "bar";
+    }
+
+    private AdapterFactory adapterFactory(EncryptionProvider ep) {
+        return new AdapterFactory() {
+            @SuppressWarnings("unchecked")
+            public <AdapterType> AdapterType getAdapter(Object adaptable, Class<AdapterType> type) {
+                ValueMap map = ((Resource) adaptable).adaptTo(ModifiableValueMap.class);
+                if (map == null) {
+                    map = ((Resource) adaptable).adaptTo(ValueMap.class);
+                }
+                return (AdapterType) new EncryptableValueMapDecorator(map, ep);
+            }
+        };
+    }
+
+    private void injectKeyProvider(EncryptionProvider ep, KeyProvider key) {
+        Class<?> resolverClass = ep.getClass();
+        java.lang.reflect.Field resolverField;
+        try {
+            resolverField = resolverClass.getDeclaredField("keyProvider");
+            resolverField.setAccessible(true);
+            resolverField.set(ep, key);
+        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private JCEKSKeyProvider.Configuration getConfig() {
+        return new JCEKSKeyProvider.Configuration() {
+
+            @Override
+            public Class<? extends Annotation> annotationType() {
+                // TODO Auto-generated method stub
+                return null;
+            }
+
+            @Override
+            public String path() {
+                return "./src/test/resources/keystore.jks";
+            }
+
+            @Override
+            public String password() {
+                return "secret";
+            }
+
+            @Override
+            public String primaryAlias() {
+                return "new";
+            }
+
+            @Override
+            public String[] secondaryAliases() {
+                return new String[] { "old" };
+            }
+        };
+    }
 }

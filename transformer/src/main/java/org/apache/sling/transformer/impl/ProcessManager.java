@@ -9,8 +9,7 @@ import org.osgi.service.component.annotations.Reference;
 public class ProcessManager {
     
     
-    @Reference
-    private Process processes;
+
     
     @Reference
     void bindProcess(Process process, Map<String, ?> properties) {

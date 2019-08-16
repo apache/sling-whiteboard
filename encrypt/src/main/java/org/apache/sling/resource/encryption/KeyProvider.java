@@ -38,30 +38,30 @@ import java.security.Key;
  */
 public interface KeyProvider {
 
-	public static String TYPE = "provider.type";
+    public static String TYPE = "provider.type";
 
-	/**
-	 * Provides an ID to access the primary encryption key, this ID must be uniquely
-	 * associated to the key such that no other key that is managed has the same ID
-	 * 
-	 * @return an array of byte[] of consistent length that
-	 */
-	byte[] getPrimaryKeyID();
+    /**
+     * Provides an ID to access the primary encryption key, this ID must be uniquely
+     * associated to the key such that no other key that is managed has the same ID
+     * 
+     * @return an array of byte[] of consistent length that
+     */
+    byte[] getPrimaryKeyID();
 
-	/**
-	 * ID's are byte arrays of consistent length which uniquely identifies a key
-	 * 
-	 * @return length of byte[] for ID
-	 */
-	int getIdLength();
+    /**
+     * ID's are byte arrays of consistent length which uniquely identifies a key
+     * 
+     * @return length of byte[] for ID
+     */
+    int getIdLength();
 
-	/**
-	 * Provides the key associated with this ID, either the primary key or one of
-	 * the maintained secondary keys
-	 * 
-	 * @param alias
-	 * @return the requested key, or null if the id does not match an existing key
-	 */
-	Key getKey(byte[] id) throws GeneralSecurityException;
+    /**
+     * Provides the key associated with this ID, either the primary key or one of
+     * the maintained secondary keys
+     * 
+     * @param alias
+     * @return the requested key, or null if the id does not match an existing key
+     */
+    Key getKey(byte[] id) throws GeneralSecurityException;
 
 }

@@ -37,166 +37,164 @@ import org.junit.Test;
 
 public class BaseEncryptionTest {
 
-	@Rule
-	public final SlingContext context = new SlingContext();
+    @Rule
+    public final SlingContext context = new SlingContext();
 
-	private static String START_PATH = "/content/sample/en";
+    private static String START_PATH = "/content/sample/en";
 
-	private static String ARRAY_PATH = "/content/sample/en/testpage1/jcr:content";
-	
-	String encryptedProperty;
+    private static String ARRAY_PATH = "/content/sample/en/testpage1/jcr:content";
 
-	@SuppressWarnings("serial")
-	@Before
-	public void setUp()
-			throws IOException,GeneralSecurityException {
-		context.load().json("/data.json", START_PATH);
-		EncryptionProvider cipherProvider = new Base64EncryptionProvider();
-		context.registerService(EncryptionProvider.class, cipherProvider);
-		EncryptableValueMapAdapterFactory factory = new EncryptableValueMapAdapterFactory();
-		injectCipherProvider(factory, cipherProvider);
-		context.registerService(AdapterFactory.class, factory, new HashMap<String, Object>() {
-			{
-				put(AdapterFactory.ADAPTABLE_CLASSES, new String[] { Resource.class.getName() });
-				put(AdapterFactory.ADAPTER_CLASSES, new String[] { EncryptableValueMap.class.getName() });
-			}
-		});
-		
-		this.encryptedProperty = "bar";
-	}
+    String encryptedProperty;
 
-	private void injectCipherProvider(EncryptableValueMapAdapterFactory factory, EncryptionProvider cipherProvider) {
-		Class<?> resolverClass = factory.getClass();
-		java.lang.reflect.Field resolverField;
-		try {
-			resolverField = resolverClass.getDeclaredField("encryptionProvider");
-			resolverField.setAccessible(true);
-			resolverField.set(factory, cipherProvider);
-		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-			e.printStackTrace();
-		}
+    @SuppressWarnings("serial")
+    @Before
+    public void setUp() throws IOException, GeneralSecurityException {
+        context.load().json("/data.json", START_PATH);
+        EncryptionProvider cipherProvider = new Base64EncryptionProvider();
+        context.registerService(EncryptionProvider.class, cipherProvider);
+        EncryptableValueMapAdapterFactory factory = new EncryptableValueMapAdapterFactory();
+        injectCipherProvider(factory, cipherProvider);
+        context.registerService(AdapterFactory.class, factory, new HashMap<String, Object>() {
+            {
+                put(AdapterFactory.ADAPTABLE_CLASSES, new String[] { Resource.class.getName() });
+                put(AdapterFactory.ADAPTER_CLASSES, new String[] { EncryptableValueMap.class.getName() });
+            }
+        });
 
-	}
+        this.encryptedProperty = "bar";
+    }
 
-	/**
-	 * Tests initial access to the EncryptionProvider and that the test provider
-	 * returns expected results Cipher classes
-	 * 
-	 * @throws Exception
-	 */
-	@Test
-	public void testCipherProvider()
-			throws Exception {
-		EncryptionProvider cipher = context.getService(EncryptionProvider.class);
-		assertNotNull(cipher);
+    private void injectCipherProvider(EncryptableValueMapAdapterFactory factory, EncryptionProvider cipherProvider) {
+        Class<?> resolverClass = factory.getClass();
+        java.lang.reflect.Field resolverField;
+        try {
+            resolverField = resolverClass.getDeclaredField("encryptionProvider");
+            resolverField.setAccessible(true);
+            resolverField.set(factory, cipherProvider);
+        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
 
-		String encrypted = cipher.encrypt(START_PATH, "foo");
-		assertNotEquals(START_PATH, encrypted);
-		String decoded = cipher.decrypt(encrypted, "foo");
-		assertEquals(START_PATH, decoded);
-	}
+    }
 
-	/**
-	 * Tests encryption and decryption of a String value
-	 * 
-	 */
-	@Test
-	public void testUnencryptedString() {
-		Resource resource = context.resourceResolver().getResource(START_PATH);
+    /**
+     * Tests initial access to the EncryptionProvider and that the test provider
+     * returns expected results Cipher classes
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testCipherProvider() throws Exception {
+        EncryptionProvider cipher = context.getService(EncryptionProvider.class);
+        assertNotNull(cipher);
 
-		ValueMap map = resource.adaptTo(ValueMap.class);
-		EncryptableValueMap encrytionMap = resource.adaptTo(EncryptableValueMap.class);
+        String encrypted = cipher.encrypt(START_PATH, "foo");
+        assertNotEquals(START_PATH, encrypted);
+        String decoded = cipher.decrypt(encrypted, "foo");
+        assertEquals(START_PATH, decoded);
+    }
 
-		String property = "jcr:primaryType";
+    /**
+     * Tests encryption and decryption of a String value
+     * 
+     */
+    @Test
+    public void testUnencryptedString() {
+        Resource resource = context.resourceResolver().getResource(START_PATH);
 
-		// get original value
-		String value = encrytionMap.get(property, String.class);
-		assertEquals("app:Page", value);
+        ValueMap map = resource.adaptTo(ValueMap.class);
+        EncryptableValueMap encrytionMap = resource.adaptTo(EncryptableValueMap.class);
 
-		// encrypt property and validate property appears to be the same
-		encrytionMap.encrypt(property);
-		value = encrytionMap.get(property,  String.class);
-		assertEquals("app:Page", value);
+        String property = "jcr:primaryType";
 
-		// validate the underlying value is encrypted
-		value = map.get(property,  "fail");
-		assertNotEquals("app:Page", value);
-		assertNotEquals("fail", value);
+        // get original value
+        String value = encrytionMap.get(property, String.class);
+        assertEquals("app:Page", value);
 
-		// decrypt property and validate the underlying map is back to normal
-		encrytionMap.decrypt(property);
-		value = map.get(property,  String.class);
-		assertEquals("app:Page", value);
-	}
+        // encrypt property and validate property appears to be the same
+        encrytionMap.encrypt(property);
+        value = encrytionMap.get(property, String.class);
+        assertEquals("app:Page", value);
 
-	/**
-	 * Tests Encodind and Decoding of an array of String values
-	 * 
-	 * @throws NoSuchPaddingException
-	 * @throws NoSuchAlgorithmException
-	 * @throws InvalidKeyException
-	 */
-	@Test
-	public void testArrayofValues() {
-		Resource resource = context.resourceResolver().getResource(ARRAY_PATH);
+        // validate the underlying value is encrypted
+        value = map.get(property, "fail");
+        assertNotEquals("app:Page", value);
+        assertNotEquals("fail", value);
 
-		ValueMap map = resource.adaptTo(ValueMap.class);
-		EncryptableValueMap encrytionMap = resource.adaptTo(EncryptableValueMap.class);
+        // decrypt property and validate the underlying map is back to normal
+        encrytionMap.decrypt(property);
+        value = map.get(property, String.class);
+        assertEquals("app:Page", value);
+    }
 
-		String property = "foo";
+    /**
+     * Tests Encodind and Decoding of an array of String values
+     * 
+     * @throws NoSuchPaddingException
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidKeyException
+     */
+    @Test
+    public void testArrayofValues() {
+        Resource resource = context.resourceResolver().getResource(ARRAY_PATH);
 
-		// get original values
-		String[] value = encrytionMap.get(property, String[].class);
-		assertArrayEquals(new String[] { "foo", "dog" }, value);
+        ValueMap map = resource.adaptTo(ValueMap.class);
+        EncryptableValueMap encrytionMap = resource.adaptTo(EncryptableValueMap.class);
 
-		// encrypt property and verifies it looks good
-		encrytionMap.encrypt(property);
-		value = encrytionMap.get(property, String[].class);
-		assertArrayEquals(new String[] { "foo", "dog" }, value);
-		
-		//verify underlying map is encrypted
-		value = map.get(property, String[].class);
-		assertNotEquals("foo", value[0]);
-		assertNotEquals("dog", value[1]);
-		
-		//decrypt the property and validate
-		encrytionMap.decrypt(property);
-		value = encrytionMap.get(property, String[].class);
-		assertArrayEquals(new String[] { "foo", "dog" }, value);
-		
-		//verify underlying map is decrypted
-		value = map.get(property, String[].class);
-		assertArrayEquals(new String[] { "foo", "dog" }, value);
-		
-	}
-	
-	/**
-	 * Tests the decryption and handling of pre-existing values
-	 * 
-	 * @throws NoSuchPaddingException
-	 * @throws NoSuchAlgorithmException
-	 * @throws InvalidKeyException
-	 */
-	@Test
-	public void testPreEncryptedArrayofValues() {
-		Resource resource = context.resourceResolver().getResource(ARRAY_PATH);
+        String property = "foo";
 
-		ValueMap map = resource.adaptTo(ValueMap.class);
-		EncryptableValueMap encryptionMap = resource.adaptTo(EncryptableValueMap.class);
+        // get original values
+        String[] value = encrytionMap.get(property, String[].class);
+        assertArrayEquals(new String[] { "foo", "dog" }, value);
 
-		// verify original is encrypted
-		String[] value = map.get(encryptedProperty, String[].class);
-		assertNotEquals("foo", value[0]);
-		assertNotEquals("dog", value[1]);
+        // encrypt property and verifies it looks good
+        encrytionMap.encrypt(property);
+        value = encrytionMap.get(property, String[].class);
+        assertArrayEquals(new String[] { "foo", "dog" }, value);
 
-		// get decrypted values and validate
-		value = (String[]) encryptionMap.get(encryptedProperty);
-		assertArrayEquals(new String[] { "foo", "dog" }, value);
-		
-		//decrypt pre-encrypted properties
-		encryptionMap.decrypt(encryptedProperty);
-		value = (String[]) map.get(encryptedProperty);
-		assertArrayEquals(new String[] { "foo", "dog" }, value);
-	}
+        // verify underlying map is encrypted
+        value = map.get(property, String[].class);
+        assertNotEquals("foo", value[0]);
+        assertNotEquals("dog", value[1]);
+
+        // decrypt the property and validate
+        encrytionMap.decrypt(property);
+        value = encrytionMap.get(property, String[].class);
+        assertArrayEquals(new String[] { "foo", "dog" }, value);
+
+        // verify underlying map is decrypted
+        value = map.get(property, String[].class);
+        assertArrayEquals(new String[] { "foo", "dog" }, value);
+
+    }
+
+    /**
+     * Tests the decryption and handling of pre-existing values
+     * 
+     * @throws NoSuchPaddingException
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidKeyException
+     */
+    @Test
+    public void testPreEncryptedArrayofValues() {
+        Resource resource = context.resourceResolver().getResource(ARRAY_PATH);
+
+        ValueMap map = resource.adaptTo(ValueMap.class);
+        EncryptableValueMap encryptionMap = resource.adaptTo(EncryptableValueMap.class);
+
+        // verify original is encrypted
+        String[] value = map.get(encryptedProperty, String[].class);
+        assertNotEquals("foo", value[0]);
+        assertNotEquals("dog", value[1]);
+
+        // get decrypted values and validate
+        value = (String[]) encryptionMap.get(encryptedProperty);
+        assertArrayEquals(new String[] { "foo", "dog" }, value);
+
+        // decrypt pre-encrypted properties
+        encryptionMap.decrypt(encryptedProperty);
+        value = (String[]) map.get(encryptedProperty);
+        assertArrayEquals(new String[] { "foo", "dog" }, value);
+    }
 
 }
