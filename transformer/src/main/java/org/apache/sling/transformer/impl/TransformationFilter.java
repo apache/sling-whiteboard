@@ -36,15 +36,8 @@ import org.osgi.service.component.annotations.Reference;
  * This filter activates the rewriter for the output.
  *
  */
-@Component(
-        service = Filter.class,
-        property = {
-                Constants.SERVICE_VENDOR + "=The Apache Software Foundation",
-                "sling.filter.scope=request",
-                "sling.filter.scope=error",
-                Constants.SERVICE_RANKING + ":Integer=2500"
-        }
-)
+@Component(service = Filter.class, property = { Constants.SERVICE_VENDOR + "=The Apache Software Foundation",
+        "sling.filter.scope=request", "sling.filter.scope=error", Constants.SERVICE_RANKING + ":Integer=2500" })
 public class TransformationFilter implements Filter {
 
     @Reference
@@ -67,21 +60,20 @@ public class TransformationFilter implements Filter {
     }
 
     /**
-     * @see javax.servlet.Filter#doFilter(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain)
+     * @see javax.servlet.Filter#doFilter(javax.servlet.ServletRequest,
+     *      javax.servlet.ServletResponse, javax.servlet.FilterChain)
      */
     @Override
-    public void doFilter(ServletRequest request,
-                         ServletResponse response,
-                         FilterChain chain)
-    throws IOException, ServletException {
-        if ( ! (request instanceof SlingHttpServletRequest)) {
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+        if (!(request instanceof SlingHttpServletRequest)) {
             throw new ServletException("Request is not a Apache Sling HTTP request.");
         }
         final SlingHttpServletRequest slingRequest = (SlingHttpServletRequest) request;
         final SlingHttpServletResponse slingResponse = (SlingHttpServletResponse) response;
 
-        final TransformerResponse rewriterResponse =
-                new TransformerResponse(slingRequest, slingResponse);
+        final TransformerResponse rewriterResponse = new TransformerResponse(slingRequest, slingResponse);
+
         boolean errorOccured = true;
         try {
             chain.doFilter(request, rewriterResponse);
@@ -89,5 +81,5 @@ public class TransformationFilter implements Filter {
         } finally {
             rewriterResponse.finished(errorOccured);
         }
-	}
+    }
 }

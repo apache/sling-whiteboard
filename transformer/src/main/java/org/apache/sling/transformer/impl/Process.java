@@ -35,18 +35,17 @@ import org.osgi.annotation.versioning.ProviderType;
  * BiConsumer<Element,TagMapping> lambda.
  * 
  * This allows you to use the next() method to collect the elements that will be
- * passed on to the stream method. This can modify the eventual output and assists in use cases where
- * there is a need to add or remove elements
+ * passed on to the stream method. This can modify the eventual output and
+ * assists in use cases where there is a need to add or remove elements
  *
  */
 @ProviderType
 public class Process implements ProcessingContext {
 
     private List<HtmlElement> list = new ArrayList<>();
-    private Map<String,Object> context = new HashMap<>();
+    private Map<String, Object> context = new HashMap<>();
     private SlingHttpServletRequest request;
     private SlingHttpServletResponse response;
-    
 
     private Process(SlingHttpServletRequest request, SlingHttpServletResponse response) {
         this.request = request;
@@ -61,7 +60,7 @@ public class Process implements ProcessingContext {
     public void next(HtmlElement... elements) {
         Collections.addAll(list, elements);
     }
-    
+
     public void next(String html) {
         Collections.addAll(list, Html.stream(html).toArray(HtmlElement[]::new));
     }
@@ -69,11 +68,11 @@ public class Process implements ProcessingContext {
     public Stream<HtmlElement> getElements() {
         return list.stream();
     }
-    
-    public Map<String,Object> getContext(){
+
+    public Map<String, Object> getContext() {
         return context;
     }
-    
+
     public SlingHttpServletResponse getResponse() {
         return response;
     }
@@ -91,4 +90,5 @@ public class Process implements ProcessingContext {
     public OutputStream getOutputStream() throws IOException {
         return response.getOutputStream();
     }
+
 }
