@@ -1,0 +1,39 @@
+#!/bin/sh
+
+
+pom_files=$(find $RELEASE_FOLDER -name '*.pom')
+
+failed=0
+unknown=0
+for pom_file in ${pom_files}; do
+    artifactId=$(xmllint --xpath "/*[local-name()='project']/*[local-name()='artifactId']/text()" ${pom_file})
+    version=$(xmllint --xpath "/*[local-name()='project']/*[local-name()='version']/text()" ${pom_file})
+    repo_name="${artifactId//\./-}"
+    if [[ $repo_name != sling-* ]]; then
+        repo_name="sling-${repo_name}"
+    fi
+    echo -n "Status for ${artifactId} ${version}: "
+    status=$(curl --silent -H 'Accept: application/vnd.github.v3+json' \
+        "https://api.github.com/repos/apache/${repo_name}/commits/${artifactId}-${version}/status" | \
+        jq --raw-output '.state')
+    echo $status
+    case $status in
+        "pending")
+            unknown=1
+            ;;
+        "failure")
+            failed=1
+            ;;
+    esac
+    echo "See https://github.com/apache/${repo_name}/commits/${artifactId}-${version} for details"
+done
+
+if [ $failed -eq 1 ]; then
+    exit 1
+fi
+
+if [ $unknown -eq 1 ]; then
+    exit 129
+fi
+
+exit 0
