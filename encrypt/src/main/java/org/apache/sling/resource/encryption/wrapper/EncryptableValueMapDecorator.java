@@ -35,145 +35,145 @@ import org.slf4j.LoggerFactory;
  * A <code>ValueMap</code> should be immutable.
  */
 public class EncryptableValueMapDecorator extends ModifiableValueMapDecorator
-		implements ModifiableValueMap, EncryptableValueMap {
+        implements ModifiableValueMap, EncryptableValueMap {
 
-	private EncryptionProvider ep;
+    private EncryptionProvider ep;
 
-	/** Default logger. */
-	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    /** Default logger. */
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	public EncryptableValueMapDecorator(Map<String, Object> base, EncryptionProvider encryptionProvider) {
-		super(base);
-		ep = encryptionProvider;
-	}
+    public EncryptableValueMapDecorator(Map<String, Object> base, EncryptionProvider encryptionProvider) {
+        super(base);
+        ep = encryptionProvider;
+    }
 
-	/**
-	 * Encrypts the value for this
-	 * 
-	 * @param property
-	 *            property
-	 */
-	@Nullable
-	public void encrypt(String property) {
-		super.put(property, doEncrypt(property, get(property)));
-	}
+    /**
+     * Encrypts the value for this
+     * 
+     * @param property
+     *            property
+     */
+    @Nullable
+    public void encrypt(String property) {
+        super.put(property, doEncrypt(property, get(property)));
+    }
 
-	/**
-	 * Sets a String property with the given name as being a non-encrypted property.
-	 * If a String value currently exists for the property and that value is
-	 * currently encrypted, that value will be decrypted. Parameters that are
-	 * already decrypted will not change.
-	 * 
-	 * @param property
-	 *            The name of the property
-	 */
-	public void decrypt(String property) {
-		super.put(property, get(property));
-	};
+    /**
+     * Sets a String property with the given name as being a non-encrypted property.
+     * If a String value currently exists for the property and that value is
+     * currently encrypted, that value will be decrypted. Parameters that are
+     * already decrypted will not change.
+     * 
+     * @param property
+     *            The name of the property
+     */
+    public void decrypt(String property) {
+        super.put(property, get(property));
+    };
 
-	@Override
-	public Object get(Object key) {
-		Object reply = super.get(key);
-		if (isEncrypted(reply)) {
-			return doDecrypt((String) key, reply);
-		}
-		return reply;
-	}
+    @Override
+    public Object get(Object key) {
+        Object reply = super.get(key);
+        if (isEncrypted(reply)) {
+            return doDecrypt((String) key, reply);
+        }
+        return reply;
+    }
 
-	@Override
-	public Object put(String key, Object value) {
-		Object prior = super.put(key, value);
-		if (isEncrypted(prior)) {
-			super.put(key, doEncrypt(key, value));
-			return doDecrypt(key, prior);
-		}
-		return prior;
-	}
+    @Override
+    public Object put(String key, Object value) {
+        Object prior = super.put(key, value);
+        if (isEncrypted(prior)) {
+            super.put(key, doEncrypt(key, value));
+            return doDecrypt(key, prior);
+        }
+        return prior;
+    }
 
-	/**
-	 * Method to encrypt an Object value.
-	 * 
-	 * @param value
-	 *            to be encrypted
-	 * @return the encrypted value
-	 */
-	@SuppressWarnings("unchecked")
-	private <T> T doEncrypt(String property, T value) {
-		T reply = null;
+    /**
+     * Method to encrypt an Object value.
+     * 
+     * @param value
+     *            to be encrypted
+     * @return the encrypted value
+     */
+    @SuppressWarnings("unchecked")
+    private <T> T doEncrypt(String property, T value) {
+        T reply = null;
 
-		if (value instanceof String) {
-			try {
-				reply = (T) ep.encrypt((String) value, property);
-			} catch (EncryptionException e) {
-				logger.debug("unable to encrypt value {} of property {}",value, property);
-				reply = value;
-			}
-		}
+        if (value instanceof String) {
+            try {
+                reply = (T) ep.encrypt((String) value, property);
+            } catch (EncryptionException e) {
+                logger.debug("unable to encrypt value {} of property {}", value, property);
+                reply = value;
+            }
+        }
 
-		if (value instanceof String[]) {
-			reply = (T) Stream.of((String[]) value).map(string -> {
-				try {
-					return ep.encrypt(string, property);
-				} catch (EncryptionException e) {
-					logger.debug("unable to encrypt value {} of property {}",string, property);
-					return string;
-				}
-			}).toArray(String[]::new);
-		}
+        if (value instanceof String[]) {
+            reply = (T) Stream.of((String[]) value).map(string -> {
+                try {
+                    return ep.encrypt(string, property);
+                } catch (EncryptionException e) {
+                    logger.debug("unable to encrypt value {} of property {}", string, property);
+                    return string;
+                }
+            }).toArray(String[]::new);
+        }
 
-		return reply;
-	}
+        return reply;
+    }
 
-	/**
-	 * Decrypt the object
-	 * 
-	 * @param value
-	 *            String representation of the encrypted value
-	 * @return decrypted value
-	 */
-	@SuppressWarnings("unchecked")
-	private <T> T doDecrypt(String property, T value) {
-		T reply = null;
+    /**
+     * Decrypt the object
+     * 
+     * @param value
+     *            String representation of the encrypted value
+     * @return decrypted value
+     */
+    @SuppressWarnings("unchecked")
+    private <T> T doDecrypt(String property, T value) {
+        T reply = null;
 
-		if (value instanceof String) {
-			try {
-				reply = (T) ep.decrypt((String) value, property);
-			} catch (EncryptionException e) {
-				logger.debug("unable to decrypt value {} of property {}",value, property);
-				reply = value;
-			}
-		}
+        if (value instanceof String) {
+            try {
+                reply = (T) ep.decrypt((String) value, property);
+            } catch (EncryptionException e) {
+                logger.debug("unable to decrypt value {} of property {}", value, property);
+                reply = value;
+            }
+        }
 
-		if (value instanceof String[]) {
-			reply = (T) Stream.of((String[]) value).map(string -> {
-				try {
-					return ep.decrypt(string, property);
-				} catch (EncryptionException e) {
-					logger.debug("unable to decrypt value {} of property {}",string, property);
-					return string;
-				}
-			}).toArray(String[]::new);
-		}
+        if (value instanceof String[]) {
+            reply = (T) Stream.of((String[]) value).map(string -> {
+                try {
+                    return ep.decrypt(string, property);
+                } catch (EncryptionException e) {
+                    logger.debug("unable to decrypt value {} of property {}", string, property);
+                    return string;
+                }
+            }).toArray(String[]::new);
+        }
 
-		return reply;
-	}
+        return reply;
+    }
 
-	private boolean isEncrypted(Object value) {
-		if (value == null) {
-			return false;
-		}
+    private boolean isEncrypted(Object value) {
+        if (value == null) {
+            return false;
+        }
 
-		if (value instanceof String) {
-			return ep.isEncrypted((String) value);
-		}
+        if (value instanceof String) {
+            return ep.isEncrypted((String) value);
+        }
 
-		if (value instanceof String[]) {
-			String[] temp = (String[]) value;
-			if (temp.length > 0) {
-				return ep.isEncrypted(temp[0]);
-			}
-		}
-		return false;
-	}
+        if (value instanceof String[]) {
+            String[] temp = (String[]) value;
+            if (temp.length > 0) {
+                return ep.isEncrypted(temp[0]);
+            }
+        }
+        return false;
+    }
 
 }

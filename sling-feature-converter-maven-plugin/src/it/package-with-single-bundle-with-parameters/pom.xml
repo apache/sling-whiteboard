@@ -1,0 +1,418 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+    agreements. See the NOTICE file distributed with this work for additional information
+    regarding copyright ownership. The ASF licenses this file to you under the Apache License,
+    Version 2.0 (the "License"); you may not use this file except in compliance with the
+    License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+     Unless required by applicable law or agreed to in writing, software distributed under the
+    License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+    either express or implied. See the License for the specific language governing permissions
+    and limitations under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.apache.sling</groupId>
+    <artifactId>sling-cpconverter-maven-plugin-test-with-param</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0.0-SNAPSHOT</version>
+    <name>Apache Sling Features Maven plugin test - with parameter</name>
+    <description>This is just an Apache Sling Content Package Maven plugin test to convert a package with a single
+        bundle
+    </description>
+    <organization>
+        <name>The Apache Software Foundation</name>
+        <url>https://www.apache.org/</url>
+    </organization>
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <properties>
+        <interpolated_variable>true</interpolated_variable>
+        <osgi.framework.version>1.9.0</osgi.framework.version>
+        <sling.framework.install.incremental>true</sling.framework.install.incremental>
+        <sling.framework.install.startlevel>1</sling.framework.install.startlevel>
+        <sling.ignoreSystemProperties>true</sling.ignoreSystemProperties>
+
+        <sling.host>localhost</sling.host>
+        <sling.port>8080</sling.port>
+        <sling.user>admin</sling.user>
+
+        <sling.password>admin</sling.password>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <release.plugin.version>2.5.3</release.plugin.version>
+        <source.plugin.version>3.0.1</source.plugin.version>
+        <resource.plugin.version>3.1.0</resource.plugin.version>
+        <jar.plugin.version>3.1.1</jar.plugin.version>
+        <enforcer.plugin.version>3.0.0-M2</enforcer.plugin.version>
+        <compiler.plugin.version>3.8.0</compiler.plugin.version>
+        <bundle.plugin.version>4.2.0</bundle.plugin.version>
+        <clean.plugin.version>3.1.0</clean.plugin.version>
+        <installer.plugin.version>3.0.0-M1</installer.plugin.version>
+        <surfire.plugin.version>3.0.0-M3</surfire.plugin.version>
+        <failsafe.plugin.version>3.0.0-M3</failsafe.plugin.version>
+        <deploy.plugin.version>3.0.0-M1</deploy.plugin.version>
+        <sling.plugin.version>2.4.0</sling.plugin.version>
+        <dependency.plugin.version>3.1.1</dependency.plugin.version>
+        <build.helper.plugin.version>3.0.0</build.helper.plugin.version>
+        <wcmio.plugin.version>1.6.18</wcmio.plugin.version>
+        <filevault-package.plugin.version>1.0.3</filevault-package.plugin.version>
+
+        <osgi.core.version>7.0.0</osgi.core.version>
+        <osgi.annotation.version>7.0.0</osgi.annotation.version>
+        <org.osgi.service.component.annotations.version>1.4.0</org.osgi.service.component.annotations.version>
+        <org.osgi.service.metatype.annotations.version>1.4.0</org.osgi.service.metatype.annotations.version>
+        <org.osgi.compendium.version>5.0.0</org.osgi.compendium.version>
+        <javax.servlet-api.version>3.1.0</javax.servlet-api.version>
+        <javax.inject.version>1</javax.inject.version>
+        <jcr.version>2.0</jcr.version>
+        <sling.models.api.version>1.3.6</sling.models.api.version>
+        <jetbrains.annotations.version>16.0.2</jetbrains.annotations.version>
+        <sling.settings.version>1.3.10</sling.settings.version>
+        <sling.commons.osgi.version>2.4.0</sling.commons.osgi.version>
+        <jackrabbit-api.version>2.16.3</jackrabbit-api.version>
+        <commons-lang.version>2.6</commons-lang.version>
+        <jmock-junit4.version>2.8.2</jmock-junit4.version>
+    </properties>
+    <build>
+        <plugins>
+            <!-- Maven Release Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <configuration>
+                    <scmCommentPrefix>[maven-scm] :</scmCommentPrefix>
+                    <preparationGoals>clean install</preparationGoals>
+                    <goals>install</goals>
+                    <releaseProfiles>release</releaseProfiles>
+                </configuration>
+            </plugin>
+            <!-- Maven Source Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <inherited>true</inherited>
+            </plugin>
+            <!-- Maven Resources Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+            <!-- Maven Jar Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+            </plugin>
+            <!-- Maven Enforcer Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>enforce-maven</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireMavenVersion>
+                                    <message>Project must be built with Maven 3.1.0 or higher</message>
+                                    <version>[3.1.0,)</version>
+                                </requireMavenVersion>
+                                <requireJavaVersion>
+                                    <message>Project must be compiled with Java 7 or higher</message>
+                                    <version>1.7.0</version>
+                                </requireJavaVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Maven Compiler Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>8</source>
+                    <target>8</target>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+        </plugins>
+        <pluginManagement>
+            <plugins>
+                <!-- Maven Release Plugin -->
+                <plugin>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>${release.plugin.version}</version>
+                </plugin>
+                <!-- Maven Source Plugin -->
+                <plugin>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>${source.plugin.version}</version>
+                </plugin>
+                <!-- Maven Resources Plugin -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>${resource.plugin.version}</version>
+                </plugin>
+                <!-- Maven Jar Plugin -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>${jar.plugin.version}</version>
+                </plugin>
+                <!-- Maven Enforcer Plugin -->
+                <plugin>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>${enforcer.plugin.version}</version>
+                </plugin>
+                <!-- Maven Compiler Plugin -->
+                <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${compiler.plugin.version}</version>
+                </plugin>
+
+                <!-- Maven Clean Plugin -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-clean-plugin</artifactId>
+                    <version>${clean.plugin.version}</version>
+                </plugin>
+                <!-- Maven Installer Plugin -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-install-plugin</artifactId>
+                    <version>${installer.plugin.version}</version>
+                </plugin>
+                <!-- Maven Surefire Plugin -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${surfire.plugin.version}</version>
+                </plugin>
+                <!-- Maven Failsafe Plugin -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>${failsafe.plugin.version}</version>
+                </plugin>
+                <!-- Maven Deploy Plugin -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>${deploy.plugin.version}</version>
+                </plugin>
+                <!-- Apache Sling Plugin -->
+                <plugin>
+                    <groupId>org.apache.sling</groupId>
+                    <artifactId>maven-sling-plugin</artifactId>
+                    <version>${sling.plugin.version}</version>
+                </plugin>
+                <!-- Content Package Plugin -->
+                <plugin>
+                    <groupId>org.apache.jackrabbit</groupId>
+                    <artifactId>filevault-package-maven-plugin</artifactId>
+                    <version>${filevault-package.plugin.version}</version>
+                    <extensions>true</extensions>
+                    <configuration>
+                        <failOnMissingEmbed>true</failOnMissingEmbed>
+                        <force>true</force>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>io.wcm.maven.plugins</groupId>
+                    <artifactId>wcmio-content-package-maven-plugin</artifactId>
+                    <version>${wcmio.plugin.version}</version>
+                    <configuration>
+                        <serviceURL>http://${sling.host}:${sling.port}/bin/cpm/</serviceURL>
+                        <userId>${sling.user}</userId>
+                        <password>${sling.password}</password>
+                        <failOnMissingEmbed>true</failOnMissingEmbed>
+                        <force>true</force>
+                        <group>cpconverter</group>
+                    </configuration>
+                </plugin>
+                <!-- Apache Felix Bundle Plugin -->
+                <plugin>
+                    <groupId>org.apache.felix</groupId>
+                    <artifactId>maven-bundle-plugin</artifactId>
+                    <version>${bundle.plugin.version}</version>
+                    <inherited>true</inherited>
+                </plugin>
+                <!-- Maven Dependency Plugin -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>${dependency.plugin.version}</version>
+                </plugin>
+                <!-- Build Helper Maven Plugin -->
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>build-helper-maven-plugin</artifactId>
+                    <version>${build.helper.plugin.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <!-- ====================================================================== -->
+    <!-- D E P E N D E N C I E S                                                -->
+    <!-- ====================================================================== -->
+    <dependencyManagement>
+        <dependencies>
+            <!-- OSGi Dependencies -->
+            <dependency>
+                <groupId>org.osgi</groupId>
+                <artifactId>osgi.core</artifactId>
+                <version>${osgi.core.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <!-- OSGi annotations: @Version, @ProviderType, @ConsumerType -->
+            <dependency>
+                <groupId>org.osgi</groupId>
+                <artifactId>osgi.annotation</artifactId>
+                <version>${osgi.annotation.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <!-- OSGi annotations for DS and metatype -->
+            <dependency>
+                <groupId>org.osgi</groupId>
+                <artifactId>org.osgi.service.component.annotations</artifactId>
+                <version>${org.osgi.service.component.annotations.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.osgi</groupId>
+                <artifactId>org.osgi.service.metatype.annotations</artifactId>
+                <version>${org.osgi.service.metatype.annotations.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <!-- Needs to be placed after 'org.osgi.service.component.annotations' otherwise field @Reference will not work -->
+            <dependency>
+                <groupId>org.osgi</groupId>
+                <artifactId>org.osgi.compendium</artifactId>
+                <version>${org.osgi.compendium.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <!-- Web Application API -->
+            <dependency>
+                <groupId>javax.servlet</groupId>
+                <artifactId>javax.servlet-api</artifactId>
+                <version>${javax.servlet-api.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <!-- dependency injection annotations -->
+            <dependency>
+                <groupId>javax.inject</groupId>
+                <artifactId>javax.inject</artifactId>
+                <version>$[javax.inject.version</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <!-- JCR API -->
+            <dependency>
+                <groupId>javax.jcr</groupId>
+                <artifactId>jcr</artifactId>
+                <version>${jcr.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <!-- Basic Logging -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>1.7.6</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jetbrains</groupId>
+                <artifactId>annotations</artifactId>
+                <version>${jetbrains.annotations.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <!-- Apache Sling Dependencies -->
+            <dependency>
+                <groupId>org.apache.sling</groupId>
+                <artifactId>org.apache.sling.api</artifactId>
+                <version>2.9.0</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.sling</groupId>
+                <artifactId>org.apache.sling.settings</artifactId>
+                <version>${sling.settings.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.sling</groupId>
+                <artifactId>org.apache.sling.commons.osgi</artifactId>
+                <version>${sling.commons.osgi.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.sling</groupId>
+                <artifactId>org.apache.sling.models.api</artifactId>
+                <version>${sling.models.api.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.jackrabbit</groupId>
+                <artifactId>jackrabbit-api</artifactId>
+                <version>${jackrabbit-api.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <!-- Support -->
+            <dependency>
+                <groupId>commons-lang</groupId>
+                <artifactId>commons-lang</artifactId>
+                <version>${commons-lang.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <!-- Basic dependencies for Unit Tests -->
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.12</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jmock</groupId>
+                <artifactId>jmock-junit4</artifactId>
+                <version>${jmock-junit4.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-simple</artifactId>
+                <version>1.7.6</version>
+                <scope>test</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    <modules>
+        <module>core</module>
+        <module>ui.apps</module>
+    </modules>
+</project>
+ 

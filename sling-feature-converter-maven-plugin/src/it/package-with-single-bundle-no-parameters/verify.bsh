@@ -1,0 +1,93 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+import java.io.*;
+import java.util.*;
+import org.codehaus.plexus.util.*;
+
+    boolean check() {
+        String projectName = "sling-cpconverter-maven-plugin-test-no-param.ui.apps";
+        String projectCoreName = "sling-cpconverter-maven-plugin-test-no-param.core";
+        String projectVersion = "1.0.0-SNAPSHOT";
+        String projectGroup = "org.apache.sling";
+        String projectGroupPath = projectGroup.replaceAll("\\.", "/");
+
+        File targetFolder = new File(basedir, "ui.apps/target");
+        File packageFile = new File(targetFolder, projectName + "-" + projectVersion + ".zip");
+        if(!packageFile.exists()) {
+            System.out.println("Content Package was not created: " + packageFile);
+            return false;
+        }
+        File outputFolder = new File(targetFolder, "cp-conversion");
+        File featureModelFolder = new File(outputFolder, "fm.out");
+        if(!featureModelFolder.exists()) {
+            System.out.println("Feature Model Folder was not created" + featureModelFolder);
+            return false;
+        }
+        File featureModelFile = new File(featureModelFolder, projectName + ".json");
+        if(!featureModelFile.exists()) {
+            System.out.println("Feature Model File was not created: " + featureModelFile);
+            return false;
+        }
+        String log = FileUtils.fileRead(featureModelFile);
+        System.out.println("Feature Model File Content: " + log);
+        String[] values = {
+            "\"id\":\"" + projectGroup + ":" + projectName + ":slingosgifeature:" + projectVersion + "\"",
+            "\"bundles\":[",
+            "\"id\":\"" + projectGroup + ":" + projectCoreName + ":" + projectVersion + "\"",
+            "\"content-packages:ARTIFACTS|true\":[",
+            "\"" + projectGroup + ":" + projectName + ":zip:cp2fm-converted:" + projectVersion + "\""
+        };
+        for (String value : values) {
+            if (log.indexOf(value) < 0) {
+                System.out.println("Did not find line: " + value + " -> FAILED!");
+                return false;
+            }
+        }
+        File convertedPackageFolder = new File(outputFolder, projectGroupPath + "/" + projectName + "/" + projectVersion);
+        if(!convertedPackageFolder.exists()) {
+            System.out.println("Converted Package Folder was not created: " + convertedPackageFolder);
+            return false;
+        }
+        File convertedPackageFile = new File(convertedPackageFolder, projectName + "-" + projectVersion + "-cp2fm-converted.zip");
+        if(!convertedPackageFile.exists()) {
+            System.out.println("Converted Package File was not created: " + convertedPackageFile);
+            return false;
+        }
+        // TODO: Adjust the code here to also support local repositories when this is activated
+        File userHomeFolder = new File(System.getProperty("user.home"));
+        File localMavenRepo = new File(userHomeFolder, ".m2/repository");
+        File convertedPackageTargetFolder = new File(localMavenRepo, projectGroupPath + "/" + projectName + "/" + projectVersion);
+        if(!convertedPackageTargetFolder.exists()) {
+            System.out.println("Converted Package Target (Maven) Folder was not created: " + convertedPackageTargetFolder);
+            return false;
+        }
+        File convertedPackageTargetFile = new File(convertedPackageTargetFolder, projectName + "-" + projectVersion + "-cp2fm-converted.zip");
+        if(!convertedPackageTargetFile.exists()) {
+            System.out.println("Converted Package Target File was not created: " + convertedPackageTargetFile);
+            return false;
+        }
+
+        return true;
+    }
+    try {
+        return check();
+    }
+    catch(Throwable t) {
+        t.printStackTrace();
+        return false;
+    }
+    return true;

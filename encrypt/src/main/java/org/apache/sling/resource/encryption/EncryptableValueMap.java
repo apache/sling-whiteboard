@@ -22,22 +22,22 @@ import org.apache.sling.api.resource.ModifiableValueMap;
  */
 public interface EncryptableValueMap extends ModifiableValueMap {
 
-	/**
-	 * Encrypts and stores the existing property value. Currently supports String
-	 * and String[]. Values that already encrypted will be re-encrypted.
-	 * 
-	 * @param name
-	 *            property
-	 */
-	void encrypt(String property);
+    /**
+     * Encrypts and stores the existing property value. Currently supports String
+     * and String[]. Values that already encrypted will be re-encrypted.
+     * 
+     * @param name
+     *            property
+     */
+    void encrypt(String property);
 
-	/**
-	 * Decrypts and stores the existing property value . Properties that are not
-	 * encrypted will not change.
-	 * 
-	 * @param name
-	 *            property
-	 */
-	void decrypt(String property);
+    /**
+     * Decrypts and stores the existing property value . Properties that are not
+     * encrypted will not change.
+     * 
+     * @param name
+     *            property
+     */
+    void decrypt(String property);
 
 }
