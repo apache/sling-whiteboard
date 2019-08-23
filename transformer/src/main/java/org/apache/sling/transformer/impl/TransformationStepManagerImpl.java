@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.transformer.TransformationStepManager;
 import org.apache.sling.transformer.TransformationStep;
 import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Component;
@@ -31,7 +32,7 @@ import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.service.component.annotations.ReferencePolicyOption;
 
 @Component
-public class ProcessManager {
+public class TransformationStepManagerImpl implements TransformationStepManager {
 
     // comparison in the same manner of a filter, where the highest ranking goes
     // first
@@ -48,6 +49,7 @@ public class ProcessManager {
         return value1.compareTo(value2);
     });
 
+    @Override
     public List<TransformationStep> getSteps(SlingHttpServletRequest request) {
         List<TransformationStep> steps = new ArrayList<>();
         mapping.forEach((properties, step) -> {

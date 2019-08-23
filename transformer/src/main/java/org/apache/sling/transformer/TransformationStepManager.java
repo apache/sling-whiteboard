@@ -16,10 +16,12 @@
  */
 package org.apache.sling.transformer;
 
-import org.apache.sling.commons.html.HtmlElement;
+import java.util.List;
 
-public interface TransformationStep {
+import org.apache.sling.api.SlingHttpServletRequest;
 
-    public void handle(HtmlElement element, TransformationContext process);
+public interface TransformationStepManager {
+
+    List<TransformationStep> getSteps(SlingHttpServletRequest request);
 
 }

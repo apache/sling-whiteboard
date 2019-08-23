@@ -22,6 +22,9 @@ import java.util.Base64;
 import java.util.Map;
 
 import org.apache.sling.commons.html.HtmlElement;
+import org.apache.sling.commons.html.HtmlElementType;
+import org.apache.sling.commons.html.util.ElementFactory;
+import org.apache.sling.transformer.TransformationContext;
 import org.apache.sling.transformer.TransformationStep;
 import org.osgi.service.component.annotations.Component;
 
@@ -32,12 +35,12 @@ public class LinkTransformer implements TransformationStep {
         IN, OUT
     }
 
-    public void handle(HtmlElement element, Process process) {
+    public void handle(HtmlElement element, TransformationContext process) {
 
-        Map<String,Object> context = process.getContext();
+        Map<String, Object> context = process.getContext();
         State current = (State) context.getOrDefault("currentState", State.OUT);
-        
-        MessageDigest d = (MessageDigest) context.computeIfAbsent("hash", (value)->{
+
+        MessageDigest d = (MessageDigest) context.computeIfAbsent("hash", (value) -> {
             MessageDigest digest = null;
             try {
                 digest = MessageDigest.getInstance("SHA-256");
@@ -46,7 +49,7 @@ public class LinkTransformer implements TransformationStep {
             }
             return digest;
         });
-        
+
         switch (current) {
         case IN:
             switch (element.getType()) {
@@ -68,9 +71,14 @@ public class LinkTransformer implements TransformationStep {
                     context.put("currentState", State.IN);
                 }
                 break;
-            case EOF:
-                String headerValue = Base64.getEncoder().encodeToString(d.digest());
-                process.getResponse().addHeader("X-Sucks", headerValue);
+            case END_TAG:
+                if (element.getValue().equalsIgnoreCase("body")) {
+                    String headerValue = Base64.getEncoder().encodeToString(d.digest());
+                    process.getResponse().addHeader("X-Sucks", headerValue);
+                    HtmlElement br = ElementFactory.create(HtmlElementType.START_TAG, "br");
+                    br.setAttribute("data-hash",headerValue );
+                    process.next(br);
+                }
                 break;
             default:
                 break;

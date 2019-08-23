@@ -27,7 +27,7 @@ import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.commons.html.Html;
 import org.apache.sling.commons.html.HtmlElement;
-import org.apache.sling.transformer.ProcessingContext;
+import org.apache.sling.transformer.TransformationContext;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
@@ -40,14 +40,15 @@ import org.osgi.annotation.versioning.ProviderType;
  *
  */
 @ProviderType
-public class Process implements ProcessingContext {
+public class TransformationContextImpl implements TransformationContext {
 
     private List<HtmlElement> list = new ArrayList<>();
     private Map<String, Object> context = new HashMap<>();
     private SlingHttpServletRequest request;
     private SlingHttpServletResponse response;
+    private boolean reset;
 
-    private Process(SlingHttpServletRequest request, SlingHttpServletResponse response) {
+    public TransformationContextImpl(SlingHttpServletRequest request, SlingHttpServletResponse response) {
         this.request = request;
         this.response = response;
     }
@@ -58,14 +59,23 @@ public class Process implements ProcessingContext {
      * process.
      */
     public void next(HtmlElement... elements) {
+        if (reset) {
+            list.clear();
+            reset = false;
+        }
         Collections.addAll(list, elements);
     }
 
     public void next(String html) {
+        if (reset) {
+            list.clear();
+            reset = false;
+        }
         Collections.addAll(list, Html.stream(html).toArray(HtmlElement[]::new));
     }
 
     public Stream<HtmlElement> getElements() {
+        reset = true;
         return list.stream();
     }
 
@@ -82,7 +92,7 @@ public class Process implements ProcessingContext {
     }
 
     @Override
-    public PrintWriter getWriter() throws IOException {
+    public PrintWriter getWriter() throws IOException  {
         return response.getWriter();
     }
 

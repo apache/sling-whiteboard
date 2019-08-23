@@ -37,7 +37,7 @@ import org.osgi.service.component.annotations.Reference;
  *
  */
 @Component(service = Filter.class, property = { Constants.SERVICE_VENDOR + "=The Apache Software Foundation",
-        "sling.filter.scope=request", "sling.filter.scope=error", Constants.SERVICE_RANKING + ":Integer=2500" })
+        "sling.filter.scope=request", "sling.filter.scope=error", Constants.SERVICE_RANKING + ":Integer="+Integer.MIN_VALUE })
 public class TransformationFilter implements Filter {
 
     @Reference
@@ -69,17 +69,16 @@ public class TransformationFilter implements Filter {
         if (!(request instanceof SlingHttpServletRequest)) {
             throw new ServletException("Request is not a Apache Sling HTTP request.");
         }
+        
         final SlingHttpServletRequest slingRequest = (SlingHttpServletRequest) request;
         final SlingHttpServletResponse slingResponse = (SlingHttpServletResponse) response;
-
-        final TransformerResponse rewriterResponse = new TransformerResponse(slingRequest, slingResponse);
-
-        boolean errorOccured = true;
-        try {
-            chain.doFilter(request, rewriterResponse);
-            errorOccured = false;
-        } finally {
-            rewriterResponse.finished(errorOccured);
+        
+        if (slingRequest.getRequestURI().endsWith(".html")){
+            TransformationContextImpl stepProcess = new TransformationContextImpl(slingRequest, slingResponse);
+            response = new TransformerResponse(stepProcess);
         }
+
+        chain.doFilter(request, response);
+
     }
 }
