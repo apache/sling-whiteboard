@@ -20,7 +20,7 @@ import java.util.List;
 
 import org.apache.sling.api.SlingHttpServletRequest;
 
-public interface TransformationStepManager {
+public interface TransformationManager {
 
     List<TransformationStep> getSteps(SlingHttpServletRequest request);
 

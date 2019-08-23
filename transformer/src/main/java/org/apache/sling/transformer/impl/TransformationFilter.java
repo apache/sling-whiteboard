@@ -75,7 +75,7 @@ public class TransformationFilter implements Filter {
         
         if (slingRequest.getRequestURI().endsWith(".html")){
             TransformationContextImpl stepProcess = new TransformationContextImpl(slingRequest, slingResponse);
-            response = new TransformerResponse(stepProcess);
+            response = new TransformationResponse(stepProcess);
         }
 
         chain.doFilter(request, response);

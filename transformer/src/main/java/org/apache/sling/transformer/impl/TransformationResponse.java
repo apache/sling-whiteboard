@@ -21,7 +21,7 @@ import java.io.PrintWriter;
 
 import org.apache.sling.api.wrappers.SlingHttpServletResponseWrapper;
 
-class TransformerResponse
+class TransformationResponse
     extends SlingHttpServletResponseWrapper {
 
     /** wrapped rewriter/servlet writer */
@@ -31,7 +31,7 @@ class TransformerResponse
     private TransformationContextImpl process;
 
 
-    public TransformerResponse(TransformationContextImpl process) {
+    public TransformationResponse(TransformationContextImpl process) {
         super(process.getResponse());
         this.process = process;
     }
@@ -43,7 +43,7 @@ class TransformerResponse
      */
     public PrintWriter getWriter() throws IOException {
         if ( this.writer == null ) {
-            this.writer = new PrintWriter(new ParserWriter(process));
+            this.writer = new PrintWriter(new TransformationWriter(process));
         }
         return writer;
     }

@@ -74,7 +74,7 @@ public class LinkTransformer implements TransformationStep {
             case END_TAG:
                 if (element.getValue().equalsIgnoreCase("body")) {
                     String headerValue = Base64.getEncoder().encodeToString(d.digest());
-                    process.getResponse().addHeader("X-Sucks", headerValue);
+                    process.getResponse().setHeader("X-Sucks", headerValue);
                     HtmlElement br = ElementFactory.create(HtmlElementType.START_TAG, "br");
                     br.setAttribute("data-hash",headerValue );
                     process.next(br);
@@ -82,7 +82,6 @@ public class LinkTransformer implements TransformationStep {
                 break;
             default:
                 break;
-
             }
             break;
         default:

@@ -23,13 +23,13 @@ import java.util.stream.Collectors;
 import org.apache.sling.commons.html.Html;
 import org.apache.sling.commons.html.util.HtmlElements;
 
-public class ParserWriter extends Writer {
+public class TransformationWriter extends Writer {
 
     private Writer originalWriter;
 
     private TransformationStepWrapper wrapper;
 
-    public ParserWriter(TransformationContextImpl process) throws IOException {
+    public TransformationWriter(TransformationContextImpl process) throws IOException {
         this.originalWriter = process.getWriter();
         this.wrapper = new TransformationStepWrapper(new LinkTransformer(), process);
     }

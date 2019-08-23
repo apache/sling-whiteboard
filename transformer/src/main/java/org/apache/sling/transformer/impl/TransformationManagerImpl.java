@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.sling.api.SlingHttpServletRequest;
-import org.apache.sling.transformer.TransformationStepManager;
+import org.apache.sling.transformer.TransformationManager;
 import org.apache.sling.transformer.TransformationStep;
 import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Component;
@@ -32,18 +32,18 @@ import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.service.component.annotations.ReferencePolicyOption;
 
 @Component
-public class TransformationStepManagerImpl implements TransformationStepManager {
+public class TransformationManagerImpl implements TransformationManager {
 
     // comparison in the same manner of a filter, where the highest ranking goes
     // first
     // in a situation where ranking is identical, then the lowest service id goes
     // first
     private Map<Map<String, Object>, TransformationStep> mapping = new TreeMap<>((map1, map2) -> {
-        Integer value1 = (Integer) map1.getOrDefault(Constants.SERVICE_RANKING, (Integer) 0);
-        Integer value2 = (Integer) map2.getOrDefault(Constants.SERVICE_RANKING, (Integer) 0);
+        Long value1 = (Long) map1.getOrDefault(Constants.SERVICE_RANKING, (Long) 0L);
+        Long value2 = (Long) map2.getOrDefault(Constants.SERVICE_RANKING, (Long) 0L);
         if (value1 - value2 == 0) {
-            value1 = (Integer) map1.get(Constants.SERVICE_ID);
-            value2 = (Integer) map2.get(Constants.SERVICE_ID);
+            value1 = (Long) map1.get(Constants.SERVICE_ID);
+            value2 = (Long) map2.get(Constants.SERVICE_ID);
             return value2.compareTo(value1);
         }
         return value1.compareTo(value2);
