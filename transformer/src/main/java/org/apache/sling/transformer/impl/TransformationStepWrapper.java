@@ -20,6 +20,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.apache.sling.commons.html.HtmlElement;
+import org.apache.sling.transformer.TransformationContext;
 import org.apache.sling.transformer.TransformationStep;
 
 /**
@@ -30,9 +31,9 @@ import org.apache.sling.transformer.TransformationStep;
 public class TransformationStepWrapper implements Function<HtmlElement, Stream<HtmlElement>> {
 
     private TransformationStep tStep;
-    private TransformationContextImpl transformationContext;
+    private TransformationContext transformationContext;
 
-    public TransformationStepWrapper(TransformationStep step,TransformationContextImpl context) {
+    public TransformationStepWrapper(TransformationStep step,TransformationContext context) {
         this.tStep = step;
         this.transformationContext = context;
     }

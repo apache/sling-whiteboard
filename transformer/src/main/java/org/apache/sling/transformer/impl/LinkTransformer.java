@@ -37,7 +37,7 @@ public class LinkTransformer implements TransformationStep {
 
     public void handle(HtmlElement element, TransformationContext process) {
 
-        Map<String, Object> context = process.getContext();
+        Map<String, Object> context = process.getStateMap();
         State current = (State) context.getOrDefault("currentState", State.OUT);
 
         MessageDigest d = (MessageDigest) context.computeIfAbsent("hash", (value) -> {
@@ -74,7 +74,7 @@ public class LinkTransformer implements TransformationStep {
             case END_TAG:
                 if (element.getValue().equalsIgnoreCase("body")) {
                     String headerValue = Base64.getEncoder().encodeToString(d.digest());
-                    process.getResponse().setHeader("X-Sucks", headerValue);
+                    process.getResponse().setHeader("Sucks", headerValue);
                     HtmlElement br = ElementFactory.create(HtmlElementType.START_TAG, "br");
                     br.setAttribute("data-hash",headerValue );
                     process.next(br);

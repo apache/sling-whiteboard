@@ -28,6 +28,7 @@ import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.commons.html.Html;
 import org.apache.sling.commons.html.HtmlElement;
 import org.apache.sling.transformer.TransformationContext;
+import org.apache.sling.transformer.TransformationStep;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
@@ -47,10 +48,12 @@ public class TransformationContextImpl implements TransformationContext {
     private SlingHttpServletRequest request;
     private SlingHttpServletResponse response;
     private boolean reset;
+    private List<TransformationStep> steps;
 
-    public TransformationContextImpl(SlingHttpServletRequest request, SlingHttpServletResponse response) {
+    public TransformationContextImpl(SlingHttpServletRequest request, SlingHttpServletResponse response, List<TransformationStep> steps) {
         this.request = request;
         this.response = response;
+        this.steps = steps;
     }
 
     /**
@@ -79,7 +82,7 @@ public class TransformationContextImpl implements TransformationContext {
         return list.stream();
     }
 
-    public Map<String, Object> getContext() {
+    public Map<String, Object> getStateMap() {
         return context;
     }
 

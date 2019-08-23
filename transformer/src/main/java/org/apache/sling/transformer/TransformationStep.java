@@ -20,6 +20,6 @@ import org.apache.sling.commons.html.HtmlElement;
 
 public interface TransformationStep {
 
-    public void handle(HtmlElement element, TransformationContext process);
+    public void handle(HtmlElement element, TransformationContext context);
 
 }

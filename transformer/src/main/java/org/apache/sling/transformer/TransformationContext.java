@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
@@ -50,7 +51,9 @@ public interface TransformationContext {
      */
     OutputStream getOutputStream() throws IOException;
 
-    Map<String, Object> getContext();
+    Map<String, Object> getStateMap();
 
     void next(HtmlElement... elements);
+
+    Stream<HtmlElement> getElements();
 }

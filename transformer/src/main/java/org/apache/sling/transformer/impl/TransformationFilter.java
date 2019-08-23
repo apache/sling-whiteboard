@@ -17,6 +17,7 @@
 package org.apache.sling.transformer.impl;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -27,6 +28,8 @@ import javax.servlet.ServletResponse;
 
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
+import org.apache.sling.transformer.TransformationContext;
+import org.apache.sling.transformer.TransformationManager;
 import org.apache.sling.transformer.TransformationStep;
 import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Component;
@@ -41,7 +44,7 @@ import org.osgi.service.component.annotations.Reference;
 public class TransformationFilter implements Filter {
 
     @Reference
-    private TransformationStep pipelineManager;
+    private TransformationManager manager;
 
     /**
      * @see javax.servlet.Filter#init(javax.servlet.FilterConfig)
@@ -73,9 +76,11 @@ public class TransformationFilter implements Filter {
         final SlingHttpServletRequest slingRequest = (SlingHttpServletRequest) request;
         final SlingHttpServletResponse slingResponse = (SlingHttpServletResponse) response;
         
+        List<TransformationStep> steps = manager.getSteps(slingRequest);
+        
         if (slingRequest.getRequestURI().endsWith(".html")){
-            TransformationContextImpl stepProcess = new TransformationContextImpl(slingRequest, slingResponse);
-            response = new TransformationResponse(stepProcess);
+            TransformationContext context = new TransformationContextImpl(slingRequest, slingResponse, steps);
+            response = new TransformationResponse(context);
         }
 
         chain.doFilter(request, response);

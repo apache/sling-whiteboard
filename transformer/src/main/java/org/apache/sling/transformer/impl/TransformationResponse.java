@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 import org.apache.sling.api.wrappers.SlingHttpServletResponseWrapper;
+import org.apache.sling.transformer.TransformationContext;
 
 class TransformationResponse
     extends SlingHttpServletResponseWrapper {
@@ -28,12 +29,12 @@ class TransformationResponse
     private PrintWriter writer;
 
 
-    private TransformationContextImpl process;
+    private TransformationContext process;
 
 
-    public TransformationResponse(TransformationContextImpl process) {
-        super(process.getResponse());
-        this.process = process;
+    public TransformationResponse(TransformationContext context) {
+        super(context.getResponse());
+        this.process = context;
     }
 
     /**
