@@ -18,42 +18,22 @@ package org.apache.sling.transformer.impl;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Writer;
 
-import org.apache.sling.api.SlingHttpServletRequest;
-import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.wrappers.SlingHttpServletResponseWrapper;
 
-class TransformerResponse
+class TransformationResponse
     extends SlingHttpServletResponseWrapper {
-
-    /** The current request. */
-    private final SlingHttpServletRequest request;
-
 
     /** wrapped rewriter/servlet writer */
     private PrintWriter writer;
 
-    /** response content type */
-    private String contentType;
 
-    /**
-     * Initializes a new instance.
-     * @param request The sling request.
-     * @param delegatee The SlingHttpServletResponse wrapped by this instance.
-     */
-    public TransformerResponse(SlingHttpServletRequest request,
-                            SlingHttpServletResponse delegatee) {
-        super(delegatee);
-        this.request = request;
-    }
+    private TransformationContextImpl process;
 
-    /**
-     * @see javax.servlet.ServletResponseWrapper#setContentType(java.lang.String)
-     */
-    public void setContentType(String type) {
-        this.contentType = type;
-        super.setContentType(type);
+
+    public TransformationResponse(TransformationContextImpl process) {
+        super(process.getResponse());
+        this.process = process;
     }
 
     /**
@@ -63,7 +43,7 @@ class TransformerResponse
      */
     public PrintWriter getWriter() throws IOException {
         if ( this.writer == null ) {
-            this.writer = super.getWriter();
+            this.writer = new PrintWriter(new TransformationWriter(process));
         }
         return writer;
     }
@@ -79,12 +59,5 @@ class TransformerResponse
         }
     }
 
-    /**
-     * Inform this response that the request processing is finished.
-     * @throws IOException
-     */
-    public void finished(final boolean errorOccured) throws IOException {
-
-    }
 
 }

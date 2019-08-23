@@ -16,26 +16,41 @@
  */
 package org.apache.sling.transformer;
 
-import org.apache.sling.api.resource.ValueMap;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.util.Map;
 
+import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.api.SlingHttpServletResponse;
+import org.apache.sling.commons.html.HtmlElement;
 
 /**
- * Configuration of a processing component.
+ * The context for a processor invocation.
  */
-public interface ProcessingComponentConfiguration {
-
-    /** Configuration for an optional component, only transformers support this option. */
-    String CONFIGURATION_COMPONENT_OPTIONAL = "component-optional";
+public interface TransformationContext {
 
     /**
-     * The name/type of the component.
-     * @return A unique name for this component.
+     * The current request.
      */
-    String getType();
+    SlingHttpServletRequest getRequest();
 
     /**
-     * Return the configuration for this component.
-     * @return The configuration for this component or an empty map if there is none.
+     * The current response.
      */
-    ValueMap getConfiguration();
+    SlingHttpServletResponse getResponse();
+
+    /**
+     * The writer.
+     */
+    PrintWriter getWriter() throws IOException;
+
+    /**
+     * The output stream.
+     */
+    OutputStream getOutputStream() throws IOException;
+
+    Map<String, Object> getContext();
+
+    void next(HtmlElement... elements);
 }

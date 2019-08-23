@@ -22,20 +22,25 @@ import java.util.stream.Stream;
 import org.apache.sling.commons.html.HtmlElement;
 import org.apache.sling.transformer.TransformationStep;
 
+/**
+ * Class that is used to convert a TransformationStep class into a Function object 
+ * that will be used to Map an HtmlElement to a Stream<HtmlElement>
+ * 
+ */
 public class TransformationStepWrapper implements Function<HtmlElement, Stream<HtmlElement>> {
 
-    private TransformationStep processStep;
-    private Process process;
+    private TransformationStep tStep;
+    private TransformationContextImpl transformationContext;
 
-    public TransformationStepWrapper(TransformationStep processStep,Process process) {
-        this.processStep = processStep;
-        this.process = process;
+    public TransformationStepWrapper(TransformationStep step,TransformationContextImpl context) {
+        this.tStep = step;
+        this.transformationContext = context;
     }
 
     @Override
     public Stream<HtmlElement> apply(HtmlElement element) {
-        processStep.handle(element, process);
-        return process.getElements();
+        tStep.handle(element, transformationContext);
+        return transformationContext.getElements();
     }
     
 }
