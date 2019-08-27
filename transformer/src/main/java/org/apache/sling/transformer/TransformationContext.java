@@ -17,8 +17,8 @@
 package org.apache.sling.transformer;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -31,29 +31,17 @@ import org.apache.sling.commons.html.HtmlElement;
  */
 public interface TransformationContext {
 
-    /**
-     * The current request.
-     */
     SlingHttpServletRequest getRequest();
 
-    /**
-     * The current response.
-     */
     SlingHttpServletResponse getResponse();
 
-    /**
-     * The writer.
-     */
     PrintWriter getWriter() throws IOException;
 
-    /**
-     * The output stream.
-     */
-    OutputStream getOutputStream() throws IOException;
-
-    Map<String, Object> getStateMap();
+    Map<String, Object> getState();
 
     void next(HtmlElement... elements);
 
     Stream<HtmlElement> getElements();
+    
+    List<TransformationStep> getSteps();
 }

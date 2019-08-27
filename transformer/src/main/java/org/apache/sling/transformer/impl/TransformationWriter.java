@@ -18,11 +18,15 @@ package org.apache.sling.transformer.impl;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.sling.commons.html.Html;
 import org.apache.sling.commons.html.util.HtmlElements;
 import org.apache.sling.transformer.TransformationContext;
+import org.apache.sling.transformer.TransformationStep;
 
 public class TransformationWriter extends Writer {
 
@@ -30,22 +34,46 @@ public class TransformationWriter extends Writer {
 
     private TransformationStepWrapper wrapper;
 
+    private CharBuffer buffer;
+
+    private List<TransformationStep> steps;
+
     public TransformationWriter(TransformationContext context) throws IOException {
+        super();
         this.originalWriter = context.getWriter();
-        this.wrapper = new TransformationStepWrapper(new LinkTransformer(), context);
+        this.wrapper = new TransformationStepWrapper(new NonceTransformer(), context);
+        this.buffer = ByteBuffer.allocate(1024).asCharBuffer();
+        this.steps = context.getSteps();
+        
+   
     }
 
     @Override
     public void write(char[] cbuf, int off, int len) throws IOException {
-        String foo = Html.stream(String.valueOf(cbuf, off, len))
-                .flatMap(wrapper)
-                .map(HtmlElements.TO_HTML)
-                .collect(Collectors.joining());
-        originalWriter.write(foo.toCharArray(), 0, foo.toCharArray().length);
+        if (len + buffer.position() > buffer.limit()) {
+            flushLocal();
+        }
+        if (len < buffer.limit()) {
+            buffer.put(cbuf, off, len);
+        } else {
+            writeLocal(String.valueOf(cbuf, off, len));
+        }
+    }
+    
+    private void flushLocal() throws IOException {
+        buffer.flip();
+        writeLocal(buffer.toString());
+        buffer.clear();
+    }
+    
+    private void writeLocal(String string) throws IOException {
+        String cache = Html.stream(string).flatMap(wrapper).map(HtmlElements.TO_HTML).collect(Collectors.joining());
+        originalWriter.write(cache.toCharArray(), 0, cache.toCharArray().length);
     }
 
     @Override
     public void flush() throws IOException {
+        flushLocal();
         originalWriter.flush();
     }
 

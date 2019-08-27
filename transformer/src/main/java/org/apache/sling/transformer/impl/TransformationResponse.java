@@ -29,12 +29,12 @@ class TransformationResponse
     private PrintWriter writer;
 
 
-    private TransformationContext process;
+    private TransformationContext context;
 
 
     public TransformationResponse(TransformationContext context) {
         super(context.getResponse());
-        this.process = context;
+        this.context = context;
     }
 
     /**
@@ -44,7 +44,7 @@ class TransformationResponse
      */
     public PrintWriter getWriter() throws IOException {
         if ( this.writer == null ) {
-            this.writer = new PrintWriter(new TransformationWriter(process));
+            this.writer = new PrintWriter(new TransformationWriter(context));
         }
         return writer;
     }

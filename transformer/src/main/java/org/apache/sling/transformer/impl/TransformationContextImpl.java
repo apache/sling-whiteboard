@@ -14,7 +14,6 @@
 package org.apache.sling.transformer.impl;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,7 +49,8 @@ public class TransformationContextImpl implements TransformationContext {
     private boolean reset;
     private List<TransformationStep> steps;
 
-    public TransformationContextImpl(SlingHttpServletRequest request, SlingHttpServletResponse response, List<TransformationStep> steps) {
+    public TransformationContextImpl(SlingHttpServletRequest request, SlingHttpServletResponse response,
+            List<TransformationStep> steps) {
         this.request = request;
         this.response = response;
         this.steps = steps;
@@ -82,7 +82,7 @@ public class TransformationContextImpl implements TransformationContext {
         return list.stream();
     }
 
-    public Map<String, Object> getStateMap() {
+    public Map<String, Object> getState() {
         return context;
     }
 
@@ -95,13 +95,13 @@ public class TransformationContextImpl implements TransformationContext {
     }
 
     @Override
-    public PrintWriter getWriter() throws IOException  {
+    public PrintWriter getWriter() throws IOException {
         return response.getWriter();
     }
 
     @Override
-    public OutputStream getOutputStream() throws IOException {
-        return response.getOutputStream();
+    public List<TransformationStep> getSteps() {
+        return steps;
     }
 
 }

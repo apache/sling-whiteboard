@@ -80,6 +80,9 @@ public class TransformationFilter implements Filter {
         
         if (slingRequest.getRequestURI().endsWith(".html")){
             TransformationContext context = new TransformationContextImpl(slingRequest, slingResponse, steps);
+            steps.forEach(transformer ->
+                transformer.init(context)
+            );
             response = new TransformationResponse(context);
         }
 
