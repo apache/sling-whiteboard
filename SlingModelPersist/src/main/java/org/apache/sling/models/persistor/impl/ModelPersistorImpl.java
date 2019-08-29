@@ -121,7 +121,7 @@ public class ModelPersistorImpl implements ModelPersistor {
         }
 
         if (ReflectionUtils.isArrayOrCollection(instance)) {
-            persistComplexValue(instance, true, nodePath, "dunno", resource);
+            persistComplexValue(instance, true, "dunno", resource);
         } else {
             // find properties to be saved
             List<Field> fields = ReflectionUtils.getAllFields(instance.getClass());
@@ -130,7 +130,7 @@ public class ModelPersistorImpl implements ModelPersistor {
             } else {
                 Resource r = resource;
                 fields.stream()
-                        .filter(field->ReflectionUtils.isNotTransient(field, isUpdate))
+                        .filter(field -> ReflectionUtils.isNotTransient(field, isUpdate))
                         .filter(ReflectionUtils::isSupportedType)
                         .filter(f -> ReflectionUtils.hasNoTransientGetter(f.getName(), instance.getClass()))
                         .forEach(field -> persistField(r, instance, field, deepPersist));
@@ -165,33 +165,42 @@ public class ModelPersistorImpl implements ModelPersistor {
                 }
             } else if (deepPersist) {
                 boolean directDescendents = field.getAnnotation(DirectDescendants.class) != null;
-                persistComplexValue(field.get(instance), directDescendents, nodePath, fieldName, resource);
+                persistComplexValue(field.get(instance), directDescendents, fieldName, resource);
             }
         } catch (IllegalAccessException | RepositoryException | PersistenceException ex) {
             LOGGER.error("Error when persisting content to " + resource.getPath(), ex);
         }
     }
 
-    private void persistComplexValue(Object obj, Boolean implicitCollection, String nodePath, final String fieldName, Resource resource) throws RepositoryException, IllegalAccessException, IllegalArgumentException, PersistenceException {
-        if (obj == null) {
-            return;
-        }
-        if (Collection.class.isAssignableFrom(obj.getClass())) {
-            Collection collection = (Collection) obj;
-            if (!collection.isEmpty()) {
-                String childrenRoot = buildChildrenRoot(nodePath, fieldName, resource.getResourceResolver(), implicitCollection);
-                persistCollection(childrenRoot, collection, resource.getResourceResolver());
+    private void persistComplexValue(Object obj, Boolean implicitCollection, final String fieldName, Resource resource) throws RepositoryException, IllegalAccessException, IllegalArgumentException, PersistenceException {
+        ResourceResolver rr = resource.getResourceResolver();
+        String childrenRoot = buildChildrenRoot(resource.getPath(), fieldName, rr, implicitCollection);
+        boolean deleteRoot = true;
+        if (obj != null) {
+            if (Collection.class.isAssignableFrom(obj.getClass())) {
+                Collection collection = (Collection) obj;
+                if (!collection.isEmpty()) {
+                    persistCollection(childrenRoot, collection, rr);
+                    deleteRoot = false;
+                }
+            } else if (Map.class.isAssignableFrom(obj.getClass())) {
+                Map map = (Map) obj;
+                if (!map.isEmpty()) {
+                    persistMap(childrenRoot, map, rr);
+                    deleteRoot = false;
+                }
+            } else {
+                // this is a single compound object
+                // create a child node and persist all its values
+                persist(resource.getPath() + "/" + fieldName, obj, rr, true);
+                deleteRoot = false;
             }
-        } else if (Map.class.isAssignableFrom(obj.getClass())) {
-            Map map = (Map) obj;
-            if (!map.isEmpty()) {
-                String childrenRoot = buildChildrenRoot(nodePath, fieldName, resource.getResourceResolver(), implicitCollection);
-                persistMap(childrenRoot, map, resource.getResourceResolver());
+            if (deleteRoot) {
+                Resource rootNode = rr.getResource(childrenRoot);
+                if (rootNode != null) {
+                    rr.delete(rootNode);
+                }
             }
-        } else {
-            // this is a single compound object
-            // create a child node and persist all its values
-            persist(nodePath + "/" + fieldName, obj, resource.getResourceResolver(), true);
         }
     }
 
