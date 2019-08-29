@@ -18,7 +18,6 @@
  */
 package org.apache.sling.models.persist;
 
-import org.apache.sling.models.persistor.ModelPersistor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Arrays;
@@ -36,6 +35,7 @@ import org.apache.sling.models.persist.bean.BeanWithPathField;
 import org.apache.sling.models.persist.bean.BeanWithPathGetter;
 import org.apache.sling.models.persist.bean.ComplexBean;
 import org.apache.sling.models.persist.bean.MappedChildren;
+import org.apache.sling.models.persistor.ModelPersistor;
 import org.apache.sling.models.persistor.impl.ModelPersistorImpl;
 import org.apache.sling.testing.mock.sling.junit.SlingContext;
 import org.junit.Before;
@@ -174,6 +174,7 @@ public class ModelPersistTest {
         l31.value1 = "L3-1";
         l31.value2 = 123;
         l31.valueList = new String[]{"L31a", "L31b", "L31c", "L31d"};
+        l31.path = "/test/complex-beans/Complex-bean-test/level2/level3/child-1";
         ComplexBean.Level3Bean l32 = new ComplexBean.Level3Bean();
         l32.value1 = "L3-2";
         l32.value2 = 456;
@@ -195,6 +196,17 @@ public class ModelPersistTest {
         // Child record should no longer exist
         Resource deletedResource = rr.getResource(l32.path);
         assertNull(deletedResource);
+
+        // Now attempt to remove the other item in the list
+        sourceBean.level2.level3.remove(l31);
+        jcrPersist.persist(sourceBean, rr);
+
+        // No child records should exist
+        deletedResource = rr.getResource(l31.path);
+        assertNull(deletedResource);
+        deletedResource = rr.getResource(l32.path);
+        assertNull(deletedResource);
+
     }
 
     @Test
