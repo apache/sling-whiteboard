@@ -29,12 +29,9 @@ class TransformationResponse
     private PrintWriter writer;
 
 
-    private TransformationContext context;
-
-
-    public TransformationResponse(TransformationContext context) {
+    public TransformationResponse(TransformationContext context) throws IOException {
         super(context.getResponse());
-        this.context = context;
+        this.writer = new PrintWriter(new TransformationWriter(context));
     }
 
     /**
@@ -43,9 +40,6 @@ class TransformationResponse
      * @see javax.servlet.ServletResponseWrapper#getWriter()
      */
     public PrintWriter getWriter() throws IOException {
-        if ( this.writer == null ) {
-            this.writer = new PrintWriter(new TransformationWriter(context));
-        }
         return writer;
     }
 

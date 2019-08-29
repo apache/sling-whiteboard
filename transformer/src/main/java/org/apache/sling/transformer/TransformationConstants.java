@@ -16,38 +16,17 @@
  */
 package org.apache.sling.transformer;
 
-import org.apache.sling.commons.html.HtmlElement;
+public class TransformationConstants {
 
-/**
- * Defines the service that will be used to modify the html as it's passed back
- *
- */
-public interface TransformationStep {
-
-    /**
-     * Called at the beginning of the filter transformation process before any steps
-     * are triggered
-     * 
-     * @param context
-     */
-    default void before(TransformationContext context) {
+    private TransformationConstants() {
     }
 
-    /**
-     * called for each element
-     * 
-     * @param element
-     * @param context
-     */
-    public void handle(HtmlElement element, TransformationContext context);
-
-    /**
-     * Called after all transformations have occurred but before a flush has been
-     * triggered
-     * 
-     * @param context
-     */
-    default void after(TransformationContext context) {
-    }
+    public static final String EXTENSIONS = "extensions";
+    
+    public static final String PATHS = "paths";
+    
+    public static final String SELECTORS = "selectors";
+    
+    public static final String ENABLED = "enabled";
 
 }

@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.transformer.TransformationConstants;
 import org.apache.sling.transformer.TransformationManager;
 import org.apache.sling.transformer.TransformationStep;
 import org.osgi.framework.Constants;
@@ -66,7 +67,7 @@ public class TransformationManagerImpl implements TransformationManager {
         while (it.hasNext()) {
             String key = it.next();
             switch (key) {
-            case "path":
+            case TransformationConstants.PATHS:
                 String value = (String) properties.get(key);
                 if (!request.getRequestURI().matches(value)) {
                     return false;

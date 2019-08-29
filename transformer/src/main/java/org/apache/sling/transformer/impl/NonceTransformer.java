@@ -21,28 +21,31 @@ import java.util.UUID;
 
 import org.apache.sling.commons.html.HtmlElement;
 import org.apache.sling.commons.html.HtmlElementType;
+import org.apache.sling.transformer.TransformationConstants;
 import org.apache.sling.transformer.TransformationContext;
 import org.apache.sling.transformer.TransformationStep;
 import org.osgi.service.component.annotations.Component;
 
-@Component(property = { "extension=html", "path=/content/*", "type=REQUEST" })
+@Component(property = { TransformationConstants.EXTENSIONS + "=html", "paths=/content/.*"  })
 public class NonceTransformer implements TransformationStep {
 
+    private static final String NONCE = "nonce";
+    
     @Override
-    public void init(TransformationContext context) {
+    public void before(TransformationContext context) {
         String nonce = UUID.randomUUID().toString().replace("-", "");
-        context.getState().put("nonce", nonce);
+        context.getState().put(NONCE, nonce);
         context.getResponse().setHeader("X-nonce", nonce);
     }
 
     public void handle(HtmlElement element, TransformationContext context) {
 
         Map<String, Object> state = context.getState();
-        String nonce = (String)state.get("nonce");
+        String nonce = (String)state.get(NONCE);
 
         if (element.getType()== HtmlElementType.START_TAG) {
             if (element.getValue().equals("script")) {
-                element.setAttribute("nonce", nonce);
+                element.setAttribute(NONCE, nonce);
             }
         }
         

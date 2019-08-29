@@ -13,8 +13,6 @@
  */
 package org.apache.sling.transformer.impl;
 
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -95,13 +93,9 @@ public class TransformationContextImpl implements TransformationContext {
     }
 
     @Override
-    public PrintWriter getWriter() throws IOException {
-        return response.getWriter();
-    }
-
-    @Override
     public List<TransformationStep> getSteps() {
         return steps;
     }
+    
 
 }

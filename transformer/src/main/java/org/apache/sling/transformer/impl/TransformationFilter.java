@@ -78,15 +78,19 @@ public class TransformationFilter implements Filter {
         
         List<TransformationStep> steps = manager.getSteps(slingRequest);
         
-        if (slingRequest.getRequestURI().endsWith(".html")){
+        if (!steps.isEmpty()){
             TransformationContext context = new TransformationContextImpl(slingRequest, slingResponse, steps);
             steps.forEach(transformer ->
-                transformer.init(context)
+                transformer.before(context)
             );
             response = new TransformationResponse(context);
         }
-
+        
         chain.doFilter(request, response);
+        
+        if (!steps.isEmpty()){
+            response.flushBuffer();
+        }
 
     }
 }
