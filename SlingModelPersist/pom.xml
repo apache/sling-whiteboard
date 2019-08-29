@@ -172,6 +172,12 @@
                 <artifactId>maven-bundle-plugin</artifactId>
                 <version>4.2.0</version>
                 <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <Export-Package>org.apache.sling.models.injectors,org.apache.sling.models.persistor,org.apache.sling.models.persistor.annotations</Export-Package>
+                        <Private-Package>org.apache.sling.models.injectors.*,org.apache.sling.models.persist.*,org.apache.sling.models.persistor.*</Private-Package>
+                    </instructions>
+                </configuration>
             </plugin>
         </plugins>
     </build>
