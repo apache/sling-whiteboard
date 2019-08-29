@@ -17,6 +17,7 @@
 package org.apache.sling.transformer.impl;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -61,9 +62,20 @@ public class TransformationManagerImpl implements TransformationManager {
     }
 
     private boolean doStep(Map<String, Object> properties, SlingHttpServletRequest request) {
-        properties.keySet().forEach(key -> {
+        Iterator<String> it = properties.keySet().iterator();
+        while (it.hasNext()) {
+            String key = it.next();
+            switch (key) {
+            case "path":
+                String value = (String) properties.get(key);
+                if (!request.getRequestURI().matches(value)) {
+                    return false;
+                }
+                break;
+            default:
+            }
 
-        });
+        }
         return true;
     }
 

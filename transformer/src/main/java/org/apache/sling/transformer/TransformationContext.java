@@ -39,7 +39,7 @@ public interface TransformationContext {
 
     Map<String, Object> getState();
 
-    void next(HtmlElement... elements);
+    void doNext(HtmlElement... elements);
 
     Stream<HtmlElement> getElements();
     

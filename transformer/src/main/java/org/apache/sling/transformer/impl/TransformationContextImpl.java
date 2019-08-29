@@ -61,7 +61,7 @@ public class TransformationContextImpl implements TransformationContext {
      * the accept method of the consumer so that they may be passed on to the next
      * process.
      */
-    public void next(HtmlElement... elements) {
+    public void doNext(HtmlElement... elements) {
         if (reset) {
             list.clear();
             reset = false;

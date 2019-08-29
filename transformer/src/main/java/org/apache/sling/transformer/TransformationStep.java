@@ -18,8 +18,17 @@ package org.apache.sling.transformer;
 
 import org.apache.sling.commons.html.HtmlElement;
 
+/**
+ * Defines the service that will be used to modify the html as it's passed back
+ *
+ */
 public interface TransformationStep {
 
+    /**
+     * Called at the beginning of the filter once the steps for a request are identified
+     * 
+     * @param context
+     */
     default void init(TransformationContext context) {
     }
 

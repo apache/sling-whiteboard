@@ -46,7 +46,7 @@ public class NonceTransformer implements TransformationStep {
             }
         }
         
-        context.next(element);
+        context.doNext(element);
     }
 
 }
