@@ -1,0 +1,29 @@
+{
+    "bundles": [
+        {
+            "id": "org.apache.sling:org.apache.sling.api:2.20.0"
+        },
+        {
+            "id": "org.apache.sling:org.apache.sling.contentparser.api:2.0.0"
+        },
+        {
+            "id": "org.apache.sling:org.apache.sling.contentparser.json:2.0.0"
+        },
+        {
+            "id": "org.apache.sling:org.apache.sling.commons.threads:3.2.18"
+        },
+        {
+            "id": "com.github.ben-manes.caffeine:caffeine:2.7.0"
+        },
+        {
+            "id": "org.apache.commons:commons-lang3:3.9"
+        },
+        {
+            "id": "org.slf4j:slf4j-api:1.7.25"
+        },
+        {
+            "id"         : "${project.groupId}:${project.artifactId}:${project.version}",
+            "start-level": "15"
+        }
+    ]
+}

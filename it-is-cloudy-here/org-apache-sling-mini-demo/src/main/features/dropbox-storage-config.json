@@ -1,0 +1,8 @@
+{
+    "configurations": {
+        "org.apache.sling.remote.resourceprovider.dropbox.impl.DropboxStorageProvider~demo": {
+            "resource.provider.root": "/content",
+            "accessToken": "$[secret:dropbox.accesstoken]"
+        }
+    }
+}

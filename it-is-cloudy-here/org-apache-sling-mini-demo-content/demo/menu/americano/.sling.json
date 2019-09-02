@@ -1,0 +1,12 @@
+{
+    "sling:resourceType": "org.apache.sling.mini.demo.coffee",
+    "phonetical": "/əmɛriˈkɑːnəʊ",
+    "title": "Americano",
+    "description": "an espresso diluted with hot water",
+    "price": "1.80",
+    "defaultImageSize": "1x",
+    "images": [
+        "/content/demo/menu/americano/americano@1x.jpg 1x",
+        "/content/demo/menu/americano/americano@2x.jpg 2x"
+    ]
+}

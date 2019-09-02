@@ -1,0 +1,61 @@
+{
+  "bundles":[
+    "org.apache.sling:org.apache.sling.commons.log:5.1.10",
+    "org.apache.sling:org.apache.sling.commons.logservice:1.0.6",
+    "org.slf4j/jcl-over-slf4j/1.7.25",
+    "org.slf4j/log4j-over-slf4j/1.7.25",
+    "org.slf4j/slf4j-api/1.7.25",
+    "org.apache.felix:org.apache.felix.configadmin:1.9.16",
+    "org.osgi:org.osgi.util.function:1.1.0",
+    "org.osgi:org.osgi.util.promise:1.1.1",
+    "org.apache.felix:org.apache.felix.scr:2.1.16",
+    "org.apache.felix:org.apache.felix.eventadmin:1.5.0",
+    "org.apache.felix:org.apache.felix.metatype:1.2.2",
+    "org.apache.felix:org.apache.felix.inventory:1.0.6",
+    "org.apache.felix:org.apache.felix.http.jetty:jar:4.0.10",
+    "org.apache.felix:org.apache.felix.http.servlet-api:1.1.2",
+    "org.apache.felix:org.apache.felix.configadmin.plugin.interpolation:0.0.2",
+    "org.apache.httpcomponents:httpcore-osgi:4.4.11",
+    "org.apache.httpcomponents:httpclient-osgi:4.5.7",
+    "commons-codec:commons-codec:1.12",
+    "commons-collections:commons-collections:3.2.2",
+    "commons-lang:commons-lang:2.6",
+    "org.apache.commons:commons-collections4:4.3",
+    "org.apache.commons:commons-lang3:3.9",
+    "org.apache.sling:org.apache.sling.api:2.20.0",
+    "org.apache.sling:org.apache.sling.auth.core:1.4.4",
+    "org.apache.sling:org.apache.sling.commons.johnzon:1.1.2",
+    "org.apache.sling:org.apache.sling.commons.mime:2.2.0",
+    "org.apache.sling:org.apache.sling.commons.osgi:2.4.0",
+    "org.apache.sling:org.apache.sling.serviceusermapper:1.4.4",
+    "org.apache.sling:org.apache.sling.servlets.post:2.3.32",
+    "org.apache.sling:org.apache.sling.settings:1.3.10",
+    "org.apache.sling:org.apache.sling.xss:2.1.8",
+    "org.apache.sling:org.apache.sling.scripting.api:2.2.0",
+    "org.apache.sling:org.apache.sling.scripting.core:2.0.58",
+    "org.apache.sling:org.apache.sling.commons.threads:3.2.18",
+    "org.apache.sling:org.apache.sling.engine:2.6.20",
+    "org.apache.sling:org.apache.sling.resourceresolver:1.6.12",
+    "org.apache.sling:org.apache.sling.servlets.get:2.1.40",
+    "org.apache.sling:org.apache.sling.servlets.resolver:2.5.6",
+    "commons-io:commons-io:2.6",
+    "commons-fileupload:commons-fileupload:1.4",
+    "org.apache.tika:tika-core:1.20",
+    "org.apache.tika:tika-parsers:1.20",
+
+    "org.apache.sling/org.apache.sling.i18n/2.5.14",
+    "org.apache.sling:org.apache.sling.commons.scheduler:2.7.4",
+    "io.dropwizard.metrics:metrics-core:3.2.6"
+  ],
+  "configurations":{
+    "org.apache.sling.jcr.resource.internal.JcrResourceResolverFactoryImpl":{
+      "resource.resolver.required.providernames":""
+    }
+  },
+  "framework-properties":{
+    "felix.cm.pm":"featurelauncher",
+    "org.osgi.framework.bootdelegation": "sun.*,com.sun.*",
+    "org.osgi.framework.bundle.parent":"framework",
+    "org.apache.felix.configadmin.plugin.interpolation.dir": "/run/secrets/"
+  }
+}

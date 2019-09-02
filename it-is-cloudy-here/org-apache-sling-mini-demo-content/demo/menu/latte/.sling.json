@@ -1,0 +1,12 @@
+{
+    "sling:resourceType": "org.apache.sling.mini.demo.coffee",
+    "phonetical": "/ˈlateɪ,ˈlɑːteɪ/",
+    "title": "Latte",
+    "description": "a type of specialty coffee made with espresso and hot steamed milk, milkier than a cappuccino",
+    "price": "2.40",
+    "defaultImageSize": "1x",
+    "images": [
+        "/content/demo/menu/latte/latte@1x.jpg 1x",
+        "/content/demo/menu/latte/latte@2x.jpg 2x"
+    ]
+}

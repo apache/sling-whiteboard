@@ -1,0 +1,12 @@
+{
+    "id": "${project.groupId}:${project.artifactId}:slingosgifeature:base:${project.version}",
+    "bundles": [
+        "org.apache.sling/org.apache.sling.scripting.bundle.tracker/0.1.0",
+        "org.apache.sling:org.apache.sling.scripting.sightly.runtime:1.1.0-1.4.0",
+        "org.apache.sling:org.apache.sling.scripting.sightly:1.2.0-1.4.0",
+        {
+            "id"         : "${project.groupId}:${project.artifactId}:${project.version}",
+            "start-level": "15"
+        }
+    ]
+}
