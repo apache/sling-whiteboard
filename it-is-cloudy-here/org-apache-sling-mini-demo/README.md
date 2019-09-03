@@ -17,7 +17,8 @@ to set up a Dropbox application.
 Copy the generated access token into the `dropbox.accesstoken` file.
 
 Copy the content from [`org-apache-sling-mini-demo-content`](../org-apache-sling-mini-demo-content) into the Dropbox
-application folder you created above.
+application folder you created above. Make sure the `.sling.json` files are present in your Dropbox folder when copying
+the content.
 
 Run `docker-compose up` from this folder and go to
 [http://localhost/content/demo/menu.html](http://localhost/content/demo/menu.html).
