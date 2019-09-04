@@ -42,6 +42,8 @@
           <module>mdresourceprovider</module>
           <module>maven-central-source-reporter</module>
           <module>SlingModelPersist</module>
+          <module>starter-system-info</module>
+          <module>metrics-prometheus</module>
     </modules>
 </project>
 
