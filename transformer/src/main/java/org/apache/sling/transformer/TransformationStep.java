@@ -39,10 +39,10 @@ public interface TransformationStep {
      * @param element
      * @param context
      */
-    public void handle(HtmlElement element, TransformationContext context);
+    public void step(HtmlElement element, TransformationContext context);
 
     /**
-     * Called after all transformations have occurred but before a flush has been
+     * Called after all steps have occurred but before a flush has been
      * triggered
      * 
      * @param context

@@ -73,6 +73,12 @@ public class TransformationManagerImpl implements TransformationManager {
                     return false;
                 }
                 break;
+            case TransformationConstants.EXTENSIONS:
+                String extension = (String) properties.get(key);
+                if (!request.getRequestURI().endsWith(extension)) {
+                    return false;
+                }
+                break;
             default:
             }
 

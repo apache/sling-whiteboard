@@ -40,7 +40,7 @@ public class TransformationStepWrapper implements Function<HtmlElement, Stream<H
 
     @Override
     public Stream<HtmlElement> apply(HtmlElement element) {
-        tStep.handle(element, transformationContext);
+        tStep.step(element, transformationContext);
         return transformationContext.getElements();
     }
     

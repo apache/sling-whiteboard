@@ -56,7 +56,7 @@ public interface TransformationContext {
      * 
      * @param elements
      */
-    void doNext(HtmlElement... elements);
+    void doNextStep(HtmlElement... elements);
 
     /**
      * Html Elements that were identified as being processed in the next step

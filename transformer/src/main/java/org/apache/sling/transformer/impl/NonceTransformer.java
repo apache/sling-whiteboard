@@ -35,10 +35,10 @@ public class NonceTransformer implements TransformationStep {
     public void before(TransformationContext context) {
         String nonce = UUID.randomUUID().toString().replace("-", "");
         context.getState().put(NONCE, nonce);
-        context.getResponse().setHeader("X-nonce", nonce);
+        context.getResponse().setHeader("Content-Security-Policy","object-src 'none'; script-src 'nonce-"+nonce+"' 'strict-dynamic' 'unsafe-eval'");
     }
 
-    public void handle(HtmlElement element, TransformationContext context) {
+    public void step(HtmlElement element, TransformationContext context) {
 
         Map<String, Object> state = context.getState();
         String nonce = (String)state.get(NONCE);
@@ -49,7 +49,7 @@ public class NonceTransformer implements TransformationStep {
             }
         }
         
-        context.doNext(element);
+        context.doNextStep(element);
     }
 
 }

@@ -59,7 +59,7 @@ public class TransformationContextImpl implements TransformationContext {
      * the accept method of the consumer so that they may be passed on to the next
      * process.
      */
-    public void doNext(HtmlElement... elements) {
+    public void doNextStep(HtmlElement... elements) {
         if (reset) {
             list.clear();
             reset = false;
@@ -67,7 +67,7 @@ public class TransformationContextImpl implements TransformationContext {
         Collections.addAll(list, elements);
     }
 
-    public void next(String html) {
+    public void doNextStep(String html) {
         if (reset) {
             list.clear();
             reset = false;
