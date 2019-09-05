@@ -30,6 +30,7 @@ import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.service.component.annotations.ReferencePolicyOption;
 import org.osgi.service.http.whiteboard.propertytypes.HttpWhiteboardContextSelect;
 import org.osgi.service.http.whiteboard.propertytypes.HttpWhiteboardServletPattern;
+import org.osgi.service.metatype.annotations.Designate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,6 +50,7 @@ import io.prometheus.client.exporter.MetricsServlet;
 @HttpWhiteboardServletPattern("/metrics")
 @HttpWhiteboardContextSelect("(osgi.http.whiteboard.context.name=org.osgi.service.http)")
 @Component(service = Servlet.class)
+@Designate(ocd = WrapperMetricsServletConfiguration.class)
 public class WrapperMetricsServlet extends MetricsServlet {
 
     private static final long serialVersionUID = 1L;
@@ -66,7 +68,7 @@ public class WrapperMetricsServlet extends MetricsServlet {
         this.exports = new DropwizardExports(metrics);
         CollectorRegistry.defaultRegistry.register(this.exports);
     }
-    
+
     @Override
     public void destroy() {
         CollectorRegistry.defaultRegistry.unregister(this.exports);
