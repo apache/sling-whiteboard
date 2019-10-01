@@ -22,6 +22,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.StreamSupport;
 import javax.jcr.RepositoryException;
 import org.apache.sling.api.resource.PersistenceException;
@@ -37,6 +39,7 @@ import org.apache.sling.models.persist.bean.ComplexBean;
 import org.apache.sling.models.persist.bean.MappedChildren;
 import org.apache.sling.models.persistor.ModelPersistor;
 import org.apache.sling.models.persistor.impl.ModelPersistorImpl;
+import org.apache.sling.models.persistor.impl.util.ReflectionUtils;
 import org.apache.sling.testing.mock.sling.junit.SlingContext;
 import org.junit.Before;
 import org.junit.Rule;
@@ -129,12 +132,43 @@ public class ModelPersistTest {
         assertEquals("Expected property not found", bean.prop1, res.getValueMap().get("prop1", "missing"));
     }
 
+    public List<String> listOfStrings;
+    public List<Integer> listOfInts;
+    public List<ComplexBean> listOfBeans;
+    public Map<String, String> mapOfStrings;
+    public Map<String, ComplexBean> mapOfBeans;
+
+    @Test
+    public void testReflectionUtilArrayHandling() throws NoSuchFieldException {
+        assertTrue("Should detect List<String> is a collection of primitives",
+                ReflectionUtils.isCollectionOfPrimitiveType(ModelPersistTest.class.getField("listOfStrings"))
+        );
+        assertTrue("Should detect List<Integer> is a collection of primitives",
+                ReflectionUtils.isCollectionOfPrimitiveType(ModelPersistTest.class.getField("listOfInts"))
+        );
+        assertFalse("Should detect List<ComplexBean> is NOT a collection of primitives",
+                ReflectionUtils.isCollectionOfPrimitiveType(ModelPersistTest.class.getField("listOfBeans"))
+        );
+        assertFalse("Should detect Map is NOT a collection of primitives",
+                ReflectionUtils.isCollectionOfPrimitiveType(ModelPersistTest.class.getField("mapOfStrings"))
+        );
+        assertFalse("Should detect Map is NOT a collection of primitives",
+                ReflectionUtils.isCollectionOfPrimitiveType(ModelPersistTest.class.getField("mapOfBeans"))
+        );
+
+        Integer[] ints = {1, 2, 3, 4};
+        assertArrayEquals("Arrays should be handled properly", ints, (Integer[]) ReflectionUtils.getStorableValue(ints));
+        assertTrue("Arrays should be passed as-is", ints == ReflectionUtils.getStorableValue(ints));
+        assertArrayEquals("Collections should be reduced intect to arrays", ints, (Object[]) ReflectionUtils.getStorableValue(Arrays.asList(ints)));
+    }
+
     @Test
     public void testComplexObjectGraph() throws RepositoryException, PersistenceException, IllegalArgumentException, IllegalAccessException {
         // First create a bean with a complex structure and various object types buried in it
         ComplexBean sourceBean = new ComplexBean();
         sourceBean.name = "Complex-bean-test";
         sourceBean.arrayOfStrings = new String[]{"Value 1", "Value 2", "Value 3"};
+        sourceBean.listOfStrings = Arrays.asList(sourceBean.arrayOfStrings);
         sourceBean.level2.name = "Complex-bean-level2";
         ComplexBean.Level3Bean l31 = new ComplexBean.Level3Bean();
         l31.value1 = "L3-1";
@@ -308,11 +342,11 @@ public class ModelPersistTest {
 
         // Confirm the children were saved in the expected places using the map key as the node name
         Resource r1 = rr.getResource("/test/path/stringKeys/one");
-        assertNotNull(r1);
+        assertNotNull("/test/path/stringKeys/one should not be null", r1);
         Resource r2 = rr.getResource("/test/path/stringKeys/two");
-        assertNotNull(r2);
+        assertNotNull("/test/path/stringKeys/two should not be null", r2);
         Resource r3 = rr.getResource("/test/path/stringKeys/three");
-        assertNotNull(r3);
+        assertNotNull("/test/path/stringKeys/three should not be null", r3);
     }
 
     @Test
