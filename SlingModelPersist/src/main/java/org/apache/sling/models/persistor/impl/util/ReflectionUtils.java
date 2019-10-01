@@ -201,6 +201,9 @@ public class ReflectionUtils {
             } catch (ClassCastException ex) {
                 return false;
             }
+        } else if (Collection.class.isAssignableFrom(clazz)) {
+            ParameterizedType p = (ParameterizedType) field.getGenericType();
+            clazz = (Class) p.getActualTypeArguments()[0];
         }
         if (UNSUPPORTED_CLASSES.contains(clazz)) {
             return false;
@@ -270,6 +273,32 @@ public class ReflectionUtils {
 
     public static boolean isPrimitiveFieldType(Class<?> fieldType) {
         return getSupportedPropertyTypes().contains(fieldType);
+    }
+
+    public static boolean isCollectionOfPrimitiveType(Field field) {
+        Type genericType = field.getGenericType();
+        if (Collection.class.isAssignableFrom(field.getType())
+                && genericType != null
+                && genericType instanceof ParameterizedType) {
+            ParameterizedType t = (ParameterizedType) genericType;
+            Class parameterClass = (Class) t.getActualTypeArguments()[0];
+            return isPrimitiveFieldType(parameterClass);
+        } else {
+            return false;
+        }
+    }
+
+    public static Object getStorableValue(Object o) {
+        if (o == null) {
+            return null;
+        }
+        if (o.getClass().isArray()) {
+            return (Object[]) o;
+        }
+        if (o instanceof Collection) {
+            return ((Collection) o).toArray(new Object[]{});
+        }
+        return o;
     }
 
     /**

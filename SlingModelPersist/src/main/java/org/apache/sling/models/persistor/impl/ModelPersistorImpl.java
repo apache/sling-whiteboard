@@ -131,7 +131,7 @@ public class ModelPersistorImpl implements ModelPersistor {
                 Resource r = resource;
                 fields.stream()
                         .filter(field -> ReflectionUtils.isNotTransient(field, isUpdate))
-                        .filter(ReflectionUtils::isSupportedType)
+                        .filter(field -> ReflectionUtils.isSupportedType(field) || ReflectionUtils.isCollectionOfPrimitiveType(field))
                         .filter(f -> ReflectionUtils.hasNoTransientGetter(f.getName(), instance.getClass()))
                         .forEach(field -> persistField(r, instance, field, deepPersist));
             }
@@ -155,8 +155,9 @@ public class ModelPersistorImpl implements ModelPersistor {
             field.setAccessible(true);
 
             // handle the value as primitive first
-            if (ReflectionUtils.isPrimitiveFieldType(fieldType)) {
-                Object value = field.get(instance);
+            if (ReflectionUtils.isPrimitiveFieldType(fieldType) || ReflectionUtils.isCollectionOfPrimitiveType(field)) {
+
+                Object value = ReflectionUtils.getStorableValue(field.get(instance));
 
                 // remove the attribute that is null, or remove in case it changes type
                 values.remove(fieldName);
