@@ -19,6 +19,7 @@
 package org.apache.sling.models.persist.bean;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import javax.inject.Inject;
@@ -54,6 +55,10 @@ public class ComplexBean {
     public String[] arrayOfStrings = {"one", "two", "three", "four"};
 
     @Inject
+    @Named("list-of-strings")
+    public List<String> listOfStrings = Arrays.asList("one", "two", "three", "four");
+
+    @Inject
     public Date now = new Date();
 
     @Inject
@@ -62,7 +67,7 @@ public class ComplexBean {
     @Inject
     public Level2Bean level2 = new Level2Bean();
 
-    @Model(adaptables = Resource.class)
+    @Model(adaptables = Resource.class, defaultInjectionStrategy = DefaultInjectionStrategy.OPTIONAL)
     public static class Level2Bean {
         @Inject
         public String name = "level2";
