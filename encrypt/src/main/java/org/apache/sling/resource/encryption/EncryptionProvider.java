@@ -25,56 +25,56 @@ package org.apache.sling.resource.encryption;
  */
 public interface EncryptionProvider {
 
-	/**
-	 * Encrypts a byte array
-	 * 
-	 * @param toEncode
-	 * @param aad
-	 *            optional additional authentication data
-	 * @return encrypted byte array
-	 * @throws EncryptionException
-	 */
-	byte[] encrypt(byte[] toEncode, byte[] aad) throws EncryptionException;
+    /**
+     * Encrypts a byte array
+     * 
+     * @param toEncode
+     * @param aad
+     *            optional additional authentication data
+     * @return encrypted byte array
+     * @throws EncryptionException
+     */
+    byte[] encrypt(byte[] toEncode, byte[] aad) throws EncryptionException;
 
-	/**
-	 * Decrypts a previously encrypted byte array
-	 * 
-	 * @param toDecode
-	 * @param aad
-	 *            optional additional authentication data
-	 * @return
-	 * @throws EncryptionException
-	 */
-	byte[] decrypt(byte[] toDecode, byte[] aad) throws EncryptionException;
+    /**
+     * Decrypts a previously encrypted byte array
+     * 
+     * @param toDecode
+     * @param aad
+     *            optional additional authentication data
+     * @return
+     * @throws EncryptionException
+     */
+    byte[] decrypt(byte[] toDecode, byte[] aad) throws EncryptionException;
 
-	/**
-	 * Encrypts a String and returns a String representation of that encoding
-	 * 
-	 * @param toEncode
-	 * @param aad
-	 *            optional additional authentication data
-	 * @return
-	 * @throws EncryptionException
-	 */
-	String encrypt(String toEncode, String aad) throws EncryptionException;
+    /**
+     * Encrypts a String and returns a String representation of that encoding
+     * 
+     * @param toEncode
+     * @param aad
+     *            optional additional authentication data
+     * @return
+     * @throws EncryptionException
+     */
+    String encrypt(String toEncode, String aad) throws EncryptionException;
 
-	/**
-	 * Takes a previously encrypted String and returns the original value
-	 * 
-	 * @param toDecode
-	 * @param aad
-	 *            optional additional authentication data
-	 * @return
-	 * @throws EncryptionException
-	 */
-	String decrypt(String toDecode, String aad) throws EncryptionException;
+    /**
+     * Takes a previously encrypted String and returns the original value
+     * 
+     * @param toDecode
+     * @param aad
+     *            optional additional authentication data
+     * @return
+     * @throws EncryptionException
+     */
+    String decrypt(String toDecode, String aad) throws EncryptionException;
 
-	/**
-	 * Validate whether the String appears to be encrypted
-	 * 
-	 * @param property
-	 * @return
-	 */
-	boolean isEncrypted(String property);
+    /**
+     * Validate whether the String appears to be encrypted
+     * 
+     * @param property
+     * @return
+     */
+    boolean isEncrypted(String property);
 
 }

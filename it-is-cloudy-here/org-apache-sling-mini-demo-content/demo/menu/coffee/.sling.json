@@ -1,0 +1,14 @@
+{
+    "sling:resourceType": "org.apache.sling.mini.demo.coffee",
+    "phonetical": "/ˈkɒfi/",
+    "title": "Coffee",
+    "description": "a cold drink made from the roasted and ground bean-like seeds of a tropical shrub",
+    "price": "1.60",
+    "defaultImageSize": "1x",
+    "images": [
+        "/content/demo/menu/coffee/coffee@1x.jpg 1x",
+        "/content/demo/menu/coffee/coffee@2x.jpg 2x"
+    ]
+}
+
+

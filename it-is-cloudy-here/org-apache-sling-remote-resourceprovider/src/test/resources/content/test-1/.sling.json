@@ -1,0 +1,16 @@
+{
+    "hey": {
+        "sling:resourceType": "sling/servlet/default",
+        "joe": {
+            "sling:resourceType": "sling/servlet/default",
+            "lastModifiedDate": "Thu Aug 07 2014 16:33:00 GMT+0200"
+        }
+    },
+    "little": {
+        "sling:resourceType": "sling/servlet/default",
+        "wing": {
+            "sling:resourceType": "sling/servlet/default",
+            "lastModifiedDate": "Thu Aug 07 2014 16:33:00 GMT+0200"
+        }
+    }
+}

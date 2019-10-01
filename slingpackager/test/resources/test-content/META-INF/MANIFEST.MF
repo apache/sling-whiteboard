@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Content-Package-Roots: /content/vuecontentbrowser
+Content-Package-Id: vuecontentbrowser:vuecontentbrowser:0.1.0
+

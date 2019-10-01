@@ -25,23 +25,23 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferencePolicyOption;
 
 @Component(service = { AdapterFactory.class }, property = {
-		Constants.SERVICE_VENDOR + "=The Apache Software Foundation",
-		Constants.SERVICE_DESCRIPTION + "=Default SlingScriptResolver",
-		org.apache.sling.api.adapter.AdapterFactory.ADAPTABLE_CLASSES + "=org.apache.sling.api.resource.Resource",
-		org.apache.sling.api.adapter.AdapterFactory.ADAPTER_CLASSES
-				+ "=org.apache.sling.resource.encryption.EncryptableValueMap" })
+        Constants.SERVICE_VENDOR + "=The Apache Software Foundation",
+        Constants.SERVICE_DESCRIPTION + "=Default SlingScriptResolver",
+        org.apache.sling.api.adapter.AdapterFactory.ADAPTABLE_CLASSES + "=org.apache.sling.api.resource.Resource",
+        org.apache.sling.api.adapter.AdapterFactory.ADAPTER_CLASSES
+                + "=org.apache.sling.resource.encryption.EncryptableValueMap" })
 public class EncryptableValueMapAdapterFactory implements AdapterFactory {
 
-	@Reference(policyOption = ReferencePolicyOption.GREEDY)
-	private EncryptionProvider encryptionProvider;
+    @Reference(policyOption = ReferencePolicyOption.GREEDY)
+    private EncryptionProvider encryptionProvider;
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public <AdapterType> AdapterType getAdapter(Object adaptable, Class<AdapterType> type) {
-		ValueMap map = ((Resource)adaptable).adaptTo(ModifiableValueMap.class);
-		if (map == null) {
-			map = ((Resource)adaptable).adaptTo(ValueMap.class);
-		}
-		return (AdapterType) new EncryptableValueMapDecorator(map, encryptionProvider);
-	}
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T getAdapter(Object adaptable, Class<T> type) {
+        ValueMap map = ((Resource) adaptable).adaptTo(ModifiableValueMap.class);
+        if (map == null) {
+            map = ((Resource) adaptable).adaptTo(ValueMap.class);
+        }
+        return (T) new EncryptableValueMapDecorator(map, encryptionProvider);
+    }
 }

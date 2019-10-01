@@ -1,0 +1,7 @@
+{
+  "bundles": [
+    "org.apache.geronimo.specs:geronimo-atinject_1.0_spec:1.1",
+    "org.apache.geronimo.specs:geronimo-annotation_1.3_spec:1.1",
+    "org.apache.geronimo.specs:geronimo-activation_1.1_spec:1.1"
+  ]
+}

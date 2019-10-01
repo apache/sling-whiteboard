@@ -21,6 +21,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.AbstractMap;
@@ -206,7 +207,16 @@ public class FrameworkUtil
 	 * @since 1.5
 	 */
 	public static Bundle getBundle(final Class<?> classFromBundle) {
-		return BUNDLE == null ? null : BUNDLE.getBundleContext().getBundle("jar:" + classFromBundle.getProtectionDomain().getCodeSource().getLocation().toExternalForm() + "!/");
+		return BUNDLE == null ? null : BUNDLE.getBundleContext().getBundle(getURL(classFromBundle.getProtectionDomain().getCodeSource().getLocation()));
+	}
+
+	private static String getURL(URL url) {
+		if (url.getProtocol().equals("jar")) {
+			return url.toExternalForm();
+		}
+		else {
+			return "jar:" + url.toExternalForm() + "!/";
+		}
 	}
 
 	/**
