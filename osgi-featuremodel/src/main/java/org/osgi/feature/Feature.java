@@ -16,6 +16,58 @@
  */
 package org.osgi.feature;
 
-public class Feature {
+import org.osgi.framework.Version;
 
+public class Feature {
+    private final String groupId;
+    private final String artifactId;
+    private final Version version;
+    private final String description;
+
+    private Feature(String gid, String aid, Version ver, String desc) {
+        groupId = gid;
+        artifactId = aid;
+        version = ver;
+        description = desc;
+    }
+
+    public String getGroupId() {
+        return groupId;
+    }
+
+    public String getArtifactId() {
+        return artifactId;
+    }
+
+    public Version getVersion() {
+        return version;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public class Builder {
+        private final String groupId;
+        private final String artifactId;
+        private final Version version;
+
+        private String description;
+
+        public Builder(String groupId, String artifactId, Version version) {
+            this.groupId = groupId;
+            this.artifactId = artifactId;
+            this.version = version;
+        }
+
+        public Builder setDescription(String description) {
+            this.description = description;
+            return this;
+        }
+
+        public Feature build() {
+            return new Feature(groupId, artifactId, version,
+                    description);
+        }
+    }
 }

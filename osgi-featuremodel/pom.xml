@@ -73,47 +73,12 @@
         </plugins>
     </build>
     <dependencies>
-        <!--
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.annotation.versioning</artifactId>
-            <scope>provided</scope>
-        </dependency>
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>osgi.core</artifactId>
+            <version>7.0.0</version>
             <scope>provided</scope>
         </dependency>     
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.service.component.annotations</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.apache.felix.inventory</artifactId>
-            <version>1.0.6</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.sling</groupId>
-            <artifactId>org.apache.sling.feature</artifactId>
-            <version>0.1.3-SNAPSHOT</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.sling</groupId>
-            <artifactId>org.apache.sling.feature.io</artifactId>
-            <version>0.1.3-SNAPSHOT</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.sling</groupId>
-            <artifactId>org.apache.sling.feature.launcher</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
-            <scope>provided</scope>
-            </dependency>
-        -->
 
         <!-- Testing -->
         <dependency>
