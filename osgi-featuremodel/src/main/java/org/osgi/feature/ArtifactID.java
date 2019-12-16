@@ -16,6 +16,8 @@
  */
 package org.osgi.feature;
 
+import java.util.Objects;
+
 public class ArtifactID {
     private final String groupId;
     private final String artifactId;
@@ -64,5 +66,22 @@ public class ArtifactID {
 
     public String getClassifier() {
         return classifier;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(artifactId, classifier, groupId, type, version);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!(obj instanceof ArtifactID))
+            return false;
+        ArtifactID other = (ArtifactID) obj;
+        return Objects.equals(artifactId, other.artifactId) && Objects.equals(classifier, other.classifier)
+                && Objects.equals(groupId, other.groupId) && Objects.equals(type, other.type)
+                && Objects.equals(version, other.version);
     }
 }

@@ -101,7 +101,7 @@ public class Feature extends ArtifactID {
     }
 
     // Not Thread Safe
-    public class Builder {
+    public static class Builder {
         private static final String DEFAULT_FEATURE_TYPE = "osgifeature";
 
         private final String groupId;
@@ -121,6 +121,12 @@ public class Feature extends ArtifactID {
         private final List<Bundle> bundles = new ArrayList<>();
         private final List<Configuration> configurations = new ArrayList<>();
         private final Map<String,String> variables = new HashMap<>();
+
+        public Builder(ArtifactID id) {
+            this(id.getGroupId(), id.getArtifactId(), id.getVersion());
+            setType(id.getType());
+            setClassifier(id.getClassifier());
+        }
 
         public Builder(String groupId, String artifactId, String version) {
             this.groupId = groupId;

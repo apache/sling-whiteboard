@@ -17,6 +17,7 @@
 package org.apache.sling.feature.osgi;
 
 import org.junit.Test;
+import org.osgi.feature.Bundle;
 import org.osgi.feature.Feature;
 import org.osgi.feature.FeatureService;
 import org.osgi.feature.impl.FeatureServiceImpl;
@@ -25,8 +26,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class FeatureServiceImplTest {
     @Test
@@ -37,7 +41,23 @@ public class FeatureServiceImplTest {
         try (Reader r = new InputStreamReader(res.openStream())) {
             Feature f = fs.readFeature(r);
 
+            assertNull(f.getTitle());
             assertEquals("The feature description", f.getDescription());
+
+            List<Bundle> bundles = f.getBundles();
+            assertEquals(3, bundles.size());
+
+            Bundle bundle = new Bundle.Builder("org.osgi", "osgi.promise", "7.0.1")
+                    .addMetadata("hash", "4632463464363646436")
+                    .addMetadata("start-order", 1L)
+                    .build();
+
+            Bundle ba = bundles.get(0);
+            ba.equals(bundle);
+
+            assertTrue(bundles.contains(bundle));
+            assertTrue(bundles.contains(new Bundle.Builder("org.slf4j", "slf4j-api", "1.7.29").build()));
+            assertTrue(bundles.contains(new Bundle.Builder("org.slf4j", "slf4j-simple", "1.7.29").build()));
         }
     }
 }

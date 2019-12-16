@@ -44,7 +44,7 @@ public class Configuration {
         return values;
     }
 
-    public class Builder {
+    public static class Builder {
         private final String p;
         private final String name;
 

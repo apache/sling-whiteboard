@@ -74,7 +74,7 @@ public class Extension {
         return res;
     }
 
-    public class Builder {
+    public static class Builder {
         private final String name;
         private final Type type;
 
