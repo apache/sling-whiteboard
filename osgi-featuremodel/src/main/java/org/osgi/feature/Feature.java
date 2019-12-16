@@ -39,10 +39,11 @@ public class Feature {
     private final boolean isFinal;
 
     private final List<Bundle> bundles;
+    private final List<Configuration> configurations;
     private final Map<String, String> variables;
 
     private Feature(String gid, String aid, Version ver, String aTitle, String desc, String vnd, String lic, String loc,
-            boolean comp, boolean fin, List<Bundle> bs, Map<String,String> vars) {
+            boolean comp, boolean fin, List<Bundle> bs, List<Configuration> cs, Map<String,String> vars) {
         groupId = gid;
         artifactId = aid;
         version = ver;
@@ -55,13 +56,12 @@ public class Feature {
         isFinal = fin;
 
         bundles = Collections.unmodifiableList(bs);
+        configurations = Collections.unmodifiableList(cs);
         variables = Collections.unmodifiableMap(vars);
 
         // add prototype
         // add requirements
         // add capabilities
-        // add bundles
-        // add configurations
         // add framework properties
     }
 
@@ -109,6 +109,10 @@ public class Feature {
         return bundles;
     }
 
+    public List<Configuration> getConfigurations() {
+        return configurations;
+    }
+
     public Map<String, String> getVariables() {
         return variables;
     }
@@ -128,6 +132,7 @@ public class Feature {
         private boolean isFinal;
 
         private final List<Bundle> bundles = new ArrayList<>();
+        private final List<Configuration> configurations = new ArrayList<>();
         private final Map<String,String> variables = new HashMap<>();
 
         public Builder(String groupId, String artifactId, Version version) {
@@ -176,6 +181,16 @@ public class Feature {
             return this;
         }
 
+        public Builder addConfigurations(Configuration ... configs) {
+            this.configurations.addAll(Arrays.asList(configs));
+            return this;
+        }
+
+        public Builder addVariable(String key, String value) {
+            this.variables.put(key, value);
+            return this;
+        }
+
         public Builder addVariables(Map<String, String> variables) {
             this.variables.putAll(variables);
             return this;
@@ -184,7 +199,7 @@ public class Feature {
         public Feature build() {
             return new Feature(groupId, artifactId, version, title,
                     description, vendor, license, location, complete, isFinal,
-                    bundles, variables);
+                    bundles, configurations, variables);
         }
     }
 }

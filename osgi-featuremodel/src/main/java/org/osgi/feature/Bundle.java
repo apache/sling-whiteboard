@@ -65,6 +65,11 @@ public class Bundle {
             this.version = version;
         }
 
+        public Builder addMetadata(String key, String value) {
+            this.metadata.put(key, value);
+            return this;
+        }
+
         public Builder addMetadata(Map<String,String> md) {
             this.metadata.putAll(md);
             return this;
