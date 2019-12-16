@@ -14,18 +14,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.sling.feature.osgi;
+package org.osgi.feature.impl;
 
 import org.junit.Test;
+import org.osgi.feature.ArtifactID;
 import org.osgi.feature.Bundle;
 import org.osgi.feature.Feature;
 import org.osgi.feature.FeatureService;
+import org.osgi.feature.MergeContext;
+import org.osgi.feature.builder.MergeContextBuilder;
 import org.osgi.feature.impl.FeatureServiceImpl;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -59,5 +63,35 @@ public class FeatureServiceImplTest {
             assertTrue(bundles.contains(new Bundle.Builder("org.slf4j", "slf4j-api", "1.7.29").build()));
             assertTrue(bundles.contains(new Bundle.Builder("org.slf4j", "slf4j-simple", "1.7.29").build()));
         }
+    }
+
+    @Test
+    public void testMergeFeatures() throws IOException {
+        FeatureService fs = new FeatureServiceImpl();
+
+        URL res1 = getClass().getResource("/features/test-feature.json");
+        Feature f1;
+        try (Reader r = new InputStreamReader(res1.openStream())) {
+            f1 = fs.readFeature(r);
+        }
+
+        URL res2 = getClass().getResource("/features/test-feature.json");
+        Feature f2;
+        try (Reader r = new InputStreamReader(res2.openStream())) {
+            f2 = fs.readFeature(r);
+        }
+
+        MergeContext ctx = new MergeContextBuilder()
+                .setBundleResolver((b1, b2) -> Arrays.asList(b1, b2))
+                .build();
+        ArtifactID tid = new ArtifactID("foo", "bar", "1.2.3");
+        Feature f3 = fs.mergeFeatures(tid, f1, f2, ctx);
+        assertEquals(tid, f3.getID());
+
+        List<Bundle> bundles = f3.getBundles();
+        assertEquals(4, bundles.size());
+
+        assertTrue(bundles.contains(new Bundle.Builder("org.slf4j", "slf4j-api", "1.7.29").build()));
+        assertTrue(bundles.contains(new Bundle.Builder("org.slf4j", "slf4j-api", "1.7.30").build()));
     }
 }

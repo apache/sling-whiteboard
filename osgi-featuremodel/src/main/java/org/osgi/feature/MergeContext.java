@@ -16,27 +16,10 @@
  */
 package org.osgi.feature;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
+import java.util.List;
 
-public interface FeatureService {
-    /**
-     * Read a Feature from JSON
-     * @param jsonReader A Reader to the JSON input
-     * @return The Feature represented by the JSON
-     * @throws IOException When reading fails
-     */
-    Feature readFeature(Reader jsonReader) throws IOException;
+public interface MergeContext {
+    List<Bundle> resolveBundles(Bundle b1, Bundle b2);
 
-    /**
-     * Write a Feature Model to JSON
-     * @param feature the Feature to write.
-     * @param jsonWriter A Writer to which the Feature should be written.
-     * @throws IOException When writing fails.
-     */
-    void writeFeature(Feature feature, Writer jsonWriter) throws IOException;
-
-
-    Feature mergeFeatures(ArtifactID targetID, Feature f1, Feature f2, MergeContext ctx);
+    Configuration resolveConfigurations(Configuration c1, Configuration c2);
 }

@@ -54,6 +54,11 @@ public class Bundle extends Artifact {
         return Objects.equals(metadata, other.metadata);
     }
 
+    @Override
+    public String toString() {
+        return "Bundle [metadata=" + metadata + ", getID()=" + getID() + "]";
+    }
+
     public static class Builder {
         private final ArtifactID id;
 
@@ -64,7 +69,7 @@ public class Bundle extends Artifact {
         }
 
         public Builder(String groupId, String artifactId, String version) {
-            this(new ArtifactID(groupId, artifactId, version, null, null));
+            this(new ArtifactID(groupId, artifactId, version));
         }
 
         public Builder addMetadata(String key, Object value) {

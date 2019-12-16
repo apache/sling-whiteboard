@@ -40,6 +40,10 @@ public class ArtifactID {
         return new ArtifactID(gid, aid, ver, t, c);
     }
 
+    public ArtifactID(String groupId, String artifactId, String version) {
+        this(groupId, artifactId, version, null, null);
+    }
+
     public ArtifactID(String groupId, String artifactId, String version, String type, String classifier) {
         this.groupId = groupId;
         this.artifactId = artifactId;
@@ -83,5 +87,11 @@ public class ArtifactID {
         return Objects.equals(artifactId, other.artifactId) && Objects.equals(classifier, other.classifier)
                 && Objects.equals(groupId, other.groupId) && Objects.equals(type, other.type)
                 && Objects.equals(version, other.version);
+    }
+
+    @Override
+    public String toString() {
+        return "ArtifactID [groupId=" + groupId + ", artifactId=" + artifactId + ", version=" + version + ", type=" + type
+                + ", classifier=" + classifier + "]";
     }
 }

@@ -21,11 +21,13 @@ import org.osgi.feature.Bundle;
 import org.osgi.feature.Feature;
 import org.osgi.feature.Feature.Builder;
 import org.osgi.feature.FeatureService;
+import org.osgi.feature.MergeContext;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -102,9 +104,52 @@ public class FeatureServiceImpl implements FeatureService {
     }
 
     @Override
-    public Feature mergeFeatures(Feature f1, Feature f2) {
-        // TODO Auto-generated method stub
-        return null;
+    public Feature mergeFeatures(ArtifactID targetID, Feature f1, Feature f2, MergeContext ctx) {
+
+        Builder fb = new Feature.Builder(targetID);
+
+        copyAttrs(f1, fb);
+        copyAttrs(f2, fb);
+
+        List<Bundle> bundles = resolveBundles(f1, f2, ctx);
+        fb.addBundles(bundles.toArray(new Bundle[0]));
+
+        return fb.build();
     }
+
+    private List<Bundle> resolveBundles(Feature f1, Feature f2, MergeContext ctx) {
+        List<Bundle> bundles = new ArrayList<>(f1.getBundles());
+        List<Bundle> addedBundles = new ArrayList<>();
+
+        for (Bundle b : f2.getBundles()) {
+            ArtifactID bID = b.getID();
+            for (Iterator<Bundle> it = bundles.iterator(); it.hasNext(); ) {
+                Bundle orgb = it.next();
+                ArtifactID orgID = orgb.getID();
+
+                if (bID.getGroupId().equals(orgID.getGroupId()) &&
+                        bID.getArtifactId().equals(orgID.getArtifactId())) {
+                    List<Bundle> res = new ArrayList<>(ctx.resolveBundles(b, orgb));
+                    if (res.contains(orgb)) {
+                        res.remove(orgb);
+                    } else {
+                        it.remove();
+                    }
+                    addedBundles.addAll(res);
+                }
+            }
+        }
+        return bundles;
+    }
+
+    private void copyAttrs(Feature f, Builder fb) {
+        fb.setTitle(f.getTitle());
+        fb.setDescription(f.getDescription());
+        fb.setVendor(f.getVendor());
+        fb.setLicense(f.getLicense());
+        fb.setLocation(f.getLocation());
+
+    }
+
 
 }

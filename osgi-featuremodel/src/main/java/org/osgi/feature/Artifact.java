@@ -25,7 +25,7 @@ public class Artifact {
         this.id = id;
     }
 
-    public ArtifactID getId() {
+    public ArtifactID getID() {
         return id;
     }
 

@@ -1,0 +1,15 @@
+{
+    "id" : "org.apache.sling:test-feature2:1.1",
+    "description": "The feature description",
+
+    "bundles" :[
+            {
+              "id" : "org.slf4j:slf4j-api:1.7.30"
+            }
+    ],
+    "configurations" : {
+        "my.pid" : {
+           "bar" : "toast"
+        }
+    }
+}
