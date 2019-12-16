@@ -16,8 +16,6 @@
  */
 package org.osgi.feature;
 
-import org.osgi.framework.Version;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,10 +24,8 @@ import java.util.List;
 import java.util.Map;
 
 // Thread Safe
-public class Feature {
-    private final String groupId;
-    private final String artifactId;
-    private final Version version;
+// Or do we use an interface?
+public class Feature extends ArtifactID {
     private final String title;
     private final String description;
     private final String vendor;
@@ -42,11 +38,10 @@ public class Feature {
     private final List<Configuration> configurations;
     private final Map<String, String> variables;
 
-    private Feature(String gid, String aid, Version ver, String aTitle, String desc, String vnd, String lic, String loc,
+    private Feature(String gid, String aid, String ver, String type, String classifier, String aTitle, String desc, String vnd, String lic, String loc,
             boolean comp, boolean fin, List<Bundle> bs, List<Configuration> cs, Map<String,String> vars) {
-        groupId = gid;
-        artifactId = aid;
-        version = ver;
+        super(gid, aid, ver, type, classifier);
+
         title = aTitle;
         description = desc;
         vendor = vnd;
@@ -63,18 +58,6 @@ public class Feature {
         // add requirements
         // add capabilities
         // add framework properties
-    }
-
-    public String getGroupId() {
-        return groupId;
-    }
-
-    public String getArtifactId() {
-        return artifactId;
-    }
-
-    public Version getVersion() {
-        return version;
     }
 
     public String getTitle() {
@@ -119,10 +102,14 @@ public class Feature {
 
     // Not Thread Safe
     public class Builder {
+        private static final String DEFAULT_FEATURE_TYPE = "osgifeature";
+
         private final String groupId;
         private final String artifactId;
-        private final Version version;
+        private final String version;
 
+        private String type;
+        private String classifier;
         private String title;
         private String description;
         private String vendor;
@@ -135,10 +122,20 @@ public class Feature {
         private final List<Configuration> configurations = new ArrayList<>();
         private final Map<String,String> variables = new HashMap<>();
 
-        public Builder(String groupId, String artifactId, Version version) {
+        public Builder(String groupId, String artifactId, String version) {
             this.groupId = groupId;
             this.artifactId = artifactId;
             this.version = version;
+        }
+
+        public Builder setType(String type) {
+            this.type = type;
+            return this;
+        }
+
+        public Builder setClassifier(String cls) {
+            this.classifier = cls;
+            return this;
         }
 
         public Builder setTitle(String title) {
@@ -197,7 +194,11 @@ public class Feature {
         }
 
         public Feature build() {
-            return new Feature(groupId, artifactId, version, title,
+            if (classifier != null && type == null) {
+                type = DEFAULT_FEATURE_TYPE;
+            }
+
+            return new Feature(groupId, artifactId, version, type, classifier, title,
                     description, vendor, license, location, complete, isFinal,
                     bundles, configurations, variables);
         }

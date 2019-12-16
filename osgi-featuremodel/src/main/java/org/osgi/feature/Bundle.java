@@ -16,36 +16,17 @@
  */
 package org.osgi.feature;
 
-import org.osgi.framework.Version;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Bundle {
-    private final String groupId;
-    private final String artifactId;
-    private final Version version;
+public class Bundle extends ArtifactID {
     private final Map<String, String> metadata;
 
-    private Bundle(String groupId, String artifactId, Version version, Map<String,String> metadata) {
-        this.groupId = groupId;
-        this.artifactId = artifactId;
-        this.version = version;
+    private Bundle(String groupId, String artifactId, String version, Map<String,String> metadata) {
+        super(groupId, artifactId, version, null, null);
 
         this.metadata = Collections.unmodifiableMap(metadata);
-    }
-
-    public String getGroupId() {
-        return groupId;
-    }
-
-    public String getArtifactId() {
-        return artifactId;
-    }
-
-    public Version getVersion() {
-        return version;
     }
 
     public Map<String, String> getMetadata() {
@@ -55,11 +36,11 @@ public class Bundle {
     public class Builder {
         private final String groupId;
         private final String artifactId;
-        private final Version version;
+        private final String version;
 
         private final Map<String,String> metadata = new HashMap<>();
 
-        public Builder(String groupId, String artifactId, Version version) {
+        public Builder(String groupId, String artifactId, String version) {
             this.groupId = groupId;
             this.artifactId = artifactId;
             this.version = version;
