@@ -25,7 +25,7 @@ import java.util.Map;
 
 // Thread Safe
 // Or do we use an interface?
-public class Feature extends ArtifactID {
+public class Feature extends Artifact {
     private final String title;
     private final String description;
     private final String vendor;
@@ -38,9 +38,9 @@ public class Feature extends ArtifactID {
     private final List<Configuration> configurations;
     private final Map<String, String> variables;
 
-    private Feature(String gid, String aid, String ver, String type, String classifier, String aTitle, String desc, String vnd, String lic, String loc,
+    private Feature(ArtifactID id, String aTitle, String desc, String vnd, String lic, String loc,
             boolean comp, boolean fin, List<Bundle> bs, List<Configuration> cs, Map<String,String> vars) {
-        super(gid, aid, ver, type, classifier);
+        super(id);
 
         title = aTitle;
         description = desc;
@@ -102,14 +102,8 @@ public class Feature extends ArtifactID {
 
     // Not Thread Safe
     public static class Builder {
-        private static final String DEFAULT_FEATURE_TYPE = "osgifeature";
+        private final ArtifactID id;
 
-        private final String groupId;
-        private final String artifactId;
-        private final String version;
-
-        private String type;
-        private String classifier;
         private String title;
         private String description;
         private String vendor;
@@ -123,25 +117,11 @@ public class Feature extends ArtifactID {
         private final Map<String,String> variables = new HashMap<>();
 
         public Builder(ArtifactID id) {
-            this(id.getGroupId(), id.getArtifactId(), id.getVersion());
-            setType(id.getType());
-            setClassifier(id.getClassifier());
+            this.id = id;
         }
 
         public Builder(String groupId, String artifactId, String version) {
-            this.groupId = groupId;
-            this.artifactId = artifactId;
-            this.version = version;
-        }
-
-        public Builder setType(String type) {
-            this.type = type;
-            return this;
-        }
-
-        public Builder setClassifier(String cls) {
-            this.classifier = cls;
-            return this;
+            this(new ArtifactID(groupId, artifactId, version, null, null));
         }
 
         public Builder setTitle(String title) {
@@ -200,11 +180,7 @@ public class Feature extends ArtifactID {
         }
 
         public Feature build() {
-            if (classifier != null && type == null) {
-                type = DEFAULT_FEATURE_TYPE;
-            }
-
-            return new Feature(groupId, artifactId, version, type, classifier, title,
+            return new Feature(id, title,
                     description, vendor, license, location, complete, isFinal,
                     bundles, configurations, variables);
         }

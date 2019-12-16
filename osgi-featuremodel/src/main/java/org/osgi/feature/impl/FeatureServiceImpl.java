@@ -101,4 +101,10 @@ public class FeatureServiceImpl implements FeatureService {
 
     }
 
+    @Override
+    public Feature mergeFeatures(Feature f1, Feature f2) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }

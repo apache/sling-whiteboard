@@ -21,11 +21,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class Bundle extends ArtifactID {
+public class Bundle extends Artifact {
     private final Map<String, Object> metadata;
 
-    private Bundle(String groupId, String artifactId, String version, Map<String,Object> metadata) {
-        super(groupId, artifactId, version, null, null);
+    private Bundle(ArtifactID id, Map<String,Object> metadata) {
+        super(id);
 
         this.metadata = Collections.unmodifiableMap(metadata);
     }
@@ -55,20 +55,16 @@ public class Bundle extends ArtifactID {
     }
 
     public static class Builder {
-        private final String groupId;
-        private final String artifactId;
-        private final String version;
+        private final ArtifactID id;
 
         private final Map<String,Object> metadata = new HashMap<>();
 
-        public Builder(ArtifactID aid) {
-            this(aid.getGroupId(), aid.getArtifactId(), aid.getVersion());
+        public Builder(ArtifactID id) {
+            this.id = id;
         }
 
         public Builder(String groupId, String artifactId, String version) {
-            this.groupId = groupId;
-            this.artifactId = artifactId;
-            this.version = version;
+            this(new ArtifactID(groupId, artifactId, version, null, null));
         }
 
         public Builder addMetadata(String key, Object value) {
@@ -82,7 +78,7 @@ public class Bundle extends ArtifactID {
         }
 
         public Bundle build() {
-            return new Bundle(groupId, artifactId, version, metadata);
+            return new Bundle(id, metadata);
         }
     }
 }
