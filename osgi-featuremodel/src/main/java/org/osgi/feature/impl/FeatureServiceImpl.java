@@ -139,6 +139,7 @@ public class FeatureServiceImpl implements FeatureService {
                 }
             }
         }
+        bundles.addAll(addedBundles);
         return bundles;
     }
 

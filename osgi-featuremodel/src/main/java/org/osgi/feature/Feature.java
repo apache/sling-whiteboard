@@ -100,6 +100,13 @@ public class Feature extends Artifact {
         return variables;
     }
 
+    @Override
+    public String toString() {
+        return "Feature [title=" + title + ", description=" + description + ", vendor=" + vendor + ", license=" + license
+                + ", location=" + location + ", complete=" + complete + ", isFinal=" + isFinal + ", bundles=" + bundles
+                + ", configurations=" + configurations + ", variables=" + variables + ", getID()=" + getID() + "]";
+    }
+
     // Not Thread Safe
     public static class Builder {
         private final ArtifactID id;

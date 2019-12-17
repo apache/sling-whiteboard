@@ -23,7 +23,6 @@ import org.osgi.feature.Feature;
 import org.osgi.feature.FeatureService;
 import org.osgi.feature.MergeContext;
 import org.osgi.feature.builder.MergeContextBuilder;
-import org.osgi.feature.impl.FeatureServiceImpl;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -75,7 +74,7 @@ public class FeatureServiceImplTest {
             f1 = fs.readFeature(r);
         }
 
-        URL res2 = getClass().getResource("/features/test-feature.json");
+        URL res2 = getClass().getResource("/features/test-feature2.json");
         Feature f2;
         try (Reader r = new InputStreamReader(res2.openStream())) {
             f2 = fs.readFeature(r);
