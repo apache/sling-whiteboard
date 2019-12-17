@@ -16,31 +16,6 @@
  */
 package org.osgi.feature;
 
-import java.util.Objects;
-
-public class Artifact {
-    private final ArtifactID id;
-
-    protected Artifact(ArtifactID id) {
-        this.id = id;
-    }
-
-    public ArtifactID getID() {
-        return id;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (!(obj instanceof Artifact))
-            return false;
-        Artifact other = (Artifact) obj;
-        return Objects.equals(id, other.id);
-    }
+public interface Artifact {
+    ArtifactID getID();
 }

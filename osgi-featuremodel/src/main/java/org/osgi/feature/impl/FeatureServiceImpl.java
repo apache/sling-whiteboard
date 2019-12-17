@@ -19,9 +19,10 @@ package org.osgi.feature.impl;
 import org.osgi.feature.ArtifactID;
 import org.osgi.feature.Bundle;
 import org.osgi.feature.Feature;
-import org.osgi.feature.Feature.Builder;
 import org.osgi.feature.FeatureService;
 import org.osgi.feature.MergeContext;
+import org.osgi.feature.builder.BundleBuilder;
+import org.osgi.feature.builder.FeatureBuilder;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -45,7 +46,7 @@ public class FeatureServiceImpl implements FeatureService {
         JsonObject json = Json.createReader(jsonReader).readObject();
 
         String id = json.getString("id");
-        Builder builder = new Feature.Builder(ArtifactID.fromMavenID(id));
+        FeatureBuilder builder = new FeatureBuilder(ArtifactID.fromMavenID(id));
 
         builder.setTitle(json.getString("title", null));
         builder.setDescription(json.getString("description", null));
@@ -69,7 +70,7 @@ public class FeatureServiceImpl implements FeatureService {
             if (val.getValueType() == JsonValue.ValueType.OBJECT) {
                 JsonObject jo = val.asJsonObject();
                 String bid = jo.getString("id");
-                Bundle.Builder bbuilder = new Bundle.Builder(ArtifactID.fromMavenID(bid));
+                BundleBuilder bbuilder = new BundleBuilder(ArtifactID.fromMavenID(bid));
 
                 for (Map.Entry<String, JsonValue> entry : jo.entrySet()) {
                     if (entry.getKey().equals("id"))
@@ -106,7 +107,7 @@ public class FeatureServiceImpl implements FeatureService {
     @Override
     public Feature mergeFeatures(ArtifactID targetID, Feature f1, Feature f2, MergeContext ctx) {
 
-        Builder fb = new Feature.Builder(targetID);
+        FeatureBuilder fb = new FeatureBuilder(targetID);
 
         copyAttrs(f1, fb);
         copyAttrs(f2, fb);
@@ -143,7 +144,7 @@ public class FeatureServiceImpl implements FeatureService {
         return bundles;
     }
 
-    private void copyAttrs(Feature f, Builder fb) {
+    private void copyAttrs(Feature f, FeatureBuilder fb) {
         fb.setTitle(f.getTitle());
         fb.setDescription(f.getDescription());
         fb.setVendor(f.getVendor());

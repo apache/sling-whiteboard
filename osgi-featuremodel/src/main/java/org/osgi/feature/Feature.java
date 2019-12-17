@@ -16,180 +16,33 @@
  */
 package org.osgi.feature;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// Thread Safe
-// Or do we use an interface?
-public class Feature extends Artifact {
-    private final String title;
-    private final String description;
-    private final String vendor;
-    private final String license;
-    private final String location;
-    private final boolean complete;
-    private final boolean isFinal;
+public interface Feature extends Artifact {
+    String getTitle();
 
-    private final List<Bundle> bundles;
-    private final List<Configuration> configurations;
-    private final Map<String, String> variables;
+    String getDescription();
 
-    private Feature(ArtifactID id, String aTitle, String desc, String vnd, String lic, String loc,
-            boolean comp, boolean fin, List<Bundle> bs, List<Configuration> cs, Map<String,String> vars) {
-        super(id);
+    String getVendor();
 
-        title = aTitle;
-        description = desc;
-        vendor = vnd;
-        license = lic;
-        location = loc;
-        complete = comp;
-        isFinal = fin;
+    String getLicense();
 
-        bundles = Collections.unmodifiableList(bs);
-        configurations = Collections.unmodifiableList(cs);
-        variables = Collections.unmodifiableMap(vars);
+    String getLocation();
 
-        // add prototype
-        // add requirements
-        // add capabilities
-        // add framework properties
-    }
+    boolean isComplete();
 
-    public String getTitle() {
-        return title;
-    }
+    boolean isFinal();
 
-    public String getDescription() {
-        return description;
-    }
+    List<Bundle> getBundles();
 
-    public String getVendor() {
-        return vendor;
-    }
+    List<Configuration> getConfigurations();
 
-    public String getLicense() {
-        return license;
-    }
+    Map<String, String> getVariables();
 
-    public String getLocation() {
-        return location;
-    }
+    // add prototype
+    // add requirements
+    // add capabilities
+    // add framework properties
 
-    public boolean isComplete() {
-        return complete;
-    }
-
-    public boolean isFinal() {
-        return isFinal;
-    }
-
-    public List<Bundle> getBundles() {
-        return bundles;
-    }
-
-    public List<Configuration> getConfigurations() {
-        return configurations;
-    }
-
-    public Map<String, String> getVariables() {
-        return variables;
-    }
-
-    @Override
-    public String toString() {
-        return "Feature [title=" + title + ", description=" + description + ", vendor=" + vendor + ", license=" + license
-                + ", location=" + location + ", complete=" + complete + ", isFinal=" + isFinal + ", bundles=" + bundles
-                + ", configurations=" + configurations + ", variables=" + variables + ", getID()=" + getID() + "]";
-    }
-
-    // Not Thread Safe
-    public static class Builder {
-        private final ArtifactID id;
-
-        private String title;
-        private String description;
-        private String vendor;
-        private String license;
-        private String location;
-        private boolean complete;
-        private boolean isFinal;
-
-        private final List<Bundle> bundles = new ArrayList<>();
-        private final List<Configuration> configurations = new ArrayList<>();
-        private final Map<String,String> variables = new HashMap<>();
-
-        public Builder(ArtifactID id) {
-            this.id = id;
-        }
-
-        public Builder(String groupId, String artifactId, String version) {
-            this(new ArtifactID(groupId, artifactId, version, null, null));
-        }
-
-        public Builder setTitle(String title) {
-            this.title = title;
-            return this;
-        }
-
-        public Builder setVendor(String vendor) {
-            this.vendor = vendor;
-            return this;
-        }
-
-        public Builder setLicense(String license) {
-            this.license = license;
-            return this;
-        }
-
-        public Builder setLocation(String location) {
-            this.location = location;
-            return this;
-        }
-
-        public Builder setComplete(boolean complete) {
-            this.complete = complete;
-            return this;
-        }
-
-        public Builder setFinal(boolean isFinal) {
-            this.isFinal = isFinal;
-            return this;
-        }
-
-        public Builder setDescription(String description) {
-            this.description = description;
-            return this;
-        }
-
-        public Builder addBundles(Bundle ... bundles) {
-            this.bundles.addAll(Arrays.asList(bundles));
-            return this;
-        }
-
-        public Builder addConfigurations(Configuration ... configs) {
-            this.configurations.addAll(Arrays.asList(configs));
-            return this;
-        }
-
-        public Builder addVariable(String key, String value) {
-            this.variables.put(key, value);
-            return this;
-        }
-
-        public Builder addVariables(Map<String, String> variables) {
-            this.variables.putAll(variables);
-            return this;
-        }
-
-        public Feature build() {
-            return new Feature(id, title,
-                    description, vendor, license, location, complete, isFinal,
-                    bundles, configurations, variables);
-        }
-    }
 }

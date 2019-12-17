@@ -91,7 +91,6 @@ public class ArtifactID {
 
     @Override
     public String toString() {
-        return "ArtifactID [groupId=" + groupId + ", artifactId=" + artifactId + ", version=" + version + ", type=" + type
-                + ", classifier=" + classifier + "]";
+        return groupId + ":" + artifactId + ":" + version;
     }
 }

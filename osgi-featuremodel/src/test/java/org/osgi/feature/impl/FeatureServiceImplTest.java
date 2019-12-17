@@ -22,6 +22,7 @@ import org.osgi.feature.Bundle;
 import org.osgi.feature.Feature;
 import org.osgi.feature.FeatureService;
 import org.osgi.feature.MergeContext;
+import org.osgi.feature.builder.BundleBuilder;
 import org.osgi.feature.builder.MergeContextBuilder;
 
 import java.io.IOException;
@@ -50,7 +51,7 @@ public class FeatureServiceImplTest {
             List<Bundle> bundles = f.getBundles();
             assertEquals(3, bundles.size());
 
-            Bundle bundle = new Bundle.Builder("org.osgi", "osgi.promise", "7.0.1")
+            Bundle bundle = new BundleBuilder(new ArtifactID("org.osgi", "osgi.promise", "7.0.1"))
                     .addMetadata("hash", "4632463464363646436")
                     .addMetadata("start-order", 1L)
                     .build();
@@ -59,8 +60,8 @@ public class FeatureServiceImplTest {
             ba.equals(bundle);
 
             assertTrue(bundles.contains(bundle));
-            assertTrue(bundles.contains(new Bundle.Builder("org.slf4j", "slf4j-api", "1.7.29").build()));
-            assertTrue(bundles.contains(new Bundle.Builder("org.slf4j", "slf4j-simple", "1.7.29").build()));
+            assertTrue(bundles.contains(new BundleBuilder(new ArtifactID("org.slf4j", "slf4j-api", "1.7.29")).build()));
+            assertTrue(bundles.contains(new BundleBuilder(new ArtifactID("org.slf4j", "slf4j-simple", "1.7.29")).build()));
         }
     }
 
@@ -90,7 +91,7 @@ public class FeatureServiceImplTest {
         List<Bundle> bundles = f3.getBundles();
         assertEquals(4, bundles.size());
 
-        assertTrue(bundles.contains(new Bundle.Builder("org.slf4j", "slf4j-api", "1.7.29").build()));
-        assertTrue(bundles.contains(new Bundle.Builder("org.slf4j", "slf4j-api", "1.7.30").build()));
+        assertTrue(bundles.contains(new BundleBuilder(new ArtifactID("org.slf4j", "slf4j-api", "1.7.29")).build()));
+        assertTrue(bundles.contains(new BundleBuilder(new ArtifactID("org.slf4j", "slf4j-api", "1.7.30")).build()));
     }
 }
