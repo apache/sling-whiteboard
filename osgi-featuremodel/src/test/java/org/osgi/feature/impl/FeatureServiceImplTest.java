@@ -81,7 +81,7 @@ public class FeatureServiceImplTest {
         }
 
         MergeContext ctx = new MergeContextBuilder()
-                .setBundleResolver((b1, b2) -> Arrays.asList(b1, b2))
+                .setBundleConflictResolver((b1, b2) -> Arrays.asList(b1, b2))
                 .build();
         ArtifactID tid = new ArtifactID("foo", "bar", "1.2.3");
         Feature f3 = fs.mergeFeatures(tid, f1, f2, ctx);

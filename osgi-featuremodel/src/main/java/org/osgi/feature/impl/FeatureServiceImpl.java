@@ -129,7 +129,7 @@ public class FeatureServiceImpl implements FeatureService {
 
                 if (bID.getGroupId().equals(orgID.getGroupId()) &&
                         bID.getArtifactId().equals(orgID.getArtifactId())) {
-                    List<Bundle> res = new ArrayList<>(ctx.resolveBundles(b, orgb));
+                    List<Bundle> res = new ArrayList<>(ctx.resolveBundleConflict(b, orgb));
                     if (res.contains(orgb)) {
                         res.remove(orgb);
                     } else {
