@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class ExtensionBuilder {
     private final String name;
@@ -139,6 +140,26 @@ public class ExtensionBuilder {
             }
 
             return res;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(content, name, type);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (!(obj instanceof ExtensionImpl))
+                return false;
+            ExtensionImpl other = (ExtensionImpl) obj;
+            return Objects.equals(content, other.content) && Objects.equals(name, other.name) && type == other.type;
+        }
+
+        @Override
+        public String toString() {
+            return "ExtensionImpl [name=" + name + ", type=" + type + "]";
         }
     }
 }

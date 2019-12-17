@@ -24,34 +24,41 @@ import java.util.List;
 import java.util.function.BiFunction;
 
 public class MergeContextBuilder {
-    private BiFunction<Bundle, Bundle, List<Bundle>> bundleResolver;
+    private BiFunction<Bundle, Bundle, List<Bundle>> bundleHandler;
+    private BiFunction<Configuration, Configuration, Configuration> configHandler;
 
-    public MergeContextBuilder setBundleConflictResolver(BiFunction<Bundle, Bundle, List<Bundle>> bf) {
-        bundleResolver = bf;
+    public MergeContextBuilder bundleConflictHandler(BiFunction<Bundle, Bundle, List<Bundle>> bh) {
+        bundleHandler = bh;
+        return this;
+    }
+
+    public MergeContextBuilder configConflictHandler(BiFunction<Configuration, Configuration, Configuration> ch) {
+        configHandler = ch;
         return this;
     }
 
     public MergeContext build() {
-        return new MergeContextImpl(bundleResolver);
+        return new MergeContextImpl(bundleHandler, configHandler);
     }
 
     private static class MergeContextImpl implements MergeContext {
-        private BiFunction<Bundle, Bundle, List<Bundle>> bundleResolver;
+        private BiFunction<Bundle, Bundle, List<Bundle>> bundleHandler;
+        private BiFunction<Configuration, Configuration, Configuration> configHandler;
 
-        private MergeContextImpl(BiFunction<Bundle, Bundle, List<Bundle>> bundleResolver) {
-            this.bundleResolver = bundleResolver;
+        private MergeContextImpl(BiFunction<Bundle, Bundle, List<Bundle>> bundleHandler,
+                BiFunction<Configuration, Configuration, Configuration> configHandler) {
+            this.bundleHandler = bundleHandler;
+            this.configHandler = configHandler;
         }
 
         @Override
         public List<Bundle> resolveBundleConflict(Bundle b1, Bundle b2) {
-            return bundleResolver.apply(b1, b2);
+            return bundleHandler.apply(b1, b2);
         }
 
         @Override
         public Configuration resolveConfigurationConflict(Configuration c1, Configuration c2) {
-            // TODO Auto-generated method stub
-            return null;
+            return configHandler.apply(c1, c2);
         }
-
     }
 }

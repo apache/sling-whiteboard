@@ -83,7 +83,7 @@ public class BundleBuilder {
 
         @Override
         public String toString() {
-            return "BundleImpl [metadata=" + metadata + ", getID()=" + getID() + "]";
+            return "BundleImpl [getID()=" + getID() + "]";
         }
     }
 }

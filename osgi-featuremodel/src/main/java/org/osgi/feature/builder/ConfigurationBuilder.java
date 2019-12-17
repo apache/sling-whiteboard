@@ -21,6 +21,7 @@ import org.osgi.feature.Configuration;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class ConfigurationBuilder {
     private final String p;
@@ -35,16 +36,29 @@ public class ConfigurationBuilder {
 
     public ConfigurationBuilder(String factoryPid, String name) {
         this.p = factoryPid;
-        this.name = null;
+        this.name = name;
     }
 
-    public ConfigurationBuilder addConfiguration(String key, Object value) {
+    public ConfigurationBuilder(Configuration c) {
+        if (c.getFactoryPid() == null) {
+            p = c.getPid();
+            name = null;
+        } else {
+            // TODO
+            p = null;
+            name = null;
+        }
+
+        addValues(c.getValues());
+    }
+
+    public ConfigurationBuilder addValue(String key, Object value) {
         // TODO can do some validation on the configuration
         this.values.put(key, value);
         return this;
     }
 
-    public ConfigurationBuilder addConfiguration(Map<String, Object> cfg) {
+    public ConfigurationBuilder addValues(Map<String, Object> cfg) {
         // TODO can do some validation on the configuration
         this.values.putAll(cfg);
         return this;
@@ -54,7 +68,7 @@ public class ConfigurationBuilder {
         if (name == null) {
             return new ConfigurationImpl(p, null, values);
         } else {
-            return new ConfigurationImpl(p, p + "~" + name, values);
+            return new ConfigurationImpl(p + "~" + name, p, values);
         }
     }
 
@@ -80,6 +94,27 @@ public class ConfigurationBuilder {
 
         public Map<String, Object> getValues() {
             return values;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(factoryPid, pid, values);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (!(obj instanceof ConfigurationImpl))
+                return false;
+            ConfigurationImpl other = (ConfigurationImpl) obj;
+            return Objects.equals(factoryPid, other.factoryPid) && Objects.equals(pid, other.pid)
+                    && Objects.equals(values, other.values);
+        }
+
+        @Override
+        public String toString() {
+            return "ConfigurationImpl [pid=" + pid + "]";
         }
     }
 }

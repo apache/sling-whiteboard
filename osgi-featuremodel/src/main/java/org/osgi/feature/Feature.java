@@ -36,7 +36,7 @@ public interface Feature extends Artifact {
 
     List<Bundle> getBundles();
 
-    List<Configuration> getConfigurations();
+    Map<String, Configuration> getConfigurations();
 
     Map<String, String> getVariables();
 

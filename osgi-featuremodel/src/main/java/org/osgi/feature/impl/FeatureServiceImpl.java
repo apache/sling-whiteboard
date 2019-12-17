@@ -18,16 +18,19 @@ package org.osgi.feature.impl;
 
 import org.osgi.feature.ArtifactID;
 import org.osgi.feature.Bundle;
+import org.osgi.feature.Configuration;
 import org.osgi.feature.Feature;
 import org.osgi.feature.FeatureService;
 import org.osgi.feature.MergeContext;
 import org.osgi.feature.builder.BundleBuilder;
+import org.osgi.feature.builder.ConfigurationBuilder;
 import org.osgi.feature.builder.FeatureBuilder;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +61,7 @@ public class FeatureServiceImpl implements FeatureService {
         builder.setFinal(json.getBoolean("final", false));
 
         builder.addBundles(getBundles(json));
+        builder.addConfigurations(getConfigurations(json));
 
         return builder.build();
     }
@@ -70,7 +74,7 @@ public class FeatureServiceImpl implements FeatureService {
             if (val.getValueType() == JsonValue.ValueType.OBJECT) {
                 JsonObject jo = val.asJsonObject();
                 String bid = jo.getString("id");
-                BundleBuilder bbuilder = new BundleBuilder(ArtifactID.fromMavenID(bid));
+                BundleBuilder builder = new BundleBuilder(ArtifactID.fromMavenID(bid));
 
                 for (Map.Entry<String, JsonValue> entry : jo.entrySet()) {
                     if (entry.getKey().equals("id"))
@@ -89,13 +93,65 @@ public class FeatureServiceImpl implements FeatureService {
                     default:
                         v = value.toString();
                     }
-                    bbuilder.addMetadata(entry.getKey(), v);
+                    builder.addMetadata(entry.getKey(), v);
                 }
-                bundles.add(bbuilder.build());
+                bundles.add(builder.build());
             }
         }
 
         return bundles.toArray(new Bundle[0]);
+    }
+
+    private Configuration[] getConfigurations(JsonObject json) {
+        List<Configuration> configs = new ArrayList<>();
+
+        JsonObject jo = json.getJsonObject("configurations");
+        for (Map.Entry<String, JsonValue> entry : jo.entrySet()) {
+
+            String p = entry.getKey();
+            String factoryPid = null;
+            int idx = p.indexOf('~');
+            if (idx > 0) {
+                factoryPid = p.substring(0, idx);
+                p = p.substring(idx + 1);
+            }
+
+            ConfigurationBuilder builder;
+            if (factoryPid == null) {
+                builder = new ConfigurationBuilder(p);
+            } else {
+                builder = new ConfigurationBuilder(factoryPid, p);
+            }
+
+            JsonObject values = entry.getValue().asJsonObject();
+            for (Map.Entry<String, JsonValue> value : values.entrySet()) {
+                JsonValue val = value.getValue();
+
+                Object v;
+                switch (val.getValueType()) {
+                case TRUE:
+                    v = true;
+                    break;
+                case FALSE:
+                    v = false;
+                    break;
+                case NUMBER:
+                    v = ((JsonNumber) val).longValueExact();
+                    break;
+                case STRING:
+                    v = ((JsonString) val).getString();
+                    break;
+                default:
+                    v = val.toString();
+
+                    // TODO object types, arrays, and requested type conversions
+                }
+                builder.addValue(value.getKey(), v);
+            }
+            configs.add(builder.build());
+        }
+
+        return configs.toArray(new Configuration[] {});
     }
 
     @Override
@@ -112,24 +168,26 @@ public class FeatureServiceImpl implements FeatureService {
         copyAttrs(f1, fb);
         copyAttrs(f2, fb);
 
-        List<Bundle> bundles = resolveBundles(f1, f2, ctx);
-        fb.addBundles(bundles.toArray(new Bundle[0]));
+        fb.addBundles(resolveBundles(f1, f2, ctx));
+        fb.addConfigurations(resolveConfigs(f1, f2, ctx));
 
         return fb.build();
     }
 
-    private List<Bundle> resolveBundles(Feature f1, Feature f2, MergeContext ctx) {
+    private Bundle[] resolveBundles(Feature f1, Feature f2, MergeContext ctx) {
         List<Bundle> bundles = new ArrayList<>(f1.getBundles());
         List<Bundle> addedBundles = new ArrayList<>();
 
         for (Bundle b : f2.getBundles()) {
             ArtifactID bID = b.getID();
+            boolean found = false;
             for (Iterator<Bundle> it = bundles.iterator(); it.hasNext(); ) {
                 Bundle orgb = it.next();
                 ArtifactID orgID = orgb.getID();
 
                 if (bID.getGroupId().equals(orgID.getGroupId()) &&
                         bID.getArtifactId().equals(orgID.getArtifactId())) {
+                    found = true;
                     List<Bundle> res = new ArrayList<>(ctx.resolveBundleConflict(b, orgb));
                     if (res.contains(orgb)) {
                         res.remove(orgb);
@@ -139,19 +197,51 @@ public class FeatureServiceImpl implements FeatureService {
                     addedBundles.addAll(res);
                 }
             }
+            if (!found) {
+                addedBundles.add(b);
+            }
         }
         bundles.addAll(addedBundles);
-        return bundles;
+        return bundles.toArray(new Bundle[] {});
+    }
+
+    private Configuration[] resolveConfigs(Feature f1, Feature f2, MergeContext ctx) {
+        Map<String,Configuration> configs = new HashMap<>(f1.getConfigurations());
+        Map<String,Configuration> addConfigs = new HashMap<>();
+
+        for (Map.Entry<String,Configuration> cfgEntry : f2.getConfigurations().entrySet()) {
+            String pid = cfgEntry.getKey();
+            Configuration newCfg = cfgEntry.getValue();
+            Configuration orgCfg = configs.get(pid);
+            if (orgCfg != null) {
+                Configuration resCfg = ctx.resolveConfigurationConflict(orgCfg, newCfg);
+                if (!resCfg.equals(orgCfg)) {
+                    configs.remove(pid);
+                    addConfigs.put(pid, resCfg);
+                }
+            } else {
+                addConfigs.put(pid, newCfg);
+            }
+        }
+
+        configs.putAll(addConfigs);
+        return configs.values().toArray(new Configuration[] {});
     }
 
     private void copyAttrs(Feature f, FeatureBuilder fb) {
-        fb.setTitle(f.getTitle());
-        fb.setDescription(f.getDescription());
-        fb.setVendor(f.getVendor());
-        fb.setLicense(f.getLicense());
-        fb.setLocation(f.getLocation());
+        if (f.getTitle() != null)
+            fb.setTitle(f.getTitle());
 
+        if (f.getDescription() != null)
+            fb.setDescription(f.getDescription());
+
+        if (f.getVendor() != null)
+            fb.setVendor(f.getVendor());
+
+        if (f.getLicense() != null)
+            fb.setLicense(f.getLicense());
+
+        if (f.getLocation() != null)
+            fb.setLocation(f.getLocation());
     }
-
-
 }

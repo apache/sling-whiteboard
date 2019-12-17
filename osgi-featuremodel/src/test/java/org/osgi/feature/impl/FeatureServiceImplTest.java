@@ -19,10 +19,12 @@ package org.osgi.feature.impl;
 import org.junit.Test;
 import org.osgi.feature.ArtifactID;
 import org.osgi.feature.Bundle;
+import org.osgi.feature.Configuration;
 import org.osgi.feature.Feature;
 import org.osgi.feature.FeatureService;
 import org.osgi.feature.MergeContext;
 import org.osgi.feature.builder.BundleBuilder;
+import org.osgi.feature.builder.ConfigurationBuilder;
 import org.osgi.feature.builder.MergeContextBuilder;
 
 import java.io.IOException;
@@ -30,7 +32,10 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -82,16 +87,38 @@ public class FeatureServiceImplTest {
         }
 
         MergeContext ctx = new MergeContextBuilder()
-                .setBundleConflictResolver((b1, b2) -> Arrays.asList(b1, b2))
+                .bundleConflictHandler((b1, b2) -> Arrays.asList(b1, b2))
+                .configConflictHandler((c1, c2) -> new ConfigurationBuilder(c1)
+                        .addValues(c2.getValues()).build())
                 .build();
+
+
         ArtifactID tid = new ArtifactID("foo", "bar", "1.2.3");
         Feature f3 = fs.mergeFeatures(tid, f1, f2, ctx);
         assertEquals(tid, f3.getID());
 
         List<Bundle> bundles = f3.getBundles();
-        assertEquals(4, bundles.size());
+        assertEquals(5, bundles.size());
 
         assertTrue(bundles.contains(new BundleBuilder(new ArtifactID("org.slf4j", "slf4j-api", "1.7.29")).build()));
         assertTrue(bundles.contains(new BundleBuilder(new ArtifactID("org.slf4j", "slf4j-api", "1.7.30")).build()));
+        assertTrue(bundles.contains(new BundleBuilder(new ArtifactID("org.slf4j", "slf4j-nop", "1.7.30")).build()));
+
+        Map<String, Configuration> configs = f3.getConfigurations();
+        assertEquals(2, configs.size());
+
+        Configuration cfg1 = configs.get("my.factory.pid~name");
+        assertEquals("my.factory.pid~name", cfg1.getPid());
+        assertEquals("my.factory.pid", cfg1.getFactoryPid());
+        assertEquals(Collections.singletonMap("a.value", "yeah"), cfg1.getValues());
+
+        Configuration cfg2 = configs.get("my.pid");
+        assertEquals("my.pid", cfg2.getPid());
+        assertNull(cfg2.getFactoryPid());
+        Map<String,Object> expected = new HashMap<>();
+        expected.put("foo", 5L);
+        expected.put("bar", "toast");
+        expected.put("number:Integer", 7L); // this is wrong TODO
+        assertEquals(expected, cfg2.getValues());
     }
 }

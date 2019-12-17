@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class FeatureBuilder {
     private final ArtifactID id;
@@ -40,7 +41,7 @@ public class FeatureBuilder {
     private boolean isFinal;
 
     private final List<Bundle> bundles = new ArrayList<>();
-    private final List<Configuration> configurations = new ArrayList<>();
+    private final Map<String,Configuration> configurations = new HashMap<>();
     private final Map<String,String> variables = new HashMap<>();
 
     public FeatureBuilder(ArtifactID id) {
@@ -88,7 +89,9 @@ public class FeatureBuilder {
     }
 
     public FeatureBuilder addConfigurations(Configuration ... configs) {
-        this.configurations.addAll(Arrays.asList(configs));
+        for (Configuration cfg : configs) {
+            this.configurations.put(cfg.getPid(), cfg);
+        }
         return this;
     }
 
@@ -97,7 +100,7 @@ public class FeatureBuilder {
         return this;
     }
 
-    public FeatureBuilder addVariables(Map<String, String> variables) {
+    public FeatureBuilder addVariables(Map<String,String> variables) {
         this.variables.putAll(variables);
         return this;
     }
@@ -118,11 +121,11 @@ public class FeatureBuilder {
         private final boolean isFinal;
 
         private final List<Bundle> bundles;
-        private final List<Configuration> configurations;
-        private final Map<String, String> variables;
+        private final Map<String,Configuration> configurations;
+        private final Map<String,String> variables;
 
         private FeatureImpl(ArtifactID id, String aTitle, String desc, String vnd, String lic, String loc,
-                boolean comp, boolean fin, List<Bundle> bs, List<Configuration> cs, Map<String,String> vars) {
+                boolean comp, boolean fin, List<Bundle> bs, Map<String,Configuration> cs, Map<String,String> vars) {
             super(id);
 
             title = aTitle;
@@ -134,7 +137,7 @@ public class FeatureBuilder {
             isFinal = fin;
 
             bundles = Collections.unmodifiableList(bs);
-            configurations = Collections.unmodifiableList(cs);
+            configurations = Collections.unmodifiableMap(cs);
             variables = Collections.unmodifiableMap(vars);
         }
 
@@ -179,13 +182,43 @@ public class FeatureBuilder {
         }
 
         @Override
-        public List<Configuration> getConfigurations() {
+        public Map<String,Configuration> getConfigurations() {
             return configurations;
         }
 
         @Override
-        public Map<String, String> getVariables() {
+        public Map<String,String> getVariables() {
             return variables;
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = super.hashCode();
+            result = prime * result + Objects.hash(bundles, complete, configurations, description, isFinal, license, location,
+                    title, variables, vendor);
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (!super.equals(obj))
+                return false;
+            if (!(obj instanceof FeatureImpl))
+                return false;
+            FeatureImpl other = (FeatureImpl) obj;
+            return Objects.equals(bundles, other.bundles) && complete == other.complete
+                    && Objects.equals(configurations, other.configurations) && Objects.equals(description, other.description)
+                    && isFinal == other.isFinal && Objects.equals(license, other.license)
+                    && Objects.equals(location, other.location) && Objects.equals(title, other.title)
+                    && Objects.equals(variables, other.variables) && Objects.equals(vendor, other.vendor);
+        }
+
+        @Override
+        public String toString() {
+            return "FeatureImpl [getID()=" + getID() + "]";
         }
     }
 }

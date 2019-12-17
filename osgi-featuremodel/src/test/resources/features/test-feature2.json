@@ -5,7 +5,10 @@
     "bundles" :[
             {
               "id" : "org.slf4j:slf4j-api:1.7.30"
-            }
+            },
+            {
+              "id" : "org.slf4j:slf4j-nop:1.7.30"
+            }            
     ],
     "configurations" : {
         "my.pid" : {
