@@ -16,68 +16,12 @@
  */
 package org.osgi.feature;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
-public class Configuration {
-    private final String pid;
-    private final String factoryPid;
-    private final Map<String, Object> values;
+public interface Configuration {
+    String getPid();
 
-    private Configuration(String pid, String factoryPid,
-            Map<String, Object> values) {
-        this.pid = pid;
-        this.factoryPid = factoryPid;
-        this.values = Collections.unmodifiableMap(values);
-    }
+    String getFactoryPid();
 
-    public String getPid() {
-        return pid;
-    }
-
-    public String getFactoryPid() {
-        return factoryPid;
-    }
-
-    public Map<String, Object> getValues() {
-        return values;
-    }
-
-    public static class Builder {
-        private final String p;
-        private final String name;
-
-        private final Map<String,Object> values = new HashMap<>();
-
-        public Builder(String pid) {
-            this.p = pid;
-            this.name = null;
-        }
-
-        public Builder(String factoryPid, String name) {
-            this.p = factoryPid;
-            this.name = null;
-        }
-
-        public Builder addConfiguration(String key, Object value) {
-            // TODO can do some validation on the configuration
-            this.values.put(key, value);
-            return this;
-        }
-
-        public Builder addConfiguration(Map<String, Object> cfg) {
-            // TODO can do some validation on the configuration
-            this.values.putAll(cfg);
-            return this;
-        }
-
-        public Configuration build() {
-            if (name == null) {
-                return new Configuration(p, null, values);
-            } else {
-                return new Configuration(p, p + "~" + name, values);
-            }
-        }
-    }
+    Map<String, Object> getValues();
 }
