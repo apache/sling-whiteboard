@@ -19,11 +19,13 @@ package org.osgi.feature.impl;
 import org.osgi.feature.ArtifactID;
 import org.osgi.feature.Bundle;
 import org.osgi.feature.Configuration;
+import org.osgi.feature.Extension;
 import org.osgi.feature.Feature;
 import org.osgi.feature.FeatureService;
 import org.osgi.feature.MergeContext;
 import org.osgi.feature.builder.BundleBuilder;
 import org.osgi.feature.builder.ConfigurationBuilder;
+import org.osgi.feature.builder.ExtensionBuilder;
 import org.osgi.feature.builder.FeatureBuilder;
 
 import java.io.IOException;
@@ -62,14 +64,18 @@ public class FeatureServiceImpl implements FeatureService {
 
         builder.addBundles(getBundles(json));
         builder.addConfigurations(getConfigurations(json));
+        builder.addExtensions(getExtensions(json));
 
         return builder.build();
     }
 
     private Bundle[] getBundles(JsonObject json) {
+        JsonArray ja = json.getJsonArray("bundles");
+        if (ja == null)
+            return new Bundle[] {};
+
         List<Bundle> bundles = new ArrayList<>();
 
-        JsonArray ja = json.getJsonArray("bundles");
         for (JsonValue val : ja) {
             if (val.getValueType() == JsonValue.ValueType.OBJECT) {
                 JsonObject jo = val.asJsonObject();
@@ -103,9 +109,12 @@ public class FeatureServiceImpl implements FeatureService {
     }
 
     private Configuration[] getConfigurations(JsonObject json) {
+        JsonObject jo = json.getJsonObject("configurations");
+        if (jo == null)
+            return new Configuration[] {};
+
         List<Configuration> configs = new ArrayList<>();
 
-        JsonObject jo = json.getJsonObject("configurations");
         for (Map.Entry<String, JsonValue> entry : jo.entrySet()) {
 
             String p = entry.getKey();
@@ -152,6 +161,55 @@ public class FeatureServiceImpl implements FeatureService {
         }
 
         return configs.toArray(new Configuration[] {});
+    }
+
+    private Extension[] getExtensions(JsonObject json) {
+        JsonArray ja = json.getJsonArray("extensions");
+        if (ja == null)
+            return new Extension[] {};
+
+        List<Extension> extensions = new ArrayList<>();
+
+        for (JsonValue ex : ja) {
+            for (Map.Entry<String,JsonValue> entry : ex.asJsonObject().entrySet()) {
+                JsonObject exData = entry.getValue().asJsonObject();
+                Extension.Type type;
+                if (exData.containsKey("text")) {
+                    type = Extension.Type.TEXT;
+                } else if (exData.containsKey("artifacts")) {
+                    type = Extension.Type.ARTIFACTS;
+                } else if (exData.containsKey("json")) {
+                    type = Extension.Type.JSON;
+                } else {
+                    throw new IllegalStateException("Invalid extension: " + entry);
+                }
+                String k = exData.getString("kind", "optional");
+                Extension.Kind kind = Extension.Kind.valueOf(k.toUpperCase());
+
+                ExtensionBuilder builder = new ExtensionBuilder(entry.getKey(), type, kind);
+
+                switch (type) {
+                case TEXT:
+                    builder.addText(exData.getString("text"));
+                    break;
+                case ARTIFACTS:
+                    JsonArray ja2 = exData.getJsonArray("artifacts");
+                    for (JsonValue jv : ja2) {
+                        if (jv.getValueType() == JsonValue.ValueType.STRING) {
+                            String id = ((JsonString) jv).getString();
+                            builder.addArtifact(ArtifactID.fromMavenID(id));
+                        }
+                    }
+                    break;
+                case JSON:
+                    exData.getJsonObject("json").toString();
+                    break;
+                }
+                extensions.add(builder.build());
+            }
+        }
+
+        return extensions.toArray(new Extension[] {});
     }
 
     @Override

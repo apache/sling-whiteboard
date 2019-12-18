@@ -19,11 +19,14 @@ package org.osgi.feature;
 import java.util.List;
 
 public interface Extension {
+    enum Kind { MANDATORY, OPTIONAL, TRANSIENT };
     enum Type { JSON, TEXT, ARTIFACTS };
 
     String getName();
 
     Type getType();
+
+    Kind getKind();
 
     String getJSON();
 

@@ -19,6 +19,7 @@ package org.osgi.feature.builder;
 import org.osgi.feature.ArtifactID;
 import org.osgi.feature.Bundle;
 import org.osgi.feature.Configuration;
+import org.osgi.feature.Extension;
 import org.osgi.feature.Feature;
 
 import java.util.ArrayList;
@@ -42,6 +43,7 @@ public class FeatureBuilder {
 
     private final List<Bundle> bundles = new ArrayList<>();
     private final Map<String,Configuration> configurations = new HashMap<>();
+    private final Map<String,Extension> extensions = new HashMap<>();
     private final Map<String,String> variables = new HashMap<>();
 
     public FeatureBuilder(ArtifactID id) {
@@ -95,6 +97,13 @@ public class FeatureBuilder {
         return this;
     }
 
+    public FeatureBuilder addExtensions(Extension ... extensions) {
+        for (Extension ex : extensions) {
+            this.extensions.put(ex.getName(), ex);
+        }
+        return this;
+    }
+
     public FeatureBuilder addVariable(String key, String value) {
         this.variables.put(key, value);
         return this;
@@ -108,7 +117,7 @@ public class FeatureBuilder {
     public Feature build() {
         return new FeatureImpl(id, title,
                 description, vendor, license, location, complete, isFinal,
-                bundles, configurations, variables);
+                bundles, configurations, extensions, variables);
     }
 
     private static class FeatureImpl extends ArtifactImpl implements Feature {
@@ -122,10 +131,12 @@ public class FeatureBuilder {
 
         private final List<Bundle> bundles;
         private final Map<String,Configuration> configurations;
+        private final Map<String,Extension> extensions;
         private final Map<String,String> variables;
 
         private FeatureImpl(ArtifactID id, String aTitle, String desc, String vnd, String lic, String loc,
-                boolean comp, boolean fin, List<Bundle> bs, Map<String,Configuration> cs, Map<String,String> vars) {
+                boolean comp, boolean fin, List<Bundle> bs, Map<String,Configuration> cs,
+                Map<String,Extension> es, Map<String,String> vars) {
             super(id);
 
             title = aTitle;
@@ -138,6 +149,7 @@ public class FeatureBuilder {
 
             bundles = Collections.unmodifiableList(bs);
             configurations = Collections.unmodifiableMap(cs);
+            extensions = Collections.unmodifiableMap(es);
             variables = Collections.unmodifiableMap(vars);
         }
 
@@ -184,6 +196,11 @@ public class FeatureBuilder {
         @Override
         public Map<String,Configuration> getConfigurations() {
             return configurations;
+        }
+
+        @Override
+        public Map<String,Extension> getExtensions() {
+            return extensions;
         }
 
         @Override

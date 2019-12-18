@@ -1,0 +1,10 @@
+{
+    "id" : "org.apache.sling:test-extension-feature2:1.0.0",
+    "extensions" : [
+        { "my-text-ex": 
+          {
+            "text": "DEF"
+          }
+        }
+    ]
+}

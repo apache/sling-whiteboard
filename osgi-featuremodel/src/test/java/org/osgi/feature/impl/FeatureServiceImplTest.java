@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.osgi.feature.ArtifactID;
 import org.osgi.feature.Bundle;
 import org.osgi.feature.Configuration;
+import org.osgi.feature.Extension;
 import org.osgi.feature.Feature;
 import org.osgi.feature.FeatureService;
 import org.osgi.feature.MergeContext;
@@ -120,5 +121,31 @@ public class FeatureServiceImplTest {
         expected.put("bar", "toast");
         expected.put("number:Integer", 7L); // this is wrong TODO
         assertEquals(expected, cfg2.getValues());
+    }
+
+    @Test
+    public void testMergeExtensions() throws IOException {
+        FeatureService fs = new FeatureServiceImpl();
+
+        URL res1 = getClass().getResource("/features/test-exfeat1.json");
+        Feature f1;
+        try (Reader r = new InputStreamReader(res1.openStream())) {
+            f1 = fs.readFeature(r);
+        }
+
+        URL res2 = getClass().getResource("/features/test-exfeat2.json");
+        Feature f2;
+        try (Reader r = new InputStreamReader(res2.openStream())) {
+            f2 = fs.readFeature(r);
+        }
+
+        MergeContext ctx = new MergeContextBuilder().build();
+
+        ArtifactID tid = new ArtifactID("g", "a", "1.2.3");
+        Feature f3 = fs.mergeFeatures(tid, f1, f2, ctx);
+
+        Map<String, Extension> extensions = f3.getExtensions();
+        assertEquals(3, extensions.size());
+        assertEquals("ABCDEF", extensions.get("my-text-ex").getText());
     }
 }

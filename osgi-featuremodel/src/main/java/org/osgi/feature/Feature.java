@@ -38,6 +38,8 @@ public interface Feature extends Artifact {
 
     Map<String, Configuration> getConfigurations();
 
+    Map<String, Extension> getExtensions();
+
     Map<String, String> getVariables();
 
     // add prototype

@@ -18,6 +18,7 @@ package org.osgi.feature.builder;
 
 import org.osgi.feature.ArtifactID;
 import org.osgi.feature.Extension;
+import org.osgi.feature.Extension.Kind;
 import org.osgi.feature.Extension.Type;
 
 import java.io.BufferedReader;
@@ -30,12 +31,14 @@ import java.util.Objects;
 public class ExtensionBuilder {
     private final String name;
     private final Type type;
+    private final Kind kind;
 
     private final StringBuilder content = new StringBuilder();
 
-    public ExtensionBuilder(String name, Type type) {
+    public ExtensionBuilder(String name, Type type, Kind kind) {
         this.name = name;
         this.type = type;
+        this.kind = kind;
     }
 
     public ExtensionBuilder addText(String text) {
@@ -90,17 +93,19 @@ public class ExtensionBuilder {
     }
 
     public Extension build() {
-        return new ExtensionImpl(name, type, content.toString());
+        return new ExtensionImpl(name, type, kind, content.toString());
     }
 
     private static class ExtensionImpl implements Extension {
         private final String name;
         private final Type type;
+        private final Kind kind;
         private final String content;
 
-        private ExtensionImpl(String name, Type type, String content) {
+        private ExtensionImpl(String name, Type type, Kind kind, String content) {
             this.name = name;
             this.type = type;
+            this.kind = kind;
             this.content = content;
         }
 
@@ -110,6 +115,10 @@ public class ExtensionBuilder {
 
         public Type getType() {
             return type;
+        }
+
+        public Kind getKind() {
+            return kind;
         }
 
         public String getJSON() {
