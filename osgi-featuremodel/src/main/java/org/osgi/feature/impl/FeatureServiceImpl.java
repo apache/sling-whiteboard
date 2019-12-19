@@ -245,7 +245,7 @@ public class FeatureServiceImpl implements FeatureService {
                 if (bID.getGroupId().equals(orgID.getGroupId()) &&
                         bID.getArtifactId().equals(orgID.getArtifactId())) {
                     found = true;
-                    List<Bundle> res = new ArrayList<>(ctx.resolveBundleConflict(b, orgb));
+                    List<Bundle> res = new ArrayList<>(ctx.handleBundleConflict(f1, b, f2, orgb));
                     if (res.contains(orgb)) {
                         res.remove(orgb);
                     } else {
@@ -271,7 +271,7 @@ public class FeatureServiceImpl implements FeatureService {
             Configuration newCfg = cfgEntry.getValue();
             Configuration orgCfg = configs.get(pid);
             if (orgCfg != null) {
-                Configuration resCfg = ctx.resolveConfigurationConflict(orgCfg, newCfg);
+                Configuration resCfg = ctx.handleConfigurationConflict(f1, orgCfg, f2, newCfg);
                 if (!resCfg.equals(orgCfg)) {
                     configs.remove(pid);
                     addConfigs.put(pid, resCfg);
@@ -294,7 +294,7 @@ public class FeatureServiceImpl implements FeatureService {
             Extension newEx = exEntry.getValue();
             Extension orgEx = extensions.get(key);
             if (orgEx != null) {
-                Extension resEx = ctx.resolveExtensionConflict(orgEx, newEx);
+                Extension resEx = ctx.handleExtensionConflict(f1, orgEx, f2, newEx);
                 if (!resEx.equals(orgEx)) {
                     extensions.remove(key);
                     addExtensions.put(key, resEx);

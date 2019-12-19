@@ -89,8 +89,8 @@ public class FeatureServiceImplTest {
         }
 
         MergeContext ctx = new MergeContextBuilder()
-                .bundleConflictHandler((b1, b2) -> Arrays.asList(b1, b2))
-                .configConflictHandler((c1, c2) -> new ConfigurationBuilder(c1)
+                .bundleConflictHandler((cf1, b1, cf2, b2) -> Arrays.asList(b1, b2))
+                .configConflictHandler((cf1, c1, cf2, c2) -> new ConfigurationBuilder(c1)
                         .addValues(c2.getValues()).build())
                 .build();
 
@@ -141,7 +141,7 @@ public class FeatureServiceImplTest {
         }
 
         MergeContext ctx = new MergeContextBuilder()
-                .extensionConflictHandler((e1, e2) ->
+                .extensionConflictHandler((cf1, e1, cf2, e2) ->
                     new ExtensionBuilder(e1.getName(), e1.getType(), e1.getKind())
                         .addText(e1.getText())
                         .addText(e2.getText())
