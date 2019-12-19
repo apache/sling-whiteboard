@@ -37,6 +37,13 @@ public interface FeatureService {
      */
     void writeFeature(Feature feature, Writer jsonWriter) throws IOException;
 
-
+    /**
+     * Merge two features into a new feature.
+     * @param targetID The ID of the new feature.
+     * @param f1 The first feature
+     * @param f2 The second feature
+     * @param ctx The merge context to use for the merge operation.
+     * @return The merged feature.
+     */
     Feature mergeFeatures(ArtifactID targetID, Feature f1, Feature f2, MergeContext ctx);
 }
