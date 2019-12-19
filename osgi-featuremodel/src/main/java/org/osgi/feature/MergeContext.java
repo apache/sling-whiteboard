@@ -42,4 +42,6 @@ public interface MergeContext {
      * @return The configuration to use.
      */
     Configuration resolveConfigurationConflict(Configuration c1, Configuration c2);
+
+    Extension resolveExtensionConflict(Extension e1, Extension e2);
 }

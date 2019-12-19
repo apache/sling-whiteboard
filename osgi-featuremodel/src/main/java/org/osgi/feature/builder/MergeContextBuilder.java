@@ -18,6 +18,7 @@ package org.osgi.feature.builder;
 
 import org.osgi.feature.Bundle;
 import org.osgi.feature.Configuration;
+import org.osgi.feature.Extension;
 import org.osgi.feature.MergeContext;
 
 import java.util.List;
@@ -26,6 +27,7 @@ import java.util.function.BiFunction;
 public class MergeContextBuilder {
     private BiFunction<Bundle, Bundle, List<Bundle>> bundleHandler;
     private BiFunction<Configuration, Configuration, Configuration> configHandler;
+    private BiFunction<Extension, Extension, Extension> extensionHandler;
 
     public MergeContextBuilder bundleConflictHandler(BiFunction<Bundle, Bundle, List<Bundle>> bh) {
         bundleHandler = bh;
@@ -37,18 +39,26 @@ public class MergeContextBuilder {
         return this;
     }
 
+    public MergeContextBuilder extensionConflictHandler(BiFunction<Extension, Extension, Extension> eh) {
+        extensionHandler = eh;
+        return this;
+    }
+
     public MergeContext build() {
-        return new MergeContextImpl(bundleHandler, configHandler);
+        return new MergeContextImpl(bundleHandler, configHandler, extensionHandler);
     }
 
     private static class MergeContextImpl implements MergeContext {
-        private BiFunction<Bundle, Bundle, List<Bundle>> bundleHandler;
-        private BiFunction<Configuration, Configuration, Configuration> configHandler;
+        private final BiFunction<Bundle, Bundle, List<Bundle>> bundleHandler;
+        private final BiFunction<Configuration, Configuration, Configuration> configHandler;
+        private final BiFunction<Extension, Extension, Extension> extensionHandler;
 
         private MergeContextImpl(BiFunction<Bundle, Bundle, List<Bundle>> bundleHandler,
-                BiFunction<Configuration, Configuration, Configuration> configHandler) {
+                BiFunction<Configuration, Configuration, Configuration> configHandler,
+                BiFunction<Extension, Extension, Extension> extensionHandler) {
             this.bundleHandler = bundleHandler;
             this.configHandler = configHandler;
+            this.extensionHandler = extensionHandler;
         }
 
         @Override
@@ -59,6 +69,11 @@ public class MergeContextBuilder {
         @Override
         public Configuration resolveConfigurationConflict(Configuration c1, Configuration c2) {
             return configHandler.apply(c1, c2);
+        }
+
+        @Override
+        public Extension resolveExtensionConflict(Extension e1, Extension e2) {
+            return extensionHandler.apply(e1, e2);
         }
     }
 }

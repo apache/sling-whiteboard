@@ -49,10 +49,11 @@ public class ExtensionBuilder {
         return this;
     }
 
-    public ExtensionBuilder addJSON(String json) {
+    public ExtensionBuilder setJSON(String json) {
         if (type != Type.JSON)
             throw new IllegalStateException("Cannot add text to extension of type " + type);
 
+        content.setLength(0); // Clear any previous value
         content.append(json);
         return this;
     }
@@ -63,16 +64,7 @@ public class ExtensionBuilder {
     }
 
     public ExtensionBuilder addArtifact(String groupId, String artifactId, String version) {
-        if (type != Type.ARTIFACTS)
-            throw new IllegalStateException("Cannot add artifacts to extension of type " + type);
-
-        content.append(groupId);
-        content.append(':');
-        content.append(artifactId);
-        content.append(':');
-        content.append(version);
-        content.append('\n');
-        return this;
+        return addArtifact(groupId, artifactId, version, null, null);
     }
 
     public ExtensionBuilder addArtifact(String groupId, String artifactId, String version, String at, String classifier) {
@@ -84,10 +76,15 @@ public class ExtensionBuilder {
         content.append(artifactId);
         content.append(':');
         content.append(version);
-        content.append(':');
-        content.append(at);
-        content.append(':');
-        content.append(classifier);
+
+        if (at != null) {
+            content.append(':');
+            content.append(at);
+            if (classifier != null) {
+                content.append(':');
+                content.append(classifier);
+            }
+        }
         content.append('\n');
         return this;
     }

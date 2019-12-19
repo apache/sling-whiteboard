@@ -26,6 +26,7 @@ import org.osgi.feature.FeatureService;
 import org.osgi.feature.MergeContext;
 import org.osgi.feature.builder.BundleBuilder;
 import org.osgi.feature.builder.ConfigurationBuilder;
+import org.osgi.feature.builder.ExtensionBuilder;
 import org.osgi.feature.builder.MergeContextBuilder;
 
 import java.io.IOException;
@@ -139,13 +140,35 @@ public class FeatureServiceImplTest {
             f2 = fs.readFeature(r);
         }
 
-        MergeContext ctx = new MergeContextBuilder().build();
+        MergeContext ctx = new MergeContextBuilder()
+                .extensionConflictHandler((e1, e2) ->
+                    new ExtensionBuilder(e1.getName(), e1.getType(), e1.getKind())
+                        .addText(e1.getText())
+                        .addText(e2.getText())
+                        .build())
+                .build();
 
         ArtifactID tid = new ArtifactID("g", "a", "1.2.3");
         Feature f3 = fs.mergeFeatures(tid, f1, f2, ctx);
 
         Map<String, Extension> extensions = f3.getExtensions();
         assertEquals(3, extensions.size());
-        assertEquals("ABCDEF", extensions.get("my-text-ex").getText());
+        Extension txtEx = extensions.get("my-text-ex");
+        assertEquals("ABCDEF", txtEx.getText());
+        assertEquals(Extension.Kind.OPTIONAL, txtEx.getKind());
+        assertEquals(Extension.Type.TEXT, txtEx.getType());
+
+        Extension artEx = extensions.get("my-art-ex");
+        assertEquals(Extension.Kind.MANDATORY, artEx.getKind());
+        assertEquals(Extension.Type.ARTIFACTS, artEx.getType());
+        List<ArtifactID> artifacts = artEx.getArtifacts();
+        assertEquals(2, artifacts.size());
+        assertTrue(artifacts.contains(new ArtifactID("g", "a", "1")));
+        assertTrue(artifacts.contains(new ArtifactID("g", "a", "2")));
+
+        Extension jsonEx = extensions.get("my-json-ex");
+        assertEquals(Extension.Kind.TRANSIENT, jsonEx.getKind());
+        assertEquals(Extension.Type.JSON, jsonEx.getType());
+        assertEquals("{\"foo\":[1,2,3]}", jsonEx.getJSON());
     }
 }
