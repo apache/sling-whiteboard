@@ -23,7 +23,7 @@ RUN MODULES="java.base,java.compiler,java.instrument,java.logging,java.managemen
     if [ "$JAVA_DESKTOP" == "true" ]; then \
         MODULES="java.desktop,${MODULES}"; \
     fi; \
-    jlink --add-modules ${MODULES} --output /opt/jre --strip-debug --compress=2 --no-header-files --no-man-pages;
+    /usr/lib/jvm/zulu11-ca/bin/jlink --add-modules ${MODULES} --output /opt/jre --strip-debug --compress=2 --no-header-files --no-man-pages;
 
 FROM alpine
 EXPOSE 8080
