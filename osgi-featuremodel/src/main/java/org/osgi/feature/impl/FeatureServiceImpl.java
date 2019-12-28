@@ -164,49 +164,47 @@ public class FeatureServiceImpl implements FeatureService {
     }
 
     private Extension[] getExtensions(JsonObject json) {
-        JsonArray ja = json.getJsonArray("extensions");
-        if (ja == null)
+        JsonObject jo = json.getJsonObject("extensions");
+        if (jo == null)
             return new Extension[] {};
 
         List<Extension> extensions = new ArrayList<>();
 
-        for (JsonValue ex : ja) {
-            for (Map.Entry<String,JsonValue> entry : ex.asJsonObject().entrySet()) {
-                JsonObject exData = entry.getValue().asJsonObject();
-                Extension.Type type;
-                if (exData.containsKey("text")) {
-                    type = Extension.Type.TEXT;
-                } else if (exData.containsKey("artifacts")) {
-                    type = Extension.Type.ARTIFACTS;
-                } else if (exData.containsKey("json")) {
-                    type = Extension.Type.JSON;
-                } else {
-                    throw new IllegalStateException("Invalid extension: " + entry);
-                }
-                String k = exData.getString("kind", "optional");
-                Extension.Kind kind = Extension.Kind.valueOf(k.toUpperCase());
-
-                ExtensionBuilder builder = new ExtensionBuilder(entry.getKey(), type, kind);
-
-                switch (type) {
-                case TEXT:
-                    builder.addText(exData.getString("text"));
-                    break;
-                case ARTIFACTS:
-                    JsonArray ja2 = exData.getJsonArray("artifacts");
-                    for (JsonValue jv : ja2) {
-                        if (jv.getValueType() == JsonValue.ValueType.STRING) {
-                            String id = ((JsonString) jv).getString();
-                            builder.addArtifact(ArtifactID.fromMavenID(id));
-                        }
-                    }
-                    break;
-                case JSON:
-                    exData.getJsonObject("json").toString();
-                    break;
-                }
-                extensions.add(builder.build());
+        for (Map.Entry<String,JsonValue> entry : jo.entrySet()) {
+            JsonObject exData = entry.getValue().asJsonObject();
+            Extension.Type type;
+            if (exData.containsKey("text")) {
+                type = Extension.Type.TEXT;
+            } else if (exData.containsKey("artifacts")) {
+                type = Extension.Type.ARTIFACTS;
+            } else if (exData.containsKey("json")) {
+                type = Extension.Type.JSON;
+            } else {
+                throw new IllegalStateException("Invalid extension: " + entry);
             }
+            String k = exData.getString("kind", "optional");
+            Extension.Kind kind = Extension.Kind.valueOf(k.toUpperCase());
+
+            ExtensionBuilder builder = new ExtensionBuilder(entry.getKey(), type, kind);
+
+            switch (type) {
+            case TEXT:
+                builder.addText(exData.getString("text"));
+                break;
+            case ARTIFACTS:
+                JsonArray ja2 = exData.getJsonArray("artifacts");
+                for (JsonValue jv : ja2) {
+                    if (jv.getValueType() == JsonValue.ValueType.STRING) {
+                        String id = ((JsonString) jv).getString();
+                        builder.addArtifact(ArtifactID.fromMavenID(id));
+                    }
+                }
+                break;
+            case JSON:
+                builder.setJSON(exData.getJsonObject("json").toString());
+                break;
+            }
+            extensions.add(builder.build());
         }
 
         return extensions.toArray(new Extension[] {});
@@ -226,13 +224,14 @@ public class FeatureServiceImpl implements FeatureService {
         copyAttrs(f1, fb);
         copyAttrs(f2, fb);
 
-        fb.addBundles(resolveBundles(f1, f2, ctx));
-        fb.addConfigurations(resolveConfigs(f1, f2, ctx));
+        fb.addBundles(mergeBundles(f1, f2, ctx));
+        fb.addConfigurations(mergeConfigs(f1, f2, ctx));
+        fb.addExtensions(mergeExtensions(f1, f2, ctx));
 
         return fb.build();
     }
 
-    private Bundle[] resolveBundles(Feature f1, Feature f2, MergeContext ctx) {
+    private Bundle[] mergeBundles(Feature f1, Feature f2, MergeContext ctx) {
         List<Bundle> bundles = new ArrayList<>(f1.getBundles());
         List<Bundle> addedBundles = new ArrayList<>();
 
@@ -246,7 +245,7 @@ public class FeatureServiceImpl implements FeatureService {
                 if (bID.getGroupId().equals(orgID.getGroupId()) &&
                         bID.getArtifactId().equals(orgID.getArtifactId())) {
                     found = true;
-                    List<Bundle> res = new ArrayList<>(ctx.resolveBundleConflict(b, orgb));
+                    List<Bundle> res = new ArrayList<>(ctx.handleBundleConflict(f1, b, f2, orgb));
                     if (res.contains(orgb)) {
                         res.remove(orgb);
                     } else {
@@ -263,7 +262,7 @@ public class FeatureServiceImpl implements FeatureService {
         return bundles.toArray(new Bundle[] {});
     }
 
-    private Configuration[] resolveConfigs(Feature f1, Feature f2, MergeContext ctx) {
+    private Configuration[] mergeConfigs(Feature f1, Feature f2, MergeContext ctx) {
         Map<String,Configuration> configs = new HashMap<>(f1.getConfigurations());
         Map<String,Configuration> addConfigs = new HashMap<>();
 
@@ -272,7 +271,7 @@ public class FeatureServiceImpl implements FeatureService {
             Configuration newCfg = cfgEntry.getValue();
             Configuration orgCfg = configs.get(pid);
             if (orgCfg != null) {
-                Configuration resCfg = ctx.resolveConfigurationConflict(orgCfg, newCfg);
+                Configuration resCfg = ctx.handleConfigurationConflict(f1, orgCfg, f2, newCfg);
                 if (!resCfg.equals(orgCfg)) {
                     configs.remove(pid);
                     addConfigs.put(pid, resCfg);
@@ -284,6 +283,29 @@ public class FeatureServiceImpl implements FeatureService {
 
         configs.putAll(addConfigs);
         return configs.values().toArray(new Configuration[] {});
+    }
+
+    private Extension[] mergeExtensions(Feature f1, Feature f2, MergeContext ctx) {
+        Map<String,Extension> extensions = new HashMap<>(f1.getExtensions());
+        Map<String,Extension> addExtensions = new HashMap<>();
+
+        for (Map.Entry<String,Extension> exEntry : f2.getExtensions().entrySet()) {
+            String key = exEntry.getKey();
+            Extension newEx = exEntry.getValue();
+            Extension orgEx = extensions.get(key);
+            if (orgEx != null) {
+                Extension resEx = ctx.handleExtensionConflict(f1, orgEx, f2, newEx);
+                if (!resEx.equals(orgEx)) {
+                    extensions.remove(key);
+                    addExtensions.put(key, resEx);
+                }
+            } else {
+                addExtensions.put(key, newEx);
+            }
+        }
+
+        extensions.putAll(addExtensions);
+        return extensions.values().toArray(new Extension[] {});
     }
 
     private void copyAttrs(Feature f, FeatureBuilder fb) {

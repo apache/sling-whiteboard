@@ -18,47 +18,64 @@ package org.osgi.feature.builder;
 
 import org.osgi.feature.Bundle;
 import org.osgi.feature.Configuration;
+import org.osgi.feature.ConflictResolver;
+import org.osgi.feature.Extension;
+import org.osgi.feature.Feature;
 import org.osgi.feature.MergeContext;
 
 import java.util.List;
-import java.util.function.BiFunction;
 
 public class MergeContextBuilder {
-    private BiFunction<Bundle, Bundle, List<Bundle>> bundleHandler;
-    private BiFunction<Configuration, Configuration, Configuration> configHandler;
+    private ConflictResolver<Bundle, List<Bundle>> bundleHandler;
+    private ConflictResolver<Configuration, Configuration> configHandler;
+    private ConflictResolver<Extension, Extension> extensionHandler;
 
-    public MergeContextBuilder bundleConflictHandler(BiFunction<Bundle, Bundle, List<Bundle>> bh) {
+    public MergeContextBuilder bundleConflictHandler(ConflictResolver<Bundle, List<Bundle>> bh) {
         bundleHandler = bh;
         return this;
     }
 
-    public MergeContextBuilder configConflictHandler(BiFunction<Configuration, Configuration, Configuration> ch) {
+    public MergeContextBuilder configConflictHandler(ConflictResolver<Configuration, Configuration> ch) {
         configHandler = ch;
         return this;
     }
 
+    public MergeContextBuilder extensionConflictHandler(ConflictResolver<Extension, Extension> eh) {
+        extensionHandler = eh;
+        return this;
+    }
+
     public MergeContext build() {
-        return new MergeContextImpl(bundleHandler, configHandler);
+        return new MergeContextImpl(bundleHandler, configHandler, extensionHandler);
     }
 
     private static class MergeContextImpl implements MergeContext {
-        private BiFunction<Bundle, Bundle, List<Bundle>> bundleHandler;
-        private BiFunction<Configuration, Configuration, Configuration> configHandler;
+        private final ConflictResolver<Bundle, List<Bundle>> bundleHandler;
+        private final ConflictResolver<Configuration, Configuration> configHandler;
+        private final ConflictResolver<Extension, Extension> extensionHandler;
 
-        private MergeContextImpl(BiFunction<Bundle, Bundle, List<Bundle>> bundleHandler,
-                BiFunction<Configuration, Configuration, Configuration> configHandler) {
+
+        public MergeContextImpl(ConflictResolver<Bundle, List<Bundle>> bundleHandler,
+                ConflictResolver<Configuration, Configuration> configHandler,
+                ConflictResolver<Extension, Extension> extensionHandler) {
             this.bundleHandler = bundleHandler;
             this.configHandler = configHandler;
+            this.extensionHandler = extensionHandler;
         }
 
         @Override
-        public List<Bundle> resolveBundleConflict(Bundle b1, Bundle b2) {
-            return bundleHandler.apply(b1, b2);
+        public List<Bundle> handleBundleConflict(Feature f1, Bundle b1, Feature f2, Bundle b2) {
+            return bundleHandler.resolve(f1, b1, f2, b2);
         }
 
         @Override
-        public Configuration resolveConfigurationConflict(Configuration c1, Configuration c2) {
-            return configHandler.apply(c1, c2);
+        public Configuration handleConfigurationConflict(Feature f1, Configuration c1, Feature f2, Configuration c2) {
+            return configHandler.resolve(f1, c1, f2, c2);
+        }
+
+        @Override
+        public Extension handleExtensionConflict(Feature f1, Extension e1, Feature f2, Extension e2) {
+            return extensionHandler.resolve(f1, e1, f2, e2);
         }
     }
 }
