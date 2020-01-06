@@ -16,15 +16,35 @@
  */
 package org.osgi.feature;
 
-
 import java.util.Map;
 
+/**
+ * A builder for Feature Model {@link Bundle} objects.
+ * @NotThreadSafe
+ */
 public interface BundleBuilder {
 
+    /**
+     * Add metadata for this Bundle.
+     * @param key Metadata key.
+     * @param value Metadata value.
+     * @return This builder.
+     */
     BundleBuilder addMetadata(String key, Object value);
 
+    /**
+     * Add metadata for this Bundle by providing a map. All
+     * metadata in the map is added to any previously provided
+     * metadata.
+     * @param md The map with metadata.
+     * @return This builder.
+     */
     BundleBuilder addMetadata(Map<String, Object> md);
 
+    /**
+     * Build the Bundle object. Can only be called once on a builder. After
+     * calling this method the current builder instance cannot be used any more.
+     * @return The Bundle.
+     */
     Bundle build();
-
 }

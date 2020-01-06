@@ -16,16 +16,52 @@
  */
 package org.osgi.feature;
 
+/**
+ * The Builder Factory can be used to obtain builders for the various entities.
+ */
 public interface BuilderFactory {
+    /**
+     * Obtain a new builder for Bundle objects.
+     * @param id The artifact ID for the bundle object being built.
+     * @return The builder.
+     */
     BundleBuilder newBundleBuilder(ArtifactID id);
 
+    /**
+     * Obtain a new builder for Configuration objects.
+     * @param pid The persistent ID for the Configuration being built.
+     * @return The builder.
+     */
     ConfigurationBuilder newConfigurationBuilder(String pid);
 
+    /**
+     * Obtain a new builder for Factory Configuration objects.
+     * @param factoryPid The factory persistent ID for the Configuration being built.
+     * @param name The name of the configuration being built. The PID for the configuration
+     * will be the factoryPid + '~' + name
+     * @return The builder.
+     */
     ConfigurationBuilder newConfigurationBuilder(String factoryPid, String name);
 
+    /**
+     * Obtain a new builder for Feature objects.
+     * @param id The artifact ID for the feature object being built.
+     * @return The builder.
+     */
     FeatureBuilder newFeatureBuilder(ArtifactID id);
 
+    /**
+     * Obtain a new builder for Feature objects.
+     * @param name The extension name.
+     * @param type The type of extension: JSON, Text or Artifacts.
+     * @param kind The kind of extension: Mandatory, Optional or Transient.
+     * @return The builder.
+     */
     ExtensionBuilder newExtensionBuilder(String name, Extension.Type type, Extension.Kind kind);
 
+    /**
+     * Obtain a new builder for MergeContext objects.
+     * @return The builder.
+     */
     MergeContextBuilder newMergeContextBuilder();
 }

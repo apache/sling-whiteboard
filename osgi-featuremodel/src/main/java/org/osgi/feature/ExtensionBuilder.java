@@ -16,18 +16,63 @@
  */
 package org.osgi.feature;
 
+/**
+ * A builder for Feature Model {@link Extension} objects.
+ * @NotThreadSafe
+ */
 public interface ExtensionBuilder {
 
+    /**
+     * Add text to the extension. Can only be called for extensions of type
+     * {@link Extension.Type.TEXT}.
+     * @param text The text to be added.
+     * @return This builder.
+     */
     ExtensionBuilder addText(String text);
 
+    /**
+     * Add JSON in String form to the extension. Can only be called for extensions
+     * of type {@link Extension.Type.JSON}.
+     * @param json The JSON to be added.
+     * @return This builder.
+     */
     ExtensionBuilder setJSON(String json);
 
+    /**
+     * Add an Artifact to the extension. Can only be called for extensions of type
+     * {@link Extension.Type.ARTIFACT}.
+     * @param aid The ArtifactID of the artifact to add.
+     * @return This builder.
+     */
     ExtensionBuilder addArtifact(ArtifactID aid);
 
+    /**
+     * Add an Artifact to the extension. Can only be called for extensions of type
+     * {@link Extension.Type.ARTIFACT}.
+     * @param groupId The Group ID of the artifact to add.
+     * @param artifactId The Artifact ID of the artifact to add.
+     * @param version The Version of the artifact to add.
+     * @return This builder.
+     */
     ExtensionBuilder addArtifact(String groupId, String artifactId, String version);
 
+    /**
+     * Add an Artifact to the extension. Can only be called for extensions of type
+     * {@link Extension.Type.ARTIFACT}.
+     * @param groupId The Group ID of the artifact to add.
+     * @param artifactId The Artifact ID of the artifact to add.
+     * @param version The Version of the artifact to add.
+     * @param at The type indicator of the artifact to add.
+     * @param classifier The classifier of the artifact to add.
+     * @return This builder.
+     */
     ExtensionBuilder addArtifact(String groupId, String artifactId, String version, String at, String classifier);
 
+    /**
+     * Build the Extension. Can only be called once on a builder. After
+     * calling this method the current builder instance cannot be used any more.
+     * @return The Extension.
+     */
     Extension build();
 
 }

@@ -18,6 +18,14 @@ package org.osgi.feature;
 
 import java.util.Map;
 
+/**
+ * A Bundle which is part of a feature.
+ * @ThreadSafe
+ */
 public interface Bundle extends Artifact {
+    /**
+     * Get the metadata for this bundle.
+     * @return The metadata.
+     */
     Map<String, Object> getMetadata();
 }

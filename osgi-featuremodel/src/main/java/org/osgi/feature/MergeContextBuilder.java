@@ -18,14 +18,37 @@ package org.osgi.feature;
 
 import java.util.List;
 
+/**
+ * A builder for {@link MergeContext} objects.
+ * @NotThreadSafe
+ */
 public interface MergeContextBuilder {
-
+    /**
+     * Set the Bundle Conflict Resolver.
+     * @param bh The Conflict Resolver.
+     * @return This builder.
+     */
     MergeContextBuilder bundleConflictHandler(ConflictResolver<Bundle, List<Bundle>> bh);
 
+    /**
+     * Set the Configuration Conflict Resolver.
+     * @param ch The Conflict Resolver.
+     * @return This builder.
+     */
     MergeContextBuilder configConflictHandler(ConflictResolver<Configuration, Configuration> ch);
 
+    /**
+     * Set the Extension Conflict Resolver.
+     * @param eh The Conflict Resolver.
+     * @return This builder.
+     */
     MergeContextBuilder extensionConflictHandler(ConflictResolver<Extension, Extension> eh);
 
+    /**
+     * Build the Merge Context. Can only be called once on a builder. After
+     * calling this method the current builder instance cannot be used any more.
+     * @return The Merge Context.
+     */
     MergeContext build();
 
 }

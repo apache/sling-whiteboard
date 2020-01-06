@@ -18,32 +18,102 @@ package org.osgi.feature;
 
 import java.util.Map;
 
+/**
+ * A builder for {@link Feature} Models.
+ * @NotThreadSafe
+ */
 public interface FeatureBuilder {
 
-    FeatureBuilder setTitle(String title);
+    /**
+     * Set the Feature Title.
+     * @param title The Title.
+     * @return This builder.
+     */
+    FeatureBuilder setTitle(String title); // TODO do we need this one?
 
+    /**
+     * Set the Vendor.
+     * @param vendor The Vendor.
+     * @return This builder.
+     */
     FeatureBuilder setVendor(String vendor);
 
-    FeatureBuilder setLicense(String license);
+    /**
+     * Set the License.
+     * @param license The License.
+     * @return This builder.
+     */
+    FeatureBuilder setLicense(String license); // TODO do we need this one?
 
+    /**
+     * Set the Location.
+     * @param location The Location.
+     * @return This builder.
+     */
     FeatureBuilder setLocation(String location);
 
+    /**
+     * Set the Feature Complete flag.
+     * @param complete If the feature is complete.
+     * @return This builder.
+     */
     FeatureBuilder setComplete(boolean complete);
 
+    /**
+     * Set the Feature is Final flag.
+     * @param isFinal If the feature is final.
+     * @return This builder.
+     */
     FeatureBuilder setFinal(boolean isFinal);
 
+    /**
+     * Set the Feature Description.
+     * @param description The description.
+     * @return This builder.
+     */
     FeatureBuilder setDescription(String description);
 
+    /**
+     * Add Bundles to the Feature.
+     * @param bundles The Bundles to add.
+     * @return This builder.
+     */
     FeatureBuilder addBundles(Bundle ... bundles);
 
+    /**
+     * Add Configurations to the Feature.
+     * @param configs The Configurations to add.
+     * @return This builder.
+     */
     FeatureBuilder addConfigurations(Configuration ... configs);
 
+    /**
+     * Add Extensions to the Feature
+     * @param extensions The Extensions to add.
+     * @return This builder.
+     */
     FeatureBuilder addExtensions(Extension ... extensions);
 
-    FeatureBuilder addVariable(String key, String value);
+    /**
+     * Add a variable to the Feature. If a variable with the specified key
+     * already exists it is replaced with this one.
+     * @param key The key.
+     * @param defaultValue The default value.
+     * @return This builder.
+     */
+    FeatureBuilder addVariable(String key, String defaultValue);
 
+    /**
+     * Add a map of variables to the Feature
+     * @param variables to be added.
+     * @return This builder.
+     */
     FeatureBuilder addVariables(Map<String, String> variables);
 
+    /**
+     * Build the Feature. Can only be called once on a builder. After
+     * calling this method the current builder instance cannot be used any more.
+     * @return The Feature.
+     */
     Feature build();
-
 }

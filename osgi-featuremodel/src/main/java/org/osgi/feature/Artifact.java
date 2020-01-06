@@ -16,6 +16,13 @@
  */
 package org.osgi.feature;
 
+/**
+ * An Artifact is an entity with an ID.
+ */
 public interface Artifact {
+    /**
+     * Get the artifact's ID.
+     * @return The ID of this artifact.
+     */
     ArtifactID getID();
 }
