@@ -19,9 +19,18 @@ package org.osgi.feature;
 /**
  * Interface implemented by a callback that can resolve merge conflicts.
  * @param <T> The type of entity this conflict resolver is used for.
- * @param <R> The type of the result of the resoluton.
+ * @param <R> The type of the result of the resolution.
  * @ConsumerType
+ * @ThreadSafe
  */
 public interface ConflictResolver<T, R> {
+    /**
+     * Resolve this conflict between o1 and o2.
+     * @param f1 The first feature model.
+     * @param o1 The first conflicting object.
+     * @param f2 The second feature model
+     * @param o2 The second conflicting object.
+     * @return The resolution of the conflict.
+     */
     R resolve(Feature f1, T o1, Feature f2, T o2);
 }

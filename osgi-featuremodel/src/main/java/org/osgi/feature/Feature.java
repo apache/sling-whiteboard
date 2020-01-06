@@ -19,27 +19,75 @@ package org.osgi.feature;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * The Feature Model Feature.
+ * @ThreadSafe
+ */
 public interface Feature extends Artifact {
+    /**
+     * Get the title.
+     * @return The title.
+     */
     String getTitle();
 
+    /**
+     * Get the description.
+     * @return The description.
+     */
     String getDescription();
 
+    /**
+     * Get the vendor.
+     * @return The vendor.
+     */
     String getVendor();
 
+    /**
+     * Get the license.
+     * @return The license.
+     */
     String getLicense();
 
+    /**
+     * Get the location.
+     * @return The location.
+     */
     String getLocation();
 
+    /**
+     * Get whether the feature is complete or not.
+     * @return Completeness value.
+     */
     boolean isComplete();
 
+    /**
+     * Get whether the feature is final or not.
+     * @return Final value.
+     */
     boolean isFinal();
 
+    /**
+     * Get the bundles.
+     * @return The bundles.
+     */
     List<Bundle> getBundles();
 
+    /**
+     * Get the configurations.
+     * @return The configurations.
+     */
     Map<String, Configuration> getConfigurations();
 
+    /**
+     * Get the extensions.
+     * @return The extensions.
+     */
     Map<String, Extension> getExtensions();
 
+    /**
+     * Get the variables.
+     * @return The variables.
+     */
     Map<String, String> getVariables();
 
     // add prototype

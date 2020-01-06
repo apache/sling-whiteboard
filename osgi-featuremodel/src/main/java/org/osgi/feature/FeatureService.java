@@ -20,10 +20,14 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 
+/**
+ * The Feature Service is the primary entry point for interacting with the feature model.
+ * @ThreadSafe
+ */
 public interface FeatureService {
     /**
-     *
-     * @return
+     * Get a factory which can be used to build feature model entities.
+     * @return A builder factory.
      */
     BuilderFactory getBuilderFactory();
 
