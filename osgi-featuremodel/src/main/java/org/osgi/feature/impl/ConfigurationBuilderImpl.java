@@ -14,32 +14,33 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.osgi.feature.builder;
+package org.osgi.feature.impl;
 
 import org.osgi.feature.Configuration;
+import org.osgi.feature.ConfigurationBuilder;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class ConfigurationBuilderImpl {
+class ConfigurationBuilderImpl implements ConfigurationBuilder {
     private final String p;
     private final String name;
 
     private final Map<String,Object> values = new HashMap<>();
 
-    public ConfigurationBuilderImpl(String pid) {
+    ConfigurationBuilderImpl(String pid) {
         this.p = pid;
         this.name = null;
     }
 
-    public ConfigurationBuilderImpl(String factoryPid, String name) {
+    ConfigurationBuilderImpl(String factoryPid, String name) {
         this.p = factoryPid;
         this.name = name;
     }
 
-    public ConfigurationBuilderImpl(Configuration c) {
+    ConfigurationBuilderImpl(Configuration c) {
         if (c.getFactoryPid() == null) {
             p = c.getPid();
             name = null;
@@ -52,18 +53,21 @@ public class ConfigurationBuilderImpl {
         addValues(c.getValues());
     }
 
-    public ConfigurationBuilderImpl addValue(String key, Object value) {
+    @Override
+    public ConfigurationBuilder addValue(String key, Object value) {
         // TODO can do some validation on the configuration
         this.values.put(key, value);
         return this;
     }
 
-    public ConfigurationBuilderImpl addValues(Map<String, Object> cfg) {
+    @Override
+    public ConfigurationBuilder addValues(Map<String, Object> cfg) {
         // TODO can do some validation on the configuration
         this.values.putAll(cfg);
         return this;
     }
 
+    @Override
     public Configuration build() {
         if (name == null) {
             return new ConfigurationImpl(p, null, values);

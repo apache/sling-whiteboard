@@ -14,37 +14,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.osgi.feature.builder;
+package org.osgi.feature;
 
-import org.osgi.feature.Artifact;
-import org.osgi.feature.ArtifactID;
+import java.util.Map;
 
-import java.util.Objects;
+public interface ConfigurationBuilder {
 
-class ArtifactImpl implements Artifact {
-    private final ArtifactID id;
+    ConfigurationBuilder addValue(String key, Object value);
 
-    ArtifactImpl(ArtifactID id) {
-        this.id = id;
-    }
+    ConfigurationBuilder addValues(Map<String, Object> cfg);
 
-    @Override
-    public ArtifactID getID() {
-        return id;
-    }
+    Configuration build();
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (!(obj instanceof ArtifactImpl))
-            return false;
-        ArtifactImpl other = (ArtifactImpl) obj;
-        return Objects.equals(id, other.id);
-    }
 }

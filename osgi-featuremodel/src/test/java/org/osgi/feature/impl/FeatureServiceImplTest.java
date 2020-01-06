@@ -25,10 +25,10 @@ import org.osgi.feature.Extension;
 import org.osgi.feature.Feature;
 import org.osgi.feature.FeatureService;
 import org.osgi.feature.MergeContext;
-import org.osgi.feature.builder.ConfigurationBuilderImpl;
-import org.osgi.feature.builder.ExtensionBuilderImpl;
-import org.osgi.feature.builder.FeatureServiceImpl;
-import org.osgi.feature.builder.MergeContextBuilderImpl;
+import org.osgi.feature.impl.ConfigurationBuilderImpl;
+import org.osgi.feature.impl.ExtensionBuilderImpl;
+import org.osgi.feature.impl.FeatureServiceImpl;
+import org.osgi.feature.impl.MergeContextBuilderImpl;
 
 import java.io.IOException;
 import java.io.InputStreamReader;

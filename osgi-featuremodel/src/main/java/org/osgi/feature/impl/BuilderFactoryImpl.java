@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.osgi.feature.builder;
+package org.osgi.feature.impl;
 
 import org.osgi.feature.ArtifactID;
 import org.osgi.feature.BuilderFactory;
