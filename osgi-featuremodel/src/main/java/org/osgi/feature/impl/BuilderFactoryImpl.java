@@ -19,6 +19,7 @@ package org.osgi.feature.impl;
 import org.osgi.feature.ArtifactID;
 import org.osgi.feature.BuilderFactory;
 import org.osgi.feature.BundleBuilder;
+import org.osgi.feature.ConfigurationBuilder;
 import org.osgi.feature.Extension.Kind;
 import org.osgi.feature.Extension.Type;
 import org.osgi.feature.ExtensionBuilder;
@@ -29,6 +30,16 @@ class BuilderFactoryImpl implements BuilderFactory {
     @Override
     public BundleBuilder newBundleBuilder(ArtifactID id) {
         return new BundleBuilderImpl(id);
+    }
+
+    @Override
+    public ConfigurationBuilder newConfigurationBuilder(String pid) {
+        return new ConfigurationBuilderImpl(pid);
+    }
+
+    @Override
+    public ConfigurationBuilder newConfigurationBuilder(String factoryPid, String name) {
+        return new ConfigurationBuilderImpl(factoryPid, name);
     }
 
     @Override

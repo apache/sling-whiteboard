@@ -19,6 +19,10 @@ package org.osgi.feature;
 public interface BuilderFactory {
     BundleBuilder newBundleBuilder(ArtifactID id);
 
+    ConfigurationBuilder newConfigurationBuilder(String pid);
+
+    ConfigurationBuilder newConfigurationBuilder(String factoryPid, String name);
+
     FeatureBuilder newFeatureBuilder(ArtifactID id);
 
     ExtensionBuilder newExtensionBuilder(String name, Extension.Type type, Extension.Kind kind);

@@ -19,9 +19,13 @@ package org.osgi.feature.impl;
 import org.osgi.feature.ArtifactID;
 import org.osgi.feature.BuilderFactory;
 import org.osgi.feature.Bundle;
+import org.osgi.feature.BundleBuilder;
 import org.osgi.feature.Configuration;
+import org.osgi.feature.ConfigurationBuilder;
 import org.osgi.feature.Extension;
+import org.osgi.feature.ExtensionBuilder;
 import org.osgi.feature.Feature;
+import org.osgi.feature.FeatureBuilder;
 import org.osgi.feature.FeatureService;
 import org.osgi.feature.MergeContext;
 
@@ -42,9 +46,11 @@ import javax.json.JsonString;
 import javax.json.JsonValue;
 
 public class FeatureServiceImpl implements FeatureService {
+    private final BuilderFactoryImpl builderFactory = new BuilderFactoryImpl();
+
     @Override
     public BuilderFactory getBuilderFactory() {
-        return new BuilderFactoryImpl();
+        return builderFactory;
     }
 
     @Override
@@ -52,7 +58,7 @@ public class FeatureServiceImpl implements FeatureService {
         JsonObject json = Json.createReader(jsonReader).readObject();
 
         String id = json.getString("id");
-        FeatureBuilderImpl builder = new FeatureBuilderImpl(ArtifactID.fromMavenID(id));
+        FeatureBuilder builder = builderFactory.newFeatureBuilder(ArtifactID.fromMavenID(id));
 
         builder.setTitle(json.getString("title", null));
         builder.setDescription(json.getString("description", null));
@@ -81,7 +87,7 @@ public class FeatureServiceImpl implements FeatureService {
             if (val.getValueType() == JsonValue.ValueType.OBJECT) {
                 JsonObject jo = val.asJsonObject();
                 String bid = jo.getString("id");
-                BundleBuilderImpl builder = new BundleBuilderImpl(ArtifactID.fromMavenID(bid));
+                BundleBuilder builder = builderFactory.newBundleBuilder(ArtifactID.fromMavenID(bid));
 
                 for (Map.Entry<String, JsonValue> entry : jo.entrySet()) {
                     if (entry.getKey().equals("id"))
@@ -126,11 +132,11 @@ public class FeatureServiceImpl implements FeatureService {
                 p = p.substring(idx + 1);
             }
 
-            ConfigurationBuilderImpl builder;
+            ConfigurationBuilder builder;
             if (factoryPid == null) {
-                builder = new ConfigurationBuilderImpl(p);
+                builder = builderFactory.newConfigurationBuilder(p);
             } else {
-                builder = new ConfigurationBuilderImpl(factoryPid, p);
+                builder = builderFactory.newConfigurationBuilder(factoryPid, p);
             }
 
             JsonObject values = entry.getValue().asJsonObject();
@@ -186,7 +192,7 @@ public class FeatureServiceImpl implements FeatureService {
             String k = exData.getString("kind", "optional");
             Extension.Kind kind = Extension.Kind.valueOf(k.toUpperCase());
 
-            ExtensionBuilderImpl builder = new ExtensionBuilderImpl(entry.getKey(), type, kind);
+            ExtensionBuilder builder = builderFactory.newExtensionBuilder(entry.getKey(), type, kind);
 
             switch (type) {
             case TEXT:
@@ -219,8 +225,7 @@ public class FeatureServiceImpl implements FeatureService {
 
     @Override
     public Feature mergeFeatures(ArtifactID targetID, Feature f1, Feature f2, MergeContext ctx) {
-
-        FeatureBuilderImpl fb = new FeatureBuilderImpl(targetID);
+        FeatureBuilder fb = builderFactory.newFeatureBuilder(targetID);
 
         copyAttrs(f1, fb);
         copyAttrs(f2, fb);
@@ -309,7 +314,7 @@ public class FeatureServiceImpl implements FeatureService {
         return extensions.values().toArray(new Extension[] {});
     }
 
-    private void copyAttrs(Feature f, FeatureBuilderImpl fb) {
+    private void copyAttrs(Feature f, FeatureBuilder fb) {
         if (f.getTitle() != null)
             fb.setTitle(f.getTitle());
 
