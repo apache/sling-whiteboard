@@ -16,12 +16,16 @@
  */
 package org.osgi.feature;
 
-public interface BuilderFactory {
-    BundleBuilder newBundleBuilder(ArtifactID id);
+import java.util.List;
 
-    FeatureBuilder newFeatureBuilder(ArtifactID id);
+public interface MergeContextBuilder {
 
-    ExtensionBuilder newExtensionBuilder(String name, Extension.Type type, Extension.Kind kind);
+    MergeContextBuilder bundleConflictHandler(ConflictResolver<Bundle, List<Bundle>> bh);
 
-    MergeContextBuilder newMergeContextBuilder();
+    MergeContextBuilder configConflictHandler(ConflictResolver<Configuration, Configuration> ch);
+
+    MergeContextBuilder extensionConflictHandler(ConflictResolver<Extension, Extension> eh);
+
+    MergeContext build();
+
 }

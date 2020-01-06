@@ -16,12 +16,18 @@
  */
 package org.osgi.feature;
 
-public interface BuilderFactory {
-    BundleBuilder newBundleBuilder(ArtifactID id);
+public interface ExtensionBuilder {
 
-    FeatureBuilder newFeatureBuilder(ArtifactID id);
+    ExtensionBuilder addText(String text);
 
-    ExtensionBuilder newExtensionBuilder(String name, Extension.Type type, Extension.Kind kind);
+    ExtensionBuilder setJSON(String json);
 
-    MergeContextBuilder newMergeContextBuilder();
+    ExtensionBuilder addArtifact(ArtifactID aid);
+
+    ExtensionBuilder addArtifact(String groupId, String artifactId, String version);
+
+    ExtensionBuilder addArtifact(String groupId, String artifactId, String version, String at, String classifier);
+
+    Extension build();
+
 }

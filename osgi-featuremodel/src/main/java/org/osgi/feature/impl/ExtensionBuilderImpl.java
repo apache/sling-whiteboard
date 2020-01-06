@@ -20,6 +20,7 @@ import org.osgi.feature.ArtifactID;
 import org.osgi.feature.Extension;
 import org.osgi.feature.Extension.Kind;
 import org.osgi.feature.Extension.Type;
+import org.osgi.feature.ExtensionBuilder;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -28,20 +29,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class ExtensionBuilderImpl {
+public class ExtensionBuilderImpl implements ExtensionBuilder {
     private final String name;
     private final Type type;
     private final Kind kind;
 
     private final StringBuilder content = new StringBuilder();
 
-    public ExtensionBuilderImpl(String name, Type type, Kind kind) {
+    ExtensionBuilderImpl(String name, Type type, Kind kind) {
         this.name = name;
         this.type = type;
         this.kind = kind;
     }
 
-    public ExtensionBuilderImpl addText(String text) {
+    @Override
+    public ExtensionBuilder addText(String text) {
         if (type != Type.TEXT)
             throw new IllegalStateException("Cannot add text to extension of type " + type);
 
@@ -49,7 +51,8 @@ public class ExtensionBuilderImpl {
         return this;
     }
 
-    public ExtensionBuilderImpl setJSON(String json) {
+    @Override
+    public ExtensionBuilder setJSON(String json) {
         if (type != Type.JSON)
             throw new IllegalStateException("Cannot add text to extension of type " + type);
 
@@ -58,16 +61,19 @@ public class ExtensionBuilderImpl {
         return this;
     }
 
-    public ExtensionBuilderImpl addArtifact(ArtifactID aid) {
+    @Override
+    public ExtensionBuilder addArtifact(ArtifactID aid) {
         addArtifact(aid.getGroupId(), aid.getArtifactId(), aid.getVersion(), aid.getType(), aid.getClassifier());
         return this;
     }
 
-    public ExtensionBuilderImpl addArtifact(String groupId, String artifactId, String version) {
+    @Override
+    public ExtensionBuilder addArtifact(String groupId, String artifactId, String version) {
         return addArtifact(groupId, artifactId, version, null, null);
     }
 
-    public ExtensionBuilderImpl addArtifact(String groupId, String artifactId, String version, String at, String classifier) {
+    @Override
+    public ExtensionBuilder addArtifact(String groupId, String artifactId, String version, String at, String classifier) {
         if (type != Type.ARTIFACTS)
             throw new IllegalStateException("Cannot add artifacts to extension of type " + type);
 
@@ -89,6 +95,7 @@ public class ExtensionBuilderImpl {
         return this;
     }
 
+    @Override
     public Extension build() {
         return new ExtensionImpl(name, type, kind, content.toString());
     }

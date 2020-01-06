@@ -22,29 +22,34 @@ import org.osgi.feature.ConflictResolver;
 import org.osgi.feature.Extension;
 import org.osgi.feature.Feature;
 import org.osgi.feature.MergeContext;
+import org.osgi.feature.MergeContextBuilder;
 
 import java.util.List;
 
-public class MergeContextBuilderImpl {
+class MergeContextBuilderImpl implements MergeContextBuilder {
     private ConflictResolver<Bundle, List<Bundle>> bundleHandler;
     private ConflictResolver<Configuration, Configuration> configHandler;
     private ConflictResolver<Extension, Extension> extensionHandler;
 
-    public MergeContextBuilderImpl bundleConflictHandler(ConflictResolver<Bundle, List<Bundle>> bh) {
+    @Override
+    public MergeContextBuilder bundleConflictHandler(ConflictResolver<Bundle, List<Bundle>> bh) {
         bundleHandler = bh;
         return this;
     }
 
-    public MergeContextBuilderImpl configConflictHandler(ConflictResolver<Configuration, Configuration> ch) {
+    @Override
+    public MergeContextBuilder configConflictHandler(ConflictResolver<Configuration, Configuration> ch) {
         configHandler = ch;
         return this;
     }
 
-    public MergeContextBuilderImpl extensionConflictHandler(ConflictResolver<Extension, Extension> eh) {
+    @Override
+    public MergeContextBuilder extensionConflictHandler(ConflictResolver<Extension, Extension> eh) {
         extensionHandler = eh;
         return this;
     }
 
+    @Override
     public MergeContext build() {
         return new MergeContextImpl(bundleHandler, configHandler, extensionHandler);
     }
@@ -55,7 +60,7 @@ public class MergeContextBuilderImpl {
         private final ConflictResolver<Extension, Extension> extensionHandler;
 
 
-        public MergeContextImpl(ConflictResolver<Bundle, List<Bundle>> bundleHandler,
+        MergeContextImpl(ConflictResolver<Bundle, List<Bundle>> bundleHandler,
                 ConflictResolver<Configuration, Configuration> configHandler,
                 ConflictResolver<Extension, Extension> extensionHandler) {
             this.bundleHandler = bundleHandler;

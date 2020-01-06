@@ -25,10 +25,6 @@ import org.osgi.feature.Extension;
 import org.osgi.feature.Feature;
 import org.osgi.feature.FeatureService;
 import org.osgi.feature.MergeContext;
-import org.osgi.feature.impl.ConfigurationBuilderImpl;
-import org.osgi.feature.impl.ExtensionBuilderImpl;
-import org.osgi.feature.impl.FeatureServiceImpl;
-import org.osgi.feature.impl.MergeContextBuilderImpl;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -91,7 +87,7 @@ public class FeatureServiceImplTest {
             f2 = fs.readFeature(r);
         }
 
-        MergeContext ctx = new MergeContextBuilderImpl()
+        MergeContext ctx = bf.newMergeContextBuilder()
                 .bundleConflictHandler((cf1, b1, cf2, b2) -> Arrays.asList(b1, b2))
                 .configConflictHandler((cf1, c1, cf2, c2) -> new ConfigurationBuilderImpl(c1)
                         .addValues(c2.getValues()).build())
@@ -130,6 +126,7 @@ public class FeatureServiceImplTest {
     @Test
     public void testMergeExtensions() throws IOException {
         FeatureService fs = new FeatureServiceImpl();
+        BuilderFactory bf = fs.getBuilderFactory();
 
         URL res1 = getClass().getResource("/features/test-exfeat1.json");
         Feature f1;
@@ -143,7 +140,7 @@ public class FeatureServiceImplTest {
             f2 = fs.readFeature(r);
         }
 
-        MergeContext ctx = new MergeContextBuilderImpl()
+        MergeContext ctx = bf.newMergeContextBuilder()
                 .extensionConflictHandler((cf1, e1, cf2, e2) ->
                     new ExtensionBuilderImpl(e1.getName(), e1.getType(), e1.getKind())
                         .addText(e1.getText())

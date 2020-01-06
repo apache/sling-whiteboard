@@ -19,7 +19,11 @@ package org.osgi.feature.impl;
 import org.osgi.feature.ArtifactID;
 import org.osgi.feature.BuilderFactory;
 import org.osgi.feature.BundleBuilder;
+import org.osgi.feature.Extension.Kind;
+import org.osgi.feature.Extension.Type;
+import org.osgi.feature.ExtensionBuilder;
 import org.osgi.feature.FeatureBuilder;
+import org.osgi.feature.MergeContextBuilder;
 
 class BuilderFactoryImpl implements BuilderFactory {
     @Override
@@ -30,5 +34,15 @@ class BuilderFactoryImpl implements BuilderFactory {
     @Override
     public FeatureBuilder newFeatureBuilder(ArtifactID id) {
         return new FeatureBuilderImpl(id);
+    }
+
+    @Override
+    public ExtensionBuilder newExtensionBuilder(String name, Type type, Kind kind) {
+        return new ExtensionBuilderImpl(name, type, kind);
+    }
+
+    @Override
+    public MergeContextBuilder newMergeContextBuilder() {
+        return new MergeContextBuilderImpl();
     }
 }
