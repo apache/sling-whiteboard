@@ -22,6 +22,12 @@ import java.io.Writer;
 
 public interface FeatureService {
     /**
+     *
+     * @return
+     */
+    BuilderFactory getBuilderFactory();
+
+    /**
      * Read a Feature from JSON
      * @param jsonReader A Reader to the JSON input
      * @return The Feature represented by the JSON

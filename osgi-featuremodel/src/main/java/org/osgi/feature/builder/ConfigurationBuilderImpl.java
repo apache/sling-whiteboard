@@ -23,23 +23,23 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class ConfigurationBuilder {
+public class ConfigurationBuilderImpl {
     private final String p;
     private final String name;
 
     private final Map<String,Object> values = new HashMap<>();
 
-    public ConfigurationBuilder(String pid) {
+    public ConfigurationBuilderImpl(String pid) {
         this.p = pid;
         this.name = null;
     }
 
-    public ConfigurationBuilder(String factoryPid, String name) {
+    public ConfigurationBuilderImpl(String factoryPid, String name) {
         this.p = factoryPid;
         this.name = name;
     }
 
-    public ConfigurationBuilder(Configuration c) {
+    public ConfigurationBuilderImpl(Configuration c) {
         if (c.getFactoryPid() == null) {
             p = c.getPid();
             name = null;
@@ -52,13 +52,13 @@ public class ConfigurationBuilder {
         addValues(c.getValues());
     }
 
-    public ConfigurationBuilder addValue(String key, Object value) {
+    public ConfigurationBuilderImpl addValue(String key, Object value) {
         // TODO can do some validation on the configuration
         this.values.put(key, value);
         return this;
     }
 
-    public ConfigurationBuilder addValues(Map<String, Object> cfg) {
+    public ConfigurationBuilderImpl addValues(Map<String, Object> cfg) {
         // TODO can do some validation on the configuration
         this.values.putAll(cfg);
         return this;

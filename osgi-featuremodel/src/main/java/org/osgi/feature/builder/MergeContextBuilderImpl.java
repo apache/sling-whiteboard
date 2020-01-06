@@ -25,22 +25,22 @@ import org.osgi.feature.MergeContext;
 
 import java.util.List;
 
-public class MergeContextBuilder {
+public class MergeContextBuilderImpl {
     private ConflictResolver<Bundle, List<Bundle>> bundleHandler;
     private ConflictResolver<Configuration, Configuration> configHandler;
     private ConflictResolver<Extension, Extension> extensionHandler;
 
-    public MergeContextBuilder bundleConflictHandler(ConflictResolver<Bundle, List<Bundle>> bh) {
+    public MergeContextBuilderImpl bundleConflictHandler(ConflictResolver<Bundle, List<Bundle>> bh) {
         bundleHandler = bh;
         return this;
     }
 
-    public MergeContextBuilder configConflictHandler(ConflictResolver<Configuration, Configuration> ch) {
+    public MergeContextBuilderImpl configConflictHandler(ConflictResolver<Configuration, Configuration> ch) {
         configHandler = ch;
         return this;
     }
 
-    public MergeContextBuilder extensionConflictHandler(ConflictResolver<Extension, Extension> eh) {
+    public MergeContextBuilderImpl extensionConflictHandler(ConflictResolver<Extension, Extension> eh) {
         extensionHandler = eh;
         return this;
     }

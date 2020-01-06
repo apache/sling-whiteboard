@@ -18,31 +18,35 @@ package org.osgi.feature.builder;
 
 import org.osgi.feature.ArtifactID;
 import org.osgi.feature.Bundle;
+import org.osgi.feature.BundleBuilder;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class BundleBuilder {
+class BundleBuilderImpl implements BundleBuilder {
     private final ArtifactID id;
 
     private final Map<String,Object> metadata = new HashMap<>();
 
-    public BundleBuilder(ArtifactID id) {
+    BundleBuilderImpl(ArtifactID id) {
         this.id = id;
     }
 
+    @Override
     public BundleBuilder addMetadata(String key, Object value) {
         this.metadata.put(key, value);
         return this;
     }
 
+    @Override
     public BundleBuilder addMetadata(Map<String,Object> md) {
         this.metadata.putAll(md);
         return this;
     }
 
+    @Override
     public Bundle build() {
         return new BundleImpl(id, metadata);
     }
@@ -50,7 +54,7 @@ public class BundleBuilder {
     private static class BundleImpl extends ArtifactImpl implements Bundle {
         private final Map<String, Object> metadata;
 
-        public BundleImpl(ArtifactID id, Map<String, Object> metadata) {
+        private BundleImpl(ArtifactID id, Map<String, Object> metadata) {
             super(id);
 
             this.metadata = Collections.unmodifiableMap(metadata);

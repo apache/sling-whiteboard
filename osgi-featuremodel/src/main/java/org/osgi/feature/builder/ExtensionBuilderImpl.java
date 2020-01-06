@@ -28,20 +28,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class ExtensionBuilder {
+public class ExtensionBuilderImpl {
     private final String name;
     private final Type type;
     private final Kind kind;
 
     private final StringBuilder content = new StringBuilder();
 
-    public ExtensionBuilder(String name, Type type, Kind kind) {
+    public ExtensionBuilderImpl(String name, Type type, Kind kind) {
         this.name = name;
         this.type = type;
         this.kind = kind;
     }
 
-    public ExtensionBuilder addText(String text) {
+    public ExtensionBuilderImpl addText(String text) {
         if (type != Type.TEXT)
             throw new IllegalStateException("Cannot add text to extension of type " + type);
 
@@ -49,7 +49,7 @@ public class ExtensionBuilder {
         return this;
     }
 
-    public ExtensionBuilder setJSON(String json) {
+    public ExtensionBuilderImpl setJSON(String json) {
         if (type != Type.JSON)
             throw new IllegalStateException("Cannot add text to extension of type " + type);
 
@@ -58,16 +58,16 @@ public class ExtensionBuilder {
         return this;
     }
 
-    public ExtensionBuilder addArtifact(ArtifactID aid) {
+    public ExtensionBuilderImpl addArtifact(ArtifactID aid) {
         addArtifact(aid.getGroupId(), aid.getArtifactId(), aid.getVersion(), aid.getType(), aid.getClassifier());
         return this;
     }
 
-    public ExtensionBuilder addArtifact(String groupId, String artifactId, String version) {
+    public ExtensionBuilderImpl addArtifact(String groupId, String artifactId, String version) {
         return addArtifact(groupId, artifactId, version, null, null);
     }
 
-    public ExtensionBuilder addArtifact(String groupId, String artifactId, String version, String at, String classifier) {
+    public ExtensionBuilderImpl addArtifact(String groupId, String artifactId, String version, String at, String classifier) {
         if (type != Type.ARTIFACTS)
             throw new IllegalStateException("Cannot add artifacts to extension of type " + type);
 

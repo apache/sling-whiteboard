@@ -18,16 +18,17 @@ package org.osgi.feature.impl;
 
 import org.junit.Test;
 import org.osgi.feature.ArtifactID;
+import org.osgi.feature.BuilderFactory;
 import org.osgi.feature.Bundle;
 import org.osgi.feature.Configuration;
 import org.osgi.feature.Extension;
 import org.osgi.feature.Feature;
 import org.osgi.feature.FeatureService;
 import org.osgi.feature.MergeContext;
-import org.osgi.feature.builder.BundleBuilder;
-import org.osgi.feature.builder.ConfigurationBuilder;
-import org.osgi.feature.builder.ExtensionBuilder;
-import org.osgi.feature.builder.MergeContextBuilder;
+import org.osgi.feature.builder.ConfigurationBuilderImpl;
+import org.osgi.feature.builder.ExtensionBuilderImpl;
+import org.osgi.feature.builder.FeatureServiceImpl;
+import org.osgi.feature.builder.MergeContextBuilderImpl;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -47,6 +48,7 @@ public class FeatureServiceImplTest {
     @Test
     public void testReadFeature() throws IOException {
         FeatureService fs = new FeatureServiceImpl();
+        BuilderFactory bf = fs.getBuilderFactory();
 
         URL res = getClass().getResource("/features/test-feature.json");
         try (Reader r = new InputStreamReader(res.openStream())) {
@@ -58,7 +60,7 @@ public class FeatureServiceImplTest {
             List<Bundle> bundles = f.getBundles();
             assertEquals(3, bundles.size());
 
-            Bundle bundle = new BundleBuilder(new ArtifactID("org.osgi", "osgi.promise", "7.0.1"))
+            Bundle bundle = bf.newBundleBuilder(new ArtifactID("org.osgi", "osgi.promise", "7.0.1"))
                     .addMetadata("hash", "4632463464363646436")
                     .addMetadata("start-order", 1L)
                     .build();
@@ -67,14 +69,15 @@ public class FeatureServiceImplTest {
             ba.equals(bundle);
 
             assertTrue(bundles.contains(bundle));
-            assertTrue(bundles.contains(new BundleBuilder(new ArtifactID("org.slf4j", "slf4j-api", "1.7.29")).build()));
-            assertTrue(bundles.contains(new BundleBuilder(new ArtifactID("org.slf4j", "slf4j-simple", "1.7.29")).build()));
+            assertTrue(bundles.contains(bf.newBundleBuilder(new ArtifactID("org.slf4j", "slf4j-api", "1.7.29")).build()));
+            assertTrue(bundles.contains(bf.newBundleBuilder(new ArtifactID("org.slf4j", "slf4j-simple", "1.7.29")).build()));
         }
     }
 
     @Test
     public void testMergeFeatures() throws IOException {
         FeatureService fs = new FeatureServiceImpl();
+        BuilderFactory bf = fs.getBuilderFactory();
 
         URL res1 = getClass().getResource("/features/test-feature.json");
         Feature f1;
@@ -88,9 +91,9 @@ public class FeatureServiceImplTest {
             f2 = fs.readFeature(r);
         }
 
-        MergeContext ctx = new MergeContextBuilder()
+        MergeContext ctx = new MergeContextBuilderImpl()
                 .bundleConflictHandler((cf1, b1, cf2, b2) -> Arrays.asList(b1, b2))
-                .configConflictHandler((cf1, c1, cf2, c2) -> new ConfigurationBuilder(c1)
+                .configConflictHandler((cf1, c1, cf2, c2) -> new ConfigurationBuilderImpl(c1)
                         .addValues(c2.getValues()).build())
                 .build();
 
@@ -102,9 +105,9 @@ public class FeatureServiceImplTest {
         List<Bundle> bundles = f3.getBundles();
         assertEquals(5, bundles.size());
 
-        assertTrue(bundles.contains(new BundleBuilder(new ArtifactID("org.slf4j", "slf4j-api", "1.7.29")).build()));
-        assertTrue(bundles.contains(new BundleBuilder(new ArtifactID("org.slf4j", "slf4j-api", "1.7.30")).build()));
-        assertTrue(bundles.contains(new BundleBuilder(new ArtifactID("org.slf4j", "slf4j-nop", "1.7.30")).build()));
+        assertTrue(bundles.contains(bf.newBundleBuilder(new ArtifactID("org.slf4j", "slf4j-api", "1.7.29")).build()));
+        assertTrue(bundles.contains(bf.newBundleBuilder(new ArtifactID("org.slf4j", "slf4j-api", "1.7.30")).build()));
+        assertTrue(bundles.contains(bf.newBundleBuilder(new ArtifactID("org.slf4j", "slf4j-nop", "1.7.30")).build()));
 
         Map<String, Configuration> configs = f3.getConfigurations();
         assertEquals(2, configs.size());
@@ -140,9 +143,9 @@ public class FeatureServiceImplTest {
             f2 = fs.readFeature(r);
         }
 
-        MergeContext ctx = new MergeContextBuilder()
+        MergeContext ctx = new MergeContextBuilderImpl()
                 .extensionConflictHandler((cf1, e1, cf2, e2) ->
-                    new ExtensionBuilder(e1.getName(), e1.getType(), e1.getKind())
+                    new ExtensionBuilderImpl(e1.getName(), e1.getType(), e1.getKind())
                         .addText(e1.getText())
                         .addText(e2.getText())
                         .build())

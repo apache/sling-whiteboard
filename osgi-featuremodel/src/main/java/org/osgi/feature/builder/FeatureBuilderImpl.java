@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class FeatureBuilder {
+public class FeatureBuilderImpl {
     private final ArtifactID id;
 
     private String title;
@@ -46,70 +46,70 @@ public class FeatureBuilder {
     private final Map<String,Extension> extensions = new HashMap<>();
     private final Map<String,String> variables = new HashMap<>();
 
-    public FeatureBuilder(ArtifactID id) {
+    public FeatureBuilderImpl(ArtifactID id) {
         this.id = id;
     }
 
-    public FeatureBuilder setTitle(String title) {
+    public FeatureBuilderImpl setTitle(String title) {
         this.title = title;
         return this;
     }
 
-    public FeatureBuilder setVendor(String vendor) {
+    public FeatureBuilderImpl setVendor(String vendor) {
         this.vendor = vendor;
         return this;
     }
 
-    public FeatureBuilder setLicense(String license) {
+    public FeatureBuilderImpl setLicense(String license) {
         this.license = license;
         return this;
     }
 
-    public FeatureBuilder setLocation(String location) {
+    public FeatureBuilderImpl setLocation(String location) {
         this.location = location;
         return this;
     }
 
-    public FeatureBuilder setComplete(boolean complete) {
+    public FeatureBuilderImpl setComplete(boolean complete) {
         this.complete = complete;
         return this;
     }
 
-    public FeatureBuilder setFinal(boolean isFinal) {
+    public FeatureBuilderImpl setFinal(boolean isFinal) {
         this.isFinal = isFinal;
         return this;
     }
 
-    public FeatureBuilder setDescription(String description) {
+    public FeatureBuilderImpl setDescription(String description) {
         this.description = description;
         return this;
     }
 
-    public FeatureBuilder addBundles(Bundle ... bundles) {
+    public FeatureBuilderImpl addBundles(Bundle ... bundles) {
         this.bundles.addAll(Arrays.asList(bundles));
         return this;
     }
 
-    public FeatureBuilder addConfigurations(Configuration ... configs) {
+    public FeatureBuilderImpl addConfigurations(Configuration ... configs) {
         for (Configuration cfg : configs) {
             this.configurations.put(cfg.getPid(), cfg);
         }
         return this;
     }
 
-    public FeatureBuilder addExtensions(Extension ... extensions) {
+    public FeatureBuilderImpl addExtensions(Extension ... extensions) {
         for (Extension ex : extensions) {
             this.extensions.put(ex.getName(), ex);
         }
         return this;
     }
 
-    public FeatureBuilder addVariable(String key, String value) {
+    public FeatureBuilderImpl addVariable(String key, String value) {
         this.variables.put(key, value);
         return this;
     }
 
-    public FeatureBuilder addVariables(Map<String,String> variables) {
+    public FeatureBuilderImpl addVariables(Map<String,String> variables) {
         this.variables.putAll(variables);
         return this;
     }
