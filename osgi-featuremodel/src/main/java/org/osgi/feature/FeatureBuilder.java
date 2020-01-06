@@ -14,21 +14,36 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.osgi.feature.builder;
+package org.osgi.feature;
 
-import org.osgi.feature.ArtifactID;
-import org.osgi.feature.BuilderFactory;
-import org.osgi.feature.BundleBuilder;
-import org.osgi.feature.FeatureBuilder;
+import java.util.Map;
 
-class BuilderFactoryImpl implements BuilderFactory {
-    @Override
-    public BundleBuilder newBundleBuilder(ArtifactID id) {
-        return new BundleBuilderImpl(id);
-    }
+public interface FeatureBuilder {
 
-    @Override
-    public FeatureBuilder newFeatureBuilder(ArtifactID id) {
-        return new FeatureBuilderImpl(id);
-    }
+    FeatureBuilder setTitle(String title);
+
+    FeatureBuilder setVendor(String vendor);
+
+    FeatureBuilder setLicense(String license);
+
+    FeatureBuilder setLocation(String location);
+
+    FeatureBuilder setComplete(boolean complete);
+
+    FeatureBuilder setFinal(boolean isFinal);
+
+    FeatureBuilder setDescription(String description);
+
+    FeatureBuilder addBundles(Bundle ... bundles);
+
+    FeatureBuilder addConfigurations(Configuration ... configs);
+
+    FeatureBuilder addExtensions(Extension ... extensions);
+
+    FeatureBuilder addVariable(String key, String value);
+
+    FeatureBuilder addVariables(Map<String, String> variables);
+
+    Feature build();
+
 }

@@ -21,6 +21,7 @@ import org.osgi.feature.Bundle;
 import org.osgi.feature.Configuration;
 import org.osgi.feature.Extension;
 import org.osgi.feature.Feature;
+import org.osgi.feature.FeatureBuilder;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class FeatureBuilderImpl {
+class FeatureBuilderImpl implements FeatureBuilder {
     private final ArtifactID id;
 
     private String title;
@@ -46,74 +47,87 @@ public class FeatureBuilderImpl {
     private final Map<String,Extension> extensions = new HashMap<>();
     private final Map<String,String> variables = new HashMap<>();
 
-    public FeatureBuilderImpl(ArtifactID id) {
+    FeatureBuilderImpl(ArtifactID id) {
         this.id = id;
     }
 
-    public FeatureBuilderImpl setTitle(String title) {
+    @Override
+    public FeatureBuilder setTitle(String title) {
         this.title = title;
         return this;
     }
 
-    public FeatureBuilderImpl setVendor(String vendor) {
+    @Override
+    public FeatureBuilder setVendor(String vendor) {
         this.vendor = vendor;
         return this;
     }
 
-    public FeatureBuilderImpl setLicense(String license) {
+    @Override
+    public FeatureBuilder setLicense(String license) {
         this.license = license;
         return this;
     }
 
-    public FeatureBuilderImpl setLocation(String location) {
+    @Override
+    public FeatureBuilder setLocation(String location) {
         this.location = location;
         return this;
     }
 
-    public FeatureBuilderImpl setComplete(boolean complete) {
+    @Override
+    public FeatureBuilder setComplete(boolean complete) {
         this.complete = complete;
         return this;
     }
 
-    public FeatureBuilderImpl setFinal(boolean isFinal) {
+    @Override
+    public FeatureBuilder setFinal(boolean isFinal) {
         this.isFinal = isFinal;
         return this;
     }
 
-    public FeatureBuilderImpl setDescription(String description) {
+    @Override
+    public FeatureBuilder setDescription(String description) {
         this.description = description;
         return this;
     }
 
-    public FeatureBuilderImpl addBundles(Bundle ... bundles) {
+    @Override
+    public FeatureBuilder addBundles(Bundle ... bundles) {
         this.bundles.addAll(Arrays.asList(bundles));
         return this;
     }
 
-    public FeatureBuilderImpl addConfigurations(Configuration ... configs) {
+    @Override
+    public FeatureBuilder addConfigurations(Configuration ... configs) {
         for (Configuration cfg : configs) {
             this.configurations.put(cfg.getPid(), cfg);
         }
         return this;
     }
 
-    public FeatureBuilderImpl addExtensions(Extension ... extensions) {
+    @Override
+    public FeatureBuilder addExtensions(Extension ... extensions) {
         for (Extension ex : extensions) {
             this.extensions.put(ex.getName(), ex);
         }
         return this;
     }
 
-    public FeatureBuilderImpl addVariable(String key, String value) {
+    @Override
+    public FeatureBuilder addVariable(String key, String value) {
         this.variables.put(key, value);
         return this;
     }
 
-    public FeatureBuilderImpl addVariables(Map<String,String> variables) {
+    @Override
+    public FeatureBuilder addVariables(Map<String,String> variables) {
         this.variables.putAll(variables);
         return this;
     }
 
+    @Override
     public Feature build() {
         return new FeatureImpl(id, title,
                 description, vendor, license, location, complete, isFinal,

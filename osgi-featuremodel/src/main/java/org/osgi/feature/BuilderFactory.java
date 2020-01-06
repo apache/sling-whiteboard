@@ -18,4 +18,6 @@ package org.osgi.feature;
 
 public interface BuilderFactory {
     BundleBuilder newBundleBuilder(ArtifactID id);
+
+    FeatureBuilder newFeatureBuilder(ArtifactID id);
 }
