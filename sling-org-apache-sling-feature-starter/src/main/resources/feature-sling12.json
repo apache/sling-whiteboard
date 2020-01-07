@@ -1023,7 +1023,7 @@
     "org.apache.sling:org.apache.sling.feature.model.starter:slingfeature:sling_slingshot:12-SNAPSHOT",
     "org.apache.sling:org.apache.sling.feature.model.starter:slingfeature:standalone:12-SNAPSHOT",
     "org.apache.sling:org.apache.sling.feature.model.starter:slingfeature:webapp:12-SNAPSHOT",
-    "org.apache.sling:org.apache.sling.jcr.packageinit:slingosgifeature:0.0.1-SNAPSHOT"
+    "org.apache.sling:org.apache.sling.jcr.packageinit:slingosgifeature:jcr-packageinit:0.0.1-SNAPSHOT"
   ],
   "repoinit:TEXT|true":[
     "# general",

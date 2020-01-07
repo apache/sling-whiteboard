@@ -32,17 +32,32 @@
         <sling.java.version>8</sling.java.version>
         <picocli.version>3.6.0</picocli.version>
         <appassembler-maven-plugin.version>2.0.0</appassembler-maven-plugin.version>
+        <org.apache.sling.feature.extension.content.version>1.0.4</org.apache.sling.feature.extension.content.version>
+        <org.apache.sling.feature.launcher.version>1.1.0</org.apache.sling.feature.launcher.version>
+        <org.apache.sling.feature.io.version>1.1.0</org.apache.sling.feature.io.version>
+        <org.apache.felix.converter.version>1.0.8</org.apache.felix.converter.version>
     </properties>
 
 <!--    <scm>-->
-<!--        <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-feature-launcher.git</connection>-->
-<!--        <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-feature-launcher.git</developerConnection>-->
-<!--        <url>https://gitbox.apache.org/repos/asf?p=sling-org-apache-sling-feature-launcher.git</url>-->
+<!--        <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-feature-starter.git</connection>-->
+<!--        <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-feature-starter.git</developerConnection>-->
+<!--        <url>https://gitbox.apache.org/repos/asf?p=sling-org-apache-sling-feature-starter.git</url>-->
 <!--        <tag>HEAD</tag>-->
 <!--    </scm>-->
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>ianal-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>verify-legal-files</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -131,22 +146,22 @@
         <dependency>
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.feature.extension.content</artifactId>
-            <version>1.0.4</version>
+            <version>${org.apache.sling.feature.extension.content.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.feature.launcher</artifactId>
-            <version>1.1.0</version>
+            <version>${org.apache.sling.feature.launcher.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.feature.io</artifactId>
-            <version>1.1.0</version>
+            <version>${org.apache.sling.feature.io.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.converter</artifactId>
-            <version>1.0.8</version>
+            <version>${org.apache.felix.converter.version}</version>
         </dependency>
 
         <dependency>
@@ -168,4 +183,61 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+    <profiles>
+        <profile>
+            <id>launch</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>reserve-network-port</id>
+                                <goals>
+                                    <!-- pre-integration-test is too late -->
+                                    <goal>reserve-network-port</goal>
+                                </goals>
+                                <phase>process-resources</phase>
+                                <configuration>
+                                    <portNames>
+                                        <portName>http.port</portName>
+                                        <portName>sling.control.port</portName>
+                                    </portNames>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.sling</groupId>
+                        <artifactId>slingstart-feature-maven-plugin</artifactId>
+                        <version>0.0.1-SNAPSHOT</version>
+                        <extensions>true</extensions>
+                        <executions>
+                            <execution>
+                                <id>start-container</id>
+                                <goals>
+                                    <goal>start</goal>
+                                    <goal>stop</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <launchpadJar>${project.build.directory}/${project.artifactId}-${project.version}.jar</launchpadJar>
+                            <parallelExecution>false</parallelExecution>
+<!--                            <createWebapp>false</createWebapp>-->
+                            <servers>
+                                <server>
+                                    <port>${http.port}</port>
+                                    <controlPort>${sling.control.port}</controlPort>
+                                    <debug>true</debug>
+                                    <stdOutFile>launchpad.out</stdOutFile>
+                                </server>
+                            </servers>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
