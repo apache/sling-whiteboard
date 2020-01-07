@@ -18,6 +18,20 @@ package org.osgi.feature;
 
 import java.util.Objects;
 
+/**
+ * ID used to denote an artifact. This could be a feature model, a bundle which is part of the feature model
+ * or some other artifact. <p>
+ *
+ * Artifact IDs follow the Maven convention of having:
+ * <ul>
+ * <li>A group ID
+ * <li>An artifact ID
+ * <li>A version
+ * <li>A type identifier (optional)
+ * <li>A classifier (optional)
+ * </ul>
+ * @ThreadSafe
+ */
 public class ArtifactID {
     private final String groupId;
     private final String artifactId;
@@ -25,6 +39,13 @@ public class ArtifactID {
     private final String type;
     private final String classifier;
 
+    /**
+     * Construct an Artifact ID from a Maven ID. Maven IDs have the following syntax: <p>
+     *
+     * {@code group-id ':' artifact-id [ ':' [type] [ ':' classifier ] ] ':' version}
+     * @param mavenID
+     * @return
+     */
     public static ArtifactID fromMavenID(String mavenID) {
         String[] parts = mavenID.split(":");
 
@@ -40,10 +61,24 @@ public class ArtifactID {
         return new ArtifactID(gid, aid, ver, t, c);
     }
 
+    /**
+     * Construct an Artifact ID
+     * @param groupId The group ID.
+     * @param artifactId The artifact ID.
+     * @param version The version.
+     */
     public ArtifactID(String groupId, String artifactId, String version) {
         this(groupId, artifactId, version, null, null);
     }
 
+    /**
+     * Construct an Artifact ID
+     * @param groupId The group ID.
+     * @param artifactId The artifact ID.
+     * @param version The version.
+     * @param type The type identifier.
+     * @param classifier The classifier.
+     */
     public ArtifactID(String groupId, String artifactId, String version, String type, String classifier) {
         this.groupId = groupId;
         this.artifactId = artifactId;
@@ -52,22 +87,42 @@ public class ArtifactID {
         this.classifier = classifier;
     }
 
+    /**
+     * Get the group ID.
+     * @return The group ID.
+     */
     public String getGroupId() {
         return groupId;
     }
 
+    /**
+     * Get the artifact ID.
+     * @return The artifact ID.
+     */
     public String getArtifactId() {
         return artifactId;
     }
 
+    /**
+     * Get the version.
+     * @return The version.
+     */
     public String getVersion() {
         return version;
     }
 
+    /**
+     * Get the type identifier.
+     * @return The type identifier.
+     */
     public String getType() {
         return type;
     }
 
+    /**
+     * Get the classifier.
+     * @return The classifier.
+     */
     public String getClassifier() {
         return classifier;
     }
