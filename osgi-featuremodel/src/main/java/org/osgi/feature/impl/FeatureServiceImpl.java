@@ -45,7 +45,7 @@ import javax.json.JsonObject;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 
-public class FeatureServiceImpl implements FeatureService {
+class FeatureServiceImpl implements FeatureService {
     private final BuilderFactoryImpl builderFactory = new BuilderFactoryImpl();
 
     @Override

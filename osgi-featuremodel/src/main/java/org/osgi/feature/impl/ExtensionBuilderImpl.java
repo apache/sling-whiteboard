@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class ExtensionBuilderImpl implements ExtensionBuilder {
+class ExtensionBuilderImpl implements ExtensionBuilder {
     private final String name;
     private final Type type;
     private final Kind kind;
