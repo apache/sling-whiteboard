@@ -30,11 +30,13 @@ public class Launcher implements LauncherMBean {
     private final int listenerPort;
 
     public Launcher(final int listenerPort) {
+        System.out.println("Launcher MBean created on port: " + listenerPort);
         this.listenerPort = listenerPort;
     }
 
     @Override
     public void startupFinished() {
+        System.out.println("Launcher MBean startup finished called, port: " + listenerPort);
         final List<String> hosts = new ArrayList<String>();
         hosts.add("localhost");
         hosts.add("127.0.0.1");

@@ -17,14 +17,10 @@
 package org.apache.sling.feature.starter.app;
 
 import java.io.File;
-import java.io.PrintStream;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,14 +30,15 @@ import org.apache.sling.feature.launcher.impl.Main;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 
 @Command(
-    name = "sfl",
+    name = "java -jar <Sling Feature Starter JAR File>",
     description = "Apache Sling Feature Starter",
     footer = "Copyright(c) 2019 The Apache Software Foundation."
 )
-public class SlingStarter implements Runnable {
+public class SlingStarter implements Runnable, ControlTarget {
 
     @Option(names = { "-s", "--mainFeature" }, description = "main feature file (file path or URL) replacing the provided Sling Feature File", required = false)
     private String mainFeatureFile;
@@ -86,6 +83,9 @@ public class SlingStarter implements Runnable {
 
     @Option(names = { "-h", "--help" }, usageHelp = true, description = "Display the usage message.")
     private boolean helpRequested;
+
+    @Parameters(paramLabel = "COMMAND", description = "Optional Command for Server Instance Interaction, can be one of: 'start', 'stop', 'status' or 'threads'", arity = "0..1")
+    private String command;
 
     // The name of the environment variable to consult to find out
     // about sling.home
@@ -141,6 +141,7 @@ public class SlingStarter implements Runnable {
      */
     private static final String PROP_SHUTDOWN_HOOK = "sling.shutdown.hook";
 
+    private boolean started = false;
 
     @Override
     public void run() {
@@ -161,9 +162,10 @@ public class SlingStarter implements Runnable {
                     }
                 }
             }
-            if(StringUtils.isNotEmpty(controlAddress)) {
-                addArgument(argumentList, PROP_CONTROL_SOCKET, controlAddress);
-            }
+            //TODO: Remove because this is handled here so we do not need to pass it to the Feature Launcher
+//            if(StringUtils.isNotEmpty(controlAddress)) {
+//                addArgument(argumentList, PROP_CONTROL_SOCKET, controlAddress);
+//            }
             if(StringUtils.isNotEmpty(logLevel)) {
                 addArgument(argumentList, PROP_LOG_LEVEL, logLevel);
             }
@@ -183,7 +185,20 @@ public class SlingStarter implements Runnable {
                 argumentList.add("-v");
             }
             System.out.println("Before Launching Feature Launcher, arguments: " + argumentList);
-            Main.main(argumentList.toArray(new String[]{}));
+            // Now we have to handle any Start Option
+            ControlAction controlAction = getControlAction(command);
+            int answer = doControlAction(controlAction, controlAddress);
+            if (answer >= 0) {
+                doTerminateVM(answer);
+                return;
+            }
+
+            // finally start Sling
+            if (!doStart(argumentList)) {
+                error("Failed to start Sling; terminating", null);
+                doTerminateVM(1);
+                return;
+            }
         } catch(Throwable t) {
             System.out.println("Caught an Exception: " + t.getLocalizedMessage());
             t.printStackTrace();
@@ -222,4 +237,96 @@ public class SlingStarter implements Runnable {
         CommandLine.run(new SlingStarter(), args);
     }
 
+    private int doControlAction(ControlAction controlAction, String controlAddress) {
+//        if(controlAction != ControlAction.FOREGROUND) {
+            final ControlListener sl = new ControlListener(
+                this,
+                controlAddress
+            );
+            switch (controlAction) {
+                case FOREGROUND:
+                    if (!sl.listen()) {
+                        return -1;
+                    }
+                    break;
+                case START:
+                    if (!sl.listen()) {
+                        // assume service already running
+                        return 0;
+                    }
+                    break;
+                case STOP:
+                    return sl.shutdownServer();
+                case STATUS:
+                    return sl.statusServer();
+                case THREADS:
+                    return sl.dumpThreads();
+            }
+//        }
+        return -1;
+    }
+
+    private boolean doStart(List<String> argumentList) {
+        // prevent duplicate start
+        if ( this.started) {
+            info("Apache Sling has already been started", new Exception("Where did this come from"));
+            return true;
+        }
+
+        info("Starting Apache Sling in " + slingHome, null);
+        this.started = true;
+        System.out.println("Start Command: '" + command + "'");
+        try {
+            Main.main(argumentList.toArray(new String[]{}));
+        } catch(Error | RuntimeException e) {
+            error("Launching Sling Feature failed", e);
+            return false;
+        }
+        return true;
+    }
+
+    private ControlAction getControlAction(String command) {
+        ControlAction answer = ControlAction.FOREGROUND;
+        try {
+            answer = ControlAction.valueOf(command.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Given Control Action is not valid: '" + command.toUpperCase() + "'");
+        } catch (NullPointerException e) {
+            // Ignore as we set the default to FOREGROUND anyhow
+        }
+        return answer;
+    }
+
+    @Override
+    public String getHome() {
+        return slingHome;
+    }
+
+    @Override
+    public void doStop() {
+        info("Stop Application", null);
+        System.exit(0);
+    }
+
+    @Override
+    public void doTerminateVM(int status) {
+        info("Terminate VM, status: " + status, null);
+        System.exit(status);
+    }
+
+    @Override
+    public void info(String message, Throwable t) {
+        System.out.println(message);
+        if(t != null) {
+            t.printStackTrace();
+        }
+    }
+
+    @Override
+    public void error(String message, Throwable t) {
+        System.err.println(message);
+        if(t != null) {
+            t.printStackTrace(System.err);
+        }
+    }
 }

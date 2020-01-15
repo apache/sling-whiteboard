@@ -17,6 +17,7 @@
 package org.apache.sling.maven.slingstart.feature.run;
 
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.logging.Log;
 
 import java.io.File;
 
@@ -27,13 +28,17 @@ public class ProcessDescription {
 
     private final String id;
     private final File directory;
-    private final ControlListener listener;
+    private final ControlClient controlClient;
     private volatile Process process;
 
-    public ProcessDescription(final String id, final File directory) throws MojoExecutionException {
+    public ProcessDescription(final String id, final File directory, String listenerSpec, Log logger) throws MojoExecutionException {
         this.id = id;
         this.directory = directory;
-        this.listener = new ControlListener(PortHelper.getNextAvailablePort());
+        this.controlClient = new ControlClient(
+            listenerSpec,
+            directory,
+            logger
+        );
     }
 
     public String getId() {
@@ -44,8 +49,8 @@ public class ProcessDescription {
         return directory;
     }
 
-    public ControlListener getControlListener() {
-        return this.listener;
+    public ControlClient getControlClient() {
+        return this.controlClient;
     }
 
     public Process getProcess() {

@@ -169,6 +169,7 @@ public class StartMojo extends AbstractStartStopMojo {
         final Collection<ServerConfiguration> configurations = getLaunchpadConfigurations();
 
         // create the common environment
+        getLog().info("Keep Launchpad Running: " + this.keepLaunchpadRunning);
         final LaunchpadEnvironment env = new LaunchpadEnvironment(this.findLaunchpadJar(),
                 this.cleanWorkingDirectory,
                 !this.keepLaunchpadRunning,

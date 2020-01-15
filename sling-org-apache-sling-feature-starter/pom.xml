@@ -143,6 +143,14 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.framework</artifactId>
+            <version>6.0.2</version>
+            <scope>provided</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.feature.extension.content</artifactId>
@@ -226,6 +234,7 @@
                             <launchpadJar>${project.build.directory}/${project.artifactId}-${project.version}.jar</launchpadJar>
                             <parallelExecution>false</parallelExecution>
 <!--                            <createWebapp>false</createWebapp>-->
+                                <keepLaunchpadRunning>true</keepLaunchpadRunning>
                             <servers>
                                 <server>
                                     <port>${http.port}</port>

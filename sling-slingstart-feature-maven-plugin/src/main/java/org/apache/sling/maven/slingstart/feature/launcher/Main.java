@@ -27,6 +27,9 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
 
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+
 /**
  * Main class for launching Apache Sling.
  *
@@ -88,10 +91,10 @@ public class Main {
         final ClassLoader cl = new URLClassLoader(new URL[] {this.appJar.toURI().toURL()});
         Thread.currentThread().setContextClassLoader(cl);
 
-        // create and register mbean
-        final MBeanServer jmxServer = ManagementFactory.getPlatformMBeanServer();
-        jmxServer.registerMBean(new Launcher(this.listenerPort),
-                new ObjectName("org.apache.sling.feature.launchpad:type=Launcher"));
+//        // create and register mbean
+//        final MBeanServer jmxServer = ManagementFactory.getPlatformMBeanServer();
+//        jmxServer.registerMBean(new Launcher(this.listenerPort),
+//                new ObjectName("org.apache.sling.feature.launchpad:type=Launcher"));
 
         final Class<?> mainClass = cl.loadClass(MAIN_CLASS_DEF);
         final Method mainMethod = mainClass.getDeclaredMethod("main", String[].class);
@@ -102,8 +105,6 @@ public class Main {
         try {
             final Main m = new Main(args);
             m.run();
-        } catch(RuntimeException e) {
-            throw e;
         } catch ( final Exception e) {
             e.printStackTrace();
             System.exit(1);

@@ -61,7 +61,7 @@ public class LauncherCallable implements Callable<ProcessDescription> {
      */
     @Override
     public ProcessDescription call() throws Exception {
-
+        logger.info("call() started");
         // fail if launchpad with this id is already started
         if (!ProcessDescriptionProvider.getInstance().isRunConfigurationAvailable(configuration.getId())) {
             throw new Exception("Launchpad with id " + configuration.getId() + " is not available");
@@ -84,13 +84,16 @@ public class LauncherCallable implements Callable<ProcessDescription> {
         // Add configuration to the config provider
         ProcessDescriptionProvider.getInstance().addRunConfiguration(cfg, launchpadKey);
 
+        logger.info("Before Check if started");
         boolean started = false;
         try {
             final long endTime = System.currentTimeMillis() + this.environment.getReadyTimeOutSec() * 1000;
             boolean finished = false;
             while ( !started && !finished && System.currentTimeMillis() < endTime ) {
                 Thread.sleep(5000);
-                started = cfg.getControlListener().isStarted();
+                logger.info("Ask Control Listener: " + cfg.getControlClient());
+                started = cfg.getControlClient().isStarted();
+                logger.info("Is Started: " + started);
                 try {
                     // if we get an exit value, the process has stopped
                     cfg.getProcess().exitValue();
@@ -100,6 +103,7 @@ public class LauncherCallable implements Callable<ProcessDescription> {
                 }
                 
             }
+            logger.info("Check Done, started: " + started + ", finihsed: " + finished);
 
             if ( finished ) {
                 throw new Exception("Launchpad did exit unexpectedly.");
@@ -121,7 +125,7 @@ public class LauncherCallable implements Callable<ProcessDescription> {
                     "' at port " + configuration.getPort()+ " [run modes: " + configuration.getRunmode()+ "]");
         } finally {
             // stop control port
-            cfg.getControlListener().stop();
+            cfg.getControlClient().shutdownServer();
 
             // call launchpad stop routine if not properly started
             if (!started) {
@@ -172,7 +176,12 @@ public class LauncherCallable implements Callable<ProcessDescription> {
     }
 
     private ProcessDescription start(final File jar) throws Exception {
-        final ProcessDescription cfg = new ProcessDescription(this.configuration.getId(), this.configuration.getFolder());
+        final ProcessDescription cfg = new ProcessDescription(
+            this.configuration.getId(),
+            this.configuration.getFolder(),
+            this.configuration.getServer() + ":" + this.configuration.getControlPort(),
+            logger
+        );
 
         final ProcessBuilder builder = new ProcessBuilder();
         final List<String> args = new ArrayList<String>();
@@ -189,7 +198,7 @@ public class LauncherCallable implements Callable<ProcessDescription> {
         args.add(Main.class.getName());
         // first three arguments: jar, listener port, verbose
         args.add(jar.getPath());
-        args.add(String.valueOf(cfg.getControlListener().getPort()));
+        args.add(String.valueOf(cfg.getControlClient().getPort()));
         args.add("true");
 
         // from here on launchpad properties
@@ -213,6 +222,7 @@ public class LauncherCallable implements Callable<ProcessDescription> {
         if ( this.configuration.getRunmode() != null && this.configuration.getRunmode().length() > 0 ) {
             args.add("-Dsling.run.modes=" + this.configuration.getRunmode());
         }
+        logger.info("Is Shutdown On Exit: " + this.environment.isShutdownOnExit());
         if ( !this.environment.isShutdownOnExit() ) {
             args.add("start");
         }
@@ -221,6 +231,7 @@ public class LauncherCallable implements Callable<ProcessDescription> {
         builder.directory(this.configuration.getFolder());
         builder.redirectErrorStream(true);
         logger.info("Starting Launchpad " + this.configuration.getId() +  "...");
+        logger.info("Starting Launchpad, arguments: " + args);
         String stdOutFile = this.configuration.getStdOutFile();
         if (StringUtils.isNotBlank(stdOutFile)) {
             File absoluteStdOutFile = new File(builder.directory(), stdOutFile);
@@ -361,8 +372,9 @@ public class LauncherCallable implements Callable<ProcessDescription> {
     }
 
     private static File getControlPortFile(final File directory) {
-        final File launchpadDir = new File(directory, LaunchpadEnvironment.WORK_DIR_NAME);
-        final File confDir = new File(launchpadDir, "conf");
+//        final File launchpadDir = new File(directory, LaunchpadEnvironment.WORK_DIR_NAME);
+//        final File confDir = new File(launchpadDir, "conf");
+        final File confDir = new File(directory, "conf");
         final File controlPortFile = new File(confDir, "controlport");
         return controlPortFile;
     }
