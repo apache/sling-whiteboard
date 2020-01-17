@@ -91,11 +91,6 @@ public class Main {
         final ClassLoader cl = new URLClassLoader(new URL[] {this.appJar.toURI().toURL()});
         Thread.currentThread().setContextClassLoader(cl);
 
-//        // create and register mbean
-//        final MBeanServer jmxServer = ManagementFactory.getPlatformMBeanServer();
-//        jmxServer.registerMBean(new Launcher(this.listenerPort),
-//                new ObjectName("org.apache.sling.feature.launchpad:type=Launcher"));
-
         final Class<?> mainClass = cl.loadClass(MAIN_CLASS_DEF);
         final Method mainMethod = mainClass.getDeclaredMethod("main", String[].class);
         mainMethod.invoke(null, (Object)this.startupArgs);

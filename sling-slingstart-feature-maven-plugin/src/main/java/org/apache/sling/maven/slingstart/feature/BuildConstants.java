@@ -16,9 +16,6 @@
  */
 package org.apache.sling.maven.slingstart.feature;
 
-//import org.apache.sling.provisioning.model.ModelConstants;
-//import org.apache.sling.provisioning.model.io.ModelArchiveWriter;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,8 +23,6 @@ public abstract class BuildConstants {
 
     // CONTEXTS
     public static final String CONTEXT_GLOBAL = "slingstart:global";
-//    public static final String CONTEXT_STANDALONE = "slingstart" + ModelConstants.RUN_MODE_STANDALONE;
-//    public static final String CONTEXT_WEBAPP = "slingstart" + ModelConstants.RUN_MODE_WEBAPP;
     public static final String CONTEXT_STANDALONE = "slingstart" + ":standalone";
     public static final String CONTEXT_WEBAPP = "slingstart" + ":webapp";
 
@@ -99,7 +94,4 @@ public abstract class BuildConstants {
         ATTRS_EXCLUDES.add(ATTR_SPECIFICATION_VENDOR);
         ATTRS_EXCLUDES.add(ATTR_SPECIFICATION_VERSION);
     }
-
-    // build constants
-    public static final String WEBAPP_OUTDIR = "slingstart-webapp";
 }

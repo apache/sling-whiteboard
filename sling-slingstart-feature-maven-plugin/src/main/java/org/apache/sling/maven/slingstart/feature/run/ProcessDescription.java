@@ -35,7 +35,6 @@ public class ProcessDescription {
         this.id = id;
         this.directory = directory;
         this.controlClient = new ControlClient(
-            listenerSpec,
             directory,
             logger
         );

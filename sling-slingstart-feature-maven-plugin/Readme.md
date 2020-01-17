@@ -45,7 +45,7 @@ module in Sling Whiteboard) like this:
 </plugin>
 ```
 
-## Issues
+## Notes
 
-The Feature Launcher does not support to be started in the background and
-so this plugin will be not end the build when Sling is started.
+For now this Plugin only supports the starting and stopping of a Sling
+instance for example to run IT tests.

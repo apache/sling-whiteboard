@@ -27,6 +27,9 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.sling.feature.launcher.impl.Main;
+import org.apache.sling.feature.starter.control.ControlAction;
+import org.apache.sling.feature.starter.control.ControlListener;
+import org.apache.sling.feature.starter.control.ControlTarget;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -90,13 +93,6 @@ public class SlingStarter implements Runnable, ControlTarget {
     // The name of the environment variable to consult to find out
     // about sling.home
     private static final String ENV_SLING_HOME = "SLING_HOME";
-
-//    /**
-//     * The name of the configuration property indicating the
-//     * {@link ControlAction} to be taken in the {@link #doControlAction()}
-//     * method.
-//     */
-//    protected static final String PROP_CONTROL_ACTION = "sling.control.action";
 
     /**
      * The name of the configuration property indicating the socket to use for
@@ -162,10 +158,6 @@ public class SlingStarter implements Runnable, ControlTarget {
                     }
                 }
             }
-            //TODO: Remove because this is handled here so we do not need to pass it to the Feature Launcher
-//            if(StringUtils.isNotEmpty(controlAddress)) {
-//                addArgument(argumentList, PROP_CONTROL_SOCKET, controlAddress);
-//            }
             if(StringUtils.isNotEmpty(logLevel)) {
                 addArgument(argumentList, PROP_LOG_LEVEL, logLevel);
             }
@@ -238,31 +230,29 @@ public class SlingStarter implements Runnable, ControlTarget {
     }
 
     private int doControlAction(ControlAction controlAction, String controlAddress) {
-//        if(controlAction != ControlAction.FOREGROUND) {
-            final ControlListener sl = new ControlListener(
-                this,
-                controlAddress
-            );
-            switch (controlAction) {
-                case FOREGROUND:
-                    if (!sl.listen()) {
-                        return -1;
-                    }
-                    break;
-                case START:
-                    if (!sl.listen()) {
-                        // assume service already running
-                        return 0;
-                    }
-                    break;
-                case STOP:
-                    return sl.shutdownServer();
-                case STATUS:
-                    return sl.statusServer();
-                case THREADS:
-                    return sl.dumpThreads();
-            }
-//        }
+        final ControlListener sl = new ControlListener(
+            this,
+            controlAddress
+        );
+        switch (controlAction) {
+            case FOREGROUND:
+                if (!sl.listen()) {
+                    return -1;
+                }
+                break;
+            case START:
+                if (!sl.listen()) {
+                    // assume service already running
+                    return 0;
+                }
+                break;
+            case STOP:
+                return sl.shutdownServer();
+            case STATUS:
+                return sl.statusServer();
+            case THREADS:
+                return sl.dumpThreads();
+        }
         return -1;
     }
 

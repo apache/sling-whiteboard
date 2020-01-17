@@ -124,8 +124,8 @@ public class LauncherCallable implements Callable<ProcessDescription> {
             this.logger.info("Started Launchpad '" + configuration.getId() +
                     "' at port " + configuration.getPort()+ " [run modes: " + configuration.getRunmode()+ "]");
         } finally {
-            // stop control port
-            cfg.getControlClient().shutdownServer();
+//            // stop control port
+//            cfg.getControlClient().shutdownServer();
 
             // call launchpad stop routine if not properly started
             if (!started) {
@@ -372,8 +372,6 @@ public class LauncherCallable implements Callable<ProcessDescription> {
     }
 
     private static File getControlPortFile(final File directory) {
-//        final File launchpadDir = new File(directory, LaunchpadEnvironment.WORK_DIR_NAME);
-//        final File confDir = new File(launchpadDir, "conf");
         final File confDir = new File(directory, "conf");
         final File controlPortFile = new File(confDir, "controlport");
         return controlPortFile;

@@ -84,8 +84,6 @@ public class LaunchpadEnvironment {
 
     private void installLauncher(final File folder) throws IOException {
         final File binDir = new File(folder, "bin");
-        copyResource("org/apache/sling/maven/slingstart/feature/launcher/Launcher.class", binDir);
-        copyResource("org/apache/sling/maven/slingstart/feature/launcher/LauncherMBean.class", binDir);
         copyResource("org/apache/sling/maven/slingstart/feature/launcher/Main.class", binDir);
     }
 

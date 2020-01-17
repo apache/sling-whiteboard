@@ -19,59 +19,24 @@
 package org.apache.sling.maven.slingstart.feature.run;
 
 import org.apache.maven.plugin.logging.Log;
-import org.apache.sling.feature.starter.app.ControlTarget;
-import org.slf4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.io.OutputStreamWriter;
-import java.lang.management.LockInfo;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MonitorInfo;
-import java.lang.management.ThreadInfo;
-import java.lang.management.ThreadMXBean;
 import java.math.BigInteger;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
- * The <code>ControlListener</code> class is a helper class for the {@link ControlTarget}
- * class to support in Sling standalone application process communication. This
- * class implements the client and server sides of a TCP/IP based communication
- * channel to control a running Sling application.
- * <p>
- * The server side listens for commands on a configurable host and port &endash;
- * <code>localhost:63000</code> by default &endash; supporting the following
- * commands:
- * <table>
- * <tr>
- * <th>Command</th>
- * <th>Description</th>
- * </tr>
- * <tr>
- * <td><code>status</code></td>
- * <td>Request status information. Currently only <i>OK</i> is sent back. If no
- * connection can be created to the server the client assumes Sling is not
- * running.</td>
- * </tr>
- * <tr>
- * <td><code>stop</code></td>
- * <td>Requests Sling to shutdown.</td>
- * </tr>
- * </table>
+ * The <code>ControlClient</code> class is a helper class to interact with a started
+ * Sling instance through its ControlListener class.
  */
 public class ControlClient {
 
@@ -84,22 +49,15 @@ public class ControlClient {
     // command sent by the client to request a thread dump
     static final String COMMAND_THREADS = "threads";
 
-    // the response sent by the server if the command executed successfully
-    private static final String RESPONSE_OK = "OK";
-
-    // the status response sent by the server when shutting down
-    private static final String RESPONSE_STOPPING = "STOPPING";
-
     // The default interface to listen on
     private static final String DEFAULT_LISTEN_INTERFACE = "127.0.0.1";
 
     // The default port to listen on and to connect to - we select it randomly
     private static final int DEFAULT_LISTEN_PORT = 0;
 
-    private final String listenSpec;
-
     private String secretKey;
     private InetSocketAddress socketAddress;
+
     private File directory;
     private Log logger;
 
@@ -111,12 +69,8 @@ public class ControlClient {
      * <code>[ host ":" ] port</code>. If the parameter is empty or
      * <code>null</code> it defaults to <i>localhost:0</i>. If the host name
      * is missing it defaults to <i>localhost</i>.
-     *
-     * @param listenSpec The specification for the host and port for the socket
-     *            connection. See above for the format of this parameter.
      */
-    public ControlClient(final String listenSpec, final File directory, Log logger) {
-        this.listenSpec = listenSpec; // socketAddress = this.getSocketAddress(listenSpec, selectNewPort);
+    public ControlClient(final File directory, Log logger) {
         this.directory = directory;
         this.logger = logger;
     }
@@ -216,11 +170,6 @@ public class ControlClient {
         return b.toString();
     }
 
-//    private void writeLine(final Socket socket, final String line) throws IOException {
-//        logger.info(socket.getRemoteSocketAddress() + "<" + line);
-//        this.writeLine0(socket, line);
-//    }
-
     private void writeLine0(final Socket socket, final String line) throws IOException {
         final BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
         bw.write(line);
@@ -253,28 +202,9 @@ public class ControlClient {
         return new File(configDir, "controlport");
     }
 
-    /**
-     * Read the port from the config file
-     * @return The port or null
-     */
-    private boolean configure(final boolean fromConfigFile) {
-        this.socketAddress = getSocketAddress(this.listenSpec);
-        this.secretKey = generateKey();
-
-        return true;
-    }
-
     private static String generateKey() {
          return new BigInteger(165, new SecureRandom()).toString(32);
     }
-
-    /**
-     * Return the control port file
-     */
-//    private File getConfigFile() {
-//        final File configDir = new File(this.controlTarget.getHome(), "conf");
-//        return new File(configDir, "controlport");
-//    }
 
     private InetSocketAddress getSocketAddress(String listenSpec) {
         try {
@@ -339,27 +269,4 @@ public class ControlClient {
             return exception;
         }
     }
-//    private void writePortToConfigFile(final File configFile, final InetSocketAddress socketAddress,
-//            final String secretKey) {
-//        configFile.getParentFile().mkdirs();
-//        FileWriter fw = null;
-//        try {
-//            fw = new FileWriter(configFile);
-//            fw.write(socketAddress.getAddress().getHostAddress());
-//            fw.write(':');
-//            fw.write(String.valueOf(socketAddress.getPort()));
-//            fw.write('\n');
-//            fw.write(secretKey);
-//            fw.write('\n');
-//        } catch (final IOException ignore) {
-//            // ignore
-//        } finally {
-//            if (fw != null) {
-//                try {
-//                    fw.close();
-//                } catch (final IOException ignore) {
-//                }
-//            }
-//        }
-//    }
 }
