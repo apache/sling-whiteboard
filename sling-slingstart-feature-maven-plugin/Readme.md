@@ -1,8 +1,8 @@
 # Sling Start Feature Maven Plugin
 
 This Maven Plugin is the Feature Model based version of the Slingstart
-Maven Plugin. It does not depend on the predecessor to keep the PM and FM
-based code base separate.
+Maven Plugin. It does not depend on its predecessor to keep the Provisioning Model
+and Feature Model code bases separate.
 
 ## Build
 
