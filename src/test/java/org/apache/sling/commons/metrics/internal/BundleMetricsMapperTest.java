@@ -35,7 +35,7 @@ public class BundleMetricsMapperTest {
     public final OsgiContext context = new OsgiContext();
     private MetricRegistry registry = new MetricRegistry();
 
-    private BundleMetricsMapper mapper = new BundleMetricsMapper(registry);
+    private BundleMetricsMapper mapper = new BundleMetricsMapper(new MetricsServiceImpl(), registry);
 
     @Test
     public void defaultDomainName() throws Exception{

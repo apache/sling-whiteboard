@@ -39,9 +39,11 @@ class BundleMetricsMapper implements ObjectNameFactory{
     static final String JMX_TYPE_METRICS = "Metrics";
     private final Logger log = LoggerFactory.getLogger(getClass());
     private final ConcurrentMap<String, Bundle> metricToBundleMapping = new ConcurrentHashMap<>();
+    private final MetricsServiceImpl metricsService;
     private final MetricRegistry registry;
 
-    BundleMetricsMapper(MetricRegistry registry) {
+    BundleMetricsMapper(MetricsServiceImpl metricsService, MetricRegistry registry) {
+        this.metricsService = metricsService;
         this.registry = registry;
     }
 
@@ -53,6 +55,7 @@ class BundleMetricsMapper implements ObjectNameFactory{
         for (String name : registeredNames){
             registry.remove(name);
             metricToBundleMapping.remove(name);
+            metricsService.remove(name);
         }
         log.debug("Removed metrics for {}", registeredNames);
     }

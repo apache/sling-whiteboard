@@ -53,7 +53,7 @@ public class MetricsServiceImpl implements MetricsService {
     private final List<ServiceRegistration> regs = new ArrayList<>();
     private final ConcurrentMap<String, Metric> metrics = new ConcurrentHashMap<>();
     private final MetricRegistry registry = new MetricRegistry();
-    private final BundleMetricsMapper metricsMapper = new BundleMetricsMapper(registry);
+    private final BundleMetricsMapper metricsMapper = new BundleMetricsMapper(this, registry);
     private GaugeManager gaugeManager;
 
     @Reference(cardinality = ReferenceCardinality.OPTIONAL)
@@ -128,6 +128,10 @@ public class MetricsServiceImpl implements MetricsService {
             return (A) registry;
         }
         return null;
+    }
+
+    void remove(String name) {
+        metrics.remove(name);
     }
 
     MetricRegistry getRegistry() {

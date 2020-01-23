@@ -21,6 +21,8 @@ package org.apache.sling.commons.metrics.internal;
 
 import com.codahale.metrics.MetricRegistry;
 import javax.management.ObjectName;
+
+import org.apache.sling.commons.metrics.Counter;
 import org.apache.sling.commons.metrics.MetricsService;
 import org.apache.sling.testing.mock.osgi.MockBundle;
 import org.apache.sling.testing.mock.osgi.junit.OsgiContext;
@@ -36,7 +38,7 @@ public class InternalMetricsServiceFactoryTest {
     public final OsgiContext context = new OsgiContext();
     private MetricsServiceImpl serviceImpl = new MetricsServiceImpl();
     private MetricRegistry registry = serviceImpl.getRegistry();
-    private BundleMetricsMapper mapper = new BundleMetricsMapper(registry);
+    private BundleMetricsMapper mapper = new BundleMetricsMapper(serviceImpl, registry);
     private InternalMetricsServiceFactory srvFactory = new InternalMetricsServiceFactory(serviceImpl, mapper);
     private ServiceRegistration<MetricsService> reg = mock(ServiceRegistration.class);
 
@@ -66,7 +68,7 @@ public class InternalMetricsServiceFactoryTest {
         MetricsService srv2 = srvFactory.getService(bar, reg);
 
         srv1.meter("m1");
-        srv1.counter("c1");
+        Counter c1 = srv1.counter("c1");
 
         srv2.meter("m2");
         assertTrue(registry.getMeters().containsKey("m1"));
@@ -78,6 +80,9 @@ public class InternalMetricsServiceFactoryTest {
         //Metrics from 'foo' bundle i.e. m1 and c1 must be removed
         assertFalse(registry.getMeters().containsKey("m1"));
         assertFalse(registry.getCounters().containsKey("c1"));
+
+        assertNotEquals("The MetricsService should not return stale metric references.", c1, serviceImpl.counter("c1"));
+        assertTrue(registry.getCounters().containsKey("c1"));
 
         //Metrics from 'bar' bundle should be present
         assertTrue(registry.getMeters().containsKey("m2"));
