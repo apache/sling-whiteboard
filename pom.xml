@@ -31,7 +31,7 @@
   <artifactId>org.apache.sling.commons.metrics</artifactId>
   <version>1.2.7-SNAPSHOT</version>
 
-  <name>Apache Sling Metrics</name>
+  <name>Apache Sling Commons Metrics</name>
   <description>
     Integrates Metric library with Sling. Refer to
     https://sling.apache.org/documentation/bundles/metrics.html
