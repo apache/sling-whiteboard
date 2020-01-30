@@ -72,6 +72,8 @@ public class ServerConfiguration implements Serializable {
      */
     private String stdOutFile;
 
+    private File additionalFeatureFile;
+
     /**
      * Get the instance id
      * @return The instance id
@@ -183,6 +185,14 @@ public class ServerConfiguration implements Serializable {
         this.stdOutFile = stdOutFile;
     }
 
+    public File getAdditionalFeatureFile() {
+        return additionalFeatureFile;
+    }
+
+    public void setAdditionalFeatureFile(File additionalFeatureFile) {
+        this.additionalFeatureFile = additionalFeatureFile;
+    }
+
     /**
      * Get the server
      * @return The server
@@ -205,15 +215,25 @@ public class ServerConfiguration implements Serializable {
         copy.setFolder(this.getFolder());
         copy.setControlPort(this.getControlPort());
         copy.setStdOutFile(this.stdOutFile);
+        copy.setAdditionalFeatureFile(this.additionalFeatureFile);
         return copy;
     }
 
     @Override
     public String toString() {
-        return "LaunchpadConfiguration [id=" + id + ", runmode=" + runmode
-                + ", port=" + port + ", controlPort=" + controlPort
-                + ", contextPath=" + contextPath
-                + ", vmOpts=" + vmOpts + ", vmDebugOpts=" + getVmDebugOpts(null) + ", opts=" + opts + ", instances="
-                + instances + ", folder=" + folder + ", stdout=" + stdOutFile + "]";
+        return "ServerConfiguration{" +
+            "id='" + id + '\'' +
+            ", runmode='" + runmode + '\'' +
+            ", port='" + port + '\'' +
+            ", controlPort='" + controlPort + '\'' +
+            ", contextPath='" + contextPath + '\'' +
+            ", vmOpts='" + vmOpts + '\'' +
+            ", debug='" + debug + '\'' +
+            ", opts='" + opts + '\'' +
+            ", instances=" + instances +
+            ", folder=" + folder +
+            ", stdOutFile='" + stdOutFile + '\'' +
+            ", additionalFeatureFile=" + additionalFeatureFile +
+            '}';
     }
 }

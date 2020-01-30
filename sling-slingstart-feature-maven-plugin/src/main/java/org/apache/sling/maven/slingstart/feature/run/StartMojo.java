@@ -378,7 +378,7 @@ public class StartMojo extends AbstractStartStopMojo {
         }
 
         // If the current project is a slingstart project, use its JAR artifact
-        if (this.project.getPackaging().equals(BuildConstants.PACKAGING_SLINGSTART)) {
+        if (this.project.getPackaging().equals(BuildConstants.PACKAGING_SLINGFEATURESTART)) {
             File jarFile = project.getArtifact().getFile();
             if (jarFile != null && jarFile.exists()) {
                 getLog().info("Using launchpad jar being generated as this project's primary artifact: '" +  jarFile + "'!");
@@ -413,7 +413,7 @@ public class StartMojo extends AbstractStartStopMojo {
         // Last chance: use the first declared dependency with type "slingstart"
         final Set<Artifact> dependencies = this.project.getDependencyArtifacts();
         for (final Artifact dep : dependencies) {
-            if (BuildConstants.PACKAGING_SLINGSTART.equals(dep.getType())) {
+            if (BuildConstants.PACKAGING_SLINGFEATURESTART.equals(dep.getType())) {
                 final Dependency d = new Dependency();
                 d.setGroupId(dep.getGroupId());
                 d.setArtifactId(dep.getArtifactId());

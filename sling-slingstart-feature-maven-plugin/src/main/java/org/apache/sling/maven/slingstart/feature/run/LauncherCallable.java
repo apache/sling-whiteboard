@@ -204,6 +204,11 @@ public class LauncherCallable implements Callable<ProcessDescription> {
         // from here on launchpad properties
         add(args, this.configuration.getOpts());
 
+        if(this.configuration.getAdditionalFeatureFile() != null) {
+            args.add("-af");
+            args.add(this.configuration.getAdditionalFeatureFile().getAbsolutePath());
+        }
+
         final String contextPath = this.configuration.getContextPath();
         if ( contextPath != null && contextPath.length() > 0 && !contextPath.equals("/") ) {
             args.add("-r");

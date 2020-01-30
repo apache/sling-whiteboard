@@ -211,14 +211,14 @@ public class SlingStarter implements Runnable, ControlTarget {
                 answer = check;
             } catch (MalformedURLException | URISyntaxException e) {
                 // Try it as a file
-                File check = new File(mainFeatureFile);
+                File check = new File(featureFile);
                 if (!check.exists() || !check.canRead()) {
-                    throw new RuntimeException("Given Feature File is not a valid URL or File: '" + mainFeatureFile + "'", e);
+                    throw new RuntimeException("Given Feature File is not a valid URL or File: '" + featureFile + "'", e);
                 }
                 try {
                     answer = check.toURI().toURL();
                 } catch (MalformedURLException ex) {
-                    throw new RuntimeException("Given Feature File cannot be converted to an URL: '" + mainFeatureFile + "'", e);
+                    throw new RuntimeException("Given Feature File cannot be converted to an URL: '" + featureFile + "'", e);
                 }
             }
         }

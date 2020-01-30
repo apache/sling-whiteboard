@@ -22,6 +22,7 @@
 
     <artifactId>org.apache.sling.feature.starter</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+    <packaging>slingfeaturestart</packaging>
 
     <name>Apache Sling Feature JAR Launcher</name>
     <description>
@@ -40,8 +41,8 @@
         <picocli.version>3.6.0</picocli.version>
         <appassembler-maven-plugin.version>2.0.0</appassembler-maven-plugin.version>
         <org.apache.sling.feature.extension.content.version>1.0.4</org.apache.sling.feature.extension.content.version>
-        <org.apache.sling.feature.launcher.version>1.1.0</org.apache.sling.feature.launcher.version>
-        <org.apache.sling.feature.io.version>1.1.0</org.apache.sling.feature.io.version>
+        <org.apache.sling.feature.launcher.version>1.1.2</org.apache.sling.feature.launcher.version>
+        <org.apache.sling.feature.io.version>1.2.2</org.apache.sling.feature.io.version>
         <org.apache.felix.converter.version>1.0.8</org.apache.felix.converter.version>
 
         <sling.java.version>8</sling.java.version>
@@ -163,16 +164,16 @@
                             <goal>start</goal>
                         </goals>
                     </execution>
-                    <execution>
-                        <id>stop-container-after-IT</id>
-                        <goals>
-                            <goal>stop</goal>
-                        </goals>
-                        <configuration>
-                            <!-- Let the Test Server run to manually verify the setup. TODO: remove later -->
-                            <shouldBlockUntilKeyIsPressed>${block.sling.at.the.end}</shouldBlockUntilKeyIsPressed>
-                        </configuration>
-                    </execution>
+<!--                    <execution>-->
+<!--                        <id>stop-container-after-IT</id>-->
+<!--                        <goals>-->
+<!--                            <goal>stop</goal>-->
+<!--                        </goals>-->
+<!--                        <configuration>-->
+<!--                            &lt;!&ndash; Let the Test Server run to manually verify the setup. TODO: remove later &ndash;&gt;-->
+<!--                            <shouldBlockUntilKeyIsPressed>${block.sling.at.the.end}</shouldBlockUntilKeyIsPressed>-->
+<!--                        </configuration>-->
+<!--                    </execution>-->
                 </executions>
                 <configuration>
                     <launchpadJar>${project.build.directory}/${project.artifactId}-${project.version}.jar</launchpadJar>

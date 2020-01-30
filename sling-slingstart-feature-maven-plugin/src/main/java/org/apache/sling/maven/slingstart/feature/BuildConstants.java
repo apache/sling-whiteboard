@@ -41,7 +41,7 @@ public abstract class BuildConstants {
 
     public static final String PACKAGING_PARTIAL_SYSTEM = "slingfeature";
 
-    public static final String PACKAGING_SLINGSTART = "slingstart";
+    public static final String PACKAGING_SLINGFEATURESTART = "slingfeaturestart";
 
     // Classifiers
 
