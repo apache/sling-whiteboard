@@ -31,7 +31,6 @@
         <groupId>biz.aQute.bnd</groupId>
         <artifactId>bnd-maven-plugin</artifactId>
       </plugin>
-
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
@@ -42,8 +41,6 @@
           </archive>
         </configuration>
       </plugin>
-
-
     </plugins>
   </build>
 
@@ -98,7 +95,41 @@ using 3.4.3 from mvncentral instead
         <artifactId>opensaml-soap-impl</artifactId>
         <version>${opensaml.version}</version>
     </dependency>
-  </dependencies>
+
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
+      <version>2.5</version>
+      <scope>provided</scope>
+    </dependency>
+
+<!--  Sling Dependencies-->
+    <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.auth.core</artifactId>
+      <version>1.3.26</version>
+      <scope>provided</scope>
+    </dependency>
+
+<!--    OSGI Annotations-->
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>osgi.annotation</artifactId>
+      <version>6.0.1</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.service.component.annotations</artifactId>
+      <version>1.3.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.service.metatype.annotations</artifactId>
+      <version>1.3.0</version>
+      <scope>provided</scope>
+    </dependency>  </dependencies>
 
   <repositories>
     <repository>
@@ -106,4 +137,6 @@ using 3.4.3 from mvncentral instead
       <url>https://build.shibboleth.net/nexus/content/repositories/releases/org/opensaml</url>
     </repository>
   </repositories>
+
+
 </project>
