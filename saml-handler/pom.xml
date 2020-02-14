@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Licensed to the Apache Software Foundation (ASF) under one or more contributor
+    license agreements. See the NOTICE file distributed with this work for additional
+    information regarding copyright ownership. The ASF licenses this file to
+    you under the Apache License, Version 2.0 (the "License"); you may not use
+    this file except in compliance with the License. You may obtain a copy of
+    the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required
+    by applicable law or agreed to in writing, software distributed under the
+    License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS
+    OF ANY KIND, either express or implied. See the License for the specific
+    language governing permissions and limitations under the License. -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <groupId>org.apache.sling</groupId>
+    <artifactId>sling</artifactId>
+    <version>33</version>
+    <relativePath />
+  </parent>
+
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.apache.sling</groupId>
+  <artifactId>org.apache.sling.auth.saml2</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+  <name>SAML2 Service Provider</name>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>biz.aQute.bnd</groupId>
+        <artifactId>bnd-maven-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.6</version>
+        <configuration>
+          <archive>
+            <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+          </archive>
+        </configuration>
+      </plugin>
+
+
+    </plugins>
+  </build>
+
+  <properties>
+    <opensaml.version>3.4.3</opensaml.version>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.12</version>
+      <scope>test</scope>
+    </dependency>
+<!-- OpenSAML
+Latest dependencies (3.4.5) from org.opensaml Nexus repo not working
+https://build.shibboleth.net/nexus/content/repositories/releases/org/opensaml
+using 3.4.3 from mvncentral instead
+-->
+    <dependency>
+      <groupId>org.opensaml</groupId>
+      <artifactId>opensaml-core</artifactId>
+      <version>${opensaml.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.opensaml</groupId>
+      <artifactId>opensaml-saml-api</artifactId>
+      <version>${opensaml.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.opensaml</groupId>
+      <artifactId>opensaml-saml-impl</artifactId>
+      <version>${opensaml.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.opensaml</groupId>
+      <artifactId>opensaml-messaging-api</artifactId>
+      <version>${opensaml.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.opensaml</groupId>
+      <artifactId>opensaml-messaging-impl</artifactId>
+      <version>${opensaml.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.opensaml</groupId>
+      <artifactId>opensaml-soap-api</artifactId>
+      <version>${opensaml.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>org.opensaml</groupId>
+        <artifactId>opensaml-soap-impl</artifactId>
+        <version>${opensaml.version}</version>
+    </dependency>
+  </dependencies>
+
+  <repositories>
+    <repository>
+      <id>org.opensaml</id>
+      <url>https://build.shibboleth.net/nexus/content/repositories/releases/org/opensaml</url>
+    </repository>
+  </repositories>
+</project>

@@ -44,6 +44,8 @@
           <module>SlingModelPersist</module>
           <module>starter-system-info</module>
           <module>metrics-prometheus</module>
+          <module>saml-handler</module>
     </modules>
+
 </project>
 
