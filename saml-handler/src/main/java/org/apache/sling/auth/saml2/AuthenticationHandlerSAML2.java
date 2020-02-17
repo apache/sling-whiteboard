@@ -1,4 +1,3 @@
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -23,6 +22,7 @@ package org.apache.sling.auth.saml2;
 import org.apache.sling.auth.core.spi.AuthenticationHandler;
 import org.apache.sling.auth.core.spi.AuthenticationInfo;
 import org.apache.sling.auth.core.spi.DefaultAuthenticationFeedbackHandler;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.metatype.annotations.Designate;
 
@@ -32,16 +32,39 @@ import java.io.IOException;
 
 @Component(
         service = AuthenticationHandler.class ,
-        name = "SAML2 SP Authentication Handler",
-        property = {"sling.servlet.methods={GET, POST}", AuthenticationHandler.PATH_PROPERTY+"=/", },
+        name = "Saml2SPAuthenticationHandler",
+        property = {"sling.servlet.methods={GET, POST}",
+            AuthenticationHandler.PATH_PROPERTY+"={}",
+        },
         immediate = true)
 
 @Designate(ocd = AuthenticationHandlerSAML2Config.class)
 
 public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHandler implements AuthenticationHandler {
 
+    private String[] path;
+    private String saml2SessAttr;
+    private boolean saml2SPEnabled = false;
+
+    @Activate
+    protected void activate(final AuthenticationHandlerSAML2Config config) {
+        this.path = config.path();
+        this.saml2SessAttr = config.saml2SessionAttr();
+        this.saml2SPEnabled = config.saml2SPEnabled();
+    }
+
     @Override
     public AuthenticationInfo extractCredentials(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
+        if (this.saml2SPEnabled) {
+            // Try getting credentials from the session
+            if (httpServletRequest.getSession().getAttribute(this.saml2SessAttr) != null) {
+                // extract credentials
+                // validate credentials
+            } else {
+
+
+            }
+        }
         return null;
     }
 

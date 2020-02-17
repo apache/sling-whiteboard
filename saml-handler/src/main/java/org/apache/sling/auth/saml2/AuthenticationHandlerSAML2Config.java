@@ -20,8 +20,10 @@
 
 package org.apache.sling.auth.saml2;
 
-
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.AttributeType;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
+
 
 /**
  * The configuration for the <code>FormAuthenticationHandler</code>
@@ -34,5 +36,18 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
                 "and related Service Provider metadata")
 public @interface AuthenticationHandlerSAML2Config {
 
+    @AttributeDefinition(name = "Path",
+            description="One or more URL paths (String) for which this AuthenticationHandler is applied")
+    String[] path() default {"/"};
 
+    @AttributeDefinition(name = "SAML2 Session Attribute",
+            description="Name used to save the users security context within a HTTP SESSION")
+    String saml2SessionAttr() default "saml2AuthInfo";
+
+    @AttributeDefinition(
+            name = "Enabled",
+            description = " SAML2 Authentication Handler Enabled",
+            type = AttributeType.BOOLEAN
+    )
+    boolean saml2SPEnabled() default false;
 }
