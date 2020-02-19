@@ -38,7 +38,6 @@
   <build>
     <plugins>
       <plugin>
-
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-bundle-plugin</artifactId>
         <extensions>true</extensions>
@@ -49,10 +48,24 @@
             <Embed-Transitive>true</Embed-Transitive>
             <Embed-Directory>target/dependency</Embed-Directory>
             <Embed-StripGroup>true</Embed-StripGroup>
-            <Import-Package>!sun.misc;resolution:=optional,
+            <Import-Package>
+              !sun.misc;resolution:=optional,
               !com.sun.msv.*;resolution:=optional,
               !com.sun.jdmk.comm;resolution:=optional,
-              !com.google.appengine.repackaged.*;resolution:=optional,
+              sun.io.*;resolution:=optional,
+              com.beust.jcommander*;resolution:=optional,
+              com.google.appengine.api.*;resolution:=optional,
+              com.google.apphosting.api.*;resolution:=optional,
+              com.google.appengine.repackaged.*;resolution:=optional,
+              org.apache.log.*;resolution:=optional,
+              org.apache.oro.text.perl.*;resolution:=optional,
+              antlr.*;resolution:=optional,
+              org.apache.tools.ant.*;resolution:=optional,
+              junit.framework.*;resolution:=optional,
+              org.dom4j.*;resolution:=optional,
+              org.jdom.*;resolution:=optional,
+              org.bouncycastle.*;resolution:=optional,
+              com.sun.org.apache.xerces.internal.*;resolution:=optional,
               *</Import-Package>
           </instructions>
         </configuration>
@@ -108,11 +121,11 @@
 
 <!-- OpenSAML -->
     <!-- https://mvnrepository.com/artifact/org.apache.servicemix.bundles/org.apache.servicemix.bundles.opensaml -->
-<!--    <dependency>-->
-<!--      <groupId>org.apache.servicemix.bundles</groupId>-->
-<!--      <artifactId>org.apache.servicemix.bundles.opensaml</artifactId>-->
-<!--      <version>3.4.3_2</version>-->
-<!--    </dependency>-->
+    <!--    <dependency>-->
+    <!--      <groupId>org.apache.servicemix.bundles</groupId>-->
+    <!--      <artifactId>org.apache.servicemix.bundles.opensaml</artifactId>-->
+    <!--      <version>3.4.3_2</version>-->
+    <!--    </dependency>-->
 
     <dependency>
       <groupId>org.opensaml</groupId>
@@ -125,6 +138,81 @@
       <version>3.4.3</version>
     </dependency>
 
+<!-- OpenSAML Dependencies-->
+    <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk15on -->
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcprov-jdk15on</artifactId>
+      <version>1.59</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.errorprone</groupId>
+      <artifactId>error_prone_annotations</artifactId>
+      <version>2.3.4</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.velocity</groupId>
+      <artifactId>velocity</artifactId>
+      <version>1.7</version>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/werken-xpath/werken-xpath -->
+    <dependency>
+      <groupId>werken-xpath</groupId>
+      <artifactId>werken-xpath</artifactId>
+      <version>0.9.4</version>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/xalan/xalan -->
+    <dependency>
+      <groupId>xalan</groupId>
+      <artifactId>xalan</artifactId>
+      <version>2.7.1</version>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/xerces/xercesImpl -->
+    <dependency>
+      <groupId>xerces</groupId>
+      <artifactId>xercesImpl</artifactId>
+      <version>2.12.0</version>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/xml-resolver/xml-resolver -->
+    <dependency>
+      <groupId>xml-resolver</groupId>
+      <artifactId>xml-resolver</artifactId>
+      <version>1.2</version>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/jaxen/jaxen -->
+    <dependency>
+      <groupId>jaxen</groupId>
+      <artifactId>jaxen</artifactId>
+      <version>1.2.0</version>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/xom/xom -->
+    <dependency>
+      <groupId>xom</groupId>
+      <artifactId>xom</artifactId>
+      <version>1.3.4</version>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/org.joda/joda-convert -->
+    <dependency>
+      <groupId>org.joda</groupId>
+      <artifactId>joda-convert</artifactId>
+      <version>2.2.1</version>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/org.relaxng/com.springsource.org.relaxng.datatype -->
+    <dependency>
+      <groupId>org.relaxng</groupId>
+      <artifactId>com.springsource.org.relaxng.datatype</artifactId>
+      <version>1.0.0</version>
+    </dependency>
 
 
 <!--    JavaEE -->
@@ -168,6 +256,7 @@
       <version>1.3.0</version>
       <scope>provided</scope>
     </dependency>
+
   </dependencies>
 
   <profiles>
@@ -191,5 +280,4 @@
       </build>
     </profile>
   </profiles>
-
 </project>
