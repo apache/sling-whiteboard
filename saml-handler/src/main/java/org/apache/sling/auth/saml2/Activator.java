@@ -19,13 +19,32 @@
 
 package org.apache.sling.auth.saml2;
 
+import org.opensaml.core.config.InitializationException;
+import org.opensaml.xmlsec.config.impl.JavaCryptoValidationInitializer;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.security.Provider;
+import java.security.Security;
 
 public class Activator implements BundleActivator {
 
+    private static final Logger logger = LoggerFactory.getLogger(BundleActivator.class);
+
     public void start(BundleContext context) throws Exception {
-        // do something at bundle start
+        logger.info("Activating Apache Sling SAML2 SP Bundle. And Initializing JCE, Java Cryptographic Extension");
+        JavaCryptoValidationInitializer jcvi = new JavaCryptoValidationInitializer();
+        try {
+            jcvi.init();
+            for (Provider jceProvider : Security.getProviders()) {
+                logger.info(jceProvider.getInfo());
+            }
+        } catch (InitializationException e) {
+            throw new Error("Java Cryptographic Extension could not initialize. " +
+                    "This happens when JCE implementation is incomplete, and not meeting OpenSAML standards.", e);
+        }
     }
 
     public void stop(BundleContext context) throws Exception {
