@@ -38,22 +38,31 @@
   <build>
     <plugins>
       <plugin>
+
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-bundle-plugin</artifactId>
         <extensions>true</extensions>
         <configuration>
           <instructions>
             <Bundle-Activator>org.apache.sling.auth.saml2.Activator</Bundle-Activator>
-            <Embed-Dependency>*;scope=compile|runtime;inline=true</Embed-Dependency>
+            <Embed-Dependency>*;scope=compile|runtime;</Embed-Dependency>
             <Embed-Transitive>true</Embed-Transitive>
-            <Import-Package>!sun.misc;resolution:=optional,!com.sun.msv;resolution:=optional,!com.sun.jdmk.comm;resolution:=optional,*</Import-Package>
+            <Embed-Directory>target/dependency</Embed-Directory>
+            <Embed-StripGroup>true</Embed-StripGroup>
+            <Import-Package>!sun.misc;resolution:=optional,
+              !com.sun.msv.*;resolution:=optional,
+              !com.sun.jdmk.comm;resolution:=optional,
+              !com.google.appengine.repackaged.*;resolution:=optional,
+              *</Import-Package>
           </instructions>
         </configuration>
       </plugin>
+
       <plugin>
         <groupId>org.apache.sling</groupId>
         <artifactId>maven-sling-plugin</artifactId>
       </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -62,6 +71,7 @@
           <target>8</target>
         </configuration>
       </plugin>
+
       <plugin>
         <groupId>org.apache.sling</groupId>
         <artifactId>maven-sling-plugin</artifactId>
@@ -72,16 +82,29 @@
           <password>${sling.password}</password>
         </configuration>
       </plugin>
+
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <version>0.13</version>
+        <configuration>
+          <excludes combine.children="append">
+            <exclude>**/dependency-reduced-pom.xml</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
     </plugins> 
   </build>
 
   <dependencies>
+<!--    TEST SCOPE -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.12</version>
       <scope>test</scope>
     </dependency>
+
 
 <!-- OpenSAML -->
     <!-- https://mvnrepository.com/artifact/org.apache.servicemix.bundles/org.apache.servicemix.bundles.opensaml -->
@@ -90,39 +113,6 @@
 <!--      <artifactId>org.apache.servicemix.bundles.opensaml</artifactId>-->
 <!--      <version>3.4.3_2</version>-->
 <!--    </dependency>-->
-
-    <!-- https://mvnrepository.com/artifact/org.apache.velocity/velocity -->
-    <dependency>
-      <groupId>org.apache.velocity</groupId>
-      <artifactId>velocity</artifactId>
-      <version>1.7</version>
-    </dependency>
-    <dependency>
-      <groupId>com.beust</groupId>
-      <artifactId>jcommander</artifactId>
-      <version>1.78</version>
-    </dependency>
-
-    <!-- https://mvnrepository.com/artifact/com.google.errorprone/error_prone_annotations -->
-    <dependency>
-      <groupId>com.google.errorprone</groupId>
-      <artifactId>error_prone_annotations</artifactId>
-      <version>2.3.4</version>
-    </dependency>
-    <!-- https://mvnrepository.com/artifact/xalan/xalan -->
-    <dependency>
-      <groupId>xalan</groupId>
-      <artifactId>xalan</artifactId>
-      <version>2.7.1</version>
-    </dependency>
-
-
-    <!-- https://mvnrepository.com/artifact/org.apache.avalon.framework/avalon-framework-api -->
-    <dependency>
-      <groupId>org.apache.avalon.framework</groupId>
-      <artifactId>avalon-framework-api</artifactId>
-      <version>4.3.1</version>
-    </dependency>
 
     <dependency>
       <groupId>org.opensaml</groupId>
@@ -134,36 +124,8 @@
       <artifactId>opensaml-xmlsec-impl</artifactId>
       <version>3.4.3</version>
     </dependency>
-<!--    <dependency>-->
-<!--      <groupId>org.opensaml</groupId>-->
-<!--      <artifactId>opensaml-saml-api</artifactId>-->
-<!--      <version>${opensaml.version}</version>-->
-<!--    </dependency>-->
-<!--    <dependency>-->
-<!--      <groupId>org.opensaml</groupId>-->
-<!--      <artifactId>opensaml-saml-impl</artifactId>-->
-<!--      <version>${opensaml.version}</version>-->
-<!--    </dependency>-->
-<!--    <dependency>-->
-<!--      <groupId>org.opensaml</groupId>-->
-<!--      <artifactId>opensaml-messaging-api</artifactId>-->
-<!--      <version>${opensaml.version}</version>-->
-<!--    </dependency>-->
-<!--    <dependency>-->
-<!--      <groupId>org.opensaml</groupId>-->
-<!--      <artifactId>opensaml-messaging-impl</artifactId>-->
-<!--      <version>${opensaml.version}</version>-->
-<!--    </dependency>-->
-<!--    <dependency>-->
-<!--      <groupId>org.opensaml</groupId>-->
-<!--      <artifactId>opensaml-soap-api</artifactId>-->
-<!--      <version>${opensaml.version}</version>-->
-<!--    </dependency>-->
-<!--    <dependency>-->
-<!--        <groupId>org.opensaml</groupId>-->
-<!--        <artifactId>opensaml-soap-impl</artifactId>-->
-<!--        <version>${opensaml.version}</version>-->
-<!--    </dependency>-->
+
+
 
 <!--    JavaEE -->
     <dependency>
