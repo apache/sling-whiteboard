@@ -1,4 +1,3 @@
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -43,6 +42,10 @@ public @interface AuthenticationHandlerSAML2Config {
     @AttributeDefinition(name = "SAML2 Session Attribute",
             description="Name used to save the users security context within a HTTP SESSION")
     String saml2SessionAttr() default "saml2AuthInfo";
+
+    @AttributeDefinition(name = "SAML2 IDP Destination",
+            description="")
+    String saml2IDPDestination() default "http://localhost:8080/idp/profile/SAML2/POST/SSO";
 
     @AttributeDefinition(
             name = "Enabled",

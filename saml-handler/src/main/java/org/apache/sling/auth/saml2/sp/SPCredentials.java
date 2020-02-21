@@ -76,5 +76,4 @@ public class SPCredentials {
         return credential;
     }
 
-
 }
