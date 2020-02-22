@@ -20,6 +20,7 @@
 package org.apache.sling.auth.saml2;
 
 import org.opensaml.core.config.InitializationException;
+import org.opensaml.core.config.InitializationService;
 import org.opensaml.xmlsec.config.impl.JavaCryptoValidationInitializer;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -36,6 +37,7 @@ public class Activator implements BundleActivator {
     public void start(BundleContext context) throws Exception {
         logger.info("Activating Apache Sling SAML2 SP Bundle. And Initializing JCE, Java Cryptographic Extension");
         JavaCryptoValidationInitializer jcvi = new JavaCryptoValidationInitializer();
+
         try {
             jcvi.init();
             for (Provider jceProvider : Security.getProviders()) {
@@ -44,6 +46,22 @@ public class Activator implements BundleActivator {
         } catch (InitializationException e) {
             throw new Error("Java Cryptographic Extension could not initialize. " +
                     "This happens when JCE implementation is incomplete, and not meeting OpenSAML standards.", e);
+        }
+
+/*
+TODO: Check whether SLing Dev's have advice about this classloading / initialization
+The suggestion in this post
+https://medium.com/@dehami.deshan/commencing-migration-towards-the-checked-flag-opensaml-3-cc62d3faa3b0
+fixes a issue similar to what is discussed below
+https://shibboleth.1660669.n2.nabble.com/Null-returned-by-XMLObjectProviderRegistrySupport-getBuilderFactory-td7643173.html
+*/
+        Thread thread = Thread.currentThread();
+        ClassLoader loader = thread.getContextClassLoader();
+        thread.setContextClassLoader(InitializationService.class.getClassLoader());
+        try {
+            InitializationService.initialize();
+        } finally {
+            thread.setContextClassLoader(loader);
         }
     }
 

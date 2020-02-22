@@ -61,7 +61,8 @@ import java.io.IOException;
         property = {"sling.servlet.methods={GET, POST}",
             AuthenticationHandler.PATH_PROPERTY+"={}",
             AuthenticationHandler.TYPE_PROPERTY + "=SAML2",
-            "label=SAML2 Authentication Handler"
+            "service.description=SAML2 Authentication Handler",
+            "service.ranking=420",
         },
         immediate = true)
 
@@ -161,14 +162,11 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
                 }
             }
         }
-// which may be returned from the AuthenticationHandler.extractCredentials
-// method to inform the caller, that a response has been sent to the client to request for credentials.
-        try {
-            httpServletResponse.sendRedirect(this.getSaml2IDPDestination());
-            return AuthenticationInfo.DOING_AUTH;
-        } catch (IOException e) {
-            logger.error("failed to redirect to IDP", e);
-        }
+/*
+TODO: Figure out why the form auth handler' requestCredenitals is called even when this service.ranking is higher
+Sling's Authentication Framework will start calling requestCredentials on the registered AuthenticationHandlers
+https://sling.apache.org/documentation/the-sling-engine/authentication/authentication-authenticationhandler.html
+*/
         return null;
     }
 
@@ -203,8 +201,6 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
         }
         return false;
     }
-
-
 
 
     private void setGotoURLOnSession(HttpServletRequest request) {

@@ -271,6 +271,17 @@
       <scope>provided</scope>
     </dependency>
 
+<!-- OAK
+NOTE: Make sure your instance provides this bundle!
+-->
+<!-- https://mvnrepository.com/artifact/org.apache.jackrabbit/oak-auth-external -->
+      <dependency>
+          <groupId>org.apache.jackrabbit</groupId>
+          <artifactId>oak-auth-external</artifactId>
+          <version>1.6.1</version>
+          <scope>provided</scope>
+      </dependency>
+
 
     <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
     <dependency>
