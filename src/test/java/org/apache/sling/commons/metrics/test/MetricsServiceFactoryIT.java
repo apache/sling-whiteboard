@@ -37,6 +37,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.ops4j.pax.exam.CoreOptions.junitBundles;
 import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
+import static org.ops4j.pax.exam.CoreOptions.options;
 
 @RunWith(PaxExam.class)
 @ExamReactorStrategy(PerClass.class)
@@ -47,14 +48,14 @@ public class MetricsServiceFactoryIT extends TestSupport {
 
     @Configuration
     public Option[] configuration() {
-        return new Option[]{
+        return options(
             baseConfiguration(),
             scr(),
             // Commons Metrics
             testBundle("bundle.filename"),
             mavenBundle().groupId("io.dropwizard.metrics").artifactId("metrics-core").versionAsInProject(),
             junitBundles()
-        };
+        );
     }
 
     @Test
