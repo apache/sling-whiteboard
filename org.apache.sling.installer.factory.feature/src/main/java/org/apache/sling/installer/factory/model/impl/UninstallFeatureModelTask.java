@@ -46,8 +46,9 @@ public class UninstallFeatureModelTask extends AbstractFeatureModelTask {
             } else {
                 final TaskResource resource = this.getResource();
                 ctx.log("Uninstalling {}", resource.getEntityId());
-                installer.registerResources("model-" + resource.getAttribute(FeatureModelTransformer.ATTR_ID), null);
-                final String path = (String)resource.getAttribute(FeatureModelTransformer.ATTR_BASE_PATH);
+                installer.registerResources("model-" + resource.getAttribute(FeatureModelInstallerPlugin.ATTR_ID),
+                        null);
+                final String path = (String) resource.getAttribute(FeatureModelInstallerPlugin.ATTR_BASE_PATH);
                 if ( path != null ) {
                     final File dir = new File(path);
                     deleteDirectory(dir);
@@ -62,6 +63,6 @@ public class UninstallFeatureModelTask extends AbstractFeatureModelTask {
 
     @Override
     public String getSortKey() {
-        return "31-" + getResource().getAttribute(FeatureModelTransformer.ATTR_ID);
+        return "31-" + getResource().getAttribute(FeatureModelInstallerPlugin.ATTR_ID);
     }
 }

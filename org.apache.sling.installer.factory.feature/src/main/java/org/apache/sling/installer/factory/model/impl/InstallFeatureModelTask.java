@@ -89,12 +89,12 @@ public class InstallFeatureModelTask extends AbstractFeatureModelTask {
         try {
             final TaskResource resource = this.getResource();
             ctx.log("Installing {}", resource.getEntityId());
-            final String featureJson = (String) resource.getAttribute(FeatureModelTransformer.ATTR_MODEL);
+            final String featureJson = (String) resource.getAttribute(FeatureModelInstallerPlugin.ATTR_MODEL);
             if (featureJson == null) {
                 ctx.log("Unable to install feature model resource {} : no model found", resource);
                 this.getResourceGroup().setFinishState(ResourceState.IGNORED);
             } else {
-                final String path = (String) resource.getAttribute(FeatureModelTransformer.ATTR_BASE_PATH);
+                final String path = (String) resource.getAttribute(FeatureModelInstallerPlugin.ATTR_BASE_PATH);
                 final File baseDir = (path == null ? null : new File(path));
 
                 boolean success = false;
@@ -140,7 +140,7 @@ public class InstallFeatureModelTask extends AbstractFeatureModelTask {
                             final OsgiInstaller installer = this.getService(OsgiInstaller.class);
                             if ( installer != null ) {
                                 installer.registerResources(
-                                        "model-" + resource.getAttribute(FeatureModelTransformer.ATTR_ID),
+                                        "model-" + resource.getAttribute(FeatureModelInstallerPlugin.ATTR_ID),
                                         result.resources.toArray(new InstallableResource[result.resources.size()]));
                             } else {
                                 ctx.log("Unable to install feature model resource {} : unable to get OSGi installer",
@@ -285,6 +285,6 @@ public class InstallFeatureModelTask extends AbstractFeatureModelTask {
 
     @Override
     public String getSortKey() {
-        return "30-" + getResource().getAttribute(FeatureModelTransformer.ATTR_ID);
+        return "30-" + getResource().getAttribute(FeatureModelInstallerPlugin.ATTR_ID);
     }
 }
