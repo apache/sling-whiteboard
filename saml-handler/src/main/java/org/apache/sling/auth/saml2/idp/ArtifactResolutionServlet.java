@@ -64,7 +64,7 @@ import static org.apache.sling.api.servlets.ServletResolverConstants.*;
         service = Servlet.class,
         immediate=true,
         property = {
-                SLING_SERVLET_SELECTORS+"=/idp/artifactResolutionService"
+                SLING_SERVLET_PATHS+"=/idp/artifactResolutionService"
         }
 )
 
