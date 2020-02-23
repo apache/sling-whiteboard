@@ -18,8 +18,6 @@
  */
 package org.apache.sling.installer.factory.model.impl;
 
-import java.io.File;
-
 import org.apache.sling.installer.api.OsgiInstaller;
 import org.apache.sling.installer.api.tasks.InstallationContext;
 import org.apache.sling.installer.api.tasks.ResourceState;
@@ -48,11 +46,6 @@ public class UninstallFeatureModelTask extends AbstractFeatureModelTask {
                 ctx.log("Uninstalling {}", resource.getEntityId());
                 installer.registerResources("model-" + resource.getAttribute(FeatureModelInstallerPlugin.ATTR_ID),
                         null);
-                final String path = (String) resource.getAttribute(FeatureModelInstallerPlugin.ATTR_BASE_PATH);
-                if ( path != null ) {
-                    final File dir = new File(path);
-                    deleteDirectory(dir);
-                }
                 this.getResourceGroup().setFinishState(ResourceState.UNINSTALLED);
                 ctx.log("Uninstalled {}", resource.getEntityId());
             }

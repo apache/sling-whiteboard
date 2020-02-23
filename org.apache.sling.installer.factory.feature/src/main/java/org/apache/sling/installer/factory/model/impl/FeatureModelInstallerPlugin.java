@@ -19,11 +19,13 @@
 package org.apache.sling.installer.factory.model.impl;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -32,6 +34,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.builder.BuilderContext;
+import org.apache.sling.feature.builder.FeatureBuilder;
 import org.apache.sling.feature.io.archive.ArchiveReader;
 import org.apache.sling.feature.io.artifacts.ArtifactManager;
 import org.apache.sling.feature.io.artifacts.ArtifactManagerConfig;
@@ -78,7 +82,8 @@ public class FeatureModelInstallerPlugin implements InstallTaskFactory, Resource
         @AttributeDefinition(name = "Repository URLs", description = "Additional repository URLs to fetch artifacts")
         String[] repositories();
 
-        @AttributeDefinition(name = "Classifier Patterns", description = "Patterns for selecting the features to handle based on the classifier. Without a configuration all features are handled.")
+        @AttributeDefinition(name = "Classifier Patterns", description = "Patterns for selecting the features to handle based on the classifier. Without a configuration all features are handled."
+                + " The patterns can use an asteriks to match any characters in the classifier. The special token ':' can be used to match the empty classifier.")
         String[] classifierPatterns();
     }
 
@@ -87,8 +92,6 @@ public class FeatureModelInstallerPlugin implements InstallTaskFactory, Resource
     public static final String TYPE_FEATURE_MODEL = "featuremodel";
 
     public static final String ATTR_MODEL = "feature";
-
-    public static final String ATTR_BASE_PATH = "path";
 
     public static final String ATTR_ID = "featureId";
 
@@ -108,27 +111,38 @@ public class FeatureModelInstallerPlugin implements InstallTaskFactory, Resource
 
     private final ArtifactManager artifactManager;
 
-    private final List<String> classifierPatterns = new ArrayList<>();
+    private final List<Pattern> classifierPatterns = new ArrayList<>();
+
+    private final File storageDirectory;
 
     @Activate
     public FeatureModelInstallerPlugin(final BundleContext ctx, final Config config) throws IOException {
         this.bundleContext = ctx;
+        this.storageDirectory = this.bundleContext.getDataFile("repository");
         final ArtifactManagerConfig amCfg = new ArtifactManagerConfig();
         amCfg.setUseMvn(config.useMvn());
+        final List<String> repos = new ArrayList<>(Arrays.asList(amCfg.getRepositoryUrls()));
+        if (this.storageDirectory != null) {
+            repos.add(this.storageDirectory.toURI().toURL().toExternalForm());
+        }
         if (config.repositories() != null && config.repositories().length > 0) {
-            final List<String> repos = new ArrayList<>(Arrays.asList(amCfg.getRepositoryUrls()));
             for (final String r : config.repositories()) {
                 if (!r.trim().isEmpty()) {
                     repos.add(r);
                 }
             }
-            amCfg.setRepositoryUrls(repos.toArray(new String[repos.size()]));
         }
+        amCfg.setRepositoryUrls(repos.toArray(new String[repos.size()]));
+
         this.artifactManager = ArtifactManager.getArtifactManager(amCfg);
         if (config.classifierPatterns() != null) {
             for (final String text : config.classifierPatterns()) {
                 if (text != null && !text.trim().isEmpty()) {
-                    classifierPatterns.add(text.trim());
+                    if (":".equals(text.trim())) {
+                        classifierPatterns.add(Pattern.compile("^$"));
+                    } else {
+                        classifierPatterns.add(Pattern.compile(toRegexPattern(text.trim())));
+                    }
                 }
             }
         }
@@ -137,7 +151,6 @@ public class FeatureModelInstallerPlugin implements InstallTaskFactory, Resource
     @Override
     public TransformationResult[] transform(final RegisteredResource resource) {
         final List<Feature> features = new ArrayList<>();
-        File baseDir = null;
         if (resource.getType().equals(InstallableResource.TYPE_FILE) && resource.getURL().endsWith(FILE_EXTENSION)) {
             try (final Reader reader = new InputStreamReader(resource.getInputStream(), "UTF-8")) {
                 features.add(FeatureJSONReader.read(reader, resource.getURL()));
@@ -146,7 +159,6 @@ public class FeatureModelInstallerPlugin implements InstallTaskFactory, Resource
             }
         }
         if (resource.getType().equals(InstallableResource.TYPE_FILE) && resource.getURL().endsWith(".zip")) {
-            baseDir = this.bundleContext.getDataFile("");
             try (final InputStream is = resource.getInputStream()) {
                 features.addAll(ArchiveReader.read(is, null));
             } catch (final IOException ioe) {
@@ -154,26 +166,34 @@ public class FeatureModelInstallerPlugin implements InstallTaskFactory, Resource
             }
         }
         if (!features.isEmpty()) {
-            boolean error = false;
-            final List<TransformationResult> result = new ArrayList<>();
-            for (final Feature feature : features) {
-                boolean select = this.classifierPatterns.isEmpty();
-                if (!select) {
-                    for (final String pattern : this.classifierPatterns) {
-                        if (":".equals(pattern)) {
-                            select = feature.getId().getClassifier() == null;
-                        } else if (feature.getId().getClassifier() != null) {
-                            select = Pattern.compile(pattern).matcher(feature.getId().getClassifier()).matches();
-                        }
-
-                        if (select) {
-                            break;
+            // persist all features to the file system
+            if (this.storageDirectory != null) {
+                for (Feature feature : features) {
+                    final File featureFile = new File(this.storageDirectory,
+                            feature.getId().toMvnPath().replace('/', File.separatorChar));
+                    if (!featureFile.exists()) {
+                        featureFile.getParentFile().mkdirs();
+                        try (final Writer writer = new FileWriter(featureFile)) {
+                            FeatureJSONWriter.write(writer, feature);
+                        } catch (final IOException ioe) {
+                            logger.error("Unable to write feature to " + featureFile + ":" + ioe.getMessage(), ioe);
                         }
                     }
                 }
+            }
 
-                if (!select) {
+            boolean error = false;
+            final List<TransformationResult> result = new ArrayList<>();
+            for (Feature feature : features) {
+                if (!classifierMatches(feature.getId().getClassifier())) {
                     continue;
+                }
+
+                // assemble feature now
+                if (!feature.isAssembled()) {
+                    final BuilderContext ctx = new BuilderContext(this.artifactManager.toFeatureProvider());
+                    ctx.setArtifactProvider(this.artifactManager);
+                    feature = FeatureBuilder.assemble(feature, ctx);
                 }
 
                 String featureJson = null;
@@ -193,10 +213,7 @@ public class FeatureModelInstallerPlugin implements InstallTaskFactory, Resource
                     final Map<String, Object> attributes = new HashMap<>();
                     attributes.put(ATTR_MODEL, featureJson);
                     attributes.put(ATTR_ID, feature.getId().toMvnId());
-                    if (baseDir != null) {
-                        final File dir = new File(baseDir, feature.getId().toMvnName());
-                        attributes.put(ATTR_BASE_PATH, dir.getAbsolutePath());
-                    }
+
                     tr.setAttributes(attributes);
 
                     result.add(tr);
@@ -221,10 +238,50 @@ public class FeatureModelInstallerPlugin implements InstallTaskFactory, Resource
         if (rsrc.getState() == ResourceState.UNINSTALL ) {
             return new UninstallFeatureModelTask(group, bundleContext);
         }
+        final InstallContext ctx = new InstallContext(this.repository, this.repoInitProcessor, this.repoInitParser,
+                this.artifactManager, this.storageDirectory);
         return new InstallFeatureModelTask(group,
-                this.repository,
-                this.repoInitProcessor,
-                this.repoInitParser,
-                this.bundleContext, this.artifactManager);
+                ctx, this.bundleContext);
+    }
+
+    boolean classifierMatches(String classifier) {
+        boolean select = this.classifierPatterns.isEmpty();
+        if (!select) {
+            if (classifier == null) {
+                classifier = "";
+            }
+            for (final Pattern pattern : this.classifierPatterns) {
+                select = pattern.matcher(classifier).matches();
+
+                if (select) {
+                    break;
+                }
+            }
+        }
+        return select;
+    }
+
+    private static String toRegexPattern(String pattern) {
+        StringBuilder stringBuilder = new StringBuilder("^");
+        int index = 0;
+        while (index < pattern.length()) {
+            char currentChar = pattern.charAt(index++);
+            switch (currentChar) {
+            case '*':
+                stringBuilder.append("[^/]*");
+                break;
+            default:
+                if (isRegexMeta(currentChar)) {
+                    stringBuilder.append(Pattern.quote(Character.toString(currentChar)));
+                } else {
+                    stringBuilder.append(currentChar);
+                }
+            }
+        }
+        return stringBuilder.append('$').toString();
+    }
+
+    private static boolean isRegexMeta(char character) {
+        return "<([{\\^-=$!|]})?*+.>".indexOf(character) != -1;
     }
 }

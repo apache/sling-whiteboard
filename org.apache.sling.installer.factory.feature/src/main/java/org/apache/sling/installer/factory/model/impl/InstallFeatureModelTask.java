@@ -43,7 +43,6 @@ import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.io.archive.ArchiveReader;
 import org.apache.sling.feature.io.artifacts.ArtifactHandler;
-import org.apache.sling.feature.io.artifacts.ArtifactManager;
 import org.apache.sling.feature.io.json.FeatureJSONReader;
 import org.apache.sling.installer.api.InstallableResource;
 import org.apache.sling.installer.api.OsgiInstaller;
@@ -51,9 +50,6 @@ import org.apache.sling.installer.api.tasks.InstallationContext;
 import org.apache.sling.installer.api.tasks.ResourceState;
 import org.apache.sling.installer.api.tasks.TaskResource;
 import org.apache.sling.installer.api.tasks.TaskResourceGroup;
-import org.apache.sling.jcr.api.SlingRepository;
-import org.apache.sling.jcr.repoinit.JcrRepoInitOpsProcessor;
-import org.apache.sling.repoinit.parser.RepoInitParser;
 import org.apache.sling.repoinit.parser.RepoInitParsingException;
 import org.apache.sling.repoinit.parser.operations.Operation;
 import org.osgi.framework.BundleContext;
@@ -63,24 +59,12 @@ import org.osgi.framework.BundleContext;
  */
 public class InstallFeatureModelTask extends AbstractFeatureModelTask {
 
-    private final SlingRepository repository;
-
-    private final JcrRepoInitOpsProcessor repoInitProcessor;
-
-    private final RepoInitParser repoInitParser;
-
-    private final ArtifactManager artifactManager;
+    private final InstallContext installContext;
 
     public InstallFeatureModelTask(final TaskResourceGroup group,
-            final SlingRepository repository,
-            final JcrRepoInitOpsProcessor repoInitProcessor,
-            final RepoInitParser repoInitParser,
-            final BundleContext bundleContext, final ArtifactManager artifactManager) {
+            final InstallContext installContext, final BundleContext bundleContext) {
         super(group, bundleContext);
-        this.repository = repository;
-        this.repoInitProcessor = repoInitProcessor;
-        this.repoInitParser = repoInitParser;
-        this.artifactManager = artifactManager;
+        this.installContext = installContext;
     }
 
     @SuppressWarnings("deprecation")
@@ -94,68 +78,59 @@ public class InstallFeatureModelTask extends AbstractFeatureModelTask {
                 ctx.log("Unable to install feature model resource {} : no model found", resource);
                 this.getResourceGroup().setFinishState(ResourceState.IGNORED);
             } else {
-                final String path = (String) resource.getAttribute(FeatureModelInstallerPlugin.ATTR_BASE_PATH);
-                final File baseDir = (path == null ? null : new File(path));
-
                 boolean success = false;
-                try {
-                    final Result result = this.transform(featureJson, resource, baseDir);
-                    if ( result == null ) {
-                        ctx.log("Unable to install feature model resource {} : unable to create resources", resource);
-                        this.getResourceGroup().setFinishState(ResourceState.IGNORED);
-                    } else {
-                        // repo init first
-                        if ( result.repoinit != null ) {
-                            List<Operation> ops = null;
-                            try ( final Reader r = new StringReader(result.repoinit) ) {
-                                ops = this.repoInitParser.parse(r);
-                            } catch (final IOException | RepoInitParsingException e) {
-                                logger.error("Unable to parse repoinit text.", e);
-                                ctx.log("Unable to install feature model resource {} : unable parse repoinit text.",
-                                        resource);
-                                this.getResourceGroup().setFinishState(ResourceState.IGNORED);
-                                return;
-                            }
+                final Result result = this.transform(featureJson, resource);
+                if (result == null) {
+                    ctx.log("Unable to install feature model resource {} : unable to create resources", resource);
+                    this.getResourceGroup().setFinishState(ResourceState.IGNORED);
+                } else {
+                    // repo init first
+                    if (result.repoinit != null) {
+                        List<Operation> ops = null;
+                        try (final Reader r = new StringReader(result.repoinit)) {
+                            ops = this.installContext.repoInitParser.parse(r);
+                        } catch (final IOException | RepoInitParsingException e) {
+                            logger.error("Unable to parse repoinit text.", e);
+                            ctx.log("Unable to install feature model resource {} : unable parse repoinit text.",
+                                    resource);
+                            this.getResourceGroup().setFinishState(ResourceState.IGNORED);
+                            return;
+                        }
 
-                            // login admin is required for repo init
-                            Session session = null;
-                            try {
-                                session = this.repository.loginAdministrative(null);
-                                this.repoInitProcessor.apply(session, ops);
-                                session.save();
-                            } catch ( final RepositoryException re) {
-                                logger.error("Unable to process repoinit text.", re);
-                                ctx.log("Unable to install feature model resource {} : unable to process repoinit text.",
-                                        resource);
-                                this.getResourceGroup().setFinishState(ResourceState.IGNORED);
-                                return;
+                        // login admin is required for repo init
+                        Session session = null;
+                        try {
+                            session = this.installContext.repository.loginAdministrative(null);
+                            this.installContext.repoInitProcessor.apply(session, ops);
+                            session.save();
+                        } catch (final RepositoryException re) {
+                            logger.error("Unable to process repoinit text.", re);
+                            ctx.log("Unable to install feature model resource {} : unable to process repoinit text.",
+                                    resource);
+                            this.getResourceGroup().setFinishState(ResourceState.IGNORED);
+                            return;
 
-                            } finally {
-                                if ( session != null ) {
-                                    session.logout();
-                                }
+                        } finally {
+                            if (session != null) {
+                                session.logout();
                             }
                         }
-                        if ( !result.resources.isEmpty() ) {
-                            final OsgiInstaller installer = this.getService(OsgiInstaller.class);
-                            if ( installer != null ) {
-                                installer.registerResources(
-                                        "model-" + resource.getAttribute(FeatureModelInstallerPlugin.ATTR_ID),
-                                        result.resources.toArray(new InstallableResource[result.resources.size()]));
-                            } else {
-                                ctx.log("Unable to install feature model resource {} : unable to get OSGi installer",
-                                        resource);
-                                this.getResourceGroup().setFinishState(ResourceState.IGNORED);
-                                return;
-                            }
+                    }
+                    if (!result.resources.isEmpty()) {
+                        final OsgiInstaller installer = this.getService(OsgiInstaller.class);
+                        if (installer != null) {
+                            installer.registerResources(
+                                    "model-" + resource.getAttribute(FeatureModelInstallerPlugin.ATTR_ID),
+                                    result.resources.toArray(new InstallableResource[result.resources.size()]));
+                        } else {
+                            ctx.log("Unable to install feature model resource {} : unable to get OSGi installer",
+                                    resource);
+                            this.getResourceGroup().setFinishState(ResourceState.IGNORED);
+                            return;
                         }
-                        this.getResourceGroup().setFinishState(ResourceState.INSTALLED);
-                        success = true;
                     }
-                } finally {
-                    if ( !success && baseDir != null ) {
-                        this.deleteDirectory(baseDir);
-                    }
+                    this.getResourceGroup().setFinishState(ResourceState.INSTALLED);
+                    success = true;
                 }
                 if ( success ) {
                     ctx.log("Installed {}", resource.getEntityId());
@@ -176,8 +151,7 @@ public class InstallFeatureModelTask extends AbstractFeatureModelTask {
     }
 
     private Result transform(final String featureJson,
-            final TaskResource rsrc,
-            final File baseDir) {
+            final TaskResource rsrc) {
         Feature feature = null;
         try (final Reader reader = new StringReader(featureJson)) {
             feature = FeatureJSONReader.read(reader, null);
@@ -188,7 +162,7 @@ public class InstallFeatureModelTask extends AbstractFeatureModelTask {
             return null;
         }
 
-        if ( baseDir != null ) {
+        if (this.installContext.storageDirectory != null) {
             // extract artifacts
             final byte[] buffer = new byte[1024*1024*256];
 
@@ -197,7 +171,7 @@ public class InstallFeatureModelTask extends AbstractFeatureModelTask {
 
                     @Override
                     public void consume(final ArtifactId id, final InputStream is) throws IOException {
-                        final File artifactFile = getArtifactFile(baseDir, id);
+                        final File artifactFile = getArtifactFile(installContext.storageDirectory, id);
                         if (!artifactFile.exists()) {
                             artifactFile.getParentFile().mkdirs();
                             try (final OutputStream os = new FileOutputStream(artifactFile)) {
@@ -218,14 +192,14 @@ public class InstallFeatureModelTask extends AbstractFeatureModelTask {
 
         final Result result = new Result();
         for (final Artifact bundle : feature.getBundles()) {
-            if (!addArtifact(baseDir, bundle, result)) {
+            if (!addArtifact(bundle, result)) {
                 return null;
             }
         }
         final Extension ext = feature.getExtensions().getByName(Extension.EXTENSION_NAME_CONTENT_PACKAGES);
         if (ext != null && ext.getType() == ExtensionType.ARTIFACTS) {
             for (final Artifact artifact : ext.getArtifacts()) {
-                addArtifact(baseDir, artifact, result);
+                addArtifact(artifact, result);
             }
         }
 
@@ -241,13 +215,14 @@ public class InstallFeatureModelTask extends AbstractFeatureModelTask {
         return result;
     }
 
-    private boolean addArtifact(final File baseDir, final Artifact artifact,
+    private boolean addArtifact(final Artifact artifact,
             final Result result) {
-        File artifactFile = (baseDir == null ? null : getArtifactFile(baseDir, artifact.getId()));
+        File artifactFile = (this.installContext.storageDirectory == null ? null
+                : getArtifactFile(this.installContext.storageDirectory, artifact.getId()));
         ArtifactHandler handler;
         if (artifactFile == null || !artifactFile.exists()) {
             try {
-                handler = this.artifactManager.getArtifactHandler(artifact.getId().toMvnUrl());
+                handler = this.installContext.artifactManager.getArtifactHandler(artifact.getId().toMvnUrl());
             } catch (final IOException ignore) {
                 return false;
             }
