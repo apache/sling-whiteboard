@@ -50,11 +50,8 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-//import org.apache.jackrabbit.api.security.user.User;
-//import javax.jcr.SimpleCredentials;
-//import javax.jcr.Credentials;
 
-//
+
 @Component(
         service = AuthenticationHandler.class ,
         name = AuthenticationHandlerSAML2.SERVICE_NAME,
@@ -304,20 +301,7 @@ https://sling.apache.org/documentation/the-sling-engine/authentication/authentic
 
     }
 
-
-// Implement AuthenticationFeedbackHandler
-// , implements AuthenticationFeedbackHandler
-//    @Override
-//    public void authenticationFailed(HttpServletRequest request, HttpServletResponse response,  AuthenticationInfo authInfo) {
-//
-//    }
-//
-//    @Override
-//    public boolean authenticationSucceeded(HttpServletRequest request, HttpServletResponse response, AuthenticationInfo authInfo) {
-//        return false;
-//    }
-
-
+//TODO write createAuthInfo
     private AuthenticationInfo createAuthInfo(final String authData) {
         final String userId = getUserId(authData);
         if (userId != null) {
@@ -327,7 +311,6 @@ https://sling.apache.org/documentation/the-sling-engine/authentication/authentic
 //            User user = userManager.getUser(credentials);
             return new AuthenticationInfo(HttpServletRequest.DIGEST_AUTH, userId);
         }
-
         return null;
     }
 

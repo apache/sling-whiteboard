@@ -64,7 +64,9 @@ import static org.apache.sling.api.servlets.ServletResolverConstants.*;
         service = Servlet.class,
         immediate=true,
         property = {
-                SLING_SERVLET_PATHS+"=/idp/artifactResolutionService"
+                SLING_SERVLET_PATHS+"=/idp/artifactResolutionService",
+                "sling.auth.requirements=-/idp/artifactResolutionService",
+                SLING_SERVLET_METHODS+"=[GET,POST]"
         }
 )
 
@@ -72,8 +74,7 @@ public class ArtifactResolutionServlet extends SlingAllMethodsServlet {
 
         private static Logger logger = LoggerFactory.getLogger(ArtifactResolutionServlet.class);
         public static final String IDP_ENTITY_ID = "TestIDP";
-        public static final String SSO_SERVICE = "http://localhost:8080/webprofile-ref-project/idp/singleSignOnService";
-        public static final String ARTIFACT_RESOLUTION_SERVICE = "http://localhost:8080/webprofile-ref-project/idp/artifactResolutionService";
+        public static final String ARTIFACT_RESOLUTION_SERVICE = "http://localhost:8080/idp/artifactResolutionService";
 
         @Override
         protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws ServletException, IOException {

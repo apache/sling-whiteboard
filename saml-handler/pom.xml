@@ -159,16 +159,16 @@
           <artifactId>opensaml-soap-impl</artifactId>
           <version>${opensaml.version}</version>
       </dependency>
-<!--        <dependency>-->
-<!--          <groupId>org.opensaml</groupId>-->
-<!--          <artifactId>opensaml-messaging-api</artifactId>-->
-<!--          <version>${opensaml.version}</version>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--          <groupId>org.opensaml</groupId>-->
-<!--          <artifactId>opensaml-messaging-impl</artifactId>-->
-<!--          <version>${opensaml.version}</version>-->
-<!--        </dependency>-->
+        <dependency>
+          <groupId>org.opensaml</groupId>
+          <artifactId>opensaml-messaging-api</artifactId>
+          <version>${opensaml.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.opensaml</groupId>
+          <artifactId>opensaml-messaging-impl</artifactId>
+          <version>${opensaml.version}</version>
+        </dependency>
 
 
 <!-- OpenSAML Dependencies-->
