@@ -34,6 +34,7 @@ import javax.servlet.ServletException;
 import java.io.IOException;
 import org.slf4j.Logger;
 
+import static org.apache.sling.api.servlets.ServletResolverConstants.SLING_SERVLET_METHODS;
 import static org.apache.sling.api.servlets.ServletResolverConstants.SLING_SERVLET_PATHS;
 
 
@@ -41,7 +42,9 @@ import static org.apache.sling.api.servlets.ServletResolverConstants.SLING_SERVL
         service = Servlet.class,
         immediate=true,
         property = {
-                SLING_SERVLET_PATHS+"=/idp/profile/SAML2/POST/SSO"
+            SLING_SERVLET_PATHS+"=/idp/profile/SAML2/POST/SSO",
+            SLING_SERVLET_METHODS+"=[GET,POST]",
+            "sling.auth.requirements=-/idp/profile/SAML2/POST/SSO"
         }
 )
 public class Saml2IDPServlet extends SlingAllMethodsServlet {
