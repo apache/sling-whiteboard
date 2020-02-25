@@ -36,6 +36,8 @@ import org.opensaml.saml.saml2.metadata.SingleSignOnService;
 import org.opensaml.xmlsec.SignatureSigningParameters;
 import org.opensaml.xmlsec.context.SecurityParametersContext;
 import org.opensaml.xmlsec.signature.support.SignatureConstants;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.service.component.ComponentContext;
 import org.apache.sling.auth.core.spi.AuthenticationHandler;
 import org.apache.sling.auth.core.spi.AuthenticationInfo;
@@ -193,12 +195,20 @@ https://sling.apache.org/documentation/the-sling-engine/authentication/authentic
     @Override
     public boolean requestCredentials(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws IOException {
         if (this.saml2SPEnabled) {
+            doClassloading();
             setGotoURLOnSession(httpServletRequest);
             redirectUserForAuthentication(httpServletResponse);
         }
         return false;
     }
 
+    private void doClassloading(){
+        // Classloading
+        BundleWiring bundleWiring = FrameworkUtil.getBundle(ConsumerServlet.class).adapt(BundleWiring.class);
+        ClassLoader loader = bundleWiring.getClassLoader();
+        Thread thread = Thread.currentThread();
+        thread.setContextClassLoader(loader);
+    }
 
     private void setGotoURLOnSession(HttpServletRequest request) {
         request.getSession().setAttribute(ConsumerServlet.GOTO_URL_SESSION_ATTRIBUTE, request.getRequestURL().toString());

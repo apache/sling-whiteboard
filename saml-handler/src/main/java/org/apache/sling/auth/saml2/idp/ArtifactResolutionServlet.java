@@ -37,9 +37,9 @@ import org.opensaml.messaging.context.MessageContext;
 import org.opensaml.messaging.decoder.MessageDecodingException;
 import org.opensaml.messaging.encoder.MessageEncodingException;
 import org.opensaml.saml.common.SAMLObject;
+import org.opensaml.saml.saml2.binding.decoding.impl.HTTPSOAP11Decoder;
 import org.opensaml.saml.saml2.binding.encoding.impl.HTTPSOAP11Encoder;
 import org.opensaml.saml.saml2.core.*;
-import org.opensaml.soap.soap11.decoder.http.impl.HTTPSOAP11Decoder;
 import org.opensaml.xmlsec.encryption.support.DataEncryptionParameters;
 import org.opensaml.xmlsec.encryption.support.EncryptionConstants;
 import org.opensaml.xmlsec.encryption.support.EncryptionException;
@@ -48,6 +48,8 @@ import org.opensaml.xmlsec.signature.Signature;
 import org.opensaml.xmlsec.signature.support.SignatureConstants;
 import org.opensaml.xmlsec.signature.support.SignatureException;
 import org.opensaml.xmlsec.signature.support.Signer;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.service.component.annotations.Component;
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
@@ -55,8 +57,8 @@ import org.apache.sling.auth.saml2.sp.ConsumerServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.opensaml.saml.saml2.encryption.Encrypter;
-
 import java.io.IOException;
+
 
 import static org.apache.sling.api.servlets.ServletResolverConstants.*;
 
@@ -79,10 +81,14 @@ public class ArtifactResolutionServlet extends SlingAllMethodsServlet {
         @Override
         protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws ServletException, IOException {
                 logger.info("received artifactResolve:");
+// Classloading
+                BundleWiring bundleWiring = FrameworkUtil.getBundle(ConsumerServlet.class).adapt(BundleWiring.class);
+                ClassLoader loader = bundleWiring.getClassLoader();
+                Thread thread = Thread.currentThread();
+                thread.setContextClassLoader(loader);
 
                 HTTPSOAP11Decoder decoder = new HTTPSOAP11Decoder();
                 decoder.setHttpServletRequest(request);
-
                 try {
                         BasicParserPool parserPool = new BasicParserPool();
                         parserPool.initialize();

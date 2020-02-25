@@ -27,6 +27,7 @@
 
   <properties>
     <opensaml.version>3.4.3</opensaml.version>
+<!--    <opensaml.version>3.2.0</opensaml.version>-->
     <sling.host>localhost</sling.host>
     <sling.port>8080</sling.port>
     <sling.user>admin</sling.user>

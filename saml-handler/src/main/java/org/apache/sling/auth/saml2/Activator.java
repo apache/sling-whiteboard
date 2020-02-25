@@ -35,18 +35,17 @@ public class Activator implements BundleActivator {
     private static final Logger logger = LoggerFactory.getLogger(BundleActivator.class);
 
     public void start(BundleContext context) throws Exception {
+        //Classloading
         BundleWiring bundleWiring = context.getBundle().adapt(BundleWiring.class);
         ClassLoader loader = bundleWiring.getClassLoader();
-
         Thread thread = Thread.currentThread();
         thread.setContextClassLoader(InitializationService.class.getClassLoader());
+
         try {
             InitializationService.initialize();
         } finally {
             thread.setContextClassLoader(loader);
         }
-
-
 
         logger.info("Activating Apache Sling SAML2 SP Bundle. And Initializing JCE, Java Cryptographic Extension");
         JavaCryptoValidationInitializer jcvi = new JavaCryptoValidationInitializer();

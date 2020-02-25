@@ -60,6 +60,8 @@ import org.opensaml.xmlsec.keyinfo.impl.StaticKeyInfoCredentialResolver;
 import org.opensaml.xmlsec.signature.support.SignatureConstants;
 import org.opensaml.xmlsec.signature.support.SignatureException;
 import org.opensaml.xmlsec.signature.support.SignatureValidator;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,6 +94,12 @@ public class ConsumerServlet extends SlingSafeMethodsServlet {
     @Override
     protected void doGet(final SlingHttpServletRequest req, final SlingHttpServletResponse resp)
             throws SlingServletException, IOException {
+// Classloading
+        BundleWiring bundleWiring = FrameworkUtil.getBundle(ConsumerServlet.class).adapt(BundleWiring.class);
+        ClassLoader loader = bundleWiring.getClassLoader();
+        Thread thread = Thread.currentThread();
+        thread.setContextClassLoader(loader);
+
         logger.info("Artifact received");
         Artifact artifact = buildArtifactFromRequest(req);
         logger.info("Artifact: " + artifact.getArtifact());
@@ -197,6 +205,7 @@ public class ConsumerServlet extends SlingSafeMethodsServlet {
         BasicMessageHandlerChain<ArtifactResponse> handlerChain = new BasicMessageHandlerChain<ArtifactResponse>();
         handlerChain.setHandlers(handlers);
         try {
+
             handlerChain.initialize();
             handlerChain.doInvoke(context);
         } catch (ComponentInitializationException e) {
