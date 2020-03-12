@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleEvent;
+import org.osgi.framework.Constants;
 import org.osgi.framework.SynchronousBundleListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,14 +32,23 @@ public class BundleStartTimeCalculator implements SynchronousBundleListener, Dum
     private Map<Long, StartTime> bundleToStartTime = new HashMap<>();
     private Clock clock = Clock.systemUTC();
     private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final long ourBundleId;
+
+    public BundleStartTimeCalculator(long ourBundleId) {
+        this.ourBundleId = ourBundleId;
+    }
 
     @Override
     public void bundleChanged(BundleEvent event) {
-        // TODO - ignore framework, ourselves
-        
         Bundle bundle = event.getBundle();
         
-        System.out.println("Processing Event Type " + event.getType() + " for bundle " + event.getBundle().getBundleId() + "/" + event.getBundle().getSymbolicName());
+        // this bundle is already starting by the time this is invoked. We also can't get proper timing
+        // from the framework bundle
+        
+        if ( bundle.getBundleId() == Constants.SYSTEM_BUNDLE_ID 
+                || bundle.getBundleId() == ourBundleId ) {
+            return;
+        }
         
         synchronized (bundleToStartTime) {
 
@@ -50,7 +60,7 @@ public class BundleStartTimeCalculator implements SynchronousBundleListener, Dum
                 case BundleEvent.STARTED:
                     StartTime startTime = bundleToStartTime.get(bundle.getBundleId());
                     if ( startTime == null ) {
-                        System.out.println("[WARN] No previous data for started bundle " + bundle.getBundleId() + "/" + bundle.getSymbolicName());
+                        logger.warn("No previous data for started bundle {}/{}", bundle.getBundleId(), bundle.getSymbolicName());
                         return;
                     }
                     startTime.started(clock.millis());

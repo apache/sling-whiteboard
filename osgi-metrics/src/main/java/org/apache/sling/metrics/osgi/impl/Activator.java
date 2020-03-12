@@ -30,7 +30,7 @@ public class Activator implements BundleActivator {
 
     @Override
     public void start(BundleContext context) throws Exception {
-        bstc = new BundleStartTimeCalculator();
+        bstc = new BundleStartTimeCalculator(context.getBundle().getBundleId());
         context.addBundleListener(bstc);
         stc = new StartupTimeCalculator(context, bstc);
     }
