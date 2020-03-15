@@ -28,8 +28,6 @@ import org.apache.sling.metrics.osgi.ServiceRestartCounter;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ServiceRestartCountCalculator implements ServiceListener {
 
@@ -43,7 +41,6 @@ public class ServiceRestartCountCalculator implements ServiceListener {
         SPECIFIC_IDENTIFIER_PROPERTIES.put("org.apache.felix.inventory.InventoryPrinter", Arrays.asList("felix.inventory.printer.name"));
     }
     
-    private final Logger logger = LoggerFactory.getLogger(getClass());
     private final Map<ServiceIdentifier, ServiceRegistrationsTracker> registrations = new HashMap<>();
     private final Map<String, Integer> unidentifiedRegistrationsByClassName = new HashMap<>();
     
@@ -74,7 +71,8 @@ public class ServiceRestartCountCalculator implements ServiceListener {
                 
                 tracker = registrations.get(id);
                 if (tracker == null) {
-                    logger.debug("Service with identifier {} was unregistered, but no previous registration data was found", id);
+                    // TODO - republish warnings somehow
+                    // logger.debug("Service with identifier {} was unregistered, but no previous registration data was found", id);
                     return;
                 }
                 tracker.unregistered();
@@ -128,7 +126,7 @@ public class ServiceRestartCountCalculator implements ServiceListener {
     }
 
     private void logUnknownService(ServiceEvent event) {
-        if ( event.getType() == ServiceEvent.UNREGISTERING && logger.isDebugEnabled()) {
+        if ( event.getType() == ServiceEvent.UNREGISTERING ) {
             Map<String, Object> props = new HashMap<>();
             for ( String propertyName : event.getServiceReference().getPropertyKeys() ) {
                 Object propVal = event.getServiceReference().getProperty(propertyName);
@@ -137,7 +135,8 @@ public class ServiceRestartCountCalculator implements ServiceListener {
                 props.put(propertyName, propVal);
             }
    
-            logger.debug("Ignoring unregistration of service with props {}, as it has none of identifier properties {}", props, Arrays.toString(GENERAL_IDENTIFIER_PROPERTIES));
+            // TODO - republish warnings somehow
+            // logger.debug("Ignoring unregistration of service with props {}, as it has none of identifier properties {}", props, Arrays.toString(GENERAL_IDENTIFIER_PROPERTIES));
         }
     }
 

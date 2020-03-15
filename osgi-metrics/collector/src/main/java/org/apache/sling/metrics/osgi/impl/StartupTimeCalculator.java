@@ -25,6 +25,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import org.apache.sling.metrics.osgi.BundleStartDuration;
 import org.apache.sling.metrics.osgi.ServiceRestartCounter;
@@ -48,6 +49,7 @@ public class StartupTimeCalculator {
     private ServiceRestartCountCalculator serviceCalculator;
     private ScheduledExecutorService executor;
     private Future<Void> future;
+    private Supplier<StartupMetrics> metricsSupplier;
 
     public StartupTimeCalculator(BundleContext ctx, BundleStartTimeCalculator bundleCalculator, ServiceRestartCountCalculator serviceCalculator) throws InvalidSyntaxException {
         executor = Executors.newScheduledThreadPool(1);
@@ -68,8 +70,10 @@ public class StartupTimeCalculator {
                     public void removedService(ServiceReference<Object> reference, Object service) {
                         if ( future != null && !future.isDone() ) {
                             boolean cancelled = future.cancel(false);
-                            if ( cancelled )
+                            if ( cancelled ) {
+                                metricsSupplier = null;
                                 future = null;
+                            }
                         }
                     }
                 });
@@ -78,12 +82,17 @@ public class StartupTimeCalculator {
         this.listenersTracker = new ServiceTracker<>(ctx, StartupMetricsListener.class, new ServiceTrackerCustomizerAdapter<StartupMetricsListener, StartupMetricsListener>() {
             @Override
             public StartupMetricsListener addingService(ServiceReference<StartupMetricsListener> reference) {
-                return ctx.getService(reference);
+                StartupMetricsListener service = ctx.getService(reference);
+                // TODO - there is still a minor race condition, between the supplier being set and the registration of services
+                // which can cause the listener to receive the event twice
+                if ( metricsSupplier != null )
+                    service.onStartupComplete(metricsSupplier.get());
+                return service;
             }
         });
         this.listenersTracker.open();
     }
-    
+
     public void close() {
         this.readyTracker.close();
     }
@@ -100,8 +109,10 @@ public class StartupTimeCalculator {
             List<BundleStartDuration> bundleDurations = bundleCalculator.getBundleStartDurations();
             List<ServiceRestartCounter> serviceRestarts = serviceCalculator.getServiceRestartCounters();
             
+            metricsSupplier = () -> new StartupMetrics(startupInstant, startupDuration, bundleDurations, serviceRestarts); 
+            
             for ( StartupMetricsListener listener : listenersTracker.getServices(new StartupMetricsListener[0]) )
-                listener.onStartupComplete(new StartupMetrics(startupInstant, startupDuration, bundleDurations, serviceRestarts));
+                listener.onStartupComplete(metricsSupplier.get());
             
             return null;
         }, 5, TimeUnit.SECONDS);

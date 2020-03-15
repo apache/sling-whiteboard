@@ -29,14 +29,11 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.Constants;
 import org.osgi.framework.SynchronousBundleListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class BundleStartTimeCalculator implements SynchronousBundleListener {
 
     private Map<Long, StartTime> bundleToStartTime = new HashMap<>();
     private Clock clock = Clock.systemUTC();
-    private final Logger logger = LoggerFactory.getLogger(getClass());
     private final long ourBundleId;
 
     public BundleStartTimeCalculator(long ourBundleId) {
@@ -65,7 +62,8 @@ public class BundleStartTimeCalculator implements SynchronousBundleListener {
                 case BundleEvent.STARTED:
                     StartTime startTime = bundleToStartTime.get(bundle.getBundleId());
                     if ( startTime == null ) {
-                        logger.warn("No previous data for started bundle {}/{}", bundle.getBundleId(), bundle.getSymbolicName());
+                        // TODO - republish warnings somehow
+                        // logger.warn("No previous data for started bundle {}/{}", bundle.getBundleId(), bundle.getSymbolicName());
                         return;
                     }
                     startTime.started(clock.millis());
