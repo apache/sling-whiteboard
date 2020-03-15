@@ -16,10 +16,17 @@
  */
 package org.apache.sling.metrics.osgi.impl;
 
+import java.util.Hashtable;
+
+import org.apache.sling.metrics.osgi.StartupMetrics;
+import org.apache.sling.metrics.osgi.StartupMetricsListener;
 import org.osgi.annotation.bundle.Header;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
+import org.osgi.framework.ServiceRegistration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Header(name = Constants.BUNDLE_ACTIVATOR, value = "${@class}")
 // avoid dependency to SCR so we can start early on
@@ -28,9 +35,24 @@ public class Activator implements BundleActivator {
     private BundleStartTimeCalculator bstc;
     private StartupTimeCalculator stc;
     private ServiceRestartCountCalculator srcc;
+    private ServiceRegistration<StartupMetricsListener> logger;
 
     @Override
     public void start(BundleContext context) throws Exception {
+
+        // TODO - to move to separate class or bundle
+        logger = context.registerService(StartupMetricsListener.class, new StartupMetricsListener() {
+            @Override
+            public void onStartupComplete(StartupMetrics event) {
+                Logger log = LoggerFactory.getLogger(getClass());
+                log.info("Application startup completed in {}", event.getStartupTime());
+                event.getBundleStartDurations().forEach( bsd -> log.info("Bundle {} started in {}", bsd.getSymbolicName(), bsd.getStartedAfter()));
+                event.getServiceRestarts().stream()
+                    .filter( src -> src.getServiceRestarts() > 0)
+                    .forEach( src -> log.info("Service identified with {} was restarted {} times", src.getServiceIdentifier(), src.getServiceRestarts()));
+            }
+        }, new Hashtable<>());
+        
         bstc = new BundleStartTimeCalculator(context.getBundle().getBundleId());
         context.addBundleListener(bstc);
 
@@ -45,6 +67,7 @@ public class Activator implements BundleActivator {
         stc.close();
         context.removeServiceListener(srcc);
         context.removeBundleListener(bstc);
+        logger.unregister();
     }
 
 }

@@ -17,9 +17,14 @@
 package org.apache.sling.metrics.osgi.impl;
 
 import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import org.apache.sling.metrics.osgi.BundleStartDuration;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.Constants;
@@ -27,7 +32,7 @@ import org.osgi.framework.SynchronousBundleListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BundleStartTimeCalculator implements SynchronousBundleListener, Dumpable {
+public class BundleStartTimeCalculator implements SynchronousBundleListener {
 
     private Map<Long, StartTime> bundleToStartTime = new HashMap<>();
     private Clock clock = Clock.systemUTC();
@@ -71,21 +76,21 @@ public class BundleStartTimeCalculator implements SynchronousBundleListener, Dum
             }
         }
     }
-
-    @Override
-    public void dumpInfo() {
-        synchronized (bundleToStartTime) {
-            bundleToStartTime.values().stream()
-                .forEach( e -> logger.info("Bundle {} has started up in {} milliseconds", e.getBundleSymbolicName() , e.getDuration()));
-        }
-        
-    }
     
+    public List<BundleStartDuration> getBundleStartDurations() {
+        
+        synchronized (bundleToStartTime) {
+            return bundleToStartTime.values().stream()
+                .map( StartTime::toBundleStartDuration )
+                .collect( Collectors.toList() );                    
+        }
+    }
+
     class StartTime {
         private final String bundleSymbolicName;
         private long startingTimestamp;
         private long startedTimestamp;
-
+        
         public StartTime(String bundleSymbolicName, long startingTimestamp) {
             this.bundleSymbolicName = bundleSymbolicName;
             this.startingTimestamp = startingTimestamp;
@@ -101,6 +106,10 @@ public class BundleStartTimeCalculator implements SynchronousBundleListener, Dum
 
         public void started(long startedTimestamp) {
             this.startedTimestamp = startedTimestamp;
+        }
+        
+        public BundleStartDuration toBundleStartDuration() {
+            return new BundleStartDuration(bundleSymbolicName, Instant.ofEpochMilli(startingTimestamp), Duration.ofMillis(startedTimestamp - startingTimestamp));
         }
     }
 }

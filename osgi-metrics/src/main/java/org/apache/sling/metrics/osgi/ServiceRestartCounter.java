@@ -14,9 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.metrics.osgi.impl;
+package org.apache.sling.metrics.osgi;
 
-public interface Dumpable {
+public final class ServiceRestartCounter {
+    private final String serviceIdentifier;
+    private final int serviceRestarts;
 
-    void dumpInfo();
+    public ServiceRestartCounter(String serviceIdentifier, int serviceRestarts) {
+        this.serviceIdentifier = serviceIdentifier;
+        this.serviceRestarts = serviceRestarts;
+    }
+
+    public String getServiceIdentifier() {
+        return serviceIdentifier;
+    }
+    
+    public int getServiceRestarts() {
+        return serviceRestarts;
+    }
 }

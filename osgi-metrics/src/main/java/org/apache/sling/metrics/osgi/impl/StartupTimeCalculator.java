@@ -18,68 +18,94 @@ package org.apache.sling.metrics.osgi.impl;
 
 import java.lang.management.ManagementFactory;
 import java.time.Clock;
-import java.util.Arrays;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
+import org.apache.sling.metrics.osgi.BundleStartDuration;
+import org.apache.sling.metrics.osgi.ServiceRestartCounter;
+import org.apache.sling.metrics.osgi.StartupMetrics;
+import org.apache.sling.metrics.osgi.StartupMetricsListener;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTracker;
-import org.osgi.util.tracker.ServiceTrackerCustomizer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-// TODO - consider not depending on logging and simply providing an API to get the information
-// or maybe late binding to the logging API by using Dynamic-ImportPackage
 public class StartupTimeCalculator {
-
-    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     // delay activation until the system is marked as ready
     // don't explicitly import the systemready class as this bundle must be started as early as possible in order
     // to record bundle starup times
     
-    private List<Dumpable> dumpables;
     private ServiceTracker<Object, Object> readyTracker;
+    private ServiceTracker<StartupMetricsListener, StartupMetricsListener> listenersTracker;
+    private BundleStartTimeCalculator bundleCalculator;
+    private ServiceRestartCountCalculator serviceCalculator;
+    private ScheduledExecutorService executor;
+    private Future<Void> future;
 
-    
-    public StartupTimeCalculator(BundleContext ctx, Dumpable... dumpables) throws InvalidSyntaxException {
-        this.dumpables = Arrays.asList(dumpables);
+    public StartupTimeCalculator(BundleContext ctx, BundleStartTimeCalculator bundleCalculator, ServiceRestartCountCalculator serviceCalculator) throws InvalidSyntaxException {
+        executor = Executors.newScheduledThreadPool(1);
+        this.bundleCalculator = bundleCalculator;
+        this.serviceCalculator = serviceCalculator;
         this.readyTracker = new ServiceTracker<>(ctx, 
                 ctx.createFilter("(" + Constants.OBJECTCLASS+"=org.apache.felix.systemready.SystemReady)"),
-                new ServiceTrackerCustomizer<Object, Object>() {
+                new ServiceTrackerCustomizerAdapter<Object, Object>() {
 
                     @Override
                     public Object addingService(ServiceReference<Object> reference) {
-                        calculate();
-                        return reference;
+                        if ( future == null ) 
+                            future = calculate();
+                        return ctx.getService(reference);
                     }
-
-                    @Override
-                    public void modifiedService(ServiceReference<Object> reference, Object service) {
-                        // nothing to do here
-                    }
-
+                    
                     @Override
                     public void removedService(ServiceReference<Object> reference, Object service) {
-                        // nothing to do here
+                        if ( future != null && !future.isDone() ) {
+                            boolean cancelled = future.cancel(false);
+                            if ( cancelled )
+                                future = null;
+                        }
                     }
                 });
         this.readyTracker.open();
+        
+        this.listenersTracker = new ServiceTracker<>(ctx, StartupMetricsListener.class, new ServiceTrackerCustomizerAdapter<StartupMetricsListener, StartupMetricsListener>() {
+            @Override
+            public StartupMetricsListener addingService(ServiceReference<StartupMetricsListener> reference) {
+                return ctx.getService(reference);
+            }
+        });
+        this.listenersTracker.open();
     }
     
     public void close() {
         this.readyTracker.close();
     }
 
-    private void calculate() {
+    private Future<Void> calculate() {
 
         long currentMillis = Clock.systemUTC().millis();
-        long startupMillis = ManagementFactory.getRuntimeMXBean().getStartTime();
-
-        logger.info("Application startup done in {} milliseconds", (currentMillis - startupMillis));
         
-        dumpables.forEach( Dumpable::dumpInfo );
+        return executor.schedule(() -> {
+            long startupMillis = ManagementFactory.getRuntimeMXBean().getStartTime();
+            
+            Duration startupDuration = Duration.ofMillis(currentMillis - startupMillis);
+            Instant startupInstant = Instant.ofEpochMilli(startupMillis);
+            List<BundleStartDuration> bundleDurations = bundleCalculator.getBundleStartDurations();
+            List<ServiceRestartCounter> serviceRestarts = serviceCalculator.getServiceRestartCounters();
+            
+            for ( StartupMetricsListener listener : listenersTracker.getServices(new StartupMetricsListener[0]) )
+                listener.onStartupComplete(new StartupMetrics(startupInstant, startupDuration, bundleDurations, serviceRestarts));
+            
+            return null;
+        }, 5, TimeUnit.SECONDS);
+        
+
     }
 }

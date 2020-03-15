@@ -19,16 +19,19 @@ package org.apache.sling.metrics.osgi.impl;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
+import org.apache.sling.metrics.osgi.ServiceRestartCounter;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ServiceRestartCountCalculator implements ServiceListener, Dumpable {
+public class ServiceRestartCountCalculator implements ServiceListener {
 
     private static final String[] GENERAL_IDENTIFIER_PROPERTIES = new String[] { Constants.SERVICE_PID, "component.name", "jmx.objectname" };
     private static final Map<String, Collection<String>> SPECIFIC_IDENTIFIER_PROPERTIES = new HashMap<>();
@@ -55,7 +58,7 @@ public class ServiceRestartCountCalculator implements ServiceListener, Dumpable 
             id = tryFindIdFromSpecificProperties(event);
         
         if ( id == null ) {
-            logUnknownServiceWarnings(event);
+            logUnknownService(event);
             if ( event.getType() == ServiceEvent.UNREGISTERING )
                 recordUnknownServiceUnregistration(event);
             return;
@@ -71,24 +74,11 @@ public class ServiceRestartCountCalculator implements ServiceListener, Dumpable 
                 
                 tracker = registrations.get(id);
                 if (tracker == null) {
-                    logger.warn("Service with identifier {} was unregistered, but no previous registration data was found", id);
+                    logger.debug("Service with identifier {} was unregistered, but no previous registration data was found", id);
                     return;
                 }
                 tracker.unregistered();
             }
-        }
-    }
-
-    @Override
-    public void dumpInfo() {
-        synchronized (registrations) {
-            registrations.values().stream()
-                .filter( t -> t.restartCount() > 1 )
-                .forEach( t -> logger.info("Service with identifier {} was restarted {} times", t.id, t.restartCount()));
-        }
-        synchronized (unidentifiedRegistrationsByClassName) {
-            unidentifiedRegistrationsByClassName.entrySet().stream()
-                .forEach( e -> logger.info("{} service registrations with {}={} could not be identified", e.getValue(), Constants.OBJECTCLASS, e.getKey()));
         }
     }
 
@@ -137,8 +127,8 @@ public class ServiceRestartCountCalculator implements ServiceListener, Dumpable 
         return null;
     }
 
-    private void logUnknownServiceWarnings(ServiceEvent event) {
-        if ( event.getType() == ServiceEvent.UNREGISTERING && logger.isWarnEnabled()) {
+    private void logUnknownService(ServiceEvent event) {
+        if ( event.getType() == ServiceEvent.UNREGISTERING && logger.isDebugEnabled()) {
             Map<String, Object> props = new HashMap<>();
             for ( String propertyName : event.getServiceReference().getPropertyKeys() ) {
                 Object propVal = event.getServiceReference().getProperty(propertyName);
@@ -147,7 +137,7 @@ public class ServiceRestartCountCalculator implements ServiceListener, Dumpable 
                 props.put(propertyName, propVal);
             }
    
-            logger.warn("Ignoring unregistration of service with props {}, as it has none of identifier properties {}", props, Arrays.toString(GENERAL_IDENTIFIER_PROPERTIES));
+            logger.debug("Ignoring unregistration of service with props {}, as it has none of identifier properties {}", props, Arrays.toString(GENERAL_IDENTIFIER_PROPERTIES));
         }
     }
 
@@ -170,6 +160,14 @@ public class ServiceRestartCountCalculator implements ServiceListener, Dumpable 
     Map<String, Integer> getUnidentifiedRegistrationsByClassName() {
         synchronized (unidentifiedRegistrationsByClassName) {
             return unidentifiedRegistrationsByClassName;
+        }
+    }
+    
+    public List<ServiceRestartCounter> getServiceRestartCounters() {
+        synchronized (registrations) {
+            return registrations.values().stream()
+                .map( ServiceRegistrationsTracker::toServiceRestartCounter )
+                .collect(Collectors.toList());
         }
     }
     
@@ -210,7 +208,6 @@ public class ServiceRestartCountCalculator implements ServiceListener, Dumpable 
         public String toString() {
             return this.key + "=" + this.value + ( additionalInfo != null ? "(" + additionalInfo + ")" : "") ;
         }
-        
     }
     
     static class ServiceRegistrationsTracker {
@@ -235,6 +232,10 @@ public class ServiceRestartCountCalculator implements ServiceListener, Dumpable 
                 return 0;
             
             return registrationCount - 1;
+        }
+        
+        public ServiceRestartCounter toServiceRestartCounter() {
+            return new ServiceRestartCounter(id.toString(), restartCount());
         }
     }
 }
