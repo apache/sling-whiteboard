@@ -20,7 +20,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 
-// TODO - create interface, to hide away constructor
+// TODO - create interface or provide builder, to hide away constructor
 public final class StartupMetrics {
 
     private final Instant jvmStartup;
