@@ -27,18 +27,24 @@ public class Activator implements BundleActivator {
 
     private BundleStartTimeCalculator bstc;
     private StartupTimeCalculator stc;
+    private ServiceRestartCountCalculator srcc;
 
     @Override
     public void start(BundleContext context) throws Exception {
         bstc = new BundleStartTimeCalculator(context.getBundle().getBundleId());
         context.addBundleListener(bstc);
-        stc = new StartupTimeCalculator(context, bstc);
+
+        srcc = new ServiceRestartCountCalculator();
+        context.addServiceListener(srcc);
+
+        stc = new StartupTimeCalculator(context, bstc, srcc);
     }
 
     @Override
     public void stop(BundleContext context) throws Exception {
-        context.removeBundleListener(bstc);
         stc.close();
+        context.removeServiceListener(srcc);
+        context.removeBundleListener(bstc);
     }
 
 }
