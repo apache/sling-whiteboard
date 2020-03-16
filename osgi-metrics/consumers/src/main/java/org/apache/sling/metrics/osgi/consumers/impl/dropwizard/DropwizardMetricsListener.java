@@ -21,7 +21,9 @@ import java.util.List;
 
 import org.apache.sling.metrics.osgi.StartupMetrics;
 import org.apache.sling.metrics.osgi.StartupMetricsListener;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.Designate;
@@ -54,11 +56,13 @@ public class DropwizardMetricsListener implements StartupMetricsListener {
     private long slowBundleThresholdMillis;
     private List<String> registeredMetricNames = new ArrayList<>();
     
+    @Activate
     protected void activate(Config cfg) {
         this.serviceRestartThreshold = cfg.service_restart_threshold();
         this.slowBundleThresholdMillis = cfg.slow_bundle_threshold_millis();
     }
 
+    @Deactivate
     protected void deactivate() {
         registeredMetricNames.forEach( m -> registry.remove(m) );
     }

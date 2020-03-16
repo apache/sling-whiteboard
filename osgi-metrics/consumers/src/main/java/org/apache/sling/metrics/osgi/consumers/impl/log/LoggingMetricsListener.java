@@ -23,6 +23,7 @@ import org.apache.sling.metrics.osgi.BundleStartDuration;
 import org.apache.sling.metrics.osgi.ServiceRestartCounter;
 import org.apache.sling.metrics.osgi.StartupMetrics;
 import org.apache.sling.metrics.osgi.StartupMetricsListener;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.Designate;
@@ -45,6 +46,7 @@ public class LoggingMetricsListener implements StartupMetricsListener {
     private int serviceRestartThreshold;
     private long slowBundleThresholdMillis;
     
+    @Activate
     protected void activate(Config cfg) {
         this.serviceRestartThreshold = cfg.service_restart_threshold();
         this.slowBundleThresholdMillis = cfg.slow_bundle_threshold_millis();
