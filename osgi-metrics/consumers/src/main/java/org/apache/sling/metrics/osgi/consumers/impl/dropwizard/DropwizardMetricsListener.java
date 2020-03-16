@@ -16,6 +16,9 @@
  */
 package org.apache.sling.metrics.osgi.consumers.impl.dropwizard;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.sling.metrics.osgi.StartupMetrics;
 import org.apache.sling.metrics.osgi.StartupMetricsListener;
 import org.osgi.service.component.annotations.Component;
@@ -25,6 +28,7 @@ import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
 import com.codahale.metrics.Gauge;
+import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
 
 @Component
@@ -48,20 +52,30 @@ public class DropwizardMetricsListener implements StartupMetricsListener {
     
     private int serviceRestartThreshold;
     private long slowBundleThresholdMillis;
+    private List<String> registeredMetricNames = new ArrayList<>();
     
     protected void activate(Config cfg) {
         this.serviceRestartThreshold = cfg.service_restart_threshold();
         this.slowBundleThresholdMillis = cfg.slow_bundle_threshold_millis();
     }
+
+    protected void deactivate() {
+        registeredMetricNames.forEach( m -> registry.remove(m) );
+    }
     
     @Override
     public void onStartupComplete(StartupMetrics event) {
-        registry.register(APPLICATION_STARTUP_GAUGE_NAME, (Gauge<Long>) () -> event.getStartupTime().toMillis() );
+        register(APPLICATION_STARTUP_GAUGE_NAME, (Gauge<Long>) () -> event.getStartupTime().toMillis() );
         event.getBundleStartDurations().stream()
             .filter( bsd -> bsd.getStartedAfter().toMillis() >= slowBundleThresholdMillis )
-            .forEach( bsd -> registry.register(BUNDLE_STARTUP_GAUGE_NAME_PREFIX + bsd.getSymbolicName(), (Gauge<Long>) () -> bsd.getStartedAfter().toMillis()));
+            .forEach( bsd -> register(BUNDLE_STARTUP_GAUGE_NAME_PREFIX + bsd.getSymbolicName(), (Gauge<Long>) () -> bsd.getStartedAfter().toMillis()));
         event.getServiceRestarts().stream()
             .filter( src -> src.getServiceRestarts() >= serviceRestartThreshold )
-            .forEach( src -> registry.register(SERVICE_RESTART_GAUGE_NAME_PREFIX + src.getServiceIdentifier(), (Gauge<Integer>) src::getServiceRestarts) );
+            .forEach( src -> register(SERVICE_RESTART_GAUGE_NAME_PREFIX + src.getServiceIdentifier(), (Gauge<Integer>) src::getServiceRestarts) );
+    }
+    
+    private void register(String name, Metric metric) {
+        registry.register(name, metric);
+        registeredMetricNames.add(name);
     }
 }
