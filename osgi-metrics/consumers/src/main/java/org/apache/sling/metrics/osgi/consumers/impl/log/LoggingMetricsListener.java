@@ -16,15 +16,22 @@
  */
 package org.apache.sling.metrics.osgi.consumers.impl.log;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.apache.sling.metrics.osgi.BundleStartDuration;
+import org.apache.sling.metrics.osgi.ServiceRestartCounter;
 import org.apache.sling.metrics.osgi.StartupMetrics;
 import org.apache.sling.metrics.osgi.StartupMetricsListener;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Component
+@Designate(ocd = LoggingMetricsListener.Config.class)
 public class LoggingMetricsListener implements StartupMetricsListener {
     
     @ObjectClassDefinition(name = "Apache Sling Logging Startup Metrics Listener")
@@ -47,13 +54,36 @@ public class LoggingMetricsListener implements StartupMetricsListener {
     public void onStartupComplete(StartupMetrics event) {
         Logger log = LoggerFactory.getLogger(getClass());
         log.info("Application startup completed in {}", event.getStartupTime());
-        event.getBundleStartDurations().stream()
-            .filter( bsd -> bsd.getStartedAfter().toMillis() >= slowBundleThresholdMillis )
-            .forEach( bsd -> log.info("Bundle {} started in {}", bsd.getSymbolicName(), bsd.getStartedAfter()) );
+
+        List<BundleStartDuration> slowStartBundles = event.getBundleStartDurations().stream()
+                .filter( bsd -> bsd.getStartedAfter().toMillis() >= slowBundleThresholdMillis )
+                .collect(Collectors.toList());
         
-        event.getServiceRestarts().stream()
-            .filter( src -> src.getServiceRestarts() >= serviceRestartThreshold )
-            .forEach( src -> log.info("Service identified with {} was restarted {} times", src.getServiceIdentifier(), src.getServiceRestarts()));
+        if ( !slowStartBundles.isEmpty() && log.isInfoEnabled() ) {
+            StringBuilder logEntry = new StringBuilder();
+            logEntry.append("The following bundles started in more than ")
+                .append(slowBundleThresholdMillis)
+                .append(" milliseconds: \n");
+            slowStartBundles
+                .forEach( ssb -> logEntry.append("- ").append(ssb.getSymbolicName()).append(" : ").append(ssb.getStartedAfter()).append('\n'));
+            
+            log.info(logEntry.toString());
+        }
+        
+        List<ServiceRestartCounter> oftenRestartedServices = event.getServiceRestarts().stream()
+                .filter( src -> src.getServiceRestarts() >= serviceRestartThreshold )
+                .collect(Collectors.toList());
+        
+        if ( !oftenRestartedServices.isEmpty() && log.isInfoEnabled() ) {
+            StringBuilder logEntry = new StringBuilder();
+            logEntry.append("The following services have restarted more than ")
+                .append(serviceRestartThreshold)
+                .append(" times during startup :\n");
+            oftenRestartedServices
+                .forEach(ors -> logEntry.append("- ").append(ors.getServiceIdentifier()).append(" : ").append(ors.getServiceRestarts()).append(" restarts\n"));
+            
+            log.info(logEntry.toString());
+        }
     }
 
 }
