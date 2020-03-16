@@ -43,6 +43,7 @@ public class StartupTimeCalculator {
     // don't explicitly import the systemready class as this bundle must be started as early as possible in order
     // to record bundle starup times
     
+    static final String PROPERTY_READINESS_DELAY = "org.apache.sling.metrics.osgi.additionalReadinessDelayMillis";
     private ServiceTracker<Object, Object> readyTracker;
     private ServiceTracker<StartupMetricsListener, StartupMetricsListener> listenersTracker;
     private BundleStartTimeCalculator bundleCalculator;
@@ -50,9 +51,16 @@ public class StartupTimeCalculator {
     private ScheduledExecutorService executor;
     private Future<Void> future;
     private Supplier<StartupMetrics> metricsSupplier;
+    private long additionalReadinessDelayMillis = TimeUnit.SECONDS.toMillis(5);
 
     public StartupTimeCalculator(BundleContext ctx, BundleStartTimeCalculator bundleCalculator, ServiceRestartCountCalculator serviceCalculator) throws InvalidSyntaxException {
         executor = Executors.newScheduledThreadPool(1);
+        try {
+            String readinessDelay = ctx.getProperty(PROPERTY_READINESS_DELAY);
+            additionalReadinessDelayMillis = Long.parseLong(readinessDelay);
+        } catch ( NumberFormatException e) {
+            Log.debug(getClass(), "Failed parsing readiness delay", e);
+        }
         this.bundleCalculator = bundleCalculator;
         this.serviceCalculator = serviceCalculator;
         this.readyTracker = new ServiceTracker<>(ctx, 
@@ -121,7 +129,7 @@ public class StartupTimeCalculator {
                 listener.onStartupComplete(metricsSupplier.get());
             
             return null;
-        }, 5, TimeUnit.SECONDS);
+        }, additionalReadinessDelayMillis, TimeUnit.MILLISECONDS);
         
 
     }
