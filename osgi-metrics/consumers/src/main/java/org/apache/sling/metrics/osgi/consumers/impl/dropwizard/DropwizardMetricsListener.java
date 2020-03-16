@@ -20,31 +20,48 @@ import org.apache.sling.metrics.osgi.StartupMetrics;
 import org.apache.sling.metrics.osgi.StartupMetricsListener;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 
 @Component
-public class SlingMetricsListener implements StartupMetricsListener{
+@Designate(ocd = DropwizardMetricsListener.Config.class)
+public class DropwizardMetricsListener implements StartupMetricsListener {
+
+    @ObjectClassDefinition(name = "Apache Sling Dropwizard Startup Metrics Listener")
+    public @interface Config {
+        @AttributeDefinition(name = "Service Restart Threshold", description="Minimum number of service restarts during startup needed to create a metric for the service")
+        int service_restart_threshold() default 3;
+        @AttributeDefinition(name = "Slow Bundle Startup Threshold", description="Minimum bundle startup duration in milliseconds needed to create a metric for the bundle")
+        long slow_bundle_threshold_millis() default 200;
+    }
 
     private static final String APPLICATION_STARTUP_GAUGE_NAME = "osgi.application_startup_time_millis";
-    private static final String BUNDLE_STARTUP_GAUGE_NAME_PREFIX = "osgi.bundle_startup_time_millis.";
-    private static final String SERVICE_RESTART_GAUGE_NAME_PREFIX = "osgi.service_restarts_count.";
-    
-    private static final long SERVICE_RESTART_THRESOLD = 3;
-    private static final long SLOW_BUNDLE_THRESHOLD_MILLIS = 50;
+    private static final String BUNDLE_STARTUP_GAUGE_NAME_PREFIX = "osgi.slow_bundle_startup_time_millis.";
+    private static final String SERVICE_RESTART_GAUGE_NAME_PREFIX = "osgi.excessive_service_restarts_count.";
     
     @Reference
     private MetricRegistry registry;
+    
+    private int serviceRestartThreshold;
+    private long slowBundleThresholdMillis;
+    
+    protected void activate(Config cfg) {
+        this.serviceRestartThreshold = cfg.service_restart_threshold();
+        this.slowBundleThresholdMillis = cfg.slow_bundle_threshold_millis();
+    }
     
     @Override
     public void onStartupComplete(StartupMetrics event) {
         registry.register(APPLICATION_STARTUP_GAUGE_NAME, (Gauge<Long>) () -> event.getStartupTime().toMillis() );
         event.getBundleStartDurations().stream()
-            .filter( bsd -> bsd.getStartedAfter().toMillis() >= SLOW_BUNDLE_THRESHOLD_MILLIS )
+            .filter( bsd -> bsd.getStartedAfter().toMillis() >= slowBundleThresholdMillis )
             .forEach( bsd -> registry.register(BUNDLE_STARTUP_GAUGE_NAME_PREFIX + bsd.getSymbolicName(), (Gauge<Long>) () -> bsd.getStartedAfter().toMillis()));
         event.getServiceRestarts().stream()
-            .filter( src -> src.getServiceRestarts() >= SERVICE_RESTART_THRESOLD )
+            .filter( src -> src.getServiceRestarts() >= serviceRestartThreshold )
             .forEach( src -> registry.register(SERVICE_RESTART_GAUGE_NAME_PREFIX + src.getServiceIdentifier(), (Gauge<Integer>) src::getServiceRestarts) );
     }
 }
