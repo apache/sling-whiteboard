@@ -71,8 +71,7 @@ public class ServiceRestartCountCalculator implements ServiceListener {
                 
                 tracker = registrations.get(id);
                 if (tracker == null) {
-                    // TODO - republish warnings somehow
-                    // logger.debug("Service with identifier {} was unregistered, but no previous registration data was found", id);
+                    Log.debug(getClass(), "Service with identifier {} was unregistered, but no previous registration data was found", id);
                     return;
                 }
                 tracker.unregistered();
@@ -134,9 +133,8 @@ public class ServiceRestartCountCalculator implements ServiceListener {
                     propVal = Arrays.toString((String[]) propVal);
                 props.put(propertyName, propVal);
             }
-   
-            // TODO - republish warnings somehow
-            // logger.debug("Ignoring unregistration of service with props {}, as it has none of identifier properties {}", props, Arrays.toString(GENERAL_IDENTIFIER_PROPERTIES));
+
+            Log.debug(getClass(), "Ignoring unregistration of service with props {}, as it has none of identifier properties {}", props, Arrays.toString(GENERAL_IDENTIFIER_PROPERTIES));
         }
     }
 
@@ -165,6 +163,7 @@ public class ServiceRestartCountCalculator implements ServiceListener {
     public List<ServiceRestartCounter> getServiceRestartCounters() {
         synchronized (registrations) {
             return registrations.values().stream()
+                .filter( r -> r.restartCount() > 0)
                 .map( ServiceRegistrationsTracker::toServiceRestartCounter )
                 .collect(Collectors.toList());
         }

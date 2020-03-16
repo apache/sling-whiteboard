@@ -93,7 +93,7 @@ public final class StartupMetrics {
     }
     
     /**
-     * @return all tracked services and their restarts, even if 0
+     * @return tracked services with at least one restart
      */
     public List<ServiceRestartCounter> getServiceRestarts() {
         return serviceRestarts;

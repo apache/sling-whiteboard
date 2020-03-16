@@ -63,6 +63,11 @@
             <version>3.3.3</version>
             <scope>test</scope>
         </dependency>
+        <!-- note this is set to optional in bnd.bnd, to help the bundle start as soon as possible -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

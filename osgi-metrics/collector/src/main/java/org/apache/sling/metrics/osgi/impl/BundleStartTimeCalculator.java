@@ -62,8 +62,7 @@ public class BundleStartTimeCalculator implements SynchronousBundleListener {
                 case BundleEvent.STARTED:
                     StartTime startTime = bundleToStartTime.get(bundle.getBundleId());
                     if ( startTime == null ) {
-                        // TODO - republish warnings somehow
-                        // logger.warn("No previous data for started bundle {}/{}", bundle.getBundleId(), bundle.getSymbolicName());
+                        Log.debug(getClass(), "No previous data for started bundle {}/{}", new Object[] { bundle.getBundleId(), bundle.getSymbolicName() });
                         return;
                     }
                     startTime.started(clock.millis());
