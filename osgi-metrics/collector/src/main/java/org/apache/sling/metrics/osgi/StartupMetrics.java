@@ -18,35 +18,83 @@ package org.apache.sling.metrics.osgi;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 
-// TODO - create interface or provide builder, to hide away constructor
+/**
+ * Provides metrics about the OSGi framework startup and associated services
+ *
+ * <p>The calculation of the application being "ready" is based on the Apache Felix SystemReady bundle and
+ * requires a proper configuration of all checks.</p>
+ */
 public final class StartupMetrics {
-
-    private final Instant jvmStartup;
-    private final Duration startupTime;
-    private final List<BundleStartDuration> bundleStartDurations;
-    private final List<ServiceRestartCounter> serviceRestarts;
- 
-    public StartupMetrics(Instant jvmStartup, Duration startupTime, List<BundleStartDuration> bundleStartDurations, List<ServiceRestartCounter> serviceRestarts) {
-        this.jvmStartup = jvmStartup;
-        this.startupTime = startupTime;
-        this.bundleStartDurations = bundleStartDurations;
-        this.serviceRestarts = serviceRestarts;
+    
+    public static final class Builder {
+        
+        private StartupMetrics startupMetrics = new StartupMetrics();
+        
+        public static Builder withJvmStartup(Instant jvmStartup) {
+            Builder builder = new Builder();
+            builder.startupMetrics.jvmStartup = jvmStartup;
+            return builder;
+        }
+        
+        public Builder withStartupTime(Duration startupTime) {
+            startupMetrics.startupTime = startupTime;
+            return this;
+        }
+        
+        public Builder withBundleStartDurations(List<BundleStartDuration> bundleStartDurations) {
+            startupMetrics.bundleStartDurations = Collections.unmodifiableList(bundleStartDurations);
+            return this;
+        }
+        
+        public Builder withServiceRestarts(List<ServiceRestartCounter> serviceRestarts) {
+            startupMetrics.serviceRestarts = Collections.unmodifiableList(serviceRestarts);
+            return this;
+        }
+        
+        public StartupMetrics build() {
+            return startupMetrics;
+        }
     }
 
+    private Instant jvmStartup;
+    private Duration startupTime;
+    private List<BundleStartDuration> bundleStartDurations;
+    private List<ServiceRestartCounter> serviceRestarts;
+ 
+    private StartupMetrics() { }
+
+    /**
+     * Returns the instant when the JVM has started
+     * 
+     * <p>Note that this is different from the OSGi startup process, and may lead to unexpected results if the
+     * OSGi framework starts considerably later compared to the JVM.</p>
+     * 
+     * @return the instant when the JVM has started
+     */
     public Instant getJvmStartup() {
         return jvmStartup;
     }
     
+    /**
+     * @return the time between the {@link #getJvmStartup()} and the application being ready
+     */
     public Duration getStartupTime() {
         return startupTime;
     }
     
+    /**
+     * @return all bundle start durations
+     */
     public List<BundleStartDuration> getBundleStartDurations() {
         return bundleStartDurations;
     }
     
+    /**
+     * @return all tracked services and their restarts, even if 0
+     */
     public List<ServiceRestartCounter> getServiceRestarts() {
         return serviceRestarts;
     }

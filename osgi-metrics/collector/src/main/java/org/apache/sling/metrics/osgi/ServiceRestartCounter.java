@@ -17,6 +17,7 @@
 package org.apache.sling.metrics.osgi;
 
 public final class ServiceRestartCounter {
+    
     private final String serviceIdentifier;
     private final int serviceRestarts;
 
@@ -25,6 +26,9 @@ public final class ServiceRestartCounter {
         this.serviceRestarts = serviceRestarts;
     }
 
+    /**
+     * @return a opaque service identifier, used for describing the service that has restarted
+     */
     public String getServiceIdentifier() {
         return serviceIdentifier;
     }

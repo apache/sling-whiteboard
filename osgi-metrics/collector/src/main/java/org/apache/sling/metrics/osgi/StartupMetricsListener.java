@@ -18,7 +18,21 @@ package org.apache.sling.metrics.osgi;
 
 import org.osgi.annotation.versioning.ConsumerType;
 
+/**
+ * A listener that is notified of the startup metrics
+ * 
+ * <p>The time of the notification can be delayed after the actual application start, as
+ * the implementation may choose to delay it to ensure that the startup is not affected
+ * by e.g. bouncing services.</p>
+ * 
+ * <p>Listeners that register after the application startup will receive a notification anyway.</p>
+ *
+ */
 @ConsumerType
 public interface StartupMetricsListener {
-    void onStartupComplete(StartupMetrics event);
+    
+    /**
+     * @param metrics the startup metrics
+     */
+    void onStartupComplete(StartupMetrics metrics);
 }

@@ -109,7 +109,13 @@ public class StartupTimeCalculator {
             List<BundleStartDuration> bundleDurations = bundleCalculator.getBundleStartDurations();
             List<ServiceRestartCounter> serviceRestarts = serviceCalculator.getServiceRestartCounters();
             
-            metricsSupplier = () -> new StartupMetrics(startupInstant, startupDuration, bundleDurations, serviceRestarts); 
+            metricsSupplier = () -> {
+                return StartupMetrics.Builder.withJvmStartup(startupInstant)
+                    .withStartupTime(startupDuration)
+                    .withBundleStartDurations(bundleDurations)
+                    .withServiceRestarts(serviceRestarts)
+                    .build();
+            };
             
             for ( StartupMetricsListener listener : listenersTracker.getServices(new StartupMetricsListener[0]) )
                 listener.onStartupComplete(metricsSupplier.get());
