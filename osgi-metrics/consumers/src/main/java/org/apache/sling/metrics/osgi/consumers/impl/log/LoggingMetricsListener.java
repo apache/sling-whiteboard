@@ -37,10 +37,11 @@ public class LoggingMetricsListener implements StartupMetricsListener {
     
     @ObjectClassDefinition(name = "Apache Sling Logging Startup Metrics Listener")
     public @interface Config {
+        
         @AttributeDefinition(name = "Service Restart Threshold", description="Minimum number of service restarts during startup needed log the number of service restarts")
-        int service_restart_threshold() default 3;
+        int serviceRestartThreshold() default 3;
         @AttributeDefinition(name = "Slow Bundle Startup Threshold", description="Minimum bundle startup duration in milliseconds needed to log the bundle startup time")
-        long slow_bundle_threshold_millis() default 200;
+        long slowBundleThresholdMillis() default 200;
     }
 
     private int serviceRestartThreshold;
@@ -48,8 +49,8 @@ public class LoggingMetricsListener implements StartupMetricsListener {
     
     @Activate
     protected void activate(Config cfg) {
-        this.serviceRestartThreshold = cfg.service_restart_threshold();
-        this.slowBundleThresholdMillis = cfg.slow_bundle_threshold_millis();
+        this.serviceRestartThreshold = cfg.serviceRestartThreshold();
+        this.slowBundleThresholdMillis = cfg.slowBundleThresholdMillis();
     }
     
     @Override

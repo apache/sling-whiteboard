@@ -40,9 +40,9 @@ public class DropwizardMetricsListener implements StartupMetricsListener {
     @ObjectClassDefinition(name = "Apache Sling Dropwizard Startup Metrics Listener")
     public @interface Config {
         @AttributeDefinition(name = "Service Restart Threshold", description="Minimum number of service restarts during startup needed to create a metric for the service")
-        int service_restart_threshold() default 3;
+        int serviceRestartThreshold() default 3;
         @AttributeDefinition(name = "Slow Bundle Startup Threshold", description="Minimum bundle startup duration in milliseconds needed to create a metric for the bundle")
-        long slow_bundle_threshold_millis() default 200;
+        long slowBundleThresholdMillis() default 200;
     }
 
     private static final String APPLICATION_STARTUP_GAUGE_NAME = "osgi.application_startup_time_millis";
@@ -58,8 +58,8 @@ public class DropwizardMetricsListener implements StartupMetricsListener {
     
     @Activate
     protected void activate(Config cfg) {
-        this.serviceRestartThreshold = cfg.service_restart_threshold();
-        this.slowBundleThresholdMillis = cfg.slow_bundle_threshold_millis();
+        this.serviceRestartThreshold = cfg.serviceRestartThreshold();
+        this.slowBundleThresholdMillis = cfg.slowBundleThresholdMillis();
     }
 
     @Deactivate
