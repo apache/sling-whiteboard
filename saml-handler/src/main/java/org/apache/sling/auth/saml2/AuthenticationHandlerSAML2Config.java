@@ -25,7 +25,7 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
 
 /**
- * The configuration for the <code>FormAuthenticationHandler</code>
+ * The configuration for <code>SAML2</code> in Apache Sling
  *
  * @see AuthenticationHandlerSAML2
  */
@@ -38,6 +38,14 @@ public @interface AuthenticationHandlerSAML2Config {
     @AttributeDefinition(name = "Path",
             description="One or more URL paths (String) for which this AuthenticationHandler is applied")
     String[] path() default {"/"};
+
+    @AttributeDefinition(name = "User ID (uid) Attribute Name",
+        description="Name of the attribute holding the users unique id")
+    String saml2userIDAttr() default "username";
+
+    @AttributeDefinition(name = "groupMembership Attribute Name",
+            description="Name of the attribute holding the users' group memberships")
+    String saml2groupMembershipAttr() default "";
 
     @AttributeDefinition(name = "SAML2 Session Attribute",
             description="Name used to save the users security context within a HTTP SESSION")

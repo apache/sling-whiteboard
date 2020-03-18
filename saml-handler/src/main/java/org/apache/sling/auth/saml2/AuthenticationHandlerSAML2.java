@@ -38,15 +38,11 @@ import org.opensaml.xmlsec.context.SecurityParametersContext;
 import org.opensaml.xmlsec.signature.support.SignatureConstants;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.wiring.BundleWiring;
-import org.osgi.service.component.ComponentContext;
 import org.apache.sling.auth.core.spi.AuthenticationHandler;
 import org.apache.sling.auth.core.spi.AuthenticationInfo;
 import org.apache.sling.auth.core.spi.DefaultAuthenticationFeedbackHandler;
 import org.apache.sling.auth.saml2.sp.SessionStorage;
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
-import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.component.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import javax.servlet.http.HttpServletRequest;
@@ -57,28 +53,32 @@ import java.io.IOException;
 @Component(
         service = AuthenticationHandler.class ,
         name = AuthenticationHandlerSAML2.SERVICE_NAME,
+        configurationPid = "org.apache.sling.auth.saml2.impl.SAML2ConfigServiceImpl",
+        configurationPolicy = ConfigurationPolicy.REQUIRE,
         property = {"sling.servlet.methods={GET, POST}",
             AuthenticationHandler.PATH_PROPERTY+"={}",
             AuthenticationHandler.TYPE_PROPERTY + "=SAML2",
             "service.description=SAML2 Authentication Handler",
-            "service.ranking=420",
+            "service.ranking=42",
         },
         immediate = true)
 
-@Designate(ocd = AuthenticationHandlerSAML2Config.class)
-
 public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHandler implements AuthenticationHandler {
-// OSGI Configs
-    private String[] path;
-    private String saml2SessAttr;
-    private String saml2IDPDestination;
-    private boolean saml2SPEnabled = false;
 
-    private static Logger logger = LoggerFactory.getLogger(AuthenticationHandlerSAML2.class);
+    @Reference
+    private SAML2ConfigService saml2ConfigService;
     public static final String AUTH_STORAGE_SESSION_TYPE = "session";
-    static final String SERVICE_NAME = "org.apache.sling.auth.saml2.AuthenticationHandlerSAML2";
     private SessionStorage authStorage;
+    private String getAssertionConsumerEndpoint() { return ConsumerServlet.ASSERTION_CONSUMER_SERVICE; }
+    private static Logger logger = LoggerFactory.getLogger(AuthenticationHandlerSAML2.class);
+    static final String SERVICE_NAME = "org.apache.sling.auth.saml2.AuthenticationHandlerSAML2";
+    private String[] path;
 
+    @Activate
+    protected void activate() {
+        doClassloading();
+        this.path = saml2ConfigService.getSaml2Path();
+    }
 
     /**
      * The last segment of the request URL for the user name and password submission
@@ -116,14 +116,6 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
 
 
 
-    @Activate
-    protected void activate(final AuthenticationHandlerSAML2Config config, ComponentContext componentContext) {
-        this.path = config.path();
-        this.saml2SessAttr = config.saml2SessionAttr();
-        this.saml2SPEnabled = config.saml2SPEnabled();
-        this.saml2IDPDestination = config.saml2IDPDestination();
-    }
-
     @Deactivate
     protected void deactivate() {
 //        if (loginModule != null) {
@@ -132,10 +124,6 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
 //        }
     }
 
-//    OSGI Config Getters
-    private String getSaml2SessAttr() { return saml2SessAttr; }
-    private String getSaml2IDPDestination() {  return this.saml2IDPDestination; }
-    private String getAssertionConsumerEndpoint() { return ConsumerServlet.ASSERTION_CONSUMER_SERVICE; }
 
 // Implement AuthenticationHandler
     /**
@@ -144,11 +132,11 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
      */
     @Override
     public AuthenticationInfo extractCredentials(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse)  {
-        if (this.saml2SPEnabled) {
+        if (saml2ConfigService.getSaml2SPEnabled()) {
             AuthenticationInfo info;
-            logger.info("Using HTTP {} store with attribute name {}", this.AUTH_STORAGE_SESSION_TYPE, this.getSaml2SessAttr());
+            logger.info("Using HTTP {} store with attribute name {}", this.AUTH_STORAGE_SESSION_TYPE, saml2ConfigService.getSaml2SessionAttr());
             // Try getting credentials from the session
-            this.authStorage = new SessionStorage(this.getSaml2SessAttr());
+            this.authStorage = new SessionStorage(saml2ConfigService.getSaml2SessionAttr());
             // extract credentials
             String authData = authStorage.extractAuthenticationInfo(httpServletRequest);
             if (authData != null) {
@@ -194,7 +182,7 @@ https://sling.apache.org/documentation/the-sling-engine/authentication/authentic
      */
     @Override
     public boolean requestCredentials(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws IOException {
-        if (this.saml2SPEnabled) {
+        if (saml2ConfigService.getSaml2SPEnabled()) {
             doClassloading();
             setGotoURLOnSession(httpServletRequest);
             redirectUserForAuthentication(httpServletResponse);
@@ -222,7 +210,7 @@ https://sling.apache.org/documentation/the-sling-engine/authentication/authentic
     private AuthnRequest buildAuthnRequest() {
         AuthnRequest authnRequest = Helpers.buildSAMLObject(AuthnRequest.class);
         authnRequest.setIssueInstant(new DateTime());
-        authnRequest.setDestination(this.getSaml2IDPDestination());
+        authnRequest.setDestination(saml2ConfigService.getSaml2IDPDestination());
         authnRequest.setProtocolBinding(SAMLConstants.SAML2_ARTIFACT_BINDING_URI);
 
         authnRequest.setAssertionConsumerServiceURL(getAssertionConsumerEndpoint());
@@ -294,8 +282,7 @@ https://sling.apache.org/documentation/the-sling-engine/authentication/authentic
     private Endpoint getIPDEndpoint() {
         SingleSignOnService endpoint = Helpers.buildSAMLObject(SingleSignOnService.class);
         endpoint.setBinding(SAMLConstants.SAML2_REDIRECT_BINDING_URI);
-        endpoint.setLocation(this.getSaml2IDPDestination());
-
+        endpoint.setLocation(saml2ConfigService.getSaml2IDPDestination());
         return endpoint;
     }
 

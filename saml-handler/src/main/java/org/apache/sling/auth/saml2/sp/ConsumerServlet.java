@@ -25,7 +25,11 @@ import net.shibboleth.utilities.java.support.httpclient.HttpClientBuilder;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.SlingServletException;
+import org.apache.sling.auth.saml2.AuthenticationHandlerSAML2Config;
+import org.apache.sling.auth.saml2.SAML2ConfigService;
+import org.apache.sling.auth.saml2.Saml2UserMgtService;
 import org.apache.sling.auth.saml2.idp.IDPCredentials;
+import org.apache.sling.auth.saml2.sync.Saml2User;
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.core.xml.schema.XSString;
 import org.opensaml.messaging.handler.MessageHandler;
@@ -62,7 +66,12 @@ import org.opensaml.xmlsec.signature.support.SignatureException;
 import org.opensaml.xmlsec.signature.support.SignatureValidator;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.wiring.BundleWiring;
+import org.osgi.service.component.ComponentContext;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.ConfigurationPolicy;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.metatype.annotations.Designate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.opensaml.messaging.handler.impl.BasicMessageHandlerChain;
@@ -76,6 +85,8 @@ import static org.apache.sling.api.servlets.ServletResolverConstants.*;
 @Component(
         service = Servlet.class,
         immediate=true,
+        configurationPid = "org.apache.sling.auth.saml2.impl.SAML2ConfigServiceImpl",
+        configurationPolicy = ConfigurationPolicy.REQUIRE,
         property = {
             SLING_SERVLET_PATHS+"=/sp/consumer",
             SLING_SERVLET_METHODS+"=GET",
@@ -89,17 +100,35 @@ public class ConsumerServlet extends SlingSafeMethodsServlet {
     public static final String AUTHENTICATED_SESSION_ATTRIBUTE = "authenticated";
     public static final String GOTO_URL_SESSION_ATTRIBUTE = "gotoURL";
     public static final String ASSERTION_CONSUMER_SERVICE = "http://localhost:8080/sp/consumer";
+    public static final String NAME_FORMAT = "urn:oasis:names:tc:SAML:2.0:nameid-format:transient";
 
+    @Reference
+    private Saml2UserMgtService saml2UserMgtService;
+    @Reference
+    private SAML2ConfigService saml2ConfigService;
     private static Logger logger = LoggerFactory.getLogger(ConsumerServlet.class);
-    @Override
-    protected void doGet(final SlingHttpServletRequest req, final SlingHttpServletResponse resp)
-            throws SlingServletException, IOException {
-// Classloading
+    private String uidAttrName = "";
+    private String groupMembershipName = "";
+    private String[] path;
+
+    @Activate
+    protected void activate() {
+        this.path = saml2ConfigService.getSaml2Path();
+    }
+
+    //TODO: Consider different classloading
+    // https://sling.apache.org/apidocs/sling8/org/apache/sling/commons/classloader/DynamicClassLoaderManager.html
+    private void doClassloading(){
         BundleWiring bundleWiring = FrameworkUtil.getBundle(ConsumerServlet.class).adapt(BundleWiring.class);
         ClassLoader loader = bundleWiring.getClassLoader();
         Thread thread = Thread.currentThread();
         thread.setContextClassLoader(loader);
+    }
 
+    @Override
+    protected void doGet(final SlingHttpServletRequest req, final SlingHttpServletResponse resp)
+            throws SlingServletException, IOException {
+        doClassloading();
         logger.info("Artifact received");
         Artifact artifact = buildArtifactFromRequest(req);
         logger.info("Artifact: " + artifact.getArtifact());
@@ -127,6 +156,7 @@ public class ConsumerServlet extends SlingSafeMethodsServlet {
         logAuthenticationMethod(assertion);
 
         setAuthenticatedSession(req);
+        doUserManagement(assertion);
         redirectToGotoURL(req, resp);
     }
 
@@ -175,6 +205,9 @@ public class ConsumerServlet extends SlingSafeMethodsServlet {
             soapClient.setHttpClient(clientBuilder.buildClient());
             soapClient.send(ArtifactResolutionServlet.ARTIFACT_RESOLUTION_SERVICE, context);
             return context.getInboundMessageContext().getMessage();
+//TODO: Refactor exception handling.
+// The code below catches various exceptions, and throws RuntimeException.
+// It will be difficult to distinguish what caused the RuntimeException
         } catch (SecurityException e) {
             throw new RuntimeException(e);
         } catch (ComponentInitializationException e) {
@@ -205,7 +238,6 @@ public class ConsumerServlet extends SlingSafeMethodsServlet {
         BasicMessageHandlerChain<ArtifactResponse> handlerChain = new BasicMessageHandlerChain<ArtifactResponse>();
         handlerChain.setHandlers(handlers);
         try {
-
             handlerChain.initialize();
             handlerChain.doInvoke(context);
         } catch (ComponentInitializationException e) {
@@ -275,5 +307,12 @@ public class ConsumerServlet extends SlingSafeMethodsServlet {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void doUserManagement(Assertion assertion){
+        Saml2User saml2User = new Saml2User();
+//        assertion.getSubject().
+        saml2UserMgtService.getOrCreateSamlUser(saml2User);
+        saml2User.getClass();
     }
 }
