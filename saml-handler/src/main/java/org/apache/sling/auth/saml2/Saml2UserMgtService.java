@@ -24,6 +24,7 @@ import org.apache.jackrabbit.api.security.user.User;
 import org.apache.sling.auth.saml2.sync.Saml2User;
 
 public interface Saml2UserMgtService {
+    boolean setUp();
     User getOrCreateSamlUser(Saml2User user);
-
+    void cleanUp();
 }

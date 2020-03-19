@@ -18,15 +18,35 @@
  *
  */
 
-package org.apache.sling.auth.saml2;
+package org.apache.sling.auth.saml2.impl;
 
-public interface SAML2ConfigService {
-    String[] getSaml2Path();
-    String getSaml2userIDAttr();
-    String getSaml2userHome();
-    String getSaml2groupMembershipAttr();
-    String getSaml2SessionAttr();
-    String getSaml2IDPDestination();
-    boolean getSaml2SPEnabled();
+import org.apache.commons.lang3.StringUtils;
+import java.security.Principal;
 
+class SimplePrincipal implements Principal {
+    protected final String name;
+
+    public SimplePrincipal(String name) {
+        if (StringUtils.isBlank(name)) {
+            throw new IllegalArgumentException("Principal name cannot be blank.");
+        }
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Principal) {
+            return name.equals(((Principal) obj).getName());
+        }
+        return false;
+    }
 }

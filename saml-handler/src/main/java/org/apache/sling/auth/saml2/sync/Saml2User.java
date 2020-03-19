@@ -23,7 +23,41 @@ import java.util.Map;
 import java.util.Set;
 
 public class Saml2User {
-    String id;
-    Map userProperties;
-    Set groupMembership;
+    private String id;
+    private String username;
+    private Map userProperties;
+    private Set groupMembership;
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public Map getUserProperties() {
+        return userProperties;
+    }
+
+    public Set getGroupMembership() {
+        return groupMembership;
+    }
+
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setUserProperties(Map userProperties) {
+        this.userProperties = userProperties;
+    }
+
+    public void setGroupMembership(Set groupMembership) {
+        this.groupMembership = groupMembership;
+    }
 }

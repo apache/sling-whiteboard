@@ -35,6 +35,7 @@ public class SAML2ConfigServiceImpl implements SAML2ConfigService {
     private String saml2IDPDestination;
     private boolean saml2SPEnabled = false;
     private String uidAttrName;
+    private String samlUserHome;
     private String groupMembershipName;
 
     @Activate
@@ -44,6 +45,7 @@ public class SAML2ConfigServiceImpl implements SAML2ConfigService {
         this.saml2SPEnabled = config.saml2SPEnabled();
         this.saml2IDPDestination = config.saml2IDPDestination();
         this.uidAttrName = config.saml2userIDAttr();
+        this.samlUserHome = config.saml2userHome();
         this.groupMembershipName = config.saml2groupMembershipAttr();
     }
 
@@ -55,6 +57,11 @@ public class SAML2ConfigServiceImpl implements SAML2ConfigService {
 
     @Override
     public String getSaml2userIDAttr() {
+        return this.uidAttrName;
+    }
+
+    @Override
+    public String getSaml2userHome() {
         return this.uidAttrName;
     }
 

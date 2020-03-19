@@ -22,9 +22,11 @@ package org.apache.sling.auth.saml2.sp;
 
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
 import net.shibboleth.utilities.java.support.httpclient.HttpClientBuilder;
+import org.apache.jackrabbit.api.security.user.User;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.SlingServletException;
+import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.auth.saml2.AuthenticationHandlerSAML2Config;
 import org.apache.sling.auth.saml2.SAML2ConfigService;
 import org.apache.sling.auth.saml2.Saml2UserMgtService;
@@ -81,6 +83,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.apache.sling.api.servlets.ServletResolverConstants.*;
+import static org.apache.sling.auth.saml2.impl.Saml2UserMgtServiceImpl.SERVICE_NAME;
+import static org.apache.sling.auth.saml2.impl.Saml2UserMgtServiceImpl.SERVICE_USER;
 
 @Component(
         service = Servlet.class,
@@ -108,15 +112,16 @@ public class ConsumerServlet extends SlingSafeMethodsServlet {
     private SAML2ConfigService saml2ConfigService;
     private static Logger logger = LoggerFactory.getLogger(ConsumerServlet.class);
     private String uidAttrName = "";
-    private String groupMembershipName = "";
-    private String[] path;
-
+//    private String groupMembershipName = "";
+//    private String[] path;
+//
     @Activate
     protected void activate() {
-        this.path = saml2ConfigService.getSaml2Path();
+        this.uidAttrName = saml2ConfigService.getSaml2userIDAttr();
+
     }
 
-    //TODO: Consider different classloading
+    //TODO: Try different classloading
     // https://sling.apache.org/apidocs/sling8/org/apache/sling/commons/classloader/DynamicClassLoaderManager.html
     private void doClassloading(){
         BundleWiring bundleWiring = FrameworkUtil.getBundle(ConsumerServlet.class).adapt(BundleWiring.class);
@@ -309,10 +314,33 @@ public class ConsumerServlet extends SlingSafeMethodsServlet {
         }
     }
 
-    private void doUserManagement(Assertion assertion){
+    private void doUserManagement(Assertion assertion) {
+        if (assertion.getAttributeStatements() == null ||
+                assertion.getAttributeStatements().get(0) == null ||
+                assertion.getAttributeStatements().get(0).getAttributes() == null) {
+            logger.warn("SAML Assertion Attribute Statement or Attributes was null ");
+            return;
+        }
+        // start a user object
         Saml2User saml2User = new Saml2User();
-//        assertion.getSubject().
-        saml2UserMgtService.getOrCreateSamlUser(saml2User);
-        saml2User.getClass();
+        // iterate the attribute assertions
+        for (Attribute attribute : assertion.getAttributeStatements().get(0).getAttributes()) {
+            if (attribute.getName().equals(saml2ConfigService.getSaml2userIDAttr())) {
+                logger.debug("username attr: " + attribute.getName());
+                for (XMLObject attributeValue : attribute.getAttributeValues()) {
+                    if ( ((XSString) attributeValue).getValue() != null ) {
+                        saml2User.setId( ((XSString) attributeValue).getValue());
+                        logger.debug("username value: " + saml2User.getId());
+                    }
+                }
+            }
+        }
+
+        boolean setUpOk = saml2UserMgtService.setUp();
+        if (setUpOk) {
+            User samlUser = saml2UserMgtService.getOrCreateSamlUser(saml2User);
+            saml2User.getClass();
+        }
+        saml2UserMgtService.cleanUp();
     }
 }

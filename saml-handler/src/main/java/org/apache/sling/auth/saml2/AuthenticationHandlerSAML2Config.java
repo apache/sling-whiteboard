@@ -43,6 +43,10 @@ public @interface AuthenticationHandlerSAML2Config {
         description="Name of the attribute holding the users unique id")
     String saml2userIDAttr() default "username";
 
+    @AttributeDefinition(name = "Path for SAML2 Users",
+            description="Home path for SAML2 Users")
+    String saml2userHome() default "/home/users/saml";
+
     @AttributeDefinition(name = "groupMembership Attribute Name",
             description="Name of the attribute holding the users' group memberships")
     String saml2groupMembershipAttr() default "";
