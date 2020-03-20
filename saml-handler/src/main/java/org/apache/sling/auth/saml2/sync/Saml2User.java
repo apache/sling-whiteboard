@@ -19,15 +19,21 @@
  */
 package org.apache.sling.auth.saml2.sync;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 public class Saml2User {
     private String id;
     private String username;
-    private Map userProperties;
-    private Set groupMembership;
+    private HashMap userProperties;
+    private HashSet groupMembership;
 
+    public Saml2User(){
+        userProperties = new HashMap<String, Object>();
+        groupMembership = new HashSet<String>();
+    }
     public String getUsername() {
         return username;
     }
@@ -53,11 +59,11 @@ public class Saml2User {
         this.id = id;
     }
 
-    public void setUserProperties(Map userProperties) {
-        this.userProperties = userProperties;
+    public void addUserProperty(String key, Object value) {
+        this.userProperties.put(key, value);
     }
 
-    public void setGroupMembership(Set groupMembership) {
-        this.groupMembership = groupMembership;
+    public void addGroupMembership(String group) {
+        this.groupMembership.add(group);
     }
 }

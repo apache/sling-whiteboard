@@ -37,7 +37,7 @@ public @interface AuthenticationHandlerSAML2Config {
 
     @AttributeDefinition(name = "Path",
             description="One or more URL paths (String) for which this AuthenticationHandler is applied")
-    String[] path() default {"/"};
+    String[] path() default {"http://localhost:8080/"};
 
     @AttributeDefinition(name = "User ID (uid) Attribute Name",
         description="Name of the attribute holding the users unique id")

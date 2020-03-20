@@ -319,7 +319,15 @@ public class ConsumerServlet extends SlingSafeMethodsServlet {
         // iterate the attribute assertions
         for (Attribute attribute : assertion.getAttributeStatements().get(0).getAttributes()) {
             if (attribute.getName().equals(saml2ConfigService.getSaml2userIDAttr())) {
-                logger.debug("username attr: " + attribute.getName());
+                logger.debug("username attr name: " + attribute.getName());
+                for (XMLObject attributeValue : attribute.getAttributeValues()) {
+                    if ( ((XSString) attributeValue).getValue() != null ) {
+                        saml2User.setId( ((XSString) attributeValue).getValue());
+                        logger.debug("username value: " + saml2User.getId());
+                    }
+                }
+            } else if (attribute.getName().equals(saml2ConfigService.getSaml2groupMembershipAttr())) {
+                logger.debug("group attr name: " + attribute.getName());
                 for (XMLObject attributeValue : attribute.getAttributeValues()) {
                     if ( ((XSString) attributeValue).getValue() != null ) {
                         saml2User.setId( ((XSString) attributeValue).getValue());

@@ -115,4 +115,19 @@ public class Saml2UserMgtServiceImpl implements Saml2UserMgtService {
         return null;
     }
 
+    @Override
+    public boolean updateGroupMembership(Saml2User user) {
+        // get list of groups from assertion
+
+        // get list of managed groups
+        // iterate the list of managed groups
+            // if the managed group is in the list of groups from assertion
+                // do nothing if user is already member of the managed group
+                // otherwise add user to the managed group
+            // for groups that are not in the list of groups from assertion
+                // do nothing if the user not a member of the managed group
+                // otherwise remove the user from the managed group
+        return false;
+    }
+
 }
