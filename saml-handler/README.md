@@ -1,7 +1,8 @@
-# Apache Sling SAML2 Handler
+# Apache Sling SAML2 Handler (NOT FOR PRODUCTION)
 
 This project is intended to be a contribution to the [Apache Sling](https://sling.apache.org) project;
  it has a SAML2 Service Provider Authentication Handler and the associated SAML2 servlets and utilities.  
+It is a work in progress and not production ready!
 
 SP_POST_Request;_IdP_POST_Response
 https://en.wikipedia.org/wiki/SAML_2.0#SP_POST_Request;_IdP_POST_Response

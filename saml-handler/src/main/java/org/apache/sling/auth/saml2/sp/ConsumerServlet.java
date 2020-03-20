@@ -26,8 +26,6 @@ import org.apache.jackrabbit.api.security.user.User;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.SlingServletException;
-import org.apache.sling.api.resource.LoginException;
-import org.apache.sling.auth.saml2.AuthenticationHandlerSAML2Config;
 import org.apache.sling.auth.saml2.SAML2ConfigService;
 import org.apache.sling.auth.saml2.Saml2UserMgtService;
 import org.apache.sling.auth.saml2.idp.IDPCredentials;
@@ -68,12 +66,10 @@ import org.opensaml.xmlsec.signature.support.SignatureException;
 import org.opensaml.xmlsec.signature.support.SignatureValidator;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.wiring.BundleWiring;
-import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.metatype.annotations.Designate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.opensaml.messaging.handler.impl.BasicMessageHandlerChain;
@@ -81,10 +77,8 @@ import javax.servlet.Servlet;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 import static org.apache.sling.api.servlets.ServletResolverConstants.*;
-import static org.apache.sling.auth.saml2.impl.Saml2UserMgtServiceImpl.SERVICE_NAME;
-import static org.apache.sling.auth.saml2.impl.Saml2UserMgtServiceImpl.SERVICE_USER;
+
 
 @Component(
         service = Servlet.class,
@@ -112,9 +106,7 @@ public class ConsumerServlet extends SlingSafeMethodsServlet {
     private SAML2ConfigService saml2ConfigService;
     private static Logger logger = LoggerFactory.getLogger(ConsumerServlet.class);
     private String uidAttrName = "";
-//    private String groupMembershipName = "";
-//    private String[] path;
-//
+
     @Activate
     protected void activate() {
         this.uidAttrName = saml2ConfigService.getSaml2userIDAttr();
@@ -134,6 +126,7 @@ public class ConsumerServlet extends SlingSafeMethodsServlet {
     protected void doGet(final SlingHttpServletRequest req, final SlingHttpServletResponse resp)
             throws SlingServletException, IOException {
         doClassloading();
+
         logger.info("Artifact received");
         Artifact artifact = buildArtifactFromRequest(req);
         logger.info("Artifact: " + artifact.getArtifact());

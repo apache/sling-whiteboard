@@ -62,7 +62,7 @@ public class SAML2ConfigServiceImpl implements SAML2ConfigService {
 
     @Override
     public String getSaml2userHome() {
-        return this.uidAttrName;
+        return this.samlUserHome;
     }
 
     @Override

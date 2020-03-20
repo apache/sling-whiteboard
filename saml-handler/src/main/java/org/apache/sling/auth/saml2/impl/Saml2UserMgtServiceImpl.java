@@ -32,10 +32,8 @@ import org.apache.sling.auth.saml2.sync.Saml2User;
 import org.apache.sling.auth.saml2.Saml2UserMgtService;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferencePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.sling.jcr.api.SlingRepository;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import java.security.Principal;
@@ -49,11 +47,11 @@ public class Saml2UserMgtServiceImpl implements Saml2UserMgtService {
     private ResourceResolverFactory resolverFactory;
     @Reference
     private SAML2ConfigService saml2ConfigService;
-//    @Reference
-//    private SlingRepository repository;
+
     private ResourceResolver resourceResolver;
     private Session session;
     private UserManager userManager;
+    private JackrabbitSession jrSession;
     private static Logger logger = LoggerFactory.getLogger(Saml2UserMgtServiceImpl.class);
     public static String SERVICE_NAME = "Saml2UserMgtService";
     public static String SERVICE_USER = "saml2-user-mgt";
@@ -63,31 +61,27 @@ public class Saml2UserMgtServiceImpl implements Saml2UserMgtService {
         try {
             Map<String, Object> param = new HashMap<>();
             param.put(ResourceResolverFactory.SUBSERVICE, SERVICE_NAME);
-//            session = repository.loginService(SERVICE_NAME, null);
             this.resourceResolver = resolverFactory.getServiceResourceResolver(param);
-
             logger.info(this.resourceResolver.getUserID());
-// return null, why?
             session = this.resourceResolver.adaptTo(Session.class);
-//            userManager = this.resourceResolver.adaptTo(UserManager.class);
-            JackrabbitSession js = (JackrabbitSession) session; // null
-
-            userManager = js.getUserManager();
+            JackrabbitSession jrSession = (JackrabbitSession) session;
+            userManager = jrSession.getUserManager();
             return true;
         } catch (LoginException e) {
             logger.error("Could not get SAML2 User Service \r\n" +
                     "Check mapping org.apache.sling.auth.saml2:{}={}", SERVICE_NAME, SERVICE_USER, e);
         } catch (RepositoryException e) {
-            logger.error("", e);
+            logger.error("RepositoryException", e);
         }
         return false;
     }
 
     @Override
     public void cleanUp() {
-        this.resourceResolver.close();
-        this.session = null;
-        this.userManager = null;
+        resourceResolver.close();
+        session = null;
+        jrSession = null;
+        userManager = null;
     }
 
 
