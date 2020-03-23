@@ -117,8 +117,7 @@ public class Saml2UserMgtServiceImpl implements Saml2UserMgtService {
 
     @Override
     public boolean updateGroupMembership(Saml2User user) {
-        // get list of groups from assertion
-
+        // get list of groups from assertion (see ConsumerServlet::doUserManagement)
         // get list of managed groups
         // iterate the list of managed groups
             // if the managed group is in the list of groups from assertion

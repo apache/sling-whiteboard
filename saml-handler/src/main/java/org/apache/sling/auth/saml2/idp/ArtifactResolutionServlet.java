@@ -281,26 +281,34 @@ public class ArtifactResolutionServlet extends SlingAllMethodsServlet {
         }
 
         private AttributeStatement buildAttributeStatement() {
+                // used for every attribute
                 AttributeStatement attributeStatement = Helpers.buildSAMLObject(AttributeStatement.class);
-
-                Attribute attributeUserName = Helpers.buildSAMLObject(Attribute.class);
-
                 XSStringBuilder stringBuilder = (XSStringBuilder) XMLObjectProviderRegistrySupport.getBuilderFactory().getBuilder(XSString.TYPE_NAME);
+
+                // used to add username attribute
+                Attribute attributeUserName = Helpers.buildSAMLObject(Attribute.class);
                 XSString userNameValue = stringBuilder.buildObject(AttributeValue.DEFAULT_ELEMENT_NAME, XSString.TYPE_NAME);
                 userNameValue.setValue("bob");
-
                 attributeUserName.getAttributeValues().add(userNameValue);
                 attributeUserName.setName("username");
                 attributeStatement.getAttributes().add(attributeUserName);
 
+                // used to add telephone
                 Attribute attributeLevel = Helpers.buildSAMLObject(Attribute.class);
                 XSString levelValue = stringBuilder.buildObject(AttributeValue.DEFAULT_ELEMENT_NAME, XSString.TYPE_NAME);
                 levelValue.setValue("999999999");
-
                 attributeLevel.getAttributeValues().add(levelValue);
                 attributeLevel.setName("telephone");
                 attributeStatement.getAttributes().add(attributeLevel);
 
+                // used to add group memberships
+                Attribute attributeGroups = Helpers.buildSAMLObject(Attribute.class);
+                XSString groupsValue = stringBuilder.buildObject(AttributeValue.DEFAULT_ELEMENT_NAME, XSString.TYPE_NAME);
+                groupsValue.setValue("pcms-authors");
+                attributeGroups.getAttributeValues().add(groupsValue);
+                attributeGroups.setName("urn:oid:2.16.840.1.113719.1.1.4.1.25");
+                attributeGroups.setFriendlyName("groupMembership");
+                attributeStatement.getAttributes().add(attributeGroups);
                 return attributeStatement;
 
         }
