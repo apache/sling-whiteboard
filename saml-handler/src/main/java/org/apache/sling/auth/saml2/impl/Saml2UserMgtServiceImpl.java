@@ -20,10 +20,9 @@
 
 package org.apache.sling.auth.saml2.impl;
 
+import org.apache.commons.collections.IteratorUtils;
 import org.apache.jackrabbit.api.JackrabbitSession;
-import org.apache.jackrabbit.api.security.user.Authorizable;
-import org.apache.jackrabbit.api.security.user.User;
-import org.apache.jackrabbit.api.security.user.UserManager;
+import org.apache.jackrabbit.api.security.user.*;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -34,10 +33,11 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
+import javax.jcr.*;
 import java.security.Principal;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 @Component(service={Saml2UserMgtService.class}, immediate = true)
@@ -118,15 +118,41 @@ public class Saml2UserMgtServiceImpl implements Saml2UserMgtService {
     @Override
     public boolean updateGroupMembership(Saml2User user) {
         // get list of groups from assertion (see ConsumerServlet::doUserManagement)
-        // get list of managed groups
-        // iterate the list of managed groups
-            // if the managed group is in the list of groups from assertion
-                // do nothing if user is already member of the managed group
-                // otherwise add user to the managed group
-            // for groups that are not in the list of groups from assertion
-                // do nothing if the user not a member of the managed group
-                // otherwise remove the user from the managed group
-        return false;
-    }
+        try {
+            User jrcUser = (User) this.userManager.getAuthorizable(user.getId());
+            final ValueFactory vf = this.session.getValueFactory();
+            Iterator<Authorizable> allGroups = userManager.findAuthorizables("jcr:primaryType", "rep:Group");
 
+            // iterate the managed groups
+            while (allGroups.hasNext()) {
+                Group managedGroup = (Group) allGroups.next();
+                // if group has managedProperty flag set true
+                Value[] valueList = managedGroup.getProperty("managedGroup");
+                if (valueList == null && user.getGroupMembership().contains(managedGroup.getID())) {
+                    // the group does not have the managedGroup flag
+                    // AND the group is in the ext users groupMembership list
+                    managedGroup.setProperty("managedGroup", vf.createValue(true));
+                }
+                List<Authorizable> existingMembers = IteratorUtils.toList(managedGroup.getMembers());
+                // if the users' list of groups (from assertion) contains the managed group...
+                Value[] isManaged = managedGroup.getProperty("managedGroup");
+                if (isManaged != null &&
+                    isManaged.length > 0 &&
+                    isManaged[0].getBoolean()) {
+                    if (user.getGroupMembership().contains(managedGroup.getID())) {
+                        managedGroup.addMember(jrcUser);
+                    } else {
+                        // for groups that are not in the list of groups from users' assertion
+                        // remove the user from the managed group if they are an existing member
+                        managedGroup.removeMember(jrcUser);
+                    }
+                }
+            }
+            session.save();
+            return true;
+        } catch (RepositoryException e) {
+            logger.error("RepositoryException", e);
+            return false;
+        }
+    }
 }

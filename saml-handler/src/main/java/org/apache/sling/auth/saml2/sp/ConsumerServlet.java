@@ -340,7 +340,7 @@ public class ConsumerServlet extends SlingSafeMethodsServlet {
         boolean setUpOk = saml2UserMgtService.setUp();
         if (setUpOk) {
             User samlUser = saml2UserMgtService.getOrCreateSamlUser(saml2User);
-            saml2User.getClass();
+            saml2UserMgtService.updateGroupMembership(saml2User);
         }
         saml2UserMgtService.cleanUp();
     }

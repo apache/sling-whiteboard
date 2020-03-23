@@ -26,16 +26,12 @@ import java.util.Set;
 
 public class Saml2User {
     private String id;
-    private String username;
     private HashMap userProperties;
     private HashSet groupMembership;
 
     public Saml2User(){
         userProperties = new HashMap<String, Object>();
         groupMembership = new HashSet<String>();
-    }
-    public String getUsername() {
-        return username;
     }
 
     public String getId() {
@@ -48,11 +44,6 @@ public class Saml2User {
 
     public Set getGroupMembership() {
         return groupMembership;
-    }
-
-
-    public void setUsername(String username) {
-        this.username = username;
     }
 
     public void setId(String id) {
