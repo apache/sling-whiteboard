@@ -330,8 +330,8 @@ public class ConsumerServlet extends SlingSafeMethodsServlet {
                 logger.debug("group attr name: " + attribute.getName());
                 for (XMLObject attributeValue : attribute.getAttributeValues()) {
                     if ( ((XSString) attributeValue).getValue() != null ) {
-                        saml2User.setId( ((XSString) attributeValue).getValue());
-                        logger.debug("username value: " + saml2User.getId());
+                        saml2User.addGroupMembership( ((XSString) attributeValue).getValue());
+                        logger.debug("managed group {} added: ", ((XSString) attributeValue).getValue());
                     }
                 }
             }
