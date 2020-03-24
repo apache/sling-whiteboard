@@ -7,7 +7,7 @@ It is a work in progress and not production ready!
 SP_POST_Request;_IdP_POST_Response
 https://en.wikipedia.org/wiki/SAML_2.0#SP_POST_Request;_IdP_POST_Response
 
-![](Saml2-browser-sso-post.gif)
+![](Saml2-sso-soap.png)
 
 ## This bundle 
 - Will allow Sling applications to authenticate users against Identity Providers (idp) 
