@@ -50,6 +50,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 
+
 @Component(
         service = AuthenticationHandler.class ,
         name = AuthenticationHandlerSAML2.SERVICE_NAME,
@@ -57,7 +58,7 @@ import java.io.IOException;
         configurationPolicy = ConfigurationPolicy.REQUIRE,
         property = {"sling.servlet.methods={GET, POST}",
             AuthenticationHandler.PATH_PROPERTY+"={}",
-            AuthenticationHandler.TYPE_PROPERTY + "=SAML2",
+            AuthenticationHandler.TYPE_PROPERTY + "=" + AuthenticationHandlerSAML2.AUTH_TYPE,
             "service.description=SAML2 Authentication Handler",
             "service.ranking=42",
         },
@@ -68,6 +69,7 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
     @Reference
     private SAML2ConfigService saml2ConfigService;
     public static final String AUTH_STORAGE_SESSION_TYPE = "session";
+    public static final String AUTH_TYPE = "SAML2";
     private SessionStorage authStorage;
     private String getAssertionConsumerEndpoint() { return ConsumerServlet.ASSERTION_CONSUMER_SERVICE; }
     private static Logger logger = LoggerFactory.getLogger(AuthenticationHandlerSAML2.class);
@@ -134,19 +136,18 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
     public AuthenticationInfo extractCredentials(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse)  {
         if (saml2ConfigService.getSaml2SPEnabled()) {
             AuthenticationInfo info;
-            logger.info("Using HTTP {} store with attribute name {}", this.AUTH_STORAGE_SESSION_TYPE, saml2ConfigService.getSaml2SessionAttr());
+            logger.debug("Using HTTP {} store with attribute name {}", this.AUTH_STORAGE_SESSION_TYPE, saml2ConfigService.getSaml2SessionAttr());
             // Try getting credentials from the session
             this.authStorage = new SessionStorage(saml2ConfigService.getSaml2SessionAttr());
             // extract credentials
-            String authData = authStorage.extractAuthenticationInfo(httpServletRequest);
+            AuthenticationInfo authData = authStorage.extractAuthenticationInfo(httpServletRequest);
+
             if (authData != null) {
-                // validate credentials. if good return AuthenticationInfo
-                if (tokenStore.isValid(authData)) {
-                    info = createAuthInfo(authData);
-                    return info;
-                } else {
-                    return AuthenticationInfo.FAIL_AUTH;
-                }
+                // check expiration
+                // validate
+                return authData;
+//                char[] pw = {};
+//                return new AuthenticationInfo("SAML2", "bob");
             }
         }
 /*
@@ -154,6 +155,7 @@ TODO: Figure out why the form auth handler' requestCredenitals is called even wh
 Sling's Authentication Framework will start calling requestCredentials on the registered AuthenticationHandlers
 https://sling.apache.org/documentation/the-sling-engine/authentication/authentication-authenticationhandler.html
 */
+
         return null;
     }
 
@@ -298,18 +300,6 @@ https://sling.apache.org/documentation/the-sling-engine/authentication/authentic
 
     }
 
-//TODO write createAuthInfo
-    private AuthenticationInfo createAuthInfo(final String authData) {
-        final String userId = getUserId(authData);
-        if (userId != null) {
-//            UserManagerImpl userManager = new UserManagerImpl();
-//            String userPassword = "";
-//            Credentials credentials = new SimpleCredentials(userID, userPassword.toCharArray());
-//            User user = userManager.getUser(credentials);
-            return new AuthenticationInfo(HttpServletRequest.DIGEST_AUTH, userId);
-        }
-        return null;
-    }
 
     /**
      * Returns the user id from the authentication data. If the authentication data
@@ -331,5 +321,19 @@ https://sling.apache.org/documentation/the-sling-engine/authentication/authentic
             }
         }
         return null;
+    }
+
+    @Override
+    public boolean authenticationSucceeded(HttpServletRequest request,
+                                           HttpServletResponse response,
+                                           AuthenticationInfo authInfo) {
+        return true;
+    }
+
+    @Override
+    public void authenticationFailed(HttpServletRequest request,
+                                     HttpServletResponse response,
+                                     AuthenticationInfo authInfo) {
+        return;
     }
 }

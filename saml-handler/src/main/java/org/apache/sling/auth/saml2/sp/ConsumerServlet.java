@@ -26,9 +26,12 @@ import org.apache.jackrabbit.api.security.user.User;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.SlingServletException;
+import org.apache.sling.auth.core.spi.AuthenticationInfo;
+import org.apache.sling.auth.saml2.AuthenticationHandlerSAML2;
 import org.apache.sling.auth.saml2.SAML2ConfigService;
 import org.apache.sling.auth.saml2.Saml2UserMgtService;
 import org.apache.sling.auth.saml2.idp.IDPCredentials;
+import org.apache.sling.auth.saml2.impl.Saml2Credentials;
 import org.apache.sling.auth.saml2.sync.Saml2User;
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.core.xml.schema.XSString;
@@ -73,8 +76,12 @@ import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.opensaml.messaging.handler.impl.BasicMessageHandlerChain;
+
+
+import javax.jcr.RepositoryException;
 import javax.servlet.Servlet;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import static org.apache.sling.api.servlets.ServletResolverConstants.*;
@@ -96,6 +103,7 @@ public class ConsumerServlet extends SlingSafeMethodsServlet {
 
     public static final String SP_ENTITY_ID = "TestSP";
     public static final String AUTHENTICATED_SESSION_ATTRIBUTE = "authenticated";
+    public static final String EXT_USER_SESSION_ATTRIBUTE = "extuser";
     public static final String GOTO_URL_SESSION_ATTRIBUTE = "gotoURL";
     public static final String ASSERTION_CONSUMER_SERVICE = "http://localhost:8080/sp/consumer";
     public static final String NAME_FORMAT = "urn:oasis:names:tc:SAML:2.0:nameid-format:transient";
@@ -153,8 +161,8 @@ public class ConsumerServlet extends SlingSafeMethodsServlet {
         logAuthenticationInstant(assertion);
         logAuthenticationMethod(assertion);
 
-        setAuthenticatedSession(req);
-        doUserManagement(assertion);
+        User extUser = doUserManagement(assertion);
+        setAuthenticatedSession(req, extUser);
         redirectToGotoURL(req, resp);
     }
 
@@ -293,8 +301,17 @@ public class ConsumerServlet extends SlingSafeMethodsServlet {
                 .getAuthnContext().getAuthnContextClassRef().getAuthnContextClassRef());
     }
 
-    private void setAuthenticatedSession(SlingHttpServletRequest req) {
+    private void setAuthenticatedSession(SlingHttpServletRequest req, User user) {
         req.getSession().setAttribute(ConsumerServlet.AUTHENTICATED_SESSION_ATTRIBUTE, true);
+        try {
+            AuthenticationInfo authInfo = new AuthenticationInfo(AuthenticationHandlerSAML2.AUTH_TYPE, user.getID());
+            //AUTHENTICATION_INFO_CREDENTIALS
+            authInfo.put("user.jcr.credentials", new Saml2Credentials(user.getID()));
+            SessionStorage sessionStorage = new SessionStorage(saml2ConfigService.getSaml2SessionAttr());
+            sessionStorage.set(req, authInfo);
+        } catch (RepositoryException e) {
+            logger.error("failed to set Authentication Info", e);
+        }
     }
 
     private void redirectToGotoURL(SlingHttpServletRequest req, SlingHttpServletResponse resp) {
@@ -307,12 +324,12 @@ public class ConsumerServlet extends SlingSafeMethodsServlet {
         }
     }
 
-    private void doUserManagement(Assertion assertion) {
+    private User doUserManagement(Assertion assertion) {
         if (assertion.getAttributeStatements() == null ||
                 assertion.getAttributeStatements().get(0) == null ||
                 assertion.getAttributeStatements().get(0).getAttributes() == null) {
             logger.warn("SAML Assertion Attribute Statement or Attributes was null ");
-            return;
+            return null;
         }
         // start a user object
         Saml2User saml2User = new Saml2User();
@@ -341,7 +358,9 @@ public class ConsumerServlet extends SlingSafeMethodsServlet {
         if (setUpOk) {
             User samlUser = saml2UserMgtService.getOrCreateSamlUser(saml2User);
             saml2UserMgtService.updateGroupMembership(saml2User);
+            saml2UserMgtService.cleanUp();
+            return samlUser;
         }
-        saml2UserMgtService.cleanUp();
+        return null;
     }
 }

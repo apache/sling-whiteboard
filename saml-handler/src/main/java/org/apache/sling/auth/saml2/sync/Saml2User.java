@@ -19,12 +19,18 @@
  */
 package org.apache.sling.auth.saml2.sync;
 
+import org.apache.jackrabbit.oak.spi.security.authentication.external.ExternalIdentityException;
+import org.apache.jackrabbit.oak.spi.security.authentication.external.ExternalIdentityRef;
+import org.apache.jackrabbit.oak.spi.security.authentication.external.ExternalUser;
+
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class Saml2User {
+public class Saml2User implements ExternalUser {
     private String id;
     private HashMap userProperties;
     private HashSet groupMembership;
@@ -34,8 +40,43 @@ public class Saml2User {
         groupMembership = new HashSet<String>();
     }
 
+    public Saml2User(String id){
+        this();
+        this.id = id;
+    }
+
+    @Nonnull
+    @Override
+    public ExternalIdentityRef getExternalId() {
+        return null;
+    }
+
     public String getId() {
         return id;
+    }
+
+    @Nonnull
+    @Override
+    public String getPrincipalName() {
+        return null;
+    }
+
+    @CheckForNull
+    @Override
+    public String getIntermediatePath() {
+        return null;
+    }
+
+    @Nonnull
+    @Override
+    public Iterable<ExternalIdentityRef> getDeclaredGroups() throws ExternalIdentityException {
+        return null;
+    }
+
+    @Nonnull
+    @Override
+    public Map<String, ?> getProperties() {
+        return null;
     }
 
     public Map getUserProperties() {

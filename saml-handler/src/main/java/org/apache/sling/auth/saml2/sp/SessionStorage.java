@@ -39,22 +39,21 @@ public class SessionStorage {
         this.sessionAttributeName = sessionAttributeName;
     }
 
-    public String extractAuthenticationInfo(HttpServletRequest request) {
+    public AuthenticationInfo extractAuthenticationInfo(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         if (session != null) {
             Object attribute = session.getAttribute(sessionAttributeName);
-            if (attribute instanceof String) {
-                return (String) attribute;
+            if (attribute instanceof AuthenticationInfo) {
+                return (AuthenticationInfo) attribute;
             }
         }
         return null;
     }
 
-    public void set(HttpServletRequest request, HttpServletResponse response, String authData,
-                    AuthenticationInfo info) {
-        // store the auth hash as a session attribute
+    public void set(HttpServletRequest request, AuthenticationInfo info) {
+        // store the authInfo instance as a session attribute
         HttpSession session = request.getSession();
-        session.setAttribute(sessionAttributeName, authData);
+        session.setAttribute(sessionAttributeName, info);
     }
 
 
