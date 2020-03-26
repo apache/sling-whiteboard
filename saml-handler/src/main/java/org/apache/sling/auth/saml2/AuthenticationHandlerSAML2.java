@@ -82,51 +82,6 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
         this.path = saml2ConfigService.getSaml2Path();
     }
 
-    /**
-     * The last segment of the request URL for the user name and password submission
-     * by the form (value is "/j_security_check").
-     * <p>
-     * This name is derived from the prescription in the Servlet API 2.4
-     * Specification, Section SRV.12.5.3.1 Login Form Notes: <i>In order for the
-     * authentication to proceed appropriately, the action of the login form must
-     * always be set to <code>j_security_check</code>.</i>
-     */
-    private static final String REQUEST_URL_SUFFIX = "/j_security_check";
-
-    /**
-     * Key in the AuthenticationInfo map which contains the domain on which the auth
-     * cookie should be set.
-     */
-    private static final String COOKIE_DOMAIN = "cookie.domain";
-
-    /**
-     * The timeout of a login session in milliseconds, converted from the
-     * configuration property {@link #} by multiplying with
-     * {@link #MINUTES}.
-     */
-    private long sessionTimeout;
-
-    /**
-     * The factor to convert minute numbers into milliseconds used internally
-     */
-    private static final long MINUTES = 60L * 1000L;
-
-    /**
-     * The {@link TokenStore} used to persist and check authentication data
-     */
-    private TokenStore tokenStore;
-
-
-
-    @Deactivate
-    protected void deactivate() {
-//        if (loginModule != null) {
-//            loginModule.unregister();
-//            loginModule = null;
-//        }
-    }
-
-
 // Implement AuthenticationHandler
     /**
      * Extracts session based credentials from the request. Returns
@@ -143,19 +98,9 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
             AuthenticationInfo authData = authStorage.extractAuthenticationInfo(httpServletRequest);
 
             if (authData != null) {
-                // check expiration
-                // validate
                 return authData;
-//                char[] pw = {};
-//                return new AuthenticationInfo("SAML2", "bob");
             }
         }
-/*
-TODO: Figure out why the form auth handler' requestCredenitals is called even when this service.ranking is higher
-Sling's Authentication Framework will start calling requestCredentials on the registered AuthenticationHandlers
-https://sling.apache.org/documentation/the-sling-engine/authentication/authentication-authenticationhandler.html
-*/
-
         return null;
     }
 
