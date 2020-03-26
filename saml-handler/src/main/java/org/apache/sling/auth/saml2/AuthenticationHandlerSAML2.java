@@ -194,7 +194,7 @@ https://sling.apache.org/documentation/the-sling-engine/authentication/authentic
 
     private void doClassloading(){
         // Classloading
-        BundleWiring bundleWiring = FrameworkUtil.getBundle(ConsumerServlet.class).adapt(BundleWiring.class);
+        BundleWiring bundleWiring = FrameworkUtil.getBundle(AuthenticationHandlerSAML2.class).adapt(BundleWiring.class);
         ClassLoader loader = bundleWiring.getClassLoader();
         Thread thread = Thread.currentThread();
         thread.setContextClassLoader(loader);
@@ -301,39 +301,4 @@ https://sling.apache.org/documentation/the-sling-engine/authentication/authentic
     }
 
 
-    /**
-     * Returns the user id from the authentication data. If the authentication data
-     * is a non-<code>null</code> value with 3 fields separated by an @ sign, the
-     * value of the third field is returned. Otherwise <code>null</code> is
-     * returned.
-     * <p>
-     * This method is not part of the API of this class and is package private to
-     * enable unit tests.
-     *
-     * @param authData
-     * @return
-     */
-    String getUserId(final String authData) {
-        if (authData != null) {
-            String[] parts = TokenStore.split(authData);
-            if (parts != null) {
-                return parts[2];
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public boolean authenticationSucceeded(HttpServletRequest request,
-                                           HttpServletResponse response,
-                                           AuthenticationInfo authInfo) {
-        return true;
-    }
-
-    @Override
-    public void authenticationFailed(HttpServletRequest request,
-                                     HttpServletResponse response,
-                                     AuthenticationInfo authInfo) {
-        return;
-    }
 }
