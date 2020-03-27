@@ -1,9 +1,19 @@
-graphql-scripting
+Apache Sling GraphQL Scripting Engine
 ----
 
 This is an experiment to run GraphQL queries server-side in Sling.
 
-It implements two Sling Scripting Engines, one for a `.gql` extension which
+----
+
+**Status**: at commit `e09c3df3`, the GraphQL engine is functional, 
+a request to a Resource `/foo` mapped to a .gql script containing 
+`{ currentResource { path } }` returns `{currentResource={path=/foo}}`.
+This demonstrates the server-side execution of GraphQL queries, 
+in the context of the current Resource.
+
+----
+
+This module implements two Sling Scripting Engines, one for a `.gql` extension which
 provides the actual GraphQL queries, and one for a `.gqls` extension which
 provides GraphQL schema fragments.
 
