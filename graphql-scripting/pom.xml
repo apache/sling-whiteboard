@@ -85,13 +85,11 @@
   </build>
 
   <dependencies>
-    <!-- javax -->
     <dependency>
       <groupId>javax.inject</groupId>
       <artifactId>javax.inject</artifactId>
       <scope>test</scope>
     </dependency>
-    <!-- OSGi -->
     <dependency>
       <groupId>org.osgi</groupId>
       <artifactId>osgi.cmpn</artifactId>
@@ -112,14 +110,18 @@
       <artifactId>org.osgi.service.metatype.annotations</artifactId>
       <scope>provided</scope>
     </dependency>
-    <!-- Apache Felix -->
     <dependency>
       <groupId>org.apache.felix</groupId>
       <artifactId>org.apache.felix.framework</artifactId>
       <version>6.0.3</version>
       <scope>test</scope>
     </dependency>
-    <!-- Apache Sling -->
+    <dependency>
+      <groupId>com.graphql-java</groupId>
+      <artifactId>graphql-java</artifactId>
+      <version>11.0</version>
+      <scope>provided</scope>
+    </dependency>
     <dependency>
       <groupId>org.apache.sling</groupId>
       <artifactId>org.apache.sling.api</artifactId>

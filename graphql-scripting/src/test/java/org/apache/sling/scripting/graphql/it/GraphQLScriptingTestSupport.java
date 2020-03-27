@@ -26,6 +26,7 @@ import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.servlethelpers.MockSlingHttpServletRequest;
 import org.apache.sling.servlethelpers.MockSlingHttpServletResponse;
 import org.apache.sling.testing.paxexam.TestSupport;
+import org.junit.Before;
 import org.ops4j.pax.exam.Option;
 import org.ops4j.pax.exam.ProbeBuilder;
 import org.ops4j.pax.exam.TestProbeBuilder;
@@ -37,6 +38,7 @@ import org.apache.sling.engine.SlingRequestProcessor;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 import static org.apache.sling.testing.paxexam.SlingOptions.slingQuickstartOakTar;
 import static org.apache.sling.testing.paxexam.SlingOptions.slingResourcePresence;
 import static org.apache.sling.testing.paxexam.SlingOptions.slingScripting;
@@ -47,7 +49,12 @@ import static org.ops4j.pax.exam.CoreOptions.when;
 import static org.ops4j.pax.exam.CoreOptions.vmOption;
 import static org.ops4j.pax.exam.cm.ConfigurationAdminOptions.newConfiguration;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class GraphQLScriptingTestSupport extends TestSupport {
+
+    private final static int STARTUP_WAIT_SECONDS = 30;
 
     @Inject
     @Filter(value = "(names=graphql)")
@@ -68,6 +75,7 @@ public abstract class GraphQLScriptingTestSupport extends TestSupport {
             ),
             super.baseConfiguration(),
             slingQuickstart(),
+            graphQLJava(),
             testBundle("bundle.filename"),
             newConfiguration("org.apache.sling.jcr.base.internal.LoginAdminWhitelist")
                 .put("whitelist.bundles.regexp", "^PAXEXAM.*$")
@@ -91,6 +99,37 @@ public abstract class GraphQLScriptingTestSupport extends TestSupport {
             slingQuickstartOakTar(workingDirectory, httpPort),
             slingScripting()
         );
+    }
+
+    protected Option graphQLJava() {
+        return composite(
+            mavenBundle().groupId("com.graphql-java").artifactId("graphql-java").versionAsInProject(),
+            mavenBundle().groupId("org.antlr").artifactId("antlr4-runtime").versionAsInProject(),
+            mavenBundle().groupId("com.graphql-java").artifactId("java-dataloader").versionAsInProject(),
+            mavenBundle().groupId("org.reactivestreams").artifactId("reactive-streams").versionAsInProject()
+        );
+    }
+
+    /**
+     * Injecting the appropriate services to wait for would be more elegant but this is very reliable..
+     */
+    @Before
+    public void waitForSling() throws Exception {
+        final int expectedStatus = 200;
+        final List<Integer> statuses = new ArrayList<>();
+        final String path = "/.json";
+        final long endTime = System.currentTimeMillis() + STARTUP_WAIT_SECONDS * 1000;
+
+        while (System.currentTimeMillis() < endTime) {
+            final int status = executeRequest("GET", path, -1).getStatus();
+            statuses.add(status);
+            if (status == expectedStatus) {
+                return;
+            }
+            Thread.sleep(250);
+        }
+
+        fail("Did not get a " + expectedStatus + " status at " + path + " got " + statuses);
     }
 
     protected MockSlingHttpServletResponse executeRequest(final String method, final String path, final int expectedStatus) throws Exception {
