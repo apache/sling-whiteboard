@@ -18,12 +18,9 @@
  */
 package org.apache.sling.scripting.graphql.it;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import javax.inject.Inject;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptException;
-
+import org.apache.sling.resource.presence.ResourcePresence;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ops4j.pax.exam.Configuration;
@@ -31,21 +28,34 @@ import org.ops4j.pax.exam.Option;
 import org.ops4j.pax.exam.junit.PaxExam;
 import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
 import org.ops4j.pax.exam.spi.reactors.PerClass;
+import org.ops4j.pax.exam.util.Filter;
+
+import static org.junit.Assert.assertTrue;
+import static org.ops4j.pax.exam.cm.ConfigurationAdminOptions.factoryConfiguration;
 
 @RunWith(PaxExam.class)
 @ExamReactorStrategy(PerClass.class)
-public class GraphQLScriptEngineIT extends GraphQLScriptingTestSupport {
+public class BasicContentIT extends GraphQLScriptingTestSupport {
+
+    @Inject
+    @Filter(value = "(path=/apps/graphql/test/one/json.gql)")
+    private ResourcePresence resourcePresence;
 
     @Configuration
     public Option[] configuration() {
-        return new Option[] { baseConfiguration() };
+        return new Option[]{
+            baseConfiguration(),
+            factoryConfiguration("org.apache.sling.resource.presence.internal.ResourcePresenter")
+                .put("path", "/apps/graphql/test/one/json.gql")
+                .asOption(),
+        };
     }
 
     @Test
-    public void testEnginePresent() throws ScriptException {
-        assertNotNull("Expecting ScriptEngineFactory to be present", scriptEngineFactory);
-        final ScriptEngine engine = scriptEngineFactory.getScriptEngine();
-        assertNotNull("Expecting ScriptEngine to be provided", engine);
-        assertEquals("Expecting our GraphQLScriptEngine", "GraphQLScriptEngine", engine.getClass().getSimpleName());
+    public void testJsonContent() throws Exception {
+        final String content = getContent("/graphql/one.json");
+        assertTrue("Expecting the right content:" + content, 
+            content.contains("One day this will be a GraphQL query"));
     }
+
 }

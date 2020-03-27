@@ -22,6 +22,7 @@ package org.apache.sling.scripting.gql.internal;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringReader;
 import java.util.Date;
 
 import javax.script.AbstractScriptEngine;
@@ -29,6 +30,8 @@ import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptException;
+
+import org.apache.commons.io.IOUtils;
 
 public class GraphQLScriptEngine extends AbstractScriptEngine {
 
@@ -40,17 +43,18 @@ public class GraphQLScriptEngine extends AbstractScriptEngine {
 
     @Override
     public Object eval(String script, ScriptContext context) throws ScriptException {
-        try {
-            context.getWriter().write("Hey this is " + getClass().getName() + " at " + new Date());
-        } catch(IOException e) {
-            throw new ScriptException(e);
-        }
-        return null;
+        return eval(new StringReader(script), context);
     }
 
     @Override
     public Object eval(Reader reader, ScriptContext context) throws ScriptException {
-        return eval("", context);
+        try {
+            // TODO no execution so far...
+            IOUtils.copy(reader, context.getWriter());
+        } catch(IOException e) {
+            throw new ScriptException(e);
+        }
+        return null;
     }
 
     @Override

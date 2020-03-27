@@ -21,6 +21,10 @@ package org.apache.sling.scripting.graphql.it;
 import javax.inject.Inject;
 import javax.script.ScriptEngineFactory;
 
+import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.api.resource.ResourceResolverFactory;
+import org.apache.sling.servlethelpers.MockSlingHttpServletRequest;
+import org.apache.sling.servlethelpers.MockSlingHttpServletResponse;
 import org.apache.sling.testing.paxexam.TestSupport;
 import org.ops4j.pax.exam.Option;
 import org.ops4j.pax.exam.ProbeBuilder;
@@ -29,11 +33,19 @@ import org.ops4j.pax.exam.options.ModifiableCompositeOption;
 import org.ops4j.pax.exam.util.Filter;
 import org.osgi.service.cm.ConfigurationAdmin;
 
+import org.apache.sling.engine.SlingRequestProcessor;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.apache.sling.testing.paxexam.SlingOptions.slingQuickstartOakTar;
 import static org.apache.sling.testing.paxexam.SlingOptions.slingResourcePresence;
 import static org.apache.sling.testing.paxexam.SlingOptions.slingScripting;
 import static org.ops4j.pax.exam.CoreOptions.composite;
 import static org.ops4j.pax.exam.CoreOptions.junitBundles;
+import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
+import static org.ops4j.pax.exam.CoreOptions.when;
+import static org.ops4j.pax.exam.CoreOptions.vmOption;
+import static org.ops4j.pax.exam.cm.ConfigurationAdminOptions.newConfiguration;
 
 public abstract class GraphQLScriptingTestSupport extends TestSupport {
 
@@ -42,15 +54,25 @@ public abstract class GraphQLScriptingTestSupport extends TestSupport {
     protected ScriptEngineFactory scriptEngineFactory;
 
     @Inject
-    protected ConfigurationAdmin configAdmin;
+    private ResourceResolverFactory resourceResolverFactory;
+
+    @Inject
+    protected SlingRequestProcessor requestProcessor;
 
     public ModifiableCompositeOption baseConfiguration() {
+        final String vmOpt = System.getProperty("pax.vm.options");
+
         return composite(
+            when(vmOpt != null).useOptions(
+                vmOption(vmOpt)
+            ),
             super.baseConfiguration(),
             slingQuickstart(),
             testBundle("bundle.filename"),
-
-            // testing
+            newConfiguration("org.apache.sling.jcr.base.internal.LoginAdminWhitelist")
+                .put("whitelist.bundles.regexp", "^PAXEXAM.*$")
+                .asOption(),
+            mavenBundle().groupId("org.apache.sling").artifactId("org.apache.sling.servlet-helpers").versionAsInProject(),
             slingResourcePresence(),
             junitBundles()
         );
@@ -70,5 +92,32 @@ public abstract class GraphQLScriptingTestSupport extends TestSupport {
             slingScripting()
         );
     }
+
+    protected MockSlingHttpServletResponse executeRequest(final String method, final String path, final int expectedStatus) throws Exception {
+        final ResourceResolver resourceResolver = resourceResolverFactory.getAdministrativeResourceResolver(null);
+        assertNotNull("Expecting ResourceResolver", resourceResolver);
+        final MockSlingHttpServletRequest request = new MockSlingHttpServletRequest(resourceResolver) {
+            @Override
+            public String getMethod() {
+                return method;
+            }
+        };
+
+        request.setPathInfo(path);
+        final MockSlingHttpServletResponse response = new MockSlingHttpServletResponse();
+        requestProcessor.processRequest(request, response, resourceResolver);
+
+        if (expectedStatus > 0) {
+            assertEquals("Expected status " + expectedStatus + " for " + method
+                + " at " + path, expectedStatus, response.getStatus());
+        }
+
+        return response;
+    }
+
+    protected String getContent(String path) throws Exception {
+        return executeRequest("GET", path, 200).getOutputAsString();
+    }
+
 
 }
