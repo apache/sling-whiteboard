@@ -30,7 +30,8 @@ import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
 import org.ops4j.pax.exam.spi.reactors.PerClass;
 import org.ops4j.pax.exam.util.Filter;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.ops4j.pax.exam.cm.ConfigurationAdminOptions.factoryConfiguration;
 
 @RunWith(PaxExam.class)
@@ -53,9 +54,10 @@ public class BasicContentIT extends GraphQLScriptingTestSupport {
 
     @Test
     public void testJsonContent() throws Exception {
-        final String content = getContent("/graphql/one.json");
-        assertTrue("Expecting the right content:" + content, 
-            content.contains("One day this will be a GraphQL query"));
+        final String expected = "{currentResource={path=/content/graphql/one}}";
+        final String actual = getContent("/graphql/one.json");
+        assertNotNull(actual);
+        assertEquals(expected, actual.trim());
     }
 
 }

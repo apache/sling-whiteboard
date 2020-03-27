@@ -23,7 +23,6 @@ package org.apache.sling.scripting.gql.internal;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.util.Date;
 
 import javax.script.AbstractScriptEngine;
 import javax.script.Bindings;
@@ -32,6 +31,10 @@ import javax.script.ScriptEngineFactory;
 import javax.script.ScriptException;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.sling.api.resource.Resource;
+import org.apache.sling.api.scripting.SlingBindings;
+
+import graphql.ExecutionResult;
 
 public class GraphQLScriptEngine extends AbstractScriptEngine {
 
@@ -49,8 +52,18 @@ public class GraphQLScriptEngine extends AbstractScriptEngine {
     @Override
     public Object eval(Reader reader, ScriptContext context) throws ScriptException {
         try {
-            // TODO no execution so far...
-            IOUtils.copy(reader, context.getWriter());
+            final GraphQLResourceQuery q = new GraphQLResourceQuery();
+
+            final Resource resource = (Resource) context.getBindings(ScriptContext.ENGINE_SCOPE).get(SlingBindings.RESOURCE);
+            final ExecutionResult result = q.executeQuery(resource, IOUtils.toString(reader));
+            if(!result.getErrors().isEmpty()) {
+                throw new ScriptException(("GraphQL query failed:" + result.getErrors()));
+            }
+            final Object data = result.getData();
+            if(data == null) {
+                throw new ScriptException("No data");
+            }
+            IOUtils.copy(new StringReader(data.toString()), context.getWriter());
         } catch(IOException e) {
             throw new ScriptException(e);
         }

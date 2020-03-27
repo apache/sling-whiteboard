@@ -148,7 +148,7 @@ public abstract class GraphQLScriptingTestSupport extends TestSupport {
 
         if (expectedStatus > 0) {
             assertEquals("Expected status " + expectedStatus + " for " + method
-                + " at " + path, expectedStatus, response.getStatus());
+                + " at " + path + " - content=" + response.getOutputAsString(), expectedStatus, response.getStatus());
         }
 
         return response;
