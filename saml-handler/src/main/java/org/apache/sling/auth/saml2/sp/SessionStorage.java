@@ -50,12 +50,28 @@ public class SessionStorage {
         return null;
     }
 
-    public void set(HttpServletRequest request, AuthenticationInfo info) {
-        // store the authInfo instance as a session attribute
+    public void setAuthInfo(HttpServletRequest request, AuthenticationInfo info) {
+        // store AuthenticationInfo in a session attribute
         HttpSession session = request.getSession();
         session.setAttribute(sessionAttributeName, info);
     }
 
+    public void setString(HttpServletRequest request, String info) {
+        // store string info in a session attribute
+        HttpSession session = request.getSession();
+        session.setAttribute(sessionAttributeName, info);
+    }
+
+    public String getString(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            Object attribute = session.getAttribute(sessionAttributeName);
+            if (attribute instanceof String) {
+                return (String) attribute;
+            }
+        }
+        return null;
+    }
 
     public void clear(HttpServletRequest request, HttpServletResponse response) {
         HttpSession session = request.getSession(false);
@@ -63,5 +79,4 @@ public class SessionStorage {
             session.removeAttribute(sessionAttributeName);
         }
     }
-
 }

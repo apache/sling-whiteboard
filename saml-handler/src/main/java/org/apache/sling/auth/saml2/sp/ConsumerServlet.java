@@ -168,6 +168,7 @@ public class ConsumerServlet extends SlingSafeMethodsServlet {
 
     private Artifact buildArtifactFromRequest(final SlingHttpServletRequest req) {
         Artifact artifact = Helpers.buildSAMLObject(Artifact.class);
+        // XSS
         artifact.setArtifact(req.getParameter("SAMLart"));
         return artifact;
     }
@@ -308,7 +309,7 @@ public class ConsumerServlet extends SlingSafeMethodsServlet {
             //AUTHENTICATION_INFO_CREDENTIALS
             authInfo.put("user.jcr.credentials", new Saml2Credentials(user.getID()));
             SessionStorage sessionStorage = new SessionStorage(saml2ConfigService.getSaml2SessionAttr());
-            sessionStorage.set(req, authInfo);
+            sessionStorage.setAuthInfo(req, authInfo);
         } catch (RepositoryException e) {
             logger.error("failed to set Authentication Info", e);
         }

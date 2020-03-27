@@ -48,7 +48,8 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-
+import java.math.BigInteger;
+import java.security.SecureRandom;
 
 
 @Component(
@@ -89,7 +90,12 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
      */
     @Override
     public AuthenticationInfo extractCredentials(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse)  {
+
         if (saml2ConfigService.getSaml2SPEnabled()) {
+            // If (Request URL = /sp/consumer && (relay state from request = relay state from session))
+                    // Get the Artifact Reference
+
+            // Else
             AuthenticationInfo info;
             logger.debug("Using HTTP {} store with attribute name {}", this.AUTH_STORAGE_SESSION_TYPE, saml2ConfigService.getSaml2SessionAttr());
             // Try getting credentials from the session
@@ -133,6 +139,8 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
             doClassloading();
             setGotoURLOnSession(httpServletRequest);
             redirectUserForAuthentication(httpServletResponse);
+
+
         }
         return false;
     }
@@ -146,7 +154,9 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
     }
 
     private void setGotoURLOnSession(HttpServletRequest request) {
-        request.getSession().setAttribute(ConsumerServlet.GOTO_URL_SESSION_ATTRIBUTE, request.getRequestURL().toString());
+        SessionStorage sessionStorage = new SessionStorage(ConsumerServlet.GOTO_URL_SESSION_ATTRIBUTE);
+        sessionStorage.setString(request , request.getRequestURL().toString());
+//        request.getSession().setAttribute(ConsumerServlet.GOTO_URL_SESSION_ATTRIBUTE, request.getRequestURL().toString());
     }
 
     private void redirectUserForAuthentication(HttpServletResponse httpServletResponse) {
@@ -197,7 +207,8 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
         MessageContext context = new MessageContext();
         context.setMessage(authnRequest);
         SAMLBindingContext bindingContext = context.getSubcontext(SAMLBindingContext.class, true);
-        bindingContext.setRelayState("teststate");
+        String state = new BigInteger(130, new SecureRandom()).toString(32);
+        bindingContext.setRelayState(state);
         SAMLPeerEntityContext peerEntityContext = context.getSubcontext(SAMLPeerEntityContext.class, true);
         SAMLEndpointContext endpointContext = peerEntityContext.getSubcontext(SAMLEndpointContext.class, true);
         endpointContext.setEndpoint(getIPDEndpoint());
