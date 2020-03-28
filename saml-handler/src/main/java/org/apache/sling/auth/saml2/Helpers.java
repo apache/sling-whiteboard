@@ -24,6 +24,8 @@ import net.shibboleth.utilities.java.support.security.RandomIdentifierGeneration
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.scripting.SlingBindings;
 import org.apache.sling.api.scripting.SlingScriptHelper;
+import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.runtime.RuntimeConstants;
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.core.xml.XMLObjectBuilderFactory;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
@@ -99,5 +101,21 @@ public class Helpers {
         } catch (TransformerException e) {
             logger.error("TransformerException in logSAMLObject", e);
         }
+    }
+
+    public static VelocityEngine getVelocityEngine() {
+// Derived work from https://github.com/rnagulapalle/spring-saml/blob/master/core/src/main/java/org/springframework/security/saml/util/VelocityFactory.java
+        try {
+            VelocityEngine velocityEngine = new VelocityEngine();
+            velocityEngine.setProperty(RuntimeConstants.ENCODING_DEFAULT, "UTF-8");
+            velocityEngine.setProperty(RuntimeConstants.OUTPUT_ENCODING, "UTF-8");
+            velocityEngine.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
+            velocityEngine.setProperty("classpath.resource.loader.class", "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
+            velocityEngine.init();
+            return velocityEngine;
+        } catch (Exception e) {
+            throw new RuntimeException("Error configuring velocity", e);
+        }
+
     }
 }

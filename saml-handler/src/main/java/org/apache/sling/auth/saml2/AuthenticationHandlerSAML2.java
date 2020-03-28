@@ -140,7 +140,6 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
             setGotoURLOnSession(httpServletRequest);
             redirectUserForAuthentication(httpServletResponse);
 
-
         }
         return false;
     }
@@ -156,7 +155,6 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
     private void setGotoURLOnSession(HttpServletRequest request) {
         SessionStorage sessionStorage = new SessionStorage(ConsumerServlet.GOTO_URL_SESSION_ATTRIBUTE);
         sessionStorage.setString(request , request.getRequestURL().toString());
-//        request.getSession().setAttribute(ConsumerServlet.GOTO_URL_SESSION_ATTRIBUTE, request.getRequestURL().toString());
     }
 
     private void redirectUserForAuthentication(HttpServletResponse httpServletResponse) {
@@ -168,8 +166,8 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
         AuthnRequest authnRequest = Helpers.buildSAMLObject(AuthnRequest.class);
         authnRequest.setIssueInstant(new DateTime());
         authnRequest.setDestination(saml2ConfigService.getSaml2IDPDestination());
-        authnRequest.setProtocolBinding(SAMLConstants.SAML2_ARTIFACT_BINDING_URI);
-
+//        authnRequest.setProtocolBinding(SAMLConstants.SAML2_ARTIFACT_BINDING_URI);
+        authnRequest.setProtocolBinding(SAMLConstants.SAML2_REDIRECT_BINDING_URI);
         authnRequest.setAssertionConsumerServiceURL(getAssertionConsumerEndpoint());
         authnRequest.setID(Helpers.generateSecureRandomId());
         authnRequest.setIssuer(buildIssuer());
@@ -204,6 +202,7 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
     }
 
     private void redirectUserWithRequest(HttpServletResponse httpServletResponse, AuthnRequest authnRequest) {
+        //https://blog.samlsecurity.com/2016/08/signing-and-sending-authnrequests-in.html
         MessageContext context = new MessageContext();
         context.setMessage(authnRequest);
         SAMLBindingContext bindingContext = context.getSubcontext(SAMLBindingContext.class, true);

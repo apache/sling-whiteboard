@@ -119,6 +119,7 @@
         <configuration>
           <excludes combine.children="append">
             <exclude>**/dependency-reduced-pom.xml</exclude>
+            <exclude>**/*.vm</exclude>
           </excludes>
         </configuration>
       </plugin>

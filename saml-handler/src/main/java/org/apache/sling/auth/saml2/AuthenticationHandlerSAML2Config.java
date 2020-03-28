@@ -57,7 +57,7 @@ public @interface AuthenticationHandlerSAML2Config {
 
     @AttributeDefinition(name = "SAML2 IDP Destination",
             description="")
-    String saml2IDPDestination() default "http://localhost:8080/idp/profile/SAML2/POST/SSO";
+    String saml2IDPDestination() default "http://localhost:8080/idp/profile/SAML2/Redirect/SSO";
 
     @AttributeDefinition(
             name = "Enabled",
