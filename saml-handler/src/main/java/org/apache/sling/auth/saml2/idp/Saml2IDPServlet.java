@@ -25,8 +25,6 @@ import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import java.io.Writer;
-
-import org.apache.sling.auth.saml2.AuthenticationHandlerSAML2;
 import org.apache.sling.auth.saml2.Helpers;
 import org.apache.sling.auth.saml2.sp.ConsumerServlet;
 import org.apache.sling.auth.saml2.sp.SPCredentials;
@@ -39,7 +37,6 @@ import org.opensaml.core.xml.schema.impl.XSStringBuilder;
 import org.opensaml.messaging.context.MessageContext;
 import org.opensaml.messaging.encoder.MessageEncodingException;
 import org.opensaml.saml.common.SAMLObject;
-import org.opensaml.saml.common.messaging.context.SAMLBindingContext;
 import org.opensaml.saml.common.messaging.context.SAMLEndpointContext;
 import org.opensaml.saml.common.messaging.context.SAMLPeerEntityContext;
 import org.opensaml.saml.common.xml.SAMLConstants;
@@ -58,15 +55,11 @@ import org.opensaml.xmlsec.signature.support.SignatureException;
 import org.opensaml.xmlsec.signature.support.Signer;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.wiring.BundleWiring;
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.LoggerFactory;
-
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import java.io.IOException;
-import java.util.Base64;
-
 import org.slf4j.Logger;
 
 import static org.apache.sling.api.servlets.ServletResolverConstants.SLING_SERVLET_METHODS;
@@ -88,7 +81,7 @@ public class Saml2IDPServlet extends SlingAllMethodsServlet {
 
     @Override
     protected void doGet(SlingHttpServletRequest req, SlingHttpServletResponse resp) throws ServletException, IOException {
-        logger.info("AuthnRequest recieved");
+        logger.info("AuthnRequest received");
         Writer w = resp.getWriter();
         resp.setContentType("text/html");
         w.append("<html>" + "<head></head>" + "<body><h1>You are now at IDP, click the button to authenticate</h1> <form method=\"POST\">"
@@ -98,20 +91,13 @@ public class Saml2IDPServlet extends SlingAllMethodsServlet {
     @Override
     protected void doPost(final SlingHttpServletRequest req, final SlingHttpServletResponse resp) throws ServletException, IOException {
         doClassloading();
-//        Writer w = resp.getWriter();
-//        resp.setContentType("text/html");
         // build saml assertion
         Response samlResponse = buildResponse();
         MessageContext<SAMLObject> context = new MessageContext<SAMLObject>();
-
-        SAMLBindingContext bindingContext = context.getSubcontext(SAMLBindingContext.class, true);
         SAMLPeerEntityContext peerEntityContext = context.getSubcontext(SAMLPeerEntityContext.class, true);
         SAMLEndpointContext endpointContext = peerEntityContext.getSubcontext(SAMLEndpointContext.class, true);
-//
         endpointContext.setEndpoint(getIPDEndpoint());
-
         context.setMessage(samlResponse);
-
         try {
             HTTPPostEncoder encoder = new HTTPPostEncoder();
             VelocityEngine ve = Helpers.getVelocityEngine();
@@ -126,12 +112,6 @@ public class Saml2IDPServlet extends SlingAllMethodsServlet {
         } catch (ComponentInitializationException e) {
             throw new RuntimeException(e);
         }
-//        Base64.getEncoder().encode()
-        // encrypt it
-        // sign it
-        // build form
-        // JS snippet to POST form back to SP
-//        resp.sendRedirect(ConsumerServlet.ASSERTION_CONSUMER_SERVICE + "?SAMLart=AAQAAMFbLinlXaCM%2BFIxiDwGOLAy2T71gbpO7ZhNzAgEANlB90ECfpNEVLg%3D");
     }
 
     private Endpoint getIPDEndpoint() {
@@ -142,20 +122,6 @@ public class Saml2IDPServlet extends SlingAllMethodsServlet {
     }
 
     private Response buildResponse() {
-//        ArtifactResponse artifactResponse = Helpers.buildSAMLObject(ArtifactResponse.class);
-//        Issuer issuer = Helpers.buildSAMLObject(Issuer.class);
-//        issuer.setValue(IDP_ENTITY_ID);
-//        artifactResponse.setIssuer(issuer);
-//        artifactResponse.setIssueInstant(new DateTime());
-//        artifactResponse.setDestination(ConsumerServlet.ASSERTION_CONSUMER_SERVICE);
-//        artifactResponse.setID(Helpers.generateSecureRandomId());
-//
-//        Status status = Helpers.buildSAMLObject(Status.class);
-//        StatusCode statusCode = Helpers.buildSAMLObject(StatusCode.class);
-//        statusCode.setValue(StatusCode.SUCCESS);
-//        status.setStatusCode(statusCode);
-//        artifactResponse.setStatus(status);
-
         Response response = Helpers.buildSAMLObject(Response.class);
         response.setDestination(ConsumerServlet.ASSERTION_CONSUMER_SERVICE);
         response.setIssueInstant(new DateTime());
@@ -170,7 +136,6 @@ public class Saml2IDPServlet extends SlingAllMethodsServlet {
         statusCode2.setValue(StatusCode.SUCCESS);
         status2.setStatusCode(statusCode2);
         response.setStatus(status2);
-//        artifactResponse.setMessage(response);
 
         Assertion assertion = buildAssertion();
         signAssertion(assertion);

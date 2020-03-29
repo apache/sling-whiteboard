@@ -116,6 +116,5 @@ public class Helpers {
         } catch (Exception e) {
             throw new RuntimeException("Error configuring velocity", e);
         }
-
     }
 }

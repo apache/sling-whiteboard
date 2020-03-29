@@ -81,7 +81,7 @@ public class ArtifactResolutionServlet extends SlingAllMethodsServlet {
         @Override
         protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws ServletException, IOException {
                 logger.info("received artifactResolve:");
-// Classloading
+                // Classloading
                 BundleWiring bundleWiring = FrameworkUtil.getBundle(ConsumerServlet.class).adapt(BundleWiring.class);
                 ClassLoader loader = bundleWiring.getClassLoader();
                 Thread thread = Thread.currentThread();
