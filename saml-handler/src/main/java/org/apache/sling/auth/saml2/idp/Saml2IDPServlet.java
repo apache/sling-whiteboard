@@ -25,8 +25,11 @@ import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import java.io.Writer;
+
+import org.apache.sling.auth.saml2.AuthenticationHandlerSAML2;
 import org.apache.sling.auth.saml2.Helpers;
-import org.apache.sling.auth.saml2.sp.ConsumerServlet;
+import org.apache.sling.auth.saml2.SAML2ConfigService;
+import org.apache.sling.auth.saml2.impl.SAML2ConfigServiceImpl;
 import org.apache.sling.auth.saml2.sp.SPCredentials;
 import org.apache.velocity.app.VelocityEngine;
 import org.joda.time.DateTime;
@@ -37,6 +40,7 @@ import org.opensaml.core.xml.schema.impl.XSStringBuilder;
 import org.opensaml.messaging.context.MessageContext;
 import org.opensaml.messaging.encoder.MessageEncodingException;
 import org.opensaml.saml.common.SAMLObject;
+import org.opensaml.saml.common.messaging.context.SAMLBindingContext;
 import org.opensaml.saml.common.messaging.context.SAMLEndpointContext;
 import org.opensaml.saml.common.messaging.context.SAMLPeerEntityContext;
 import org.opensaml.saml.common.xml.SAMLConstants;
@@ -56,12 +60,12 @@ import org.opensaml.xmlsec.signature.support.Signer;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.slf4j.LoggerFactory;
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import org.slf4j.Logger;
-
 import static org.apache.sling.api.servlets.ServletResolverConstants.SLING_SERVLET_METHODS;
 import static org.apache.sling.api.servlets.ServletResolverConstants.SLING_SERVLET_PATHS;
 
@@ -70,14 +74,17 @@ import static org.apache.sling.api.servlets.ServletResolverConstants.SLING_SERVL
         service = Servlet.class,
         immediate=true,
         property = {
-            SLING_SERVLET_PATHS+"=/idp/profile/SAML2/Redirect/SSO",
+            SLING_SERVLET_PATHS+"="+Saml2IDPServlet.TEST_IDP_ENDPOINT,
             SLING_SERVLET_METHODS+"=[GET,POST]",
-            "sling.auth.requirements=-/idp/profile/SAML2/Redirect/SSO"
+            "sling.auth.requirements=-"+Saml2IDPServlet.TEST_IDP_ENDPOINT
         }
 )
 public class Saml2IDPServlet extends SlingAllMethodsServlet {
     private static Logger logger = LoggerFactory.getLogger(Saml2IDPServlet.class);
     public static final String IDP_ENTITY_ID = "TestIDP";
+    public static final String TEST_IDP_ENDPOINT = "/idp/profile/SAML2/Redirect/SSO";
+    @Reference
+    private SAML2ConfigService saml2ConfigService;
 
     @Override
     protected void doGet(SlingHttpServletRequest req, SlingHttpServletResponse resp) throws ServletException, IOException {
@@ -94,9 +101,12 @@ public class Saml2IDPServlet extends SlingAllMethodsServlet {
         // build saml assertion
         Response samlResponse = buildResponse();
         MessageContext<SAMLObject> context = new MessageContext<SAMLObject>();
+        String relayState =req.getParameter("RelayState");
+        context.getSubcontext(SAMLBindingContext.class, true).setRelayState(relayState);
         SAMLPeerEntityContext peerEntityContext = context.getSubcontext(SAMLPeerEntityContext.class, true);
         SAMLEndpointContext endpointContext = peerEntityContext.getSubcontext(SAMLEndpointContext.class, true);
         endpointContext.setEndpoint(getIPDEndpoint());
+
         context.setMessage(samlResponse);
         try {
             HTTPPostEncoder encoder = new HTTPPostEncoder();
@@ -117,13 +127,13 @@ public class Saml2IDPServlet extends SlingAllMethodsServlet {
     private Endpoint getIPDEndpoint() {
         SingleSignOnService endpoint = Helpers.buildSAMLObject(SingleSignOnService.class);
         endpoint.setBinding(SAMLConstants.SAML2_POST_BINDING_URI);
-        endpoint.setLocation(ConsumerServlet.ASSERTION_CONSUMER_SERVICE);
+        endpoint.setLocation(SAML2ConfigServiceImpl.ASSERTION_CONSUMER_SERVICE_PATH);
         return endpoint;
     }
 
     private Response buildResponse() {
         Response response = Helpers.buildSAMLObject(Response.class);
-        response.setDestination(ConsumerServlet.ASSERTION_CONSUMER_SERVICE);
+        response.setDestination(saml2ConfigService.getACSURL());
         response.setIssueInstant(new DateTime());
         response.setID(Helpers.generateSecureRandomId());
 
@@ -184,7 +194,7 @@ public class Saml2IDPServlet extends SlingAllMethodsServlet {
         subjectConfirmationData.setInResponseTo("Made up ID");
         subjectConfirmationData.setNotBefore(new DateTime().minusDays(2));
         subjectConfirmationData.setNotOnOrAfter(new DateTime().plusDays(2));
-        subjectConfirmationData.setRecipient(ConsumerServlet.ASSERTION_CONSUMER_SERVICE);
+        subjectConfirmationData.setRecipient(saml2ConfigService.getACSURL());
         subjectConfirmation.setSubjectConfirmationData(subjectConfirmationData);
         return subjectConfirmation;
     }
@@ -195,7 +205,7 @@ public class Saml2IDPServlet extends SlingAllMethodsServlet {
         conditions.setNotOnOrAfter(new DateTime().plusDays(2));
         AudienceRestriction audienceRestriction = Helpers.buildSAMLObject(AudienceRestriction.class);
         Audience audience = Helpers.buildSAMLObject(Audience.class);
-        audience.setAudienceURI(ConsumerServlet.ASSERTION_CONSUMER_SERVICE);
+        audience.setAudienceURI(saml2ConfigService.getACSURL());
         audienceRestriction.getAudiences().add(audience);
         conditions.getAudienceRestrictions().add(audienceRestriction);
         return conditions;
@@ -271,4 +281,5 @@ public class Saml2IDPServlet extends SlingAllMethodsServlet {
         Thread thread = Thread.currentThread();
         thread.setContextClassLoader(loader);
     }
+
 }

@@ -39,6 +39,10 @@ public @interface AuthenticationHandlerSAML2Config {
             description="One or more URL paths (String) for which this AuthenticationHandler is applied")
     String[] path() default {"http://localhost:8080/"};
 
+    @AttributeDefinition(name = "Service Provider Entity ID",
+            description="The Entity ID for the SP")
+    String entityID() default "http://localhost:8080/";
+
     @AttributeDefinition(name = "User ID (uid) Attribute Name",
         description="Name of the attribute holding the users unique id")
     String saml2userIDAttr() default "username";

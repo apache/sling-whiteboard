@@ -24,6 +24,8 @@ public interface SAML2ConfigService {
     String[] getSaml2Path();
     String getSaml2userIDAttr();
     String getSaml2userHome();
+    String getEntityID();
+    String getACSURL();
     String getSaml2groupMembershipAttr();
     String getSaml2SessionAttr();
     String getSaml2IDPDestination();

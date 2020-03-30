@@ -37,6 +37,11 @@ public class SAML2ConfigServiceImpl implements SAML2ConfigService {
     private String uidAttrName;
     private String samlUserHome;
     private String groupMembershipName;
+    private String entityID;
+
+    public static final String ASSERTION_CONSUMER_SERVICE_PATH = "/sp/consumer";
+    public static final String GOTO_URL_SESSION_ATTRIBUTE = "gotoURL";
+    public static final String AUTHENTICATED_SESSION_ATTRIBUTE = "authenticated";
 
     @Activate
     protected void activate(final AuthenticationHandlerSAML2Config config, ComponentContext componentContext) {
@@ -47,6 +52,7 @@ public class SAML2ConfigServiceImpl implements SAML2ConfigService {
         this.uidAttrName = config.saml2userIDAttr();
         this.samlUserHome = config.saml2userHome();
         this.groupMembershipName = config.saml2groupMembershipAttr();
+        this.entityID = config.entityID();
     }
 
 
@@ -81,7 +87,18 @@ public class SAML2ConfigServiceImpl implements SAML2ConfigService {
     }
 
     @Override
+    public String getEntityID() {
+        return this.entityID;
+    }
+
+    @Override
     public boolean getSaml2SPEnabled() {
         return this.saml2SPEnabled;
+    }
+
+    @Override
+    public String getACSURL() {
+        entityID = entityID.endsWith("/") ? entityID.substring(0, entityID.length()-1) : entityID;
+        return entityID+ASSERTION_CONSUMER_SERVICE_PATH;
     }
 }
