@@ -32,17 +32,20 @@ import graphql.ExecutionResult;
 public class GraphQLResourceQueryTest {
    @Test
     public void basicTest() throws Exception {
+        final String resourceType = "RT-" + UUID.randomUUID();
         final String path = "/some/path/" + UUID.randomUUID();
         final Resource r = Mockito.mock(Resource.class);
         Mockito.when(r.getPath()).thenReturn(path);
+        Mockito.when(r.getResourceType()).thenReturn(resourceType);
 
         final GraphQLResourceQuery q = new GraphQLResourceQuery();
-        final ExecutionResult result = q.executeQuery(r, "{ currentResource { path } }");
+        final ExecutionResult result = q.executeQuery(r, "{ currentResource { path resourceType } }");
 
         if(!result.getErrors().isEmpty()) {
             fail("Errors:" + result.getErrors());
         }
-        final String expected = "{currentResource={path=" + path + "}}";
+        // TODO brittle test...
+        final String expected = "{currentResource={path=" + path + ", resourceType=" + resourceType + "}}";
         assertEquals(expected, result.getData().toString());
     }
 }

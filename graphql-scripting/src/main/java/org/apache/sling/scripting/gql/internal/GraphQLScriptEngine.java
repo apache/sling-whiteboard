@@ -21,6 +21,7 @@
 package org.apache.sling.scripting.gql.internal;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
 
@@ -29,6 +30,9 @@ import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptException;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.sling.api.resource.Resource;
@@ -39,6 +43,10 @@ import graphql.ExecutionResult;
 public class GraphQLScriptEngine extends AbstractScriptEngine {
 
     private final GraphQLScriptEngineFactory factory;
+    public static final int JSON_INDENT_SPACES = 2;
+
+    // As per GraphQL spec, nulls must be present in the JSON output
+    private static final Gson GSON = new GsonBuilder().serializeNulls().create();
 
     public GraphQLScriptEngine(GraphQLScriptEngineFactory factory) {
         this.factory = factory;
@@ -54,16 +62,18 @@ public class GraphQLScriptEngine extends AbstractScriptEngine {
         try {
             final GraphQLResourceQuery q = new GraphQLResourceQuery();
 
-            final Resource resource = (Resource) context.getBindings(ScriptContext.ENGINE_SCOPE).get(SlingBindings.RESOURCE);
+            final Resource resource = (Resource) context.getBindings(ScriptContext.ENGINE_SCOPE)
+                    .get(SlingBindings.RESOURCE);
             final ExecutionResult result = q.executeQuery(resource, IOUtils.toString(reader));
-            if(!result.getErrors().isEmpty()) {
+            if (!result.getErrors().isEmpty()) {
                 throw new ScriptException(("GraphQL query failed:" + result.getErrors()));
             }
             final Object data = result.getData();
-            if(data == null) {
+            if (data == null) {
                 throw new ScriptException("No data");
             }
-            IOUtils.copy(new StringReader(data.toString()), context.getWriter());
+            final PrintWriter out = (PrintWriter) context.getBindings(ScriptContext.ENGINE_SCOPE).get(SlingBindings.OUT);
+            GSON.toJson(data, out);
         } catch(IOException e) {
             throw new ScriptException(e);
         }

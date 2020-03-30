@@ -81,6 +81,7 @@ public abstract class GraphQLScriptingTestSupport extends TestSupport {
                 .put("whitelist.bundles.regexp", "^PAXEXAM.*$")
                 .asOption(),
             mavenBundle().groupId("org.apache.sling").artifactId("org.apache.sling.servlet-helpers").versionAsInProject(),
+            mavenBundle().groupId("com.google.code.gson").artifactId("gson").versionAsInProject(),
             slingResourcePresence(),
             junitBundles()
         );
@@ -157,6 +158,4 @@ public abstract class GraphQLScriptingTestSupport extends TestSupport {
     protected String getContent(String path) throws Exception {
         return executeRequest("GET", path, 200).getOutputAsString();
     }
-
-
 }

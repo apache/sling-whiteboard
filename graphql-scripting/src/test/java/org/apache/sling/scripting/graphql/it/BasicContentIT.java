@@ -31,7 +31,6 @@ import org.ops4j.pax.exam.spi.reactors.PerClass;
 import org.ops4j.pax.exam.util.Filter;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.ops4j.pax.exam.cm.ConfigurationAdminOptions.factoryConfiguration;
 
 @RunWith(PaxExam.class)
@@ -54,10 +53,10 @@ public class BasicContentIT extends GraphQLScriptingTestSupport {
 
     @Test
     public void testJsonContent() throws Exception {
-        final String expected = "{currentResource={path=/content/graphql/one}}";
-        final String actual = getContent("/graphql/one.json");
-        assertNotNull(actual);
-        assertEquals(expected, actual.trim());
+        final String path = "/graphql/one";
+        final String json = getContent(path + ".json");
+        // TODO we should really parse this..or run detailed tests in unit tests, and just the basics here
+        final String expected = "{\"currentResource\":{\"path\":\"/content/graphql/one\",\"resourceType\":\"graphql/test/one\"}}";
+        assertEquals(expected, json);
     }
-
 }

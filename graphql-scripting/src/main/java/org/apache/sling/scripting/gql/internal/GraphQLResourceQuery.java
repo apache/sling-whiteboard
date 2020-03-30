@@ -53,7 +53,7 @@ class GraphQLResourceQuery {
     ExecutionResult executeQuery(Resource r, String query) {
         final String schemaDef = 
             "type Query { currentResource : SlingResource }\n"
-            + "type SlingResource { path: String }\n"
+            + "type SlingResource { path: String resourceType: String }\n"
         ;
 
         final GraphQLSchema schema = buildSchema(schemaDef, r);
@@ -70,11 +70,8 @@ class GraphQLResourceQuery {
     }
 
     private RuntimeWiring buildWiring(Resource r) {
-        // TODO data should pass via the DataFetchingEnvironment...
-        final String path = r == null ? "NO_PATH" : r.getPath();
         return RuntimeWiring.newRuntimeWiring()
-            .type(TypeRuntimeWiring.newTypeWiring("Query").dataFetcher("currentResource", new EchoDataFetcher("DummyCurrentResourceResult")).build())
-            .type(TypeRuntimeWiring.newTypeWiring("SlingResource").dataFetcher("path", new EchoDataFetcher(path)).build())
+            .type(TypeRuntimeWiring.newTypeWiring("Query").dataFetcher("currentResource", new EchoDataFetcher(r)).build())
             .build()
         ;
     }
