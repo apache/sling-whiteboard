@@ -22,10 +22,14 @@ package org.apache.sling.auth.saml2.sp;
 
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
 import net.shibboleth.utilities.java.support.httpclient.HttpClientBuilder;
+import net.shibboleth.utilities.java.support.xml.ParserPool;
+import net.shibboleth.utilities.java.support.xml.XMLParserException;
+import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.api.security.user.User;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.SlingServletException;
+import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.auth.core.spi.AuthenticationInfo;
 import org.apache.sling.auth.saml2.AuthenticationHandlerSAML2;
 import org.apache.sling.auth.saml2.SAML2ConfigService;
@@ -34,7 +38,11 @@ import org.apache.sling.auth.saml2.idp.IDPCredentials;
 import org.apache.sling.auth.saml2.impl.Saml2Credentials;
 import org.apache.sling.auth.saml2.sync.Saml2User;
 import org.opensaml.core.xml.XMLObject;
+import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
+import org.opensaml.core.xml.io.UnmarshallingException;
 import org.opensaml.core.xml.schema.XSString;
+import org.opensaml.core.xml.util.XMLObjectSupport;
+import org.opensaml.messaging.decoder.MessageDecodingException;
 import org.opensaml.messaging.handler.MessageHandler;
 import org.opensaml.messaging.encoder.MessageEncodingException;
 import org.opensaml.messaging.handler.MessageHandlerException;
@@ -43,9 +51,10 @@ import org.opensaml.saml.common.binding.security.impl.MessageLifetimeSecurityHan
 import org.opensaml.saml.common.binding.security.impl.ReceivedEndpointSecurityHandler;
 import org.opensaml.saml.common.binding.security.impl.SAMLOutboundProtocolMessageSigningHandler;
 import org.opensaml.saml.common.messaging.context.SAMLMessageInfoContext;
+import org.opensaml.saml.saml2.binding.decoding.impl.HTTPPostDecoder;
+import org.opensaml.saml.saml2.binding.decoding.impl.HTTPRedirectDeflateDecoder;
 import org.opensaml.saml.saml2.binding.encoding.impl.HttpClientRequestSOAP11Encoder;
 import org.opensaml.saml.saml2.binding.decoding.impl.HttpClientResponseSOAP11Decoder;
-import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
 import org.apache.sling.auth.saml2.Helpers;
 import org.apache.sling.auth.saml2.idp.ArtifactResolutionServlet;
 import org.joda.time.DateTime;
@@ -99,7 +108,7 @@ import static org.apache.sling.api.servlets.ServletResolverConstants.*;
         }
 )
 
-public class ConsumerServlet extends SlingSafeMethodsServlet {
+public class ConsumerServlet extends SlingAllMethodsServlet {
 
     public static final String SP_ENTITY_ID = "TestSP";
     public static final String AUTHENTICATED_SESSION_ATTRIBUTE = "authenticated";
@@ -121,8 +130,6 @@ public class ConsumerServlet extends SlingSafeMethodsServlet {
 
     }
 
-    //TODO: Try different classloading
-    // https://sling.apache.org/apidocs/sling8/org/apache/sling/commons/classloader/DynamicClassLoaderManager.html
     private void doClassloading(){
         BundleWiring bundleWiring = FrameworkUtil.getBundle(ConsumerServlet.class).adapt(BundleWiring.class);
         ClassLoader loader = bundleWiring.getClassLoader();
@@ -131,26 +138,64 @@ public class ConsumerServlet extends SlingSafeMethodsServlet {
     }
 
     @Override
-    protected void doGet(final SlingHttpServletRequest req, final SlingHttpServletResponse resp)
+    protected void doPost(final SlingHttpServletRequest req, final SlingHttpServletResponse resp)
             throws SlingServletException, IOException {
         doClassloading();
 
+        HTTPPostDecoder httpPostDecoder = new HTTPPostDecoder();
+        ParserPool parserPool = XMLObjectProviderRegistrySupport.getParserPool();
+        httpPostDecoder.setParserPool(parserPool);
+        httpPostDecoder.setHttpServletRequest(req);
+
+        try {
+            httpPostDecoder.initialize();
+            httpPostDecoder.decode();
+
+        } catch (MessageDecodingException e) {
+            logger.error("MessageDecodingException");
+            throw new RuntimeException(e);
+        } catch (ComponentInitializationException e) {
+            throw new RuntimeException(e);
+        }
+
+        MessageContext messageContext = httpPostDecoder.getMessageContext();
+        Response response = (Response) messageContext.getMessage();
+        EncryptedAssertion encryptedAssertion = response.getEncryptedAssertions().get(0);
+        Assertion assertion = decryptAssertion(encryptedAssertion);
+        verifyAssertionSignature(assertion);
+        logger.info("Decrypted Assertion: ");
+        Helpers.logSAMLObject(assertion);
+
+        logAssertionAttributes(assertion);
+        logAuthenticationInstant(assertion);
+        logAuthenticationMethod(assertion);
+
+        User extUser = doUserManagement(assertion);
+        setAuthenticatedSession(req, extUser);
+        redirectToGotoURL(req, resp);
+    }
+
+
+
+
+    @Override
+    protected void doGet(final SlingHttpServletRequest req, final SlingHttpServletResponse resp)
+            throws SlingServletException, IOException {
+        doClassloading();
+//start soap
         logger.info("Artifact received");
         Artifact artifact = buildArtifactFromRequest(req);
         logger.info("Artifact: " + artifact.getArtifact());
-
         ArtifactResolve artifactResolve = buildArtifactResolve(artifact);
         logger.info("Sending ArtifactResolve");
         logger.info("ArtifactResolve: ");
         Helpers.logSAMLObject(artifactResolve);
-
         ArtifactResponse artifactResponse = sendAndReceiveArtifactResolve(artifactResolve, resp);
         logger.info("ArtifactResponse received");
         logger.info("ArtifactResponse: ");
         Helpers.logSAMLObject(artifactResponse);
-
         validateDestinationAndLifetime(artifactResponse, req);
-
+// end soap
         EncryptedAssertion encryptedAssertion = getEncryptedAssertion(artifactResponse);
         Assertion assertion = decryptAssertion(encryptedAssertion);
         verifyAssertionSignature(assertion);
@@ -212,9 +257,6 @@ public class ConsumerServlet extends SlingSafeMethodsServlet {
             soapClient.setHttpClient(clientBuilder.buildClient());
             soapClient.send(ArtifactResolutionServlet.ARTIFACT_RESOLUTION_SERVICE, context);
             return context.getInboundMessageContext().getMessage();
-//TODO: Refactor exception handling.
-// The code below catches various exceptions, and throws RuntimeException.
-// It will be difficult to distinguish what caused the RuntimeException
         } catch (SecurityException e) {
             throw new RuntimeException(e);
         } catch (ComponentInitializationException e) {

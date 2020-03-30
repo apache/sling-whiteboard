@@ -40,7 +40,6 @@ public class Activator implements BundleActivator {
         ClassLoader loader = bundleWiring.getClassLoader();
         Thread thread = Thread.currentThread();
         thread.setContextClassLoader(InitializationService.class.getClassLoader());
-
         try {
             InitializationService.initialize();
         } finally {
