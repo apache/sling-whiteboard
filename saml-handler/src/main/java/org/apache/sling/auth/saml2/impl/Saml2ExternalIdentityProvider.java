@@ -20,6 +20,7 @@
 package org.apache.sling.auth.saml2.impl;
 
 import org.apache.jackrabbit.oak.spi.security.ConfigurationParameters;
+import org.apache.jackrabbit.oak.spi.security.authentication.credentials.CredentialsSupport;
 import org.apache.jackrabbit.oak.spi.security.authentication.external.*;
 import org.apache.sling.auth.saml2.sync.Saml2User;
 import org.osgi.service.component.annotations.Activate;
@@ -31,8 +32,7 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.jcr.Credentials;
 import javax.security.auth.login.LoginException;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Derived works from
@@ -44,7 +44,7 @@ import java.util.Map;
         service = ExternalIdentityProvider.class,
         immediate = true
 )
-public class Saml2ExternalIdentityProvider implements ExternalIdentityProvider {
+public class Saml2ExternalIdentityProvider implements ExternalIdentityProvider, CredentialsSupport {
 
     private final Logger logger = LoggerFactory.getLogger(Saml2ExternalIdentityProvider.class);
     public static final String NAME = "SAML2";
@@ -89,8 +89,7 @@ public class Saml2ExternalIdentityProvider implements ExternalIdentityProvider {
     @CheckForNull
     @Override
     public ExternalUser authenticate(@Nonnull Credentials credentials) throws ExternalIdentityException, LoginException {
-        if (credentials instanceof Saml2Credentials)
-        {
+        if (credentials instanceof Saml2Credentials) {
             String userId = ((Saml2Credentials) credentials).getUserId();
             return getUser(userId);
         } else
@@ -116,4 +115,32 @@ public class Saml2ExternalIdentityProvider implements ExternalIdentityProvider {
     public Iterator<ExternalGroup> listGroups() throws ExternalIdentityException {
         throw new UnsupportedOperationException("listGroups");
     }
+
+//Start Credential Support Interface Implementations
+    @Nonnull
+    @Override
+    public Set<Class> getCredentialClasses() {
+        return Collections.singleton(Saml2Credentials.class);
+    }
+
+    @CheckForNull
+    @Override
+    public String getUserId(@Nonnull Credentials credentials) {
+        if (credentials instanceof Saml2Credentials) {
+            return ((Saml2Credentials) credentials).getUserId();
+        }
+        return null;
+    }
+
+    @Nonnull
+    @Override
+    public Map<String, ?> getAttributes(@Nonnull Credentials credentials) {
+        return null;
+    }
+
+    @Override
+    public boolean setAttributes(@Nonnull Credentials credentials, @Nonnull Map<String, ?> map) {
+        return false;
+    }
+//End Credential Support Interface Implementations
 }

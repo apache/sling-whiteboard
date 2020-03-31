@@ -173,8 +173,7 @@ class TokenStore {
             UnsupportedEncodingException, NoSuchAlgorithmException,
             InvalidKeyException {
 
-        String cookiePayload = String.valueOf(token) + String.valueOf(expires)
-                + "@" + userId;
+        String cookiePayload = token + expires + "@" + userId;
         Mac m = Mac.getInstance(HMAC_SHA1);
         m.init(key);
         m.update(cookiePayload.getBytes(UTF_8));

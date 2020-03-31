@@ -25,8 +25,6 @@ import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import java.io.Writer;
-
-import org.apache.sling.auth.saml2.AuthenticationHandlerSAML2;
 import org.apache.sling.auth.saml2.Helpers;
 import org.apache.sling.auth.saml2.SAML2ConfigService;
 import org.apache.sling.auth.saml2.impl.SAML2ConfigServiceImpl;
