@@ -293,16 +293,6 @@
       <scope>provided</scope>
     </dependency>
 
-
-<!-- https://mvnrepository.com/artifact/org.apache.sling/org.apache.sling.commons.classloader -->
-<!--    <dependency>-->
-<!--      <groupId>org.apache.sling</groupId>-->
-<!--      <artifactId>org.apache.sling.commons.classloader</artifactId>-->
-<!--      <version>1.4.0</version>-->
-<!--      <scope>provided</scope>-->
-<!--    </dependency>-->
-
-
 <!-- OAK
 NOTE: Make sure your instance provides this bundle!
 -->
