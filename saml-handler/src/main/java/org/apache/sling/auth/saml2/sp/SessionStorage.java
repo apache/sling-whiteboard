@@ -19,7 +19,6 @@
 
 package org.apache.sling.auth.saml2.sp;
 
-import org.apache.sling.auth.core.spi.AuthenticationInfo;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -38,23 +37,6 @@ public class SessionStorage {
     public SessionStorage(final String sessionAttributeName) {
         this.sessionAttributeName = sessionAttributeName;
     }
-
-//    public AuthenticationInfo extractAuthenticationInfo(HttpServletRequest request) {
-//        HttpSession session = request.getSession(false);
-//        if (session != null) {
-//            Object attribute = session.getAttribute(sessionAttributeName);
-//            if (attribute instanceof AuthenticationInfo) {
-//                return (AuthenticationInfo) attribute;
-//            }
-//        }
-//        return null;
-//    }
-
-//    public void setAuthInfo(HttpServletRequest request, AuthenticationInfo info) {
-//        // store AuthenticationInfo in a session attribute
-//        HttpSession session = request.getSession();
-//        session.setAttribute(sessionAttributeName, info);
-//    }
 
     public void setString(HttpServletRequest request, String info) {
         // store string info in a session attribute
