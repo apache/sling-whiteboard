@@ -125,7 +125,9 @@ public class Saml2IDPServlet extends SlingAllMethodsServlet {
     private Endpoint getIPDEndpoint() {
         SingleSignOnService endpoint = Helpers.buildSAMLObject(SingleSignOnService.class);
         endpoint.setBinding(SAMLConstants.SAML2_POST_BINDING_URI);
-        endpoint.setLocation(SAML2ConfigServiceImpl.ASSERTION_CONSUMER_SERVICE_PATH);
+        String entityID = saml2ConfigService.getEntityID();
+        entityID = entityID.endsWith("/") ? entityID.substring(0, entityID.length()-1) : entityID;
+        endpoint.setLocation(entityID + SAML2ConfigServiceImpl.ASSERTION_CONSUMER_SERVICE_PATH);
         return endpoint;
     }
 

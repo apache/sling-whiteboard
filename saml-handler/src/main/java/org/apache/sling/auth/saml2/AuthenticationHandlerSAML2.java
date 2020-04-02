@@ -411,7 +411,7 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
     private AuthenticationInfo buildAuthInfo(final User user){
         //AUTHENTICATION_INFO_CREDENTIALS
         try {
-            AuthenticationInfo authInfo = new AuthenticationInfo(AuthenticationHandlerSAML2.AUTH_TYPE, user.getID());
+            AuthenticationInfo authInfo = new AuthenticationInfo(AUTH_TYPE, user.getID());
             authInfo.put("user.jcr.credentials", new Saml2Credentials(user.getID()));
             return authInfo;
         } catch (RepositoryException e) {
@@ -428,12 +428,10 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
         }
         final AuthenticationInfo info = new AuthenticationInfo(AUTH_TYPE, userId);
         info.put("user.jcr.credentials", new Saml2Credentials(userId));
-
         return info;
     }
 
     private void setRelayStateOnSession(HttpServletRequest req, String relayState) {
-        req.getSession().setAttribute(SAML2ConfigServiceImpl.AUTHENTICATED_SESSION_ATTRIBUTE, true);
         SessionStorage sessionStorage = new SessionStorage(saml2ConfigService.getSaml2SessionAttr());
         sessionStorage.setString(req, relayState);
     }

@@ -173,7 +173,7 @@ class TokenStore {
             UnsupportedEncodingException, NoSuchAlgorithmException,
             InvalidKeyException {
 
-        String cookiePayload = token + expires + "@" + userId;
+        String cookiePayload = "" + token + expires + "@" + userId;
         Mac m = Mac.getInstance(HMAC_SHA1);
         m.init(key);
         m.update(cookiePayload.getBytes(UTF_8));
@@ -218,9 +218,12 @@ class TokenStore {
         if (parts != null) {
 
             // single digit token number
+            // part 0 = token/hash
+            // part 1 = token number (1 ... 5) + system time in ms
+            // part 2 = user name
             int tokenNumber = parts[1].charAt(0) - '0';
+            //https://stackoverflow.com/questions/4318263/java-subtract-0-from-char-to-get-an-int-why-does-this-work
             if (tokenNumber >= 0 && tokenNumber < currentTokens.length) {
-
                 long cookieTime = Long.parseLong(parts[1].substring(1));
                 if (System.currentTimeMillis() < cookieTime) {
 
