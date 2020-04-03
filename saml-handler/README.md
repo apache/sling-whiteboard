@@ -19,15 +19,26 @@ such as Shibboleth using SAML2 protocols.
 - Packages
   - `idp` is a test fixture based on the OpenSAML V3 eBook. It will be useful for minimizing 
   setup for testing purposes. Set to disabled for production.  
-  - `sp` is the package for service provider classes, servlets and the 
-  Sling authentication handler
+  - `sp` is the package for service provider classes utilities
   - `Helpers` static utilities for help using the opensaml library
     
  
-This code is Derivative Works from [webprofile-ref-project-v3](https://bitbucket.org/srasmusson/webprofile-ref-project-v3)
-* ArtifactResolutionServlet.java changed to be a Sling Servlet
-* ConsumerServlet.java changed to be a Sling Servlet
-* ConsumerServlet.java changed to be a Sling Servlet
-* Renamed OpenSAMLUtils.java to Helpers.java
-* [Apache License for webprofile-ref-project-v3](https://bitbucket.org/srasmusson/webprofile-ref-project-v3/src/master/LICENSE) 
+##Set up JKS  
+ `$ cd sling`   
+ `$ mkdir keys`  
+ `$ cd keys`
+  
+ ### Create KeyStore & Generate Self Signed Cert (not for prod)
+ keytool \
+     -genkeypair \
+     -keyalg RSA \
+     -validity 365 \
+     -alias samlStore \
+     -keystore samlKeystore.jks  \
+     -keypass key_password \
+     -storepass  storepassword \
+     -dname "CN=localhost, OU=LSA Technology Services, O=University of Michigan,L=Ann Arbor, S=MI, C=US"
+     
+ ### Generate IDP KeyPair (not for prod)
+ keytool -genkey -alias samlKeys -keyalg RSA -keystore samlKeystore.jks
 
