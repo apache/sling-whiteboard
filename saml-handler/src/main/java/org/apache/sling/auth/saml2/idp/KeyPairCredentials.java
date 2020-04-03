@@ -20,11 +20,8 @@
 
 package org.apache.sling.auth.saml2.idp;
 
-import org.opensaml.security.credential.Credential;
 import org.opensaml.security.credential.CredentialSupport;
-import org.opensaml.security.crypto.KeySupport;
 import org.opensaml.security.x509.BasicX509Credential;
-
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -32,27 +29,7 @@ import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
-public class IDPCredentials {
-    private static final Credential credential;
-
-    static {
-        credential = generateCredential();
-    }
-
-    private static Credential generateCredential() {
-        try {
-            KeyStore keyStore = KeyStore.getInstance("JKS");
-            KeyPair keyPair = KeySupport.generateKeyPair("RSA", 1024, null);
-            return CredentialSupport.getSimpleCredential(keyPair.getPublic(), keyPair.getPrivate());
-
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchProviderException e) {
-            throw new RuntimeException(e);
-        } catch (java.security.KeyStoreException e) {
-            throw new RuntimeException(e);
-        }
-    }
+public class KeyPairCredentials {
 
     public static BasicX509Credential getCredential(
             final String jksPath,
@@ -91,9 +68,4 @@ public class IDPCredentials {
             }
         }
     }
-
-    public static Credential getCredential() {
-        return credential;
-    }
-
 }
