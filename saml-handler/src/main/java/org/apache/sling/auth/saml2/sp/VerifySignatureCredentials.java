@@ -25,14 +25,23 @@ import net.shibboleth.utilities.java.support.resolver.Criterion;
 import net.shibboleth.utilities.java.support.resolver.ResolverException;
 import org.opensaml.core.criterion.EntityIdCriterion;
 import org.opensaml.security.credential.Credential;
+import org.opensaml.security.credential.CredentialSupport;
 import org.opensaml.security.credential.impl.KeyStoreCredentialResolver;
+import org.opensaml.security.x509.BasicX509Credential;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.security.*;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by Privat on 13/05/14.
+ *
+ * originally created by Privat on 13/05/14.
  */
 public class SPCredentials {
     private static final String KEY_STORE_PASSWORD = "password";
@@ -76,4 +85,36 @@ public class SPCredentials {
         return credential;
     }
 
+    public static Credential getCredential(
+            final String jksPath,
+            final String jksPassword,
+            final String certAlias) {
+        FileInputStream fis = null;
+        try {
+            KeyStore keyStore = KeyStore.getInstance("JKS");
+            fis = new FileInputStream(jksPath);
+            keyStore.load(new FileInputStream(jksPath), jksPassword.toCharArray());
+            X509Certificate cert = (X509Certificate) keyStore.getCertificate(certAlias);
+            BasicX509Credential x509Credential = new BasicX509Credential(cert);
+            return x509Credential;
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (java.security.KeyStoreException e) {
+            throw new RuntimeException(e);
+        }  catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        } catch (CertificateException e) {
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                if (fis != null) {
+                    fis.close();
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
 }
