@@ -28,7 +28,7 @@ import java.io.Writer;
 import org.apache.sling.auth.saml2.Helpers;
 import org.apache.sling.auth.saml2.SAML2ConfigService;
 import org.apache.sling.auth.saml2.impl.SAML2ConfigServiceImpl;
-import org.apache.sling.auth.saml2.sp.SPCredentials;
+import org.apache.sling.auth.saml2.sp.VerifySignatureCredentials;
 import org.apache.velocity.app.VelocityEngine;
 import org.joda.time.DateTime;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
@@ -46,18 +46,26 @@ import org.opensaml.saml.saml2.binding.encoding.impl.HTTPPostEncoder;
 import org.opensaml.saml.saml2.core.*;
 import org.opensaml.saml.saml2.encryption.Encrypter;
 import org.opensaml.saml.saml2.metadata.Endpoint;
+import org.opensaml.saml.saml2.metadata.KeyDescriptor;
 import org.opensaml.saml.saml2.metadata.SingleSignOnService;
+import org.opensaml.security.SecurityException;
+import org.opensaml.security.credential.Credential;
+import org.opensaml.security.credential.UsageType;
 import org.opensaml.xmlsec.encryption.support.DataEncryptionParameters;
 import org.opensaml.xmlsec.encryption.support.EncryptionConstants;
 import org.opensaml.xmlsec.encryption.support.EncryptionException;
 import org.opensaml.xmlsec.encryption.support.KeyEncryptionParameters;
+import org.opensaml.xmlsec.keyinfo.KeyInfoGenerator;
+import org.opensaml.xmlsec.keyinfo.impl.X509KeyInfoGeneratorFactory;
 import org.opensaml.xmlsec.signature.Signature;
 import org.opensaml.xmlsec.signature.support.SignatureConstants;
 import org.opensaml.xmlsec.signature.support.SignatureException;
 import org.opensaml.xmlsec.signature.support.Signer;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.wiring.BundleWiring;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.LoggerFactory;
 import javax.servlet.Servlet;
@@ -81,6 +89,9 @@ public class Saml2IDPServlet extends SlingAllMethodsServlet {
     private static Logger logger = LoggerFactory.getLogger(Saml2IDPServlet.class);
     public static final String IDP_ENTITY_ID = "TestIDP";
     public static final String TEST_IDP_ENDPOINT = "/idp/profile/SAML2/Redirect/SSO";
+    private Credential spEncryptionCert;
+    private Credential idpSigningKeys;
+
     @Reference
     private SAML2ConfigService saml2ConfigService;
 
@@ -104,7 +115,6 @@ public class Saml2IDPServlet extends SlingAllMethodsServlet {
         SAMLPeerEntityContext peerEntityContext = context.getSubcontext(SAMLPeerEntityContext.class, true);
         SAMLEndpointContext endpointContext = peerEntityContext.getSubcontext(SAMLEndpointContext.class, true);
         endpointContext.setEndpoint(getIPDEndpoint());
-
         context.setMessage(samlResponse);
         try {
             HTTPPostEncoder encoder = new HTTPPostEncoder();
@@ -120,6 +130,28 @@ public class Saml2IDPServlet extends SlingAllMethodsServlet {
         } catch (ComponentInitializationException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Activate @Modified
+    protected void activate(){
+//      set credential for signing
+        this.idpSigningKeys = KeyPairCredentials.getCredential(
+            saml2ConfigService.getJksFileLocation(),
+            saml2ConfigService.getJksStorePassword(),
+            saml2ConfigService.getSpKeysAlias(),
+            saml2ConfigService.getSpKeysPassword());
+//      set encryption keys
+        this.spEncryptionCert = VerifySignatureCredentials.getCredential(
+            saml2ConfigService.getJksFileLocation(),
+            saml2ConfigService.getJksStorePassword(),
+            saml2ConfigService.getSpKeysAlias());
+    }
+
+    private Credential getSpEncryptionCert(){
+        return this.spEncryptionCert;
+    }
+    private Credential getIdpSigningKeys(){
+        return this.idpSigningKeys;
     }
 
     private Endpoint getIPDEndpoint() {
@@ -240,11 +272,28 @@ public class Saml2IDPServlet extends SlingAllMethodsServlet {
         return attributeStatement;
     }
 
-    private void signAssertion(Assertion assertion) {
+    private Signature getSignature(){
         Signature signature = Helpers.buildSAMLObject(Signature.class);
-        signature.setSigningCredential(IDPCredentials.getCredential());
+        X509KeyInfoGeneratorFactory keyInfoGeneratorFactory = new X509KeyInfoGeneratorFactory();
+        keyInfoGeneratorFactory.setEmitEntityCertificate(true);
+        KeyInfoGenerator keyInfoGenerator = keyInfoGeneratorFactory.newInstance();
+        KeyDescriptor encKeyDescriptor = Helpers.buildSAMLObject(KeyDescriptor.class);
+        encKeyDescriptor.setUse(UsageType.SIGNING);
+
+        try {
+            signature.setKeyInfo(keyInfoGenerator.generate( this.getIdpSigningKeys()));
+        } catch (SecurityException e) {
+            throw new RuntimeException(e);
+        }
+
+        signature.setSigningCredential(this.getIdpSigningKeys());
         signature.setSignatureAlgorithm(SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA1);
         signature.setCanonicalizationAlgorithm(SignatureConstants.ALGO_ID_C14N_EXCL_OMIT_COMMENTS);
+        return signature;
+    }
+
+    private void signAssertion(Assertion assertion) {
+        Signature signature = getSignature();
         assertion.setSignature(signature);
         try {
             XMLObjectProviderRegistrySupport.getMarshallerFactory().getMarshaller(assertion).marshall(assertion);
@@ -258,11 +307,13 @@ public class Saml2IDPServlet extends SlingAllMethodsServlet {
         }
     }
 
+
     private EncryptedAssertion encryptAssertion(Assertion assertion) {
         DataEncryptionParameters encryptionParameters = new DataEncryptionParameters();
         encryptionParameters.setAlgorithm(EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128);
         KeyEncryptionParameters keyEncryptionParameters = new KeyEncryptionParameters();
-        keyEncryptionParameters.setEncryptionCredential(SPCredentials.getCredential());
+
+        keyEncryptionParameters.setEncryptionCredential(this.getSpEncryptionCert());
         keyEncryptionParameters.setAlgorithm(EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP);
         Encrypter encrypter = new Encrypter(encryptionParameters, keyEncryptionParameters);
         encrypter.setKeyPlacement(Encrypter.KeyPlacement.INLINE);

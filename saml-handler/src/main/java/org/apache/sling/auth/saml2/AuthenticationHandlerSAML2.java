@@ -23,10 +23,10 @@ import net.shibboleth.utilities.java.support.component.ComponentInitializationEx
 import net.shibboleth.utilities.java.support.xml.ParserPool;
 import org.apache.jackrabbit.api.security.user.User;
 import org.apache.sling.auth.core.AuthUtil;
-import org.apache.sling.auth.saml2.idp.IDPCredentials;
+import org.apache.sling.auth.saml2.idp.KeyPairCredentials;
 import org.apache.sling.auth.saml2.impl.SAML2ConfigServiceImpl;
 import org.apache.sling.auth.saml2.impl.Saml2Credentials;
-import org.apache.sling.auth.saml2.sp.SPCredentials;
+import org.apache.sling.auth.saml2.sp.VerifySignatureCredentials;
 import org.apache.sling.auth.saml2.sync.Saml2User;
 import org.joda.time.DateTime;
 import org.opensaml.core.xml.XMLObject;
@@ -46,6 +46,7 @@ import org.opensaml.saml.saml2.encryption.Decrypter;
 import org.opensaml.saml.saml2.metadata.Endpoint;
 import org.opensaml.saml.saml2.metadata.SingleSignOnService;
 import org.opensaml.saml.security.impl.SAMLSignatureProfileValidator;
+import org.opensaml.security.credential.Credential;
 import org.opensaml.xmlsec.SignatureSigningParameters;
 import org.opensaml.xmlsec.context.SecurityParametersContext;
 import org.opensaml.xmlsec.encryption.support.DecryptionException;
@@ -105,6 +106,8 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
     private static Logger logger = LoggerFactory.getLogger(AuthenticationHandlerSAML2.class);
     static final String SERVICE_NAME = "org.apache.sling.auth.saml2.AuthenticationHandlerSAML2";
     private String[] path;
+    private Credential spKeypair;
+    private Credential idpVerificationCert;
 
     /**
      * The request method required for SAML2 submission (value is "POST").
@@ -123,7 +126,7 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
      */
     private TokenStore tokenStore;
 
-    @Activate
+    @Activate @Modified
     protected void activate(ComponentContext componentContext)
             throws InvalidKeyException, NoSuchAlgorithmException, IllegalStateException, UnsupportedEncodingException {
         this.authStorage = new SessionStorage(SAML2ConfigServiceImpl.AUTHENTICATED_SESSION_ATTRIBUTE);
@@ -131,6 +134,24 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
         this.path = saml2ConfigService.getSaml2Path();
         final File tokenFile = getTokenFile(componentContext.getBundleContext());
         this.tokenStore = new TokenStore(tokenFile, sessionTimeout, false);
+//      set encryption keys
+        this.spKeypair = KeyPairCredentials.getCredential(
+                saml2ConfigService.getJksFileLocation(),
+                saml2ConfigService.getJksStorePassword(),
+                saml2ConfigService.getSpKeysAlias(),
+                saml2ConfigService.getSpKeysPassword());
+//      set credential for signing
+        this.idpVerificationCert = VerifySignatureCredentials.getCredential(
+                saml2ConfigService.getJksFileLocation(),
+                saml2ConfigService.getJksStorePassword(),
+                saml2ConfigService.getSpKeysAlias());
+    }
+
+    private Credential getSpKeypair(){
+        return this.spKeypair;
+    }
+    private Credential getIdpVerificationCert(){
+        return this.idpVerificationCert;
     }
 
     /**
@@ -140,10 +161,9 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
     @Override
     public AuthenticationInfo extractCredentials(final HttpServletRequest httpServletRequest,
                                                  final HttpServletResponse httpServletResponse)  {
-
+// 1. If the request is POST to the ACS URL, it needs to extract the Auth Info from the SAML data POST'ed
         if (saml2ConfigService.getSaml2SPEnabled() ) {
             String reqURI = httpServletRequest.getRequestURI();
-// 1. If the request is POST to the ACS URL, it needs to extract the Auth Info from the SAML data POST'ed
             if (reqURI.equals(SAML2ConfigServiceImpl.ASSERTION_CONSUMER_SERVICE_PATH)){
                 doClassloading();
                 MessageContext messageContext = decodeHttpPostSamlResp(httpServletRequest);
@@ -165,7 +185,6 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
             } else if (!httpServletRequest.getRequestURI().equals(TEST_IDP_ENDPOINT)){
                 // Request context is not the ACS path, so get the authInfo from session.
                 String authData = authStorage.getString(httpServletRequest);
-
                 if (authData != null) {
                     if (tokenStore.isValid(authData)) {
                         return buildAuthInfo(authData);
@@ -282,7 +301,7 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
     }
 
     private void redirectUserWithRequest(final HttpServletRequest httpServletRequest ,
-                             final HttpServletResponse httpServletResponse, final AuthnRequest authnRequest) {
+                     final HttpServletResponse httpServletResponse, final AuthnRequest authnRequest) {
         MessageContext context = new MessageContext();
         context.setMessage(authnRequest);
         SAMLBindingContext bindingContext = context.getSubcontext(SAMLBindingContext.class, true);
@@ -293,7 +312,7 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
         SAMLEndpointContext endpointContext = peerEntityContext.getSubcontext(SAMLEndpointContext.class, true);
         endpointContext.setEndpoint(getIPDEndpoint());
         SignatureSigningParameters signatureSigningParameters = new SignatureSigningParameters();
-        signatureSigningParameters.setSigningCredential(SPCredentials.getCredential());
+        signatureSigningParameters.setSigningCredential(this.getSpKeypair());
         signatureSigningParameters.setSignatureAlgorithm(SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA256);
         context.getSubcontext(SecurityParametersContext.class, true).setSignatureSigningParameters(signatureSigningParameters);
         HTTPRedirectDeflateEncoder encoder = new HTTPRedirectDeflateEncoder();
@@ -343,7 +362,8 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
     }
 
     private Assertion decryptAssertion(final EncryptedAssertion encryptedAssertion) {
-        StaticKeyInfoCredentialResolver keyInfoCredentialResolver = new StaticKeyInfoCredentialResolver(SPCredentials.getCredential());
+        // Use SP Private Key to decrypt
+        StaticKeyInfoCredentialResolver keyInfoCredentialResolver = new StaticKeyInfoCredentialResolver(this.spKeypair);
         Decrypter decrypter = new Decrypter(null, keyInfoCredentialResolver, new InlineEncryptedKeyResolver());
         decrypter.setRootInNewDocument(true);
         try {
@@ -361,7 +381,8 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
         try {
             SAMLSignatureProfileValidator profileValidator = new SAMLSignatureProfileValidator();
             profileValidator.validate(assertion.getSignature());
-            SignatureValidator.validate(assertion.getSignature(), IDPCredentials.getCredential());
+            // use IDP Cert to verify signature
+            SignatureValidator.validate(assertion.getSignature(), this.getIdpVerificationCert());
             logger.info("SAML Assertion signature verified");
         } catch (SignatureException e) {
             throw new RuntimeException("SAML Assertion signature problem", e);
@@ -630,8 +651,6 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
         }
         return null;
     }
-
-
 
     /**
      * Returns an absolute file indicating the file to use to persist the security

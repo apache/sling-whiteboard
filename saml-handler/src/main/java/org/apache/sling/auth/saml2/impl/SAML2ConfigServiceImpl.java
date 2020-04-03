@@ -38,6 +38,12 @@ public class SAML2ConfigServiceImpl implements SAML2ConfigService {
     private String samlUserHome;
     private String groupMembershipName;
     private String entityID;
+    private boolean demoIDPEnabled;
+    private String jksFileLocation;
+    private String jksStorePassword;
+    private String spKeysAlias;
+    private String spKeysPassword;
+    private String idpCertAlias;
 
     public static final String ASSERTION_CONSUMER_SERVICE_PATH = "/sp/consumer";
     public static final String GOTO_URL_SESSION_ATTRIBUTE = "gotoURL";
@@ -53,6 +59,13 @@ public class SAML2ConfigServiceImpl implements SAML2ConfigService {
         this.samlUserHome = config.saml2userHome();
         this.groupMembershipName = config.saml2groupMembershipAttr();
         this.entityID = config.entityID();
+        this.demoIDPEnabled = config.demoIDPEnabled();
+        this.jksFileLocation = config.jksFileLocation();
+        this.jksStorePassword = config.jksStorePassword();
+        this.spKeysAlias = config.spKeysAlias();
+        this.spKeysPassword = config.spKeysPassword();
+        this.idpCertAlias = config.idpCertAlias();
+
     }
 
 
@@ -94,6 +107,36 @@ public class SAML2ConfigServiceImpl implements SAML2ConfigService {
     @Override
     public boolean getSaml2SPEnabled() {
         return this.saml2SPEnabled;
+    }
+
+    @Override
+    public boolean getDemoIDPEnabled() {
+        return this.demoIDPEnabled;
+    }
+
+    @Override
+    public String getJksFileLocation() {
+        return this.jksFileLocation;
+    }
+
+    @Override
+    public String getJksStorePassword() {
+        return this.jksStorePassword;
+    }
+
+    @Override
+    public String getSpKeysAlias() {
+        return this.spKeysAlias;
+    }
+
+    @Override
+    public String getSpKeysPassword() {
+        return this.spKeysPassword;
+    }
+
+    @Override
+    public String getIdpCertAlias() {
+        return this.idpCertAlias;
     }
 
     @Override
