@@ -22,7 +22,6 @@ package org.apache.sling.auth.saml2.sync;
 import org.apache.jackrabbit.oak.spi.security.authentication.external.ExternalIdentityException;
 import org.apache.jackrabbit.oak.spi.security.authentication.external.ExternalIdentityRef;
 import org.apache.jackrabbit.oak.spi.security.authentication.external.ExternalUser;
-
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.util.HashMap;

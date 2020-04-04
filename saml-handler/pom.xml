@@ -26,7 +26,8 @@
   <name>SAML2 Service Provider</name>
 
   <properties>
-    <opensaml.version>3.4.3</opensaml.version>
+<!--    <opensaml.version>4.0.0</opensaml.version>-->
+    <opensaml.version>3.4.5</opensaml.version>
     <sling.host>localhost</sling.host>
     <sling.port>8080</sling.port>
     <sling.user>admin</sling.user>
@@ -84,6 +85,8 @@
         <configuration>
           <source>8</source>
           <target>8</target>
+<!--          <source>11</source>-->
+<!--          <target>11</target>-->
         </configuration>
       </plugin>
 
@@ -363,4 +366,14 @@ NOTE: Make sure your instance provides this bundle!
       </build>
     </profile>
   </profiles>
+
+<!-- The Shibboleth Repository is needed
+https://wiki.shibboleth.net/confluence/display/DEV/Use+of+Maven+Central
+-->
+  <repositories>
+    <repository>
+      <id>shibboleth</id>
+      <url>https://build.shibboleth.net/nexus/content/groups/public</url>
+    </repository>
+  </repositories>
 </project>

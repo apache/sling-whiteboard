@@ -20,6 +20,7 @@
 
 package org.apache.sling.auth.saml2.sp;
 
+
 import org.opensaml.security.credential.Credential;
 import org.opensaml.security.x509.BasicX509Credential;
 import java.io.FileInputStream;
