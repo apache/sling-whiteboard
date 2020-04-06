@@ -23,22 +23,35 @@ such as Shibboleth using SAML2 protocols.
   - `Helpers` static utilities for help using the opensaml library
     
  
-##Set up JKS  
+## Set up JKS  
  `$ cd sling`   
  `$ mkdir keys`  
  `$ cd keys`
   
  ### Create KeyStore & Generate Self Signed Cert (not for prod)
- keytool \
-     -genkeypair \
-     -keyalg RSA \
-     -validity 365 \
-     -alias samlStore \
-     -keystore samlKeystore.jks  \
-     -keypass key_password \
-     -storepass  storepassword \
-     -dname "CN=localhost, OU=LSA Technology Services, O=University of Michigan,L=Ann Arbor, S=MI, C=US"
-     
- ### Generate IDP KeyPair (not for prod)
- keytool -genkey -alias samlKeys -keyalg RSA -keystore samlKeystore.jks
+ While https on Jetty is technically not required, it serves a few purposes here: provides better security for direct access, and confirms the Java Keystore is configured properly and accessible by the sling system user. 
+  
+ #### Create self-signed SSL Certificate 
+ `$ keytool -genkeypair -keyalg RSA -validity 365 -alias samlStore -keystore samlKeystore.jks -keypass key_password
+-storepass  storepassword -dname "CN=localhost, OU=LSA Technology Services, O=University of Michigan,L=Ann Arbor, S=MI, C=US"`
 
+Note: Make note of the JKS filename and path, storepass, keypass, and cert alias.  
+
+#### Configure https on Jetty
+org.apache.felix.https.enable=B"true"  
+org.osgi.service.http.port.secure=I"443"  
+org.apache.felix.https.keystore="./sling/keys/slingKeystore.jks"  
+org.apache.felix.https.keystore.key.password="key_password" 
+org.apache.felix.https.keystore.password="storepassword" 
+org.apache.felix.https.truststore.password="storepassword"     
+     
+### Put your Service Provider KeyPair into the JKS 
+Option 1: Generate using Keytool  
+`$ keytool -genkey -alias samlKeys -keyalg RSA -keystore samlKeystore.jks`
+
+Option 2: Import Existing into jks  
+`$ keytool -importkeystore -srckeystore serviceProviderKeys.p12 -destkeystore theKeystore.jks
+-srcstoretype pkcs12 -alias spKeysAlias`
+ 
+### Put your Identity Provider's Signing Certificate into the JKS
+`$ keytool -import -file idp-signing.pem  -keystore theKeystore.jks -alias IDPSigningAlias`
