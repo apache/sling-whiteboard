@@ -88,9 +88,8 @@ import static org.apache.sling.auth.saml2.idp.Saml2IDPServlet.TEST_IDP_ENDPOINT;
             AuthenticationHandler.PATH_PROPERTY+"={}",
             AuthenticationHandler.TYPE_PROPERTY + "=" + AuthenticationHandlerSAML2.AUTH_TYPE,
             "service.description=SAML2 Authentication Handler",
-            "service.ranking=42",
-        },
-        immediate = true)
+            "service.ranking:Integer=42",
+        })
 
 public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHandler implements AuthenticationHandler {
 
@@ -132,6 +131,7 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
         this.authStorage = new SessionStorage(SAML2ConfigServiceImpl.AUTHENTICATED_SESSION_ATTRIBUTE);
         this.sessionTimeout = MINUTES * timeoutMinutes;
         this.path = saml2ConfigService.getSaml2Path();
+
         final File tokenFile = getTokenFile(componentContext.getBundleContext());
         this.tokenStore = new TokenStore(tokenFile, sessionTimeout, false);
 //      set encryption keys
@@ -144,7 +144,7 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
         this.idpVerificationCert = VerifySignatureCredentials.getCredential(
                 saml2ConfigService.getJksFileLocation(),
                 saml2ConfigService.getJksStorePassword(),
-                saml2ConfigService.getSpKeysAlias());
+                saml2ConfigService.getIdpCertAlias());
     }
 
     private Credential getSpKeypair(){
@@ -164,7 +164,7 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
 // 1. If the request is POST to the ACS URL, it needs to extract the Auth Info from the SAML data POST'ed
         if (saml2ConfigService.getSaml2SPEnabled() ) {
             String reqURI = httpServletRequest.getRequestURI();
-            if (reqURI.equals(SAML2ConfigServiceImpl.ASSERTION_CONSUMER_SERVICE_PATH)){
+            if (reqURI.equals(saml2ConfigService.getAcsPath())){
                 doClassloading();
                 MessageContext messageContext = decodeHttpPostSamlResp(httpServletRequest);
                 boolean relayStateIsOk = validateRelayState(httpServletRequest, messageContext);
@@ -231,7 +231,7 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
     public boolean requestCredentials(final HttpServletRequest httpServletRequest,
                                       final HttpServletResponse httpServletResponse) throws IOException {
         // check the referrer to see if the request is for this handler
-        if (!AuthUtil.checkReferer(httpServletRequest, SAML2ConfigServiceImpl.ASSERTION_CONSUMER_SERVICE_PATH)) {
+        if (!AuthUtil.checkReferer(httpServletRequest, saml2ConfigService.getAcsPath())) {
             // not for this handler, so return
             return false;
         }
@@ -267,13 +267,13 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
         AuthnRequest authnRequest = Helpers.buildSAMLObject(AuthnRequest.class);
         authnRequest.setIssueInstant(new DateTime());
         authnRequest.setDestination(saml2ConfigService.getSaml2IDPDestination());
-        authnRequest.setProtocolBinding(SAMLConstants.SAML2_REDIRECT_BINDING_URI);
+        authnRequest.setProtocolBinding(SAMLConstants.SAML2_POST_BINDING_URI);
         // Entity ID
         authnRequest.setAssertionConsumerServiceURL(saml2ConfigService.getACSURL());
         authnRequest.setID(Helpers.generateSecureRandomId());
         authnRequest.setIssuer(buildIssuer());
         authnRequest.setNameIDPolicy(buildNameIdPolicy());
-        authnRequest.setRequestedAuthnContext(buildRequestedAuthnContext());
+//        authnRequest.setRequestedAuthnContext(buildRequestedAuthnContext());
         return authnRequest;
     }
 
@@ -541,7 +541,7 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
         final boolean result;
         // only consider a resource redirect if this is a POST request to the ACS URL
         if (REQUEST_METHOD.equals(request.getMethod()) &&
-                request.getRequestURI().endsWith(SAML2ConfigServiceImpl.ASSERTION_CONSUMER_SERVICE_PATH)) {
+                request.getRequestURI().endsWith(saml2ConfigService.getAcsPath())) {
             redirectToGotoURL(request, response);
             result = true;
         } else {

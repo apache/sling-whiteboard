@@ -39,9 +39,17 @@ public @interface AuthenticationHandlerSAML2Config {
         description="One or more URL paths (String) for which this AuthenticationHandler is applied")
     String[] path() default {"http://localhost:8080/"};
 
+    @AttributeDefinition(name = "Service Ranking",
+        description="Integer value used to select auth'n handler when 2 or more handlers have paths of the same length.")
+    int service_ranking() default 42;
+
     @AttributeDefinition(name = "Service Provider Entity ID",
         description="The Entity ID for the SP")
     String entityID() default "http://localhost:8080/";
+
+    @AttributeDefinition(name = "ACS Path",
+        description="Service Provider's Assertion Consumer Service Path")
+    String acsPath() default "/sp/consumer";
 
     @AttributeDefinition(name = "User ID (uid) Attribute Name",
         description="Name of the attribute holding the users unique id")

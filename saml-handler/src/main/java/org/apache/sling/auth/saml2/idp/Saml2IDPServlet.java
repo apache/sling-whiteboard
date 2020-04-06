@@ -27,7 +27,6 @@ import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import java.io.Writer;
 import org.apache.sling.auth.saml2.Helpers;
 import org.apache.sling.auth.saml2.SAML2ConfigService;
-import org.apache.sling.auth.saml2.impl.SAML2ConfigServiceImpl;
 import org.apache.sling.auth.saml2.sp.VerifySignatureCredentials;
 import org.apache.velocity.app.VelocityEngine;
 import org.joda.time.DateTime;
@@ -159,7 +158,7 @@ public class Saml2IDPServlet extends SlingAllMethodsServlet {
         endpoint.setBinding(SAMLConstants.SAML2_POST_BINDING_URI);
         String entityID = saml2ConfigService.getEntityID();
         entityID = entityID.endsWith("/") ? entityID.substring(0, entityID.length()-1) : entityID;
-        endpoint.setLocation(entityID + SAML2ConfigServiceImpl.ASSERTION_CONSUMER_SERVICE_PATH);
+        endpoint.setLocation(entityID + saml2ConfigService.getAcsPath());
         return endpoint;
     }
 

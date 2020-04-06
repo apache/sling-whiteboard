@@ -44,8 +44,9 @@ public class SAML2ConfigServiceImpl implements SAML2ConfigService {
     private String spKeysAlias;
     private String spKeysPassword;
     private String idpCertAlias;
+//    private int serviceRanking;
+    private String acsPath;
 
-    public static final String ASSERTION_CONSUMER_SERVICE_PATH = "/sp/consumer";
     public static final String GOTO_URL_SESSION_ATTRIBUTE = "gotoURL";
     public static final String AUTHENTICATED_SESSION_ATTRIBUTE = "authenticated";
 
@@ -65,7 +66,8 @@ public class SAML2ConfigServiceImpl implements SAML2ConfigService {
         this.spKeysAlias = config.spKeysAlias();
         this.spKeysPassword = config.spKeysPassword();
         this.idpCertAlias = config.idpCertAlias();
-
+//        this.serviceRanking = config.serviceRanking();
+        this.acsPath = config.acsPath();
     }
 
 
@@ -73,6 +75,11 @@ public class SAML2ConfigServiceImpl implements SAML2ConfigService {
     public String[] getSaml2Path() {
         return this.path;
     }
+
+//    @Override
+//    public int getServiceRanking() {
+//        return this.serviceRanking;
+//    }
 
     @Override
     public String getSaml2userIDAttr() {
@@ -102,6 +109,11 @@ public class SAML2ConfigServiceImpl implements SAML2ConfigService {
     @Override
     public String getEntityID() {
         return this.entityID;
+    }
+
+    @Override
+    public String getAcsPath() {
+        return this.acsPath;
     }
 
     @Override
@@ -141,7 +153,7 @@ public class SAML2ConfigServiceImpl implements SAML2ConfigService {
 
     @Override
     public String getACSURL() {
-        entityID = entityID.endsWith("/") ? entityID.substring(0, entityID.length()-1) : entityID;
-        return entityID+ASSERTION_CONSUMER_SERVICE_PATH;
+        final String domain = entityID.endsWith("/") ? entityID.substring(0, entityID.length()-1) : entityID;
+        return domain + this.getAcsPath();
     }
 }
