@@ -13,6 +13,21 @@ in the context of the current Resource.
 
 ----
 
+## Next Steps
+Here are my initial rough ideas for evolving this into a useful GraphQL core for Sling:
+
+  * Use the Sling resolution mechanism to acquire the GraphQL Schemas, using maybe a `.gqlschema` request extension to get them. This provides full flexiblity to generate schemas from scripts, servlets, Sling Models or whatever's needed
+  * Demonstrate how to create a "traditional" GraphQL endpoint by setting up a Sling Resource to define it, which might need a proxy servlet for ease of use. As those endpoints use the Sling script resolution mechanism under the hood, it's possible to define several such endpoints with specific characteristics, schemas etc. if needed. Also, backing those endpoints with Sling Resources allows for setting up access control of them, which we wouldn't get with a path-mounted servlet.
+  
+This (along with a few "details") would allow for this GraphQL core to be used in various modes:
+
+  * As a traditional GraphQL endpoint, where the clients supply requests etc.
+  * In a "Resource-based GraphQL endpoints" style where every Sling Resource can be a GraphQL endpoint (using specific request selectors and extensions), where queries are executed in the context of that Resource. For this we can either use server-side "prepared GraphQL queries" like in the initial prototype, or let the clients supply those queries to be closer to the traditional GraphQL way of doing things. 
+  
+The _Resource-based GraphQL endpoints_ mode is an experimental idea at this point but if we design for both modes from the beginning it's not hard to support - and I think server-side GraphQL queries can play an important role in some contexts.
+
+## Initial Prototype
+
 This module implements two Sling Scripting Engines, one for a `.gql` extension which
 provides the actual GraphQL queries, and one for a `.gqls` extension which
 provides GraphQL schema fragments.
