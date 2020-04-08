@@ -36,47 +36,8 @@
     <sling.password>admin</sling.password>
   </properties>
 
-<!--  <packaging>bundle</packaging>-->
   <build>
     <plugins>
-
-<!--      <plugin>-->
-<!--        <groupId>org.apache.felix</groupId>-->
-<!--        <artifactId>maven-bundle-plugin</artifactId>-->
-<!--        <version>3.5.0</version>-->
-<!--        <extensions>true</extensions>-->
-<!--        <configuration>-->
-<!--          <instructions>-->
-<!--            <Bundle-Activator>org.apache.sling.auth.saml2.Activator</Bundle-Activator>-->
-<!--            <Embed-Dependency>*;scope=compile|runtime;</Embed-Dependency>-->
-<!--            <Embed-Transitive>true</Embed-Transitive>-->
-<!--            <Embed-Directory>target/dependency</Embed-Directory>-->
-<!--            <Embed-StripGroup>true</Embed-StripGroup>-->
-<!--            <Import-Package>-->
-<!--              !sun.misc,-->
-<!--              !com.sun.msv.*,-->
-<!--              !com.sun.jdmk.comm,-->
-<!--              !sun.io.*,-->
-<!--              !com.beust.jcommander*,-->
-<!--              !com.google.appengine.api.*,-->
-<!--              !com.google.apphosting.api.*,-->
-<!--              !com.google.appengine.repackaged.*,-->
-<!--              !org.apache.log.*,-->
-<!--              !org.apache.oro.text.perl.*,-->
-<!--              !antlr.*,-->
-<!--              !org.apache.tools.ant.*,-->
-<!--              !junit.framework.*,-->
-<!--              !org.dom4j.*,-->
-<!--              !org.jdom.*,-->
-<!--              !org.bouncycastle.*,-->
-<!--              !com.sun.org.apache.xerces.internal.*,-->
-<!--              *</Import-Package>-->
-<!--            <_noee>true</_noee>-->
-<!--          </instructions>-->
-<!--        </configuration>-->
-<!--      </plugin>-->
-
-<!--      doesn't work when built with bnd-maven-plugin :-( -->
       <plugin>
         <groupId>biz.aQute.bnd</groupId>
         <artifactId>bnd-maven-plugin</artifactId>
@@ -232,17 +193,12 @@
       <version>1.0.0</version>
     </dependency>
 
-    <dependency>
-      <groupId>org.codehaus.woodstox</groupId>
-      <artifactId>stax2-api</artifactId>
-      <version>3.1.4</version>
-    </dependency>
-
 <!--    <dependency>-->
-<!--      <groupId>org.apache.santuario</groupId>-->
-<!--      <artifactId>xmlsec</artifactId>-->
-<!--      <version>2.0.10</version>-->
+<!--      <groupId>org.codehaus.woodstox</groupId>-->
+<!--      <artifactId>stax2-api</artifactId>-->
+<!--      <version>3.1.4</version>-->
 <!--    </dependency>-->
+
 
     <!--    JavaEE -->
     <dependency>
