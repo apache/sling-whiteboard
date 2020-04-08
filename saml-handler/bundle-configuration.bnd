@@ -1,0 +1,59 @@
+Bundle-Category: sling
+Bundle-DocURL: https://sling.apache.org
+Bundle-Activator: org.apache.sling.auth.saml2.Activator
+#-exportcontents: ${removeall;${packages;VERSIONED};${packages;CONDITIONAL}}
+-exportcontents: org.apache.sling.auth.saml2.*
+-snapshot: SNAPSHOT
+-noextraheaders: true
+
+Import-Package:!com.beust*,!antlr*,!org.apache.log.*,!org.apache.oro.text.perl*,!com.google.apphosting*,\
+!org.apache.tools.ant.*,!org.jdom*,!com.sun.org.apache.xerces.internal*,!sun.io,!org.bouncycastle.*,\
+!junit.framework*,!org.dom4j.*,!com.sun.msv.*,!sun.misc,javax.annotation;version=0.0.0,!org.apache.santuario.xmlsec.*,*
+
+#,javax.annotation;version=0.0.0,*
+#,javax.annotation;version=0.0.0,*;provide:=false
+
+-includeresource:\
+xmlsec-[0-9\.]+.jar;lib:=true,\
+opensaml-core-[0-9\.]+.jar;lib:=true,\
+opensaml-saml-impl-[0-9\.]+.jar;lib:=true,\
+opensaml-saml-api-[0-9\.]+.jar;lib:=true,\
+opensaml-xmlsec-api-[0-9\.]+.jar;lib:=true,\
+opensaml-xmlsec-impl-[0-9\.]+.jar;lib:=true,\
+opensaml-security-api-[0-9\.]+.jar;lib:=true,\
+opensaml-security-impl-[0-9\.]+.jar;lib:=true,\
+opensaml-storage-api-[0-9\.]+.jar;lib:=true,\
+opensaml-profile-api-[0-9\.]+.jar;lib:=true,\
+opensaml-messaging-api-[0-9\.]+.jar;lib:=true,\
+opensaml-soap-api-[0-9\.]+.jar;lib:=true,\
+opensaml-soap-impl-[0-9\.]+.jar;lib:=true,\
+velocity-[0-9\.]+.jar;lib:=true,\
+werken-xpath-[0-9\.]+.jar;lib:=true,\
+java-support-[0-9\.]+.jar;lib:=true,\
+commons-codec-[0-9\.]+.jar;lib:=true,\
+joda-convert-[0-9\.]+.jar;lib:=true,\
+joda-time-[0-9\.]+.jar;lib:=true,\
+cryptacular-[0-9\.]+.jar;lib:=true,\
+xml-security-[0-9\.]+.jar;lib:=true,\
+xalan-[0-9\.]+.jar;lib:=true,\
+serializer-[0-9\.]+.jar;lib:=true,\
+xercesImpl-[0-9\.]+.jar;lib:=true,\
+xml-resolver-[0-9\.]+.jar;lib:=true,\
+xom-[0-9\.]+.jar;lib:=true,\
+jaxen-[0-9\.]+.jar;lib:=true,\
+error_prone_annotations-[0-9\.]+.jar;lib:=true,\
+xml-apis-[0-9\.]+.jar;lib:=true,\
+metrics-core-[0-9\.]+.jar;lib:=true,\
+woodstox-core-[0-9\.]+.jar;lib:=true,\
+stax2-api-[0-9\.]+.jar;lib:=true,\
+com.springsource.org.relaxng.datatype-[0-9\.]+.jar;lib:=true,\
+jsr305-[0-9\.]+.jar;lib:=true,\
+bcprov-jdk15on-[0-9\.]+.jar;lib:=true,\
+
+
+#xmlsec-2.0.10.jar;lib:=true
+#httpclient-[0-9\.]+.jar;lib:=true,\
+#httpcore-[0-9\.]+.jar;lib:=true,\
+#commons-lang-[0-9\.]+.jar;lib:=true,\
+#commons-collections-[0-9\.]+.jar;lib:=true,\
+#

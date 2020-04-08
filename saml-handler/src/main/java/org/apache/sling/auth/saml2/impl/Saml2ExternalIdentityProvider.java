@@ -38,12 +38,11 @@ import java.util.*;
  * Derived works from
  * https://github.com/peregrine-cms/peregrinecms-com-peregrine-sling-auth-header/blob/master/src/main/java/com/peregrine/sling/auth/header/HeaderExternalIdentityProvider.java
  */
-
 @Component(
-        name = "SAML2 External Identity Provider",
         service = ExternalIdentityProvider.class,
         immediate = true
 )
+//name = "SAML2 External Identity Provider",
 public class Saml2ExternalIdentityProvider implements ExternalIdentityProvider, CredentialsSupport {
 
     private final Logger logger = LoggerFactory.getLogger(Saml2ExternalIdentityProvider.class);

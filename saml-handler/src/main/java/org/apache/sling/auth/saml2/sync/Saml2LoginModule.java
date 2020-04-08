@@ -40,10 +40,11 @@ import java.util.Map;
 import java.util.Set;
 
 @Component(
-        name = "SAML2 Login Module",
         service = Saml2LoginModule.class,
         immediate = true
 )
+//        name = "SAML2 Login Module",
+
 public class Saml2LoginModule extends AbstractLoginModule {
 
     static Set<Class> SUPPORTED_CREDENTIALS = new HashSet<Class>();

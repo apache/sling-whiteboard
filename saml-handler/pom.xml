@@ -20,10 +20,12 @@
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.apache.sling.auth</groupId>
-  <artifactId>saml2</artifactId>
-  <version>0.1.0-SNAPSHOT</version>
+
+  <artifactId>org.apache.sling.auth.saml2</artifactId>
   <name>SAML2 Service Provider</name>
+  <version>0.1.0-SNAPSHOT</version>
+  <description>A SAML2 Web-profile SSO Service Provider (Sling Authentication) that uses encrypted
+    POST Binding for communicating security assertions with an identity provider such as Shibboleth.</description>
 
   <properties>
 <!--    <opensaml.version>4.0.0</opensaml.version>-->
@@ -32,53 +34,69 @@
     <sling.port>8080</sling.port>
     <sling.user>admin</sling.user>
     <sling.password>admin</sling.password>
-<!--    <bnd.version>4.3.1</bnd.version>-->
   </properties>
 
-  <packaging>bundle</packaging>
-
+<!--  <packaging>bundle</packaging>-->
   <build>
     <plugins>
 
+<!--      <plugin>-->
+<!--        <groupId>org.apache.felix</groupId>-->
+<!--        <artifactId>maven-bundle-plugin</artifactId>-->
+<!--        <version>3.5.0</version>-->
+<!--        <extensions>true</extensions>-->
+<!--        <configuration>-->
+<!--          <instructions>-->
+<!--            <Bundle-Activator>org.apache.sling.auth.saml2.Activator</Bundle-Activator>-->
+<!--            <Embed-Dependency>*;scope=compile|runtime;</Embed-Dependency>-->
+<!--            <Embed-Transitive>true</Embed-Transitive>-->
+<!--            <Embed-Directory>target/dependency</Embed-Directory>-->
+<!--            <Embed-StripGroup>true</Embed-StripGroup>-->
+<!--            <Import-Package>-->
+<!--              !sun.misc,-->
+<!--              !com.sun.msv.*,-->
+<!--              !com.sun.jdmk.comm,-->
+<!--              !sun.io.*,-->
+<!--              !com.beust.jcommander*,-->
+<!--              !com.google.appengine.api.*,-->
+<!--              !com.google.apphosting.api.*,-->
+<!--              !com.google.appengine.repackaged.*,-->
+<!--              !org.apache.log.*,-->
+<!--              !org.apache.oro.text.perl.*,-->
+<!--              !antlr.*,-->
+<!--              !org.apache.tools.ant.*,-->
+<!--              !junit.framework.*,-->
+<!--              !org.dom4j.*,-->
+<!--              !org.jdom.*,-->
+<!--              !org.bouncycastle.*,-->
+<!--              !com.sun.org.apache.xerces.internal.*,-->
+<!--              *</Import-Package>-->
+<!--            <_noee>true</_noee>-->
+<!--          </instructions>-->
+<!--        </configuration>-->
+<!--      </plugin>-->
+
+<!--      doesn't work when built with bnd-maven-plugin :-( -->
       <plugin>
-        <groupId>org.apache.felix</groupId>
-        <artifactId>maven-bundle-plugin</artifactId>
-        <version>3.5.0</version>
-        <extensions>true</extensions>
+        <groupId>biz.aQute.bnd</groupId>
+        <artifactId>bnd-maven-plugin</artifactId>
+        <version>4.3.1</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>bnd-process</goal>
+            </goals>
+          </execution>
+        </executions>
         <configuration>
-          <instructions>
-            <Bundle-Activator>org.apache.sling.auth.saml2.Activator</Bundle-Activator>
-            <Embed-Dependency>*;scope=compile|runtime;</Embed-Dependency>
-            <Embed-Transitive>true</Embed-Transitive>
-            <Embed-Directory>target/dependency</Embed-Directory>
-            <Embed-StripGroup>true</Embed-StripGroup>
-            <Import-Package>
-              !sun.misc;resolution:=optional,
-              !com.sun.msv.*;resolution:=optional,
-              !com.sun.jdmk.comm;resolution:=optional,
-              sun.io.*;resolution:=optional,
-              com.beust.jcommander*;resolution:=optional,
-              com.google.appengine.api.*;resolution:=optional,
-              com.google.apphosting.api.*;resolution:=optional,
-              com.google.appengine.repackaged.*;resolution:=optional,
-              org.apache.log.*;resolution:=optional,
-              org.apache.oro.text.perl.*;resolution:=optional,
-              antlr.*;resolution:=optional,
-              org.apache.tools.ant.*;resolution:=optional,
-              junit.framework.*;resolution:=optional,
-              org.dom4j.*;resolution:=optional,
-              org.jdom.*;resolution:=optional,
-              org.bouncycastle.*;resolution:=optional,
-              com.sun.org.apache.xerces.internal.*;resolution:=optional,
-              *</Import-Package>
-            <_noee>true</_noee>
-          </instructions>
+          <bndfile>bundle-configuration.bnd</bndfile>
         </configuration>
       </plugin>
 
       <plugin>
         <groupId>org.apache.sling</groupId>
         <artifactId>maven-sling-plugin</artifactId>
+        <version>2.3.4</version>
       </plugin>
 
       <plugin>
@@ -114,6 +132,7 @@
           <excludes combine.children="append">
             <exclude>**/dependency-reduced-pom.xml</exclude>
             <exclude>**/*.vm</exclude>
+            <exclude>bundle-configuration.bnd</exclude>
           </excludes>
         </configuration>
       </plugin>
@@ -140,12 +159,17 @@
       <version>${opensaml.version}</version>
     </dependency>
 
-
 <!-- OpenSAML Dependencies-->
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcprov-jdk15on</artifactId>
       <version>1.59</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.xml.security</groupId>
+      <artifactId>xml-security</artifactId>
+      <version>1.4.1</version>
     </dependency>
 
     <dependency>
@@ -199,7 +223,7 @@
     <dependency>
       <groupId>org.joda</groupId>
       <artifactId>joda-convert</artifactId>
-      <version>2.2.1</version>
+      <version>1.9.2</version>
     </dependency>
 
     <dependency>
@@ -208,7 +232,19 @@
       <version>1.0.0</version>
     </dependency>
 
-<!--    JavaEE -->
+    <dependency>
+      <groupId>org.codehaus.woodstox</groupId>
+      <artifactId>stax2-api</artifactId>
+      <version>3.1.4</version>
+    </dependency>
+
+<!--    <dependency>-->
+<!--      <groupId>org.apache.santuario</groupId>-->
+<!--      <artifactId>xmlsec</artifactId>-->
+<!--      <version>2.0.10</version>-->
+<!--    </dependency>-->
+
+    <!--    JavaEE -->
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>servlet-api</artifactId>
