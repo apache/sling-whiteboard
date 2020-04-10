@@ -1,7 +1,6 @@
 Bundle-Category: sling
 Bundle-DocURL: https://sling.apache.org
 Bundle-Activator: org.apache.sling.auth.saml2.Activator
-#-exportcontents: ${removeall;${packages;VERSIONED};${packages;CONDITIONAL}}
 -exportcontents: org.apache.sling.auth.saml2.*
 -snapshot: SNAPSHOT
 -noextraheaders: true
@@ -10,6 +9,7 @@ Import-Package:!com.beust*,!antlr*,!org.apache.log.*,!org.apache.oro.text.perl*,
 !org.apache.tools.ant.*,!org.jdom*,!com.sun.org.apache.xerces.internal*,!sun.io,!org.bouncycastle.*,\
 !junit.framework*,!org.dom4j.*,!com.sun.msv.*,!sun.misc,javax.annotation;version=0.0.0,*
 
+-removeheaders: Include-Resource, Private-Package
 
 -includeresource:\
 xmlsec-[0-9\.]+.jar;lib:=true,\

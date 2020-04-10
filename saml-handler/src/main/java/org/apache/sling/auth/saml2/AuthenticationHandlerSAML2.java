@@ -84,6 +84,7 @@ import static org.apache.sling.auth.saml2.idp.Saml2IDPServlet.TEST_IDP_ENDPOINT;
         name = AuthenticationHandlerSAML2.SERVICE_NAME,
         configurationPid = "org.apache.sling.auth.saml2.impl.SAML2ConfigServiceImpl",
         configurationPolicy = ConfigurationPolicy.REQUIRE,
+        immediate = true,
         property = {"sling.servlet.methods={GET, POST}",
             AuthenticationHandler.PATH_PROPERTY+"={}",
             AuthenticationHandler.TYPE_PROPERTY + "=" + AuthenticationHandlerSAML2.AUTH_TYPE,
