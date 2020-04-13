@@ -79,7 +79,7 @@
           <archive>
             <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
             <manifestEntries>
-              <Jaas-ModuleClass>org.apache.sling.auth.saml2.sync.Saml2LoginModule</Jaas-ModuleClass>
+              <Jaas-ModuleClass>org.apache.sling.auth.saml2.sp.Saml2LoginModule</Jaas-ModuleClass>
             </manifestEntries>
           </archive>
         </configuration>
