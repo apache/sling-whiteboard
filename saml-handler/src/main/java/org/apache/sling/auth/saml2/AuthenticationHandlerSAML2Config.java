@@ -77,12 +77,6 @@ public @interface AuthenticationHandlerSAML2Config {
         type = AttributeType.BOOLEAN )
     boolean saml2SPEnabled() default false;
 
-//TODO: Register and unregister SamlIDPServlet based on this config
-    @AttributeDefinition(
-        name = "Demo IDP",
-        description = "Demo IDP Enabled (TODO item. no effect)", type = AttributeType.BOOLEAN)
-    boolean demoIDPEnabled() default false;
-
     @AttributeDefinition(name = "Java Keystore (.jks) file location",
         description="File location of the Java Keystore JKS")
     String jksFileLocation() default "./sling/keys/samlKeystore.jks";

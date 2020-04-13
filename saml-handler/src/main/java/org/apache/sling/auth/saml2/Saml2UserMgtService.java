@@ -21,7 +21,7 @@
 package org.apache.sling.auth.saml2;
 
 import org.apache.jackrabbit.api.security.user.User;
-import org.apache.sling.auth.saml2.sync.Saml2User;
+import org.apache.sling.auth.saml2.sp.Saml2User;
 
 public interface Saml2UserMgtService {
 

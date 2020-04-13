@@ -18,7 +18,7 @@
  *
  */
 
-package org.apache.sling.auth.saml2.idp;
+package org.apache.sling.auth.saml2.sp;
 
 import org.opensaml.security.credential.CredentialSupport;
 import org.opensaml.security.x509.BasicX509Credential;

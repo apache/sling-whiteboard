@@ -17,7 +17,7 @@
  * under the License.
  *
  */
-package org.apache.sling.auth.saml2.sync;
+package org.apache.sling.auth.saml2.sp;
 
 import org.apache.jackrabbit.oak.spi.security.authentication.external.ExternalIdentityException;
 import org.apache.jackrabbit.oak.spi.security.authentication.external.ExternalIdentityRef;

@@ -34,7 +34,6 @@ public interface SAML2ConfigService {
     String getSaml2IDPDestination();
     boolean getSaml2SPEnabled();
 
-    boolean getDemoIDPEnabled();
     String getJksFileLocation();
     String getJksStorePassword();
     String getSpKeysAlias();

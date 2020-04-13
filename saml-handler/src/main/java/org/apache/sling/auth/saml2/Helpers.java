@@ -86,7 +86,7 @@ public class Helpers {
             transformer.transform(source, result);
             String xmlString = result.getWriter().toString();
 
-            logger.info(xmlString);
+            logger.debug(xmlString);
         } catch (TransformerConfigurationException e) {
             logger.error("TransformerConfigurationException in logSAMLObject", e);
         } catch (TransformerException e) {
@@ -94,18 +94,4 @@ public class Helpers {
         }
     }
 
-    public static VelocityEngine getVelocityEngine() {
-// Derived work from https://github.com/rnagulapalle/spring-saml/blob/master/core/src/main/java/org/springframework/security/saml/util/VelocityFactory.java
-        try {
-            VelocityEngine velocityEngine = new VelocityEngine();
-            velocityEngine.setProperty(RuntimeConstants.ENCODING_DEFAULT, "UTF-8");
-            velocityEngine.setProperty(RuntimeConstants.OUTPUT_ENCODING, "UTF-8");
-            velocityEngine.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
-            velocityEngine.setProperty("classpath.resource.loader.class", "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
-            velocityEngine.init();
-            return velocityEngine;
-        } catch (Exception e) {
-            throw new RuntimeException("Error configuring velocity", e);
-        }
-    }
 }

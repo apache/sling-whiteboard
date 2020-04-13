@@ -38,13 +38,11 @@ public class SAML2ConfigServiceImpl implements SAML2ConfigService {
     private String samlUserHome;
     private String groupMembershipName;
     private String entityID;
-    private boolean demoIDPEnabled;
     private String jksFileLocation;
     private String jksStorePassword;
     private String spKeysAlias;
     private String spKeysPassword;
     private String idpCertAlias;
-//    private int serviceRanking;
     private String acsPath;
 
     public static final String GOTO_URL_SESSION_ATTRIBUTE = "gotoURL";
@@ -60,13 +58,11 @@ public class SAML2ConfigServiceImpl implements SAML2ConfigService {
         this.samlUserHome = config.saml2userHome();
         this.groupMembershipName = config.saml2groupMembershipAttr();
         this.entityID = config.entityID();
-        this.demoIDPEnabled = config.demoIDPEnabled();
         this.jksFileLocation = config.jksFileLocation();
         this.jksStorePassword = config.jksStorePassword();
         this.spKeysAlias = config.spKeysAlias();
         this.spKeysPassword = config.spKeysPassword();
         this.idpCertAlias = config.idpCertAlias();
-//        this.serviceRanking = config.serviceRanking();
         this.acsPath = config.acsPath();
     }
 
@@ -75,11 +71,6 @@ public class SAML2ConfigServiceImpl implements SAML2ConfigService {
     public String[] getSaml2Path() {
         return this.path;
     }
-
-//    @Override
-//    public int getServiceRanking() {
-//        return this.serviceRanking;
-//    }
 
     @Override
     public String getSaml2userIDAttr() {
@@ -119,11 +110,6 @@ public class SAML2ConfigServiceImpl implements SAML2ConfigService {
     @Override
     public boolean getSaml2SPEnabled() {
         return this.saml2SPEnabled;
-    }
-
-    @Override
-    public boolean getDemoIDPEnabled() {
-        return this.demoIDPEnabled;
     }
 
     @Override

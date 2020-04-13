@@ -27,7 +27,7 @@ import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.auth.saml2.SAML2ConfigService;
-import org.apache.sling.auth.saml2.sync.Saml2User;
+import org.apache.sling.auth.saml2.sp.Saml2User;
 import org.apache.sling.auth.saml2.Saml2UserMgtService;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;

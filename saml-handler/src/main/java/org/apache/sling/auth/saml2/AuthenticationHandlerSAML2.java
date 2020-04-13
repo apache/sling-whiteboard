@@ -23,11 +23,9 @@ import net.shibboleth.utilities.java.support.component.ComponentInitializationEx
 import net.shibboleth.utilities.java.support.xml.ParserPool;
 import org.apache.jackrabbit.api.security.user.User;
 import org.apache.sling.auth.core.AuthUtil;
-import org.apache.sling.auth.saml2.idp.KeyPairCredentials;
+import org.apache.sling.auth.saml2.sp.*;
 import org.apache.sling.auth.saml2.impl.SAML2ConfigServiceImpl;
 import org.apache.sling.auth.saml2.impl.Saml2Credentials;
-import org.apache.sling.auth.saml2.sp.VerifySignatureCredentials;
-import org.apache.sling.auth.saml2.sync.Saml2User;
 import org.joda.time.DateTime;
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
@@ -61,7 +59,6 @@ import org.osgi.framework.wiring.BundleWiring;
 import org.apache.sling.auth.core.spi.AuthenticationHandler;
 import org.apache.sling.auth.core.spi.AuthenticationInfo;
 import org.apache.sling.auth.core.spi.DefaultAuthenticationFeedbackHandler;
-import org.apache.sling.auth.saml2.sp.SessionStorage;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.*;
 import org.slf4j.Logger;
@@ -76,7 +73,7 @@ import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import static org.apache.sling.auth.saml2.idp.Saml2IDPServlet.TEST_IDP_ENDPOINT;
+
 
 
 @Component(
@@ -183,7 +180,7 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
                 }
                 return null;
 // 2.  try credentials from the session
-            } else if (!httpServletRequest.getRequestURI().equals(TEST_IDP_ENDPOINT)){
+            } else {
                 // Request context is not the ACS path, so get the authInfo from session.
                 String authData = authStorage.getString(httpServletRequest);
                 if (authData != null) {
@@ -236,7 +233,7 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
             // not for this handler, so return
             return false;
         }
-        if (saml2ConfigService.getSaml2SPEnabled() && !httpServletRequest.getContextPath().equals(TEST_IDP_ENDPOINT)) {
+        if (saml2ConfigService.getSaml2SPEnabled() ) {
             doClassloading();
             setGotoURLOnSession(httpServletRequest);
             redirectUserForAuthentication(httpServletRequest, httpServletResponse);

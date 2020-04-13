@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.sling.auth.saml2;
+package org.apache.sling.auth.saml2.sp;
 
 public enum SamlReason {
 
