@@ -14,18 +14,30 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.osgi.feature;
+package org.osgi.util.features;
 
 import java.util.Map;
 
 /**
- * A Bundle which is part of a feature.
+ * Represents an OSGi Configuration in the Feature Model.
  * @ThreadSafe
  */
-public interface Bundle extends Artifact {
+public interface Configuration {
     /**
-     * Get the metadata for this bundle.
-     * @return The metadata.
+     * Get the PID from the configuration.
+     * @return The PID.
      */
-    Map<String, Object> getMetadata();
+    String getPid();
+
+    /**
+     * Get the Factory PID from the configuration, if any.
+     * @return The Factory PID, or {@code null} if there is none.
+     */
+    String getFactoryPid();
+
+    /**
+     * Get the configuration key-value map.
+     * @return The key-value map.
+     */
+    Map<String, Object> getValues();
 }

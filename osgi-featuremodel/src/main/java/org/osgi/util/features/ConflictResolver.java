@@ -14,37 +14,23 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.osgi.feature.impl;
+package org.osgi.util.features;
 
-import org.osgi.feature.Artifact;
-import org.osgi.feature.ArtifactID;
-
-import java.util.Objects;
-
-class ArtifactImpl implements Artifact {
-    private final ArtifactID id;
-
-    ArtifactImpl(ArtifactID id) {
-        this.id = id;
-    }
-
-    @Override
-    public ArtifactID getID() {
-        return id;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (!(obj instanceof ArtifactImpl))
-            return false;
-        ArtifactImpl other = (ArtifactImpl) obj;
-        return Objects.equals(id, other.id);
-    }
+/**
+ * Interface implemented by a callback that can resolve merge conflicts.
+ * @param <T> The type of entity this conflict resolver is used for.
+ * @param <R> The type of the result of the resolution.
+ * @ConsumerType
+ * @ThreadSafe
+ */
+public interface ConflictResolver<T, R> {
+    /**
+     * Resolve this conflict between o1 and o2.
+     * @param f1 The first feature model.
+     * @param o1 The first conflicting object.
+     * @param f2 The second feature model
+     * @param o2 The second conflicting object.
+     * @return The resolution of the conflict.
+     */
+    R resolve(Feature f1, T o1, Feature f2, T o2);
 }

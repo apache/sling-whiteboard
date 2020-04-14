@@ -14,14 +14,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.osgi.feature.impl;
+package org.osgi.util.features.impl;
 
-import org.osgi.feature.ArtifactID;
-import org.osgi.feature.Bundle;
-import org.osgi.feature.Configuration;
-import org.osgi.feature.Extension;
-import org.osgi.feature.Feature;
-import org.osgi.feature.FeatureBuilder;
+import org.osgi.util.features.ArtifactID;
+import org.osgi.util.features.Bundle;
+import org.osgi.util.features.Configuration;
+import org.osgi.util.features.Extension;
+import org.osgi.util.features.Feature;
+import org.osgi.util.features.FeatureBuilder;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -14,11 +14,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.osgi.feature.impl;
+package org.osgi.util.features.impl;
 
-import org.osgi.feature.ArtifactID;
-import org.osgi.feature.Bundle;
-import org.osgi.feature.BundleBuilder;
+import org.osgi.util.features.ArtifactID;
+import org.osgi.util.features.Bundle;
+import org.osgi.util.features.BundleBuilder;
 
 import java.util.Collections;
 import java.util.HashMap;

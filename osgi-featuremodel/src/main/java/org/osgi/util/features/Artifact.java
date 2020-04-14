@@ -14,30 +14,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.osgi.feature;
-
-import java.util.Map;
+package org.osgi.util.features;
 
 /**
- * Represents an OSGi Configuration in the Feature Model.
- * @ThreadSafe
+ * An Artifact is an entity with an ID.
  */
-public interface Configuration {
+public interface Artifact {
     /**
-     * Get the PID from the configuration.
-     * @return The PID.
+     * Get the artifact's ID.
+     * @return The ID of this artifact.
      */
-    String getPid();
-
-    /**
-     * Get the Factory PID from the configuration, if any.
-     * @return The Factory PID, or {@code null} if there is none.
-     */
-    String getFactoryPid();
-
-    /**
-     * Get the configuration key-value map.
-     * @return The key-value map.
-     */
-    Map<String, Object> getValues();
+    ArtifactID getID();
 }

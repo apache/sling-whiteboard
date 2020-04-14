@@ -14,17 +14,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.osgi.feature.impl;
+package org.osgi.util.features.impl;
 
 import org.junit.Test;
-import org.osgi.feature.ArtifactID;
-import org.osgi.feature.BuilderFactory;
-import org.osgi.feature.Bundle;
-import org.osgi.feature.Configuration;
-import org.osgi.feature.Extension;
-import org.osgi.feature.Feature;
-import org.osgi.feature.FeatureService;
-import org.osgi.feature.MergeContext;
+import org.osgi.util.features.ArtifactID;
+import org.osgi.util.features.BuilderFactory;
+import org.osgi.util.features.Bundle;
+import org.osgi.util.features.Configuration;
+import org.osgi.util.features.Extension;
+import org.osgi.util.features.Feature;
+import org.osgi.util.features.FeatureService;
+import org.osgi.util.features.MergeContext;
+import org.osgi.util.features.impl.ConfigurationBuilderImpl;
+import org.osgi.util.features.impl.ExtensionBuilderImpl;
+import org.osgi.util.features.impl.FeatureServiceImpl;
 
 import java.io.IOException;
 import java.io.InputStreamReader;

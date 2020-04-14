@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.osgi.feature;
+package org.osgi.util.features;
 
 /**
  * The Builder Factory can be used to obtain builders for the various entities.

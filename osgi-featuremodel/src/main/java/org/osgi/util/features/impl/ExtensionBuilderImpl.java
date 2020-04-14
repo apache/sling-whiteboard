@@ -14,13 +14,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.osgi.feature.impl;
+package org.osgi.util.features.impl;
 
-import org.osgi.feature.ArtifactID;
-import org.osgi.feature.Extension;
-import org.osgi.feature.Extension.Kind;
-import org.osgi.feature.Extension.Type;
-import org.osgi.feature.ExtensionBuilder;
+import org.osgi.util.features.ArtifactID;
+import org.osgi.util.features.Extension;
+import org.osgi.util.features.ExtensionBuilder;
+import org.osgi.util.features.Extension.Kind;
+import org.osgi.util.features.Extension.Type;
 
 import java.io.BufferedReader;
 import java.io.IOException;

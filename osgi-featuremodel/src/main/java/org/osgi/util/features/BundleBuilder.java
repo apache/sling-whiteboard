@@ -14,38 +14,37 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.osgi.feature;
+package org.osgi.util.features;
 
 import java.util.Map;
 
 /**
- * A builder for Feature Model {@link Configuration} objects.
+ * A builder for Feature Model {@link Bundle} objects.
  * @NotThreadSafe
  */
-public interface ConfigurationBuilder {
+public interface BundleBuilder {
 
     /**
-     * Add a configuration value for this Configuration object. If a
-     * value with the same key was previously provided the previous value is
-     * overwritten.
-     * @param key The configuration key.
-     * @param value The configuration value. Acceptable data types are: TODO list
+     * Add metadata for this Bundle.
+     * @param key Metadata key.
+     * @param value Metadata value.
      * @return This builder.
      */
-    ConfigurationBuilder addValue(String key, Object value);
+    BundleBuilder addMetadata(String key, Object value);
 
     /**
-     * Add a map of configuration values for this Configuration object. All values
-     * will be added to any previously provided configuration values.
-     * @param cfg
+     * Add metadata for this Bundle by providing a map. All
+     * metadata in the map is added to any previously provided
+     * metadata.
+     * @param md The map with metadata.
      * @return This builder.
      */
-    ConfigurationBuilder addValues(Map<String, Object> cfg);
+    BundleBuilder addMetadata(Map<String, Object> md);
 
     /**
-     * Build the Configuration object. Can only be called once on a builder. After
+     * Build the Bundle object. Can only be called once on a builder. After
      * calling this method the current builder instance cannot be used any more.
-     * @return The Configuration.
+     * @return The Bundle.
      */
-    Configuration build();
+    Bundle build();
 }

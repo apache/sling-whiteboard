@@ -14,17 +14,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.osgi.feature.impl;
+package org.osgi.util.features.impl;
 
-import org.osgi.feature.ArtifactID;
-import org.osgi.feature.BuilderFactory;
-import org.osgi.feature.BundleBuilder;
-import org.osgi.feature.ConfigurationBuilder;
-import org.osgi.feature.Extension.Kind;
-import org.osgi.feature.Extension.Type;
-import org.osgi.feature.ExtensionBuilder;
-import org.osgi.feature.FeatureBuilder;
-import org.osgi.feature.MergeContextBuilder;
+import org.osgi.util.features.ArtifactID;
+import org.osgi.util.features.BuilderFactory;
+import org.osgi.util.features.BundleBuilder;
+import org.osgi.util.features.ConfigurationBuilder;
+import org.osgi.util.features.ExtensionBuilder;
+import org.osgi.util.features.FeatureBuilder;
+import org.osgi.util.features.MergeContextBuilder;
+import org.osgi.util.features.Extension.Kind;
+import org.osgi.util.features.Extension.Type;
 
 class BuilderFactoryImpl implements BuilderFactory {
     @Override

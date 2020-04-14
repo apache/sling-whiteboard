@@ -14,15 +14,18 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.osgi.feature;
+package org.osgi.util.features;
+
+import java.util.Map;
 
 /**
- * An Artifact is an entity with an ID.
+ * A Bundle which is part of a feature.
+ * @ThreadSafe
  */
-public interface Artifact {
+public interface Bundle extends Artifact {
     /**
-     * Get the artifact's ID.
-     * @return The ID of this artifact.
+     * Get the metadata for this bundle.
+     * @return The metadata.
      */
-    ArtifactID getID();
+    Map<String, Object> getMetadata();
 }
