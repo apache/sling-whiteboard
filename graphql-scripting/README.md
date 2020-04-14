@@ -5,15 +5,14 @@ This is an experiment to run GraphQL queries server-side in Sling.
 
 ----
 
-**Status**: at commit `e09c3df3`, the GraphQL engine is functional, 
-a request to a Resource `/foo` mapped to a .gql script containing 
-`{ currentResource { path } }` returns `{currentResource={path=/foo}}`.
-This demonstrates the server-side execution of GraphQL queries, 
-in the context of the current Resource.
+## Status at commit 61721472
 
-A (rough) GraphQLServlet allows for implementing either a traditional
-GraphQL single-path endpoint, or turning any Sling Resource into 
-a GraphQL endpoint. See the comments in that class.
+The GraphQL engine is functional, a request to a Resource `/foo` mapped to a .gql script containing
+`{ currentResource { path } }` returns `{currentResource={path=/foo}}`.
+This demonstrates the server-side execution of GraphQL queries, in the context of the current Resource.
+
+A (rough) `GraphQLServlet` allows for implementing either a traditional GraphQL single-path endpoint,
+or turning any Sling Resource into a GraphQL endpoint. See the comments in that class.
 
 ----
 
