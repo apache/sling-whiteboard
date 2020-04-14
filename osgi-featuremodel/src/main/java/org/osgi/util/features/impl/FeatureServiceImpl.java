@@ -16,17 +16,16 @@
  */
 package org.osgi.util.features.impl;
 
-import org.osgi.util.features.ID;
 import org.osgi.util.features.BuilderFactory;
+import org.osgi.util.features.Feature;
+import org.osgi.util.features.FeatureBuilder;
 import org.osgi.util.features.FeatureBundle;
 import org.osgi.util.features.FeatureBundleBuilder;
 import org.osgi.util.features.FeatureConfiguration;
 import org.osgi.util.features.FeatureConfigurationBuilder;
 import org.osgi.util.features.FeatureExtension;
 import org.osgi.util.features.FeatureExtensionBuilder;
-import org.osgi.util.features.Feature;
-import org.osgi.util.features.FeatureBuilder;
-import org.osgi.util.features.FeatureService;
+import org.osgi.util.features.ID;
 import org.osgi.util.features.MergeContext;
 
 import java.io.IOException;
@@ -45,15 +44,13 @@ import javax.json.JsonObject;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 
-class FeatureServiceImpl implements FeatureService {
+public class FeatureServiceImpl { //implements FeatureService {
     private final BuilderFactoryImpl builderFactory = new BuilderFactoryImpl();
 
-    @Override
     public BuilderFactory getBuilderFactory() {
         return builderFactory;
     }
 
-    @Override
     public Feature readFeature(Reader jsonReader) throws IOException {
         JsonObject json = Json.createReader(jsonReader).readObject();
 
@@ -217,13 +214,11 @@ class FeatureServiceImpl implements FeatureService {
         return extensions.toArray(new FeatureExtension[] {});
     }
 
-    @Override
     public void writeFeature(Feature feature, Writer jsonWriter) throws IOException {
         // TODO Auto-generated method stub
 
     }
 
-    @Override
     public Feature mergeFeatures(ID targetID, Feature f1, Feature f2, MergeContext ctx) {
         FeatureBuilder fb = builderFactory.newFeatureBuilder(targetID);
 

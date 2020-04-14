@@ -17,17 +17,14 @@
 package org.osgi.util.features.impl;
 
 import org.junit.Test;
-import org.osgi.util.features.ID;
 import org.osgi.util.features.BuilderFactory;
+import org.osgi.util.features.Feature;
 import org.osgi.util.features.FeatureBundle;
 import org.osgi.util.features.FeatureConfiguration;
 import org.osgi.util.features.FeatureExtension;
-import org.osgi.util.features.Feature;
-import org.osgi.util.features.FeatureService;
+import org.osgi.util.features.Features;
+import org.osgi.util.features.ID;
 import org.osgi.util.features.MergeContext;
-import org.osgi.util.features.impl.ConfigurationBuilderImpl;
-import org.osgi.util.features.impl.ExtensionBuilderImpl;
-import org.osgi.util.features.impl.FeatureServiceImpl;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -46,12 +43,11 @@ import static org.junit.Assert.assertTrue;
 public class FeatureServiceImplTest {
     @Test
     public void testReadFeature() throws IOException {
-        FeatureService fs = new FeatureServiceImpl();
-        BuilderFactory bf = fs.getBuilderFactory();
+        BuilderFactory bf = Features.getBuilderFactory();
 
         URL res = getClass().getResource("/features/test-feature.json");
         try (Reader r = new InputStreamReader(res.openStream())) {
-            Feature f = fs.readFeature(r);
+            Feature f = Features.readFeature(r);
 
             assertNull(f.getTitle());
             assertEquals("The feature description", f.getDescription());
@@ -75,19 +71,18 @@ public class FeatureServiceImplTest {
 
     @Test
     public void testMergeFeatures() throws IOException {
-        FeatureService fs = new FeatureServiceImpl();
-        BuilderFactory bf = fs.getBuilderFactory();
+        BuilderFactory bf = Features.getBuilderFactory();
 
         URL res1 = getClass().getResource("/features/test-feature.json");
         Feature f1;
         try (Reader r = new InputStreamReader(res1.openStream())) {
-            f1 = fs.readFeature(r);
+            f1 = Features.readFeature(r);
         }
 
         URL res2 = getClass().getResource("/features/test-feature2.json");
         Feature f2;
         try (Reader r = new InputStreamReader(res2.openStream())) {
-            f2 = fs.readFeature(r);
+            f2 = Features.readFeature(r);
         }
 
         MergeContext ctx = bf.newMergeContextBuilder()
@@ -98,7 +93,7 @@ public class FeatureServiceImplTest {
 
 
         ID tid = new ID("foo", "bar", "1.2.3");
-        Feature f3 = fs.mergeFeatures(tid, f1, f2, ctx);
+        Feature f3 = Features.mergeFeatures(tid, f1, f2, ctx);
         assertEquals(tid, f3.getID());
 
         List<FeatureBundle> bundles = f3.getBundles();
@@ -128,19 +123,18 @@ public class FeatureServiceImplTest {
 
     @Test
     public void testMergeExtensions() throws IOException {
-        FeatureService fs = new FeatureServiceImpl();
-        BuilderFactory bf = fs.getBuilderFactory();
+        BuilderFactory bf = Features.getBuilderFactory();
 
         URL res1 = getClass().getResource("/features/test-exfeat1.json");
         Feature f1;
         try (Reader r = new InputStreamReader(res1.openStream())) {
-            f1 = fs.readFeature(r);
+            f1 = Features.readFeature(r);
         }
 
         URL res2 = getClass().getResource("/features/test-exfeat2.json");
         Feature f2;
         try (Reader r = new InputStreamReader(res2.openStream())) {
-            f2 = fs.readFeature(r);
+            f2 = Features.readFeature(r);
         }
 
         MergeContext ctx = bf.newMergeContextBuilder()
@@ -152,7 +146,7 @@ public class FeatureServiceImplTest {
                 .build();
 
         ID tid = new ID("g", "a", "1.2.3");
-        Feature f3 = fs.mergeFeatures(tid, f1, f2, ctx);
+        Feature f3 = Features.mergeFeatures(tid, f1, f2, ctx);
 
         Map<String, FeatureExtension> extensions = f3.getExtensions();
         assertEquals(3, extensions.size());
