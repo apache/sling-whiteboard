@@ -17,9 +17,9 @@
 package org.osgi.util.features.impl;
 
 import org.osgi.util.features.ID;
-import org.osgi.util.features.Bundle;
-import org.osgi.util.features.Configuration;
-import org.osgi.util.features.Extension;
+import org.osgi.util.features.FeatureBundle;
+import org.osgi.util.features.FeatureConfiguration;
+import org.osgi.util.features.FeatureExtension;
 import org.osgi.util.features.Feature;
 import org.osgi.util.features.FeatureBuilder;
 
@@ -42,9 +42,9 @@ class FeatureBuilderImpl implements FeatureBuilder {
     private boolean complete;
     private boolean isFinal;
 
-    private final List<Bundle> bundles = new ArrayList<>();
-    private final Map<String,Configuration> configurations = new HashMap<>();
-    private final Map<String,Extension> extensions = new HashMap<>();
+    private final List<FeatureBundle> bundles = new ArrayList<>();
+    private final Map<String,FeatureConfiguration> configurations = new HashMap<>();
+    private final Map<String,FeatureExtension> extensions = new HashMap<>();
     private final Map<String,String> variables = new HashMap<>();
 
     FeatureBuilderImpl(ID id) {
@@ -94,22 +94,22 @@ class FeatureBuilderImpl implements FeatureBuilder {
     }
 
     @Override
-    public FeatureBuilder addBundles(Bundle ... bundles) {
+    public FeatureBuilder addBundles(FeatureBundle ... bundles) {
         this.bundles.addAll(Arrays.asList(bundles));
         return this;
     }
 
     @Override
-    public FeatureBuilder addConfigurations(Configuration ... configs) {
-        for (Configuration cfg : configs) {
+    public FeatureBuilder addConfigurations(FeatureConfiguration ... configs) {
+        for (FeatureConfiguration cfg : configs) {
             this.configurations.put(cfg.getPid(), cfg);
         }
         return this;
     }
 
     @Override
-    public FeatureBuilder addExtensions(Extension ... extensions) {
-        for (Extension ex : extensions) {
+    public FeatureBuilder addExtensions(FeatureExtension ... extensions) {
+        for (FeatureExtension ex : extensions) {
             this.extensions.put(ex.getName(), ex);
         }
         return this;
@@ -143,14 +143,14 @@ class FeatureBuilderImpl implements FeatureBuilder {
         private final boolean complete;
         private final boolean isFinal;
 
-        private final List<Bundle> bundles;
-        private final Map<String,Configuration> configurations;
-        private final Map<String,Extension> extensions;
+        private final List<FeatureBundle> bundles;
+        private final Map<String,FeatureConfiguration> configurations;
+        private final Map<String,FeatureExtension> extensions;
         private final Map<String,String> variables;
 
         private FeatureImpl(ID id, String aTitle, String desc, String vnd, String lic, String loc,
-                boolean comp, boolean fin, List<Bundle> bs, Map<String,Configuration> cs,
-                Map<String,Extension> es, Map<String,String> vars) {
+                boolean comp, boolean fin, List<FeatureBundle> bs, Map<String,FeatureConfiguration> cs,
+                Map<String,FeatureExtension> es, Map<String,String> vars) {
             super(id);
 
             title = aTitle;
@@ -203,17 +203,17 @@ class FeatureBuilderImpl implements FeatureBuilder {
         }
 
         @Override
-        public List<Bundle> getBundles() {
+        public List<FeatureBundle> getBundles() {
             return bundles;
         }
 
         @Override
-        public Map<String,Configuration> getConfigurations() {
+        public Map<String,FeatureConfiguration> getConfigurations() {
             return configurations;
         }
 
         @Override
-        public Map<String,Extension> getExtensions() {
+        public Map<String,FeatureExtension> getExtensions() {
             return extensions;
         }
 

@@ -23,7 +23,7 @@ import java.util.Map;
  * The Feature Model Feature.
  * @ThreadSafe
  */
-public interface Feature extends Artifact {
+public interface Feature extends FeatureArtifact {
     /**
      * Get the title.
      * @return The title.
@@ -70,19 +70,19 @@ public interface Feature extends Artifact {
      * Get the bundles.
      * @return The bundles.
      */
-    List<Bundle> getBundles();
+    List<FeatureBundle> getBundles();
 
     /**
      * Get the configurations.
      * @return The configurations.
      */
-    Map<String, Configuration> getConfigurations();
+    Map<String, FeatureConfiguration> getConfigurations();
 
     /**
      * Get the extensions.
      * @return The extensions.
      */
-    Map<String, Extension> getExtensions();
+    Map<String, FeatureExtension> getExtensions();
 
     /**
      * Get the variables.

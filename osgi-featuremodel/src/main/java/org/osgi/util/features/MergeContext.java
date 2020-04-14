@@ -33,7 +33,7 @@ public interface MergeContext {
      * @return Return a list of bundles that should be used in this case. This could
      * be one or both of the provided bundles, or a different bundle altogether.
      */
-    List<Bundle> handleBundleConflict(Feature f1, Bundle b1, Feature f2, Bundle b2);
+    List<FeatureBundle> handleBundleConflict(Feature f1, FeatureBundle b1, Feature f2, FeatureBundle b2);
 
     /**
      * If two merged features both contain the same configuration PID, this method
@@ -44,7 +44,7 @@ public interface MergeContext {
      * @param c2 The second configuration.
      * @return The merged configuration to use.
      */
-    Configuration handleConfigurationConflict(Feature f1, Configuration c1, Feature f2, Configuration c2);
+    FeatureConfiguration handleConfigurationConflict(Feature f1, FeatureConfiguration c1, Feature f2, FeatureConfiguration c2);
 
     /**
      * If two merged features both contain an extension with the same IF, this method
@@ -55,5 +55,5 @@ public interface MergeContext {
      * @param e2 The second extension.
      * @return The merged extension.
      */
-    Extension handleExtensionConflict(Feature f1, Extension e1, Feature f2, Extension e2);
+    FeatureExtension handleExtensionConflict(Feature f1, FeatureExtension e1, Feature f2, FeatureExtension e2);
 }

@@ -19,9 +19,9 @@ package org.osgi.util.features.impl;
 import org.junit.Test;
 import org.osgi.util.features.ID;
 import org.osgi.util.features.BuilderFactory;
-import org.osgi.util.features.Bundle;
-import org.osgi.util.features.Configuration;
-import org.osgi.util.features.Extension;
+import org.osgi.util.features.FeatureBundle;
+import org.osgi.util.features.FeatureConfiguration;
+import org.osgi.util.features.FeatureExtension;
 import org.osgi.util.features.Feature;
 import org.osgi.util.features.FeatureService;
 import org.osgi.util.features.MergeContext;
@@ -56,15 +56,15 @@ public class FeatureServiceImplTest {
             assertNull(f.getTitle());
             assertEquals("The feature description", f.getDescription());
 
-            List<Bundle> bundles = f.getBundles();
+            List<FeatureBundle> bundles = f.getBundles();
             assertEquals(3, bundles.size());
 
-            Bundle bundle = bf.newBundleBuilder(new ID("org.osgi", "osgi.promise", "7.0.1"))
+            FeatureBundle bundle = bf.newBundleBuilder(new ID("org.osgi", "osgi.promise", "7.0.1"))
                     .addMetadata("hash", "4632463464363646436")
                     .addMetadata("start-order", 1L)
                     .build();
 
-            Bundle ba = bundles.get(0);
+            FeatureBundle ba = bundles.get(0);
             ba.equals(bundle);
 
             assertTrue(bundles.contains(bundle));
@@ -101,22 +101,22 @@ public class FeatureServiceImplTest {
         Feature f3 = fs.mergeFeatures(tid, f1, f2, ctx);
         assertEquals(tid, f3.getID());
 
-        List<Bundle> bundles = f3.getBundles();
+        List<FeatureBundle> bundles = f3.getBundles();
         assertEquals(5, bundles.size());
 
         assertTrue(bundles.contains(bf.newBundleBuilder(new ID("org.slf4j", "slf4j-api", "1.7.29")).build()));
         assertTrue(bundles.contains(bf.newBundleBuilder(new ID("org.slf4j", "slf4j-api", "1.7.30")).build()));
         assertTrue(bundles.contains(bf.newBundleBuilder(new ID("org.slf4j", "slf4j-nop", "1.7.30")).build()));
 
-        Map<String, Configuration> configs = f3.getConfigurations();
+        Map<String, FeatureConfiguration> configs = f3.getConfigurations();
         assertEquals(2, configs.size());
 
-        Configuration cfg1 = configs.get("my.factory.pid~name");
+        FeatureConfiguration cfg1 = configs.get("my.factory.pid~name");
         assertEquals("my.factory.pid~name", cfg1.getPid());
         assertEquals("my.factory.pid", cfg1.getFactoryPid());
         assertEquals(Collections.singletonMap("a.value", "yeah"), cfg1.getValues());
 
-        Configuration cfg2 = configs.get("my.pid");
+        FeatureConfiguration cfg2 = configs.get("my.pid");
         assertEquals("my.pid", cfg2.getPid());
         assertNull(cfg2.getFactoryPid());
         Map<String,Object> expected = new HashMap<>();
@@ -154,24 +154,24 @@ public class FeatureServiceImplTest {
         ID tid = new ID("g", "a", "1.2.3");
         Feature f3 = fs.mergeFeatures(tid, f1, f2, ctx);
 
-        Map<String, Extension> extensions = f3.getExtensions();
+        Map<String, FeatureExtension> extensions = f3.getExtensions();
         assertEquals(3, extensions.size());
-        Extension txtEx = extensions.get("my-text-ex");
+        FeatureExtension txtEx = extensions.get("my-text-ex");
         assertEquals("ABCDEF", txtEx.getText());
-        assertEquals(Extension.Kind.OPTIONAL, txtEx.getKind());
-        assertEquals(Extension.Type.TEXT, txtEx.getType());
+        assertEquals(FeatureExtension.Kind.OPTIONAL, txtEx.getKind());
+        assertEquals(FeatureExtension.Type.TEXT, txtEx.getType());
 
-        Extension artEx = extensions.get("my-art-ex");
-        assertEquals(Extension.Kind.MANDATORY, artEx.getKind());
-        assertEquals(Extension.Type.ARTIFACTS, artEx.getType());
+        FeatureExtension artEx = extensions.get("my-art-ex");
+        assertEquals(FeatureExtension.Kind.MANDATORY, artEx.getKind());
+        assertEquals(FeatureExtension.Type.ARTIFACTS, artEx.getType());
         List<ID> artifacts = artEx.getArtifacts();
         assertEquals(2, artifacts.size());
         assertTrue(artifacts.contains(new ID("g", "a", "1")));
         assertTrue(artifacts.contains(new ID("g", "a", "2")));
 
-        Extension jsonEx = extensions.get("my-json-ex");
-        assertEquals(Extension.Kind.TRANSIENT, jsonEx.getKind());
-        assertEquals(Extension.Type.JSON, jsonEx.getType());
+        FeatureExtension jsonEx = extensions.get("my-json-ex");
+        assertEquals(FeatureExtension.Kind.TRANSIENT, jsonEx.getKind());
+        assertEquals(FeatureExtension.Type.JSON, jsonEx.getType());
         assertEquals("{\"foo\":[1,2,3]}", jsonEx.getJSON());
     }
 }

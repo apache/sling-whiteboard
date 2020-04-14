@@ -18,12 +18,12 @@ package org.osgi.util.features.impl;
 
 import org.osgi.util.features.ID;
 import org.osgi.util.features.BuilderFactory;
-import org.osgi.util.features.Bundle;
-import org.osgi.util.features.BundleBuilder;
-import org.osgi.util.features.Configuration;
-import org.osgi.util.features.ConfigurationBuilder;
-import org.osgi.util.features.Extension;
-import org.osgi.util.features.ExtensionBuilder;
+import org.osgi.util.features.FeatureBundle;
+import org.osgi.util.features.FeatureBundleBuilder;
+import org.osgi.util.features.FeatureConfiguration;
+import org.osgi.util.features.FeatureConfigurationBuilder;
+import org.osgi.util.features.FeatureExtension;
+import org.osgi.util.features.FeatureExtensionBuilder;
 import org.osgi.util.features.Feature;
 import org.osgi.util.features.FeatureBuilder;
 import org.osgi.util.features.FeatureService;
@@ -76,18 +76,18 @@ class FeatureServiceImpl implements FeatureService {
         return builder.build();
     }
 
-    private Bundle[] getBundles(JsonObject json) {
+    private FeatureBundle[] getBundles(JsonObject json) {
         JsonArray ja = json.getJsonArray("bundles");
         if (ja == null)
-            return new Bundle[] {};
+            return new FeatureBundle[] {};
 
-        List<Bundle> bundles = new ArrayList<>();
+        List<FeatureBundle> bundles = new ArrayList<>();
 
         for (JsonValue val : ja) {
             if (val.getValueType() == JsonValue.ValueType.OBJECT) {
                 JsonObject jo = val.asJsonObject();
                 String bid = jo.getString("id");
-                BundleBuilder builder = builderFactory.newBundleBuilder(ID.fromMavenID(bid));
+                FeatureBundleBuilder builder = builderFactory.newBundleBuilder(ID.fromMavenID(bid));
 
                 for (Map.Entry<String, JsonValue> entry : jo.entrySet()) {
                     if (entry.getKey().equals("id"))
@@ -112,15 +112,15 @@ class FeatureServiceImpl implements FeatureService {
             }
         }
 
-        return bundles.toArray(new Bundle[0]);
+        return bundles.toArray(new FeatureBundle[0]);
     }
 
-    private Configuration[] getConfigurations(JsonObject json) {
+    private FeatureConfiguration[] getConfigurations(JsonObject json) {
         JsonObject jo = json.getJsonObject("configurations");
         if (jo == null)
-            return new Configuration[] {};
+            return new FeatureConfiguration[] {};
 
-        List<Configuration> configs = new ArrayList<>();
+        List<FeatureConfiguration> configs = new ArrayList<>();
 
         for (Map.Entry<String, JsonValue> entry : jo.entrySet()) {
 
@@ -132,7 +132,7 @@ class FeatureServiceImpl implements FeatureService {
                 p = p.substring(idx + 1);
             }
 
-            ConfigurationBuilder builder;
+            FeatureConfigurationBuilder builder;
             if (factoryPid == null) {
                 builder = builderFactory.newConfigurationBuilder(p);
             } else {
@@ -167,32 +167,32 @@ class FeatureServiceImpl implements FeatureService {
             configs.add(builder.build());
         }
 
-        return configs.toArray(new Configuration[] {});
+        return configs.toArray(new FeatureConfiguration[] {});
     }
 
-    private Extension[] getExtensions(JsonObject json) {
+    private FeatureExtension[] getExtensions(JsonObject json) {
         JsonObject jo = json.getJsonObject("extensions");
         if (jo == null)
-            return new Extension[] {};
+            return new FeatureExtension[] {};
 
-        List<Extension> extensions = new ArrayList<>();
+        List<FeatureExtension> extensions = new ArrayList<>();
 
         for (Map.Entry<String,JsonValue> entry : jo.entrySet()) {
             JsonObject exData = entry.getValue().asJsonObject();
-            Extension.Type type;
+            FeatureExtension.Type type;
             if (exData.containsKey("text")) {
-                type = Extension.Type.TEXT;
+                type = FeatureExtension.Type.TEXT;
             } else if (exData.containsKey("artifacts")) {
-                type = Extension.Type.ARTIFACTS;
+                type = FeatureExtension.Type.ARTIFACTS;
             } else if (exData.containsKey("json")) {
-                type = Extension.Type.JSON;
+                type = FeatureExtension.Type.JSON;
             } else {
                 throw new IllegalStateException("Invalid extension: " + entry);
             }
             String k = exData.getString("kind", "optional");
-            Extension.Kind kind = Extension.Kind.valueOf(k.toUpperCase());
+            FeatureExtension.Kind kind = FeatureExtension.Kind.valueOf(k.toUpperCase());
 
-            ExtensionBuilder builder = builderFactory.newExtensionBuilder(entry.getKey(), type, kind);
+            FeatureExtensionBuilder builder = builderFactory.newExtensionBuilder(entry.getKey(), type, kind);
 
             switch (type) {
             case TEXT:
@@ -214,7 +214,7 @@ class FeatureServiceImpl implements FeatureService {
             extensions.add(builder.build());
         }
 
-        return extensions.toArray(new Extension[] {});
+        return extensions.toArray(new FeatureExtension[] {});
     }
 
     @Override
@@ -237,21 +237,21 @@ class FeatureServiceImpl implements FeatureService {
         return fb.build();
     }
 
-    private Bundle[] mergeBundles(Feature f1, Feature f2, MergeContext ctx) {
-        List<Bundle> bundles = new ArrayList<>(f1.getBundles());
-        List<Bundle> addedBundles = new ArrayList<>();
+    private FeatureBundle[] mergeBundles(Feature f1, Feature f2, MergeContext ctx) {
+        List<FeatureBundle> bundles = new ArrayList<>(f1.getBundles());
+        List<FeatureBundle> addedBundles = new ArrayList<>();
 
-        for (Bundle b : f2.getBundles()) {
+        for (FeatureBundle b : f2.getBundles()) {
             ID bID = b.getID();
             boolean found = false;
-            for (Iterator<Bundle> it = bundles.iterator(); it.hasNext(); ) {
-                Bundle orgb = it.next();
+            for (Iterator<FeatureBundle> it = bundles.iterator(); it.hasNext(); ) {
+                FeatureBundle orgb = it.next();
                 ID orgID = orgb.getID();
 
                 if (bID.getGroupId().equals(orgID.getGroupId()) &&
                         bID.getArtifactId().equals(orgID.getArtifactId())) {
                     found = true;
-                    List<Bundle> res = new ArrayList<>(ctx.handleBundleConflict(f1, b, f2, orgb));
+                    List<FeatureBundle> res = new ArrayList<>(ctx.handleBundleConflict(f1, b, f2, orgb));
                     if (res.contains(orgb)) {
                         res.remove(orgb);
                     } else {
@@ -265,19 +265,19 @@ class FeatureServiceImpl implements FeatureService {
             }
         }
         bundles.addAll(addedBundles);
-        return bundles.toArray(new Bundle[] {});
+        return bundles.toArray(new FeatureBundle[] {});
     }
 
-    private Configuration[] mergeConfigs(Feature f1, Feature f2, MergeContext ctx) {
-        Map<String,Configuration> configs = new HashMap<>(f1.getConfigurations());
-        Map<String,Configuration> addConfigs = new HashMap<>();
+    private FeatureConfiguration[] mergeConfigs(Feature f1, Feature f2, MergeContext ctx) {
+        Map<String,FeatureConfiguration> configs = new HashMap<>(f1.getConfigurations());
+        Map<String,FeatureConfiguration> addConfigs = new HashMap<>();
 
-        for (Map.Entry<String,Configuration> cfgEntry : f2.getConfigurations().entrySet()) {
+        for (Map.Entry<String,FeatureConfiguration> cfgEntry : f2.getConfigurations().entrySet()) {
             String pid = cfgEntry.getKey();
-            Configuration newCfg = cfgEntry.getValue();
-            Configuration orgCfg = configs.get(pid);
+            FeatureConfiguration newCfg = cfgEntry.getValue();
+            FeatureConfiguration orgCfg = configs.get(pid);
             if (orgCfg != null) {
-                Configuration resCfg = ctx.handleConfigurationConflict(f1, orgCfg, f2, newCfg);
+                FeatureConfiguration resCfg = ctx.handleConfigurationConflict(f1, orgCfg, f2, newCfg);
                 if (!resCfg.equals(orgCfg)) {
                     configs.remove(pid);
                     addConfigs.put(pid, resCfg);
@@ -288,19 +288,19 @@ class FeatureServiceImpl implements FeatureService {
         }
 
         configs.putAll(addConfigs);
-        return configs.values().toArray(new Configuration[] {});
+        return configs.values().toArray(new FeatureConfiguration[] {});
     }
 
-    private Extension[] mergeExtensions(Feature f1, Feature f2, MergeContext ctx) {
-        Map<String,Extension> extensions = new HashMap<>(f1.getExtensions());
-        Map<String,Extension> addExtensions = new HashMap<>();
+    private FeatureExtension[] mergeExtensions(Feature f1, Feature f2, MergeContext ctx) {
+        Map<String,FeatureExtension> extensions = new HashMap<>(f1.getExtensions());
+        Map<String,FeatureExtension> addExtensions = new HashMap<>();
 
-        for (Map.Entry<String,Extension> exEntry : f2.getExtensions().entrySet()) {
+        for (Map.Entry<String,FeatureExtension> exEntry : f2.getExtensions().entrySet()) {
             String key = exEntry.getKey();
-            Extension newEx = exEntry.getValue();
-            Extension orgEx = extensions.get(key);
+            FeatureExtension newEx = exEntry.getValue();
+            FeatureExtension orgEx = extensions.get(key);
             if (orgEx != null) {
-                Extension resEx = ctx.handleExtensionConflict(f1, orgEx, f2, newEx);
+                FeatureExtension resEx = ctx.handleExtensionConflict(f1, orgEx, f2, newEx);
                 if (!resEx.equals(orgEx)) {
                     extensions.remove(key);
                     addExtensions.put(key, resEx);
@@ -311,7 +311,7 @@ class FeatureServiceImpl implements FeatureService {
         }
 
         extensions.putAll(addExtensions);
-        return extensions.values().toArray(new Extension[] {});
+        return extensions.values().toArray(new FeatureExtension[] {});
     }
 
     private void copyAttrs(Feature f, FeatureBuilder fb) {

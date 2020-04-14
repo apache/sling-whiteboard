@@ -18,27 +18,27 @@ package org.osgi.util.features.impl;
 
 import org.osgi.util.features.ID;
 import org.osgi.util.features.BuilderFactory;
-import org.osgi.util.features.BundleBuilder;
-import org.osgi.util.features.ConfigurationBuilder;
-import org.osgi.util.features.ExtensionBuilder;
+import org.osgi.util.features.FeatureBundleBuilder;
+import org.osgi.util.features.FeatureConfigurationBuilder;
+import org.osgi.util.features.FeatureExtensionBuilder;
 import org.osgi.util.features.FeatureBuilder;
 import org.osgi.util.features.MergeContextBuilder;
-import org.osgi.util.features.Extension.Kind;
-import org.osgi.util.features.Extension.Type;
+import org.osgi.util.features.FeatureExtension.Kind;
+import org.osgi.util.features.FeatureExtension.Type;
 
 class BuilderFactoryImpl implements BuilderFactory {
     @Override
-    public BundleBuilder newBundleBuilder(ID id) {
+    public FeatureBundleBuilder newBundleBuilder(ID id) {
         return new BundleBuilderImpl(id);
     }
 
     @Override
-    public ConfigurationBuilder newConfigurationBuilder(String pid) {
+    public FeatureConfigurationBuilder newConfigurationBuilder(String pid) {
         return new ConfigurationBuilderImpl(pid);
     }
 
     @Override
-    public ConfigurationBuilder newConfigurationBuilder(String factoryPid, String name) {
+    public FeatureConfigurationBuilder newConfigurationBuilder(String factoryPid, String name) {
         return new ConfigurationBuilderImpl(factoryPid, name);
     }
 
@@ -48,7 +48,7 @@ class BuilderFactoryImpl implements BuilderFactory {
     }
 
     @Override
-    public ExtensionBuilder newExtensionBuilder(String name, Type type, Kind kind) {
+    public FeatureExtensionBuilder newExtensionBuilder(String name, Type type, Kind kind) {
         return new ExtensionBuilderImpl(name, type, kind);
     }
 

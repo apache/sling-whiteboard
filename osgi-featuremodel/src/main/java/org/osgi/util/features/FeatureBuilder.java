@@ -78,21 +78,21 @@ public interface FeatureBuilder {
      * @param bundles The Bundles to add.
      * @return This builder.
      */
-    FeatureBuilder addBundles(Bundle ... bundles);
+    FeatureBuilder addBundles(FeatureBundle ... bundles);
 
     /**
      * Add Configurations to the Feature.
      * @param configs The Configurations to add.
      * @return This builder.
      */
-    FeatureBuilder addConfigurations(Configuration ... configs);
+    FeatureBuilder addConfigurations(FeatureConfiguration ... configs);
 
     /**
      * Add Extensions to the Feature
      * @param extensions The Extensions to add.
      * @return This builder.
      */
-    FeatureBuilder addExtensions(Extension ... extensions);
+    FeatureBuilder addExtensions(FeatureExtension ... extensions);
 
     /**
      * Add a variable to the Feature. If a variable with the specified key

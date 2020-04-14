@@ -16,15 +16,15 @@
  */
 package org.osgi.util.features.impl;
 
-import org.osgi.util.features.Configuration;
-import org.osgi.util.features.ConfigurationBuilder;
+import org.osgi.util.features.FeatureConfiguration;
+import org.osgi.util.features.FeatureConfigurationBuilder;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-class ConfigurationBuilderImpl implements ConfigurationBuilder {
+class ConfigurationBuilderImpl implements FeatureConfigurationBuilder {
     private final String p;
     private final String name;
 
@@ -40,7 +40,7 @@ class ConfigurationBuilderImpl implements ConfigurationBuilder {
         this.name = name;
     }
 
-    ConfigurationBuilderImpl(Configuration c) {
+    ConfigurationBuilderImpl(FeatureConfiguration c) {
         if (c.getFactoryPid() == null) {
             p = c.getPid();
             name = null;
@@ -54,21 +54,21 @@ class ConfigurationBuilderImpl implements ConfigurationBuilder {
     }
 
     @Override
-    public ConfigurationBuilder addValue(String key, Object value) {
+    public FeatureConfigurationBuilder addValue(String key, Object value) {
         // TODO can do some validation on the configuration
         this.values.put(key, value);
         return this;
     }
 
     @Override
-    public ConfigurationBuilder addValues(Map<String, Object> cfg) {
+    public FeatureConfigurationBuilder addValues(Map<String, Object> cfg) {
         // TODO can do some validation on the configuration
         this.values.putAll(cfg);
         return this;
     }
 
     @Override
-    public Configuration build() {
+    public FeatureConfiguration build() {
         if (name == null) {
             return new ConfigurationImpl(p, null, values);
         } else {
@@ -76,7 +76,7 @@ class ConfigurationBuilderImpl implements ConfigurationBuilder {
         }
     }
 
-    private static class ConfigurationImpl implements Configuration {
+    private static class ConfigurationImpl implements FeatureConfiguration {
         private final String pid;
         private final String factoryPid;
         private final Map<String, Object> values;

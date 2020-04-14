@@ -25,14 +25,14 @@ public interface BuilderFactory {
      * @param id The artifact ID for the bundle object being built.
      * @return The builder.
      */
-    BundleBuilder newBundleBuilder(ID id);
+    FeatureBundleBuilder newBundleBuilder(ID id);
 
     /**
      * Obtain a new builder for Configuration objects.
      * @param pid The persistent ID for the Configuration being built.
      * @return The builder.
      */
-    ConfigurationBuilder newConfigurationBuilder(String pid);
+    FeatureConfigurationBuilder newConfigurationBuilder(String pid);
 
     /**
      * Obtain a new builder for Factory Configuration objects.
@@ -41,7 +41,7 @@ public interface BuilderFactory {
      * will be the factoryPid + '~' + name
      * @return The builder.
      */
-    ConfigurationBuilder newConfigurationBuilder(String factoryPid, String name);
+    FeatureConfigurationBuilder newConfigurationBuilder(String factoryPid, String name);
 
     /**
      * Obtain a new builder for Feature objects.
@@ -57,7 +57,7 @@ public interface BuilderFactory {
      * @param kind The kind of extension: Mandatory, Optional or Transient.
      * @return The builder.
      */
-    ExtensionBuilder newExtensionBuilder(String name, Extension.Type type, Extension.Kind kind);
+    FeatureExtensionBuilder newExtensionBuilder(String name, FeatureExtension.Type type, FeatureExtension.Kind kind);
 
     /**
      * Obtain a new builder for MergeContext objects.

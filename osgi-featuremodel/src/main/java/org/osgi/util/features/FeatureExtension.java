@@ -31,7 +31,7 @@ import java.util.List;
  * </ul>
  * @ThreadSafe
  */
-public interface Extension {
+public interface FeatureExtension {
     enum Kind { MANDATORY, OPTIONAL, TRANSIENT };
     enum Type { JSON, TEXT, ARTIFACTS };
 

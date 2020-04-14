@@ -16,13 +16,16 @@
  */
 package org.osgi.util.features;
 
+import java.util.Map;
+
 /**
- * An Artifact is an entity with an ID.
+ * A Bundle which is part of a feature.
+ * @ThreadSafe
  */
-public interface Artifact {
+public interface FeatureBundle extends FeatureArtifact {
     /**
-     * Get the artifact's ID.
-     * @return The ID of this artifact.
+     * Get the metadata for this bundle.
+     * @return The metadata.
      */
-    ID getID();
+    Map<String, Object> getMetadata();
 }

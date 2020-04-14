@@ -16,12 +16,12 @@
  */
 package org.osgi.util.features.impl;
 
-import org.osgi.util.features.Artifact;
+import org.osgi.util.features.FeatureArtifact;
 import org.osgi.util.features.ID;
 
 import java.util.Objects;
 
-class ArtifactImpl implements Artifact {
+class ArtifactImpl implements FeatureArtifact {
     private final ID id;
 
     ArtifactImpl(ID id) {

@@ -17,15 +17,15 @@
 package org.osgi.util.features.impl;
 
 import org.osgi.util.features.ID;
-import org.osgi.util.features.Bundle;
-import org.osgi.util.features.BundleBuilder;
+import org.osgi.util.features.FeatureBundle;
+import org.osgi.util.features.FeatureBundleBuilder;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-class BundleBuilderImpl implements BundleBuilder {
+class BundleBuilderImpl implements FeatureBundleBuilder {
     private final ID id;
 
     private final Map<String,Object> metadata = new HashMap<>();
@@ -35,23 +35,23 @@ class BundleBuilderImpl implements BundleBuilder {
     }
 
     @Override
-    public BundleBuilder addMetadata(String key, Object value) {
+    public FeatureBundleBuilder addMetadata(String key, Object value) {
         this.metadata.put(key, value);
         return this;
     }
 
     @Override
-    public BundleBuilder addMetadata(Map<String,Object> md) {
+    public FeatureBundleBuilder addMetadata(Map<String,Object> md) {
         this.metadata.putAll(md);
         return this;
     }
 
     @Override
-    public Bundle build() {
+    public FeatureBundle build() {
         return new BundleImpl(id, metadata);
     }
 
-    private static class BundleImpl extends ArtifactImpl implements Bundle {
+    private static class BundleImpl extends ArtifactImpl implements FeatureBundle {
         private final Map<String, Object> metadata;
 
         private BundleImpl(ID id, Map<String, Object> metadata) {

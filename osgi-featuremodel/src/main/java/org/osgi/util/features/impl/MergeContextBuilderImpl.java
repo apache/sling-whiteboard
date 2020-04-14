@@ -16,10 +16,10 @@
  */
 package org.osgi.util.features.impl;
 
-import org.osgi.util.features.Bundle;
-import org.osgi.util.features.Configuration;
+import org.osgi.util.features.FeatureBundle;
+import org.osgi.util.features.FeatureConfiguration;
 import org.osgi.util.features.ConflictResolver;
-import org.osgi.util.features.Extension;
+import org.osgi.util.features.FeatureExtension;
 import org.osgi.util.features.Feature;
 import org.osgi.util.features.MergeContext;
 import org.osgi.util.features.MergeContextBuilder;
@@ -27,24 +27,24 @@ import org.osgi.util.features.MergeContextBuilder;
 import java.util.List;
 
 class MergeContextBuilderImpl implements MergeContextBuilder {
-    private ConflictResolver<Bundle, List<Bundle>> bundleHandler;
-    private ConflictResolver<Configuration, Configuration> configHandler;
-    private ConflictResolver<Extension, Extension> extensionHandler;
+    private ConflictResolver<FeatureBundle, List<FeatureBundle>> bundleHandler;
+    private ConflictResolver<FeatureConfiguration, FeatureConfiguration> configHandler;
+    private ConflictResolver<FeatureExtension, FeatureExtension> extensionHandler;
 
     @Override
-    public MergeContextBuilder bundleConflictHandler(ConflictResolver<Bundle, List<Bundle>> bh) {
+    public MergeContextBuilder bundleConflictHandler(ConflictResolver<FeatureBundle, List<FeatureBundle>> bh) {
         bundleHandler = bh;
         return this;
     }
 
     @Override
-    public MergeContextBuilder configConflictHandler(ConflictResolver<Configuration, Configuration> ch) {
+    public MergeContextBuilder configConflictHandler(ConflictResolver<FeatureConfiguration, FeatureConfiguration> ch) {
         configHandler = ch;
         return this;
     }
 
     @Override
-    public MergeContextBuilder extensionConflictHandler(ConflictResolver<Extension, Extension> eh) {
+    public MergeContextBuilder extensionConflictHandler(ConflictResolver<FeatureExtension, FeatureExtension> eh) {
         extensionHandler = eh;
         return this;
     }
@@ -55,31 +55,31 @@ class MergeContextBuilderImpl implements MergeContextBuilder {
     }
 
     private static class MergeContextImpl implements MergeContext {
-        private final ConflictResolver<Bundle, List<Bundle>> bundleHandler;
-        private final ConflictResolver<Configuration, Configuration> configHandler;
-        private final ConflictResolver<Extension, Extension> extensionHandler;
+        private final ConflictResolver<FeatureBundle, List<FeatureBundle>> bundleHandler;
+        private final ConflictResolver<FeatureConfiguration, FeatureConfiguration> configHandler;
+        private final ConflictResolver<FeatureExtension, FeatureExtension> extensionHandler;
 
 
-        MergeContextImpl(ConflictResolver<Bundle, List<Bundle>> bundleHandler,
-                ConflictResolver<Configuration, Configuration> configHandler,
-                ConflictResolver<Extension, Extension> extensionHandler) {
+        MergeContextImpl(ConflictResolver<FeatureBundle, List<FeatureBundle>> bundleHandler,
+                ConflictResolver<FeatureConfiguration, FeatureConfiguration> configHandler,
+                ConflictResolver<FeatureExtension, FeatureExtension> extensionHandler) {
             this.bundleHandler = bundleHandler;
             this.configHandler = configHandler;
             this.extensionHandler = extensionHandler;
         }
 
         @Override
-        public List<Bundle> handleBundleConflict(Feature f1, Bundle b1, Feature f2, Bundle b2) {
+        public List<FeatureBundle> handleBundleConflict(Feature f1, FeatureBundle b1, Feature f2, FeatureBundle b2) {
             return bundleHandler.resolve(f1, b1, f2, b2);
         }
 
         @Override
-        public Configuration handleConfigurationConflict(Feature f1, Configuration c1, Feature f2, Configuration c2) {
+        public FeatureConfiguration handleConfigurationConflict(Feature f1, FeatureConfiguration c1, Feature f2, FeatureConfiguration c2) {
             return configHandler.resolve(f1, c1, f2, c2);
         }
 
         @Override
-        public Extension handleExtensionConflict(Feature f1, Extension e1, Feature f2, Extension e2) {
+        public FeatureExtension handleExtensionConflict(Feature f1, FeatureExtension e1, Feature f2, FeatureExtension e2) {
             return extensionHandler.resolve(f1, e1, f2, e2);
         }
     }

@@ -17,48 +17,48 @@
 package org.osgi.util.features;
 
 /**
- * A builder for Feature Model {@link Extension} objects.
+ * A builder for Feature Model {@link FeatureExtension} objects.
  * @NotThreadSafe
  */
-public interface ExtensionBuilder {
+public interface FeatureExtensionBuilder {
 
     /**
      * Add text to the extension. Can only be called for extensions of type
-     * {@link Extension.Type.TEXT}.
+     * {@link FeatureExtension.Type.TEXT}.
      * @param text The text to be added.
      * @return This builder.
      */
-    ExtensionBuilder addText(String text);
+    FeatureExtensionBuilder addText(String text);
 
     /**
      * Add JSON in String form to the extension. Can only be called for extensions
-     * of type {@link Extension.Type.JSON}.
+     * of type {@link FeatureExtension.Type.JSON}.
      * @param json The JSON to be added.
      * @return This builder.
      */
-    ExtensionBuilder setJSON(String json);
+    FeatureExtensionBuilder setJSON(String json);
 
     /**
      * Add an Artifact to the extension. Can only be called for extensions of type
-     * {@link Extension.Type.ARTIFACT}.
+     * {@link FeatureExtension.Type.ARTIFACT}.
      * @param aid The ArtifactID of the artifact to add.
      * @return This builder.
      */
-    ExtensionBuilder addArtifact(ID aid);
+    FeatureExtensionBuilder addArtifact(ID aid);
 
     /**
      * Add an Artifact to the extension. Can only be called for extensions of type
-     * {@link Extension.Type.ARTIFACT}.
+     * {@link FeatureExtension.Type.ARTIFACT}.
      * @param groupId The Group ID of the artifact to add.
      * @param artifactId The Artifact ID of the artifact to add.
      * @param version The Version of the artifact to add.
      * @return This builder.
      */
-    ExtensionBuilder addArtifact(String groupId, String artifactId, String version);
+    FeatureExtensionBuilder addArtifact(String groupId, String artifactId, String version);
 
     /**
      * Add an Artifact to the extension. Can only be called for extensions of type
-     * {@link Extension.Type.ARTIFACT}.
+     * {@link FeatureExtension.Type.ARTIFACT}.
      * @param groupId The Group ID of the artifact to add.
      * @param artifactId The Artifact ID of the artifact to add.
      * @param version The Version of the artifact to add.
@@ -66,13 +66,13 @@ public interface ExtensionBuilder {
      * @param classifier The classifier of the artifact to add.
      * @return This builder.
      */
-    ExtensionBuilder addArtifact(String groupId, String artifactId, String version, String at, String classifier);
+    FeatureExtensionBuilder addArtifact(String groupId, String artifactId, String version, String at, String classifier);
 
     /**
      * Build the Extension. Can only be called once on a builder. After
      * calling this method the current builder instance cannot be used any more.
      * @return The Extension.
      */
-    Extension build();
+    FeatureExtension build();
 
 }

@@ -28,21 +28,21 @@ public interface MergeContextBuilder {
      * @param bh The Conflict Resolver.
      * @return This builder.
      */
-    MergeContextBuilder bundleConflictHandler(ConflictResolver<Bundle, List<Bundle>> bh);
+    MergeContextBuilder bundleConflictHandler(ConflictResolver<FeatureBundle, List<FeatureBundle>> bh);
 
     /**
      * Set the Configuration Conflict Resolver.
      * @param ch The Conflict Resolver.
      * @return This builder.
      */
-    MergeContextBuilder configConflictHandler(ConflictResolver<Configuration, Configuration> ch);
+    MergeContextBuilder configConflictHandler(ConflictResolver<FeatureConfiguration, FeatureConfiguration> ch);
 
     /**
      * Set the Extension Conflict Resolver.
      * @param eh The Conflict Resolver.
      * @return This builder.
      */
-    MergeContextBuilder extensionConflictHandler(ConflictResolver<Extension, Extension> eh);
+    MergeContextBuilder extensionConflictHandler(ConflictResolver<FeatureExtension, FeatureExtension> eh);
 
     /**
      * Build the Merge Context. Can only be called once on a builder. After
