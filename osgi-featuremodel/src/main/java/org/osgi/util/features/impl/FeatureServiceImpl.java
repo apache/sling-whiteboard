@@ -16,7 +16,7 @@
  */
 package org.osgi.util.features.impl;
 
-import org.osgi.util.features.ArtifactID;
+import org.osgi.util.features.ID;
 import org.osgi.util.features.BuilderFactory;
 import org.osgi.util.features.Bundle;
 import org.osgi.util.features.BundleBuilder;
@@ -58,7 +58,7 @@ class FeatureServiceImpl implements FeatureService {
         JsonObject json = Json.createReader(jsonReader).readObject();
 
         String id = json.getString("id");
-        FeatureBuilder builder = builderFactory.newFeatureBuilder(ArtifactID.fromMavenID(id));
+        FeatureBuilder builder = builderFactory.newFeatureBuilder(ID.fromMavenID(id));
 
         builder.setTitle(json.getString("title", null));
         builder.setDescription(json.getString("description", null));
@@ -87,7 +87,7 @@ class FeatureServiceImpl implements FeatureService {
             if (val.getValueType() == JsonValue.ValueType.OBJECT) {
                 JsonObject jo = val.asJsonObject();
                 String bid = jo.getString("id");
-                BundleBuilder builder = builderFactory.newBundleBuilder(ArtifactID.fromMavenID(bid));
+                BundleBuilder builder = builderFactory.newBundleBuilder(ID.fromMavenID(bid));
 
                 for (Map.Entry<String, JsonValue> entry : jo.entrySet()) {
                     if (entry.getKey().equals("id"))
@@ -203,7 +203,7 @@ class FeatureServiceImpl implements FeatureService {
                 for (JsonValue jv : ja2) {
                     if (jv.getValueType() == JsonValue.ValueType.STRING) {
                         String id = ((JsonString) jv).getString();
-                        builder.addArtifact(ArtifactID.fromMavenID(id));
+                        builder.addArtifact(ID.fromMavenID(id));
                     }
                 }
                 break;
@@ -224,7 +224,7 @@ class FeatureServiceImpl implements FeatureService {
     }
 
     @Override
-    public Feature mergeFeatures(ArtifactID targetID, Feature f1, Feature f2, MergeContext ctx) {
+    public Feature mergeFeatures(ID targetID, Feature f1, Feature f2, MergeContext ctx) {
         FeatureBuilder fb = builderFactory.newFeatureBuilder(targetID);
 
         copyAttrs(f1, fb);
@@ -242,11 +242,11 @@ class FeatureServiceImpl implements FeatureService {
         List<Bundle> addedBundles = new ArrayList<>();
 
         for (Bundle b : f2.getBundles()) {
-            ArtifactID bID = b.getID();
+            ID bID = b.getID();
             boolean found = false;
             for (Iterator<Bundle> it = bundles.iterator(); it.hasNext(); ) {
                 Bundle orgb = it.next();
-                ArtifactID orgID = orgb.getID();
+                ID orgID = orgb.getID();
 
                 if (bID.getGroupId().equals(orgID.getGroupId()) &&
                         bID.getArtifactId().equals(orgID.getArtifactId())) {

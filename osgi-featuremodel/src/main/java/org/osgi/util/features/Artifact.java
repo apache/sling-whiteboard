@@ -24,5 +24,5 @@ public interface Artifact {
      * Get the artifact's ID.
      * @return The ID of this artifact.
      */
-    ArtifactID getID();
+    ID getID();
 }

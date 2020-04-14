@@ -69,5 +69,5 @@ public interface Extension {
      * Get the Artifacts from this extension.
      * @return The Artifacts, or {@code null} if this is not an Artifacts extension.
      */
-    List<ArtifactID> getArtifacts();
+    List<ID> getArtifacts();
 }

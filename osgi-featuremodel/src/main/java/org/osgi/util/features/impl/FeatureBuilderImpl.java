@@ -16,7 +16,7 @@
  */
 package org.osgi.util.features.impl;
 
-import org.osgi.util.features.ArtifactID;
+import org.osgi.util.features.ID;
 import org.osgi.util.features.Bundle;
 import org.osgi.util.features.Configuration;
 import org.osgi.util.features.Extension;
@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.Objects;
 
 class FeatureBuilderImpl implements FeatureBuilder {
-    private final ArtifactID id;
+    private final ID id;
 
     private String title;
     private String description;
@@ -47,7 +47,7 @@ class FeatureBuilderImpl implements FeatureBuilder {
     private final Map<String,Extension> extensions = new HashMap<>();
     private final Map<String,String> variables = new HashMap<>();
 
-    FeatureBuilderImpl(ArtifactID id) {
+    FeatureBuilderImpl(ID id) {
         this.id = id;
     }
 
@@ -148,7 +148,7 @@ class FeatureBuilderImpl implements FeatureBuilder {
         private final Map<String,Extension> extensions;
         private final Map<String,String> variables;
 
-        private FeatureImpl(ArtifactID id, String aTitle, String desc, String vnd, String lic, String loc,
+        private FeatureImpl(ID id, String aTitle, String desc, String vnd, String lic, String loc,
                 boolean comp, boolean fin, List<Bundle> bs, Map<String,Configuration> cs,
                 Map<String,Extension> es, Map<String,String> vars) {
             super(id);

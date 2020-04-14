@@ -25,7 +25,7 @@ public interface BuilderFactory {
      * @param id The artifact ID for the bundle object being built.
      * @return The builder.
      */
-    BundleBuilder newBundleBuilder(ArtifactID id);
+    BundleBuilder newBundleBuilder(ID id);
 
     /**
      * Obtain a new builder for Configuration objects.
@@ -48,7 +48,7 @@ public interface BuilderFactory {
      * @param id The artifact ID for the feature object being built.
      * @return The builder.
      */
-    FeatureBuilder newFeatureBuilder(ArtifactID id);
+    FeatureBuilder newFeatureBuilder(ID id);
 
     /**
      * Obtain a new builder for Feature objects.

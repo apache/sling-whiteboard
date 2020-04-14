@@ -17,19 +17,19 @@
 package org.osgi.util.features.impl;
 
 import org.osgi.util.features.Artifact;
-import org.osgi.util.features.ArtifactID;
+import org.osgi.util.features.ID;
 
 import java.util.Objects;
 
 class ArtifactImpl implements Artifact {
-    private final ArtifactID id;
+    private final ID id;
 
-    ArtifactImpl(ArtifactID id) {
+    ArtifactImpl(ID id) {
         this.id = id;
     }
 
     @Override
-    public ArtifactID getID() {
+    public ID getID() {
         return id;
     }
 

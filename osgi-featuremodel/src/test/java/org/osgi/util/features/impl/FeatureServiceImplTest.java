@@ -17,7 +17,7 @@
 package org.osgi.util.features.impl;
 
 import org.junit.Test;
-import org.osgi.util.features.ArtifactID;
+import org.osgi.util.features.ID;
 import org.osgi.util.features.BuilderFactory;
 import org.osgi.util.features.Bundle;
 import org.osgi.util.features.Configuration;
@@ -59,7 +59,7 @@ public class FeatureServiceImplTest {
             List<Bundle> bundles = f.getBundles();
             assertEquals(3, bundles.size());
 
-            Bundle bundle = bf.newBundleBuilder(new ArtifactID("org.osgi", "osgi.promise", "7.0.1"))
+            Bundle bundle = bf.newBundleBuilder(new ID("org.osgi", "osgi.promise", "7.0.1"))
                     .addMetadata("hash", "4632463464363646436")
                     .addMetadata("start-order", 1L)
                     .build();
@@ -68,8 +68,8 @@ public class FeatureServiceImplTest {
             ba.equals(bundle);
 
             assertTrue(bundles.contains(bundle));
-            assertTrue(bundles.contains(bf.newBundleBuilder(new ArtifactID("org.slf4j", "slf4j-api", "1.7.29")).build()));
-            assertTrue(bundles.contains(bf.newBundleBuilder(new ArtifactID("org.slf4j", "slf4j-simple", "1.7.29")).build()));
+            assertTrue(bundles.contains(bf.newBundleBuilder(new ID("org.slf4j", "slf4j-api", "1.7.29")).build()));
+            assertTrue(bundles.contains(bf.newBundleBuilder(new ID("org.slf4j", "slf4j-simple", "1.7.29")).build()));
         }
     }
 
@@ -97,16 +97,16 @@ public class FeatureServiceImplTest {
                 .build();
 
 
-        ArtifactID tid = new ArtifactID("foo", "bar", "1.2.3");
+        ID tid = new ID("foo", "bar", "1.2.3");
         Feature f3 = fs.mergeFeatures(tid, f1, f2, ctx);
         assertEquals(tid, f3.getID());
 
         List<Bundle> bundles = f3.getBundles();
         assertEquals(5, bundles.size());
 
-        assertTrue(bundles.contains(bf.newBundleBuilder(new ArtifactID("org.slf4j", "slf4j-api", "1.7.29")).build()));
-        assertTrue(bundles.contains(bf.newBundleBuilder(new ArtifactID("org.slf4j", "slf4j-api", "1.7.30")).build()));
-        assertTrue(bundles.contains(bf.newBundleBuilder(new ArtifactID("org.slf4j", "slf4j-nop", "1.7.30")).build()));
+        assertTrue(bundles.contains(bf.newBundleBuilder(new ID("org.slf4j", "slf4j-api", "1.7.29")).build()));
+        assertTrue(bundles.contains(bf.newBundleBuilder(new ID("org.slf4j", "slf4j-api", "1.7.30")).build()));
+        assertTrue(bundles.contains(bf.newBundleBuilder(new ID("org.slf4j", "slf4j-nop", "1.7.30")).build()));
 
         Map<String, Configuration> configs = f3.getConfigurations();
         assertEquals(2, configs.size());
@@ -151,7 +151,7 @@ public class FeatureServiceImplTest {
                         .build())
                 .build();
 
-        ArtifactID tid = new ArtifactID("g", "a", "1.2.3");
+        ID tid = new ID("g", "a", "1.2.3");
         Feature f3 = fs.mergeFeatures(tid, f1, f2, ctx);
 
         Map<String, Extension> extensions = f3.getExtensions();
@@ -164,10 +164,10 @@ public class FeatureServiceImplTest {
         Extension artEx = extensions.get("my-art-ex");
         assertEquals(Extension.Kind.MANDATORY, artEx.getKind());
         assertEquals(Extension.Type.ARTIFACTS, artEx.getType());
-        List<ArtifactID> artifacts = artEx.getArtifacts();
+        List<ID> artifacts = artEx.getArtifacts();
         assertEquals(2, artifacts.size());
-        assertTrue(artifacts.contains(new ArtifactID("g", "a", "1")));
-        assertTrue(artifacts.contains(new ArtifactID("g", "a", "2")));
+        assertTrue(artifacts.contains(new ID("g", "a", "1")));
+        assertTrue(artifacts.contains(new ID("g", "a", "2")));
 
         Extension jsonEx = extensions.get("my-json-ex");
         assertEquals(Extension.Kind.TRANSIENT, jsonEx.getKind());

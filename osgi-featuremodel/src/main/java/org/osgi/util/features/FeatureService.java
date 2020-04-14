@@ -55,5 +55,5 @@ public interface FeatureService {
      * @param ctx The merge context to use for the merge operation.
      * @return The merged feature.
      */
-    Feature mergeFeatures(ArtifactID targetID, Feature f1, Feature f2, MergeContext ctx);
+    Feature mergeFeatures(ID targetID, Feature f1, Feature f2, MergeContext ctx);
 }

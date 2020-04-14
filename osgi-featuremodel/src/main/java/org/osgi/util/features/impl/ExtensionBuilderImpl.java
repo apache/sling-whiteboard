@@ -16,7 +16,7 @@
  */
 package org.osgi.util.features.impl;
 
-import org.osgi.util.features.ArtifactID;
+import org.osgi.util.features.ID;
 import org.osgi.util.features.Extension;
 import org.osgi.util.features.ExtensionBuilder;
 import org.osgi.util.features.Extension.Kind;
@@ -62,7 +62,7 @@ class ExtensionBuilderImpl implements ExtensionBuilder {
     }
 
     @Override
-    public ExtensionBuilder addArtifact(ArtifactID aid) {
+    public ExtensionBuilder addArtifact(ID aid) {
         addArtifact(aid.getGroupId(), aid.getArtifactId(), aid.getVersion(), aid.getType(), aid.getClassifier());
         return this;
     }
@@ -139,14 +139,14 @@ class ExtensionBuilderImpl implements ExtensionBuilder {
             return content;
         }
 
-        public List<ArtifactID> getArtifacts() {
+        public List<ID> getArtifacts() {
             BufferedReader r = new BufferedReader(new StringReader(content));
 
-            List<ArtifactID> res = new ArrayList<>();
+            List<ID> res = new ArrayList<>();
             String line = null;
             try {
                 while ((line = r.readLine()) != null) {
-                    res.add(ArtifactID.fromMavenID(line));
+                    res.add(ID.fromMavenID(line));
                 }
             } catch (IOException e) {
                 // ignore

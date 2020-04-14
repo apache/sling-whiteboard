@@ -44,7 +44,7 @@ public interface ExtensionBuilder {
      * @param aid The ArtifactID of the artifact to add.
      * @return This builder.
      */
-    ExtensionBuilder addArtifact(ArtifactID aid);
+    ExtensionBuilder addArtifact(ID aid);
 
     /**
      * Add an Artifact to the extension. Can only be called for extensions of type

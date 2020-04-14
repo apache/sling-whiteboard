@@ -32,7 +32,7 @@ import java.util.Objects;
  * </ul>
  * @ThreadSafe
  */
-public class ArtifactID {
+public class ID {
     private final String groupId;
     private final String artifactId;
     private final String version; // The Artifact Version may not follow OSGi version rules
@@ -46,7 +46,7 @@ public class ArtifactID {
      * @param mavenID
      * @return
      */
-    public static ArtifactID fromMavenID(String mavenID) {
+    public static ID fromMavenID(String mavenID) {
         String[] parts = mavenID.split(":");
 
         if (parts.length < 3 && parts.length > 5)
@@ -58,7 +58,7 @@ public class ArtifactID {
         String t = parts.length > 3 ? parts[3] : null;
         String c = parts.length > 4 ? parts[4] : null;
 
-        return new ArtifactID(gid, aid, ver, t, c);
+        return new ID(gid, aid, ver, t, c);
     }
 
     /**
@@ -67,7 +67,7 @@ public class ArtifactID {
      * @param artifactId The artifact ID.
      * @param version The version.
      */
-    public ArtifactID(String groupId, String artifactId, String version) {
+    public ID(String groupId, String artifactId, String version) {
         this(groupId, artifactId, version, null, null);
     }
 
@@ -79,7 +79,7 @@ public class ArtifactID {
      * @param type The type identifier.
      * @param classifier The classifier.
      */
-    public ArtifactID(String groupId, String artifactId, String version, String type, String classifier) {
+    public ID(String groupId, String artifactId, String version, String type, String classifier) {
         this.groupId = groupId;
         this.artifactId = artifactId;
         this.version = version;
@@ -136,9 +136,9 @@ public class ArtifactID {
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
-        if (!(obj instanceof ArtifactID))
+        if (!(obj instanceof ID))
             return false;
-        ArtifactID other = (ArtifactID) obj;
+        ID other = (ID) obj;
         return Objects.equals(artifactId, other.artifactId) && Objects.equals(classifier, other.classifier)
                 && Objects.equals(groupId, other.groupId) && Objects.equals(type, other.type)
                 && Objects.equals(version, other.version);

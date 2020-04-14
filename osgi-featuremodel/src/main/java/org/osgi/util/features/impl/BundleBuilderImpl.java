@@ -16,7 +16,7 @@
  */
 package org.osgi.util.features.impl;
 
-import org.osgi.util.features.ArtifactID;
+import org.osgi.util.features.ID;
 import org.osgi.util.features.Bundle;
 import org.osgi.util.features.BundleBuilder;
 
@@ -26,11 +26,11 @@ import java.util.Map;
 import java.util.Objects;
 
 class BundleBuilderImpl implements BundleBuilder {
-    private final ArtifactID id;
+    private final ID id;
 
     private final Map<String,Object> metadata = new HashMap<>();
 
-    BundleBuilderImpl(ArtifactID id) {
+    BundleBuilderImpl(ID id) {
         this.id = id;
     }
 
@@ -54,7 +54,7 @@ class BundleBuilderImpl implements BundleBuilder {
     private static class BundleImpl extends ArtifactImpl implements Bundle {
         private final Map<String, Object> metadata;
 
-        private BundleImpl(ArtifactID id, Map<String, Object> metadata) {
+        private BundleImpl(ID id, Map<String, Object> metadata) {
             super(id);
 
             this.metadata = Collections.unmodifiableMap(metadata);
