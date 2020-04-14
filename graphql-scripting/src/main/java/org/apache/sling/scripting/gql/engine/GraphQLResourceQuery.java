@@ -18,9 +18,7 @@
  * under the License.
  */
 
-package org.apache.sling.scripting.gql.internal;
-
-import java.util.Date;
+package org.apache.sling.scripting.gql.engine;
 
 import org.apache.sling.api.resource.Resource;
 

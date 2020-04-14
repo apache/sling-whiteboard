@@ -18,7 +18,7 @@
  * under the License.
  */
 
-package org.apache.sling.scripting.gql.internal;
+package org.apache.sling.scripting.gql.engine;
 
 import java.io.IOException;
 import java.io.PrintWriter;

@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.sling.scripting.gql.internal;
+package org.apache.sling.scripting.gql.engine;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
