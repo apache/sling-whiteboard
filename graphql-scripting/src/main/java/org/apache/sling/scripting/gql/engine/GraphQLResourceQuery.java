@@ -20,6 +20,8 @@
 
 package org.apache.sling.scripting.gql.engine;
 
+import javax.script.ScriptException;
+
 import org.apache.sling.api.resource.Resource;
 
 import graphql.ExecutionResult;
@@ -34,7 +36,7 @@ import graphql.schema.idl.TypeDefinitionRegistry;
 import graphql.schema.idl.TypeRuntimeWiring;
 
 /** Run a GraphQL query in the context of a Sling Resource */
-class GraphQLResourceQuery {
+public class GraphQLResourceQuery {
 
     static class EchoDataFetcher implements DataFetcher<Object> {
         private final Object data;
@@ -48,7 +50,13 @@ class GraphQLResourceQuery {
         }
     }
 
-    ExecutionResult executeQuery(Resource r, String query) {
+    public ExecutionResult executeQuery(Resource r, String query) throws ScriptException {
+        if(r == null) {
+            throw new ScriptException("Resource is null");
+        }
+        if(query == null) {
+            throw new ScriptException("Resource is null");
+        }
         final String schemaDef = 
             "type Query { currentResource : SlingResource }\n"
             + "type SlingResource { path: String resourceType: String }\n"

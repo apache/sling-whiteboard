@@ -65,19 +65,23 @@ public class GraphQLScriptEngine extends AbstractScriptEngine {
             final Resource resource = (Resource) context.getBindings(ScriptContext.ENGINE_SCOPE)
                     .get(SlingBindings.RESOURCE);
             final ExecutionResult result = q.executeQuery(resource, IOUtils.toString(reader));
-            if (!result.getErrors().isEmpty()) {
-                throw new ScriptException(("GraphQL query failed:" + result.getErrors()));
-            }
-            final Object data = result.getData();
-            if (data == null) {
-                throw new ScriptException("No data");
-            }
             final PrintWriter out = (PrintWriter) context.getBindings(ScriptContext.ENGINE_SCOPE).get(SlingBindings.OUT);
-            GSON.toJson(data, out);
+            sendJSON(out, result);
         } catch(IOException e) {
             throw new ScriptException(e);
         }
         return null;
+    }
+
+    public static void sendJSON(PrintWriter out, ExecutionResult result) throws ScriptException {
+        if (!result.getErrors().isEmpty()) {
+            throw new ScriptException(("GraphQL query failed:" + result.getErrors()));
+        }
+        final Object data = result.getData();
+        if (data == null) {
+            throw new ScriptException("No data");
+        }
+        GSON.toJson(data, out);
     }
 
     @Override

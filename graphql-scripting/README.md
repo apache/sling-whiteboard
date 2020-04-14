@@ -11,6 +11,10 @@ a request to a Resource `/foo` mapped to a .gql script containing
 This demonstrates the server-side execution of GraphQL queries, 
 in the context of the current Resource.
 
+A (rough) GraphQLServlet allows for implementing either a traditional
+GraphQL single-path endpoint, or turning any Sling Resource into 
+a GraphQL endpoint. See the comments in that class.
+
 ----
 
 ## Next Steps
@@ -54,3 +58,32 @@ use cases to define the “shape” of (mostly) JSON data returned to the client
 
 For now this is just an experiment meant to better understand how this can 
 work and what it brings, we’ll refine the plan as we progress.
+
+## How to test this in a Sling instance
+
+See the `GraphQLScriptingTestSupport.graphQLJava()` method for which bundles
+are required for this bundle to start.
+
+A simple way to install them in a Sling starter instance (running under JDK11
+or later) is:
+
+    mvn dependency:copy-dependencies
+    export S=http://localhost:8080
+    curl -u admin:admin -X DELETE $S/apps/gql
+    curl -u admin:admin -X MKCOL $S/apps/gql
+    curl -u admin:admin -X MKCOL $S/apps/gql/install
+    curl -u admin:admin -X MKCOL $S/apps/gql/install/15
+    export B="graphql reactive antlr dataloader"
+    for bundle in $B
+    do
+      path=$(ls target/dependency/*${bundle}* | head -1)
+      filename=$(basename $path)
+      curl -u admin:admin -T $path ${S}/apps/gql/install/15/${filename}
+    done
+
+For some reason, as of April 14th the `org.apache.sling.installer.factory.packages` bundle
+has to be stopped for this to work - didn't investigate so far.
+
+And then install this bundle using for example
+
+    mvn clean install sling:install
