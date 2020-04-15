@@ -44,8 +44,7 @@ public class UninstallFeatureModelTask extends AbstractFeatureModelTask {
             } else {
                 final TaskResource resource = this.getResource();
                 ctx.log("Uninstalling {}", resource.getEntityId());
-                installer.registerResources("model-" + resource.getAttribute(FeatureModelInstallerPlugin.ATTR_ID),
-                        null);
+                installer.registerResources(getScheme(resource), null);
                 this.getResourceGroup().setFinishState(ResourceState.UNINSTALLED);
                 ctx.log("Uninstalled {}", resource.getEntityId());
             }

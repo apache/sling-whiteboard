@@ -120,7 +120,7 @@ public class InstallFeatureModelTask extends AbstractFeatureModelTask {
                         final OsgiInstaller installer = this.getService(OsgiInstaller.class);
                         if (installer != null) {
                             installer.registerResources(
-                                    "model-" + resource.getAttribute(FeatureModelInstallerPlugin.ATTR_ID),
+                                    getScheme(resource),
                                     result.resources.toArray(new InstallableResource[result.resources.size()]));
                         } else {
                             ctx.log("Unable to install feature model resource {} : unable to get OSGi installer",

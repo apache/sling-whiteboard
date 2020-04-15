@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.sling.installer.api.tasks.InstallTask;
+import org.apache.sling.installer.api.tasks.TaskResource;
 import org.apache.sling.installer.api.tasks.TaskResourceGroup;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
@@ -52,6 +53,10 @@ public abstract class AbstractFeatureModelTask extends InstallTask {
             this.bundleContext.ungetService(r);
         }
         this.services.clear();
+    }
+
+    protected String getScheme(final TaskResource resource) {
+        return "model-".concat(resource.getAttribute(FeatureModelInstallerPlugin.ATTR_ID).toString().replace(':', '_'));
     }
 
     @SuppressWarnings("unchecked")

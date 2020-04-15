@@ -50,7 +50,7 @@ public class FeatureModelInstallerPluginTest {
     }
 
     @Test
-    public void tesClassifierPatterns() throws Exception {
+    public void testClassifierPatterns() throws Exception {
         final FeatureModelInstallerPlugin.Config config = Mockito.mock(FeatureModelInstallerPlugin.Config.class);
         Mockito.when(config.classifierPatterns()).thenReturn(new String[] { ":", "*devfar", "*prodfar", "*special*" });
 
