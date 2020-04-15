@@ -37,8 +37,7 @@ public @interface AuthenticationHandlerSAML2Config {
 
     @AttributeDefinition(name = "Path",
         description="One or more URL paths (String) for which this AuthenticationHandler is applied")
-    String[] path() default {"http://localhost:8080/"};
-
+    String[] path() default {};
 
     @AttributeDefinition(name = "Service Ranking",
         description="Integer value used to select auth'n handler when 2 or more handlers have paths of the same length.")

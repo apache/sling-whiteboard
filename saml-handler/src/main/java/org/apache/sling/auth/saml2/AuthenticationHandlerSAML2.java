@@ -387,9 +387,9 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
         // start a user object
         Saml2User saml2User = new Saml2User();
         // get list of configured attribute names to synchronize from the IDP assertion to the user's properties
-        final String[] attrNamesToSyncArr = saml2ConfigService.getSyncAttrs();
+
         List<String> attrNamesToSync = null;
-        if (attrNamesToSyncArr != null) {
+        if (saml2ConfigService.getSyncAttrs() != null && saml2ConfigService.getSyncAttrs().length > 0) {
             attrNamesToSync = Arrays.asList(saml2ConfigService.getSyncAttrs());
         }
 
