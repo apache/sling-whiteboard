@@ -22,6 +22,9 @@ package org.apache.sling.auth.saml2.sp;
 import org.apache.jackrabbit.oak.spi.security.authentication.external.ExternalIdentityException;
 import org.apache.jackrabbit.oak.spi.security.authentication.external.ExternalIdentityRef;
 import org.apache.jackrabbit.oak.spi.security.authentication.external.ExternalUser;
+import org.opensaml.core.xml.XMLObject;
+import org.opensaml.core.xml.schema.XSString;
+
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.util.HashMap;
@@ -78,7 +81,7 @@ public class Saml2User implements ExternalUser {
         return null;
     }
 
-    public Map getUserProperties() {
+    public Map<String,String> getUserProperties() {
         return userProperties;
     }
 
@@ -90,8 +93,8 @@ public class Saml2User implements ExternalUser {
         this.id = id;
     }
 
-    public void addUserProperty(String key, Object value) {
-        this.userProperties.put(key, value);
+    public void addUserProperty(String key, XMLObject attributeValue) {
+        this.userProperties.put(key, ((XSString) attributeValue).getValue());
     }
 
     public void addGroupMembership(String group) {

@@ -73,7 +73,8 @@ import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-
+import java.util.Arrays;
+import java.util.List;
 
 
 @Component(
@@ -271,18 +272,7 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
         authnRequest.setID(Helpers.generateSecureRandomId());
         authnRequest.setIssuer(buildIssuer());
         authnRequest.setNameIDPolicy(buildNameIdPolicy());
-//        authnRequest.setRequestedAuthnContext(buildRequestedAuthnContext());
         return authnRequest;
-    }
-
-
-    private RequestedAuthnContext buildRequestedAuthnContext() {
-        RequestedAuthnContext requestedAuthnContext = Helpers.buildSAMLObject(RequestedAuthnContext.class);
-        requestedAuthnContext.setComparison(AuthnContextComparisonTypeEnumeration.MINIMUM);
-        AuthnContextClassRef passwordAuthnContextClassRef = Helpers.buildSAMLObject(AuthnContextClassRef.class);
-        passwordAuthnContextClassRef.setAuthnContextClassRef(AuthnContext.PASSWORD_AUTHN_CTX);
-        requestedAuthnContext.getAuthnContextClassRefs().add(passwordAuthnContextClassRef);
-        return requestedAuthnContext;
     }
 
     private Issuer buildIssuer() {
@@ -396,6 +386,8 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
         }
         // start a user object
         Saml2User saml2User = new Saml2User();
+        // get list of configured attribute names to synchronize from the IDP assertion to the user's properties
+        List<String> attrNamesToSync = Arrays.asList(saml2ConfigService.getSyncAttrs());
         // iterate the attribute assertions
         for (Attribute attribute : assertion.getAttributeStatements().get(0).getAttributes()) {
             if (attribute.getName().equals(saml2ConfigService.getSaml2userIDAttr())) {
@@ -414,6 +406,18 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
                         logger.debug("managed group {} added: ", ((XSString) attributeValue).getValue());
                     }
                 }
+            } else if (attrNamesToSync.contains(attribute.getName())) {
+                for (XMLObject attributeValue : attribute.getAttributeValues()) {
+                    if ( ((XSString) attributeValue).getValue() != null ) {
+                        if (attribute.getFriendlyName() != null && !attribute.getFriendlyName().isEmpty()) {
+                            saml2User.addUserProperty(attribute.getFriendlyName(), attributeValue);
+                            logger.debug("sync attr name: " + attribute.getFriendlyName());
+                            logger.debug("attribute value: " + ((XSString) attributeValue).getValue());
+                        } else {
+                            logger.warn("attribute has no friendly name and cannot be added: " + ((XSString) attributeValue).getValue());
+                        }
+                    }
+                }
             }
         }
 
@@ -421,6 +425,7 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
         if (setUpOk) {
             User samlUser = saml2UserMgtService.getOrCreateSamlUser(saml2User);
             saml2UserMgtService.updateGroupMembership(saml2User);
+            saml2UserMgtService.updateUserProperties(saml2User);
             saml2UserMgtService.cleanUp();
             return samlUser;
         }

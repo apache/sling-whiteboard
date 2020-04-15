@@ -22,11 +22,10 @@ package org.apache.sling.auth.saml2;
 
 public interface SAML2ConfigService {
     String[] getSaml2Path();
-//    int getservice_ranking();
+
     String getEntityID();
     String getAcsPath();
     String getACSURL();
-
     String getSaml2userHome();
     String getSaml2userIDAttr();
     String getSaml2groupMembershipAttr();
@@ -34,6 +33,7 @@ public interface SAML2ConfigService {
     String getSaml2IDPDestination();
     boolean getSaml2SPEnabled();
 
+    String[] getSyncAttrs();
     String getJksFileLocation();
     String getJksStorePassword();
     String getSpKeysAlias();

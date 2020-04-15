@@ -39,6 +39,7 @@ public @interface AuthenticationHandlerSAML2Config {
         description="One or more URL paths (String) for which this AuthenticationHandler is applied")
     String[] path() default {"http://localhost:8080/"};
 
+
     @AttributeDefinition(name = "Service Ranking",
         description="Integer value used to select auth'n handler when 2 or more handlers have paths of the same length.")
     int service_ranking() default 42;
@@ -62,6 +63,10 @@ public @interface AuthenticationHandlerSAML2Config {
     @AttributeDefinition(name = "groupMembership Attribute Name",
         description="Name of the attribute holding the users' group memberships")
     String saml2groupMembershipAttr() default "";
+
+    @AttributeDefinition(name = "Synchronize User Attributes",
+            description="List of Names from SAML Response to Synchronize")
+    String[] syncAttrs() default {};
 
     @AttributeDefinition(name = "SAML2 Session Attribute",
         description="Name used to save the users security context within a HTTP SESSION")

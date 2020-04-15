@@ -20,7 +20,6 @@
 
 package org.apache.sling.auth.saml2.impl;
 
-import org.apache.commons.collections.IteratorUtils;
 import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.user.*;
 import org.apache.sling.api.resource.LoginException;
@@ -37,7 +36,6 @@ import javax.jcr.*;
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 @Component(service={Saml2UserMgtService.class}, immediate = true)
@@ -52,6 +50,7 @@ public class Saml2UserMgtServiceImpl implements Saml2UserMgtService {
     private Session session;
     private UserManager userManager;
     private JackrabbitSession jrSession;
+    private ValueFactory vf;
     private static Logger logger = LoggerFactory.getLogger(Saml2UserMgtServiceImpl.class);
     public static String SERVICE_NAME = "Saml2UserMgtService";
     public static String SERVICE_USER = "saml2-user-mgt";
@@ -66,6 +65,7 @@ public class Saml2UserMgtServiceImpl implements Saml2UserMgtService {
             session = this.resourceResolver.adaptTo(Session.class);
             JackrabbitSession jrSession = (JackrabbitSession) session;
             userManager = jrSession.getUserManager();
+            vf = this.session.getValueFactory();
             return true;
         } catch (LoginException e) {
             logger.error("Could not get SAML2 User Service \r\n" +
@@ -82,8 +82,8 @@ public class Saml2UserMgtServiceImpl implements Saml2UserMgtService {
         session = null;
         jrSession = null;
         userManager = null;
+        vf = null;
     }
-
 
     @Override
     public User getOrCreateSamlUser(Saml2User user) {
@@ -101,8 +101,7 @@ public class Saml2UserMgtServiceImpl implements Saml2UserMgtService {
                 // User's with null passwords cannot login using passwords
                 jackrabbitUser = userManager.createUser(user.getId(), null);
             } else {
-                // if Saml2 User Home is configured...
-                // create a principle
+                // if Saml2 User Home is configured, then create a principle
                 Principal principal = new SimplePrincipal(user.getId());
                 jackrabbitUser = userManager.createUser(user.getId(), null, principal, saml2ConfigService.getSaml2userHome());
             }
@@ -120,7 +119,7 @@ public class Saml2UserMgtServiceImpl implements Saml2UserMgtService {
         // get list of groups from assertion (see ConsumerServlet::doUserManagement)
         try {
             User jrcUser = (User) this.userManager.getAuthorizable(user.getId());
-            final ValueFactory vf = this.session.getValueFactory();
+
             Iterator<Authorizable> allGroups = userManager.findAuthorizables("jcr:primaryType", "rep:Group");
 
             // iterate the managed groups
@@ -133,7 +132,7 @@ public class Saml2UserMgtServiceImpl implements Saml2UserMgtService {
                     // AND the group is in the ext users groupMembership list
                     managedGroup.setProperty("managedGroup", vf.createValue(true));
                 }
-                List<Authorizable> existingMembers = IteratorUtils.toList(managedGroup.getMembers());
+
                 // if the users' list of groups (from assertion) contains the managed group...
                 Value[] isManaged = managedGroup.getProperty("managedGroup");
                 if (isManaged != null &&
@@ -152,6 +151,21 @@ public class Saml2UserMgtServiceImpl implements Saml2UserMgtService {
             return true;
         } catch (RepositoryException e) {
             logger.error("RepositoryException", e);
+            return false;
+        }
+    }
+
+    @Override
+    public boolean updateUserProperties(Saml2User user) {
+        try {
+            User jcrUser = (User) this.userManager.getAuthorizable(user.getId());
+            for (Map.Entry<String,String> entry : user.getUserProperties().entrySet()) {
+                jcrUser.setProperty(entry.getKey(), vf.createValue(entry.getValue()));
+            }
+            session.save();
+            return true;
+        } catch (RepositoryException e) {
+            logger.error("User Properties could not synchronize", e);
             return false;
         }
     }

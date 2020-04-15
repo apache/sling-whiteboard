@@ -44,6 +44,7 @@ public class SAML2ConfigServiceImpl implements SAML2ConfigService {
     private String spKeysPassword;
     private String idpCertAlias;
     private String acsPath;
+    private String[] syncAttrs;
 
     public static final String GOTO_URL_SESSION_ATTRIBUTE = "gotoURL";
     public static final String AUTHENTICATED_SESSION_ATTRIBUTE = "authenticated";
@@ -64,6 +65,7 @@ public class SAML2ConfigServiceImpl implements SAML2ConfigService {
         this.spKeysPassword = config.spKeysPassword();
         this.idpCertAlias = config.idpCertAlias();
         this.acsPath = config.acsPath();
+        this.syncAttrs = config.syncAttrs();
     }
 
 
@@ -135,6 +137,11 @@ public class SAML2ConfigServiceImpl implements SAML2ConfigService {
     @Override
     public String getIdpCertAlias() {
         return this.idpCertAlias;
+    }
+
+    @Override
+    public String[] getSyncAttrs() {
+        return this.syncAttrs;
     }
 
     @Override
