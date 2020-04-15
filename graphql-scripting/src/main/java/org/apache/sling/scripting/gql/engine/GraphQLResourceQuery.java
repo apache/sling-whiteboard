@@ -23,6 +23,8 @@ package org.apache.sling.scripting.gql.engine;
 import javax.script.ScriptException;
 
 import org.apache.sling.api.resource.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import graphql.ExecutionResult;
 import graphql.GraphQL;
@@ -38,6 +40,8 @@ import graphql.schema.idl.TypeRuntimeWiring;
 /** Run a GraphQL query in the context of a Sling Resource */
 public class GraphQLResourceQuery {
 
+    private final Logger log = LoggerFactory.getLogger(getClass());
+    
     static class EchoDataFetcher implements DataFetcher<Object> {
         private final Object data;
 
@@ -55,14 +59,32 @@ public class GraphQLResourceQuery {
             throw new ScriptException("Resource is null");
         }
         if(query == null) {
-            throw new ScriptException("Resource is null");
+            throw new ScriptException("Query is null");
+        }
+        if(schemaProvider == null) {
+            throw new ScriptException("GraphQLSchemaProvider is null");
         }
 
-        final String schemaDef = schemaProvider.getSchema(r);
-        final GraphQLSchema schema = buildSchema(schemaDef, r);
-        final GraphQL graphQL = GraphQL.newGraphQL(schema).build();
-        final ExecutionResult result = graphQL.execute(query);
-        return result;
+        String schemaDef = null;
+        try {
+            schemaDef = schemaProvider.getSchema(r);
+        } catch(Exception e) {
+            final ScriptException up = new ScriptException("Schema provider failed");
+            up.initCause(e);
+            throw up;
+        }
+        log.info("Resource {} maps to GQL schema {}", r.getPath(), schemaDef);
+        try {
+            final GraphQLSchema schema = buildSchema(schemaDef, r);
+            final GraphQL graphQL = GraphQL.newGraphQL(schema).build();
+            final ExecutionResult result = graphQL.execute(query);
+            return result;
+        } catch(Exception e) {
+            final ScriptException up = new ScriptException(
+                String.format("Query failed for Resource %s: schema=%s, query=%s", r.getPath(), schemaDef, query));
+            up.initCause(e);
+            throw up;                
+        }
     }
 
     private GraphQLSchema buildSchema(String sdl, Resource r) {

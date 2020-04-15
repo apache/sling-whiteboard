@@ -38,7 +38,7 @@ import static org.ops4j.pax.exam.cm.ConfigurationAdminOptions.factoryConfigurati
 public class GraphQLServletIT extends GraphQLScriptingTestSupport {
 
     @Inject
-    @Filter(value = "(path=/)")
+    @Filter(value = "(path=/apps/graphql/test/one/json.gql)")
     private ResourcePresence resourcePresence;
 
     @Configuration
@@ -46,16 +46,17 @@ public class GraphQLServletIT extends GraphQLScriptingTestSupport {
         return new Option[]{
             baseConfiguration(),
             factoryConfiguration("org.apache.sling.resource.presence.internal.ResourcePresenter")
-                .put("path", "/")
+                .put("path", "/apps/graphql/test/one/json.gql")
                 .asOption(),
         };
     }
 
     @Test
     public void testJsonContent() throws Exception {
-        final String json = getContent("/.gql");
+        final String path = "/graphql/one";
+        final String json = getContent(path + ".gql");
         // TODO we should really parse this..or run detailed tests in unit tests, and just the basics here
-        final String expected = "{\"currentResource\":{\"path\":\"/\",\"resourceType\":\"rep:root\"}}";
+        final String expected = "{\"currentResource\":{\"path\":\"/content/graphql/one\",\"resourceType\":\"graphql/test/one\"}}";
         assertEquals(expected, json);
     }
 }

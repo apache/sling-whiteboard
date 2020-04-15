@@ -101,7 +101,7 @@ public class GraphQLServlet extends SlingAllMethodsServlet {
         try {
             final GraphQLResourceQuery q = new GraphQLResourceQuery();
             final ExecutionResult result = q.executeQuery(schemaProvider, resource, params.query);
-                GraphQLScriptEngine.sendJSON(response.getWriter(), result);
+            GraphQLScriptEngine.sendJSON(response.getWriter(), result);
         } catch(Exception ex) {
             throw new IOException(ex);
         } finally {

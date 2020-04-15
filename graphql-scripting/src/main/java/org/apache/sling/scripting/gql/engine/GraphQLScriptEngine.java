@@ -67,7 +67,7 @@ public class GraphQLScriptEngine extends AbstractScriptEngine {
             final ExecutionResult result = q.executeQuery(factory.getSchemaProvider(), resource, IOUtils.toString(reader));
             final PrintWriter out = (PrintWriter) context.getBindings(ScriptContext.ENGINE_SCOPE).get(SlingBindings.OUT);
             sendJSON(out, result);
-        } catch(IOException e) {
+        } catch(Exception e) {
             throw new ScriptException(e);
         }
         return null;

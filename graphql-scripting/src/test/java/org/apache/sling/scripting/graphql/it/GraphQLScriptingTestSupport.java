@@ -42,6 +42,7 @@ import static org.junit.Assert.fail;
 import static org.apache.sling.testing.paxexam.SlingOptions.slingQuickstartOakTar;
 import static org.apache.sling.testing.paxexam.SlingOptions.slingResourcePresence;
 import static org.apache.sling.testing.paxexam.SlingOptions.slingScripting;
+import static org.apache.sling.testing.paxexam.SlingOptions.slingScriptingJsp;
 import static org.ops4j.pax.exam.CoreOptions.composite;
 import static org.ops4j.pax.exam.CoreOptions.junitBundles;
 import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
@@ -98,7 +99,8 @@ public abstract class GraphQLScriptingTestSupport extends TestSupport {
         final String workingDirectory = workingDirectory();
         return composite(
             slingQuickstartOakTar(workingDirectory, httpPort),
-            slingScripting()
+            slingScripting(),
+            slingScriptingJsp()
         );
     }
 

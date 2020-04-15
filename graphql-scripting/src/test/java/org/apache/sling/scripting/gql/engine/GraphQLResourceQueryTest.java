@@ -30,7 +30,7 @@ import org.mockito.Mockito;
 import graphql.ExecutionResult;
 
 public class GraphQLResourceQueryTest {
-    private final GraphQLSchemaProvider schemaProvider = new GraphQLSchemaProvider();
+    private final GraphQLSchemaProvider schemaProvider = new MockSchemaProvider();
 
     @Test
     public void basicTest() throws Exception {
