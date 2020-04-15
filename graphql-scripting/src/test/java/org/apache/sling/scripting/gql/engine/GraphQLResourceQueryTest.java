@@ -30,7 +30,9 @@ import org.mockito.Mockito;
 import graphql.ExecutionResult;
 
 public class GraphQLResourceQueryTest {
-   @Test
+    private final GraphQLSchemaProvider schemaProvider = new GraphQLSchemaProvider();
+
+    @Test
     public void basicTest() throws Exception {
         final String resourceType = "RT-" + UUID.randomUUID();
         final String path = "/some/path/" + UUID.randomUUID();
@@ -39,7 +41,7 @@ public class GraphQLResourceQueryTest {
         Mockito.when(r.getResourceType()).thenReturn(resourceType);
 
         final GraphQLResourceQuery q = new GraphQLResourceQuery();
-        final ExecutionResult result = q.executeQuery(r, "{ currentResource { path resourceType } }");
+        final ExecutionResult result = q.executeQuery(schemaProvider, r, "{ currentResource { path resourceType } }");
 
         if(!result.getErrors().isEmpty()) {
             fail("Errors:" + result.getErrors());

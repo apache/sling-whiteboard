@@ -26,6 +26,7 @@ import org.apache.sling.scripting.api.AbstractScriptEngineFactory;
 import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.metatype.annotations.Designate;
 
 @Component(
@@ -45,6 +46,9 @@ public class GraphQLScriptEngineFactory extends AbstractScriptEngineFactory {
 
     public static final String LANGUAGE_NAME = "GraphQL";
     public static final String LANGUAGE_VERSION = "Sling:GraphQL:0.1";
+
+    @Reference
+    private GraphQLSchemaProvider schemaProvider;
 
     @Activate
     private void activate(final GraphQLScriptEngineFactoryConfiguration config) {
@@ -66,5 +70,9 @@ public class GraphQLScriptEngineFactory extends AbstractScriptEngineFactory {
     @Override
     public ScriptEngine getScriptEngine() {
         return new GraphQLScriptEngine(this);
+    }
+
+    GraphQLSchemaProvider getSchemaProvider() {
+        return schemaProvider;
     }
 }

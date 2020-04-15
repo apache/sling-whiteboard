@@ -31,8 +31,10 @@ import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.scripting.gql.engine.GraphQLResourceQuery;
+import org.apache.sling.scripting.gql.engine.GraphQLSchemaProvider;
 import org.apache.sling.scripting.gql.engine.GraphQLScriptEngine;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,6 +63,9 @@ import graphql.ExecutionResult;
 public class GraphQLServlet extends SlingAllMethodsServlet {
     private static final long serialVersionUID = 1L;
     private final Logger log = LoggerFactory.getLogger(getClass());
+
+    @Reference
+    private GraphQLSchemaProvider schemaProvider;
 
     static class RequestParams {
         final String query;
@@ -95,7 +100,7 @@ public class GraphQLServlet extends SlingAllMethodsServlet {
 
         try {
             final GraphQLResourceQuery q = new GraphQLResourceQuery();
-            final ExecutionResult result = q.executeQuery(resource, params.query);
+            final ExecutionResult result = q.executeQuery(schemaProvider, resource, params.query);
                 GraphQLScriptEngine.sendJSON(response.getWriter(), result);
         } catch(Exception ex) {
             throw new IOException(ex);

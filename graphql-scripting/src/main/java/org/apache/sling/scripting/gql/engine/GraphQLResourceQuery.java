@@ -50,18 +50,15 @@ public class GraphQLResourceQuery {
         }
     }
 
-    public ExecutionResult executeQuery(Resource r, String query) throws ScriptException {
+    public ExecutionResult executeQuery(GraphQLSchemaProvider schemaProvider, Resource r, String query) throws ScriptException {
         if(r == null) {
             throw new ScriptException("Resource is null");
         }
         if(query == null) {
             throw new ScriptException("Resource is null");
         }
-        final String schemaDef = 
-            "type Query { currentResource : SlingResource }\n"
-            + "type SlingResource { path: String resourceType: String }\n"
-        ;
 
+        final String schemaDef = schemaProvider.getSchema(r);
         final GraphQLSchema schema = buildSchema(schemaDef, r);
         final GraphQL graphQL = GraphQL.newGraphQL(schema).build();
         final ExecutionResult result = graphQL.execute(query);
