@@ -194,12 +194,13 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
                         if ( AuthUtil.isValidateRequest(httpServletRequest)) {
                             // signal the requestCredentials method a previous login failure
                             httpServletRequest.setAttribute(FAILURE_REASON, SamlReason.TIMEOUT);
+                            return AuthenticationInfo.FAIL_AUTH;
                         }
                     }
                 }
             }
         }
-        return AuthenticationInfo.FAIL_AUTH;
+        return null;
     }
 
     /**
@@ -386,7 +387,12 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
         // start a user object
         Saml2User saml2User = new Saml2User();
         // get list of configured attribute names to synchronize from the IDP assertion to the user's properties
-        List<String> attrNamesToSync = Arrays.asList(saml2ConfigService.getSyncAttrs());
+        final String[] attrNamesToSyncArr = saml2ConfigService.getSyncAttrs();
+        List<String> attrNamesToSync = null;
+        if (attrNamesToSyncArr != null) {
+            attrNamesToSync = Arrays.asList(saml2ConfigService.getSyncAttrs());
+        }
+
         // iterate the attribute assertions
         for (Attribute attribute : assertion.getAttributeStatements().get(0).getAttributes()) {
             if (attribute.getName().equals(saml2ConfigService.getSaml2userIDAttr())) {
@@ -405,7 +411,7 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
                         logger.debug("managed group {} added: ", ((XSString) attributeValue).getValue());
                     }
                 }
-            } else if (attrNamesToSync.contains(attribute.getName())) {
+            } else if (attrNamesToSync != null && attrNamesToSync.contains(attribute.getName())) {
                 for (XMLObject attributeValue : attribute.getAttributeValues()) {
                     if ( ((XSString) attributeValue).getValue() != null ) {
                         if (attribute.getFriendlyName() != null && !attribute.getFriendlyName().isEmpty()) {
