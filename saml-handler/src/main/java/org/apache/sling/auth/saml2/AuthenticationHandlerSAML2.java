@@ -194,13 +194,12 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
                         if ( AuthUtil.isValidateRequest(httpServletRequest)) {
                             // signal the requestCredentials method a previous login failure
                             httpServletRequest.setAttribute(FAILURE_REASON, SamlReason.TIMEOUT);
-                            return AuthenticationInfo.FAIL_AUTH;
                         }
                     }
                 }
             }
         }
-        return null;
+        return AuthenticationInfo.FAIL_AUTH;
     }
 
     /**
