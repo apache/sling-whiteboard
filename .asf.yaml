@@ -1,0 +1,6 @@
+github:
+  description: Apache Sling Resource Graft - utility for grafting resource trees onto existing resources 
+  labels:
+    - java
+    - sling
+    - experimental
