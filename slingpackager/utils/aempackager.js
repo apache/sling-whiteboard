@@ -41,36 +41,24 @@ const checkService = (url, username, password, callback) => {
     logger.debug('request =', JSON.stringify(req.toJSON()));
 }
 
-const list = (url, username, password) => {
+const list = (url, username, password, maxRetry) => {
   logger.log('Listing packages on', url)
 
   let serviceURL = url + endpoint + '?cmd=ls';
-  logger.debug('Service call: ', serviceURL);
-  let post = request.post({url: serviceURL}, (error, response, body) => {
+  var post = callService({serviceURL, username, password, maxRetry}, (error, result) => {
     if(error) {
       logger.error(error);
+      process.exit(1);
     }
 
-    if(response && response.statusCode===200) {
-      // logger.log(body);
-      xml2js.parseString(body, (error, result) => {
-        if(result) {
-          var data = getData(result);
-          displayPackages(data[0].packages[0].package);
-        } else if(error) {
-          logger.error(error);
-        }
-      });
-    } else {
-      logger.error('Unable to connect to server. statusCode:', response && response.statusCode);
+    if(result) {
+      var data = getData(result);
+      displayPackages(data[0].packages[0].package);
     }
-
-  }).auth(username, password);
-
-  logger.debug(JSON.stringify(post.toJSON()));
+  });
 }
 
-const uploadPackage = (url, username, password, packagePath, install) => {
+const uploadPackage = (url, username, password, packagePath, install, maxRetry) => {
   logger.log('Uploading AEM package',packagePath,'on', url);
 
   let serviceURL = url + endpoint;
@@ -78,84 +66,122 @@ const uploadPackage = (url, username, password, packagePath, install) => {
     serviceURL = serviceURL + '?install=true'
   }
 
-  logger.debug('Service call: ', serviceURL);
-  var post = request.post({url: serviceURL}, (error, response, body) => {
-    if(error) {
-      logger.error(error);
-    }
-
-    if(response && response.statusCode===200) {
-      xml2js.parseString(body, (error, result) => {
-        if(result) {
-          if(getStatusCode(result) === '200') {
-            logger.log("Done!");
-          } else {
-            logger.error("Something went wrong! Check server logs.");
-          }
-        } else if(error) {
-          logger.error(error);
-        }
-        logger.debug(body);
-      });
-    } else {
-      logger.error('Unable to connect to server. statusCode:', response && response.statusCode);
-    }
-
-  }).auth(username, password);
+  var post = executeCommand(serviceURL, username, password, maxRetry);
   post.form().append('file', fs.createReadStream(packagePath));
-  logger.debug(JSON.stringify(post.toJSON()));
 }
 
-const deletePackage = (url, username, password, package) => {
+const deletePackage = (url, username, password, package, maxRetry) => {
   logger.log('Deleting AEM package',package,'on', url);
-  let post = executePackageCommand(url, username, password, package, 'rm');
-  logger.debug(JSON.stringify(post.toJSON()));
+  executePackageCommand(url, username, password, package, 'rm', maxRetry);
 }
 
-const installPackage = (url, username, password, package) => {
+const installPackage = (url, username, password, package, maxRetry) => {
   logger.log('Installing AEM package',package,'on', url);
-  let post = executePackageCommand(url, username, password, package, 'inst');
-  logger.debug(JSON.stringify(post.toJSON()));
+  executePackageCommand(url, username, password, package, 'inst', maxRetry);
 }
 
-const uninstallPackage = (url, username, password, package) => {
+const uninstallPackage = (url, username, password, package, maxRetry) => {
   logger.log('Uninstalling AEM package',package,'on', url);
-  let post = executePackageCommand(url, username, password, package, 'uninst');
-  logger.debug(JSON.stringify(post.toJSON()));
+  executePackageCommand(url, username, password, package, 'uninst', maxRetry);
+}
+
+const buildPackage = (url, username, password, package, maxRetry) => {
+  logger.log('Building AEM package', package, 'on', url);
+  executePackageCommand(url, username, password, package, 'build', maxRetry);
 }
 
 const getName = () => {
   return 'AEM Package Manager';
 }
 
-function executePackageCommand(url, username, password, packageName, cmd) {
+function executePackageCommand(url, username, password, packageName, cmd, maxRetry) {
   let serviceURL = url + endpoint + '?cmd=' + cmd;
-  logger.debug('Service call: ', serviceURL);
-  var post = request.post({url: serviceURL}, (error, response, body) => {
+  var post = executeCommand(serviceURL, username, password, maxRetry);
+  post.form().append('name', packageName);
+  return post;
+}
+
+function executeCommand(serviceURL, username, password, maxRetry) {
+  var post = callService({serviceURL, username, password, maxRetry}, (error, result) => {
     if(error) {
       logger.error(error);
+      process.exit(1);
     }
 
-    if(response && response.statusCode===200) {
-      xml2js.parseString(body, (error, result) => {
-        if(result) {
-          if(getStatusCode(result) === '200') {
-            logger.log("Done!");
-          } else {
-            logger.log(getStatusText(result));
-          }
-        } else if(error) {
-          logger.error(error);
-        }
-      });
-    } else {
-      logger.error('Unable to connect to server. statusCode:', response && response.statusCode);
+    if(result) {
+      var respLog = getResponseLog(result);
+      if(respLog) {
+        logger.log(respLog);
+      } else {
+        logger.log(getStatusText(result));
+      }
     }
-
-  }).auth(username, password);
-  post.form().append('name', packageName);
+  });
 
   return post;
+}
+
+function callService(data, callback) {
+  if(data.retryCount === undefined) {
+      data.retryCount = 0;
+      if(data.maxRetry === undefined) {
+          data.maxRetry = 10;
+      }
+  }
+
+  logger.debug(data.retryCount + '. Service call: ', data.serviceURL);
+
+  let req = request.post({ url: data.serviceURL }, (error, response, body) => {
+      var statusCodeLine = (response === undefined) ? "" : "Response: " + response.statusCode + " : " + response.statusMessage;
+      logger.debug(statusCodeLine);
+
+      if (error) {
+          if(data.retryCount < data.maxRetry) {
+              data.retryCount++;
+              callService(data, callback);
+          } else  { 
+              logger.error(error);
+              callback(error + " " + statusCodeLine, undefined); 
+          }
+
+          return;
+      } else if(response && response.statusCode===200) {
+        xml2js.parseString(body, (error, result) => {
+          if(result) {
+            logger.debug('Response body: ',body);
+            if(getStatusCode(result) === '200') {
+              callback(undefined, result);
+            } else {
+              logger.debug(body);
+              logger.warn("Response status:",getStatusCode(result),":",getStatusText(result));
+              retryCallService(data, 'Unable to parse service response for', data.serviceURL, callback);
+            }
+          } else if(error) {
+            logger.debug(body);
+            logger.warn('Unable to parse service response for', data.serviceURL);
+            retryCallService(data, 'Unable to parse service response for', data.serviceURL, callback);
+          }
+        });
+
+        return;
+      } 
+
+      retryCallService(data, "Error calling service " + data.serviceURL, callback)
+
+      return;
+  }).auth(data.username, data.password);
+
+  logger.debug(JSON.stringify(req.toJSON()));
+  return req;
+}
+
+function retryCallService(data, error, callback) {
+  if(data.retryCount < data.maxRetry) {
+    data.retryCount++;
+    callService(data, callback);
+   } else  { 
+    callback(error, undefined);
+   }
 }
 
 function displayPackages(packages) {
@@ -168,11 +194,29 @@ function displayPackages(packages) {
 }
 
 function getStatusCode(result) {
-  return result.crx.response[0].status[0].$.code;
+  try {
+    return result.crx.response[0].status[0].$.code;
+  } catch(e) {
+    return undefined;
+  }
 }
 
 function getStatusText(result) {
-  return result.crx.response[0].status[0]._;
+  try {
+    return result.crx.response[0].status[0]._;
+  } catch(e) {
+    return undefined;
+  }
+}
+
+function getResponseLog(result) {
+  if(result.crx.response[0].log) {
+    return result.crx.response[0].log;
+  }
+  if(result.crx.response[0].data && result.crx.response[0].data[0].log) {
+    return result.crx.response[0].data[0].log;
+  } 
+  return undefined;
 }
 
 function getData(result) {
@@ -186,6 +230,7 @@ module.exports = {
     deletePackage,
     installPackage,
     uninstallPackage,
+    buildPackage,
     getName
 }
 

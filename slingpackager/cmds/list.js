@@ -33,7 +33,7 @@ exports.handler = (argv) => {
 
   packager.test(argv, (success, packageManager) => {
     if(success) {
-        packageManager.list(argv.server, userName, pass);
+        packageManager.list(argv.server, userName, pass,  argv.retry);
     }
   });
 
