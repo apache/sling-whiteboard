@@ -45,10 +45,12 @@ to run slingpackager in your project.
 slingpackager <command>
 
 Commands:
+  slingpackager build <package>      build package on server
   slingpackager delete <package>     delete package on server
   slingpackager install <package>    install package on server
   slingpackager list                 list installed packages
   slingpackager package <folder>     create a package
+  slingpackager test                 test package manager service connection
   slingpackager uninstall <package>  uninstall package on server
   slingpackager upload <package>     upload package to server
 
@@ -182,6 +184,22 @@ Options:
   --verbose, -v  turn on verbose output
 ```
 
+### Build
+
+```
+slingpackager build <package>
+
+build package on server
+
+Options:
+  --version      Show version number                                   [boolean]
+  --help         Show help                                             [boolean]
+  --server, -s   server url                   [default: "http://localhost:8080"]
+  --user, -u     server credentials in the form username:password
+                                                        [default: "admin:admin"]
+  --verbose, -v  turn on verbose output
+```
+
 ### Delete
 
 ```
@@ -260,6 +278,11 @@ slingpackager install /themeclean-flex/ui.apps-1.0-SNAPSHOT.zip
 #### Uninstall package.
 ```
 slingpackager uninstall /themeclean-flex/ui.apps-1.0-SNAPSHOT.zip
+```
+
+#### Build package.
+```
+slingpackager build /themeclean-flex/ui.apps-1.0-SNAPSHOT.zip
 ```
 
 #### Delete package.
