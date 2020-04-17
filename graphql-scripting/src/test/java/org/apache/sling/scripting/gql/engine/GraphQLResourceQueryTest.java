@@ -24,6 +24,7 @@ import static org.junit.Assert.fail;
 import java.util.UUID;
 
 import org.apache.sling.api.resource.Resource;
+import org.apache.sling.scripting.gql.schema.GraphQLSchemaProvider;
 import org.junit.Test;
 import org.mockito.Mockito;
 

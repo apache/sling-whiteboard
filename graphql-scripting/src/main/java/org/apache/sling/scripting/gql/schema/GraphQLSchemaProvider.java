@@ -18,11 +18,9 @@
  * under the License.
  */
 
-package org.apache.sling.scripting.gql.engine;
+package org.apache.sling.scripting.gql.schema;
 
 import java.io.IOException;
-
-import javax.servlet.ServletException;
 
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;

@@ -23,6 +23,7 @@ package org.apache.sling.scripting.gql.engine;
 import javax.script.ScriptException;
 
 import org.apache.sling.api.resource.Resource;
+import org.apache.sling.scripting.gql.schema.GraphQLSchemaProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,9 +96,8 @@ public class GraphQLResourceQuery {
     }
 
     private RuntimeWiring buildWiring(Resource r) {
-        return RuntimeWiring.newRuntimeWiring()
-            .type(TypeRuntimeWiring.newTypeWiring("Query").dataFetcher("currentResource", new EchoDataFetcher(r)).build())
-            .build()
-        ;
+        final RuntimeWiring.Builder b = RuntimeWiring.newRuntimeWiring();
+        b.type(TypeRuntimeWiring.newTypeWiring("Query").dataFetcher("currentResource", new EchoDataFetcher(r)).build());
+        return b.build();
     }
 }

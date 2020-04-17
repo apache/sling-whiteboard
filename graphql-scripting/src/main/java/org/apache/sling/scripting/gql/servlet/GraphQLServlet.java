@@ -31,7 +31,7 @@ import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.scripting.gql.engine.GraphQLResourceQuery;
-import org.apache.sling.scripting.gql.engine.GraphQLSchemaProvider;
+import org.apache.sling.scripting.gql.schema.GraphQLSchemaProvider;
 import org.apache.sling.scripting.gql.engine.GraphQLScriptEngine;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;

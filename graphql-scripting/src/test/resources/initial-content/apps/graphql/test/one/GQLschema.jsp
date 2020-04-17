@@ -25,9 +25,12 @@ additional DataFetcher information that we need.
 --%>
 
 type Query { 
-  currentResource : SlingResource 
+  currentResource : SlingResource ## fetch:test/pipe $
 }
 
 type SlingResource { 
-  path: String resourceType: String 
+  path: String
+  resourceType: String
+  # pathMD5: String ## fetch:test/digest/md5 $.path
+  # pathSHA512: String ## fetch:test/digest/sha512,armored(UTF-8) $.path
 }

@@ -19,6 +19,7 @@
 package org.apache.sling.scripting.gql.engine;
 
 import org.apache.sling.api.resource.Resource;
+import org.apache.sling.scripting.gql.schema.GraphQLSchemaProvider;
 
 class MockSchemaProvider extends GraphQLSchemaProvider {
 
