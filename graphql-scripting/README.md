@@ -19,12 +19,41 @@ implement any suitable dynamic mechanism to provide it.
 
 ----
 
-## Next Steps
+## Decorating the schemas with DataFetcher definitions
 
-  * This is just a rough prototype for now, in "the tests are green, who cares?" style. 
-  * We'll probably need to invent a way to specify which `DataFetchers` to use in the schemas, for example decorating 
-    them with information on how to select a suitable `DataFetchers` OSGi service based on service properties.
-  
+With dynamic schemas, I think the mapping of types and/or fields to DataFetchers belongs in them.
+
+We can use structured comments in the schemas for this so that they stay syntactically valid.
+
+Here's an example where `## fetch:` comments are used for these definitions:
+
+    type Query {
+
+      # Use the 'test:pipe' Fetcher where "test" is a Fetcher namespace,
+      # and pass "$" to it as a data selection expression which in this
+      # case means "use the current Sling Resource".
+      currentResource : SlingResource ## fetch:test/pipe $
+
+    }
+
+    type SlingResource {
+      path: String
+      resourceType: String
+
+      # Use the "test:digest" DataFetcher with the "md5" fetcher option
+      # and pass "$path" as its data selection expression
+      pathMD5: String ## fetch:test/digest/md5 $.path
+
+      # Similar with different fetcher options
+      pathSHA512: String ## fetch:test/digest/sha512,armored(UTF-8) $.path
+    }
+
+A default `DataFetcher` is used for types and fields which have no `## fetch:` comment.
+
+This is **not yet implemented** at commit 25cbb95d, there's just a basic parser for the above
+fetch definitions.
+
+
 ## Multiple GraphQL endpoint styles
 
 This module enables the following GraphQL "styles"
