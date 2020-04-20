@@ -21,29 +21,26 @@ package org.apache.sling.installer.factory.model.impl;
 import java.io.File;
 
 import org.apache.sling.feature.io.artifacts.ArtifactManager;
-import org.apache.sling.jcr.api.SlingRepository;
-import org.apache.sling.jcr.repoinit.JcrRepoInitOpsProcessor;
-import org.apache.sling.repoinit.parser.RepoInitParser;
 
 public class InstallContext {
 
-    public final SlingRepository repository;
+//    public final SlingRepository repository;
 
-    public final JcrRepoInitOpsProcessor repoInitProcessor;
+//    public final JcrRepoInitOpsProcessor repoInitProcessor;
 
-    public final RepoInitParser repoInitParser;
+//    public final RepoInitParser repoInitParser;
 
     public final ArtifactManager artifactManager;
 
     public final File storageDirectory;
 
-    public InstallContext(final SlingRepository repository,
-            final JcrRepoInitOpsProcessor repoInitProcessor,
-            final RepoInitParser repoInitParser,
+    public InstallContext(//final SlingRepository repository,
+//            final JcrRepoInitOpsProcessor repoInitProcessor,
+//            final RepoInitParser repoInitParser,
             final ArtifactManager artifactManager, final File storageDirectory) {
-        this.repository = repository;
-        this.repoInitProcessor = repoInitProcessor;
-        this.repoInitParser = repoInitParser;
+//        this.repository = repository;
+//        this.repoInitProcessor = repoInitProcessor;
+//        this.repoInitParser = repoInitParser;
         this.artifactManager = artifactManager;
         this.storageDirectory = storageDirectory;
     }
