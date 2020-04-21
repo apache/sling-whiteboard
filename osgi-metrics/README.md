@@ -29,7 +29,7 @@ The `org.apache.sling.metrics.osgi.consumers` bundle contains three out-of-the-b
 
 The following (truncated) JSON file exemplifies how the metrics are written
 
-```
+```json
 {
   "application": {
     "startTimeMillis": 1587469534671,
