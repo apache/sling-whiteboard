@@ -1,11 +1,12 @@
 {
   "name": "@apachesling/slingpackager",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "prepare a sling package file for sling and install it",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/apache/sling-whiteboard"
+    "url": "git+https://github.com/apache/sling-whiteboard.git",
+    "directory": "slingpackager"
   },
   "scripts": {
     "test": "mocha"

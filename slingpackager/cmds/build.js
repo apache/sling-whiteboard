@@ -32,7 +32,7 @@ exports.handler = (argv) => {
   logger.init(argv);
   packager.test(argv, (success, packageManager) => {
     if(success) {
-        packageManager.buildPackage(argv.server, userName, pass, argv.package, argv.retry);
+        packageManager.build(argv.server, userName, pass, argv.package, argv.retry);
     }
   });
 

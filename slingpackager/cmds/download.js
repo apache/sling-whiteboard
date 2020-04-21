@@ -18,9 +18,19 @@
  */
 const packager = require('../utils/packager')
 const logger = require('../utils/consoleLogger')
+const fs = require('fs')
+const path = require('path')
 
-exports.command = 'install <package>'
-exports.desc = 'install package on server'
+exports.command = 'download <package>'
+exports.desc = 'download package from server'
+
+exports.builder = {
+  destination: {
+    alias: 'd',
+    describe: 'Package destination directory. Defaults to current directory.'
+  }
+}
+
 exports.handler = (argv) => {
   let user = argv.user.split(':');
   let userName = user[0];
@@ -29,10 +39,17 @@ exports.handler = (argv) => {
     pass = user[1];
   }
 
+  var destDir = process.cwd();
+  if(argv.destination && 
+    fs.existsSync(argv.destination) && 
+    fs.statSync(argv.destination).isDirectory()) {
+      destDir = path.resolve(argv.destination);
+  }
+
   logger.init(argv);
   packager.test(argv, (success, packageManager) => {
     if(success) {
-        packageManager.install(argv.server, userName, pass, argv.package, argv.retry);
+        packageManager.download(argv.server, userName, pass, destDir, argv.package, argv.retry);
     }
   });
 

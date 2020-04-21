@@ -32,7 +32,7 @@ exports.handler = (argv) => {
   logger.init(argv);
   packager.test(argv, (success, packageManager) => {
     if(success) {
-        packageManager.uninstallPackage(argv.server, userName, pass, argv.package,  argv.retry);
+        packageManager.uninstall(argv.server, userName, pass, argv.package,  argv.retry);
     }
   });
 
