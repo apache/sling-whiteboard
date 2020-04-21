@@ -24,7 +24,9 @@ import static org.junit.Assert.fail;
 import java.util.UUID;
 
 import org.apache.sling.api.resource.Resource;
+import org.apache.sling.scripting.gql.schema.FetcherManager;
 import org.apache.sling.scripting.gql.schema.GraphQLSchemaProvider;
+import org.apache.sling.scripting.gql.schema.MockFetcherManager;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -32,6 +34,7 @@ import graphql.ExecutionResult;
 
 public class GraphQLResourceQueryTest {
     private final GraphQLSchemaProvider schemaProvider = new MockSchemaProvider();
+    private final FetcherManager fetchers = new MockFetcherManager();
 
     @Test
     public void basicTest() throws Exception {
@@ -42,7 +45,7 @@ public class GraphQLResourceQueryTest {
         Mockito.when(r.getResourceType()).thenReturn(resourceType);
 
         final GraphQLResourceQuery q = new GraphQLResourceQuery();
-        final ExecutionResult result = q.executeQuery(schemaProvider, r, "{ currentResource { path resourceType } }");
+        final ExecutionResult result = q.executeQuery(schemaProvider, fetchers, r, "{ currentResource { path resourceType } }");
 
         if(!result.getErrors().isEmpty()) {
             fail("Errors:" + result.getErrors());

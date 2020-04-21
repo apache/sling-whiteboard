@@ -22,8 +22,14 @@ package org.apache.sling.scripting.gql.engine;
 
 import javax.script.ScriptException;
 
+import graphql.language.Comment;
+import graphql.language.FieldDefinition;
+import graphql.language.ObjectTypeDefinition;
 import org.apache.sling.api.resource.Resource;
+import org.apache.sling.scripting.gql.schema.FetcherDefinition;
+import org.apache.sling.scripting.gql.schema.FetcherManager;
 import org.apache.sling.scripting.gql.schema.GraphQLSchemaProvider;
+import org.apache.sling.scripting.gql.schema.SlingDataFetcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,24 +44,15 @@ import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import graphql.schema.idl.TypeRuntimeWiring;
 
+import java.util.List;
+
 /** Run a GraphQL query in the context of a Sling Resource */
 public class GraphQLResourceQuery {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
-    
-    static class EchoDataFetcher implements DataFetcher<Object> {
-        private final Object data;
 
-        EchoDataFetcher(Object data) {
-            this.data = data;
-        }
-        @Override
-        public Object get(DataFetchingEnvironment environment) throws Exception {
-            return data;
-        }
-    }
-
-    public ExecutionResult executeQuery(GraphQLSchemaProvider schemaProvider, Resource r, String query) throws ScriptException {
+    public ExecutionResult executeQuery(GraphQLSchemaProvider schemaProvider, FetcherManager fetchers,
+                                        Resource r, String query) throws ScriptException {
         if(r == null) {
             throw new ScriptException("Resource is null");
         }
@@ -76,7 +73,7 @@ public class GraphQLResourceQuery {
         }
         log.info("Resource {} maps to GQL schema {}", r.getPath(), schemaDef);
         try {
-            final GraphQLSchema schema = buildSchema(schemaDef, r);
+            final GraphQLSchema schema = buildSchema(schemaDef, fetchers, r);
             final GraphQL graphQL = GraphQL.newGraphQL(schema).build();
             final ExecutionResult result = graphQL.execute(query);
             return result;
@@ -88,16 +85,55 @@ public class GraphQLResourceQuery {
         }
     }
 
-    private GraphQLSchema buildSchema(String sdl, Resource r) {
+    private GraphQLSchema buildSchema(String sdl, FetcherManager fetchers, Resource r) {
         TypeDefinitionRegistry typeRegistry = new SchemaParser().parse(sdl);
-        RuntimeWiring runtimeWiring = buildWiring(r);
+        RuntimeWiring runtimeWiring = buildWiring(typeRegistry, fetchers, r);
         SchemaGenerator schemaGenerator = new SchemaGenerator();
         return schemaGenerator.makeExecutableSchema(typeRegistry, runtimeWiring);
     }
 
-    private RuntimeWiring buildWiring(Resource r) {
-        final RuntimeWiring.Builder b = RuntimeWiring.newRuntimeWiring();
-        b.type(TypeRuntimeWiring.newTypeWiring("Query").dataFetcher("currentResource", new EchoDataFetcher(r)).build());
-        return b.build();
+    private RuntimeWiring buildWiring(TypeDefinitionRegistry typeRegistry, FetcherManager fetchers, Resource r) {
+        List<ObjectTypeDefinition> types = typeRegistry.getTypes(ObjectTypeDefinition.class);
+        RuntimeWiring.Builder builder = RuntimeWiring.newRuntimeWiring();
+        for (ObjectTypeDefinition type : types) {
+
+            builder.type(type.getName(), typeWiring -> {
+                for (FieldDefinition field : type.getFieldDefinitions()) {
+
+                    DataFetcher<Object> fetcher = getDataFetcher(field, fetchers, r);
+                    if (fetcher != null) {
+                        typeWiring.dataFetcher(field.getName(), fetcher);
+                    }
+                }
+                return typeWiring;
+            });
+        }
+        return builder.build();
     }
+
+    private DataFetcher<Object> getDataFetcher(FieldDefinition field, FetcherManager fetchers,
+                                               Resource r) {
+        List<Comment> comments = field.getComments();
+        for (Comment comment : comments) {
+
+            String commentStr = comment.getContent();
+            if (commentStr.startsWith("#")) {
+                commentStr = commentStr.substring(1).trim();
+
+                try {
+                    FetcherDefinition def = new FetcherDefinition(commentStr);
+                    DataFetcher<Object> fetcher = fetchers.getDataFetcherForType(def, r);
+                    if (fetcher != null) {
+                        return fetcher;
+                    } else {
+                        log.warn("No data fetcher registered for {}", def.toString());
+                    }
+                } catch (IllegalArgumentException iae) {
+                    log.warn("Invalid fetcher definition", iae);
+                }
+            }
+        }
+        return null;
+    }
+
 }

@@ -16,22 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.sling.scripting.gql.engine;
 
+package org.apache.sling.scripting.gql.schema;
+
+import aQute.bnd.annotation.ConsumerType;
+import graphql.schema.DataFetcher;
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.scripting.gql.schema.GraphQLSchemaProvider;
 
-class MockSchemaProvider extends GraphQLSchemaProvider {
+@ConsumerType
+public interface SlingDataFetcher {
 
-    private static final String MOCK_SCHEMA = 
-        "type Query {\n"
-        + "    ## fetch:sling/echo\n"
-        + "    currentResource : SlingResource\n"
-        + "}\n"
-        + "type SlingResource { path: String resourceType: String }";
+    String getNamespace();
 
-    @Override
-    public String getSchema(Resource r) throws Exception {
-        return MOCK_SCHEMA;
-    }
+    String getName();
+
+    DataFetcher<Object> createDataFetcher(FetcherDefinition fetcherDef, Resource r);
+
 }

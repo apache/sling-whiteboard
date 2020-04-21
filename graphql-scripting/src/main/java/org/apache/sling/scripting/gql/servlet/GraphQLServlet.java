@@ -31,6 +31,7 @@ import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.scripting.gql.engine.GraphQLResourceQuery;
+import org.apache.sling.scripting.gql.schema.FetcherManager;
 import org.apache.sling.scripting.gql.schema.GraphQLSchemaProvider;
 import org.apache.sling.scripting.gql.engine.GraphQLScriptEngine;
 import org.osgi.service.component.annotations.Component;
@@ -67,6 +68,9 @@ public class GraphQLServlet extends SlingAllMethodsServlet {
     @Reference
     private GraphQLSchemaProvider schemaProvider;
 
+    @Reference
+    private FetcherManager fetchers;
+
     static class RequestParams {
         final String query;
 
@@ -100,7 +104,7 @@ public class GraphQLServlet extends SlingAllMethodsServlet {
 
         try {
             final GraphQLResourceQuery q = new GraphQLResourceQuery();
-            final ExecutionResult result = q.executeQuery(schemaProvider, resource, params.query);
+            final ExecutionResult result = q.executeQuery(schemaProvider, fetchers, resource, params.query);
             GraphQLScriptEngine.sendJSON(response.getWriter(), result);
         } catch(Exception ex) {
             throw new IOException(ex);
