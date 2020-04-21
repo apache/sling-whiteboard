@@ -25,6 +25,44 @@ The `org.apache.sling.metrics.osgi.consumers` bundle contains three out-of-the-b
 - JSON file written in the bundle data directory
 - Log entries using the SLF4j API
 
+### JSON metrics file sample
+
+The following (truncated) JSON file exemplifies how the metrics are written
+
+```
+{
+  "application": {
+    "startTimeMillis": 1587469534671,
+    "startDurationMillis": 14635
+  },
+  "bundles": [
+    {
+      "symbolicName": "org.osgi.util.pushstream",
+      "startTimeMillis": 1587469535933,
+      "startDurationMillis": 0
+    },
+    {
+      "symbolicName": "org.apache.aries.util",
+      "startTimeMillis": 1587469535935,
+      "startDurationMillis": 0
+    },
+    {
+      "symbolicName": "org.apache.felix.configadmin",
+      "startTimeMillis": 1587469536313,
+      "startDurationMillis": 58
+    }
+  ],
+  "services": [
+    {
+      "identifier": "jmx.objectname=org.apache.sling.classloader:name=FSClassLoader,type=ClassLoader",
+      "restarts": 2
+    }
+  ]
+}
+```
+
+Similar metrics are reported through the other collectors.
+
 ## Usage
 
 1. Add the `org.apache.sling/org.apache.sling.metrics.osgi.collector` bundle and ensure that
