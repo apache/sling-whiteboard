@@ -21,53 +21,52 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.ops4j.pax.exam.CoreOptions.bundle;
+import static org.ops4j.pax.exam.CoreOptions.composite;
 import static org.ops4j.pax.exam.CoreOptions.frameworkProperty;
 import static org.ops4j.pax.exam.CoreOptions.junitBundles;
 import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
 import static org.ops4j.pax.exam.CoreOptions.options;
 
+import java.util.Arrays;
 import java.util.Dictionary;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
-import org.apache.felix.systemready.SystemReady;
 import org.apache.sling.metrics.osgi.StartupMetrics;
 import org.apache.sling.metrics.osgi.StartupMetricsListener;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.ops4j.pax.exam.Configuration;
 import org.ops4j.pax.exam.Option;
-import org.ops4j.pax.exam.junit.PaxExam;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceRegistration;
 
-@RunWith(PaxExam.class)
-public class SmokeIT {
+public abstract class AbstractIT {
+
+    private static final String TESTED_BUNDLE_LOCATION = "reference:file:target/classes";
 
     @Inject
-    private BundleContext bc;
-    
+    protected BundleContext bc;
+
     @Configuration
     public Option[] config() {
         return options(
-            // lower timeout, we don't have
+            // lower timeout, we don't have bounces
             frameworkProperty(StartupTimeCalculator.PROPERTY_READINESS_DELAY).value("100"),
-            bundle("reference:file:target/classes"),
+            bundle(TESTED_BUNDLE_LOCATION),
             junitBundles(),
-            mavenBundle("org.apache.felix", "org.apache.felix.systemready", "0.4.2"),
-            mavenBundle("org.apache.felix", "org.apache.felix.rootcause", "0.1.0"),
             mavenBundle("org.apache.felix", "org.apache.felix.scr", "2.1.16"),
             mavenBundle("org.osgi", "org.osgi.util.promise", "1.1.1"),
-            mavenBundle("org.osgi", "org.osgi.util.function", "1.1.0")
+            mavenBundle("org.osgi", "org.osgi.util.function", "1.1.0"),
+            composite(specificOptions())
         );
     }
     
+    protected abstract Option[] specificOptions();
+
     @Test
     public void registerListenerAfterSystemIsReady() throws InterruptedException {
         runBasicTest(false);
@@ -79,28 +78,34 @@ public class SmokeIT {
     }
 
     private void runBasicTest(boolean registerListenerFirst) throws InterruptedException {
-        CountDownLatch latch = new CountDownLatch(1);
-        DebugListener listener = new DebugListener(latch);
         
+        Set<String> expectedBundleNames = Arrays.stream(bc.getBundles())
+            .filter( b -> b.getBundleId() != Constants.SYSTEM_BUNDLE_ID ) // no framework bundle
+            .filter( b -> !b.getLocation().equals(TESTED_BUNDLE_LOCATION) ) // not the bundle under test
+            .map ( b -> b.getSymbolicName() )
+            .filter( bsn ->  ! bsn.startsWith("org.ops4j")  ) // no ops4j bundles
+            .filter( bsn ->  ! bsn.startsWith("PAXEXAM")  ) // no ops4j bundles
+            .filter( bsn -> ! bsn.contains("geronimo-atinject")) // injected early on by Pax-Exam
+            .collect(Collectors.toSet());
+        
+        WaitForResultsStartupMetricsListener listener = new WaitForResultsStartupMetricsListener();
+
+        // service that will be tracked as restarting
         Runnable foo = () -> {};
-        
         Dictionary<String, Object> props = new Hashtable<>();
         props.put(Constants.SERVICE_PID, "some.service.pid");
-        
         ServiceRegistration<Runnable> reg = bc.registerService(Runnable.class, foo, props);
         reg.unregister();
         reg = bc.registerService(Runnable.class, foo, props);
         reg.unregister();
 
         if ( registerListenerFirst ) {
-            bc.registerService(SystemReady.class, new SystemReady() {}, null);
+            markSystemReady();
             bc.registerService(StartupMetricsListener.class, listener, null);
         } else {
+            markSystemReady();
             bc.registerService(StartupMetricsListener.class, listener, null);
-            bc.registerService(SystemReady.class, new SystemReady() {}, null);
         }
-        
-        latch.await();
         
         StartupMetrics metrics = listener.getMetrics();
         
@@ -108,12 +113,6 @@ public class SmokeIT {
         Set<String> trackedBundleNames = metrics.getBundleStartDurations().stream()
                 .map( bsd -> bsd.getSymbolicName())
                 .collect(Collectors.toSet());
-        Set<String> expectedBundleNames = new HashSet<>();
-        expectedBundleNames.add("org.apache.felix.systemready");
-        expectedBundleNames.add("org.apache.felix.rootcause");
-        expectedBundleNames.add("org.apache.felix.scr");
-        expectedBundleNames.add("org.osgi.util.promise");
-        expectedBundleNames.add("org.osgi.util.function");
         
         assertTrue("Tracked bundle names " + trackedBundleNames + " did not contain " + expectedBundleNames, 
             trackedBundleNames.containsAll(expectedBundleNames));
@@ -122,24 +121,5 @@ public class SmokeIT {
         assertThat("Restarted component service identifier", metrics.getServiceRestarts().get(0).getServiceIdentifier(), equalTo(Constants.SERVICE_PID+"="+props.get(Constants.SERVICE_PID)));
     }
 
-    static class DebugListener implements StartupMetricsListener {
-        
-        private CountDownLatch latch;
-        private StartupMetrics metrics;
-
-        public DebugListener(CountDownLatch latch) {
-            this.latch = latch;
-        }
-        
-        @Override
-        public void onStartupComplete(StartupMetrics metrics) {
-            this.metrics = metrics;
-            latch.countDown();
-        }
-
-        public StartupMetrics getMetrics() {
-            return metrics;
-        }
-        
-    }
+    protected abstract void markSystemReady();
 }

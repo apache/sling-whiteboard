@@ -64,7 +64,7 @@ public class StartupTimeCalculator {
         this.bundleCalculator = bundleCalculator;
         this.serviceCalculator = serviceCalculator;
         this.readyTracker = new ServiceTracker<>(ctx, 
-                ctx.createFilter("(" + Constants.OBJECTCLASS+"=org.apache.felix.systemready.SystemReady)"),
+                ctx.createFilter("(|(" + Constants.OBJECTCLASS+"=org.apache.felix.systemready.SystemReady)(&(" + Constants.OBJECTCLASS+ "=org.apache.felix.hc.api.condition.Healthy)(tag=systemalive)))"),
                 new ServiceTrackerCustomizerAdapter<Object, Object>() {
 
                     @Override
