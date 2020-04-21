@@ -52,7 +52,9 @@ import static org.ops4j.pax.exam.CoreOptions.wrappedBundle;
 import static org.ops4j.pax.exam.cm.ConfigurationAdminOptions.newConfiguration;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public abstract class GraphQLScriptingTestSupport extends TestSupport {
 
@@ -137,7 +139,7 @@ public abstract class GraphQLScriptingTestSupport extends TestSupport {
         final long endTime = System.currentTimeMillis() + STARTUP_WAIT_SECONDS * 1000;
 
         while (System.currentTimeMillis() < endTime) {
-            final int status = executeRequest("GET", path, -1).getStatus();
+            final int status = executeRequest("GET", path, null, -1).getStatus();
             statuses.add(status);
             if (status == expectedStatus) {
                 return;
@@ -148,7 +150,8 @@ public abstract class GraphQLScriptingTestSupport extends TestSupport {
         fail("Did not get a " + expectedStatus + " status at " + path + " got " + statuses);
     }
 
-    protected MockSlingHttpServletResponse executeRequest(final String method, final String path, final int expectedStatus) throws Exception {
+    protected MockSlingHttpServletResponse executeRequest(final String method, 
+        final String path, Map<String, Object> params, final int expectedStatus) throws Exception {
         final ResourceResolver resourceResolver = resourceResolverFactory.getAdministrativeResourceResolver(null);
         assertNotNull("Expecting ResourceResolver", resourceResolver);
         final MockSlingHttpServletRequest request = new MockSlingHttpServletRequest(resourceResolver) {
@@ -159,6 +162,11 @@ public abstract class GraphQLScriptingTestSupport extends TestSupport {
         };
 
         request.setPathInfo(path);
+
+        if(params != null) {
+            request.setParameterMap(params);
+        }
+
         final MockSlingHttpServletResponse response = new MockSlingHttpServletResponse();
         requestProcessor.processRequest(request, response, resourceResolver);
 
@@ -171,6 +179,18 @@ public abstract class GraphQLScriptingTestSupport extends TestSupport {
     }
 
     protected String getContent(String path) throws Exception {
-        return executeRequest("GET", path, 200).getOutputAsString();
+        return executeRequest("GET", path, null, 200).getOutputAsString();
+    }
+
+    protected String getContent(String path, String ... params) throws Exception {
+        return executeRequest("GET", path, toMap(params), 200).getOutputAsString();
+    }
+
+    protected Map<String, Object> toMap(String ...keyValuePairs) {
+        final Map<String, Object> result = new HashMap<>();
+        for(int i=0 ; i < keyValuePairs.length; i+=2) {
+            result.put(keyValuePairs[i], keyValuePairs[i+1]);
+        }
+        return result;
     }
 }

@@ -8,5 +8,11 @@
         "sling:resourceType": "graphql/test/one",
         "sling:resourceSuperType": "graphql/test/root",
         "title": "GraphQL one"
+    },
+    "two": {
+        "jcr:primaryType": "nt:unstructured",
+        "sling:resourceType": "graphql/test/two",
+        "sling:resourceSuperType": "graphql/test/root",
+        "title": "GraphQL two"
     }
 }

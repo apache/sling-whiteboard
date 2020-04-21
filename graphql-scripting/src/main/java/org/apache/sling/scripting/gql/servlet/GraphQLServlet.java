@@ -34,7 +34,11 @@ import org.apache.sling.scripting.gql.engine.GraphQLResourceQuery;
 import org.apache.sling.scripting.gql.schema.GraphQLSchemaProvider;
 import org.apache.sling.scripting.gql.engine.GraphQLScriptEngine;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,17 +56,43 @@ import graphql.ExecutionResult;
 
 @Component(
     service = Servlet.class,
+    immediate = true,
+    configurationPolicy=ConfigurationPolicy.REQUIRE,
     property = {
-         // TODO the servlet should not be mounted by default...just testing it out for now
-         "sling.servlet.resourceTypes=sling/servlet/default",
-         "sling.servlet.methods=GET",
-         "sling.servlet.methods=HEAD",
-         "sling.servlet.extensions=gql"
-    }
-)
+        "service.description=Sling GraphQL Servlet",
+        "service.vendor=The Apache Software Foundation"
+    })
+@Designate(ocd = GraphQLServlet.Config.class, factory=true)
 public class GraphQLServlet extends SlingAllMethodsServlet {
     private static final long serialVersionUID = 1L;
     private final Logger log = LoggerFactory.getLogger(getClass());
+
+    private final static String NAME = GraphQLServlet.class.getName();
+
+    @ObjectClassDefinition(
+        name = "Apache Sling GraphQL Servlet",
+        description = "Servlet that implements GraphQL endpoints")
+    public @interface Config {
+        @AttributeDefinition(
+            name = "Selectors",
+            description="Standard Sling servlet property")
+        String[] sling_servlet_selectors() default "";
+
+        @AttributeDefinition(
+            name = "Resource Types",
+            description="Standard Sling servlet property")
+        String[] sling_servlet_resourceTypes() default "sling/servlet/default";
+
+        @AttributeDefinition(
+            name = "Methods",
+            description="Standard Sling servlet property")
+        String[] sling_servlet_methods() default "GET";
+
+        @AttributeDefinition(
+            name = "Extensions",
+            description="Standard Sling servlet property")
+        String[] sling_servlet_extensions() default "gql";
+    }
 
     @Reference
     private GraphQLSchemaProvider schemaProvider;
