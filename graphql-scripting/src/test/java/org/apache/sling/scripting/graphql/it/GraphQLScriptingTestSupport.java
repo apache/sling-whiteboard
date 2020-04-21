@@ -48,6 +48,7 @@ import static org.ops4j.pax.exam.CoreOptions.junitBundles;
 import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
 import static org.ops4j.pax.exam.CoreOptions.when;
 import static org.ops4j.pax.exam.CoreOptions.vmOption;
+import static org.ops4j.pax.exam.CoreOptions.wrappedBundle;
 import static org.ops4j.pax.exam.cm.ConfigurationAdminOptions.newConfiguration;
 
 import java.util.ArrayList;
@@ -84,6 +85,7 @@ public abstract class GraphQLScriptingTestSupport extends TestSupport {
             mavenBundle().groupId("org.apache.sling").artifactId("org.apache.sling.servlet-helpers").versionAsInProject(),
             mavenBundle().groupId("com.google.code.gson").artifactId("gson").versionAsInProject(),
             slingResourcePresence(),
+            jsonPath(),
             junitBundles()
         );
     }
@@ -101,6 +103,17 @@ public abstract class GraphQLScriptingTestSupport extends TestSupport {
             slingQuickstartOakTar(workingDirectory, httpPort),
             slingScripting(),
             slingScriptingJsp()
+        );
+    }
+
+    protected Option jsonPath() {
+        return composite(
+            mavenBundle().groupId("com.jayway.jsonpath").artifactId("json-path").versionAsInProject(),
+            mavenBundle().groupId("net.minidev").artifactId("json-smart").versionAsInProject(),
+            mavenBundle().groupId("net.minidev").artifactId("accessors-smart").versionAsInProject(),
+            mavenBundle().groupId("org.ow2.asm").artifactId("asm").versionAsInProject(),
+            mavenBundle().groupId("com.jayway.jsonpath").artifactId("json-path-assert").versionAsInProject(),
+            mavenBundle().groupId("org.apache.servicemix.bundles").artifactId("org.apache.servicemix.bundles.hamcrest").versionAsInProject()
         );
     }
 

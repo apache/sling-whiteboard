@@ -40,7 +40,7 @@
 
     <!-- GSON requires Java 11 - we might use something else later -->
     <sling.java.version>11</sling.java.version>
-    <org.ops4j.pax.exam.version>4.13.1</org.ops4j.pax.exam.version>
+    <org.ops4j.pax.exam.version>4.13.3</org.ops4j.pax.exam.version>
 
     <!-- To debug the pax process, override this with -D -->
     <pax.vm.options>-Xmx512M</pax.vm.options>
@@ -235,6 +235,30 @@
       <groupId>org.ops4j.pax.exam</groupId>
       <artifactId>pax-exam-link-mvn</artifactId>
       <version>${org.ops4j.pax.exam.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.ops4j.pax.url</groupId>
+      <artifactId>pax-url-wrap</artifactId>
+      <version>2.3.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.jayway.jsonpath</groupId>
+      <artifactId>json-path</artifactId>
+      <version>2.4.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.jayway.jsonpath</groupId>
+      <artifactId>json-path-assert</artifactId>
+      <version>2.2.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.servicemix.bundles</groupId>
+      <artifactId>org.apache.servicemix.bundles.hamcrest</artifactId>
+      <version>1.3_1</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

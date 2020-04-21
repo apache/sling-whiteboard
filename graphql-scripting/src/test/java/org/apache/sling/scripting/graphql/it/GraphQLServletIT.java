@@ -20,6 +20,8 @@ package org.apache.sling.scripting.graphql.it;
 
 import javax.inject.Inject;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
+
 import org.apache.sling.resource.presence.ResourcePresence;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,7 +32,8 @@ import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
 import org.ops4j.pax.exam.spi.reactors.PerClass;
 import org.ops4j.pax.exam.util.Filter;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.ops4j.pax.exam.cm.ConfigurationAdminOptions.factoryConfiguration;
 
 @RunWith(PaxExam.class)
@@ -55,8 +58,8 @@ public class GraphQLServletIT extends GraphQLScriptingTestSupport {
     public void testJsonContent() throws Exception {
         final String path = "/graphql/one";
         final String json = getContent(path + ".gql");
-        // TODO we should really parse this..or run detailed tests in unit tests, and just the basics here
-        final String expected = "{\"currentResource\":{\"path\":\"/content/graphql/one\",\"resourceType\":\"graphql/test/one\"}}";
-        assertEquals(expected, json);
+        assertThat(json, hasJsonPath("$.currentResource"));
+        assertThat(json, hasJsonPath("$.currentResource.path", equalTo("/content/graphql/one")));
+        assertThat(json, hasJsonPath("$.currentResource.resourceType", equalTo("graphql/test/one")));
     }
 }
