@@ -25,7 +25,7 @@ const logger = require('./consoleLogger')
 
 const endpoint = "/crx/packmgr/service.jsp";
 
-const checkService = (url, username, password, callback) => {
+const check = (url, username, password, callback) => {
     let serviceURL = url + endpoint;
     logger.debug('Checking AEM Package Manager.');
     logger.debug('Service call: ', serviceURL);
@@ -58,7 +58,7 @@ const list = (url, username, password, maxRetry) => {
   });
 }
 
-const uploadPackage = (url, username, password, packagePath, install, maxRetry) => {
+const upload = (url, username, password, packagePath, install, maxRetry) => {
   logger.log('Uploading AEM package',packagePath,'on', url);
 
   let serviceURL = url + endpoint;
@@ -75,19 +75,55 @@ const deletePackage = (url, username, password, package, maxRetry) => {
   executePackageCommand(url, username, password, package, 'rm', maxRetry);
 }
 
-const installPackage = (url, username, password, package, maxRetry) => {
+const install = (url, username, password, package, maxRetry) => {
   logger.log('Installing AEM package',package,'on', url);
   executePackageCommand(url, username, password, package, 'inst', maxRetry);
 }
 
-const uninstallPackage = (url, username, password, package, maxRetry) => {
+const uninstall = (url, username, password, package, maxRetry) => {
   logger.log('Uninstalling AEM package',package,'on', url);
   executePackageCommand(url, username, password, package, 'uninst', maxRetry);
 }
 
-const buildPackage = (url, username, password, package, maxRetry) => {
+const build = (url, username, password, package, maxRetry) => {
   logger.log('Building AEM package', package, 'on', url);
   executePackageCommand(url, username, password, package, 'build', maxRetry);
+}
+
+const download = (url, username, password, destination, package, maxRetry) => {
+  logger.log('Downloading AEM package', package, 'from', url, 'to', destination);
+  let serviceURL = url + endpoint + '?cmd=get&name='+package;
+  downloadPackag({serviceURL, username, password, destination, package, maxRetry});
+}
+
+function downloadPackag(data) {
+  data.download = true;
+  if(data.filePath) {
+      callService(data, (error, response) => {
+          if(error) {
+              logger.error("Unable to download package.");
+              process.exit(1);
+          } else {
+              if(fs.existsSync(data.filePath)) {
+                  var stats = fs.statSync(data.filePath);
+                  logger.log("Package downloaded.");
+                  logger.log(stats.size + " " + data.filePath);
+              }
+          }
+      }, true).pipe(fs.createWriteStream(data.filePath));;
+  } else {
+      callService(data, (error, response) => {
+          if(error) {
+              logger.error("Unable to download package.");
+              process.exit(1);
+          } else {
+              let fileName = response.headers['content-disposition'].split('=').reverse()[0];
+              let filePath = path.join(data.destination, fileName);
+              data.filePath = filePath;
+              downloadPackag(data);
+          }
+      }, true);
+  }
 }
 
 const getName = () => {
@@ -146,6 +182,10 @@ function callService(data, callback) {
 
           return;
       } else if(response && response.statusCode===200) {
+        if(data.download) {
+          callback(undefined, response);
+          return;
+        }
         xml2js.parseString(body, (error, result) => {
           if(result) {
             logger.debug('Response body: ',body);
@@ -189,7 +229,8 @@ function displayPackages(packages) {
     logger.log('name='+packages[i].name[0]+
        ' group='+packages[i].group[0]+
        ' version='+packages[i].version[0]+
-       ' path='+packages[i].downloadName[0]);
+       ' path='+packages[i].downloadName[0]+
+       ' size='+packages[i].size[0]);
   }
 }
 
@@ -224,13 +265,14 @@ function getData(result) {
 }
 
 module.exports = {
-    checkService,
+    check,
     list,
-    uploadPackage,
+    upload,
     deletePackage,
-    installPackage,
-    uninstallPackage,
-    buildPackage,
+    install,
+    uninstall,
+    build,
+    download,
     getName
 }
 

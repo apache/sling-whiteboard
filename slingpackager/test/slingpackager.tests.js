@@ -64,6 +64,13 @@ describe('slingpackager', function() {
         });
     });
 
+    // download test
+    describe('download', function() {
+        it('should download package', function() {
+            testDownload();
+        });
+    });
+
     // install test
     describe('install', function() {
         it('should install package', function(done) {
@@ -117,6 +124,16 @@ function testList() {
     var cmd = 'node bin/slingpackager list' + ' -s ' + server;
     var output = exec(cmd);
     logger.debug(output);
+}
+
+// download command test
+function testDownload() {
+    var orgSize = fs.statSync(packPath).size;
+    cleanup();
+    var cmd = 'node bin/slingpackager download ' + packServerName + ' -d test ' + ' -s ' + server;
+    var output = exec(cmd);
+    logger.debug(output);
+    assert.equal((fs.existsSync(packPath) && fs.statSync(packPath).size==orgSize), true);
 }
 
 // install command test

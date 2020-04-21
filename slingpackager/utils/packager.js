@@ -43,12 +43,12 @@ function testService(argv, callback) {
 function checkService(data, callback) {
     testCount = testCount + 1;
     logger.debug(testCount + '. Testing',pm.getName(),'on',data.server);
-    pm.checkService(data.server, data.userName, data.password, (success) => {
+    pm.check(data.server, data.userName, data.password, (success) => {
         if(success) {
             callback(data, true);
         } else {
             logger.debug(testCount + '. Testing',aemPackager.getName(),'on',data.server);
-            aemPackager.checkService(data.server, data.userName, data.password, (success) => {
+            aemPackager.check(data.server, data.userName, data.password, (success) => {
               if(success) {
                   pm = aemPackager;
               }

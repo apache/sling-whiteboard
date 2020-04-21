@@ -27,7 +27,7 @@ const deleteEndpoint = "/bin/cpm/package.delete.json";
 const installEndpoint = "/bin/cpm/package.install.json";
 const uninstallEndpoint = "/bin/cpm/package.uninstall.json";
 
-const checkService = (url, username, password, callback) => {
+const check = (url, username, password, callback) => {
     let serviceURL = url + '/bin/cpm/package.json';
     logger.debug('Checking Composum Package Manager.');
     logger.debug('Service call: ', serviceURL);
@@ -46,10 +46,10 @@ const list = (url, username, password, maxRetry) => {
     listPackages(url, username, password, '', maxRetry);
 }
 
-const uploadPackage = (url, username, password, packagePath, install, maxRetry) => {
+const upload = (url, username, password, packagePath, install, maxRetry) => {
     logger.log('Uploading package', packagePath, 'on', url);
 
-    let serviceURL = url + uploadEndpoint;
+    let serviceURL = url + uploadEndpoint + "?force=true";
     let post = callPostService({serviceURL, username, password, maxRetry}, (error, json) => {
         if(error) {
             logger.error('Unable to upload package', packagePath);
@@ -89,7 +89,7 @@ const deletePackage = (url, username, password, package, maxRetry) => {
     logger.debug(JSON.stringify(req.toJSON()));
 }
 
-const installPackage = (url, username, password, package, maxRetry) => {
+const install = (url, username, password, package, maxRetry) => {
     logger.log('Installing package', package, 'on', url);
 
     let post = postJob({url, username, password, package, maxRetry}, 'install', (error, result) => {
@@ -101,7 +101,7 @@ const installPackage = (url, username, password, package, maxRetry) => {
     });
 }
 
-const uninstallPackage = (url, username, password, package, maxRetry) => {
+const uninstall = (url, username, password, package, maxRetry) => {
     logger.log('Uninstalling package', package, 'on', url);
 
     let post = postJob({url, username, password, package, maxRetry}, 'uninstall', (error, result) => {
@@ -118,7 +118,7 @@ const uninstallPackage = (url, username, password, package, maxRetry) => {
     });
 }
 
-const buildPackage = (url, username, password, package, maxRetry) => {
+const build = (url, username, password, package, maxRetry) => {
     logger.log('Building package', package, 'on', url);
 
     let post = postJob({url, username, password, package, maxRetry}, 'assemble', (error, result) => {
@@ -135,8 +135,43 @@ const buildPackage = (url, username, password, package, maxRetry) => {
     });
 }
 
+const download = (url, username, password, destination, package, maxRetry) => {
+    logger.log('Downloading package', package, 'from', url, 'to', destination);
+    let serviceURL = url + "/bin/cpm/package.download.zip" + package;
+    downloadPackag({serviceURL, username, password, destination, package, maxRetry});
+}
+
 const getName = () => {
     return 'Composum Package Manager';
+}
+
+function downloadPackag(data) {
+    if(data.filePath) {
+        callGetService(data, (error, response) => {
+            if(error) {
+                logger.error("Unable to download package.");
+                process.exit(1);
+            } else {
+                if(fs.existsSync(data.filePath)) {
+                    var stats = fs.statSync(data.filePath);
+                    logger.log("Package downloaded.");
+                    logger.log(stats.size + " " + data.filePath);
+                }
+            }
+        }, true).pipe(fs.createWriteStream(data.filePath));;
+    } else {
+        callGetService(data, (error, response) => {
+            if(error) {
+                logger.error("Unable to download package.");
+                process.exit(1);
+            } else {
+                let fileName = response.headers['content-disposition'].split('=').reverse()[0];
+                let filePath = path.join(data.destination, fileName);
+                data.filePath = filePath;
+                downloadPackag(data);
+            }
+        }, true);
+    }
 }
 
 function listPackages(url, username, password, path, maxRetry) {
@@ -191,9 +226,9 @@ function postJob(data, operation, callback) {
     return post;
 }
 
-function callGetService(data, callback) {
+function callGetService(data, callback, download=false) {
     data.method = "GET";
-    return callService(data, callback);
+    return callService(data, callback, download);
 }
 
 function callPostService(data, callback) {
@@ -203,7 +238,7 @@ function callPostService(data, callback) {
     return post;
 }
 
-function callService(data, callback) {
+function callService(data, callback, download=false) {
     if(data.retryCount === undefined) {
         data.retryCount = 0;
         if(data.maxRetry === undefined) {
@@ -231,9 +266,13 @@ function callService(data, callback) {
 
         if (response && response.statusCode === 200) {
             if (body) {
-                var json = JSON.parse(body);
-                logger.debug('Response:', JSON.stringify(json, undefined, '   '));
-                callback(undefined, json);
+                if(download) {
+                    callback(undefined, response);
+                } else {
+                    var json = JSON.parse(body);
+                    logger.debug('Response:', JSON.stringify(json, undefined, '   '));
+                    callback(undefined, json);
+                }
                 return;
             } else {
                 logger.debug("Respons has no body.");
@@ -294,13 +333,14 @@ function getJobOutput(url, username, password, eventId, callback, jobState) {
 }
 
 module.exports = {
-    checkService,
+    check,
     list,
-    uploadPackage,
+    upload,
     deletePackage,
-    installPackage,
-    uninstallPackage,
-    buildPackage,
+    install,
+    uninstall,
+    build,
+    download,
     getName
 }
 
