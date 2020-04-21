@@ -84,6 +84,11 @@ public class GraphQLServletIT extends GraphQLScriptingTestSupport {
     }
 
     @Test
+    public void testMissingQuery() throws Exception {
+        executeRequest("GET", "/graphql/two.gql", null, 400);
+    }
+
+    @Test
     public void testDefaultJson() throws Exception {
         final String json = getContent("/graphql/two.json");
         assertThat(json, hasJsonPath("$.title", equalTo("GraphQL two")));

@@ -24,6 +24,7 @@ import java.io.IOException;
 
 import javax.script.ScriptException;
 import javax.servlet.Servlet;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.sling.api.SlingHttpServletRequest;
@@ -67,7 +68,7 @@ public class GraphQLServlet extends SlingAllMethodsServlet {
     private static final long serialVersionUID = 1L;
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    private final static String NAME = GraphQLServlet.class.getName();
+    public static final String P_QUERY = "query";
 
     @ObjectClassDefinition(
         name = "Apache Sling GraphQL Servlet",
@@ -97,40 +98,29 @@ public class GraphQLServlet extends SlingAllMethodsServlet {
     @Reference
     private GraphQLSchemaProvider schemaProvider;
 
-    static class RequestParams {
-        final String query;
-
-        RequestParams(SlingHttpServletRequest request) {
-            final String q = request.getParameter("query");
-
-            // TODO hack for now...
-            final String defaultQuery = "{ currentResource { path resourceType } }";
-            query = (q != null && q.trim().length() > 0) ? q.trim() : defaultQuery;
-        }
-
-        @Override
-        public String toString() {
-            return String.format("Query=%s", query);
-        }
-    }
-
     @Override
     public void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
-        execute(request.getResource(), new RequestParams(request), response);
+        execute(request.getResource(), request, response);
     }
 
     @Override
     public void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
-        execute(request.getResource(), new RequestParams(request), response);
+        execute(request.getResource(), request, response);
     }
 
-    private void execute(Resource resource, RequestParams params, SlingHttpServletResponse response) throws IOException {
+    private void execute(Resource resource, SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
+        final String query = request.getParameter(P_QUERY);
+        if(query == null || query.trim().length() == 0) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing request parameter:" + P_QUERY);
+            return;
+        }
+
         try {
             final GraphQLResourceQuery q = new GraphQLResourceQuery();
-            final ExecutionResult result = q.executeQuery(schemaProvider, resource, params.query);
+            final ExecutionResult result = q.executeQuery(schemaProvider, resource, query);
             GraphQLScriptEngine.sendJSON(response.getWriter(), result);
         } catch(Exception ex) {
             throw new IOException(ex);
