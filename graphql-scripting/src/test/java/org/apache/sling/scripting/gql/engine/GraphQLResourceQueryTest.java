@@ -44,14 +44,24 @@ public class GraphQLResourceQueryTest {
         Mockito.when(r.getPath()).thenReturn(path);
         Mockito.when(r.getResourceType()).thenReturn(resourceType);
 
-        final GraphQLResourceQuery q = new GraphQLResourceQuery();
-        final ExecutionResult result = q.executeQuery(schemaProvider, fetchers, r, "{ currentResource { path resourceType } }");
+        final GraphQLResourceQuery q1 = new GraphQLResourceQuery();
+        final ExecutionResult result1 = q1.executeQuery(schemaProvider, fetchers, r, "{ currentResource { path resourceType } }");
 
-        if(!result.getErrors().isEmpty()) {
-            fail("Errors:" + result.getErrors());
+        if(!result1.getErrors().isEmpty()) {
+            fail("Errors:" + result1.getErrors());
         }
         // TODO brittle test...
-        final String expected = "{currentResource={path=" + path + ", resourceType=" + resourceType + "}}";
-        assertEquals(expected, result.getData().toString());
+        final String expected1 = "{currentResource={path=" + path + ", resourceType=" + resourceType + "}}";
+        assertEquals(expected1, result1.getData().toString());
+
+        final GraphQLResourceQuery q2 = new GraphQLResourceQuery();
+        final ExecutionResult result2 = q2.executeQuery(schemaProvider, fetchers, r, "{ staticContent { test } }");
+
+        if(!result2.getErrors().isEmpty()) {
+            fail("Errors:" + result2.getErrors());
+        }
+        // TODO brittle test...
+        final String expected2 = "{staticContent={test=true}}";
+        assertEquals(expected2, result2.getData().toString());
     }
 }

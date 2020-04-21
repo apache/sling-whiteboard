@@ -23,6 +23,9 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import org.apache.sling.api.resource.Resource;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 public class MockFetcherManager extends FetcherManager {
 
     static class EchoDataFetcher implements DataFetcher<Object> {
@@ -44,7 +47,7 @@ public class MockFetcherManager extends FetcherManager {
 
         @Override
         public String getNamespace() {
-            return "sling";
+            return "test";
         }
 
         @Override
@@ -58,8 +61,43 @@ public class MockFetcherManager extends FetcherManager {
         }
     }
 
+    static class StaticDataFetcher implements DataFetcher<Object> {
+
+        private final Object data;
+
+        StaticDataFetcher(Object data) {
+            this.data = data;
+        }
+
+        @Override
+        public Object get(DataFetchingEnvironment environment) {
+            return data;
+        }
+
+    }
+
+    static class StaticSlingDataFetcher implements SlingDataFetcher {
+
+        @Override
+        public String getNamespace() {
+            return "test";
+        }
+
+        @Override
+        public String getName() {
+            return "static";
+        }
+
+        @Override
+        public DataFetcher<Object> createDataFetcher(FetcherDefinition fetcherDef, Resource r) {
+            Map<String, Object> data = new LinkedHashMap<>(4);
+            data.put("test", true);
+            return new StaticDataFetcher(data);
+        }
+    }
+
     public MockFetcherManager() {
-        super(new EchoSlingDataFetcher());
+        super(new EchoSlingDataFetcher(), new StaticSlingDataFetcher());
     }
 
 }

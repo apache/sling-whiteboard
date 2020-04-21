@@ -25,10 +25,13 @@ class MockSchemaProvider extends GraphQLSchemaProvider {
 
     private static final String MOCK_SCHEMA = 
         "type Query {\n"
-        + "    ## fetch:sling/echo\n"
+        + "    ## fetch:test/echo\n"
         + "    currentResource : SlingResource\n"
+        + "    ## fetch:test/static\n"
+        + "    staticContent: Test"
         + "}\n"
-        + "type SlingResource { path: String resourceType: String }";
+        + "type SlingResource { path: String resourceType: String }\n"
+        + "type Test { test: Boolean }";
 
     @Override
     public String getSchema(Resource r) throws Exception {
