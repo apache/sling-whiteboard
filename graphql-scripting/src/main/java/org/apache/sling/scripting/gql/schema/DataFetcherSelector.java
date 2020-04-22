@@ -21,8 +21,8 @@ package org.apache.sling.scripting.gql.schema;
 
 import graphql.schema.DataFetcher;
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.scripting.gql.api.DataFetcherFactory;
-import org.apache.sling.scripting.gql.api.FetcherDefinition;
+import org.apache.sling.scripting.gql.api.DataFetcherProvider;
+import org.apache.sling.scripting.gql.api.DataFetcherDefinition;
 import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -33,30 +33,30 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-@Component(service = FetcherManager.class, immediate = true, property = {
+@Component(service = DataFetcherSelector.class, immediate = true, property = {
         Constants.SERVICE_DESCRIPTION + "=Apache Sling Scripting GraphQL FetcherManager",
         Constants.SERVICE_VENDOR + "=The Apache Software Foundation" })
-public class FetcherManager {
+public class DataFetcherSelector {
 
     @Reference(
         name = "slingFetchers",
         cardinality = ReferenceCardinality.MULTIPLE,
         policy = ReferencePolicy.DYNAMIC)
-    private final List<DataFetcherFactory> factories = new CopyOnWriteArrayList<>();
+    private final List<DataFetcherProvider> factories = new CopyOnWriteArrayList<>();
 
-    public FetcherManager() {
+    public DataFetcherSelector() {
         // public default constructor required ...
     }
 
-    FetcherManager(DataFetcherFactory... testFetchers) {
+    DataFetcherSelector(DataFetcherProvider... testFetchers) {
         factories.addAll(Arrays.asList(testFetchers));
     }
 
-    public DataFetcher<Object> getDataFetcherForType(FetcherDefinition def, Resource r) {
+    public DataFetcher<Object> getDataFetcherForType(DataFetcherDefinition def, Resource r) {
         String ns = def.getFetcherNamespace();
         String name = def.getFetcherName();
 
-        for (DataFetcherFactory factory : factories) {
+        for (DataFetcherProvider factory : factories) {
             if (factory.getNamespace().equals(ns) && factory.getName().equals(name)) {
                 return factory.createDataFetcher(def, r);
             }

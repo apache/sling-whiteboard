@@ -32,7 +32,7 @@ import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.scripting.gql.engine.GraphQLResourceQuery;
-import org.apache.sling.scripting.gql.schema.FetcherManager;
+import org.apache.sling.scripting.gql.schema.DataFetcherSelector;
 import org.apache.sling.scripting.gql.schema.GraphQLSchemaProvider;
 import org.apache.sling.scripting.gql.engine.GraphQLScriptEngine;
 import org.osgi.service.component.annotations.Component;
@@ -101,7 +101,7 @@ public class GraphQLServlet extends SlingAllMethodsServlet {
     private GraphQLSchemaProvider schemaProvider;
 
     @Reference
-    private FetcherManager fetchers;
+    private DataFetcherSelector fetchers;
 
     @Override
     public void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {

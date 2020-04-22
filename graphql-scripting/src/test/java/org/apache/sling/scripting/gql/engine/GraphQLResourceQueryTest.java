@@ -31,9 +31,9 @@ import java.util.UUID;
 import com.google.gson.Gson;
 
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.scripting.gql.schema.FetcherManager;
+import org.apache.sling.scripting.gql.schema.DataFetcherSelector;
 import org.apache.sling.scripting.gql.schema.GraphQLSchemaProvider;
-import org.apache.sling.scripting.gql.schema.MockFetcherManager;
+import org.apache.sling.scripting.gql.schema.MockDataFetcherSelector;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -41,7 +41,7 @@ import graphql.ExecutionResult;
 
 public class GraphQLResourceQueryTest {
     private final GraphQLSchemaProvider schemaProvider = new MockSchemaProvider();
-    private final FetcherManager fetchers = new MockFetcherManager();
+    private final DataFetcherSelector fetchers = new MockDataFetcherSelector();
 
     @Test
     public void basicTest() throws Exception {

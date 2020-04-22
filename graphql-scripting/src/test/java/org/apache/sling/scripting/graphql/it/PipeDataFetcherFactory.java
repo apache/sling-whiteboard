@@ -22,18 +22,18 @@ package org.apache.sling.scripting.graphql.it;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.scripting.gql.api.FetcherDefinition;
-import org.apache.sling.scripting.gql.api.DataFetcherFactory;
+import org.apache.sling.scripting.gql.api.DataFetcherDefinition;
+import org.apache.sling.scripting.gql.api.DataFetcherProvider;
 
-public class PipeDataFetcherFactory implements DataFetcherFactory {
+public class PipeDataFetcherFactory implements DataFetcherProvider {
 
     static class PipeDataFetcher implements DataFetcher<Object> {
 
-        private final FetcherDefinition fetcherDef;
+        private final DataFetcherDefinition fetcherDef;
 
         private final Resource r;
 
-        PipeDataFetcher(FetcherDefinition fetcherDef, Resource r) {
+        PipeDataFetcher(DataFetcherDefinition fetcherDef, Resource r) {
             this.fetcherDef = fetcherDef;
             this.r = r;
         }
@@ -61,7 +61,7 @@ public class PipeDataFetcherFactory implements DataFetcherFactory {
     }
 
     @Override
-    public DataFetcher<Object> createDataFetcher(FetcherDefinition fetcherDef, Resource r) {
+    public DataFetcher<Object> createDataFetcher(DataFetcherDefinition fetcherDef, Resource r) {
         return new PipeDataFetcher(fetcherDef, r);
     }
 }

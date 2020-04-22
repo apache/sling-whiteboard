@@ -20,12 +20,12 @@
 
 package org.apache.sling.scripting.gql.schema;
 
-import org.apache.sling.scripting.gql.api.FetcherDefinition;
+import org.apache.sling.scripting.gql.api.DataFetcherDefinition;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class FetcherDefinitionImpl implements FetcherDefinition {
+public class DataFetcherDefinitionImpl implements DataFetcherDefinition {
     public final String fetcherNamespace;
     public final String fetcherName;
     public final String fetcherOptions;
@@ -39,7 +39,7 @@ public class FetcherDefinitionImpl implements FetcherDefinition {
     /** Creates a definition from a formatted String like
      *  
       */
-    public FetcherDefinitionImpl(String fetcherDef) {
+    public DataFetcherDefinitionImpl(String fetcherDef) {
         if(fetcherDef == null) {
             throw new IllegalArgumentException("Invalid input: " + fetcherDef);
         }

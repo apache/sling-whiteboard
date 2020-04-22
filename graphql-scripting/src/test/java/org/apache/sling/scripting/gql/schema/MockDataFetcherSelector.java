@@ -22,13 +22,13 @@ package org.apache.sling.scripting.gql.schema;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.scripting.gql.api.DataFetcherFactory;
-import org.apache.sling.scripting.gql.api.FetcherDefinition;
+import org.apache.sling.scripting.gql.api.DataFetcherProvider;
+import org.apache.sling.scripting.gql.api.DataFetcherDefinition;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class MockFetcherManager extends FetcherManager {
+public class MockDataFetcherSelector extends DataFetcherSelector {
 
     static class EchoDataFetcher implements DataFetcher<Object> {
 
@@ -45,7 +45,7 @@ public class MockFetcherManager extends FetcherManager {
 
     }
 
-    static class EchoDataFetcherFactory implements DataFetcherFactory {
+    static class EchoDataFetcherFactory implements DataFetcherProvider {
 
         @Override
         public String getNamespace() {
@@ -58,7 +58,7 @@ public class MockFetcherManager extends FetcherManager {
         }
 
         @Override
-        public DataFetcher<Object> createDataFetcher(FetcherDefinition fetcherDef, Resource r) {
+        public DataFetcher<Object> createDataFetcher(DataFetcherDefinition fetcherDef, Resource r) {
             return new EchoDataFetcher(r);
         }
     }
@@ -78,7 +78,7 @@ public class MockFetcherManager extends FetcherManager {
 
     }
 
-    static class StaticDataFetcherFactory implements DataFetcherFactory {
+    static class StaticDataFetcherFactory implements DataFetcherProvider {
 
         @Override
         public String getNamespace() {
@@ -91,14 +91,14 @@ public class MockFetcherManager extends FetcherManager {
         }
 
         @Override
-        public DataFetcher<Object> createDataFetcher(FetcherDefinition fetcherDef, Resource r) {
+        public DataFetcher<Object> createDataFetcher(DataFetcherDefinition fetcherDef, Resource r) {
             Map<String, Object> data = new LinkedHashMap<>(4);
             data.put("test", true);
             return new StaticDataFetcher(data);
         }
     }
 
-    public MockFetcherManager() {
+    public MockDataFetcherSelector() {
         super(new EchoDataFetcherFactory(), new StaticDataFetcherFactory());
     }
 

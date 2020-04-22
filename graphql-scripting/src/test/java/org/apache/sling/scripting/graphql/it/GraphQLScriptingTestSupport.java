@@ -23,7 +23,7 @@ import javax.script.ScriptEngineFactory;
 
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
-import org.apache.sling.scripting.gql.api.DataFetcherFactory;
+import org.apache.sling.scripting.gql.api.DataFetcherProvider;
 import org.apache.sling.servlethelpers.MockSlingHttpServletRequest;
 import org.apache.sling.servlethelpers.MockSlingHttpServletResponse;
 import org.apache.sling.testing.paxexam.TestSupport;
@@ -74,7 +74,7 @@ public abstract class GraphQLScriptingTestSupport extends TestSupport {
     @Inject
     protected SlingRequestProcessor requestProcessor;
 
-    protected ServiceRegistration<DataFetcherFactory> dataFetcherFactoryRegistration;
+    protected ServiceRegistration<DataFetcherProvider> dataFetcherFactoryRegistration;
 
     @Inject
     private BundleContext bundleContext;
@@ -83,7 +83,7 @@ public abstract class GraphQLScriptingTestSupport extends TestSupport {
     public void registerFetchers() {
         PipeDataFetcherFactory pipeDataFetcherFactory = new PipeDataFetcherFactory();
         dataFetcherFactoryRegistration =
-                bundleContext.registerService(DataFetcherFactory.class, pipeDataFetcherFactory, null);
+                bundleContext.registerService(DataFetcherProvider.class, pipeDataFetcherFactory, null);
     }
 
     @After

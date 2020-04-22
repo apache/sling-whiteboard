@@ -25,8 +25,8 @@ import graphql.language.Comment;
 import graphql.language.FieldDefinition;
 import graphql.language.ObjectTypeDefinition;
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.scripting.gql.schema.FetcherDefinitionImpl;
-import org.apache.sling.scripting.gql.schema.FetcherManager;
+import org.apache.sling.scripting.gql.schema.DataFetcherDefinitionImpl;
+import org.apache.sling.scripting.gql.schema.DataFetcherSelector;
 import org.apache.sling.scripting.gql.schema.GraphQLSchemaProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +47,7 @@ public class GraphQLResourceQuery {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    public ExecutionResult executeQuery(GraphQLSchemaProvider schemaProvider, FetcherManager fetchers,
+    public ExecutionResult executeQuery(GraphQLSchemaProvider schemaProvider, DataFetcherSelector fetchers,
                                         Resource r, String query) throws ScriptException {
         if(r == null) {
             throw new ScriptException("Resource is null");
@@ -81,14 +81,14 @@ public class GraphQLResourceQuery {
         }
     }
 
-    private GraphQLSchema buildSchema(String sdl, FetcherManager fetchers, Resource r) {
+    private GraphQLSchema buildSchema(String sdl, DataFetcherSelector fetchers, Resource r) {
         TypeDefinitionRegistry typeRegistry = new SchemaParser().parse(sdl);
         RuntimeWiring runtimeWiring = buildWiring(typeRegistry, fetchers, r);
         SchemaGenerator schemaGenerator = new SchemaGenerator();
         return schemaGenerator.makeExecutableSchema(typeRegistry, runtimeWiring);
     }
 
-    private RuntimeWiring buildWiring(TypeDefinitionRegistry typeRegistry, FetcherManager fetchers, Resource r) {
+    private RuntimeWiring buildWiring(TypeDefinitionRegistry typeRegistry, DataFetcherSelector fetchers, Resource r) {
         List<ObjectTypeDefinition> types = typeRegistry.getTypes(ObjectTypeDefinition.class);
         RuntimeWiring.Builder builder = RuntimeWiring.newRuntimeWiring();
         for (ObjectTypeDefinition type : types) {
@@ -107,7 +107,7 @@ public class GraphQLResourceQuery {
         return builder.build();
     }
 
-    private DataFetcher<Object> getDataFetcher(FieldDefinition field, FetcherManager fetchers,
+    private DataFetcher<Object> getDataFetcher(FieldDefinition field, DataFetcherSelector fetchers,
                                                Resource r) {
         List<Comment> comments = field.getComments();
         for (Comment comment : comments) {
@@ -117,7 +117,7 @@ public class GraphQLResourceQuery {
                 commentStr = commentStr.substring(1).trim();
 
                 try {
-                    FetcherDefinitionImpl def = new FetcherDefinitionImpl(commentStr);
+                    DataFetcherDefinitionImpl def = new DataFetcherDefinitionImpl(commentStr);
                     DataFetcher<Object> fetcher = fetchers.getDataFetcherForType(def, r);
                     if (fetcher != null) {
                         return fetcher;

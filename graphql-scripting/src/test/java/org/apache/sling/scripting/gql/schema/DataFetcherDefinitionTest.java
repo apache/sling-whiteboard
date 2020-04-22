@@ -31,7 +31,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
-public class FetcherDefinitionTest {
+public class DataFetcherDefinitionTest {
 
     private final String input;
     private final String expected;
@@ -53,7 +53,7 @@ public class FetcherDefinitionTest {
         return result;
     }
 
-    public FetcherDefinitionTest(String input, Object expected) {
+    public DataFetcherDefinitionTest(String input, Object expected) {
         this.input = input;
         if(expected instanceof String) {
             this.expected = (String)expected;
@@ -67,11 +67,11 @@ public class FetcherDefinitionTest {
     @Test
     public void testMatch() throws Exception {
         if(failureClass == null) {
-            final FetcherDefinitionImpl d = new FetcherDefinitionImpl(input);
-            assertEquals("FetcherDefinitionImpl#" + expected, d.toString());
+            final DataFetcherDefinitionImpl d = new DataFetcherDefinitionImpl(input);
+            assertEquals("DataFetcherDefinitionImpl#" + expected, d.toString());
         } else {
             try {
-                new FetcherDefinitionImpl(input);
+                new DataFetcherDefinitionImpl(input);
                 fail("Expecting a " + failureClass.getName());
             } catch(Throwable t) {
                 assertEquals("Expecting a " + failureClass.getName(), failureClass, t.getClass());

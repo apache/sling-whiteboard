@@ -19,17 +19,17 @@
 
 package org.apache.sling.scripting.gql.api;
 
-import aQute.bnd.annotation.ConsumerType;
-import graphql.schema.DataFetcher;
-import org.apache.sling.api.resource.Resource;
+import aQute.bnd.annotation.ProviderType;
 
-@ConsumerType
-public interface DataFetcherFactory {
+@ProviderType
+public interface DataFetcherDefinition {
 
-    String getNamespace();
+    String getFetcherNamespace();
 
-    String getName();
+    String getFetcherName();
 
-    DataFetcher<Object> createDataFetcher(FetcherDefinition fetcherDef, Resource r);
+    String getFetcherOptions();
+
+    String getFetcherSourceExpression();
 
 }
