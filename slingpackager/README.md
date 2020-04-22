@@ -10,9 +10,11 @@ It covers the following use cases:
 
 - build a content package form a local folder
 - upload a content package onto a server
+- download a content package from server
 - install a content package on a server
 - list all installed packages on the server
 - uninstall a content package from the server
+- build a content package on the server
 - delete a content package on the server
 
 For an example project using the `slingpackager` please have a look at the [simple-sling-vue-example](https://github.com/peregrine-cms/simple-sling-vue-example) project.
@@ -47,6 +49,7 @@ slingpackager <command>
 Commands:
   slingpackager build <package>      build package on server
   slingpackager delete <package>     delete package on server
+  slingpackager download <package>   download package from server
   slingpackager install <package>    install package on server
   slingpackager list                 list installed packages
   slingpackager package <folder>     create a package
@@ -150,6 +153,26 @@ Options:
                                                         [default: "admin:admin"]
   --verbose, -v  turn on verbose output
   --install, -i  install the package after it's uploaded
+```
+
+### Download
+
+```
+slingpackager download <package>
+
+download package from server
+
+Options:
+  --version          Show version number                               [boolean]
+  --help             Show help                                         [boolean]
+  --server, -s       server url               [default: "http://localhost:8080"]
+  --user, -u         server credentials in the form username:password
+                                                        [default: "admin:admin"]
+  --retry, -r        maximum number of service calls to attempt before failing
+                                                                   [default: 10]
+  --verbose, -v      turn on verbose output           [boolean] [default: false]
+  --destination, -d  Package destination directory. Defaults to current
+                     directory.
 ```
 
 ### Install
@@ -268,6 +291,11 @@ name=we.retail.community.enablement.author group=adobe/aem6/sample version=1.11.
 name=we.retail.community.enablement.common group=adobe/aem6/sample version=1.11.84 path=we.retail.community.enablement.common-1.11.84.zip
 name=we.retail.ui.apps group=adobe/aem6/sample version=4.0.0 path=we.retail.ui.apps-4.0.0.zip
 ...
+```
+
+#### Download package.
+```
+slingpackager download /themeclean-flex/ui.apps-1.0-SNAPSHOT.zip
 ```
 
 #### Install uploaded package.
