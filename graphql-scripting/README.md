@@ -53,6 +53,8 @@ A default `DataFetcher` is used for types and fields which have no `## fetch:` c
 This is **not yet implemented** at commit 25cbb95d, there's just a basic parser for the above
 fetch definitions.
 
+See also [@stefangrimm's comment](https://github.com/apache/sling-whiteboard/commit/0c9db2d0e202eb74b605e65da7bfe01b4a8818f8#commitcomment-38639195) about using the graphql-java's `DataFetcher` API  to collect these definitions.
+
 
 ## Multiple GraphQL endpoint styles
 

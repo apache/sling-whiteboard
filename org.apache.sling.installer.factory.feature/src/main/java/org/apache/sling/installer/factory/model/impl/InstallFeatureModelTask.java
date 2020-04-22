@@ -32,9 +32,6 @@ import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
 
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Configuration;
@@ -50,8 +47,6 @@ import org.apache.sling.installer.api.tasks.InstallationContext;
 import org.apache.sling.installer.api.tasks.ResourceState;
 import org.apache.sling.installer.api.tasks.TaskResource;
 import org.apache.sling.installer.api.tasks.TaskResourceGroup;
-import org.apache.sling.repoinit.parser.RepoInitParsingException;
-import org.apache.sling.repoinit.parser.operations.Operation;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -85,7 +80,7 @@ public class InstallFeatureModelTask extends AbstractFeatureModelTask {
                     this.getResourceGroup().setFinishState(ResourceState.IGNORED);
                 } else {
                     // repo init first
-                    if (result.repoinit != null) {
+/*                    if (result.repoinit != null) {
                         List<Operation> ops = null;
                         try (final Reader r = new StringReader(result.repoinit)) {
                             ops = this.installContext.repoInitParser.parse(r);
@@ -115,7 +110,7 @@ public class InstallFeatureModelTask extends AbstractFeatureModelTask {
                                 session.logout();
                             }
                         }
-                    }
+                    }*/
                     if (!result.resources.isEmpty()) {
                         final OsgiInstaller installer = this.getService(OsgiInstaller.class);
                         if (installer != null) {
@@ -143,7 +138,7 @@ public class InstallFeatureModelTask extends AbstractFeatureModelTask {
 
     public static final class Result {
         public final List<InstallableResource> resources = new ArrayList<>();
-        public String repoinit;
+//        public String repoinit;
     }
 
     private File getArtifactFile(final File baseDir, final ArtifactId id) {
@@ -210,7 +205,13 @@ public class InstallFeatureModelTask extends AbstractFeatureModelTask {
 
         final Extension repoInit = feature.getExtensions().getByName(Extension.EXTENSION_NAME_REPOINIT);
         if (repoInit != null && repoInit.getType() == ExtensionType.TEXT) {
-            result.repoinit = repoInit.getText();
+//            result.repoinit = repoInit.getText();
+            final String configPid = "org.apache.sling.jcr.repoinit.RepositoryInitializer~".concat(feature.getId().toMvnName().replace('-', '_'));
+            final Dictionary<String, Object> props = new Hashtable<>();
+            props.put("scripts", repoInit.getText());
+
+            result.resources.add(new InstallableResource("/".concat(configPid).concat(".config"), null,
+                    props, null, InstallableResource.TYPE_CONFIG, null));
         }
         return result;
     }

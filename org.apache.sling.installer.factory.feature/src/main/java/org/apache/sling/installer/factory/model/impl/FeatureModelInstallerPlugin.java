@@ -50,13 +50,9 @@ import org.apache.sling.installer.api.tasks.ResourceTransformer;
 import org.apache.sling.installer.api.tasks.TaskResource;
 import org.apache.sling.installer.api.tasks.TaskResourceGroup;
 import org.apache.sling.installer.api.tasks.TransformationResult;
-import org.apache.sling.jcr.api.SlingRepository;
-import org.apache.sling.jcr.repoinit.JcrRepoInitOpsProcessor;
-import org.apache.sling.repoinit.parser.RepoInitParser;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
@@ -98,14 +94,14 @@ public class FeatureModelInstallerPlugin implements InstallTaskFactory, Resource
     /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Reference
-    private SlingRepository repository;
+//    @Reference
+//    private SlingRepository repository;
 
-    @Reference
-    private JcrRepoInitOpsProcessor repoInitProcessor;
+//    @Reference
+//    private JcrRepoInitOpsProcessor repoInitProcessor;
 
-    @Reference
-    private RepoInitParser repoInitParser;
+//    @Reference
+//    private RepoInitParser repoInitParser;
 
     private final BundleContext bundleContext;
 
@@ -158,7 +154,7 @@ public class FeatureModelInstallerPlugin implements InstallTaskFactory, Resource
                 logger.info("Unable to read feature model from " + resource.getURL(), ioe);
             }
         }
-        if (resource.getType().equals(InstallableResource.TYPE_FILE) && resource.getURL().endsWith(".zip")) {
+        if (resource.getType().equals(InstallableResource.TYPE_FILE) && resource.getURL().endsWith(".far")) {
             try (final InputStream is = resource.getInputStream()) {
                 features.addAll(ArchiveReader.read(is, null));
             } catch (final IOException ioe) {
@@ -238,7 +234,7 @@ public class FeatureModelInstallerPlugin implements InstallTaskFactory, Resource
         if (rsrc.getState() == ResourceState.UNINSTALL ) {
             return new UninstallFeatureModelTask(group, bundleContext);
         }
-        final InstallContext ctx = new InstallContext(this.repository, this.repoInitProcessor, this.repoInitParser,
+        final InstallContext ctx = new InstallContext(//this.repository, this.repoInitProcessor, this.repoInitParser,
                 this.artifactManager, this.storageDirectory);
         return new InstallFeatureModelTask(group,
                 ctx, this.bundleContext);

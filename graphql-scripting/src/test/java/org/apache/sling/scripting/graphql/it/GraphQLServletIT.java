@@ -20,8 +20,13 @@ package org.apache.sling.scripting.graphql.it;
 
 import javax.inject.Inject;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasNoJsonPath;
+
 import org.apache.sling.resource.presence.ResourcePresence;
 import org.apache.sling.scripting.gql.api.DataFetcherFactory;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ops4j.pax.exam.Configuration;
@@ -33,7 +38,8 @@ import org.ops4j.pax.exam.util.Filter;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.ops4j.pax.exam.cm.ConfigurationAdminOptions.factoryConfiguration;
 
 @RunWith(PaxExam.class)
@@ -41,38 +47,58 @@ import static org.ops4j.pax.exam.cm.ConfigurationAdminOptions.factoryConfigurati
 public class GraphQLServletIT extends GraphQLScriptingTestSupport {
 
     @Inject
-    @Filter(value = "(path=/apps/graphql/test/one/json.gql)")
+    @Filter(value = "(path=/content/graphql/two)")
     private ResourcePresence resourcePresence;
 
-    @Inject
-    private BundleContext bundleContext;
+    private static final String GRAPHQL_SERVLET_CONFIG_PID = "org.apache.sling.graphql.core.GraphQLServlet";
 
     @Configuration
     public Option[] configuration() {
         return new Option[]{
             baseConfiguration(),
             factoryConfiguration("org.apache.sling.resource.presence.internal.ResourcePresenter")
-                .put("path", "/apps/graphql/test/one/json.gql")
+                .put("path", "/content/graphql/two")
+                .asOption(),
+
+            // The GraphQL servlet is disabled by default, try setting up two of them
+            factoryConfiguration(GRAPHQL_SERVLET_CONFIG_PID)
+                .put("sling.servlet.resourceTypes", "sling/servlet/default")
+                .put("sling.servlet.extensions", "gql")
+                .asOption(),
+            factoryConfiguration(GRAPHQL_SERVLET_CONFIG_PID)
+                .put("sling.servlet.resourceTypes", "graphql/test/two")
+                .put("sling.servlet.selectors", "testing")
+                .put("sling.servlet.extensions", "otherExt")
                 .asOption(),
         };
     }
 
     @Test
-    public void testJsonContent() throws Exception {
-        PipeDataFetcherFactory pipeDataFetcherFactory = new PipeDataFetcherFactory();
-        ServiceRegistration<DataFetcherFactory> dataFetcherFactoryRegistration =
-                bundleContext.registerService(DataFetcherFactory.class, pipeDataFetcherFactory, null);
+    public void testGqlExt() throws Exception {
+        final String json = getContent("/graphql/two.gql", "query", "{ currentResource { resourceType name } }");
+        assertThat(json, hasJsonPath("$.currentResource.resourceType", equalTo("graphql/test/two")));
+        assertThat(json, hasJsonPath("$.currentResource.name", equalTo("two")));
+        assertThat(json, hasNoJsonPath("$.currentResource.path"));
+    }
 
-        try {
-            final String path = "/graphql/one";
-            final String json = getContent(path + ".gql");
-            // TODO we should really parse this..or run detailed tests in unit tests, and just the basics here
-            final String expected =
-                    "{\"currentResource\":{\"path\":\"/content/graphql/one\",\"resourceType\":\"graphql/test/one\"}}";
-            assertEquals(expected, json);
+    @Test
+    public void testOtherExt() throws Exception {
+        final String json = getContent("/graphql/two.testing.otherExt", "query", "{ currentResource { path name } }");
+        assertThat(json, hasJsonPath("$.currentResource.path", equalTo("/content/graphql/two")));
+        assertThat(json, hasJsonPath("$.currentResource.name", equalTo("two")));
+        assertThat(json, hasNoJsonPath("$.currentResource.resourceType"));
+        executeRequest("GET", "/graphql/two.otherExt", null, 404);
+    }
 
-        } finally {
-            dataFetcherFactoryRegistration.unregister();
-        }
+    @Test
+    public void testMissingQuery() throws Exception {
+        executeRequest("GET", "/graphql/two.gql", null, 400);
+    }
+
+    @Test
+    public void testDefaultJson() throws Exception {
+        final String json = getContent("/graphql/two.json");
+        assertThat(json, hasJsonPath("$.title", equalTo("GraphQL two")));
+        assertThat(json, hasJsonPath("$.jcr:primaryType", equalTo("nt:unstructured")));
     }
 }

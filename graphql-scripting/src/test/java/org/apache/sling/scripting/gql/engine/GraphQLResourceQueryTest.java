@@ -18,10 +18,17 @@
  */
 package org.apache.sling.scripting.gql.engine;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
+import static org.hamcrest.Matchers.equalTo;
+
 import java.util.UUID;
+
+import com.google.gson.Gson;
 
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.scripting.gql.schema.FetcherManager;
@@ -47,9 +54,15 @@ public class GraphQLResourceQueryTest {
         final GraphQLResourceQuery q1 = new GraphQLResourceQuery();
         final ExecutionResult result1 = q1.executeQuery(schemaProvider, fetchers, r, "{ currentResource { path resourceType } }");
 
-        if(!result1.getErrors().isEmpty()) {
+        if (!result1.getErrors().isEmpty()) {
             fail("Errors:" + result1.getErrors());
         }
+
+        final String json = new Gson().toJson(result1);
+        assertThat(json, hasJsonPath("$.data.currentResource"));
+        assertThat(json, hasJsonPath("$.data.currentResource.path", equalTo(path)));
+        assertThat(json, hasJsonPath("$.data.currentResource.resourceType", equalTo(resourceType)));
+
         // TODO brittle test...
         final String expected1 = "{currentResource={path=" + path + ", resourceType=" + resourceType + "}}";
         assertEquals(expected1, result1.getData().toString());
@@ -57,11 +70,12 @@ public class GraphQLResourceQueryTest {
         final GraphQLResourceQuery q2 = new GraphQLResourceQuery();
         final ExecutionResult result2 = q2.executeQuery(schemaProvider, fetchers, r, "{ staticContent { test } }");
 
-        if(!result2.getErrors().isEmpty()) {
+        if (!result2.getErrors().isEmpty()) {
             fail("Errors:" + result2.getErrors());
         }
         // TODO brittle test...
         final String expected2 = "{staticContent={test=true}}";
         assertEquals(expected2, result2.getData().toString());
+
     }
 }

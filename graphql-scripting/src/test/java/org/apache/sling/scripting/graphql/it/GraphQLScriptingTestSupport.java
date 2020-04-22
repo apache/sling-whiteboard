@@ -23,15 +23,19 @@ import javax.script.ScriptEngineFactory;
 
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
+import org.apache.sling.scripting.gql.api.DataFetcherFactory;
 import org.apache.sling.servlethelpers.MockSlingHttpServletRequest;
 import org.apache.sling.servlethelpers.MockSlingHttpServletResponse;
 import org.apache.sling.testing.paxexam.TestSupport;
+import org.junit.After;
 import org.junit.Before;
 import org.ops4j.pax.exam.Option;
 import org.ops4j.pax.exam.ProbeBuilder;
 import org.ops4j.pax.exam.TestProbeBuilder;
 import org.ops4j.pax.exam.options.ModifiableCompositeOption;
 import org.ops4j.pax.exam.util.Filter;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.cm.ConfigurationAdmin;
 
 import org.apache.sling.engine.SlingRequestProcessor;
@@ -48,10 +52,13 @@ import static org.ops4j.pax.exam.CoreOptions.junitBundles;
 import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
 import static org.ops4j.pax.exam.CoreOptions.when;
 import static org.ops4j.pax.exam.CoreOptions.vmOption;
+import static org.ops4j.pax.exam.CoreOptions.wrappedBundle;
 import static org.ops4j.pax.exam.cm.ConfigurationAdminOptions.newConfiguration;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public abstract class GraphQLScriptingTestSupport extends TestSupport {
 
@@ -66,6 +73,23 @@ public abstract class GraphQLScriptingTestSupport extends TestSupport {
 
     @Inject
     protected SlingRequestProcessor requestProcessor;
+
+    protected ServiceRegistration<DataFetcherFactory> dataFetcherFactoryRegistration;
+
+    @Inject
+    private BundleContext bundleContext;
+
+    @Before
+    public void registerFetchers() {
+        PipeDataFetcherFactory pipeDataFetcherFactory = new PipeDataFetcherFactory();
+        dataFetcherFactoryRegistration =
+                bundleContext.registerService(DataFetcherFactory.class, pipeDataFetcherFactory, null);
+    }
+
+    @After
+    public void unregisterFetchers() {
+        dataFetcherFactoryRegistration.unregister();
+    }
 
     public ModifiableCompositeOption baseConfiguration() {
         final String vmOpt = System.getProperty("pax.vm.options");
@@ -84,6 +108,7 @@ public abstract class GraphQLScriptingTestSupport extends TestSupport {
             mavenBundle().groupId("org.apache.sling").artifactId("org.apache.sling.servlet-helpers").versionAsInProject(),
             mavenBundle().groupId("com.google.code.gson").artifactId("gson").versionAsInProject(),
             slingResourcePresence(),
+            jsonPath(),
             junitBundles()
         );
     }
@@ -101,6 +126,17 @@ public abstract class GraphQLScriptingTestSupport extends TestSupport {
             slingQuickstartOakTar(workingDirectory, httpPort),
             slingScripting(),
             slingScriptingJsp()
+        );
+    }
+
+    protected Option jsonPath() {
+        return composite(
+            mavenBundle().groupId("com.jayway.jsonpath").artifactId("json-path").versionAsInProject(),
+            mavenBundle().groupId("net.minidev").artifactId("json-smart").versionAsInProject(),
+            mavenBundle().groupId("net.minidev").artifactId("accessors-smart").versionAsInProject(),
+            mavenBundle().groupId("org.ow2.asm").artifactId("asm").versionAsInProject(),
+            mavenBundle().groupId("com.jayway.jsonpath").artifactId("json-path-assert").versionAsInProject(),
+            mavenBundle().groupId("org.apache.servicemix.bundles").artifactId("org.apache.servicemix.bundles.hamcrest").versionAsInProject()
         );
     }
 
@@ -124,7 +160,7 @@ public abstract class GraphQLScriptingTestSupport extends TestSupport {
         final long endTime = System.currentTimeMillis() + STARTUP_WAIT_SECONDS * 1000;
 
         while (System.currentTimeMillis() < endTime) {
-            final int status = executeRequest("GET", path, -1).getStatus();
+            final int status = executeRequest("GET", path, null, -1).getStatus();
             statuses.add(status);
             if (status == expectedStatus) {
                 return;
@@ -135,7 +171,8 @@ public abstract class GraphQLScriptingTestSupport extends TestSupport {
         fail("Did not get a " + expectedStatus + " status at " + path + " got " + statuses);
     }
 
-    protected MockSlingHttpServletResponse executeRequest(final String method, final String path, final int expectedStatus) throws Exception {
+    protected MockSlingHttpServletResponse executeRequest(final String method, 
+        final String path, Map<String, Object> params, final int expectedStatus) throws Exception {
         final ResourceResolver resourceResolver = resourceResolverFactory.getAdministrativeResourceResolver(null);
         assertNotNull("Expecting ResourceResolver", resourceResolver);
         final MockSlingHttpServletRequest request = new MockSlingHttpServletRequest(resourceResolver) {
@@ -146,6 +183,11 @@ public abstract class GraphQLScriptingTestSupport extends TestSupport {
         };
 
         request.setPathInfo(path);
+
+        if(params != null) {
+            request.setParameterMap(params);
+        }
+
         final MockSlingHttpServletResponse response = new MockSlingHttpServletResponse();
         requestProcessor.processRequest(request, response, resourceResolver);
 
@@ -158,6 +200,18 @@ public abstract class GraphQLScriptingTestSupport extends TestSupport {
     }
 
     protected String getContent(String path) throws Exception {
-        return executeRequest("GET", path, 200).getOutputAsString();
+        return executeRequest("GET", path, null, 200).getOutputAsString();
+    }
+
+    protected String getContent(String path, String ... params) throws Exception {
+        return executeRequest("GET", path, toMap(params), 200).getOutputAsString();
+    }
+
+    protected Map<String, Object> toMap(String ...keyValuePairs) {
+        final Map<String, Object> result = new HashMap<>();
+        for(int i=0 ; i < keyValuePairs.length; i+=2) {
+            result.put(keyValuePairs[i], keyValuePairs[i+1]);
+        }
+        return result;
     }
 }
