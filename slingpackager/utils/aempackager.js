@@ -91,14 +91,16 @@ const build = (url, username, password, package, maxRetry) => {
 }
 
 const download = (url, username, password, destination, package, maxRetry) => {
-  logger.log('Downloading AEM package', package, 'from', url, 'to', destination);
   let serviceURL = url + endpoint + '?cmd=get&name='+package;
-  downloadPackag({serviceURL, username, password, destination, package, maxRetry});
+  downloadPackage({url, username, password, destination, package, maxRetry});
 }
 
-function downloadPackag(data) {
-  data.download = true;
+function downloadPackage(data) {
+  logger.log('Downloading AEM package', data.package, 'from', data.url, 'to', data.destination);
   if(data.filePath) {
+      data.download = true;
+      data.serviceURL = data.url + endpoint + '?cmd=get&name='+data.package;
+      logger.debug(data.package, "to", data.filePath);
       callService(data, (error, response) => {
           if(error) {
               logger.error("Unable to download package.");
@@ -110,17 +112,27 @@ function downloadPackag(data) {
                   logger.log(stats.size + " " + data.filePath);
               }
           }
-      }, true).pipe(fs.createWriteStream(data.filePath));;
+      }, true).pipe(fs.createWriteStream(data.filePath));
   } else {
-      callService(data, (error, response) => {
+      data.download = false;
+      data.serviceURL = data.url + endpoint + '?cmd=ls';
+      callService(data, (error, result) => {
           if(error) {
               logger.error("Unable to download package.");
               process.exit(1);
-          } else {
-              let fileName = response.headers['content-disposition'].split('=').reverse()[0];
-              let filePath = path.join(data.destination, fileName);
-              data.filePath = filePath;
-              downloadPackag(data);
+          } else if(result) {
+              var packages = getData(result)[0].packages[0].package;
+              for (var i = 0; i < packages.length; i++) {
+                var pack = packages[i];
+                if(pack.name[0] === data.package || pack.downloadName[0] === data.package) {
+                  let fileName = packages[i].downloadName[0];
+                  let filePath = path.join(data.destination, fileName);
+                  data.filePath = filePath;
+                  data.package = packages[i].name[0];
+                  downloadPackage(data);
+                  return;
+                }
+              }
           }
       }, true);
   }
