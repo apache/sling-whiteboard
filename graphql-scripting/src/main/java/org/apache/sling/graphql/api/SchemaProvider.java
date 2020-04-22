@@ -17,19 +17,29 @@
  * under the License.
  */
 
-package org.apache.sling.scripting.gql.api;
+package org.apache.sling.graphql.api;
 
-import aQute.bnd.annotation.ConsumerType;
-import graphql.schema.DataFetcher;
+import java.io.IOException;
+
 import org.apache.sling.api.resource.Resource;
 
-@ConsumerType
-public interface DataFetcherProvider {
+import aQute.bnd.annotation.ProviderType;
 
-    String getNamespace();
+@ProviderType
+public interface SchemaProvider {
+    
+    public static class SchemaProviderException extends IOException {
+        private static final long serialVersionUID = 1L;
 
-    String getName();
+        public SchemaProviderException(String reason) {
+            super(reason);
+        }
 
-    DataFetcher<Object> createDataFetcher(DataFetcherDefinition fetcherDef, Resource r);
+        public SchemaProviderException(String reason, Throwable cause) {
+            super(reason, cause);
+        }
+    }
 
+    /** Get a GraphQL Schema definition for the given resource and optional selectors */
+    String getSchema(Resource r, String [] selectors) throws SchemaProviderException;
 }

@@ -17,19 +17,19 @@
  * under the License.
  */
 
-package org.apache.sling.scripting.gql.api;
+package org.apache.sling.graphql.api;
 
-import aQute.bnd.annotation.ProviderType;
+import aQute.bnd.annotation.ConsumerType;
+import graphql.schema.DataFetcher;
+import org.apache.sling.api.resource.Resource;
 
-@ProviderType
-public interface DataFetcherDefinition {
+@ConsumerType
+public interface DataFetcherProvider {
 
-    String getFetcherNamespace();
+    String getNamespace();
 
-    String getFetcherName();
+    String getName();
 
-    String getFetcherOptions();
-
-    String getFetcherSourceExpression();
+    DataFetcher<Object> createDataFetcher(DataFetcherDefinition fetcherDef, Resource r);
 
 }

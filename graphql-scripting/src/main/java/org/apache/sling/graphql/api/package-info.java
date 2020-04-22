@@ -17,29 +17,7 @@
  * under the License.
  */
 
-package org.apache.sling.scripting.gql.api;
+@Version("1.0.0")
+package org.apache.sling.graphql.api;
 
-import java.io.IOException;
-
-import org.apache.sling.api.resource.Resource;
-
-import aQute.bnd.annotation.ProviderType;
-
-@ProviderType
-public interface SchemaProvider {
-    
-    public static class SchemaProviderException extends IOException {
-        private static final long serialVersionUID = 1L;
-
-        public SchemaProviderException(String reason) {
-            super(reason);
-        }
-
-        public SchemaProviderException(String reason, Throwable cause) {
-            super(reason, cause);
-        }
-    }
-
-    /** Get a GraphQL Schema definition for the given resource and optional selectors */
-    String getSchema(Resource r, String [] selectors) throws SchemaProviderException;
-}
+import org.osgi.annotation.versioning.Version;

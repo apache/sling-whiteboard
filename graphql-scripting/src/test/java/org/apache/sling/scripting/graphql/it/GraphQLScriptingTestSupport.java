@@ -23,7 +23,7 @@ import javax.script.ScriptEngineFactory;
 
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
-import org.apache.sling.scripting.gql.api.DataFetcherProvider;
+import org.apache.sling.graphql.api.DataFetcherProvider;
 import org.apache.sling.servlethelpers.MockSlingHttpServletRequest;
 import org.apache.sling.servlethelpers.MockSlingHttpServletResponse;
 import org.apache.sling.testing.paxexam.TestSupport;

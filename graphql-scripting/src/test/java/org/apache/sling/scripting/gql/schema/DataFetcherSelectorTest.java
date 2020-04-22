@@ -20,7 +20,7 @@
 package org.apache.sling.scripting.gql.schema;
 
 import graphql.schema.DataFetcher;
-import org.apache.sling.scripting.gql.api.DataFetcherProvider;
+import org.apache.sling.graphql.api.DataFetcherProvider;
 import org.junit.Test;
 import org.mockito.Mockito;
 

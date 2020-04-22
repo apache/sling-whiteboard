@@ -20,7 +20,7 @@
 
 package org.apache.sling.scripting.gql.schema;
 
-import org.apache.sling.scripting.gql.api.DataFetcherDefinition;
+import org.apache.sling.graphql.api.DataFetcherDefinition;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

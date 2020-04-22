@@ -17,7 +17,19 @@
  * under the License.
  */
 
-@Version("1.0.0")
-package org.apache.sling.scripting.gql.api;
+package org.apache.sling.graphql.api;
 
-import org.osgi.annotation.versioning.Version;
+import aQute.bnd.annotation.ProviderType;
+
+@ProviderType
+public interface DataFetcherDefinition {
+
+    String getFetcherNamespace();
+
+    String getFetcherName();
+
+    String getFetcherOptions();
+
+    String getFetcherSourceExpression();
+
+}

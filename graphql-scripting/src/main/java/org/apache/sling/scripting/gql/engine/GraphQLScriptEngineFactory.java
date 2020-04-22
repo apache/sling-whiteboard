@@ -23,7 +23,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
 
 import org.apache.sling.scripting.api.AbstractScriptEngineFactory;
-import org.apache.sling.scripting.gql.api.SchemaProvider;
+import org.apache.sling.graphql.api.SchemaProvider;
 import org.apache.sling.scripting.gql.schema.DataFetcherSelector;
 import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Activate;

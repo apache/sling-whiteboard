@@ -27,7 +27,7 @@ import javax.servlet.ServletException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.engine.SlingRequestProcessor;
-import org.apache.sling.scripting.gql.api.SchemaProvider;
+import org.apache.sling.graphql.api.SchemaProvider;
 import org.apache.sling.servlethelpers.MockSlingHttpServletRequest;
 import org.apache.sling.servlethelpers.MockSlingHttpServletResponse;
 import org.osgi.framework.Constants;

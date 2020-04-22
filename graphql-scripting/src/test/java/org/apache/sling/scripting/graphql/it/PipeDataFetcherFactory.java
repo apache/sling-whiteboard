@@ -22,8 +22,8 @@ package org.apache.sling.scripting.graphql.it;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.scripting.gql.api.DataFetcherDefinition;
-import org.apache.sling.scripting.gql.api.DataFetcherProvider;
+import org.apache.sling.graphql.api.DataFetcherDefinition;
+import org.apache.sling.graphql.api.DataFetcherProvider;
 
 public class PipeDataFetcherFactory implements DataFetcherProvider {
 

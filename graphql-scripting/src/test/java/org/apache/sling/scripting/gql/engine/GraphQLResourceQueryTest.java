@@ -33,7 +33,7 @@ import com.google.gson.Gson;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.scripting.gql.schema.DataFetcherSelector;
 import org.apache.sling.scripting.gql.schema.MockDataFetcherSelector;
-import org.apache.sling.scripting.gql.api.SchemaProvider;
+import org.apache.sling.graphql.api.SchemaProvider;
 import org.junit.Test;
 import org.mockito.Mockito;
 

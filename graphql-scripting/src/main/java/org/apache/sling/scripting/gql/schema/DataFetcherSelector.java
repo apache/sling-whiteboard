@@ -21,8 +21,8 @@ package org.apache.sling.scripting.gql.schema;
 
 import graphql.schema.DataFetcher;
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.scripting.gql.api.DataFetcherProvider;
-import org.apache.sling.scripting.gql.api.DataFetcherDefinition;
+import org.apache.sling.graphql.api.DataFetcherProvider;
+import org.apache.sling.graphql.api.DataFetcherDefinition;
 import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;

@@ -25,7 +25,7 @@ import graphql.language.Comment;
 import graphql.language.FieldDefinition;
 import graphql.language.ObjectTypeDefinition;
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.scripting.gql.api.SchemaProvider;
+import org.apache.sling.graphql.api.SchemaProvider;
 import org.apache.sling.scripting.gql.schema.DataFetcherDefinitionImpl;
 import org.apache.sling.scripting.gql.schema.DataFetcherSelector;
 import org.slf4j.Logger;

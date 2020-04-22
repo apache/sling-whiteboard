@@ -22,8 +22,8 @@ package org.apache.sling.scripting.gql.schema;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.scripting.gql.api.DataFetcherProvider;
-import org.apache.sling.scripting.gql.api.DataFetcherDefinition;
+import org.apache.sling.graphql.api.DataFetcherProvider;
+import org.apache.sling.graphql.api.DataFetcherDefinition;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
