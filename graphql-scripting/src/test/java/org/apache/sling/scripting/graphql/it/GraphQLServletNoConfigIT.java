@@ -20,8 +20,6 @@ package org.apache.sling.scripting.graphql.it;
 
 import javax.inject.Inject;
 
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
-
 import org.apache.sling.resource.presence.ResourcePresence;
 import org.junit.Test;
 import org.junit.runner.RunWith;

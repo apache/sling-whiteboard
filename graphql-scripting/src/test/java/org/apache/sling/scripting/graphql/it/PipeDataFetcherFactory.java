@@ -23,7 +23,6 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.scripting.gql.api.FetcherDefinition;
-import org.apache.sling.scripting.gql.schema.FetcherDefinitionImpl;
 import org.apache.sling.scripting.gql.api.DataFetcherFactory;
 
 public class PipeDataFetcherFactory implements DataFetcherFactory {

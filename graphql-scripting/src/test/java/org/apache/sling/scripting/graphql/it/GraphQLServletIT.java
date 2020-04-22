@@ -24,9 +24,6 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasNoJsonPath;
 
 import org.apache.sling.resource.presence.ResourcePresence;
-import org.apache.sling.scripting.gql.api.DataFetcherFactory;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ops4j.pax.exam.Configuration;
@@ -35,8 +32,6 @@ import org.ops4j.pax.exam.junit.PaxExam;
 import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
 import org.ops4j.pax.exam.spi.reactors.PerClass;
 import org.ops4j.pax.exam.util.Filter;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceRegistration;
 
 import static org.junit.Assert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
