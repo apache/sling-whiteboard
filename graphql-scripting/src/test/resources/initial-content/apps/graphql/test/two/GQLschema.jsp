@@ -24,7 +24,8 @@ a "passthrough" script engine, or one that extracts the
 additional DataFetcher information that we need.
 --%>
 
-type Query { 
+type Query {
+  ## fetch:test/pipe $
   currentResource : SlingResource
 }
 

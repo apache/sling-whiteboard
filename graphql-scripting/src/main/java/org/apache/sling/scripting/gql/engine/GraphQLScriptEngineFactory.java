@@ -23,6 +23,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
 
 import org.apache.sling.scripting.api.AbstractScriptEngineFactory;
+import org.apache.sling.scripting.gql.schema.FetcherManager;
 import org.apache.sling.scripting.gql.schema.GraphQLSchemaProvider;
 import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Activate;
@@ -51,6 +52,9 @@ public class GraphQLScriptEngineFactory extends AbstractScriptEngineFactory {
     @Reference
     private GraphQLSchemaProvider schemaProvider;
 
+    @Reference
+    private FetcherManager fetcherManager;
+
     @Activate
     private void activate(final GraphQLScriptEngineFactoryConfiguration config) {
         setExtensions(config.extensions());
@@ -76,4 +80,9 @@ public class GraphQLScriptEngineFactory extends AbstractScriptEngineFactory {
     GraphQLSchemaProvider getSchemaProvider() {
         return schemaProvider;
     }
+
+    FetcherManager getFetcherManager() {
+        return fetcherManager;
+    }
+
 }

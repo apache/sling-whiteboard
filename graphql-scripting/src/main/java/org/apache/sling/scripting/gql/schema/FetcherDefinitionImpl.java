@@ -20,12 +20,12 @@
 
 package org.apache.sling.scripting.gql.schema;
 
+import org.apache.sling.scripting.gql.api.FetcherDefinition;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class FetcherDefinition {
-    public final String typeName;
-    public final String fieldName;
+public class FetcherDefinitionImpl implements FetcherDefinition {
     public final String fetcherNamespace;
     public final String fetcherName;
     public final String fetcherOptions;
@@ -39,16 +39,14 @@ public class FetcherDefinition {
     /** Creates a definition from a formatted String like
      *  
       */
-    public FetcherDefinition(String typeName, String fieldName, String fetcherDef) {
-        if(typeName == null || fieldName == null || fetcherDef == null) {
-            throw new IllegalArgumentException("Invalid input: " + typeName + "," + fieldName + "," + fetcherDef);
+    public FetcherDefinitionImpl(String fetcherDef) {
+        if(fetcherDef == null) {
+            throw new IllegalArgumentException("Invalid input: " + fetcherDef);
         }
         final Matcher m = REGEXP.matcher(fetcherDef);
         if(!m.matches()) {
             throw new IllegalArgumentException("Input does not match " + REGEXP + ": " + fetcherDef);
         }
-        this.typeName = typeName;
-        this.fieldName = fieldName;
         fetcherNamespace = m.group(1);
         fetcherName = m.group(2);
         fetcherOptions = optional(m.group(4));
@@ -60,10 +58,30 @@ public class FetcherDefinition {
     }
 
     @Override
+    public String getFetcherNamespace() {
+        return fetcherNamespace;
+    }
+
+    @Override
+    public String getFetcherName() {
+        return fetcherName;
+    }
+
+    @Override
+    public String getFetcherOptions() {
+        return fetcherOptions;
+    }
+
+    @Override
+    public String getFetcherSourceExpression() {
+        return fetcherSourceExpression;
+    }
+
+    @Override
     public String toString() {
         return String.format(
-            "%s#%s#%s#%s#%s#%s#%s", 
-            getClass().getSimpleName(), typeName, fieldName, 
+            "%s#%s#%s#%s#%s",
+            getClass().getSimpleName(),
             fetcherNamespace, fetcherName, 
             fetcherOptions, fetcherSourceExpression);
     }

@@ -23,15 +23,19 @@ import javax.script.ScriptEngineFactory;
 
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
+import org.apache.sling.scripting.gql.api.DataFetcherFactory;
 import org.apache.sling.servlethelpers.MockSlingHttpServletRequest;
 import org.apache.sling.servlethelpers.MockSlingHttpServletResponse;
 import org.apache.sling.testing.paxexam.TestSupport;
+import org.junit.After;
 import org.junit.Before;
 import org.ops4j.pax.exam.Option;
 import org.ops4j.pax.exam.ProbeBuilder;
 import org.ops4j.pax.exam.TestProbeBuilder;
 import org.ops4j.pax.exam.options.ModifiableCompositeOption;
 import org.ops4j.pax.exam.util.Filter;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.cm.ConfigurationAdmin;
 
 import org.apache.sling.engine.SlingRequestProcessor;
@@ -69,6 +73,23 @@ public abstract class GraphQLScriptingTestSupport extends TestSupport {
 
     @Inject
     protected SlingRequestProcessor requestProcessor;
+
+    protected ServiceRegistration<DataFetcherFactory> dataFetcherFactoryRegistration;
+
+    @Inject
+    private BundleContext bundleContext;
+
+    @Before
+    public void registerFetchers() {
+        PipeDataFetcherFactory pipeDataFetcherFactory = new PipeDataFetcherFactory();
+        dataFetcherFactoryRegistration =
+                bundleContext.registerService(DataFetcherFactory.class, pipeDataFetcherFactory, null);
+    }
+
+    @After
+    public void unregisterFetchers() {
+        dataFetcherFactoryRegistration.unregister();
+    }
 
     public ModifiableCompositeOption baseConfiguration() {
         final String vmOpt = System.getProperty("pax.vm.options");
