@@ -17,14 +17,15 @@
  * under the License.
  */
 
-package org.apache.sling.scripting.gql.schema;
+package org.apache.sling.scripting.gql.api;
 
 import aQute.bnd.annotation.ConsumerType;
 import graphql.schema.DataFetcher;
 import org.apache.sling.api.resource.Resource;
+import org.apache.sling.scripting.gql.schema.FetcherDefinition;
 
 @ConsumerType
-public interface SlingDataFetcher {
+public interface DataFetcherFactory {
 
     String getNamespace();
 

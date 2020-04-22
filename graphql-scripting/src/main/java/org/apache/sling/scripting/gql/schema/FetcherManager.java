@@ -21,6 +21,7 @@ package org.apache.sling.scripting.gql.schema;
 
 import graphql.schema.DataFetcher;
 import org.apache.sling.api.resource.Resource;
+import org.apache.sling.scripting.gql.api.DataFetcherFactory;
 import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -40,19 +41,23 @@ public class FetcherManager {
         name = "slingFetchers",
         cardinality = ReferenceCardinality.MULTIPLE,
         policy = ReferencePolicy.DYNAMIC)
-    private final List<SlingDataFetcher> slingFetchers = new CopyOnWriteArrayList<>();
+    private final List<DataFetcherFactory> factories = new CopyOnWriteArrayList<>();
 
-    FetcherManager(SlingDataFetcher ... testFetchers) {
-        slingFetchers.addAll(Arrays.asList(testFetchers));
+    public FetcherManager() {
+        // public default constructor required ...
+    }
+
+    FetcherManager(DataFetcherFactory... testFetchers) {
+        factories.addAll(Arrays.asList(testFetchers));
     }
 
     public DataFetcher<Object> getDataFetcherForType(FetcherDefinition def, Resource r) {
         String ns = def.getFetcherNamespace();
         String name = def.getFetcherName();
 
-        for (SlingDataFetcher fetcher : slingFetchers) {
-            if (fetcher.getNamespace().equals(ns) && fetcher.getName().equals(name)) {
-                return fetcher.createDataFetcher(def, r);
+        for (DataFetcherFactory factory : factories) {
+            if (factory.getNamespace().equals(ns) && factory.getName().equals(name)) {
+                return factory.createDataFetcher(def, r);
             }
         }
         return null;

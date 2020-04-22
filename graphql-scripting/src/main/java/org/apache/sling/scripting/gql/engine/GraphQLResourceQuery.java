@@ -29,20 +29,17 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.scripting.gql.schema.FetcherDefinition;
 import org.apache.sling.scripting.gql.schema.FetcherManager;
 import org.apache.sling.scripting.gql.schema.GraphQLSchemaProvider;
-import org.apache.sling.scripting.gql.schema.SlingDataFetcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import graphql.schema.DataFetcher;
-import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaGenerator;
 import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
-import graphql.schema.idl.TypeRuntimeWiring;
 
 import java.util.List;
 
