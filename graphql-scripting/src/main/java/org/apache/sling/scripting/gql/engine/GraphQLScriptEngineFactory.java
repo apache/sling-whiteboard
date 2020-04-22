@@ -23,8 +23,8 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
 
 import org.apache.sling.scripting.api.AbstractScriptEngineFactory;
+import org.apache.sling.scripting.gql.api.SchemaProvider;
 import org.apache.sling.scripting.gql.schema.DataFetcherSelector;
-import org.apache.sling.scripting.gql.schema.GraphQLSchemaProvider;
 import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -50,7 +50,7 @@ public class GraphQLScriptEngineFactory extends AbstractScriptEngineFactory {
     public static final String LANGUAGE_VERSION = "Sling:GraphQL:0.1";
 
     @Reference
-    private GraphQLSchemaProvider schemaProvider;
+    private SchemaProvider schemaProvider;
 
     @Reference
     private DataFetcherSelector fetcherManager;
@@ -77,7 +77,7 @@ public class GraphQLScriptEngineFactory extends AbstractScriptEngineFactory {
         return new GraphQLScriptEngine(this);
     }
 
-    GraphQLSchemaProvider getSchemaProvider() {
+    SchemaProvider getSchemaProvider() {
         return schemaProvider;
     }
 

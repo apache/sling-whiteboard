@@ -22,9 +22,12 @@ package org.apache.sling.scripting.gql.schema;
 
 import java.io.IOException;
 
+import javax.servlet.ServletException;
+
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.engine.SlingRequestProcessor;
+import org.apache.sling.scripting.gql.api.SchemaProvider;
 import org.apache.sling.servlethelpers.MockSlingHttpServletRequest;
 import org.apache.sling.servlethelpers.MockSlingHttpServletResponse;
 import org.osgi.framework.Constants;
@@ -32,29 +35,18 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 /** Provides a Resource-specific GraphQL Schema, as text */
-@Component(service = GraphQLSchemaProvider.class, immediate = true, property = {
+@Component(service = SchemaProvider.class, immediate = true, property = {
         Constants.SERVICE_DESCRIPTION + "=Apache Sling Scripting GraphQL SchemaProvider",
         Constants.SERVICE_VENDOR + "=The Apache Software Foundation" })
-public class GraphQLSchemaProvider {
+public class DefaultSchemaProvider implements SchemaProvider {
 
     public static final String SCHEMA_EXTENSION = ".GQLschema";
 
     @Reference
     protected SlingRequestProcessor requestProcessor;
 
-    public static class SchemaProviderException extends IOException {
-        private static final long serialVersionUID = 1L;
-
-        SchemaProviderException(String reason) {
-            super(reason);
-        }
-
-        SchemaProviderException(String reason, Throwable cause) {
-            super(reason, cause);
-        }
-    }
-
-    public String getSchema(Resource r) throws Exception {
+    @Override
+    public String getSchema(Resource r, String [] selectors) throws SchemaProviderException {
         final ResourceResolver resourceResolver = r.getResourceResolver();
         if(r == null) {
             throw new SchemaProviderException("Resource.getResourceResolver() is null");
@@ -67,7 +59,12 @@ public class GraphQLSchemaProvider {
         if(status != 200) {
             throw new SchemaProviderException("Request to " + path + " returns HTTP status " + status);
         }
-        requestProcessor.processRequest(request, response, resourceResolver);
-        return response.getOutputAsString();
+
+        try {
+            requestProcessor.processRequest(request, response, resourceResolver);
+            return response.getOutputAsString();
+        } catch(Exception e) {
+            throw new SchemaProviderException("Schema request failed", e);
+        }
     }
 }

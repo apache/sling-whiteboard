@@ -16,26 +16,30 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.sling.scripting.gql.engine;
+
+package org.apache.sling.scripting.gql.api;
+
+import java.io.IOException;
 
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.scripting.gql.api.SchemaProvider;
 
-class MockSchemaProvider implements SchemaProvider {
+import aQute.bnd.annotation.ProviderType;
 
-    private static final String MOCK_SCHEMA = 
-        "type Query {\n"
-        + "    ## fetch:test/echo\n"
-        + "    currentResource : SlingResource\n"
-        + "    ## fetch:test/static\n"
-        + "    staticContent: Test"
-        + "}\n"
-        + "type SlingResource { path: String resourceType: String }\n"
-        + "type Test { test: Boolean }";
+@ProviderType
+public interface SchemaProvider {
+    
+    public static class SchemaProviderException extends IOException {
+        private static final long serialVersionUID = 1L;
 
-    @Override
-    public String getSchema(Resource r, String[] selectors) throws SchemaProviderException {
-        return MOCK_SCHEMA;
+        public SchemaProviderException(String reason) {
+            super(reason);
+        }
+
+        public SchemaProviderException(String reason, Throwable cause) {
+            super(reason, cause);
+        }
     }
 
+    /** Get a GraphQL Schema definition for the given resource and optional selectors */
+    String getSchema(Resource r, String [] selectors) throws SchemaProviderException;
 }

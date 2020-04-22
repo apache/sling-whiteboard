@@ -25,9 +25,9 @@ import graphql.language.Comment;
 import graphql.language.FieldDefinition;
 import graphql.language.ObjectTypeDefinition;
 import org.apache.sling.api.resource.Resource;
+import org.apache.sling.scripting.gql.api.SchemaProvider;
 import org.apache.sling.scripting.gql.schema.DataFetcherDefinitionImpl;
 import org.apache.sling.scripting.gql.schema.DataFetcherSelector;
-import org.apache.sling.scripting.gql.schema.GraphQLSchemaProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +47,7 @@ public class GraphQLResourceQuery {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    public ExecutionResult executeQuery(GraphQLSchemaProvider schemaProvider, DataFetcherSelector fetchers,
+    public ExecutionResult executeQuery(SchemaProvider schemaProvider, DataFetcherSelector fetchers,
                                         Resource r, String query) throws ScriptException {
         if(r == null) {
             throw new ScriptException("Resource is null");
@@ -56,12 +56,12 @@ public class GraphQLResourceQuery {
             throw new ScriptException("Query is null");
         }
         if(schemaProvider == null) {
-            throw new ScriptException("GraphQLSchemaProvider is null");
+            throw new ScriptException("SchemaProvider is null");
         }
 
         String schemaDef = null;
         try {
-            schemaDef = schemaProvider.getSchema(r);
+            schemaDef = schemaProvider.getSchema(r, null);
         } catch(Exception e) {
             final ScriptException up = new ScriptException("Schema provider failed");
             up.initCause(e);

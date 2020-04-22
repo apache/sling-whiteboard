@@ -31,9 +31,9 @@ import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
+import org.apache.sling.scripting.gql.api.SchemaProvider;
 import org.apache.sling.scripting.gql.engine.GraphQLResourceQuery;
 import org.apache.sling.scripting.gql.schema.DataFetcherSelector;
-import org.apache.sling.scripting.gql.schema.GraphQLSchemaProvider;
 import org.apache.sling.scripting.gql.engine.GraphQLScriptEngine;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
@@ -98,7 +98,7 @@ public class GraphQLServlet extends SlingAllMethodsServlet {
     }
 
     @Reference
-    private GraphQLSchemaProvider schemaProvider;
+    private SchemaProvider schemaProvider;
 
     @Reference
     private DataFetcherSelector fetchers;
