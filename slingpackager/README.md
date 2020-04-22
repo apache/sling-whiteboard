@@ -30,7 +30,7 @@ npm install @peregrinecms/slingpackager -g
 This will make the packager available as a command line tool on your system. If you'd like to install `slingpackager` to your project only (or to try it before you commit to a global install), in your project folder, use
 
 ```
-npm install @peregrinecms/slingpackager
+npm install @peregrinecms/slingpackager --save-dev
 ```
 
 You can then execute
