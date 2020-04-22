@@ -24,13 +24,13 @@ For an example project using the `slingpackager` please have a look at the [simp
 To install slingpackager globally use
 
 ```
-npm install @peregrinecms/slingpackager -g
+npm install @apache-sling/slingpackager -g
 ```
 
 This will make the packager available as a command line tool on your system. If you'd like to install `slingpackager` to your project only (or to try it before you commit to a global install), in your project folder, use
 
 ```
-npm install @peregrinecms/slingpackager --save-dev
+npm install @apache-sling/slingpackager --save-dev
 ```
 
 You can then execute
