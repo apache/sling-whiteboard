@@ -30,10 +30,7 @@ import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
-/**
- * VerifySignatureCredentials
- *
- */
+
 public class VerifySignatureCredentials {
 
     public static Credential getCredential(

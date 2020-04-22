@@ -262,31 +262,7 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
         redirectUserWithRequest(httpServletRequest, httpServletResponse, authnRequest);
     }
 
-    private AuthnRequest buildAuthnRequest() {
-        AuthnRequest authnRequest = Helpers.buildSAMLObject(AuthnRequest.class);
-        authnRequest.setIssueInstant(new DateTime());
-        authnRequest.setDestination(saml2ConfigService.getSaml2IDPDestination());
-        authnRequest.setProtocolBinding(SAMLConstants.SAML2_POST_BINDING_URI);
-        // Entity ID
-        authnRequest.setAssertionConsumerServiceURL(saml2ConfigService.getACSURL());
-        authnRequest.setID(Helpers.generateSecureRandomId());
-        authnRequest.setIssuer(buildIssuer());
-        authnRequest.setNameIDPolicy(buildNameIdPolicy());
-        return authnRequest;
-    }
 
-    private Issuer buildIssuer() {
-        Issuer issuer = Helpers.buildSAMLObject(Issuer.class);
-        issuer.setValue(saml2ConfigService.getEntityID());
-        return issuer;
-    }
-
-    private NameIDPolicy buildNameIdPolicy() {
-        NameIDPolicy nameIDPolicy = Helpers.buildSAMLObject(NameIDPolicy.class);
-        nameIDPolicy.setAllowCreate(true);
-        nameIDPolicy.setFormat(NameIDType.TRANSIENT);
-        return nameIDPolicy;
-    }
 
     private void redirectUserWithRequest(final HttpServletRequest httpServletRequest ,
                      final HttpServletResponse httpServletResponse, final AuthnRequest authnRequest) {
@@ -331,6 +307,40 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
         return endpoint;
     }
 
+    /*
+     *
+     * Attribution:
+     * Created by Privat on 4/6/14.
+     *
+     * for another Apache 2.0 licensed project.
+     * https://bitbucket.org/srasmusson/webprofile-ref-project-v3/src/master/src/main/java/no/steras/opensamlbook/sp/AccessFilter.java
+     * https://bitbucket.org/srasmusson/webprofile-ref-project-v3/src/master/src/main/java/no/steras/opensamlbook/sp/ConsumerServlet.java
+     */
+    private AuthnRequest buildAuthnRequest() {
+        AuthnRequest authnRequest = Helpers.buildSAMLObject(AuthnRequest.class);
+        authnRequest.setIssueInstant(new DateTime());
+        authnRequest.setDestination(saml2ConfigService.getSaml2IDPDestination());
+        authnRequest.setProtocolBinding(SAMLConstants.SAML2_POST_BINDING_URI);
+        // Entity ID
+        authnRequest.setAssertionConsumerServiceURL(saml2ConfigService.getACSURL());
+        authnRequest.setID(Helpers.generateSecureRandomId());
+        authnRequest.setIssuer(buildIssuer());
+        authnRequest.setNameIDPolicy(buildNameIdPolicy());
+        return authnRequest;
+    }
+
+    private Issuer buildIssuer() {
+        Issuer issuer = Helpers.buildSAMLObject(Issuer.class);
+        issuer.setValue(saml2ConfigService.getEntityID());
+        return issuer;
+    }
+
+    private NameIDPolicy buildNameIdPolicy() {
+        NameIDPolicy nameIDPolicy = Helpers.buildSAMLObject(NameIDPolicy.class);
+        nameIDPolicy.setAllowCreate(true);
+        nameIDPolicy.setFormat(NameIDType.TRANSIENT);
+        return nameIDPolicy;
+    }
 
     private MessageContext decodeHttpPostSamlResp(final HttpServletRequest request) {
         HTTPPostDecoder httpPostDecoder = new HTTPPostDecoder();
@@ -376,6 +386,10 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
             throw new RuntimeException("SAML Assertion signature problem", e);
         }
     }
+
+    /*
+     * End Privat attribution
+     */
 
     private User doUserManagement(final Assertion assertion) {
         if (assertion.getAttributeStatements() == null ||

@@ -21,8 +21,6 @@
 package org.apache.sling.auth.saml2;
 
 import net.shibboleth.utilities.java.support.security.RandomIdentifierGenerationStrategy;
-import org.apache.velocity.app.VelocityEngine;
-import org.apache.velocity.runtime.RuntimeConstants;
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.core.xml.XMLObjectBuilderFactory;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
@@ -37,6 +35,14 @@ import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.StringWriter;
+
+/*
+ * Attribution:
+ * Created by Privat on 4/6/14.
+ *
+ * for another Apache 2.0 licensed project.
+ * https://bitbucket.org/srasmusson/webprofile-ref-project-v3/src/master/src/main/java/no/steras/opensamlbook/OpenSAMLUtils.java
+ */
 
 public class Helpers {
 
