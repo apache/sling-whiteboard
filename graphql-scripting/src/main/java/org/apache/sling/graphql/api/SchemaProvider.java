@@ -28,18 +28,6 @@ import aQute.bnd.annotation.ProviderType;
 @ProviderType
 public interface SchemaProvider {
     
-    public static class SchemaProviderException extends IOException {
-        private static final long serialVersionUID = 1L;
-
-        public SchemaProviderException(String reason) {
-            super(reason);
-        }
-
-        public SchemaProviderException(String reason, Throwable cause) {
-            super(reason, cause);
-        }
-    }
-
     /** Get a GraphQL Schema definition for the given resource and optional selectors */
-    String getSchema(Resource r, String [] selectors) throws SchemaProviderException;
+    String getSchema(Resource r, String [] selectors) throws IOException;
 }

@@ -34,7 +34,7 @@ class MockSchemaProvider implements SchemaProvider {
         + "type Test { test: Boolean }";
 
     @Override
-    public String getSchema(Resource r, String[] selectors) throws SchemaProviderException {
+    public String getSchema(Resource r, String[] selectors) {
         return MOCK_SCHEMA;
     }
 

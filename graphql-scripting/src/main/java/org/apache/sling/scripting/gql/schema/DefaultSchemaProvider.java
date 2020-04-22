@@ -22,8 +22,6 @@ package org.apache.sling.scripting.gql.schema;
 
 import java.io.IOException;
 
-import javax.servlet.ServletException;
-
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.engine.SlingRequestProcessor;
@@ -41,6 +39,18 @@ import org.osgi.service.component.annotations.Reference;
 public class DefaultSchemaProvider implements SchemaProvider {
 
     public static final String SCHEMA_EXTENSION = ".GQLschema";
+
+    public static class SchemaProviderException extends IOException {
+        private static final long serialVersionUID = 1L;
+
+        public SchemaProviderException(String reason) {
+            super(reason);
+        }
+
+        public SchemaProviderException(String reason, Throwable cause) {
+            super(reason, cause);
+        }
+    }
 
     @Reference
     protected SlingRequestProcessor requestProcessor;
