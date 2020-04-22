@@ -1,4 +1,3 @@
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -26,7 +25,7 @@ import graphql.language.Comment;
 import graphql.language.FieldDefinition;
 import graphql.language.ObjectTypeDefinition;
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.scripting.gql.schema.FetcherDefinition;
+import org.apache.sling.scripting.gql.schema.FetcherDefinitionImpl;
 import org.apache.sling.scripting.gql.schema.FetcherManager;
 import org.apache.sling.scripting.gql.schema.GraphQLSchemaProvider;
 import org.slf4j.Logger;
@@ -118,7 +117,7 @@ public class GraphQLResourceQuery {
                 commentStr = commentStr.substring(1).trim();
 
                 try {
-                    FetcherDefinition def = new FetcherDefinition(commentStr);
+                    FetcherDefinitionImpl def = new FetcherDefinitionImpl(commentStr);
                     DataFetcher<Object> fetcher = fetchers.getDataFetcherForType(def, r);
                     if (fetcher != null) {
                         return fetcher;
