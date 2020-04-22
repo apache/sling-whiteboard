@@ -57,6 +57,7 @@ import graphql.ExecutionResult;
 
 @Component(
     service = Servlet.class,
+    name = "org.apache.sling.graphql.core.GraphQLServlet",
     immediate = true,
     configurationPolicy=ConfigurationPolicy.REQUIRE,
     property = {

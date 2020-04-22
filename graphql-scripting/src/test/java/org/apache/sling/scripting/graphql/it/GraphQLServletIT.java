@@ -45,6 +45,8 @@ public class GraphQLServletIT extends GraphQLScriptingTestSupport {
     @Filter(value = "(path=/content/graphql/two)")
     private ResourcePresence resourcePresence;
 
+    private static final String GRAPHQL_SERVLET_CONFIG_PID = "org.apache.sling.graphql.core.GraphQLServlet";
+
     @Configuration
     public Option[] configuration() {
         return new Option[]{
@@ -54,11 +56,11 @@ public class GraphQLServletIT extends GraphQLScriptingTestSupport {
                 .asOption(),
 
             // The GraphQL servlet is disabled by default, try setting up two of them
-            factoryConfiguration("org.apache.sling.scripting.gql.servlet.GraphQLServlet")
+            factoryConfiguration(GRAPHQL_SERVLET_CONFIG_PID)
                 .put("sling.servlet.resourceTypes", "sling/servlet/default")
                 .put("sling.servlet.extensions", "gql")
                 .asOption(),
-            factoryConfiguration("org.apache.sling.scripting.gql.servlet.GraphQLServlet")
+            factoryConfiguration(GRAPHQL_SERVLET_CONFIG_PID)
                 .put("sling.servlet.resourceTypes", "graphql/test/two")
                 .put("sling.servlet.selectors", "testing")
                 .put("sling.servlet.extensions", "otherExt")
