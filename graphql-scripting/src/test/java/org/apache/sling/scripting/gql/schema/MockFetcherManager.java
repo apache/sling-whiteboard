@@ -22,6 +22,8 @@ package org.apache.sling.scripting.gql.schema;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import org.apache.sling.api.resource.Resource;
+import org.apache.sling.scripting.gql.api.DataFetcherFactory;
+import org.apache.sling.scripting.gql.api.FetcherDefinition;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -43,7 +45,7 @@ public class MockFetcherManager extends FetcherManager {
 
     }
 
-    static class EchoSlingDataFetcher implements SlingDataFetcher {
+    static class EchoDataFetcherFactory implements DataFetcherFactory {
 
         @Override
         public String getNamespace() {
@@ -76,7 +78,7 @@ public class MockFetcherManager extends FetcherManager {
 
     }
 
-    static class StaticSlingDataFetcher implements SlingDataFetcher {
+    static class StaticDataFetcherFactory implements DataFetcherFactory {
 
         @Override
         public String getNamespace() {
@@ -97,7 +99,7 @@ public class MockFetcherManager extends FetcherManager {
     }
 
     public MockFetcherManager() {
-        super(new EchoSlingDataFetcher(), new StaticSlingDataFetcher());
+        super(new EchoDataFetcherFactory(), new StaticDataFetcherFactory());
     }
 
 }

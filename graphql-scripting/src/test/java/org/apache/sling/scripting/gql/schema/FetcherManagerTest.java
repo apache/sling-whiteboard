@@ -20,6 +20,7 @@
 package org.apache.sling.scripting.gql.schema;
 
 import graphql.schema.DataFetcher;
+import org.apache.sling.scripting.gql.api.DataFetcherFactory;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -33,17 +34,17 @@ public class FetcherManagerTest {
         DataFetcher<Object> gqlFetcher1 = (DataFetcher<Object>) Mockito.mock(DataFetcher.class);
         DataFetcher<Object> gqlFetcher2 = (DataFetcher<Object>) Mockito.mock(DataFetcher.class);
         DataFetcher<Object> gqlFetcher3 = (DataFetcher<Object>) Mockito.mock(DataFetcher.class);
-        SlingDataFetcher fetcher1 = Mockito.mock(SlingDataFetcher.class);
+        DataFetcherFactory fetcher1 = Mockito.mock(DataFetcherFactory.class);
         Mockito.when(fetcher1.getNamespace()).thenReturn("ns1");
         Mockito.when(fetcher1.getName()).thenReturn("name1");
         Mockito.when(fetcher1.createDataFetcher(Mockito.any(), Mockito.any()))
                 .thenReturn(gqlFetcher1);
-        SlingDataFetcher fetcher2 = Mockito.mock(SlingDataFetcher.class);
+        DataFetcherFactory fetcher2 = Mockito.mock(DataFetcherFactory.class);
         Mockito.when(fetcher2.getNamespace()).thenReturn("ns2");
         Mockito.when(fetcher2.getName()).thenReturn("name2");
         Mockito.when(fetcher2.createDataFetcher(Mockito.any(), Mockito.any()))
                 .thenReturn(gqlFetcher2);
-        SlingDataFetcher fetcher3 = Mockito.mock(SlingDataFetcher.class);
+        DataFetcherFactory fetcher3 = Mockito.mock(DataFetcherFactory.class);
         Mockito.when(fetcher3.getNamespace()).thenReturn("ns1");
         Mockito.when(fetcher3.getName()).thenReturn("name2");
         Mockito.when(fetcher3.createDataFetcher(Mockito.any(), Mockito.any()))
@@ -52,15 +53,15 @@ public class FetcherManagerTest {
 
         assertEquals(
                 gqlFetcher1,
-                fetchers.getDataFetcherForType(new FetcherDefinition("fetch:ns1/name1"), null));
+                fetchers.getDataFetcherForType(new FetcherDefinitionImpl("fetch:ns1/name1"), null));
         assertEquals(
                 gqlFetcher2,
-                fetchers.getDataFetcherForType(new FetcherDefinition("fetch:ns2/name2"), null));
+                fetchers.getDataFetcherForType(new FetcherDefinitionImpl("fetch:ns2/name2"), null));
         assertEquals(
                 gqlFetcher3,
-                fetchers.getDataFetcherForType(new FetcherDefinition("fetch:ns1/name2"), null));
+                fetchers.getDataFetcherForType(new FetcherDefinitionImpl("fetch:ns1/name2"), null));
         assertNull(
-                fetchers.getDataFetcherForType(new FetcherDefinition("fetch:ns2/name1"), null));
+                fetchers.getDataFetcherForType(new FetcherDefinitionImpl("fetch:ns2/name1"), null));
     }
 
 }

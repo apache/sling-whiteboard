@@ -21,6 +21,7 @@ package org.apache.sling.scripting.graphql.it;
 import javax.inject.Inject;
 
 import org.apache.sling.resource.presence.ResourcePresence;
+import org.apache.sling.scripting.gql.api.DataFetcherFactory;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ops4j.pax.exam.Configuration;
@@ -29,6 +30,8 @@ import org.ops4j.pax.exam.junit.PaxExam;
 import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
 import org.ops4j.pax.exam.spi.reactors.PerClass;
 import org.ops4j.pax.exam.util.Filter;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
 
 import static org.junit.Assert.assertEquals;
 import static org.ops4j.pax.exam.cm.ConfigurationAdminOptions.factoryConfiguration;
@@ -40,6 +43,9 @@ public class GraphQLServletIT extends GraphQLScriptingTestSupport {
     @Inject
     @Filter(value = "(path=/apps/graphql/test/one/json.gql)")
     private ResourcePresence resourcePresence;
+
+    @Inject
+    private BundleContext bundleContext;
 
     @Configuration
     public Option[] configuration() {
@@ -53,10 +59,20 @@ public class GraphQLServletIT extends GraphQLScriptingTestSupport {
 
     @Test
     public void testJsonContent() throws Exception {
-        final String path = "/graphql/one";
-        final String json = getContent(path + ".gql");
-        // TODO we should really parse this..or run detailed tests in unit tests, and just the basics here
-        final String expected = "{\"currentResource\":{\"path\":\"/content/graphql/one\",\"resourceType\":\"graphql/test/one\"}}";
-        assertEquals(expected, json);
+        PipeDataFetcherFactory pipeDataFetcherFactory = new PipeDataFetcherFactory();
+        ServiceRegistration<DataFetcherFactory> dataFetcherFactoryRegistration =
+                bundleContext.registerService(DataFetcherFactory.class, pipeDataFetcherFactory, null);
+
+        try {
+            final String path = "/graphql/one";
+            final String json = getContent(path + ".gql");
+            // TODO we should really parse this..or run detailed tests in unit tests, and just the basics here
+            final String expected =
+                    "{\"currentResource\":{\"path\":\"/content/graphql/one\",\"resourceType\":\"graphql/test/one\"}}";
+            assertEquals(expected, json);
+
+        } finally {
+            dataFetcherFactoryRegistration.unregister();
+        }
     }
 }
