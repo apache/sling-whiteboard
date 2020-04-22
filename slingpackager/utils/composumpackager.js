@@ -138,15 +138,16 @@ const build = (url, username, password, package, maxRetry) => {
 const download = (url, username, password, destination, package, maxRetry) => {
     logger.log('Downloading package', package, 'from', url, 'to', destination);
     let serviceURL = url + "/bin/cpm/package.download.zip" + package;
-    downloadPackag({serviceURL, username, password, destination, package, maxRetry});
+    downloadPackage({url, username, password, destination, package, maxRetry});
 }
 
 const getName = () => {
     return 'Composum Package Manager';
 }
 
-function downloadPackag(data) {
+function downloadPackage(data) {
     if(data.filePath) {
+        data.serviceURL = data.url + "/bin/cpm/package.download.zip" + data.package;
         callGetService(data, (error, response) => {
             if(error) {
                 logger.error("Unable to download package.");
@@ -160,17 +161,37 @@ function downloadPackag(data) {
             }
         }, true).pipe(fs.createWriteStream(data.filePath));;
     } else {
-        callGetService(data, (error, response) => {
+        data.serviceURL = data.url + listEndpoint;
+        let req = callGetService(data, (error, response) => {
             if(error) {
                 logger.error("Unable to download package.");
                 process.exit(1);
             } else {
-                let fileName = response.headers['content-disposition'].split('=').reverse()[0];
-                let filePath = path.join(data.destination, fileName);
-                data.filePath = filePath;
-                downloadPackag(data);
+                var packages = response.children ? response.children : response;
+                for (var i = 0; i < packages.length; i++) {
+                    if(packages[i].type === 'package' && isPackage(packages[i], data.package)) {
+                        let fileName = packages[i].file;
+                        let filePath = path.join(data.destination, fileName);
+                        data.filePath = filePath;
+                        data.package = packages[i].path;
+                        downloadPackage(data);
+                        return;
+                    }
+                }
+
+                logger.error("Unable to download package. Package " + data.package + " is not found on server.");
             }
-        }, true);
+        }, false);
+
+        logger.debug("Request: ", JSON.stringify(req.toJSON(), undefined, '   '));
+    }
+}
+
+function isPackage(packJson, name) {
+    if(packJson.id === name || packJson.name === name || packJson.path === name) {
+        return true;
+    } else {
+        return packJson.definition.name === name;
     }
 }
 
@@ -226,9 +247,9 @@ function postJob(data, operation, callback) {
     return post;
 }
 
-function callGetService(data, callback, download=false) {
+function callGetService(data, callback, isDownload=false) {
     data.method = "GET";
-    return callService(data, callback, download);
+    return callService(data, callback, isDownload);
 }
 
 function callPostService(data, callback) {
@@ -238,7 +259,7 @@ function callPostService(data, callback) {
     return post;
 }
 
-function callService(data, callback, download=false) {
+function callService(data, callback, isDownload=false) {
     if(data.retryCount === undefined) {
         data.retryCount = 0;
         if(data.maxRetry === undefined) {
@@ -266,7 +287,7 @@ function callService(data, callback, download=false) {
 
         if (response && response.statusCode === 200) {
             if (body) {
-                if(download) {
+                if(isDownload) {
                     callback(undefined, response);
                 } else {
                     var json = JSON.parse(body);
