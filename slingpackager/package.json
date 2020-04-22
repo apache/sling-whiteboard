@@ -1,7 +1,7 @@
 {
   "name": "@apachesling/slingpackager",
   "version": "0.0.5",
-  "description": "prepare a sling package file for sling and install it",
+  "description": "A tool for working with Apache Sling content packages.",
   "main": "index.js",
   "repository": {
     "type": "git",
