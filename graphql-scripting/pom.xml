@@ -237,12 +237,16 @@
       <version>${org.ops4j.pax.exam.version}</version>
       <scope>test</scope>
     </dependency>
-      <dependency>
-          <groupId>biz.aQute.bnd</groupId>
-          <artifactId>biz.aQute.bndlib</artifactId>
-          <version>5.0.0</version>
-          <scope>compile</scope>
-      </dependency>
+    <dependency>
+      <groupId>biz.aQute.bnd</groupId>
+      <artifactId>biz.aQute.bndlib</artifactId>
+      <version>5.0.0</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.annotation.versioning</artifactId>
+    </dependency>
   </dependencies>
 
 </project>
