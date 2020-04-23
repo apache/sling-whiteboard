@@ -59,6 +59,7 @@ public class GraphQLServletIT extends GraphQLScriptingTestSupport {
             factoryConfiguration(GRAPHQL_SERVLET_CONFIG_PID)
                 .put("sling.servlet.resourceTypes", "sling/servlet/default")
                 .put("sling.servlet.extensions", "gql")
+                .put("sling.servlet.methods", new String[] { "GET", "POST" })
                 .asOption(),
             factoryConfiguration(GRAPHQL_SERVLET_CONFIG_PID)
                 .put("sling.servlet.resourceTypes", "graphql/test/two")
@@ -71,6 +72,14 @@ public class GraphQLServletIT extends GraphQLScriptingTestSupport {
     @Test
     public void testGqlExt() throws Exception {
         final String json = getContent("/graphql/two.gql", "query", "{ currentResource { resourceType name } }");
+        assertThat(json, hasJsonPath("$.currentResource.resourceType", equalTo("graphql/test/two")));
+        assertThat(json, hasJsonPath("$.currentResource.name", equalTo("two")));
+        assertThat(json, hasNoJsonPath("$.currentResource.path"));
+    }
+
+    @Test
+    public void testGqlExtWithPost() throws Exception {
+        final String json = getContentWithPost("/graphql/two.gql", "{ currentResource { resourceType name } }", null);
         assertThat(json, hasJsonPath("$.currentResource.resourceType", equalTo("graphql/test/two")));
         assertThat(json, hasJsonPath("$.currentResource.name", equalTo("two")));
         assertThat(json, hasNoJsonPath("$.currentResource.path"));

@@ -21,6 +21,8 @@
 package org.apache.sling.scripting.gql.servlet;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
 
 import javax.script.ScriptException;
 import javax.servlet.Servlet;
@@ -117,15 +119,16 @@ public class GraphQLServlet extends SlingAllMethodsServlet {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
-        final String query = request.getParameter(P_QUERY);
-        if(query == null || query.trim().length() == 0) {
+        final RequestParser parser = new RequestParser(request);
+        final String query = parser.getQuery();
+        if (query == null || query.trim().length() == 0) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing request parameter:" + P_QUERY);
             return;
         }
 
         try {
             final GraphQLResourceQuery q = new GraphQLResourceQuery();
-            final ExecutionResult result = q.executeQuery(schemaProvider, fetchers, resource, query);
+            final ExecutionResult result = q.executeQuery(schemaProvider, fetchers, resource, query, parser.getVariables());
             GraphQLScriptEngine.sendJSON(response.getWriter(), result);
         } catch(Exception ex) {
             throw new IOException(ex);
@@ -133,4 +136,5 @@ public class GraphQLServlet extends SlingAllMethodsServlet {
             response.getWriter().flush();
         }
     }
+
 }
