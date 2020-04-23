@@ -10,7 +10,7 @@ https://en.wikipedia.org/wiki/SAML_2.0
 
 ![](src/main/resources/Saml2SP.png)
  
-###Features  
+### Features  
 Sling applications to authenticate users against Identity Providers (idp) 
 such as Keycloak or Shibboleth using SAML2 protocols.
 
@@ -59,15 +59,29 @@ After enabling Jetty to use https over port 2443, you will need to accept the br
 Run an IDP locally.  
 1. Assuming Sling runs on 8080, use the docker commnd to run Keycloak on port *8088* sign into the IDP using admin:admin   
 1.1. `docker run -p 8088:8080 -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin quay.io/keycloak/keycloak:9.0.2`  
-1.2. Either configure this manually, or import the example configurations from resources/realm-export.json If you choose this option, then be sure to enable Jetty to use https on 2443 as described above.           
-2. As a convenience, the resources folder has the JKS associated with the IDP realm-export.json configurations.  
-2.1. Keystore Password = storepass   
-2.2. The `localhost` realm signing certificate is contained.  
-2.3. The localhost realm contains Client settings for the Sling Service Provider `https://localhost:2443` and the encryption keypair is contained; alias = slingSP, password = encPassword  
-2.4. The Encryption Key was generated within the Keycloak "Clients" console under the "SAML Keys" tab.  
-2.5. The Keycloak config for `https://localhost:2443` has one user defined.   
-Username = saml2-example   
-Password = password 
+or run it in standalone https://www.keycloak.org/docs/latest/getting_started/  
+1.2. Configure the IDP manually with some basic settings such as the one described below;   
+    * create a localhost realm with a Client ID set to https://localhost:2443/ or whatever entity identifier you want
+    * convert the realm cert (http://localhost:8088/auth/admin/master/console/#/realms/localhost/keys) from pem to der
+    * save this file and import it into the JKS giving it an alias localhost. The SP uses this validate the IDP's signature
+    * Enabled = On
+    * Include AuthnStatement = On
+    * Sign Assertions = On
+    * Encrypt Assertions = On
+    * Client Signature Required = Off (This could be an open issue. Works for shib-idp not keycloak)
+    * Valid Redirect URIs = https://localhost:2443/*
+    * Base URL = https://localhost:2443/
+    * Master SAML Processing URL = https://localhost:2443/          
+2. Create a User & a Group
+    * Username = saml2-example   
+    * Password = password
+    * Group: pcms-authors
+    * Assign the user to the group
+    * Configure the IDP to release the group
+    * Decide or set an attribute to for the User ID
+    * Add an other user attributes desired to be released
+    * Intercept the SAML Response and verify the content
+      
 
 References
 https://www.keycloak.org/getting-started/getting-started-docker
@@ -78,16 +92,27 @@ localhost realm http://localhost:8088/auth/admin/master/console/#/realms/localho
      
 ### Put your Service Provider KeyPair into a JKS 
 Option 1: Generate using Keytool  
-`$ keytool -genkey -alias samlKeys -keyalg RSA -keystore samlKeystore.jks`
+`$ keytool -genkey -alias samlKeys -keyalg RSA -keystore samlKeystore.jks`  
+Make note of the storepass, alias, filename, and key password.  
+These will all be needed to configure SP encryption.  
+The generated JKS should be imported into your Keycloak localhost Client "SAML Keys"
 
 Option 2: Import Existing into jks  
 `$ keytool -importkeystore -srckeystore serviceProviderKeys.p12 -destkeystore samlKeystore.jks
 -srcstoretype pkcs12 -alias spKeysAlias`
  
-Option 3: For localhost testing with Keycloak use `resources/slingSP.jks`   
-Copy resources/slingSP.jks to your Sling instance ./sling/keys/slingSP.jks
  
+
 ### Put your Identity Provider's Signing Certificate into SAML JKS
+Get the cert.pem from Realm Setting > Keys
+Copy pem cert and paste into a text file
+
+-----BEGIN CERTIFICATE-----   
+MIICoTCCAYkCBgFxqKn5fjANBgkqhkiG9w0BAQsFADAUMRIwEAYDVQQDDAlsb2Nh   
+bGhvc3QwHhcNMjAwNDIzMjAwOTAzWhcNMzAwNDIzMjAxMDQzWjAUMRIwEAYDVQQD   
+....   
+-----END CERTIFICATE-----
+    
 `$ keytool -import -file idp-signing.pem  -keystore samlKeystore.jks -alias IDPSigningAlias`
 
 
