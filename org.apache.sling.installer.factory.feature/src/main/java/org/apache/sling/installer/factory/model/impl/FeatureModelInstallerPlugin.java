@@ -94,15 +94,6 @@ public class FeatureModelInstallerPlugin implements InstallTaskFactory, Resource
     /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-//    @Reference
-//    private SlingRepository repository;
-
-//    @Reference
-//    private JcrRepoInitOpsProcessor repoInitProcessor;
-
-//    @Reference
-//    private RepoInitParser repoInitParser;
-
     private final BundleContext bundleContext;
 
     private final ArtifactManager artifactManager;
@@ -234,8 +225,7 @@ public class FeatureModelInstallerPlugin implements InstallTaskFactory, Resource
         if (rsrc.getState() == ResourceState.UNINSTALL ) {
             return new UninstallFeatureModelTask(group, bundleContext);
         }
-        final InstallContext ctx = new InstallContext(//this.repository, this.repoInitProcessor, this.repoInitParser,
-                this.artifactManager, this.storageDirectory);
+        final InstallContext ctx = new InstallContext(this.artifactManager, this.storageDirectory);
         return new InstallFeatureModelTask(group,
                 ctx, this.bundleContext);
     }

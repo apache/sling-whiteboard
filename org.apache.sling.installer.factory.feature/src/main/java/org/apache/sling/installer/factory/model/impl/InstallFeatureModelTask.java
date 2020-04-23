@@ -38,6 +38,8 @@ import org.apache.sling.feature.Configuration;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.extension.apiregions.api.ApiRegions;
+import org.apache.sling.feature.extension.apiregions.launcher.LauncherProperties;
 import org.apache.sling.feature.io.archive.ArchiveReader;
 import org.apache.sling.feature.io.artifacts.ArtifactHandler;
 import org.apache.sling.feature.io.json.FeatureJSONReader;
@@ -54,6 +56,14 @@ import org.osgi.framework.BundleContext;
  */
 public class InstallFeatureModelTask extends AbstractFeatureModelTask {
 
+    private static final String PROP_idbsnver = "mapping.bundleid.bsnver";
+    private static final String PROP_bundleFeatures = "mapping.bundleid.features";
+    private static final String PROP_featureRegions = "mapping.featureid.regions";
+    private static final String PROP_regionPackage = "mapping.region.packages";
+
+    private static final String REGION_FACTORY_PID = "org.apache.sling.feature.apiregions.factory~";
+    private static final String REPOINIT_FACTORY_PID = "org.apache.sling.jcr.repoinit.RepositoryInitializer~";
+
     private final InstallContext installContext;
 
     public InstallFeatureModelTask(final TaskResourceGroup group,
@@ -62,7 +72,6 @@ public class InstallFeatureModelTask extends AbstractFeatureModelTask {
         this.installContext = installContext;
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public void execute(final InstallationContext ctx) {
         try {
@@ -74,49 +83,17 @@ public class InstallFeatureModelTask extends AbstractFeatureModelTask {
                 this.getResourceGroup().setFinishState(ResourceState.IGNORED);
             } else {
                 boolean success = false;
-                final Result result = this.transform(featureJson, resource);
+                final List<InstallableResource> result = this.transform(featureJson, resource);
                 if (result == null) {
                     ctx.log("Unable to install feature model resource {} : unable to create resources", resource);
                     this.getResourceGroup().setFinishState(ResourceState.IGNORED);
                 } else {
-                    // repo init first
-/*                    if (result.repoinit != null) {
-                        List<Operation> ops = null;
-                        try (final Reader r = new StringReader(result.repoinit)) {
-                            ops = this.installContext.repoInitParser.parse(r);
-                        } catch (final IOException | RepoInitParsingException e) {
-                            logger.error("Unable to parse repoinit text.", e);
-                            ctx.log("Unable to install feature model resource {} : unable parse repoinit text.",
-                                    resource);
-                            this.getResourceGroup().setFinishState(ResourceState.IGNORED);
-                            return;
-                        }
-
-                        // login admin is required for repo init
-                        Session session = null;
-                        try {
-                            session = this.installContext.repository.loginAdministrative(null);
-                            this.installContext.repoInitProcessor.apply(session, ops);
-                            session.save();
-                        } catch (final RepositoryException re) {
-                            logger.error("Unable to process repoinit text.", re);
-                            ctx.log("Unable to install feature model resource {} : unable to process repoinit text.",
-                                    resource);
-                            this.getResourceGroup().setFinishState(ResourceState.IGNORED);
-                            return;
-
-                        } finally {
-                            if (session != null) {
-                                session.logout();
-                            }
-                        }
-                    }*/
-                    if (!result.resources.isEmpty()) {
+                    if (!result.isEmpty()) {
                         final OsgiInstaller installer = this.getService(OsgiInstaller.class);
                         if (installer != null) {
                             installer.registerResources(
                                     getScheme(resource),
-                                    result.resources.toArray(new InstallableResource[result.resources.size()]));
+                                    result.toArray(new InstallableResource[result.size()]));
                         } else {
                             ctx.log("Unable to install feature model resource {} : unable to get OSGi installer",
                                     resource);
@@ -136,16 +113,11 @@ public class InstallFeatureModelTask extends AbstractFeatureModelTask {
         }
     }
 
-    public static final class Result {
-        public final List<InstallableResource> resources = new ArrayList<>();
-//        public String repoinit;
-    }
-
     private File getArtifactFile(final File baseDir, final ArtifactId id) {
         return new File(baseDir, id.toMvnId().replace('/', File.separatorChar));
     }
 
-    private Result transform(final String featureJson,
+    private List<InstallableResource> transform(final String featureJson,
             final TaskResource rsrc) {
         Feature feature = null;
         try (final Reader reader = new StringReader(featureJson)) {
@@ -157,8 +129,26 @@ public class InstallFeatureModelTask extends AbstractFeatureModelTask {
             return null;
         }
 
+        final List<InstallableResource> result = new ArrayList<>();
+        // configurations
+        for (final Configuration cfg : feature.getConfigurations()) {
+            result.add(new InstallableResource("/".concat(cfg.getPid()).concat(".config"), null,
+                    cfg.getConfigurationProperties(), null, InstallableResource.TYPE_CONFIG, null));
+        }
+
+        // repoinit
+        final Extension repoInit = feature.getExtensions().getByName(Extension.EXTENSION_NAME_REPOINIT);
+        if (repoInit != null && repoInit.getType() == ExtensionType.TEXT) {
+            final String configPid = REPOINIT_FACTORY_PID.concat(feature.getId().toMvnName().replace('-', '_'));
+            final Dictionary<String, Object> props = new Hashtable<>();
+            props.put("scripts", repoInit.getText());
+
+            result.add(new InstallableResource("/".concat(configPid).concat(".config"), null,
+                    props, null, InstallableResource.TYPE_CONFIG, null));
+        }
+
+        // extract artifacts
         if (this.installContext.storageDirectory != null) {
-            // extract artifacts
             final byte[] buffer = new byte[1024*1024*256];
 
             try ( final InputStream is = rsrc.getInputStream() ) {
@@ -184,13 +174,35 @@ public class InstallFeatureModelTask extends AbstractFeatureModelTask {
             }
         }
 
+        // api regions
+        final Extension regionExt = feature.getExtensions().getByName(ApiRegions.EXTENSION_NAME);
+        if ( regionExt != null ) {
+            try {
+                final ApiRegions regions = ApiRegions.parse(regionExt.getJSONStructure().asJsonArray());
 
-        final Result result = new Result();
+                final String configPid = REGION_FACTORY_PID.concat(feature.getId().toMvnName().replace('-', '_'));
+                final Dictionary<String, Object> props = new Hashtable<>();
+                props.put(PROP_idbsnver, LauncherProperties.getBundleIDtoBSNandVersionMap(feature, this.installContext.artifactManager));
+                props.put(PROP_bundleFeatures, LauncherProperties.getBundleIDtoFeaturesMap(feature));
+                props.put(PROP_featureRegions, LauncherProperties.getFeatureIDtoRegionsMap(regions));
+                props.put(PROP_regionPackage, LauncherProperties.getRegionNametoPackagesMap(regions));
+
+                result.add(new InstallableResource("/".concat(configPid).concat(".config"), null,
+                        props, null, InstallableResource.TYPE_CONFIG, null));
+            } catch (final IOException ioe) {
+                logger.warn("Unable to parse region information " + feature.getId().toMvnId(), ioe);
+                return null;
+            }
+        }
+
+        // bundles
         for (final Artifact bundle : feature.getBundles()) {
             if (!addArtifact(bundle, result)) {
                 return null;
             }
         }
+
+        // content packages
         final Extension ext = feature.getExtensions().getByName(Extension.EXTENSION_NAME_CONTENT_PACKAGES);
         if (ext != null && ext.getType() == ExtensionType.ARTIFACTS) {
             for (final Artifact artifact : ext.getArtifacts()) {
@@ -198,26 +210,11 @@ public class InstallFeatureModelTask extends AbstractFeatureModelTask {
             }
         }
 
-        for (final Configuration cfg : feature.getConfigurations()) {
-            result.resources.add(new InstallableResource("/".concat(cfg.getPid()).concat(".config"), null,
-                    cfg.getConfigurationProperties(), null, InstallableResource.TYPE_CONFIG, null));
-        }
-
-        final Extension repoInit = feature.getExtensions().getByName(Extension.EXTENSION_NAME_REPOINIT);
-        if (repoInit != null && repoInit.getType() == ExtensionType.TEXT) {
-//            result.repoinit = repoInit.getText();
-            final String configPid = "org.apache.sling.jcr.repoinit.RepositoryInitializer~".concat(feature.getId().toMvnName().replace('-', '_'));
-            final Dictionary<String, Object> props = new Hashtable<>();
-            props.put("scripts", repoInit.getText());
-
-            result.resources.add(new InstallableResource("/".concat(configPid).concat(".config"), null,
-                    props, null, InstallableResource.TYPE_CONFIG, null));
-        }
         return result;
     }
 
     private boolean addArtifact(final Artifact artifact,
-            final Result result) {
+            final List<InstallableResource> result) {
         File artifactFile = (this.installContext.storageDirectory == null ? null
                 : getArtifactFile(this.installContext.storageDirectory, artifact.getId()));
         ArtifactHandler handler;
@@ -250,7 +247,7 @@ public class InstallFeatureModelTask extends AbstractFeatureModelTask {
             }
             dict.put(InstallableResource.RESOURCE_URI_HINT, handler.getLocalURL().toString());
 
-            result.resources.add(new InstallableResource("/".concat(artifact.getId().toMvnName()), is, dict, digest,
+            result.add(new InstallableResource("/".concat(artifact.getId().toMvnName()), is, dict, digest,
                     InstallableResource.TYPE_FILE, null));
         } catch (final IOException ioe) {
             logger.warn("Unable to read artifact " + handler.getLocalURL(), ioe);
