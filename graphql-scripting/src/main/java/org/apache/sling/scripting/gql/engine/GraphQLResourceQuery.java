@@ -21,6 +21,7 @@ package org.apache.sling.scripting.gql.engine;
 
 import javax.script.ScriptException;
 
+import graphql.ExecutionInput;
 import graphql.language.Comment;
 import graphql.language.FieldDefinition;
 import graphql.language.ObjectTypeDefinition;
@@ -40,7 +41,9 @@ import graphql.schema.idl.SchemaGenerator;
 import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /** Run a GraphQL query in the context of a Sling Resource */
 public class GraphQLResourceQuery {
@@ -49,6 +52,11 @@ public class GraphQLResourceQuery {
 
     public ExecutionResult executeQuery(SchemaProvider schemaProvider, DataFetcherSelector fetchers,
                                         Resource r, String query) throws ScriptException {
+        return executeQuery(schemaProvider, fetchers, r, query, Collections.emptyMap());
+    }
+
+    public ExecutionResult executeQuery(SchemaProvider schemaProvider, DataFetcherSelector fetchers,
+                                        Resource r, String query, Map<String, Object> variables) throws ScriptException {
         if(r == null) {
             throw new ScriptException("Resource is null");
         }
@@ -71,7 +79,11 @@ public class GraphQLResourceQuery {
         try {
             final GraphQLSchema schema = buildSchema(schemaDef, fetchers, r);
             final GraphQL graphQL = GraphQL.newGraphQL(schema).build();
-            final ExecutionResult result = graphQL.execute(query);
+            ExecutionInput ei = ExecutionInput.newExecutionInput()
+                .query(query)
+                .variables(variables)
+                .build();
+            final ExecutionResult result = graphQL.execute(ei);
             return result;
         } catch(Exception e) {
             final ScriptException up = new ScriptException(
