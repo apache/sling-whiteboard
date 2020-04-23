@@ -29,6 +29,8 @@ import java.util.Map;
 
 public class RequestParser {
 
+    private static final String MIME_TYPE_JSON = "application/json";
+
     private String query;
 
     private Map<String, Object> variables;
@@ -40,18 +42,22 @@ public class RequestParser {
         parse(request);
     }
 
+    @SuppressWarnings("unchecked")
     private Map<String, Object> getInputJson(SlingHttpServletRequest req) throws IOException {
-        return (Map<String, Object>) GSON.fromJson(req.getReader(), Map.class);
+        return GSON.fromJson(req.getReader(), Map.class);
     }
 
+    @SuppressWarnings("unchecked")
     private void parse(SlingHttpServletRequest request) throws IOException {
         if (request.getMethod().equalsIgnoreCase("POST")) {
-            Map<String, Object> requestJson = getInputJson(request);
-            query = (String) requestJson.get("query");
-            if (query != null) {
-                query = query.replace("\\n", "\n");
+            if (MIME_TYPE_JSON.equals(request.getContentType())) {
+                Map<String, Object> requestJson = getInputJson(request);
+                query = (String) requestJson.get("query");
+                if (query != null) {
+                    query = query.replace("\\n", "\n");
+                }
+                variables = (Map<String, Object>) requestJson.get("variables");
             }
-            variables = (Map<String, Object>) requestJson.get("variables");
         }
 
         if (query == null) {

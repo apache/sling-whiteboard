@@ -21,6 +21,8 @@ package org.apache.sling.scripting.graphql.it;
 import javax.inject.Inject;
 import javax.script.ScriptEngineFactory;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.graphql.api.DataFetcherProvider;
@@ -52,9 +54,10 @@ import static org.ops4j.pax.exam.CoreOptions.junitBundles;
 import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
 import static org.ops4j.pax.exam.CoreOptions.when;
 import static org.ops4j.pax.exam.CoreOptions.vmOption;
-import static org.ops4j.pax.exam.CoreOptions.wrappedBundle;
 import static org.ops4j.pax.exam.cm.ConfigurationAdminOptions.newConfiguration;
 
+import java.io.BufferedReader;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -199,12 +202,56 @@ public abstract class GraphQLScriptingTestSupport extends TestSupport {
         return response;
     }
 
+    protected MockSlingHttpServletResponse executePostRequest(final String path,
+        final String body, final String contentType, final int expectedStatus) throws Exception {
+        final ResourceResolver resourceResolver = resourceResolverFactory.getAdministrativeResourceResolver(null);
+        assertNotNull("Expecting ResourceResolver", resourceResolver);
+        final MockSlingHttpServletRequest request = new MockSlingHttpServletRequest(resourceResolver) {
+            @Override
+            public String getMethod() {
+                return "POST";
+            }
+
+            @Override
+            public BufferedReader getReader() {
+                return new BufferedReader(new StringReader(body));
+            }
+        };
+
+        request.setContentType(contentType);
+        request.setPathInfo(path);
+
+        final MockSlingHttpServletResponse response = new MockSlingHttpServletResponse();
+        requestProcessor.processRequest(request, response, resourceResolver);
+
+        if (expectedStatus > 0) {
+            assertEquals("Expected status " + expectedStatus + " for POST "
+                + " at " + path + " - content=" + response.getOutputAsString(), expectedStatus, response.getStatus());
+        }
+
+        return response;
+    }
+
     protected String getContent(String path) throws Exception {
         return executeRequest("GET", path, null, 200).getOutputAsString();
     }
 
     protected String getContent(String path, String ... params) throws Exception {
         return executeRequest("GET", path, toMap(params), 200).getOutputAsString();
+    }
+
+    protected String getContentWithPost(String path, String query, Map<String, Object> variables) throws Exception {
+        Map<String, Object> body = new HashMap<>();
+        if (query != null) {
+            String queryEncoded = query.replace("\n", "\\n");
+            body.put("query", queryEncoded);
+        }
+        if (variables != null) {
+            body.put("variables", variables);
+        }
+
+        Gson gson = new GsonBuilder().serializeNulls().create();
+        return executePostRequest(path, gson.toJson(body), "application/json", 200).getOutputAsString();
     }
 
     protected Map<String, Object> toMap(String ...keyValuePairs) {
