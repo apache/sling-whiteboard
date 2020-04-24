@@ -10,7 +10,7 @@ https://en.wikipedia.org/wiki/SAML_2.0
 
 ![](src/main/resources/Saml2SP.png)
  
-### Features  
+## Features  
 Sling applications to authenticate users against Identity Providers (idp) 
 such as Keycloak or Shibboleth using SAML2 protocols.
 
