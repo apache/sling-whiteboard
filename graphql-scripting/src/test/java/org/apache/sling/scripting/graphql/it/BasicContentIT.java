@@ -58,8 +58,8 @@ public class BasicContentIT extends GraphQLScriptingTestSupport {
     public void testJsonContent() throws Exception {
         final String path = "/graphql/one";
         final String json = getContent(path + ".json");
-        assertThat(json, hasJsonPath("$.currentResource"));
-        assertThat(json, hasJsonPath("$.currentResource.path", equalTo("/content/graphql/one")));
-        assertThat(json, hasJsonPath("$.currentResource.resourceType", equalTo("graphql/test/one")));
+        assertThat(json, hasJsonPath("$.data.currentResource"));
+        assertThat(json, hasJsonPath("$.data.currentResource.path", equalTo("/content/graphql/one")));
+        assertThat(json, hasJsonPath("$.data.currentResource.resourceType", equalTo("graphql/test/one")));
     }
 }

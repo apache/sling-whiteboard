@@ -75,10 +75,7 @@ public class GraphQLScriptEngine extends AbstractScriptEngine {
     }
 
     public static void sendJSON(PrintWriter out, ExecutionResult result) throws ScriptException {
-        if (!result.getErrors().isEmpty()) {
-            throw new ScriptException(("GraphQL query failed:" + result.getErrors()));
-        }
-        final Object data = result.getData();
+        final Object data = result.toSpecification();
         if (data == null) {
             throw new ScriptException("No data");
         }
