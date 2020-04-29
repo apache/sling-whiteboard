@@ -66,6 +66,8 @@ This module enables the following GraphQL "styles"
     request selectors and extensions) where queries are executed in the context of that Resource. This is an experimental
     idea at this point but it's built into the design so doesn't require more efforts to support. That style supports both
     server-side "**prepared GraphQL queries**" and the more traditional client-supplied queries.
+    
+The GraphQL requests can hit a Sling resource in all cases, there's no need for path-mounted servlets which are [not desirable](https://sling.apache.org/documentation/the-sling-engine/servlets.html#caveats-when-binding-servlets-by-path-1).
   
 ## How to test this in a Sling instance
 
