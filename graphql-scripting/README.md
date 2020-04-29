@@ -61,13 +61,11 @@ See also [@stefangrimm's comment](https://github.com/apache/sling-whiteboard/com
 This module enables the following GraphQL "styles"
 
   * The **traditional GraphQL endpoint** style, where the clients supply requests to a single URL. It is easy to define
-    multiple such endpoints with different settings, which can be useful.
+    multiple such endpoints with different settings, which can be useful to provide different "views" of your content.
   * A **Resource-based GraphQL endpoints** style where every Sling Resource can be a GraphQL endpoint (using specific 
     request selectors and extensions) where queries are executed in the context of that Resource. This is an experimental
-    idea at this point but isn't hard to support as it was part of the initial design of this module.
-    
-The second option supports both server-side "prepared GraphQL queries" which can be useful to aggregate content
-for example, and the more traditional client-supplied queries.
+    idea at this point but it's built into the design so doesn't require more efforts to support. That style supports both
+    server-side "**prepared GraphQL queries**" and the more traditional client-supplied queries.
   
 ## How to test this in a Sling instance
 
