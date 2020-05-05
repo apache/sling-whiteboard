@@ -22,6 +22,12 @@ Synchronize user management based on the SAML2 Assertion and OSGi bundle configs
 `Helpers` hold static utility methods used with the OpenSAML V3 library  
 The parent `saml2` package has interface definitions, the bundle Activator
 
+### OSGI Requirements
+It is assumed the Sling environment provides certain bundles. The SAML2 bundle will not activate without:  
+* org.apache.jackrabbit.oak-auth-external
+
+
+ 
  
 ## JKS Options  
 Just as Jetty requires a JKS to enable https, the SAML2 SP bundle requires a JKS to hold the IDP's signing certificate and to hold the SAML2 Service providers encryption key-pair. One suggestion is to locate these under the sling folder...
