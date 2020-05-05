@@ -121,11 +121,6 @@
     </dependency>
 
 <!-- OpenSAML Dependencies-->
-    <dependency>
-      <groupId>org.bouncycastle</groupId>
-      <artifactId>bcprov-jdk15on</artifactId>
-      <version>1.59</version>
-    </dependency>
 
     <dependency>
       <groupId>org.apache.xml.security</groupId>
@@ -186,18 +181,6 @@
       <artifactId>joda-convert</artifactId>
       <version>1.9.2</version>
     </dependency>
-
-    <dependency>
-      <groupId>org.relaxng</groupId>
-      <artifactId>com.springsource.org.relaxng.datatype</artifactId>
-      <version>1.0.0</version>
-    </dependency>
-
-<!--    <dependency>-->
-<!--      <groupId>org.codehaus.woodstox</groupId>-->
-<!--      <artifactId>stax2-api</artifactId>-->
-<!--      <version>3.1.4</version>-->
-<!--    </dependency>-->
 
 
     <!--    JavaEE -->
