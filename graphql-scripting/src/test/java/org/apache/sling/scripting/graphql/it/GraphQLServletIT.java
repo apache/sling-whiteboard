@@ -72,25 +72,25 @@ public class GraphQLServletIT extends GraphQLScriptingTestSupport {
     @Test
     public void testGqlExt() throws Exception {
         final String json = getContent("/graphql/two.gql", "query", "{ currentResource { resourceType name } }");
-        assertThat(json, hasJsonPath("$.currentResource.resourceType", equalTo("graphql/test/two")));
-        assertThat(json, hasJsonPath("$.currentResource.name", equalTo("two")));
-        assertThat(json, hasNoJsonPath("$.currentResource.path"));
+        assertThat(json, hasJsonPath("$.data.currentResource.resourceType", equalTo("graphql/test/two")));
+        assertThat(json, hasJsonPath("$.data.currentResource.name", equalTo("two")));
+        assertThat(json, hasNoJsonPath("$.data.currentResource.path"));
     }
 
     @Test
     public void testGqlExtWithPost() throws Exception {
         final String json = getContentWithPost("/graphql/two.gql", "{ currentResource { resourceType name } }", null);
-        assertThat(json, hasJsonPath("$.currentResource.resourceType", equalTo("graphql/test/two")));
-        assertThat(json, hasJsonPath("$.currentResource.name", equalTo("two")));
-        assertThat(json, hasNoJsonPath("$.currentResource.path"));
+        assertThat(json, hasJsonPath("$.data.currentResource.resourceType", equalTo("graphql/test/two")));
+        assertThat(json, hasJsonPath("$.data.currentResource.name", equalTo("two")));
+        assertThat(json, hasNoJsonPath("$.data.currentResource.path"));
     }
 
     @Test
     public void testOtherExt() throws Exception {
         final String json = getContent("/graphql/two.testing.otherExt", "query", "{ currentResource { path name } }");
-        assertThat(json, hasJsonPath("$.currentResource.path", equalTo("/content/graphql/two")));
-        assertThat(json, hasJsonPath("$.currentResource.name", equalTo("two")));
-        assertThat(json, hasNoJsonPath("$.currentResource.resourceType"));
+        assertThat(json, hasJsonPath("$.data.currentResource.path", equalTo("/content/graphql/two")));
+        assertThat(json, hasJsonPath("$.data.currentResource.name", equalTo("two")));
+        assertThat(json, hasNoJsonPath("$.data.currentResource.resourceType"));
         executeRequest("GET", "/graphql/two.otherExt", null, 404);
     }
 

@@ -7,7 +7,7 @@ Bundle-Activator: org.apache.sling.auth.saml2.Activator
 
 Import-Package:!com.beust*,!antlr*,!org.apache.log.*,!org.apache.oro.text.perl*,!com.google.apphosting*,\
 !org.apache.tools.ant.*,!org.jdom*,!com.sun.org.apache.xerces.internal*,!sun.io,!org.bouncycastle.*,\
-!junit.framework*,!org.dom4j.*,!com.sun.msv.*,!sun.misc,javax.annotation;version=0.0.0,*
+!junit.framework*,!org.dom4j.*,!com.sun.msv.*,!sun.misc,javax.annotation;version=0.0.0,!org.relaxng.datatype.*,*
 
 -removeheaders: Include-Resource, Private-Package
 
@@ -40,7 +40,6 @@ xom-[0-9\.]+.jar;lib:=true,\
 jaxen-[0-9\.]+.jar;lib:=true,\
 error_prone_annotations-[0-9\.]+.jar;lib:=true,\
 xml-apis-[0-9\.]+.jar;lib:=true,\
-com.springsource.org.relaxng.datatype-[0-9\.]+.jar;lib:=true,\
 woodstox-core-[0-9\.]+.jar;lib:=true,\
 stax2-api-[0-9\.]+.jar;lib:=true,\
 

@@ -21,14 +21,22 @@ package org.apache.sling.scripting.gql.schema;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
+
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.graphql.api.DataFetcherProvider;
 import org.apache.sling.graphql.api.DataFetcherDefinition;
 
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class MockDataFetcherSelector extends DataFetcherSelector {
+
+    public MockDataFetcherSelector() {
+        super(new EchoDataFetcherFactory(), new StaticDataFetcherFactory(), new DigestDataFetcherFactory());
+    }
 
     static class EchoDataFetcher implements DataFetcher<Object> {
 
@@ -98,8 +106,68 @@ public class MockDataFetcherSelector extends DataFetcherSelector {
         }
     }
 
-    public MockDataFetcherSelector() {
-        super(new EchoDataFetcherFactory(), new StaticDataFetcherFactory());
+    static class DigestDataFetcher implements DataFetcher<Object> {
+
+        private final Resource r;
+        private final String algorithm;
+        private final String propertyName;
+
+        DigestDataFetcher(Resource r, DataFetcherDefinition fetcherDef) {
+            this.r = r;
+            this.algorithm = fetcherDef.getFetcherOptions();
+            this.propertyName = fetcherDef.getFetcherSourceExpression();
+        }
+
+        @Override
+        public Object get(DataFetchingEnvironment environment) {
+            String rawValue = null;
+            if ("path".equals(propertyName)) {
+                rawValue = r.getPath();
+            } else if("resourceType".equals(propertyName)) {
+                rawValue = r.getResourceType();
+            }
+
+            String digest = null;
+            try {
+                digest = computeDigest(algorithm, rawValue);
+            } catch (Exception e) {
+                throw new RuntimeException("Error computing digest:" + e, e);
+            }
+
+            return algorithm + "#" + propertyName + "#" + digest;
+        }
+
     }
 
+    public static String toHexString(byte[] data) {
+        final StringBuilder sb = new StringBuilder();
+        for (byte b : data) {
+            sb.append(String.format("%02x", b & 0xff));
+        }
+        return sb.toString();
+    }
+
+    public static String computeDigest(String algorithm, String value) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+        final MessageDigest md = MessageDigest.getInstance(algorithm);
+        md.update(value.getBytes("UTF-8"));
+        return toHexString(md.digest());
+    }
+
+    static class DigestDataFetcherFactory implements DataFetcherProvider {
+
+        @Override
+        public String getNamespace() {
+            return "test";
+        }
+
+        @Override
+        public String getName() {
+            return "digest";
+        }
+
+        @Override
+        public DataFetcher<Object> createDataFetcher(DataFetcherDefinition fetcherDef, Resource r) {
+            return new DigestDataFetcher(r, fetcherDef);
+        }
+    }
 }

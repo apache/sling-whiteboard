@@ -5,6 +5,19 @@ This is an experimental module for running GraphQL queries in Sling.
 
 ----
 
+## Enabling Multiple GraphQL endpoint styles
+
+This module enables the following GraphQL "styles"
+
+  * The **traditional GraphQL endpoint** style, where the clients supply requests to a single URL. It is easy to define
+    multiple such endpoints with different settings, which can be useful to provide different "views" of your content.
+  * A **Resource-based GraphQL endpoints** style where every Sling Resource can be a GraphQL endpoint (using specific 
+    request selectors and extensions) where queries are executed in the context of that Resource. This is an experimental
+    idea at this point but it's built into the design so doesn't require more efforts to support. That style supports both
+    server-side "**prepared GraphQL queries**" and the more traditional client-supplied queries.
+    
+The GraphQL requests can hit a Sling resource in all cases, there's no need for path-mounted servlets which are [not desirable](https://sling.apache.org/documentation/the-sling-engine/servlets.html#caveats-when-binding-servlets-by-path-1).
+  
 ## Status at commit 13847b2b
 
 The GraphQL engine is functional, a request to a Resource `/foo` mapped to a .gql script containing
@@ -55,20 +68,6 @@ fetch definitions.
 
 See also [@stefangrimm's comment](https://github.com/apache/sling-whiteboard/commit/0c9db2d0e202eb74b605e65da7bfe01b4a8818f8#commitcomment-38639195) about using the graphql-java's `DataFetcher` API  to collect these definitions.
 
-
-## Multiple GraphQL endpoint styles
-
-This module enables the following GraphQL "styles"
-
-  * The **traditional GraphQL endpoint** style, where the clients supply requests to a single URL. It is easy to define
-    multiple such endpoints with different settings, which can be useful.
-  * A **Resource-based GraphQL endpoints** style where every Sling Resource can be a GraphQL endpoint (using specific 
-    request selectors and extensions) where queries are executed in the context of that Resource. This is an experimental
-    idea at this point but isn't hard to support as it was part of the initial design of this module.
-    
-The second option supports both server-side "prepared GraphQL queries" which can be useful to aggregate content
-for example, and the more traditional client-supplied queries.
-  
 ## How to test this in a Sling instance
 
 See the `GraphQLScriptingTestSupport.graphQLJava()` method for which bundles

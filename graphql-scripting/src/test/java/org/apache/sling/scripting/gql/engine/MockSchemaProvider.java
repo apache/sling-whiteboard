@@ -30,7 +30,19 @@ class MockSchemaProvider implements SchemaProvider {
         + "    ## fetch:test/static\n"
         + "    staticContent: Test"
         + "}\n"
-        + "type SlingResource { path: String resourceType: String }\n"
+        + "type SlingResource { \n"
+        + "    path: String\n"
+        + "    resourceType: String\n"
+        + "\n"
+        + "    ## fetch:test/digest/md5 path\n"
+        + "    pathMD5: String\n"
+        + "\n"
+        + "    ## fetch:test/digest/sha-256 path\n"
+        + "    pathSHA256: String\n"
+        + "\n"
+        + "    ## fetch:test/digest/md5 resourceType\n"
+        + "    resourceTypeMD5: String\n"
+        + " }\n"
         + "type Test { test: Boolean }";
 
     @Override

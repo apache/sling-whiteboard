@@ -1,2 +1,0 @@
--includeresource: @org.apache.sling.feature.extension.apiregions-[0-9.]*.jar!/org/apache/sling/feature/extension/apiregions/launcher/LauncherProperties.*
-Conditional-Package: org.apache.sling.feature.extension.apiregions.api
