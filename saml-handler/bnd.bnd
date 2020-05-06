@@ -1,6 +1,7 @@
 Bundle-Category: sling
 Bundle-DocURL: https://sling.apache.org
 Bundle-Activator: org.apache.sling.auth.saml2.Activator
+Jaas-ModuleClass: org.apache.sling.auth.saml2.sp.Saml2LoginModule
 -exportcontents: org.apache.sling.auth.saml2.*
 -snapshot: SNAPSHOT
 -noextraheaders: true
