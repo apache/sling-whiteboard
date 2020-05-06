@@ -47,6 +47,7 @@ public class SAML2ConfigServiceImpl implements SAML2ConfigService {
     private String[] syncAttrs;
 
     public static final String GOTO_URL_SESSION_ATTRIBUTE = "gotoURL";
+    public static final String SAML2_REQUEST_ID = "saml2RequestID";
     public static final String AUTHENTICATED_SESSION_ATTRIBUTE = "authenticated";
 
     @Activate

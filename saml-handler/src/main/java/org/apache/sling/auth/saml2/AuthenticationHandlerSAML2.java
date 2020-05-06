@@ -76,6 +76,8 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.apache.sling.auth.saml2.impl.SAML2ConfigServiceImpl.SAML2_REQUEST_ID;
+
 
 @Component(
         service = AuthenticationHandler.class ,
@@ -173,11 +175,14 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
                     EncryptedAssertion encryptedAssertion = response.getEncryptedAssertions().get(0);
                     Assertion assertion = decryptAssertion(encryptedAssertion);
                     verifyAssertionSignature(assertion);
-                    logger.debug("Decrypted Assertion: ");
-                    Helpers.logSAMLObject(assertion);
-                    User extUser = doUserManagement(assertion);
-                    AuthenticationInfo newAuthInfo = this.buildAuthInfo(extUser);
-                    return newAuthInfo;
+                    if (validateSaml2Conditions(httpServletRequest, assertion)){
+                        logger.debug("Decrypted Assertion: ");
+                        Helpers.logSAMLObject(assertion);
+                        User extUser = doUserManagement(assertion);
+                        AuthenticationInfo newAuthInfo = this.buildAuthInfo(extUser);
+                        return newAuthInfo;
+                    }
+                    logger.error("Validation of SubjectConfirmation failed");
                 }
                 return null;
 // 2.  try credentials from the session
@@ -269,9 +274,9 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
         MessageContext context = new MessageContext();
         context.setMessage(authnRequest);
         SAMLBindingContext bindingContext = context.getSubcontext(SAMLBindingContext.class, true);
-        String state = new BigInteger(130, new SecureRandom()).toString(32);
-        bindingContext.setRelayState(state);
-        setRelayStateOnSession(httpServletRequest, state);
+
+        setRelayStateOnSession(httpServletRequest, bindingContext);
+        setRequestIDOnSession(httpServletRequest, authnRequest);
         SAMLPeerEntityContext peerEntityContext = context.getSubcontext(SAMLPeerEntityContext.class, true);
         SAMLEndpointContext endpointContext = peerEntityContext.getSubcontext(SAMLEndpointContext.class, true);
         endpointContext.setEndpoint(getIPDEndpoint());
@@ -474,19 +479,58 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
         return info;
     }
 
-    private void setRelayStateOnSession(HttpServletRequest req, String relayState) {
+    private void setRelayStateOnSession(HttpServletRequest req, SAMLBindingContext bindingContext) {
+        String state = new BigInteger(130, new SecureRandom()).toString(32);
+        bindingContext.setRelayState(state);
         SessionStorage sessionStorage = new SessionStorage(saml2ConfigService.getSaml2SessionAttr());
-        sessionStorage.setString(req, relayState);
+        sessionStorage.setString(req, state);
     }
 
-    private boolean validateRelayState(HttpServletRequest req, MessageContext messageContext){
+    private void setRequestIDOnSession(HttpServletRequest req, AuthnRequest authnRequest){
+        SessionStorage sessionStorage = new SessionStorage(SAML2_REQUEST_ID);
+        sessionStorage.setString(req, authnRequest.getID());
+    }
+
+    private boolean validateRelayState(HttpServletRequest req, MessageContext messageContext) {
         SAMLBindingContext bindingContext = messageContext.getSubcontext(SAMLBindingContext.class, true);
         String reportedRelayState = bindingContext.getRelayState();
-        SessionStorage relayStateStore =new SessionStorage(saml2ConfigService.getSaml2SessionAttr());
+        SessionStorage relayStateStore = new SessionStorage(saml2ConfigService.getSaml2SessionAttr());
         String savedRelayState = relayStateStore.getString(req);
         if (savedRelayState == null || savedRelayState.isEmpty()){
             return false;
         } else if (savedRelayState.equals(reportedRelayState)){
+            return true;
+        }
+        return false;
+    }
+
+    private boolean validateSaml2Conditions(HttpServletRequest req, Assertion assertion) {
+        final List<SubjectConfirmation> subjectConfirmations = assertion.getSubject().getSubjectConfirmations();
+        if (subjectConfirmations.isEmpty()) {
+            return false;
+        }
+        final SubjectConfirmationData subjectConfirmationData = subjectConfirmations.get(0).getSubjectConfirmationData();
+        final DateTime notOnOrAfter = subjectConfirmationData.getNotOnOrAfter();
+        // validate expiration
+        final boolean validTime = notOnOrAfter.isAfterNow();
+        if (!validTime) {
+            logger.error("SAML2 Subject Confirmation failed validation: Expired.");
+        }
+        // validate recipient
+        final String recipient = subjectConfirmationData.getRecipient();
+        final boolean validRecipient = recipient.equals(saml2ConfigService.getACSURL());
+        if (!validRecipient) {
+            logger.error("SAML2 Subject Confirmation failed validation: Invalid Recipient.");
+        }
+        // validate In Response To (ID saved in session from authnRequest)
+        final String inResponseTo = subjectConfirmationData.getInResponseTo();
+        final String savedInResponseTo = new SessionStorage(SAML2_REQUEST_ID).getString(req);
+        boolean validID = false;
+        if (savedInResponseTo != null && inResponseTo != null) {
+            validID = savedInResponseTo.equals(inResponseTo);
+        }
+        // return true if subject confirmation is validated
+        if (validID && validRecipient && validID) {
             return true;
         }
         return false;
