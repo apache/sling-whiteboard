@@ -525,15 +525,10 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
         // validate In Response To (ID saved in session from authnRequest)
         final String inResponseTo = subjectConfirmationData.getInResponseTo();
         final String savedInResponseTo = new SessionStorage(SAML2_REQUEST_ID).getString(req);
-        boolean validID = false;
-        if (savedInResponseTo != null && inResponseTo != null) {
-            validID = savedInResponseTo.equals(inResponseTo);
-        }
+        boolean validID = savedInResponseTo.equals(inResponseTo);
+
         // return true if subject confirmation is validated
-        if (validID && validRecipient && validID) {
-            return true;
-        }
-        return false;
+        return validTime && validRecipient && validID;
     }
 
     private void redirectToGotoURL(HttpServletRequest req, HttpServletResponse resp) {
