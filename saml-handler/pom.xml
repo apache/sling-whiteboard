@@ -14,8 +14,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
     <groupId>org.apache.sling</groupId>
-    <artifactId>sling</artifactId>
-    <version>37</version>
+    <artifactId>sling-bundle-parent</artifactId>
+    <version>38</version>
     <relativePath />
   </parent>
 
@@ -34,6 +34,7 @@
     <sling.port>8080</sling.port>
     <sling.user>admin</sling.user>
     <sling.password>admin</sling.password>
+    <bnd.baseline.skip>true</bnd.baseline.skip>
   </properties>
 
   <build>
@@ -41,23 +42,11 @@
       <plugin>
         <groupId>biz.aQute.bnd</groupId>
         <artifactId>bnd-maven-plugin</artifactId>
-        <version>4.3.1</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>bnd-process</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <bndfile>bundle-configuration.bnd</bndfile>
-        </configuration>
       </plugin>
 
       <plugin>
         <groupId>org.apache.sling</groupId>
-        <artifactId>maven-sling-plugin</artifactId>
-        <version>2.3.4</version>
+        <artifactId>sling-maven-plugin</artifactId>
       </plugin>
 
       <plugin>
@@ -72,28 +61,12 @@
       </plugin>
 
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>2.6</version>
-        <configuration>
-          <archive>
-            <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
-            <manifestEntries>
-              <Jaas-ModuleClass>org.apache.sling.auth.saml2.sp.Saml2LoginModule</Jaas-ModuleClass>
-            </manifestEntries>
-          </archive>
-        </configuration>
-      </plugin>
-
-      <plugin>
         <groupId>org.apache.rat</groupId>
         <artifactId>apache-rat-plugin</artifactId>
-        <version>0.13</version>
         <configuration>
           <excludes combine.children="append">
             <exclude>**/dependency-reduced-pom.xml</exclude>
             <exclude>**/*.vm</exclude>
-            <exclude>bundle-configuration.bnd</exclude>
           </excludes>
         </configuration>
       </plugin>
