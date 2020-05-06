@@ -20,10 +20,8 @@ package org.apache.sling.scripting.gql.engine;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import static org.hamcrest.Matchers.equalTo;
 
@@ -79,16 +77,15 @@ public class GraphQLResourceQueryTest {
     @Test
     public void digestFieldsTest() throws Exception {
         final String json = queryJSON("{ currentResource { path pathMD5 pathSHA256 resourceTypeMD5 } }");
-        assertThat(json, hasJsonPath("$.data.currentResource"));
-        assertThat(json, hasJsonPath("$.data.currentResource.path", equalTo(resource.getPath())));
 
         final String pathMD5 = MockDataFetcherSelector.computeDigest("md5", resource.getPath());
-        assertThat(json, hasJsonPath("$.data.currentResource.pathMD5", equalTo("md5#path#" + pathMD5)));
-
         final String pathSHA256 = MockDataFetcherSelector.computeDigest("sha-256", resource.getPath());
-        assertThat(json, hasJsonPath("$.data.currentResource.pathSHA256", equalTo("sha-256#path#" + pathSHA256)));
-
         final String resourceTypeMD5 = MockDataFetcherSelector.computeDigest("md5", resource.getResourceType());
+
+        assertThat(json, hasJsonPath("$.data.currentResource"));
+        assertThat(json, hasJsonPath("$.data.currentResource.path", equalTo(resource.getPath())));
+        assertThat(json, hasJsonPath("$.data.currentResource.pathMD5", equalTo("md5#path#" + pathMD5)));
+        assertThat(json, hasJsonPath("$.data.currentResource.pathSHA256", equalTo("sha-256#path#" + pathSHA256)));
         assertThat(json, hasJsonPath("$.data.currentResource.resourceTypeMD5", equalTo("md5#resourceType#" + resourceTypeMD5)));
     }
 }
