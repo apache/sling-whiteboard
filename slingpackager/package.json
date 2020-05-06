@@ -1,11 +1,12 @@
 {
   "name": "@apachesling/slingpackager",
-  "version": "0.0.3",
-  "description": "prepare a sling package file for sling and install it",
+  "version": "0.0.5",
+  "description": "A tool for working with Apache Sling content packages.",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/peregrine-cms/slingpackager.git"
+    "url": "https://github.com/apache/sling-whiteboard.git",
+    "directory": "slingpackager"
   },
   "scripts": {
     "test": "mocha"

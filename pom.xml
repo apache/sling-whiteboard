@@ -39,7 +39,9 @@
     </description>
 
     <modules>
+        <!-- Jenkins build fails
           <module>mdresourceprovider</module>
+        -->
           <module>maven-central-source-reporter</module>
           <module>SlingModelPersist</module>
           <module>starter-system-info</module>

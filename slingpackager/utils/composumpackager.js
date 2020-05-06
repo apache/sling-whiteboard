@@ -27,7 +27,7 @@ const deleteEndpoint = "/bin/cpm/package.delete.json";
 const installEndpoint = "/bin/cpm/package.install.json";
 const uninstallEndpoint = "/bin/cpm/package.uninstall.json";
 
-const checkService = (url, username, password, callback) => {
+const check = (url, username, password, callback) => {
     let serviceURL = url + '/bin/cpm/package.json';
     logger.debug('Checking Composum Package Manager.');
     logger.debug('Service call: ', serviceURL);
@@ -41,153 +41,173 @@ const checkService = (url, username, password, callback) => {
     }).auth(username, password);
 }
 
-const list = (url, username, password) => {
+const list = (url, username, password, maxRetry) => {
     logger.log('Listing packages on', url);
-    listPackages(url, username, password, '');
+    listPackages(url, username, password, '', maxRetry);
 }
 
-const uploadPackage = (url, username, password, packagePath, install) => {
+const upload = (url, username, password, packagePath, install, maxRetry) => {
     logger.log('Uploading package', packagePath, 'on', url);
 
-    let serviceURL = url + uploadEndpoint;
-    logger.debug('Service call: ', serviceURL);
-    let post = request.post({ url: serviceURL }, (error, response, body) => {
-        if (error) {
+    let serviceURL = url + uploadEndpoint + "?force=true";
+    let post = callPostService({serviceURL, username, password, maxRetry}, (error, json) => {
+        if(error) {
+            logger.error('Unable to upload package', packagePath);
             logger.error(error);
-        }
-
-        if (response && response.statusCode === 200) {
-            var json = JSON.parse(body);
+            process.exit(1);
+        } else {
             logger.log(json.status)
             logger.debug(JSON.stringify(json));
 
             if(install) {
-                logger.debug('installing', json.path);
-                installPackage(url, username, password, json.path);
+                logger.info('installing', json.path);
+                installPackage(url, username, password, json.path, maxRetry);
             }
-
-        } else {
-            logger.error('Unable to upload package. statusCode:', response && response.statusCode);
-            logger.debug(body);
         }
-    }).auth(username, password);
+    });
 
     post.form().append('file', fs.createReadStream(packagePath));
 
     logger.debug(JSON.stringify(post.toJSON()));
 }
 
-const deletePackage = (url, username, password, package) => {
+const deletePackage = (url, username, password, package, maxRetry) => {
     logger.log('Deleting package', package, 'on', url);
 
     let serviceURL = url + deleteEndpoint + package;
-    logger.debug('Service call: ', serviceURL);
-    let req = request({ url: serviceURL, method: 'DELETE' }, (error, response, body) => {
-        if (error) {
+    let req = callService({serviceURL, method: 'DELETE', username, password, maxRetry}, (error, json) => {
+        if(error) {
+            logger.error('Unable to delete package', package);
             logger.error(error);
-        }
-
-        if (response && response.statusCode === 200) {
-            if (body) {
-                var json = JSON.parse(body);
-                logger.log(json.status)
-            } else {
-                logger.error('Unable to delete package. Check package name (try by path).');
-            }
+            process.exit(1);
         } else {
-            logger.error('Unable to delete package. statusCode:', response && response.statusCode);
-            logger.debug(body);
+            logger.log(json.status);
+            logger.debug(JSON.stringify(json));
         }
-    }).auth(username, password);
+    });
 
     logger.debug(JSON.stringify(req.toJSON()));
 }
 
-const installPackage = (url, username, password, package) => {
+const install = (url, username, password, package, maxRetry) => {
     logger.log('Installing package', package, 'on', url);
 
-    let serviceURL = url + installEndpoint + package;
-    logger.debug('Service call: ', serviceURL);
-    let post = request.post({ url: serviceURL }, (error, response, body) => {
-        if (error) {
+    let post = postJob({url, username, password, package, maxRetry}, 'install', (error, result) => {
+        if(error) {
+            logger.error('Unable to uninstall package', package);
             logger.error(error);
-        }
-
-        if (response && response.statusCode === 200) {
-            if (body) {
-                var json = JSON.parse(body);
-                logger.log(json.status)
-            }
-        } else {
-            logger.error('Unable to install package. statusCode:', response && response.statusCode);
-            logger.debug(body);
-        }
-    }).auth(username, password);
-
-    logger.debug(JSON.stringify(post.toJSON()));
+            process.exit(1);
+        } 
+    });
 }
 
-const uninstallPackage = (url, username, password, package) => {
+const uninstall = (url, username, password, package, maxRetry) => {
     logger.log('Uninstalling package', package, 'on', url);
 
-    let serviceURL = url + '/bin/cpm/core/jobcontrol.job.json';
-    logger.debug('Service call: ', serviceURL);
-    // Commented out code bellow does not work wirh Composum 1.7/Sling9
-    // var post = request.post({ url: url + uninstallEndpoint + package }, (error, response, body) => {
-    var post = request.post({ url: serviceURL }, (error, response, body) => {
-        if (error) {
+    let post = postJob({url, username, password, package, maxRetry}, 'uninstall', (error, result) => {
+        if(error) {
+            logger.error('Unable to uninstall package', package);
             logger.error(error);
-        }
-
-        if (response && response.statusCode === 200) {
-            if (body) {
-                var json = JSON.parse(body);
-                logger.log('done');
-                // Commented out for Composum 1.7/Sling9
-                // logger.log(json.status)
-            }
+            process.exit(1);
         } else {
-            logger.error('Unable to uninstall package. statusCode:', response && response.statusCode);
-            logger.debug(body);
+            if(result && (typeof(result) === 'string') && result.startsWith('Unable')) {
+                logger.error(result);
+                process.exit(1);
+            }
         }
-    }).auth(username, password);
+    });
+}
 
-    // These parameters are not needed when using uninstallEndpoint with Sling11.
-    // This is a workaround for Composum 1.7 and Sling9 which does not have this endpoint.
-    var form = post.form();
-    form.append('event.job.topic', 'com/composum/sling/core/pckgmgr/PackageJobExecutor');
-    form.append('reference', package);
-    form.append('_charset_', 'UTF-8');
-    form.append('operation', 'uninstall');
+const build = (url, username, password, package, maxRetry) => {
+    logger.log('Building package', package, 'on', url);
 
-    logger.debug(JSON.stringify(post.toJSON()));
+    let post = postJob({url, username, password, package, maxRetry}, 'assemble', (error, result) => {
+        if(error) {
+            logger.error('Unable to build package', package);
+            logger.error(error);
+            process.exit(1);
+        } else {
+            if(result && (typeof(result) === 'string') && result.startsWith('Unable')) {
+                logger.error(result);
+                process.exit(1);
+            }
+        }
+    });
+}
+
+const download = (url, username, password, destination, package, maxRetry) => {
+    logger.log('Downloading package', package, 'from', url, 'to', destination);
+    let serviceURL = url + "/bin/cpm/package.download.zip" + package;
+    downloadPackage({url, username, password, destination, package, maxRetry});
 }
 
 const getName = () => {
     return 'Composum Package Manager';
 }
 
-function listPackages(url, username, password, path) {
+function downloadPackage(data) {
+    if(data.filePath) {
+        data.serviceURL = data.url + "/bin/cpm/package.download.zip" + data.package;
+        callGetService(data, (error, response) => {
+            if(error) {
+                logger.error("Unable to download package.");
+                process.exit(1);
+            } else {
+                if(fs.existsSync(data.filePath)) {
+                    var stats = fs.statSync(data.filePath);
+                    logger.log("Package downloaded.");
+                    logger.log(stats.size + " " + data.filePath);
+                }
+            }
+        }, true).pipe(fs.createWriteStream(data.filePath));;
+    } else {
+        data.serviceURL = data.url + listEndpoint;
+        let req = callGetService(data, (error, response) => {
+            if(error) {
+                logger.error("Unable to download package.");
+                process.exit(1);
+            } else {
+                var packages = response.children ? response.children : response;
+                for (var i = 0; i < packages.length; i++) {
+                    if(packages[i].type === 'package' && isPackage(packages[i], data.package)) {
+                        let fileName = packages[i].file;
+                        let filePath = path.join(data.destination, fileName);
+                        data.filePath = filePath;
+                        data.package = packages[i].path;
+                        downloadPackage(data);
+                        return;
+                    }
+                }
+
+                logger.error("Unable to download package. Package " + data.package + " is not found on server.");
+            }
+        }, false);
+
+        logger.debug("Request: ", JSON.stringify(req.toJSON(), undefined, '   '));
+    }
+}
+
+function isPackage(packJson, name) {
+    if(packJson.id === name || packJson.name === name || packJson.path === name) {
+        return true;
+    } else {
+        return packJson.definition.name === name;
+    }
+}
+
+function listPackages(url, username, password, path, maxRetry) {
     var serviceURL = url + listEndpoint + path;
-    logger.debug('Service call: ', serviceURL);
-
-    let req = request.get({ url: serviceURL}, (error, response, body) => {
-        if (error) {
+    
+    let req = callGetService({serviceURL, username, password, maxRetry}, (error, json) => {
+        if(error) {
+            logger.error("Unable to list packages.");
             logger.error(error);
-        }
-
-        if (response && response.statusCode === 200) {
-            var json = JSON.parse(body);
-            
-            // Check for structure diff between Composume in Sling9 and Sling11
+            process.exit(1);
+        } else {
             var packages = json.children ? json.children : json;
             displayPackages(url, username, password, packages);
-        } else {
-            logger.error('Unable to connect to server. statusCode:', response && response.statusCode);
-            logger.debug(body);
         }
-
-    }).auth(username, password);
+    }); 
 
     logger.debug(JSON.stringify(req.toJSON()));
 }
@@ -206,13 +226,142 @@ function displayPackages(url, username, password, packages) {
     }
 }
 
+function postJob(data, operation, callback) {
+    data.serviceURL = data.url + '/bin/cpm/core/jobcontrol.job.json';
+    let post = callPostService(data, (error, json) => {
+        if(json && json['slingevent:eventId']) {
+            setTimeout(() => {
+                getJobOutput(data.url, data.username, data.password, json['slingevent:eventId'], callback)
+            },100);
+        } else {
+            callback(error, json); 
+        }
+    });
+
+    var form = post.form();
+    form.append('event.job.topic', 'com/composum/sling/core/pckgmgr/PackageJobExecutor');
+    form.append('_charset_', 'UTF-8');
+    form.append('operation', operation);
+    form.append('reference', data.package);
+
+    return post;
+}
+
+function callGetService(data, callback, isDownload=false) {
+    data.method = "GET";
+    return callService(data, callback, isDownload);
+}
+
+function callPostService(data, callback) {
+    data.method = "POST";
+    var post = callService(data, callback);
+    logger.debug('POST:', JSON.stringify(post.toJSON(), undefined, '   '));
+    return post;
+}
+
+function callService(data, callback, isDownload=false) {
+    if(data.retryCount === undefined) {
+        data.retryCount = 0;
+        if(data.maxRetry === undefined) {
+            data.maxRetry = 10;
+        }
+    }
+
+    logger.debug(data.retryCount + '. Service call: ', data.serviceURL);
+
+    let req = request({ url: data.serviceURL, method: data.method }, (error, response, body) => {
+        var statusCodeLine = (response === undefined) ? "" : "Response: " + response.statusCode + " : " + response.statusMessage;
+        logger.debug(statusCodeLine);
+
+        if (error) {
+            if(data.retryCount < data.maxRetry) {
+                data.retryCount++;
+                callService(data, callback);
+            } else  { 
+                logger.error(error);
+                callback(error + " " + statusCodeLine, undefined); 
+            }
+
+            return;
+        }
+
+        if (response && response.statusCode === 200) {
+            if (body) {
+                if(isDownload) {
+                    callback(undefined, response);
+                } else {
+                    var json = JSON.parse(body);
+                    logger.debug('Response:', JSON.stringify(json, undefined, '   '));
+                    callback(undefined, json);
+                }
+                return;
+            } else {
+                logger.debug("Respons has no body.");
+            }
+        }
+
+        if(data.retryCount < data.maxRetry) {
+            data.retryCount++;
+            callService(data, callback);
+        } else  { 
+            callback("Error calling service " + data.serviceURL, undefined);
+        }
+
+        return;
+    }).auth(data.username, data.password);
+    return req;
+}
+
+function getJobOutput(url, username, password, eventId, callback, jobState) {
+    var requestData = {url: url + "/bin/cpm/core/jobcontrol.outfile.txt/" + eventId};
+    if(jobState === undefined || jobState === "ACTIVE" || jobState === "QUEUED") {
+        requestData.url = url + "/bin/cpm/core/jobcontrol.job.json/" + eventId;
+    } 
+
+    request.get(requestData, (error, response, body) => {
+        var statusCodeLine = (response === undefined) ? "" : "Response: " + response.statusCode + " : " + response.statusMessage;
+        logger.debug(statusCodeLine);
+
+        if(error) {
+            logger.error(error);
+        } else if(body) {
+            if(body.trim().startsWith("{")) {
+                var json = JSON.parse(body);
+                logger.debug('Response:', JSON.stringify(json, undefined, '   '));
+                if(json["jobState"]) {
+                    setTimeout(()=>{
+                        getJobOutput(url, username, password, eventId, callback, json["jobState"]);
+                    }, 100);
+                    return;
+                }
+            } 
+            
+            logger.log(body.trim());
+        } else if (response && response.statusCode != 200) {
+            if(callback) {
+                callback('Package manager job service failed. '+statusCodeLine, undefined);
+            } else {
+                logger.error('Package manager job service failed.', statusCodeLine);
+                process.exit(1);
+            }
+        }
+
+        if(callback) {
+            callback(error, body); 
+        } 
+
+    }).auth(username, password);
+}
+
 module.exports = {
-    checkService,
+    check,
     list,
-    uploadPackage,
+    upload,
     deletePackage,
-    installPackage,
-    uninstallPackage,
+    install,
+    uninstall,
+    build,
+    download,
     getName
 }
 

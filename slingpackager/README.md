@@ -10,9 +10,11 @@ It covers the following use cases:
 
 - build a content package form a local folder
 - upload a content package onto a server
+- download a content package from server
 - install a content package on a server
 - list all installed packages on the server
 - uninstall a content package from the server
+- build a content package on the server
 - delete a content package on the server
 
 For an example project using the `slingpackager` please have a look at the [simple-sling-vue-example](https://github.com/peregrine-cms/simple-sling-vue-example) project.
@@ -22,13 +24,13 @@ For an example project using the `slingpackager` please have a look at the [simp
 To install slingpackager globally use
 
 ```
-npm install @peregrinecms/slingpackager -g
+npm install @apache-sling/slingpackager -g
 ```
 
 This will make the packager available as a command line tool on your system. If you'd like to install `slingpackager` to your project only (or to try it before you commit to a global install), in your project folder, use
 
 ```
-npm install @peregrinecms/slingpackager
+npm install @apache-sling/slingpackager --save-dev
 ```
 
 You can then execute
@@ -45,10 +47,13 @@ to run slingpackager in your project.
 slingpackager <command>
 
 Commands:
+  slingpackager build <package>      build package on server
   slingpackager delete <package>     delete package on server
+  slingpackager download <package>   download package from server
   slingpackager install <package>    install package on server
   slingpackager list                 list installed packages
   slingpackager package <folder>     create a package
+  slingpackager test                 test package manager service connection
   slingpackager uninstall <package>  uninstall package on server
   slingpackager upload <package>     upload package to server
 
@@ -150,6 +155,26 @@ Options:
   --install, -i  install the package after it's uploaded
 ```
 
+### Download
+
+```
+slingpackager download <package>
+
+download package from server
+
+Options:
+  --version          Show version number                               [boolean]
+  --help             Show help                                         [boolean]
+  --server, -s       server url               [default: "http://localhost:8080"]
+  --user, -u         server credentials in the form username:password
+                                                        [default: "admin:admin"]
+  --retry, -r        maximum number of service calls to attempt before failing
+                                                                   [default: 10]
+  --verbose, -v      turn on verbose output           [boolean] [default: false]
+  --destination, -d  Package destination directory. Defaults to current
+                     directory.
+```
+
 ### Install
 
 ```
@@ -172,6 +197,22 @@ Options:
 slingpackager uninstall <package>
 
 uninstall package on server
+
+Options:
+  --version      Show version number                                   [boolean]
+  --help         Show help                                             [boolean]
+  --server, -s   server url                   [default: "http://localhost:8080"]
+  --user, -u     server credentials in the form username:password
+                                                        [default: "admin:admin"]
+  --verbose, -v  turn on verbose output
+```
+
+### Build
+
+```
+slingpackager build <package>
+
+build package on server
 
 Options:
   --version      Show version number                                   [boolean]
@@ -252,6 +293,11 @@ name=we.retail.ui.apps group=adobe/aem6/sample version=4.0.0 path=we.retail.ui.a
 ...
 ```
 
+#### Download package.
+```
+slingpackager download /themeclean-flex/ui.apps-1.0-SNAPSHOT.zip
+```
+
 #### Install uploaded package.
 ```
 slingpackager install /themeclean-flex/ui.apps-1.0-SNAPSHOT.zip
@@ -260,6 +306,11 @@ slingpackager install /themeclean-flex/ui.apps-1.0-SNAPSHOT.zip
 #### Uninstall package.
 ```
 slingpackager uninstall /themeclean-flex/ui.apps-1.0-SNAPSHOT.zip
+```
+
+#### Build package.
+```
+slingpackager build /themeclean-flex/ui.apps-1.0-SNAPSHOT.zip
 ```
 
 #### Delete package.

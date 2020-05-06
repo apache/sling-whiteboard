@@ -41,6 +41,8 @@ const password = serverInfo.password;
 
 describe('slingpackager', function() {
 
+    this.timeout(30000);
+    
     // package test
     describe('package', function() {
         it('should create package', function() {
@@ -62,10 +64,24 @@ describe('slingpackager', function() {
         });
     });
 
+    // download test
+    describe('download', function() {
+        it('should download package', function() {
+            testDownload();
+        });
+    });
+
     // install test
     describe('install', function() {
         it('should install package', function(done) {
             testInstall(done);
+        });
+    });
+
+    // build test
+    describe('build', function() {
+        it('should build package', function(done) {
+            testBuild(done);
         });
     });
 
@@ -110,9 +126,27 @@ function testList() {
     logger.debug(output);
 }
 
+// download command test
+function testDownload() {
+    var orgSize = fs.statSync(packPath).size;
+    cleanup();
+    var cmd = 'node bin/slingpackager download ' + packServerName + ' -d test ' + ' -s ' + server;
+    var output = exec(cmd);
+    logger.debug(output);
+    assert.equal((fs.existsSync(packPath) && fs.statSync(packPath).size==orgSize), true);
+}
+
 // install command test
 function testInstall(done) {
     var cmd = 'node bin/slingpackager install ' + packServerName + ' -s ' + server;
+    var output = exec(cmd);
+    logger.debug(output);
+    assert200(server + testInstallPath, done);
+};
+
+// build command test
+function testBuild(done) {
+    var cmd = 'node bin/slingpackager build ' + packServerName + ' -s ' + server;
     var output = exec(cmd);
     logger.debug(output);
     assert200(server + testInstallPath, done);
