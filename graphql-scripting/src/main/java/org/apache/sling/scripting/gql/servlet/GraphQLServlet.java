@@ -21,12 +21,8 @@
 package org.apache.sling.scripting.gql.servlet;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Map;
 
-import javax.script.ScriptException;
 import javax.servlet.Servlet;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.sling.api.SlingHttpServletRequest;
@@ -43,8 +39,6 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import graphql.ExecutionResult;
 
@@ -70,7 +64,6 @@ import graphql.ExecutionResult;
 @Designate(ocd = GraphQLServlet.Config.class, factory=true)
 public class GraphQLServlet extends SlingAllMethodsServlet {
     private static final long serialVersionUID = 1L;
-    private final Logger log = LoggerFactory.getLogger(getClass());
 
     public static final String P_QUERY = "query";
 
