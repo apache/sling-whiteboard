@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.sling.scripting.graphql.it;
+package org.apache.sling.graphql.core.it;
 
 import javax.inject.Inject;
 import javax.script.ScriptEngineFactory;
@@ -175,7 +175,11 @@ public abstract class GraphQLScriptingTestSupport extends TestSupport {
 
     protected MockSlingHttpServletResponse executeRequest(final String method, 
         final String path, Map<String, Object> params, final int expectedStatus) throws Exception {
+
+        // Admin resolver is fine for testing    
+        @SuppressWarnings("deprecation")            
         final ResourceResolver resourceResolver = resourceResolverFactory.getAdministrativeResourceResolver(null);
+
         assertNotNull("Expecting ResourceResolver", resourceResolver);
         final MockSlingHttpServletRequest request = new MockSlingHttpServletRequest(resourceResolver) {
             @Override
@@ -203,7 +207,11 @@ public abstract class GraphQLScriptingTestSupport extends TestSupport {
 
     protected MockSlingHttpServletResponse executePostRequest(final String path,
         final String body, final String contentType, final int expectedStatus) throws Exception {
+
+        // Admin resolver is fine for testing    
+        @SuppressWarnings("deprecation")            
         final ResourceResolver resourceResolver = resourceResolverFactory.getAdministrativeResourceResolver(null);
+        
         assertNotNull("Expecting ResourceResolver", resourceResolver);
         final MockSlingHttpServletRequest request = new MockSlingHttpServletRequest(resourceResolver) {
             @Override

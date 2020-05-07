@@ -18,7 +18,7 @@
  * under the License.
  */
 
-package org.apache.sling.scripting.gql.servlet;
+package org.apache.sling.graphql.core.servlet;
 
 import java.io.IOException;
 
@@ -30,9 +30,9 @@ import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.graphql.api.SchemaProvider;
-import org.apache.sling.scripting.gql.engine.GraphQLResourceQuery;
-import org.apache.sling.scripting.gql.schema.DataFetcherSelector;
-import org.apache.sling.scripting.gql.engine.GraphQLScriptEngine;
+import org.apache.sling.graphql.core.engine.GraphQLResourceQuery;
+import org.apache.sling.graphql.core.schema.DataFetcherSelector;
+import org.apache.sling.graphql.core.scripting.GraphQLScriptEngine;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.Reference;

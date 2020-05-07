@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.sling.scripting.gql.engine;
+package org.apache.sling.graphql.core.engine;
 
 import javax.script.ScriptException;
 
@@ -27,8 +27,8 @@ import graphql.language.FieldDefinition;
 import graphql.language.ObjectTypeDefinition;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.graphql.api.SchemaProvider;
-import org.apache.sling.scripting.gql.schema.DataFetcherDefinition;
-import org.apache.sling.scripting.gql.schema.DataFetcherSelector;
+import org.apache.sling.graphql.core.schema.DataFetcherDefinition;
+import org.apache.sling.graphql.core.schema.DataFetcherSelector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

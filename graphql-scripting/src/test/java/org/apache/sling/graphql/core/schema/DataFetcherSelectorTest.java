@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.sling.scripting.gql.schema;
+package org.apache.sling.graphql.core.schema;
 
 import graphql.schema.DataFetcher;
 import org.apache.sling.graphql.api.graphqljava.DataFetcherProvider;
@@ -30,6 +30,7 @@ import static org.junit.Assert.assertNull;
 public class DataFetcherSelectorTest {
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testGetDataFetcher() {
         DataFetcher<Object> gqlFetcher1 = (DataFetcher<Object>) Mockito.mock(DataFetcher.class);
         DataFetcher<Object> gqlFetcher2 = (DataFetcher<Object>) Mockito.mock(DataFetcher.class);

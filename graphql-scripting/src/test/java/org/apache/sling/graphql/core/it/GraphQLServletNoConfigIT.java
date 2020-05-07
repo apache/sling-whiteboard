@@ -16,11 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.sling.scripting.graphql.it;
+package org.apache.sling.graphql.core.it;
 
 import javax.inject.Inject;
-
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 
 import org.apache.sling.resource.presence.ResourcePresence;
 import org.junit.Test;
@@ -32,13 +30,11 @@ import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
 import org.ops4j.pax.exam.spi.reactors.PerClass;
 import org.ops4j.pax.exam.util.Filter;
 
-import static org.junit.Assert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 import static org.ops4j.pax.exam.cm.ConfigurationAdminOptions.factoryConfiguration;
 
 @RunWith(PaxExam.class)
 @ExamReactorStrategy(PerClass.class)
-public class BasicContentIT extends GraphQLScriptingTestSupport {
+public class GraphQLServletNoConfigIT extends GraphQLScriptingTestSupport {
 
     @Inject
     @Filter(value = "(path=/apps/graphql/test/one/json.gql)")
@@ -55,11 +51,9 @@ public class BasicContentIT extends GraphQLScriptingTestSupport {
     }
 
     @Test
-    public void testJsonContent() throws Exception {
+    public void testServletDisabledByDefault() throws Exception {
         final String path = "/graphql/one";
-        final String json = getContent(path + ".json");
-        assertThat(json, hasJsonPath("$.data.currentResource"));
-        assertThat(json, hasJsonPath("$.data.currentResource.path", equalTo("/content/graphql/one")));
-        assertThat(json, hasJsonPath("$.data.currentResource.resourceType", equalTo("graphql/test/one")));
+        executeRequest("GET", path + ".json", null, 200);
+        executeRequest("GET", path + ".gql", null, 404);
     }
 }

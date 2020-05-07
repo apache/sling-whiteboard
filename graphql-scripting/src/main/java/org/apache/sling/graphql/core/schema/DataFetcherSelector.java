@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.sling.scripting.gql.schema;
+package org.apache.sling.graphql.core.schema;
 
 import graphql.schema.DataFetcher;
 import org.apache.sling.api.resource.Resource;
@@ -47,7 +47,8 @@ public class DataFetcherSelector {
         // public default constructor required ...
     }
 
-    DataFetcherSelector(DataFetcherProvider... testFetchers) {
+    /** Convenience constructor for testing */
+    protected DataFetcherSelector(DataFetcherProvider... testFetchers) {
         factories.addAll(Arrays.asList(testFetchers));
     }
 

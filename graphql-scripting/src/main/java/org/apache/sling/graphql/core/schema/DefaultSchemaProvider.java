@@ -18,7 +18,7 @@
  * under the License.
  */
 
-package org.apache.sling.scripting.gql.schema;
+package org.apache.sling.graphql.core.schema;
 
 import java.io.IOException;
 
@@ -58,9 +58,6 @@ public class DefaultSchemaProvider implements SchemaProvider {
     @Override
     public String getSchema(Resource r, String [] selectors) throws SchemaProviderException {
         final ResourceResolver resourceResolver = r.getResourceResolver();
-        if(r == null) {
-            throw new SchemaProviderException("Resource.getResourceResolver() is null");
-        }
         final MockSlingHttpServletRequest request = new MockSlingHttpServletRequest(resourceResolver);
         final String path = r.getPath() + SCHEMA_EXTENSION;
         request.setPathInfo(path);

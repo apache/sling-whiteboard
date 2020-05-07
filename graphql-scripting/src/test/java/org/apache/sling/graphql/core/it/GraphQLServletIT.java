@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.sling.scripting.graphql.it;
+package org.apache.sling.graphql.core.it;
 
 import javax.inject.Inject;
 

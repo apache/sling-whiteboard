@@ -17,14 +17,14 @@
  * under the License.
  */
 
-package org.apache.sling.scripting.gql.engine;
+package org.apache.sling.graphql.core.scripting;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
 
 import org.apache.sling.scripting.api.AbstractScriptEngineFactory;
 import org.apache.sling.graphql.api.SchemaProvider;
-import org.apache.sling.scripting.gql.schema.DataFetcherSelector;
+import org.apache.sling.graphql.core.schema.DataFetcherSelector;
 import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;

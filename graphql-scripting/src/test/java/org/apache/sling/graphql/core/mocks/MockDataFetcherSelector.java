@@ -17,13 +17,14 @@
  * under the License.
  */
 
-package org.apache.sling.scripting.gql.schema;
+package org.apache.sling.graphql.core.mocks;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.graphql.api.graphqljava.DataFetcherProvider;
+import org.apache.sling.graphql.core.schema.DataFetcherSelector;
 
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;

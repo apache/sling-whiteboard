@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.sling.scripting.gql.servlet;
+package org.apache.sling.graphql.core.servlet;
 
 import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.sling.api.SlingHttpServletRequest;

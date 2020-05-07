@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.sling.scripting.graphql.it;
+package org.apache.sling.graphql.core.it;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;

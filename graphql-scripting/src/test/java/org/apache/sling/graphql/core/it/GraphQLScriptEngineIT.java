@@ -16,11 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.sling.scripting.graphql.it;
+package org.apache.sling.graphql.core.it;
 
-import javax.inject.Inject;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
-import org.apache.sling.resource.presence.ResourcePresence;
+import javax.script.ScriptEngine;
+import javax.script.ScriptException;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ops4j.pax.exam.Configuration;
@@ -28,32 +31,21 @@ import org.ops4j.pax.exam.Option;
 import org.ops4j.pax.exam.junit.PaxExam;
 import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
 import org.ops4j.pax.exam.spi.reactors.PerClass;
-import org.ops4j.pax.exam.util.Filter;
-
-import static org.ops4j.pax.exam.cm.ConfigurationAdminOptions.factoryConfiguration;
 
 @RunWith(PaxExam.class)
 @ExamReactorStrategy(PerClass.class)
-public class GraphQLServletNoConfigIT extends GraphQLScriptingTestSupport {
-
-    @Inject
-    @Filter(value = "(path=/apps/graphql/test/one/json.gql)")
-    private ResourcePresence resourcePresence;
+public class GraphQLScriptEngineIT extends GraphQLScriptingTestSupport {
 
     @Configuration
     public Option[] configuration() {
-        return new Option[]{
-            baseConfiguration(),
-            factoryConfiguration("org.apache.sling.resource.presence.internal.ResourcePresenter")
-                .put("path", "/apps/graphql/test/one/json.gql")
-                .asOption(),
-        };
+        return new Option[] { baseConfiguration() };
     }
 
     @Test
-    public void testServletDisabledByDefault() throws Exception {
-        final String path = "/graphql/one";
-        executeRequest("GET", path + ".json", null, 200);
-        executeRequest("GET", path + ".gql", null, 404);
+    public void testEnginePresent() throws ScriptException {
+        assertNotNull("Expecting ScriptEngineFactory to be present", scriptEngineFactory);
+        final ScriptEngine engine = scriptEngineFactory.getScriptEngine();
+        assertNotNull("Expecting ScriptEngine to be provided", engine);
+        assertEquals("Expecting our GraphQLScriptEngine", "GraphQLScriptEngine", engine.getClass().getSimpleName());
     }
 }

@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.sling.scripting.gql.engine;
+package org.apache.sling.graphql.core.engine;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 
@@ -30,9 +30,10 @@ import java.util.UUID;
 import com.cedarsoftware.util.io.JsonWriter;
 
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.scripting.gql.schema.DataFetcherSelector;
-import org.apache.sling.scripting.gql.schema.MockDataFetcherSelector;
 import org.apache.sling.graphql.api.SchemaProvider;
+import org.apache.sling.graphql.core.schema.DataFetcherSelector;
+import org.apache.sling.graphql.core.mocks.MockDataFetcherSelector;
+import org.apache.sling.graphql.core.mocks.MockSchemaProvider;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;

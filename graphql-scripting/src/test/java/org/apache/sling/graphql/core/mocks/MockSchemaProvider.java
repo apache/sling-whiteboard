@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.sling.scripting.gql.engine;
+package org.apache.sling.graphql.core.mocks;
 
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.graphql.api.SchemaProvider;
 
-class MockSchemaProvider implements SchemaProvider {
+public class MockSchemaProvider implements SchemaProvider {
 
     private static final String MOCK_SCHEMA = 
         "type Query {\n"

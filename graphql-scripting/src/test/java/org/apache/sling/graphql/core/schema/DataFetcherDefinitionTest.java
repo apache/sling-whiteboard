@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.sling.scripting.gql.schema;
+package org.apache.sling.graphql.core.schema;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;

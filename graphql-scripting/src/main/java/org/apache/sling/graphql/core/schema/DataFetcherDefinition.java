@@ -18,7 +18,7 @@
  * under the License.
  */
 
-package org.apache.sling.scripting.gql.schema;
+package org.apache.sling.graphql.core.schema;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

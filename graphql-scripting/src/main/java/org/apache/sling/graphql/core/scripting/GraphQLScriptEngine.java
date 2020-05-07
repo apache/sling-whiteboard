@@ -18,7 +18,7 @@
  * under the License.
  */
 
-package org.apache.sling.scripting.gql.engine;
+package org.apache.sling.graphql.core.scripting;
 
 import java.io.PrintWriter;
 import java.io.Reader;
@@ -36,6 +36,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.scripting.SlingBindings;
+import org.apache.sling.graphql.core.engine.GraphQLResourceQuery;
 
 import graphql.ExecutionResult;
 
@@ -75,7 +76,9 @@ public class GraphQLScriptEngine extends AbstractScriptEngine {
         if (data == null) {
             throw new ScriptException("No data");
         }
-        new JsonWriter(new WriterOutputStream(out)).write(data);
+        try(JsonWriter w = new JsonWriter(new WriterOutputStream(out))) {
+            w.write(data);
+        }
     }
 
     @Override
