@@ -17,19 +17,15 @@
  * under the License.
  */
 
-package org.apache.sling.graphql.api;
-
-import aQute.bnd.annotation.ProviderType;
-
-@ProviderType
-public interface DataFetcherDefinition {
-
-    String getFetcherNamespace();
-
-    String getFetcherName();
-
-    String getFetcherOptions();
-
-    String getFetcherSourceExpression();
-
-}
+ /**
+  * This package contains APIs which are specific to the
+  * Sling GraphQL core implementation that's based on the
+  * com.graphql-java:graphql-java library.
+  *
+  * If we later want our API to be independent of that, we
+  * can deprecate this package in favor of generic implementations
+  * that would then be in the parent package.
+  */
+@Version("1.0.0")
+package org.apache.sling.graphql.api.graphqljava;
+import org.osgi.annotation.versioning.Version;

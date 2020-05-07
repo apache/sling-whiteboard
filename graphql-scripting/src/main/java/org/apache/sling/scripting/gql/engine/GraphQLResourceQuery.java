@@ -27,7 +27,7 @@ import graphql.language.FieldDefinition;
 import graphql.language.ObjectTypeDefinition;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.graphql.api.SchemaProvider;
-import org.apache.sling.scripting.gql.schema.DataFetcherDefinitionImpl;
+import org.apache.sling.scripting.gql.schema.DataFetcherDefinition;
 import org.apache.sling.scripting.gql.schema.DataFetcherSelector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -129,7 +129,7 @@ public class GraphQLResourceQuery {
                 commentStr = commentStr.substring(1).trim();
 
                 try {
-                    DataFetcherDefinitionImpl def = new DataFetcherDefinitionImpl(commentStr);
+                    DataFetcherDefinition def = new DataFetcherDefinition(commentStr);
                     DataFetcher<Object> fetcher = fetchers.getDataFetcherForType(def, r);
                     if (fetcher != null) {
                         return fetcher;

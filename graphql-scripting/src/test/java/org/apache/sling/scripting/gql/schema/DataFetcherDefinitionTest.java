@@ -67,11 +67,11 @@ public class DataFetcherDefinitionTest {
     @Test
     public void testMatch() throws Exception {
         if(failureClass == null) {
-            final DataFetcherDefinitionImpl d = new DataFetcherDefinitionImpl(input);
-            assertEquals("DataFetcherDefinitionImpl#" + expected, d.toString());
+            final DataFetcherDefinition d = new DataFetcherDefinition(input);
+            assertEquals("DataFetcherDefinition#" + expected, d.toString());
         } else {
             try {
-                new DataFetcherDefinitionImpl(input);
+                new DataFetcherDefinition(input);
                 fail("Expecting a " + failureClass.getName());
             } catch(Throwable t) {
                 assertEquals("Expecting a " + failureClass.getName(), failureClass, t.getClass());

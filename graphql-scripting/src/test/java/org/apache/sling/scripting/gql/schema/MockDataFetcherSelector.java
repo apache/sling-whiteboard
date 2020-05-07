@@ -23,8 +23,7 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.graphql.api.DataFetcherProvider;
-import org.apache.sling.graphql.api.DataFetcherDefinition;
+import org.apache.sling.graphql.api.graphqljava.DataFetcherProvider;
 
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
@@ -66,7 +65,7 @@ public class MockDataFetcherSelector extends DataFetcherSelector {
         }
 
         @Override
-        public DataFetcher<Object> createDataFetcher(DataFetcherDefinition fetcherDef, Resource r) {
+        public DataFetcher<Object> createDataFetcher(Resource r, String name, String options, String source) {
             return new EchoDataFetcher(r);
         }
     }
@@ -99,7 +98,7 @@ public class MockDataFetcherSelector extends DataFetcherSelector {
         }
 
         @Override
-        public DataFetcher<Object> createDataFetcher(DataFetcherDefinition fetcherDef, Resource r) {
+        public DataFetcher<Object> createDataFetcher(Resource r, String name, String options, String source) {
             Map<String, Object> data = new LinkedHashMap<>(4);
             data.put("test", true);
             return new StaticDataFetcher(data);
@@ -110,20 +109,20 @@ public class MockDataFetcherSelector extends DataFetcherSelector {
 
         private final Resource r;
         private final String algorithm;
-        private final String propertyName;
+        private final String source;
 
-        DigestDataFetcher(Resource r, DataFetcherDefinition fetcherDef) {
+        DigestDataFetcher(Resource r, String options, String source) {
             this.r = r;
-            this.algorithm = fetcherDef.getFetcherOptions();
-            this.propertyName = fetcherDef.getFetcherSourceExpression();
+            this.algorithm = options;
+            this.source = source;
         }
 
         @Override
         public Object get(DataFetchingEnvironment environment) {
             String rawValue = null;
-            if ("path".equals(propertyName)) {
+            if ("path".equals(source)) {
                 rawValue = r.getPath();
-            } else if("resourceType".equals(propertyName)) {
+            } else if("resourceType".equals(source)) {
                 rawValue = r.getResourceType();
             }
 
@@ -134,7 +133,7 @@ public class MockDataFetcherSelector extends DataFetcherSelector {
                 throw new RuntimeException("Error computing digest:" + e, e);
             }
 
-            return algorithm + "#" + propertyName + "#" + digest;
+            return algorithm + "#" + source + "#" + digest;
         }
 
     }
@@ -166,8 +165,8 @@ public class MockDataFetcherSelector extends DataFetcherSelector {
         }
 
         @Override
-        public DataFetcher<Object> createDataFetcher(DataFetcherDefinition fetcherDef, Resource r) {
-            return new DigestDataFetcher(r, fetcherDef);
+        public DataFetcher<Object> createDataFetcher(Resource r, String name, String options, String source) {
+            return new DigestDataFetcher(r, options, source);
         }
     }
 }

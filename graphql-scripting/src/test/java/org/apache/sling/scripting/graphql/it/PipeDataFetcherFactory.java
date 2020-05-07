@@ -22,25 +22,22 @@ package org.apache.sling.scripting.graphql.it;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.graphql.api.DataFetcherDefinition;
-import org.apache.sling.graphql.api.DataFetcherProvider;
+import org.apache.sling.graphql.api.graphqljava.DataFetcherProvider;
 
 public class PipeDataFetcherFactory implements DataFetcherProvider {
 
     static class PipeDataFetcher implements DataFetcher<Object> {
 
-        private final DataFetcherDefinition fetcherDef;
-
         private final Resource r;
+        private final String options;
 
-        PipeDataFetcher(DataFetcherDefinition fetcherDef, Resource r) {
-            this.fetcherDef = fetcherDef;
+        PipeDataFetcher(Resource r, String name, String options, String source) {
             this.r = r;
+            this.options = options;
         }
 
         @Override
         public Object get(DataFetchingEnvironment environment) throws Exception {
-            String options = fetcherDef.getFetcherOptions();
             if (!options.isEmpty() && !options.equals("$")) {
                 throw new IllegalArgumentException("Invalid fetcher options: " + options);
             }
@@ -61,7 +58,7 @@ public class PipeDataFetcherFactory implements DataFetcherProvider {
     }
 
     @Override
-    public DataFetcher<Object> createDataFetcher(DataFetcherDefinition fetcherDef, Resource r) {
-        return new PipeDataFetcher(fetcherDef, r);
+    public DataFetcher<Object> createDataFetcher(Resource r, String name, String options, String source) {
+        return new PipeDataFetcher(r, name, options, source);
     }
 }

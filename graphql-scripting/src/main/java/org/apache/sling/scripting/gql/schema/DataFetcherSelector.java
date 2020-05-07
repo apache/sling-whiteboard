@@ -21,8 +21,7 @@ package org.apache.sling.scripting.gql.schema;
 
 import graphql.schema.DataFetcher;
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.graphql.api.DataFetcherProvider;
-import org.apache.sling.graphql.api.DataFetcherDefinition;
+import org.apache.sling.graphql.api.graphqljava.DataFetcherProvider;
 import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -58,7 +57,7 @@ public class DataFetcherSelector {
 
         for (DataFetcherProvider factory : factories) {
             if (factory.getNamespace().equals(ns) && factory.getName().equals(name)) {
-                return factory.createDataFetcher(def, r);
+                return factory.createDataFetcher(r, def.getFetcherName(), def.getFetcherOptions(), def.getFetcherSourceExpression());
             }
         }
         return null;

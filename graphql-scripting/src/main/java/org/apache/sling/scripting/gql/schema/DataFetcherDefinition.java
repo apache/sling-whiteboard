@@ -20,12 +20,10 @@
 
 package org.apache.sling.scripting.gql.schema;
 
-import org.apache.sling.graphql.api.DataFetcherDefinition;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class DataFetcherDefinitionImpl implements DataFetcherDefinition {
+public class DataFetcherDefinition {
     public final String fetcherNamespace;
     public final String fetcherName;
     public final String fetcherOptions;
@@ -39,7 +37,7 @@ public class DataFetcherDefinitionImpl implements DataFetcherDefinition {
     /** Creates a definition from a formatted String like
      *  
       */
-    public DataFetcherDefinitionImpl(String fetcherDef) {
+    public DataFetcherDefinition(String fetcherDef) {
         if(fetcherDef == null) {
             throw new IllegalArgumentException("Invalid input: " + fetcherDef);
         }
@@ -57,22 +55,18 @@ public class DataFetcherDefinitionImpl implements DataFetcherDefinition {
         return input == null ? "" : input.trim();
     }
 
-    @Override
     public String getFetcherNamespace() {
         return fetcherNamespace;
     }
 
-    @Override
     public String getFetcherName() {
         return fetcherName;
     }
 
-    @Override
     public String getFetcherOptions() {
         return fetcherOptions;
     }
 
-    @Override
     public String getFetcherSourceExpression() {
         return fetcherSourceExpression;
     }

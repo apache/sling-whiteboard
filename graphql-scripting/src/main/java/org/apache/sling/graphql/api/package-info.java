@@ -17,7 +17,10 @@
  * under the License.
  */
 
-@Version("1.0.0")
+ /**
+  * This package contains APIs which are independent of
+  * a specific implementation of the underlying graphQL engine.
+  */
+@Version("2.0.0")
 package org.apache.sling.graphql.api;
-
 import org.osgi.annotation.versioning.Version;
