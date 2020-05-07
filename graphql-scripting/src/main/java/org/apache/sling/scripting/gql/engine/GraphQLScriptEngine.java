@@ -31,10 +31,10 @@ import javax.script.ScriptContext;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptException;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.cedarsoftware.util.io.JsonWriter;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.scripting.SlingBindings;
 
@@ -44,9 +44,6 @@ public class GraphQLScriptEngine extends AbstractScriptEngine {
 
     private final GraphQLScriptEngineFactory factory;
     public static final int JSON_INDENT_SPACES = 2;
-
-    // As per GraphQL spec, nulls must be present in the JSON output
-    private static final Gson GSON = new GsonBuilder().serializeNulls().create();
 
     public GraphQLScriptEngine(GraphQLScriptEngineFactory factory) {
         this.factory = factory;
@@ -79,7 +76,7 @@ public class GraphQLScriptEngine extends AbstractScriptEngine {
         if (data == null) {
             throw new ScriptException("No data");
         }
-        GSON.toJson(data, out);
+        new JsonWriter(new WriterOutputStream(out)).write(data);
     }
 
     @Override

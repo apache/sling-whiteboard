@@ -38,8 +38,6 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-    <!-- GSON requires Java 11 - we might use something else later -->
-    <sling.java.version>11</sling.java.version>
     <org.ops4j.pax.exam.version>4.13.3</org.ops4j.pax.exam.version>
 
     <!-- To debug the pax process, override this with -D -->
@@ -175,9 +173,9 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>com.google.code.gson</groupId>
-      <artifactId>gson</artifactId>
-      <version>2.8.6</version>
+      <groupId>com.cedarsoftware</groupId>
+      <artifactId>json-io</artifactId>
+      <version>4.12.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

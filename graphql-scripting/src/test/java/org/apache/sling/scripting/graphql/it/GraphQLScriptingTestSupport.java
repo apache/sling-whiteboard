@@ -21,8 +21,8 @@ package org.apache.sling.scripting.graphql.it;
 import javax.inject.Inject;
 import javax.script.ScriptEngineFactory;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.cedarsoftware.util.io.JsonWriter;
+
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.graphql.api.DataFetcherProvider;
@@ -38,7 +38,6 @@ import org.ops4j.pax.exam.options.ModifiableCompositeOption;
 import org.ops4j.pax.exam.util.Filter;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
-import org.osgi.service.cm.ConfigurationAdmin;
 
 import org.apache.sling.engine.SlingRequestProcessor;
 
@@ -109,7 +108,7 @@ public abstract class GraphQLScriptingTestSupport extends TestSupport {
                 .put("whitelist.bundles.regexp", "^PAXEXAM.*$")
                 .asOption(),
             mavenBundle().groupId("org.apache.sling").artifactId("org.apache.sling.servlet-helpers").versionAsInProject(),
-            mavenBundle().groupId("com.google.code.gson").artifactId("gson").versionAsInProject(),
+            mavenBundle().groupId("com.cedarsoftware").artifactId("json-io").versionAsInProject(),
             slingResourcePresence(),
             jsonPath(),
             junitBundles()
@@ -250,8 +249,7 @@ public abstract class GraphQLScriptingTestSupport extends TestSupport {
             body.put("variables", variables);
         }
 
-        Gson gson = new GsonBuilder().serializeNulls().create();
-        return executePostRequest(path, gson.toJson(body), "application/json", 200).getOutputAsString();
+        return executePostRequest(path, JsonWriter.objectToJson(body) ,"application/json", 200).getOutputAsString();
     }
 
     protected Map<String, Object> toMap(String ...keyValuePairs) {

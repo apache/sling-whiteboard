@@ -19,13 +19,14 @@
 
 package org.apache.sling.scripting.gql.servlet;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.sling.api.SlingHttpServletRequest;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
+
+import com.cedarsoftware.util.io.JsonReader;
 
 public class RequestParser {
 
@@ -35,16 +36,13 @@ public class RequestParser {
 
     private Map<String, Object> variables;
 
-    // As per GraphQL spec, nulls must be present in the JSON output
-    private static final Gson GSON = new GsonBuilder().serializeNulls().create();
-
     RequestParser(SlingHttpServletRequest request) throws IOException {
         parse(request);
     }
 
     @SuppressWarnings("unchecked")
     private Map<String, Object> getInputJson(SlingHttpServletRequest req) throws IOException {
-        return GSON.fromJson(req.getReader(), Map.class);
+        return JsonReader.jsonToMaps(new ReaderInputStream(req.getReader()), null);
     }
 
     @SuppressWarnings("unchecked")

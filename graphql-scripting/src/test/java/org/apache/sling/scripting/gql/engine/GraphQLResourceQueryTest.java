@@ -27,7 +27,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 import java.util.UUID;
 
-import com.google.gson.Gson;
+import com.cedarsoftware.util.io.JsonWriter;
 
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.scripting.gql.schema.DataFetcherSelector;
@@ -56,7 +56,7 @@ public class GraphQLResourceQueryTest {
     private String queryJSON(String stmt) throws Exception {
         final ExecutionResult result = new GraphQLResourceQuery().executeQuery(schemaProvider, fetchers, resource, stmt);
         assertTrue("Expecting no errors: " + result.getErrors(), result.getErrors().isEmpty());
-        return new Gson().toJson(result);
+        return JsonWriter.objectToJson(result);
     }
 
     @Test
