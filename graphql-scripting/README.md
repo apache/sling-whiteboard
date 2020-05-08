@@ -25,7 +25,30 @@ This module enables the following GraphQL "styles"
     server-side "**prepared GraphQL queries**" and the more traditional client-supplied queries.
     
 The GraphQL requests can hit a Sling resource in all cases, there's no need for path-mounted servlets which are [not desirable](https://sling.apache.org/documentation/the-sling-engine/servlets.html#caveats-when-binding-servlets-by-path-1).
+
+## Resource-specific GraphQL schemas
+
+Schemas are provided by `SchemaProvider` services:
+
+    public interface SchemaProvider {
   
+      /** Get a GraphQL Schema definition for the given resource and optional selectors
+       *
+       *  @param r The Resource to which the schema applies
+       *  @param selectors Optional set of Request Selectors that can influence the schema selection
+       *  @return a GraphQL schema that can be annotated to define the data fetchers to use, see
+       *      this module's documentation. Can return null if a schema cannot be provided, in which
+       *      case a different provider should be used.
+       */
+      @Nullable
+      String getSchema(@NotNull Resource r, @Nullable String [] selectors) throws IOException;
+    }
+
+The default provider makes an internal Sling request with for the current Resource with a `.GQLschema` extension.
+
+This allows the Sling script/servlet resolution mechanism and its script engines to be used to generate 
+schemas dynamically, taking request selectors into account.
+
 ## DataFetcher selection with Schema annotations
 
 The GraphQL schemas used by this module can be enhanced with comments
