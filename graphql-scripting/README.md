@@ -26,43 +26,44 @@ This module enables the following GraphQL "styles"
     
 The GraphQL requests can hit a Sling resource in all cases, there's no need for path-mounted servlets which are [not desirable](https://sling.apache.org/documentation/the-sling-engine/servlets.html#caveats-when-binding-servlets-by-path-1).
   
-## Decorating the schemas with DataFetcher definitions
+## DataFetcher selection with Schema annotations
 
-TODO rework this section and point to the corresponding tests.
+The GraphQL schemas used by this module can be enhanced with comments
+that select specific `DataFetcher` to return the appropriate data.
 
-With dynamic schemas, I think the mapping of types and/or fields to DataFetchers belongs in them.
+A default `DataFetcher` is used for types and fields which have no such annotation.
 
-We can use structured comments in the schemas for this so that they stay syntactically valid.
+Comments starting with `## fetch` specify data fetchers using the following syntax:
 
-Here's an example where `## fetch:` comments are used for these definitions:
+    ## fetch:<namespace>/<name>/<options> <source>
+
+Where `<namespace>` selects a source (OSGi service) of `DataFetcher`, `<name>` selects
+a specific fetcher from that source, `<options>` can optionally be used to adapt the 
+behavior of the fetcher according to its own specification and `<source>` can optionally
+be used to tell the fetcher which field or object to select in its input.
+    
+Here's an example of such an annotated schema.    
 
     type Query {
-
-      # Use the 'test:pipe' Fetcher where "test" is a Fetcher namespace,
-      # and pass "$" to it as a data selection expression which in this
-      # case means "use the current Sling Resource".
-      currentResource : SlingResource ## fetch:test/pipe $
-
+        ## fetch:test/echo
+        currentResource : SlingResource
+        ## fetch:test/static
+        staticContent: Test
     }
+    type SlingResource { 
+        path: String
+        resourceType: String
 
-    type SlingResource {
-      path: String
-      resourceType: String
+        ## fetch:test/digest/md5 path
+        pathMD5: String
+    
+        ## fetch:test/digest/sha-256 path
+        pathSHA256: String
 
-      # Use the "test:digest" DataFetcher with the "md5" fetcher option
-      # and pass "$path" as its data selection expression
-      pathMD5: String ## fetch:test/digest/md5 $.path
-
-      # Similar with different fetcher options
-      pathSHA512: String ## fetch:test/digest/sha512,armored(UTF-8) $.path
-    }
-
-A default `DataFetcher` is used for types and fields which have no `## fetch:` comment.
-
-This is **not yet implemented** at commit 25cbb95d, there's just a basic parser for the above
-fetch definitions.
-
-See also [@stefangrimm's comment](https://github.com/apache/sling-whiteboard/commit/0c9db2d0e202eb74b605e65da7bfe01b4a8818f8#commitcomment-38639195) about using the graphql-java's `DataFetcher` API  to collect these definitions.
+        ## fetch:test/digest/md5 resourceType
+        resourceTypeMD5: String
+     }
+    type Test { test: Boolean }
 
 ## How to test this in a Sling instance
 
