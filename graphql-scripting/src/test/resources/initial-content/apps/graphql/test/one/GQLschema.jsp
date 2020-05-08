@@ -32,6 +32,4 @@ type Query {
 type SlingResource { 
   path: String
   resourceType: String
-  # pathMD5: String ## fetch:test/digest/md5 $.path
-  # pathSHA512: String ## fetch:test/digest/sha512,armored(UTF-8) $.path
 }
