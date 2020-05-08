@@ -41,6 +41,7 @@ import graphql.schema.idl.SchemaGenerator;
 import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -93,14 +94,15 @@ public class GraphQLResourceQuery {
         }
     }
 
-    private GraphQLSchema buildSchema(String sdl, DataFetcherSelector fetchers, Resource r) {
+    private GraphQLSchema buildSchema(String sdl, DataFetcherSelector fetchers, Resource r) throws IOException {
         TypeDefinitionRegistry typeRegistry = new SchemaParser().parse(sdl);
         RuntimeWiring runtimeWiring = buildWiring(typeRegistry, fetchers, r);
         SchemaGenerator schemaGenerator = new SchemaGenerator();
         return schemaGenerator.makeExecutableSchema(typeRegistry, runtimeWiring);
     }
 
-    private RuntimeWiring buildWiring(TypeDefinitionRegistry typeRegistry, DataFetcherSelector fetchers, Resource r) {
+    private RuntimeWiring buildWiring(TypeDefinitionRegistry typeRegistry, DataFetcherSelector fetchers, Resource r)
+        throws IOException {
         List<ObjectTypeDefinition> types = typeRegistry.getTypes(ObjectTypeDefinition.class);
         RuntimeWiring.Builder builder = RuntimeWiring.newRuntimeWiring();
         for (ObjectTypeDefinition type : types) {
@@ -108,9 +110,13 @@ public class GraphQLResourceQuery {
             builder.type(type.getName(), typeWiring -> {
                 for (FieldDefinition field : type.getFieldDefinitions()) {
 
-                    DataFetcher<Object> fetcher = getDataFetcher(field, fetchers, r);
-                    if (fetcher != null) {
-                        typeWiring.dataFetcher(field.getName(), fetcher);
+                    try {
+                        DataFetcher<Object> fetcher = getDataFetcher(field, fetchers, r);
+                        if (fetcher != null) {
+                            typeWiring.dataFetcher(field.getName(), fetcher);
+                        }
+                    } catch(IOException e) {
+                        throw new RuntimeException("Exception while building wiring", e);
                     }
                 }
                 return typeWiring;
@@ -120,7 +126,7 @@ public class GraphQLResourceQuery {
     }
 
     private DataFetcher<Object> getDataFetcher(FieldDefinition field, DataFetcherSelector fetchers,
-                                               Resource r) {
+                                               Resource r) throws IOException {
         List<Comment> comments = field.getComments();
         for (Comment comment : comments) {
 

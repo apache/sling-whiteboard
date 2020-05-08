@@ -27,11 +27,13 @@ import org.mockito.Mockito;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
+import java.io.IOException;
+
 public class DataFetcherSelectorTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void testGetDataFetcher() {
+    public void testGetDataFetcher() throws IOException {
         DataFetcher<Object> gqlFetcher1 = (DataFetcher<Object>) Mockito.mock(DataFetcher.class);
         DataFetcher<Object> gqlFetcher2 = (DataFetcher<Object>) Mockito.mock(DataFetcher.class);
         DataFetcher<Object> gqlFetcher3 = (DataFetcher<Object>) Mockito.mock(DataFetcher.class);

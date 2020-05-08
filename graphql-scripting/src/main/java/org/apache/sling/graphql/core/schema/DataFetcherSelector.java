@@ -28,6 +28,7 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -52,7 +53,7 @@ public class DataFetcherSelector {
         factories.addAll(Arrays.asList(testFetchers));
     }
 
-    public DataFetcher<Object> getDataFetcherForType(DataFetcherDefinition def, Resource r) {
+    public DataFetcher<Object> getDataFetcherForType(DataFetcherDefinition def, Resource r) throws IOException {
         String ns = def.getFetcherNamespace();
         String name = def.getFetcherName();
 
