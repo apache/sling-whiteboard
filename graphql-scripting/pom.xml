@@ -28,11 +28,11 @@
     <relativePath />
   </parent>
 
-  <artifactId>org.apache.sling.scripting.graphql</artifactId>
+  <artifactId>org.apache.sling.graphql.core</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 
-  <name>Apache Sling Scripting GraphQL</name>
-  <description>Support for server-side GraphQL queries</description>
+  <name>Apache Sling GraphQL Core</name>
+  <description>Support for GraphQL queries</description>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
