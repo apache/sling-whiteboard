@@ -15,7 +15,11 @@
   <parent>
     <groupId>org.apache.sling</groupId>
     <artifactId>sling-bundle-parent</artifactId>
+<<<<<<< HEAD
     <version>38</version>
+=======
+    <version>39</version>
+>>>>>>> upstream/master
     <relativePath />
   </parent>
 
@@ -35,10 +39,17 @@
     <sling.user>admin</sling.user>
     <sling.password>admin</sling.password>
     <bnd.baseline.skip>true</bnd.baseline.skip>
+<<<<<<< HEAD
     <noticeStatement>
       This module includes modified code from webprofile-ref-project-v3 [1], which has ASL2 as the license.
       [1]: https://bitbucket.org/srasmusson/webprofile-ref-project-v3
     </noticeStatement>
+=======
+    <noticeStatement>This module includes modified code from webprofile-ref-project-v3 [1],
+which is licensed under the Apache-2.0 license.
+
+[1]: https://bitbucket.org/srasmusson/webprofile-ref-project-v3</noticeStatement>
+>>>>>>> upstream/master
   </properties>
 
   <build>
