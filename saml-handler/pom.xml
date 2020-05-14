@@ -15,7 +15,7 @@
   <parent>
     <groupId>org.apache.sling</groupId>
     <artifactId>sling-bundle-parent</artifactId>
-    <version>38</version>
+    <version>39</version>
     <relativePath />
   </parent>
 
@@ -35,6 +35,10 @@
     <sling.user>admin</sling.user>
     <sling.password>admin</sling.password>
     <bnd.baseline.skip>true</bnd.baseline.skip>
+    <noticeStatement>This module includes modified code from webprofile-ref-project-v3 [1],
+which is licensed under the Apache-2.0 license.
+
+[1]: https://bitbucket.org/srasmusson/webprofile-ref-project-v3</noticeStatement>
   </properties>
 
   <build>
