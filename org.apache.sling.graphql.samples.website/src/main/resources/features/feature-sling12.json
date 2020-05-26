@@ -1,7 +1,7 @@
 {
   "id":"org.apache.sling:org.apache.sling.kickstart.conversion:slingosgifeature:sling12:0.0.1-SNAPSHOT",
   "title":"Sling 12 Feature Model",
-  "description":"Complete Sling 12 Feature Model",
+  "description":"Complete Sling 12 Feature Model - copied from the kickstart project",
   "vendor":"The Apache Software Foundation",
   "license":"Apache License, Version 2.0",
   "variables":{
@@ -309,7 +309,7 @@
       "start-order":"15"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.jcr.repoinit:1.1.20",
+      "id":"org.apache.sling:org.apache.sling.jcr.repoinit:1.1.24",
       "start-order":"20",
       "feature-origins":"org.apache.sling:org.apache.sling.kickstart.conversion:slingfeature:repoinit:0.0.1-SNAPSHOT"
     },
@@ -319,7 +319,7 @@
       "feature-origins":"org.apache.sling:org.apache.sling.kickstart.conversion:slingfeature:repoinit:0.0.1-SNAPSHOT"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.repoinit.parser:1.4.2",
+      "id":"org.apache.sling:org.apache.sling.repoinit.parser:1.6.2",
       "start-order":"20",
       "feature-origins":"org.apache.sling:org.apache.sling.kickstart.conversion:slingfeature:repoinit:0.0.1-SNAPSHOT"
     },
