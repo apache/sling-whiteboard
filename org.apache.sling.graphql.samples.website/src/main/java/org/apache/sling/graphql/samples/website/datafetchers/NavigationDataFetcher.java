@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.stream.StreamSupport;
 
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.graphql.samples.website.models.Section;
+import org.apache.sling.graphql.samples.website.models.SlingWrappers;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
@@ -43,11 +43,11 @@ class NavigationDataFetcher implements DataFetcher<Object> {
     }
 
     private Object[] getSections() {
-        final List<Section> result = new ArrayList<>();
+        final List<Map<String, Object>> result = new ArrayList<>();
         final Resource root = resource.getResourceResolver().getResource(CONTENT_ROOT);
         final Iterable<Resource> it = () -> root.getResourceResolver().getChildren(root).iterator();
         StreamSupport.stream(it.spliterator(), false)
-            .forEach(child -> result.add(new Section(child)));
+            .forEach(child -> result.add(SlingWrappers.resourceWrapper(child)));
         return result.toArray();
 
     }

@@ -21,10 +21,11 @@ package org.apache.sling.graphql.samples.website.datafetchers;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.StreamSupport;
 
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.graphql.samples.website.models.ArticleRef;
+import org.apache.sling.graphql.samples.website.models.SlingWrappers;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
@@ -43,11 +44,11 @@ class ArticlesBySectionFetcher implements DataFetcher<Object> {
     public Object get(DataFetchingEnvironment environment) throws Exception {
         // TODO should paginate instead
         final int maxArticles = 42;
-        final List<ArticleRef> result = new ArrayList<>();
+        final List<Map<String, Object>> result = new ArrayList<>();
         final Iterable<Resource> it = () -> section.getResourceResolver().getChildren(section).iterator();
         StreamSupport.stream(it.spliterator(), false)
             .limit(maxArticles)
-            .forEach(child -> result.add(new ArticleRef(child)));
+            .forEach(child -> result.add(SlingWrappers.resourceWrapper(child)));
         return result;
     }
 }

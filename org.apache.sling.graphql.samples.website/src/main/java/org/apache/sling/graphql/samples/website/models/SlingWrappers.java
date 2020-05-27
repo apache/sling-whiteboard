@@ -17,26 +17,25 @@
  * under the License.
  */
 
-package org.apache.sling.graphql.samples.website.datafetchers;
+package org.apache.sling.graphql.samples.website.models;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ValueMap;
 
-import graphql.schema.DataFetcher;
-import graphql.schema.DataFetchingEnvironment;
+public class SlingWrappers {
+    public static final String PATH = "path";
 
-class ValueMapDataFetcher implements DataFetcher<Object> {
-
-    public static final String NAME = "valueMap";
-
-    private final Resource resource;
-
-    ValueMapDataFetcher(Resource r) {
-        this.resource = r;
+    private SlingWrappers() {
     }
 
-    @Override
-    public Object get(DataFetchingEnvironment environment) throws Exception {
-        return resource.adaptTo(ValueMap.class);
+    public static Map<String, Object> resourceWrapper(Resource r) {
+        // Quick hack to add "path" to the map
+        final Map<String, Object> result = new HashMap<>();
+        result.putAll(r.adaptTo(ValueMap.class));
+        result.put(PATH, r.getPath());
+        return result;
     }
 }

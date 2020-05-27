@@ -27,7 +27,7 @@ import java.util.Map;
 
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ValueMap;
-import org.apache.sling.graphql.samples.website.models.ArticleRef;
+import org.apache.sling.graphql.samples.website.models.SlingWrappers;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
@@ -59,7 +59,7 @@ class TagQueryDataFetcher implements DataFetcher<Object> {
     @Override
     public Object get(DataFetchingEnvironment environment) throws Exception {
         final Map<String, Object> result = new HashMap<>();
-        final List<ArticleRef> articles = new ArrayList<>();
+        final List<Map<String, Object>> articles = new ArrayList<>();
         final ValueMap vm = resource.adaptTo(ValueMap.class);
         if(vm != null) {
             final String [] tags = vm.get("tags", String[].class);
@@ -70,7 +70,7 @@ class TagQueryDataFetcher implements DataFetcher<Object> {
                 final Iterator<Resource> it = resource.getResourceResolver().findResources(jcrQuery(tags), "xpath");
                 // TODO should stop/paginate if too many results
                 while(it.hasNext()) {
-                    articles.add(new ArticleRef(it.next()));
+                    articles.add(SlingWrappers.resourceWrapper(it.next()));
                 }
             }
         }

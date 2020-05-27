@@ -17,28 +17,26 @@
  * under the License.
  */
 
-package org.apache.sling.graphql.samples.website.models;
+package org.apache.sling.graphql.samples.website.datafetchers;
 
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.api.resource.ValueMap;
+import org.apache.sling.graphql.samples.website.models.SlingWrappers;
 
-// TODO we should be able to avoid such model classes
-// using a Sling-aware default data fetcher
-public class Section {
-    private final String name;
-    private final String path;
+import graphql.schema.DataFetcher;
+import graphql.schema.DataFetchingEnvironment;
 
-    public Section(Resource r) {
-        final ValueMap vm = r.adaptTo(ValueMap.class);
-        name = vm == null ? null : vm.get("name", String.class);
-        path = r.getPath();
+class CurrentResourceFetcher implements DataFetcher<Object> {
+
+    public static final String NAME = "currentResource";
+
+    private final Resource resource;
+
+    CurrentResourceFetcher(Resource r) {
+        this.resource = r;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public String getPath() {
-        return path;
+    @Override
+    public Object get(DataFetchingEnvironment environment) throws Exception {
+        return SlingWrappers.resourceWrapper(resource);
     }
 }

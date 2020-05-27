@@ -25,10 +25,7 @@ best way, but it works for these initial tests.
 --%>
 
 type Query {
-  # Convert the current Resource to its valueMap
-  # to be able to use the default graphql-java 
-  # PropertiesDataFetcher on (most of) its values
-  ## fetch:samples/valueMap
+  ## fetch:samples/currentResource
   article : Article
 
   ## fetch:samples/navigation

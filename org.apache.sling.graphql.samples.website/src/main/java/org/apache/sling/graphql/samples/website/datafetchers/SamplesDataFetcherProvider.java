@@ -38,8 +38,8 @@ public class SamplesDataFetcherProvider implements DataFetcherProvider {
                 
         if(SeeAlsoDataFetcher.NAME.equals(name)) {
             return new SeeAlsoDataFetcher(r);
-        } else if(ValueMapDataFetcher.NAME.equals(name)) {
-            return new ValueMapDataFetcher(r);
+        } else if(CurrentResourceFetcher.NAME.equals(name)) {
+            return new CurrentResourceFetcher(r);
         } else if(TagQueryDataFetcher.NAME.equals(name)) {
             return new TagQueryDataFetcher(r);
         } else if(ArticlesBySectionFetcher.NAME.equals(name)) {

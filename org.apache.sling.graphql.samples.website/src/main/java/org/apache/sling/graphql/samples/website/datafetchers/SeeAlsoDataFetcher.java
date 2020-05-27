@@ -21,11 +21,12 @@ package org.apache.sling.graphql.samples.website.datafetchers;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ValueMap;
-import org.apache.sling.graphql.samples.website.models.ArticleRef;
+import org.apache.sling.graphql.samples.website.models.SlingWrappers;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
@@ -40,13 +41,13 @@ class SeeAlsoDataFetcher implements DataFetcher<Object> {
         this.resource = r;
     }
 
-    private static ArticleRef toArticleRef(ResourceResolver resolver, String nodeName) {
+    private static Map<String, Object> toArticleRef(ResourceResolver resolver, String nodeName) {
         final String jcrQuery = "/jcr:root/content/articles//" + nodeName;
         final Iterator<Resource> it = resolver.findResources(jcrQuery, "xpath");
         if(!it.hasNext()) {
             throw new RuntimeException("No Resource found:" + jcrQuery);
         }
-        final ArticleRef result = new ArticleRef(it.next());
+        final Map<String, Object> result = SlingWrappers.resourceWrapper(it.next());
         if(it.hasNext()) {
             throw new RuntimeException("More than one Resource found:" + jcrQuery);
         }

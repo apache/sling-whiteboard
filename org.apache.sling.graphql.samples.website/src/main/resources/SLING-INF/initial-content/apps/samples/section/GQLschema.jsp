@@ -28,7 +28,7 @@ type Query {
   # Convert the current Resource to its valueMap
   # to be able to use the default graphql-java 
   # PropertiesDataFetcher on (most of) its values
-  ## fetch:samples/valueMap
+  ## fetch:samples/currentResource
   section: Section
 
   ## fetch:samples/navigation
