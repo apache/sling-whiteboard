@@ -20,7 +20,7 @@
 <html>
     <head>
         <title data-sly-set.title="${properties.title}">${title}</title>
-        
+
         <link rel="stylesheet" href="https://fonts.xz.style/serve/inter.css">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1.1.2/new.min.css">
 
@@ -39,11 +39,7 @@
             url: document.URL + ".json",
             success: function( result ) {
               var template = Handlebars.compile($("#content").html());
-              result.data.article.tagsQuery = "";
-              for(i in result.data.article.tags) {
-                result.data.article.tagsQuery += result.data.article.tags[i] + "+";
-              }
-              $("#content").html(template({ article : result.data.article }));
+              $("#content").html(template({ data : result.data }));
             }
           });
         </script>
@@ -51,39 +47,18 @@
     </head>
     <body>
       <div id="content">
-        <div class="title">
-          <h1>{{article.title}}</h1>
-          <hr/>
-        </div>
-        
-        <div class="tags">
-          Tags:
-          {{#each article.tags}}
-            <span class="tag">
-              <a href="/tags/{{this}}.html">{{this}}</a>
-            </span>
-          {{/each}}
-          - Find articles <a href="/tags/{{article.tagsQuery}}.html">with all these tags</a>
-          <hr/>
-        </div>
-        
-        <div class="seeAlso">
-          <h2>See Also</h2>
+        <h1>Articles with tag (TODO: which tag?)</h1>
           <ul>
-            {{#each article.seeAlso}}
+            {{#each data.articlesByTag}}
               <li class="seeAlso">
                 <a href="{{this.path}}.html">{{this.title}}</a>
               </li>
+              Tags:
+              {{#each this.tags}}
+                <span class="tag">{{this}}</span>
+              {{/each}}
             {{/each}}
           </ul>
-          <hr/>
-        </div>
-
-        <div class="text">
-          {{{article.text}}}
-          <hr/>
-        </div>
-        
       </div>
     </body>
 </html>
