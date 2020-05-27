@@ -17,9 +17,9 @@ traditional client-side GraphQL queries as well, once that's setup.
 
 ## How to run this
 
-* Build this module with `mvn clean install`
 * Build the [GraphQL Core](https://github.com/apache/sling-org-apache-sling-graphql-core/) module
 * Build the [Sling Kickstart](https://github.com/apache/sling-org-apache-sling-kickstart) module
+* Build this module with `mvn clean install`
 
 Then start the demo Sling instance using
 
