@@ -46,7 +46,7 @@
                 }
                 result.data.article.tagsQuery += result.data.article.tags[i];
               }
-              $("#content").html(template({ article : result.data.article }));
+              $("#content").html(template({ data : result.data }));
             }
           });
         </script>
@@ -54,26 +54,35 @@
     </head>
     <body>
       <div id="content">
+        <div id="navigation">
+            {{#each data.navigation.sections}}
+              <span class="section">
+                <a href="{{this.path}}.html">{{this.name}}</a>
+              </span>
+            {{/each}}
+            <hr/>
+        </div>
+        
         <div class="title">
-          <h1>{{article.title}}</h1>
+          <h1>{{data.article.title}}</h1>
           <hr/>
         </div>
         
         <div class="tags">
           Tags:
-          {{#each article.tags}}
+          {{#each data.article.tags}}
             <span class="tag">
               <a href="/tags/{{this}}.html">{{this}}</a>
             </span>
           {{/each}}
-          - Find articles <a href="/tags/{{article.tagsQuery}}.html">with all these tags</a>
+          - Find articles <a href="/tags/{{data.article.tagsQuery}}.html">with all these tags</a>
           <hr/>
         </div>
         
         <div class="seeAlso">
           <h2>See Also</h2>
           <ul>
-            {{#each article.seeAlso}}
+            {{#each data.article.seeAlso}}
               <li class="seeAlso">
                 <a href="{{this.path}}.html">{{this.title}}</a>
               </li>
@@ -83,7 +92,7 @@
         </div>
 
         <div class="text">
-          {{{article.text}}}
+          {{{data.article.text}}}
           <hr/>
         </div>
         

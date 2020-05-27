@@ -47,7 +47,16 @@
     </head>
     <body>
       <div id="content">
-        <h1>Articles with tag (TODO: which tag?)</h1>
+        <div id="navigation">
+          {{#each data.navigation.sections}}
+            <span class="section">
+              <a href="{{this.path}}.html">{{this.name}}</a>
+            </span>
+          {{/each}}
+          <hr/>
+      </div>
+      
+      <h1>Articles with tag (TODO: which tag?)</h1>
           <ul>
             {{#each data.articlesByTag}}
               <li class="seeAlso">

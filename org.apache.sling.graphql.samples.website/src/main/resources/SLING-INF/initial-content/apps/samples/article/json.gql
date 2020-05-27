@@ -17,6 +17,12 @@
 
 # Define the query for this resource type, selector and extension
 { 
+  navigation {
+    sections {
+      path
+      name
+    }
+  }
   article 
   { 
     title

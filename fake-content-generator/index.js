@@ -47,6 +47,7 @@ function generatePage() {
   
   return {
     source: "Apache Sling's fake-content-generator",
+    section: folder,
     folder: folder.toLowerCase(),
     filename: filename,
     title: `${folder} - ${title}`,
@@ -56,14 +57,30 @@ function generatePage() {
   }
 }
 
-function mkDirIfNeeded(path) {
+function mkDirIfNeeded(path, callback) {
   if(!fs.existsSync(path)) {
     fs.mkdirSync(path);
+    if(callback) {
+      callback(path);
+    }
   }
 }
 
 const nFiles = 1000;
 const baseOutputFolder = "./output";
+
+function setupCategoryFolder(path, name, section) {
+  mkDirIfNeeded(path, path => {
+    // Define Sling resource properties for the created folder
+    const output = `${baseOutputFolder}/${name}.json`;
+    const props = {};
+    props["jcr:primaryType"] = "sling:Folder";
+    props["sling:resourceType"] = `samples/section`;
+    props["name"] = section;
+    fs.writeFile(output, JSON.stringify(props), err => { if(err) throw err; });
+  });
+}
+
 console.log(`Generating ${nFiles} fake content files under ${baseOutputFolder}`);
 mkDirIfNeeded(baseOutputFolder);
 
@@ -73,7 +90,7 @@ for(i=0 ; i < nFiles; i++) {
   page["sling:resourceType"] = `samples/article/${page.folder}`;
   page["sling:resourceSuperType"] = "samples/article";
   const outputFolder = `${baseOutputFolder}/${page.folder}`;
-  mkDirIfNeeded(outputFolder);
+  setupCategoryFolder(outputFolder, page.folder, page.section);
   
   const output = `${outputFolder}/${page.filename}.json`;
   fs.writeFile(output, JSON.stringify(page), err => { if(err) throw err; });

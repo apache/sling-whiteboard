@@ -30,6 +30,18 @@ type Query {
   # PropertiesDataFetcher on (most of) its values
   ## fetch:samples/valueMap
   article : Article
+
+  ## fetch:samples/navigation
+  navigation: Navigation
+}
+
+type Navigation {
+  sections: [Section]
+}
+
+type Section { 
+  name: String
+  path: String
 }
 
 type Article { 
