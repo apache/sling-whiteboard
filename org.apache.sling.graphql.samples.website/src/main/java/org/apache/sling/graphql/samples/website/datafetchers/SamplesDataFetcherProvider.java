@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.sling.graphql.samples.website;
+package org.apache.sling.graphql.samples.website.datafetchers;
 
 import graphql.schema.DataFetcher;
 

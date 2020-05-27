@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.sling.graphql.samples.website;
+package org.apache.sling.graphql.samples.website.tagresource;
 
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.spi.resource.provider.ResolveContext;
@@ -27,6 +27,9 @@ import org.osgi.service.component.annotations.Component;
 
 import java.util.Iterator;
 
+/** Provide in-memory resources for Tag queries like /content/tags/one+two+three 
+ *  which will run a query for articles that have all three tags.
+*/
 @Component(service = ResourceProvider.class, property = { ResourceProvider.PROPERTY_NAME + "=TagsResourceProvider",
         ResourceProvider.PROPERTY_ROOT + "=" + TagsResourceProvider.ROOT_PATH })
 public class TagsResourceProvider extends ResourceProvider<TagsResourceProvider.UnusedContext> {

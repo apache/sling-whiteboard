@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.sling.graphql.samples.website;
+package org.apache.sling.graphql.samples.website.tagresource;
 
 import org.apache.sling.adapter.annotations.Adaptable;
 import org.apache.sling.adapter.annotations.Adapter;
@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+/** In-memory representation of a Tag query */
 @Adaptable(
     adaptableClass=Resource.class, 
     adapters={ @Adapter({ValueMap.class})}

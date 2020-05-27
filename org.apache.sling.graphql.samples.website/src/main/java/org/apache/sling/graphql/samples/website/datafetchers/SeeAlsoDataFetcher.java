@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.sling.graphql.samples.website;
+package org.apache.sling.graphql.samples.website.datafetchers;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -25,6 +25,7 @@ import java.util.Iterator;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ValueMap;
+import org.apache.sling.graphql.samples.website.models.ArticleRef;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;

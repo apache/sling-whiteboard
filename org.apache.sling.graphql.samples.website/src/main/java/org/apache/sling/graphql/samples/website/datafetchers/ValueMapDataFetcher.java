@@ -17,36 +17,26 @@
  * under the License.
  */
 
-package org.apache.sling.graphql.samples.website;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.StreamSupport;
+package org.apache.sling.graphql.samples.website.datafetchers;
 
 import org.apache.sling.api.resource.Resource;
+import org.apache.sling.api.resource.ValueMap;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 
-class ArticlesBySectionFetcher implements DataFetcher<Object> {
+class ValueMapDataFetcher implements DataFetcher<Object> {
 
-    public static final String NAME = "articlesBySection";
+    public static final String NAME = "valueMap";
 
-    private final Resource section;
+    private final Resource resource;
 
-    ArticlesBySectionFetcher(Resource section) {
-        this.section = section;
+    ValueMapDataFetcher(Resource r) {
+        this.resource = r;
     }
 
     @Override
     public Object get(DataFetchingEnvironment environment) throws Exception {
-        // TODO should paginate instead
-        final int maxArticles = 42;
-        final List<ArticleRef> result = new ArrayList<>();
-        final Iterable<Resource> it = () -> section.getResourceResolver().getChildren(section).iterator();
-        StreamSupport.stream(it.spliterator(), false)
-            .limit(maxArticles)
-            .forEach(child -> result.add(new ArticleRef(child)));
-        return result;
+        return resource.adaptTo(ValueMap.class);
     }
 }

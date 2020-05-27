@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.sling.graphql.samples.website;
+package org.apache.sling.graphql.samples.website.datafetchers;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.stream.StreamSupport;
 
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.api.resource.ValueMap;
+import org.apache.sling.graphql.samples.website.models.Section;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
@@ -37,25 +37,6 @@ class NavigationDataFetcher implements DataFetcher<Object> {
     public static final String CONTENT_ROOT = "/content/articles";
 
     private final Resource resource;
-
-    static class Section {
-        private final String name;
-        private final String path;
-
-        Section(Resource r) {
-            final ValueMap vm = r.adaptTo(ValueMap.class);
-            name = vm == null ? null : vm.get("name", String.class);
-            path = r.getPath();
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getPath() {
-            return path;
-        }
-    }
 
     NavigationDataFetcher(Resource resource) {
         this.resource = resource;

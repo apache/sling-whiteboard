@@ -17,32 +17,28 @@
  * under the License.
  */
 
-package org.apache.sling.graphql.samples.website;
+package org.apache.sling.graphql.samples.website.models;
 
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ValueMap;
 
-public class ArticleRef {
-    private final String title;
+// TODO we should be able to avoid such model classes
+// using a Sling-aware default data fetcher
+public class Section {
+    private final String name;
     private final String path;
-    private final String [] tags;
 
-    ArticleRef(Resource r) {
+    public Section(Resource r) {
         final ValueMap vm = r.adaptTo(ValueMap.class);
-        title = vm == null ? null : vm.get("title", String.class);
-        tags = vm == null ? null : vm.get("tags", String[].class);
+        name = vm == null ? null : vm.get("name", String.class);
         path = r.getPath();
     }
 
-    public String getTitle() {
-        return title;
+    public String getName() {
+        return name;
     }
 
     public String getPath() {
         return path;
-    }
-
-    public String [] getTags() {
-        return tags;
     }
 }

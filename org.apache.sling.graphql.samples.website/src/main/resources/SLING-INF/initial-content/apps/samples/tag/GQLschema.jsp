@@ -18,10 +18,10 @@
 --%>
 
 <%--
-Generating the schemas in JSP might not be the best way
-but it works for these initial tests - we might create
-a "passthrough" script engine, or one that extracts the
-additional DataFetcher information that we need.
+TODO we should be able to consolidate our models or
+at least factor out their common parts.
+Also, generating the schemas in JSP might not be the
+best way, but it works for these initial tests.
 --%>
 
 type Query {
