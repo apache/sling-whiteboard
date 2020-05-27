@@ -69,14 +69,16 @@
         </div>
         
         <div class="tags">
-          Tags:
-          {{#each data.article.tags}}
-            <span class="tag">
-              <a href="/tags/{{this}}.html">{{this}}</a>
-            </span>
-          {{/each}}
-          - Find articles <a href="/tags/{{data.article.tagsQuery}}.html">with all these tags</a>
-          <hr/>
+          {{#if data.article.tags}}
+            Tags:
+            {{#each data.article.tags}}
+              <span class="tag">
+                <a href="/tags/{{this}}.html">{{this}}</a>
+              </span>
+              {{/each}}
+              - Find articles <a href="/tags/{{data.article.tagsQuery}}.html">with all these tags</a>
+              <hr/>
+          {{/if}}
         </div>
         
         <div class="seeAlso">
