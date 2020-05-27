@@ -42,6 +42,10 @@ public class SamplesDataFetcherProvider implements DataFetcherProvider {
             return new ValueMapDataFetcher(r);
         } else if(TagQueryDataFetcher.NAME.equals(name)) {
             return new TagQueryDataFetcher(r);
+        } else if(ArticlesBySectionFetcher.NAME.equals(name)) {
+            return new ArticlesBySectionFetcher(r);
+        } else if(NavigationDataFetcher.NAME.equals(name)) {
+            return new NavigationDataFetcher(r);
         }
         return null;
     }
