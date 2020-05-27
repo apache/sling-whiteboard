@@ -40,6 +40,8 @@ public class SamplesDataFetcherProvider implements DataFetcherProvider {
             return new SeeAlsoDataFetcher(r);
         } else if(ValueMapDataFetcher.NAME.equals(name)) {
             return new ValueMapDataFetcher(r);
+        } else if(TagQueryDataFetcher.NAME.equals(name)) {
+            return new TagQueryDataFetcher(r);
         }
         return null;
     }

@@ -19,52 +19,54 @@
 
 package org.apache.sling.graphql.samples.website;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ValueMap;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 
-class SeeAlsoDataFetcher implements DataFetcher<Object> {
+class TagQueryDataFetcher implements DataFetcher<Object> {
 
-    public static final String NAME = "seeAlso";
+    public static final String NAME = "tagQuery";
 
     private final Resource resource;
 
-    SeeAlsoDataFetcher(Resource r) {
+    TagQueryDataFetcher(Resource r) {
         this.resource = r;
     }
 
-    private static ArticleRef toArticleRef(ResourceResolver resolver, String nodeName) {
-        final String jcrQuery = "/jcr:root/content/articles//" + nodeName;
-        final Iterator<Resource> it = resolver.findResources(jcrQuery, "xpath");
-        if(!it.hasNext()) {
-            throw new RuntimeException("No Resource found:" + jcrQuery);
+    static String jcrQuery(String ... tags) {
+        // Build a query like
+        //  /jcr:root/content/articles//*[@tags = "panel" and @tags = "card"]
+        final StringBuilder sb = new StringBuilder("/jcr:root/content/articles//*[");
+        for(int i=0 ; i < tags.length; i++) {
+            if(i > 0) {
+                sb.append(" and ");
+            }
+            sb.append("@tags=\"").append(tags[i]).append("\"");
         }
-        final ArticleRef result = new ArticleRef(it.next());
-        if(it.hasNext()) {
-            throw new RuntimeException("More than one Resource found:" + jcrQuery);
-        }
-        return result;
+        sb.append("]");
+        return sb.toString();
     }
 
     @Override
     public Object get(DataFetchingEnvironment environment) throws Exception {
-
-        // Our "see also" field only contains node names - this demonstrates
-        // using a query to get their full paths
-        // 
+        final List<ArticleRef> result = new ArrayList<>();
         final ValueMap vm = resource.adaptTo(ValueMap.class);
         if(vm != null) {
-            return Arrays
-                .stream(vm.get(NAME, String[].class))
-                .map(it -> toArticleRef(resource.getResourceResolver(), it))
-                .toArray();
+            final String [] tags = vm.get("tags", String[].class);
+            if(tags != null) {
+                final Iterator<Resource> it = resource.getResourceResolver().findResources(jcrQuery(tags), "xpath");
+                // TODO should stop/paginate if too many results
+                while(it.hasNext()) {
+                    result.add(new ArticleRef(it.next()));
+                }
+            }
         }
-        return null;
+        return result.toArray();
     }
 }
