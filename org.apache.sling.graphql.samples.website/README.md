@@ -5,12 +5,15 @@ This is a work in progress demo of the Sling GraphQL Core.
 
 ## Status
 
-At this point this module just provides a setup that starts the GraphQL Core module,
-with the GraphQL Servlet active at `/graphql` and some sample content under
-`/content/articles`.
+A first version is implemented with server-side GraphQL queries to demonstrate the simple
+content aggregation that that provides, along with client-side Handlebars templates for
+the demo.
 
-Until we flesh this out, you'll need to add your own schemas and components
-to run GraphQL queries.
+http://localhost:8080/content/graphql-website-demo.html is the entry point, after starting
+this as described below.
+
+The GraphQL schemas and `DataFetchers` that have been implemented will be usable for more
+traditional client-side GraphQL queries as well, once that's setup.
 
 ## How to run this
 
@@ -25,6 +28,4 @@ Then start the demo Sling instance using
     -s src/main/resources/features/feature-sling12.json \
     -af src/main/resources/features/feature-graphql-example-website.json 
 
-And open http://localhost:8080/content/graphql-website-demo.html
-
-TODO: add GraphiQL instructions
+And open the above mentioned start page.
