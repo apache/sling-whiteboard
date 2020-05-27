@@ -29,10 +29,15 @@ type Query {
   # to be able to use the default graphql-java 
   # PropertiesDataFetcher on (most of) its values
   ## fetch:samples/tagQuery
-  articlesByTag : [ArticleRef]
+  tagQuery: TagQuery
 
   ## fetch:samples/navigation
   navigation: Navigation
+}
+
+type TagQuery {
+  query: [String]
+  articles : [ArticleRef]
 }
 
 type Navigation {

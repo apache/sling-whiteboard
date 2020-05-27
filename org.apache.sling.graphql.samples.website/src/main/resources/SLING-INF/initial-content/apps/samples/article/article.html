@@ -80,6 +80,7 @@
         </div>
         
         <div class="seeAlso">
+          {{#if data.article.seeAlso}}
           <h2>See Also</h2>
           <ul>
             {{#each data.article.seeAlso}}
@@ -89,6 +90,7 @@
             {{/each}}
           </ul>
           <hr/>
+          {{/if}}
         </div>
 
         <div class="text">

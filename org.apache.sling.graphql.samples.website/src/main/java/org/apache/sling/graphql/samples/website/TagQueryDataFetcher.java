@@ -20,8 +20,10 @@
 package org.apache.sling.graphql.samples.website;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ValueMap;
@@ -55,18 +57,22 @@ class TagQueryDataFetcher implements DataFetcher<Object> {
 
     @Override
     public Object get(DataFetchingEnvironment environment) throws Exception {
-        final List<ArticleRef> result = new ArrayList<>();
+        final Map<String, Object> result = new HashMap<>();
+        final List<ArticleRef> articles = new ArrayList<>();
         final ValueMap vm = resource.adaptTo(ValueMap.class);
         if(vm != null) {
             final String [] tags = vm.get("tags", String[].class);
             if(tags != null) {
+                result.put("articles", articles);
+                result.put("query", tags);
+
                 final Iterator<Resource> it = resource.getResourceResolver().findResources(jcrQuery(tags), "xpath");
                 // TODO should stop/paginate if too many results
                 while(it.hasNext()) {
-                    result.add(new ArticleRef(it.next()));
+                    articles.add(new ArticleRef(it.next()));
                 }
             }
         }
-        return result.toArray();
+        return result;
     }
 }

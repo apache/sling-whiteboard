@@ -56,9 +56,9 @@
           <hr/>
       </div>
       
-      <h1>Articles with tag (TODO: which tag?)</h1>
+      <h1>Articles with tags "{{data.tagQuery.query}}"</h1>
           <ul>
-            {{#each data.articlesByTag}}
+            {{#each data.tagQuery.articles}}
               <li class="seeAlso">
                 <a href="{{this.path}}.html">{{this.title}}</a>
               </li>
