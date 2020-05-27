@@ -41,7 +41,10 @@
               var template = Handlebars.compile($("#content").html());
               result.data.article.tagsQuery = "";
               for(i in result.data.article.tags) {
-                result.data.article.tagsQuery += result.data.article.tags[i] + "+";
+                if(result.data.article.tagsQuery.length > 0) {
+                  result.data.article.tagsQuery +="+";
+                }
+                result.data.article.tagsQuery += result.data.article.tags[i];
               }
               $("#content").html(template({ article : result.data.article }));
             }
