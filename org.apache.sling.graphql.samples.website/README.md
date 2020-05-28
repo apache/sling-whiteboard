@@ -22,7 +22,8 @@ http://localhost:8080/content/graphql-website-demo.html is the entry point, afte
 this as described below.
 
 The rendering is based on JSON content that's aggregated server-side using GraphQL queries
-to provide all the page content, navigation etc. in a single request.
+to provide all the page content, navigation etc. in a single request. Add `.json` to any
+demo website URL to see that.
 
 This is just an initial prototype. As a next step I'd like to render the article pages using
 server-side Handlebars templates and implement a few single-page applications for search
@@ -30,7 +31,7 @@ and browsing. While keeping the articles rendering server-side (so that they mak
 for Web search engines for example) and ideally using the same languages (GraphQL and
 Handlebars) either server- or client-side.
 
-## Client-side GraphQL queries
+## Client-side GraphQL queries
 
 Client-side queries work using an external GraphiQL client (or any suitable client) that
 talks to http://localhost:8080/graphql.json
