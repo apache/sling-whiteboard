@@ -54,16 +54,6 @@ class SeeAlsoDataFetcher implements DataFetcher<Object> {
         return result;
     }
 
-    private String getSourcePath(DataFetchingEnvironment env) {
-        String result = null;
-        final Object o = env.getSource();
-        if(o instanceof Map) {
-            final Map<?, ?> m = (Map)o;
-            result = String.valueOf(m.get("path"));
-        }
-        return result;
-    }
-
     @Override
     public Object get(DataFetchingEnvironment env) throws Exception {
 

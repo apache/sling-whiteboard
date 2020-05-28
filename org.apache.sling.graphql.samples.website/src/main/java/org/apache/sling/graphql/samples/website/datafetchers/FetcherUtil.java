@@ -26,6 +26,9 @@ import graphql.schema.DataFetchingEnvironment;
 
 class FetcherUtil {
 
+    private FetcherUtil() {
+    }
+
     /** Return the "source" Resource to use, preferably the one provided
      *  by the DataFetchingEnvironment, otherwise the supplied base Resource.
      */
@@ -34,7 +37,7 @@ class FetcherUtil {
         String path = null;
         final Object o = env.getSource();
         if(o instanceof Map) {
-            final Map<?, ?> m = (Map)o;
+            final Map<?, ?> m = (Map<?,?>)o;
             path = String.valueOf(m.get("path"));
         }
         if(path != null) {
