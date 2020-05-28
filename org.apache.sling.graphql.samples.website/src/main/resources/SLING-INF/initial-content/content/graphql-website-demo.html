@@ -32,15 +32,51 @@
         <div>
           <p>To navigate the content, start at <a href="/articles">/articles</a>.</p>
         </div>
-
+        
+        <h2>Under the hood</h2>
+        
+        <p>
+        Some of the links below require <a href="/system/sling/form/login">logging in as admin</a> first 
+        (by default that's <em>admin:admin</em>).
+        
+        <p>
+        Taking <a href="/content/articles/music/christine-macgyver-on-the-capacitor-of-primary-libero-dolore-aka-rss.html">
+          Christine MacGyver on the capacitor of primary 'libero dolore' (aka RSS)</a>
+          as an example:
+        
         <ul>
           <li>
-            <a href="/content/articles/news/willow-mclaughlin-on-the-capacitor-of-back-end-similique-voluptas-aka-http.json">
-              Content aggregation using a server-side GraphQL query</a> 
-              (raw json data <a href="/content/articles/news/willow-mclaughlin-on-the-capacitor-of-back-end-similique-voluptas-aka-http.rawjson">here</a>)
-              <br/>
-              The corresponding scripts are in the <a href="/bin/browser.html/apps/samples/article">/apps/samples/article</a> folder.
+              The GraphQL schema is retrieved with an internal Sling request with the 
+              <a href="/content/articles/music/christine-macgyver-on-the-capacitor-of-primary-libero-dolore-aka-rss.GQLschema">GQLschema extension</a>
           </li>
+          <li>
+            The server-side GraphQL query is defined <a href="/apps/samples/article/json.gql">in a json.gql script</a>.
+          </li>
+          <li>
+            Based on that script's name, according to the usual Sling conventions it is used by the <em>Sling GraphQL ScriptEngine</em> to execute
+            the query and returns <a href="/content/articles/music/christine-macgyver-on-the-capacitor-of-primary-libero-dolore-aka-rss.json">a simple JSON document</a>
+            that provides everything needed to render the page in one request.
+            <br/>
+            That document includes navigation information (the article categories) and processed
+            content like the "seeAlso" links which are fleshed out to include the full path and title of the referenced articles, starting, from the
+            article filenames present in the article content. This aggregation happens in the <em>DataFetcher</em> Java classes of the demo bundle.
+            <br/>
+          </li>
+          <li>
+            For this demo, the <em>rawjson</em> extension provides 
+            <a href="/content/articles/music/christine-macgyver-on-the-capacitor-of-primary-libero-dolore-aka-rss.rawjson">the raw JSON rendering</a>
+            of the default Sling GET servlet, for comparison.
+          </li>
+          <li>
+            The rendering currently happens on the client side using a <a href="/apps/samples/article/article.html">Handlebars template</a>. The (tentative)
+            plan is to move this server-side for the article renderings, and implement a tags browsing page using GraphQL queries and client-side Handlebars
+            rendering to demonstrate using the same query and rendering languages either server- or client-side.
+          </li>
+        </ul>
+
+        More useful links:
+        
+        <ul>
           <li>
             <a href="/content/tags/card+panel.json">Tag queries using a custom ResourceResolver + server-side GraphQL queries</a>
             - raw JSON <a href="/content/tags/card+panel.rawjson">here</a>.
