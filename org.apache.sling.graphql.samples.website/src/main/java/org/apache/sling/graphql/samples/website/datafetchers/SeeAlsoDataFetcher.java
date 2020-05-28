@@ -54,13 +54,23 @@ class SeeAlsoDataFetcher implements DataFetcher<Object> {
         return result;
     }
 
+    private String getSourcePath(DataFetchingEnvironment env) {
+        String result = null;
+        final Object o = env.getSource();
+        if(o instanceof Map) {
+            final Map<?, ?> m = (Map)o;
+            result = String.valueOf(m.get("path"));
+        }
+        return result;
+    }
+
     @Override
-    public Object get(DataFetchingEnvironment environment) throws Exception {
+    public Object get(DataFetchingEnvironment env) throws Exception {
 
         // Our "see also" field only contains node names - this demonstrates
         // using a query to get their full paths
         // 
-        final ValueMap vm = resource.adaptTo(ValueMap.class);
+        final ValueMap vm = FetcherUtil.getSourceResource(env, resource).adaptTo(ValueMap.class);
         if(vm != null) {
             return Arrays
                 .stream(vm.get(NAME, String[].class))

@@ -10,7 +10,7 @@
       "id" : "org.apache.sling:org.apache.sling.graphql.core:0.0.1-SNAPSHOT",
       "configurations" : {
         "org.apache.sling.graphql.core.GraphQLServlet~default" : {
-          "sling.servlet.resourceTypes" : "graphql/servlet",
+          "sling.servlet.resourceTypes" : "samples/servlet",
           "sling.servlet.extensions": "json",
           "sling.servlet.methods": [ "GET", "POST" ]
         }
@@ -41,7 +41,7 @@
     "allow   jcr:read on /graphql",
     "end",
     "set properties on /graphql",
-    "set sling:resourceType{String} to graphql/servlet",
+    "set sling:resourceType{String} to samples/servlet",
     "end"
   ]
 }

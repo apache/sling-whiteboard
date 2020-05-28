@@ -46,6 +46,8 @@ public class SamplesDataFetcherProvider implements DataFetcherProvider {
             return new ArticlesBySectionFetcher(r);
         } else if(NavigationDataFetcher.NAME.equals(name)) {
             return new NavigationDataFetcher(r);
+        } else if(ArticlesWithTextFetcher.NAME.equals(name)) {
+            return new ArticlesWithTextFetcher(r);
         }
         return null;
     }
