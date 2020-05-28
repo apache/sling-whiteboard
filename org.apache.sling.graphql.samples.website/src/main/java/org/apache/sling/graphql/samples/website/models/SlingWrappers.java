@@ -32,10 +32,9 @@ public class SlingWrappers {
     }
 
     public static Map<String, Object> resourceWrapper(Resource r) {
-        // Quick hack to add "path" to the map
-        final Map<String, Object> result = new HashMap<>();
-        result.putAll(r.adaptTo(ValueMap.class));
-        result.put(PATH, r.getPath());
-        return result;
+        // Add useful Resource properties to the ValueMap
+        final Map<String, Object> addProps = new HashMap<>();
+        addProps.put(PATH, r.getPath());
+        return new ReadOnlyFallbackMap<>(r.adaptTo(ValueMap.class), addProps);
     }
 }
