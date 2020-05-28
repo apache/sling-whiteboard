@@ -30,29 +30,22 @@ type Section {
   path: String
   
   ## fetch:samples/articlesBySection
-  articles: [ArticleRef]
+  articles: [Article]
 }
 
-type Article { 
+type Article {
+  path: String
   title: String
   tags: [String]
+  text: String
 
   # seeAlso field needs enhancement
   # to include full paths + titles
-  #
   ## fetch:samples/seeAlso
-  seeAlso: [ArticleRef]
-
-  text: String
+  seeAlso: [Article]
 }
 
 type TagQuery {
   query: [String]
-  articles : [ArticleRef]
-}
-
-type ArticleRef {
-  title: String
-  path: String
-  tags: [String]
+  articles : [Article]
 }
