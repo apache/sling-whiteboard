@@ -1,7 +1,7 @@
 Apache Sling GraphQL demo website
 ----
 
-This is a work in progress demo of the Sling GraphQL Core.
+This is a work in progress demo of the [Sling GraphQL Core](https://github.com/apache/sling-org-apache-sling-graphql-core/).
 
 It demonstrates both server-side GraphQL queries, used for content aggregation, and the 
 more traditional client-side queries, using the same GraphQL schemas and data fetching
