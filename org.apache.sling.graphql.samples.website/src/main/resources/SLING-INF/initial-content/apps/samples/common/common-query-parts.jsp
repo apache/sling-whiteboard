@@ -17,11 +17,5 @@
 * under the License.
 --%>
 
-type Query {
-  ## fetch:samples/currentResource
-  section: Section
-
-  <%@include file="../common/common-query-parts.jsp" %>
-}
-
-<%@include file="../common/GQLschema.jsp" %>
+## fetch:samples/navigation
+navigation: Navigation

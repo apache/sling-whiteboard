@@ -17,40 +17,11 @@
 * under the License.
 --%>
 
-<%--
-TODO we should be able to consolidate our models or
-at least factor out their common parts.
-Also, generating the schemas in JSP might not be the
-best way, but it works for these initial tests.
---%>
-
 type Query {
-  # Convert the current Resource to its valueMap
-  # to be able to use the default graphql-java 
-  # PropertiesDataFetcher on (most of) its values
   ## fetch:samples/tagQuery
   tagQuery: TagQuery
 
-  ## fetch:samples/navigation
-  navigation: Navigation
+  <%@include file="../common/common-query-parts.jsp" %>
 }
 
-type TagQuery {
-  query: [String]
-  articles : [ArticleRef]
-}
-
-type Navigation {
-  sections: [Section]
-}
-
-type Section { 
-  name: String
-  path: String
-}
-
-type ArticleRef {
-  title: String
-  tags: [String]
-  path: String
-}
+<%@include file="../common/GQLschema.jsp" %>

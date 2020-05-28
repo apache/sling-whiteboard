@@ -17,43 +17,11 @@
 * under the License.
 --%>
 
-<%--
-TODO we should be able to consolidate our models or
-at least factor out their common parts.
-Also, generating the schemas in JSP might not be the
-best way, but it works for these initial tests.
---%>
-
 type Query {
   ## fetch:samples/currentResource
   article : Article
 
-  ## fetch:samples/navigation
-  navigation: Navigation
+  <%@include file="../common/common-query-parts.jsp" %>
 }
 
-type Navigation {
-  sections: [Section]
-}
-
-type Section { 
-  name: String
-  path: String
-}
-
-type Article { 
-  title: String
-  tags: [String]
-
-  # Convert the "see also" article node names
-  # to references with title + full path
-  ## fetch:samples/seeAlso
-  seeAlso: [ArticleRef]
-
-  text: String
-}
-
-type ArticleRef {
-  title: String
-  path: String
-}
+<%@include file="../common/GQLschema.jsp" %>

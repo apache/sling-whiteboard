@@ -17,11 +17,42 @@
 * under the License.
 --%>
 
-type Query {
-  ## fetch:samples/currentResource
-  section: Section
+# This is the common parts of our "samples" schemas
+# It is included (using JSP includes for now) in
+# the resourceType-specific schemas
 
-  <%@include file="../common/common-query-parts.jsp" %>
+type Navigation {
+  sections: [Section]
 }
 
-<%@include file="../common/GQLschema.jsp" %>
+type Section { 
+  name: String
+  path: String
+  
+  ## fetch:samples/articlesBySection
+  articles: [ArticleRef]
+}
+
+type Article { 
+  title: String
+  tags: [String]
+
+  # seeAlso field needs enhancement
+  # to include full paths + titles
+  #
+  ## fetch:samples/seeAlso
+  seeAlso: [ArticleRef]
+
+  text: String
+}
+
+type TagQuery {
+  query: [String]
+  articles : [ArticleRef]
+}
+
+type ArticleRef {
+  title: String
+  path: String
+  tags: [String]
+}
