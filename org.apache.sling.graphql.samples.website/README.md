@@ -7,7 +7,7 @@ It demonstrates both server-side GraphQL queries, used for content aggregation, 
 more traditional client-side queries, using the same GraphQL schemas and data fetching
 Java components for both variants.
 
-Besides the page rendering code there's not much: GraphQL schema definitions and a few
+Besides the page rendering code there's not much: GraphQL schema and query definitions and a few
 Java classes used for aggregating or enhancing content and for content queries.
 
 For now there's no pagination of query results, just arbitrary limits on the number
