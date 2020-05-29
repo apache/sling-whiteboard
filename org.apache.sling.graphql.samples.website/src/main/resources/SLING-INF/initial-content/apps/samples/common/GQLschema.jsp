@@ -22,6 +22,7 @@
 # the resourceType-specific schemas
 
 type Navigation {
+  root: String
   sections: [Section]
 }
 

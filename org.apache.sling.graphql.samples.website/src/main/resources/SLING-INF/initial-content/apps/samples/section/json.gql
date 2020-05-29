@@ -18,6 +18,7 @@
 # Define the query for this resource type, selector and extension
 { 
   navigation {
+    root
     sections {
       path
       name
