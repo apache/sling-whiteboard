@@ -47,7 +47,7 @@
                 <a href="/tags/{{this}}.html">{{this}}</a>
               </span>
               {{/each}}
-              - Find articles <a href="/tags/{{data.article.tagsQuery}}.html">with all these tags</a>
+              - Find articles <a href='/tags/{{join data.article.tags "+"}}.html'>with all these tags</a>
               <hr/>
           {{/if}}
         </div>

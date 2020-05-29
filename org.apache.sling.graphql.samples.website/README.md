@@ -90,9 +90,9 @@ And open the above mentioned start page.
 
 ## Under the hood
 The following explanations apply to the article and navigation pages. The (upcoming) single-page apps
-will use different mechanisms.
+will use similar mechanisms client-side.
 
-The scripts and source code mentioned below are foud in the source code and initial content of this
+The scripts and source code mentioned below are found in the source code and initial content of this
 demo module.
 
 The GraphQL core retrieves a schema for the current Sling Resource by making a request with 

@@ -34,6 +34,7 @@ import javax.script.ScriptException;
 import com.cedarsoftware.util.io.JsonReader;
 import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.Template;
+import com.github.jknack.handlebars.helper.StringHelpers;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.sling.api.resource.Resource;
@@ -50,6 +51,8 @@ import org.apache.sling.servlethelpers.MockSlingHttpServletResponse;
  *  The JSON representation of the current Resource is retrieved
  *  using an internal request with the Resource path + ".json", and
  *  the result converted to a Handlebars-friendly Map of Maps.
+ * 
+ *  See https://github.com/jknack/handlebars.java for Handlebars docs
  */
 public class HandlebarsScriptEngine extends AbstractScriptEngine {
 
@@ -65,7 +68,7 @@ public class HandlebarsScriptEngine extends AbstractScriptEngine {
         final PrintWriter out = (PrintWriter) context.getBindings(ScriptContext.ENGINE_SCOPE).get(SlingBindings.OUT);
 
         try {
-            final Handlebars handlebars = new Handlebars();
+            final Handlebars handlebars = setupHandlebars();
             final Template template = handlebars.compileInline(script);
             out.println(template.apply(getData(resource)));
         } catch(IOException ioe) {
@@ -74,6 +77,12 @@ public class HandlebarsScriptEngine extends AbstractScriptEngine {
             throw up;
         }
         return null;
+    }
+
+    private Handlebars setupHandlebars() {
+        final Handlebars result = new Handlebars();
+        result.registerHelpers(StringHelpers.class);
+        return result;
     }
 
     /** We might do this with a BindingsValuesProvider? */

@@ -34,7 +34,7 @@
           <hr/>
       </div>
       
-      <h1>Articles with tags "{{data.tagQuery.query}}"</h1>
+      <h1>Articles with tags "{{join data.tagQuery.query ','}}"</h1>
           <ul>
             {{#each data.tagQuery.articles}}
               <li class="seeAlso">
