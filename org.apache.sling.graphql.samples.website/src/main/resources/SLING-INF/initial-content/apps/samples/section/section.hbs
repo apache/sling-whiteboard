@@ -19,55 +19,32 @@
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/-->
 <html>
     <head>
-        <title data-sly-set.title="${properties.title}">${title}</title>
-
+        <title>{{data.title}}</title>
         <link rel="stylesheet" href="https://fonts.xz.style/serve/inter.css">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1.1.2/new.min.css">
-
-        <script
-          src="https://code.jquery.com/jquery-3.5.1.js"
-          integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
-          crossorigin="anonymous">
-        </script>
-          
-        <script
-          src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js">
-        </script>
-          
-        <script>
-          $.ajax({
-            url: document.URL + ".json",
-            success: function( result ) {
-              var template = Handlebars.compile($("#content").html());
-              $("#content").html(template({ data : result.data }));
-            }
-          });
-        </script>
-          
     </head>
     <body>
       <div id="content">
         <div id="navigation">
-          {{#each data.navigation.sections}}
-            <span class="section">
-              <a href="{{this.path}}.html">{{this.name}}</a>
-            </span>
-          {{/each}}
+            {{#each data.navigation.sections}}
+              <span class="section">
+                <a href="{{this.path}}.html">{{this.name}}</a>
+              </span>
+            {{/each}}
+            <hr/>
+        </div>
+        <div class="title">
+          <h1>{{data.section.name}}</h1>
           <hr/>
-      </div>
-      
-      <h1>Articles with tags "{{data.tagQuery.query}}"</h1>
+        </div>
+        <div class="articles">
           <ul>
-            {{#each data.tagQuery.articles}}
+            {{#each data.section.articles}}
               <li class="seeAlso">
                 <a href="{{this.path}}.html">{{this.title}}</a>
               </li>
-              Tags:
-              {{#each this.tags}}
-                <span class="tag">{{this}}</span>
-              {{/each}}
             {{/each}}
           </ul>
-      </div>
+        </div>
     </body>
 </html>

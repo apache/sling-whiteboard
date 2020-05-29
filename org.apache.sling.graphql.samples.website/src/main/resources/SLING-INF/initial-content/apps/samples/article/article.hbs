@@ -19,31 +19,9 @@
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/-->
 <html>
     <head>
-        <title data-sly-set.title="${properties.title}">${title}</title>
-        
+        <title>{{data.title}}</title>
         <link rel="stylesheet" href="https://fonts.xz.style/serve/inter.css">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1.1.2/new.min.css">
-
-        <script
-          src="https://code.jquery.com/jquery-3.5.1.js"
-          integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
-          crossorigin="anonymous">
-        </script>
-          
-        <script
-          src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js">
-        </script>
-          
-        <script>
-          $.ajax({
-            url: document.URL + ".json",
-            success: function( result ) {
-              var template = Handlebars.compile($("#content").html());
-              $("#content").html(template({ data : result.data }));
-            }
-          });
-        </script>
-          
     </head>
     <body>
       <div id="content">
@@ -55,18 +33,44 @@
             {{/each}}
             <hr/>
         </div>
+        
         <div class="title">
-          <h1>{{data.section.name}}</h1>
+          <h1>{{data.article.title}}</h1>
           <hr/>
         </div>
-        <div class="articles">
+        
+        <div class="tags">
+          {{#if data.article.tags}}
+            Tags:
+            {{#each data.article.tags}}
+              <span class="tag">
+                <a href="/tags/{{this}}.html">{{this}}</a>
+              </span>
+              {{/each}}
+              - Find articles <a href="/tags/{{data.article.tagsQuery}}.html">with all these tags</a>
+              <hr/>
+          {{/if}}
+        </div>
+        
+        <div class="seeAlso">
+          {{#if data.article.seeAlso}}
+          <h2>See Also</h2>
           <ul>
-            {{#each data.section.articles}}
+            {{#each data.article.seeAlso}}
               <li class="seeAlso">
                 <a href="{{this.path}}.html">{{this.title}}</a>
               </li>
             {{/each}}
           </ul>
+          <hr/>
+          {{/if}}
         </div>
+
+        <div class="text">
+          {{{data.article.text}}}
+          <hr/>
+        </div>
+        
+      </div>
     </body>
 </html>
