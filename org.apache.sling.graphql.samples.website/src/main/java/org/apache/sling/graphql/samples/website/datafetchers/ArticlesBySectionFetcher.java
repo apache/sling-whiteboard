@@ -30,6 +30,7 @@ import org.apache.sling.graphql.samples.website.models.SlingWrappers;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 
+/** Find articles that belong to a given section (business, news etc) */
 class ArticlesBySectionFetcher implements DataFetcher<Object> {
 
     public static final String NAME = "articlesBySection";
@@ -41,9 +42,12 @@ class ArticlesBySectionFetcher implements DataFetcher<Object> {
     }
 
     @Override
-    public Object get(DataFetchingEnvironment environment) throws Exception {
+    public Object get(DataFetchingEnvironment env) throws Exception {
         // TODO should paginate instead
         final int maxArticles = 42;
+
+        final Resource currentResource = FetcherUtil.getSourceResource(env, section);
+
         final List<Map<String, Object>> result = new ArrayList<>();
         final Iterable<Resource> it = () -> section.getResourceResolver().getChildren(section).iterator();
         StreamSupport.stream(it.spliterator(), false)

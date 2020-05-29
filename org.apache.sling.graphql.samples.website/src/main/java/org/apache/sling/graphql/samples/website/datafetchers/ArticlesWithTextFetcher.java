@@ -30,6 +30,7 @@ import org.apache.sling.graphql.samples.website.models.SlingWrappers;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 
+/** Find articles which contain specific text */
 class ArticlesWithTextFetcher implements DataFetcher<Object> {
 
     public static final String NAME = "articlesWithText";

@@ -32,6 +32,7 @@ import org.apache.sling.graphql.samples.website.models.SlingWrappers;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 
+/** Retrieve articles which have a given tag or set of tags  */
 class TagQueryDataFetcher implements DataFetcher<Object> {
 
     public static final String NAME = "tagQuery";

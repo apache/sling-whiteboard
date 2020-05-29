@@ -31,6 +31,9 @@ import org.apache.sling.graphql.samples.website.models.SlingWrappers;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 
+/** Retrieve navigation information for our website: sections, content
+ *  root etc.
+ */
 class NavigationDataFetcher implements DataFetcher<Object> {
 
     public static final String NAME = "navigation";

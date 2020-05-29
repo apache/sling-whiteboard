@@ -31,6 +31,7 @@ import org.apache.sling.graphql.samples.website.models.SlingWrappers;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 
+/** Retrieve additional information for our articles 'seeAlso' field */
 class SeeAlsoDataFetcher implements DataFetcher<Object> {
 
     public static final String NAME = "seeAlso";
@@ -41,9 +42,15 @@ class SeeAlsoDataFetcher implements DataFetcher<Object> {
         this.resource = r;
     }
 
+    /** For "see also", our articles have just the article name but no path or section.
+     *  This maps those names (which are Sling Resource names) to their Resource, so
+     *  we can use the full path + title to render links.
+     */
     private static Map<String, Object> toArticleRef(ResourceResolver resolver, String nodeName) {
         final String jcrQuery = "/jcr:root/content/articles//" + nodeName;
         final Iterator<Resource> it = resolver.findResources(jcrQuery, "xpath");
+
+        // We want exactly one result
         if(!it.hasNext()) {
             throw new RuntimeException("No Resource found:" + jcrQuery);
         }
@@ -51,6 +58,7 @@ class SeeAlsoDataFetcher implements DataFetcher<Object> {
         if(it.hasNext()) {
             throw new RuntimeException("More than one Resource found:" + jcrQuery);
         }
+
         return result;
     }
 

@@ -29,6 +29,9 @@ import org.osgi.service.component.annotations.Component;
 
 import java.io.IOException;
 
+/** Used by the GraphQL Core to select the appropriate DataFetcher,
+ *  based on ##fetcher annotations in the schemas.
+ */
 @Component(service = DataFetcherProvider.class, property = { "namespace=samples" })
 public class SamplesDataFetcherProvider implements DataFetcherProvider {
 

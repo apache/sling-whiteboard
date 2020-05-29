@@ -25,6 +25,7 @@ import org.apache.sling.graphql.samples.website.models.SlingWrappers;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 
+/** Convert the current SlingResource to a GraphQL-friendly Map */
 class CurrentResourceFetcher implements DataFetcher<Object> {
 
     public static final String NAME = "currentResource";
