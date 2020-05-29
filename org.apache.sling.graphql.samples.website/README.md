@@ -13,15 +13,12 @@ Java classes used for aggregating or enhancing content and for content queries.
 For now there's no pagination of query results, just arbitrary limits on the number
 of results returned.
 
-## Demo Website
+## Demo Website using server-side GraphQL
 
-A website with rich navigation is implemented with server-side GraphQL queries and client-side
-Handlebars templates for HTML rendering.
+The entry point for the demo website (after starting this as described below) 
+is http://localhost:8080/content/articles 
 
-http://localhost:8080/content/articles is the entry point, after starting
-this as described below.
-
-The articles and some navigation pages are rendered using server-side Handlebars templates,
+The articles and navigation pages are rendered using server-side Handlebars templates,
 which retrieve the aggregated JSON content of the current page by making an internal request
 to the current path with a `.json` extension.
 
@@ -36,7 +33,7 @@ client-side Handlebars templates.
 
 With this we'll get the best of both worlds: server-side queries and rendering for the article
 pages (so that they make sense for Web search engines for example) and client-side queries and
-rendering for the single-page applications that our website needs. Using the same languages
+rendering for the few single-page applications that our website needs. Using the same languages
 (GraphQL and Handlebars) in both cases, with a small amount of Java code to implement
 the content querying and aggregation code.
 
