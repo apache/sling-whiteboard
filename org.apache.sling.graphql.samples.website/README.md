@@ -18,18 +18,28 @@ of results returned.
 A website with rich navigation is implemented with server-side GraphQL queries and client-side
 Handlebars templates for HTML rendering.
 
-http://localhost:8080/content/graphql-website-demo.html is the entry point, after starting
+http://localhost:8080/content/articles is the entry point, after starting
 this as described below.
 
-The rendering is based on JSON content that's aggregated server-side using GraphQL queries
-to provide all the page content, navigation etc. in a single request. Add `.json` to any
-demo website URL to see that.
+The articles and some navigation pages are rendered using server-side Handlebars templates,
+which retrieve the aggregated JSON content of the current page by making an internal request
+to the current path with a `.json` extension.
 
-This is just an initial prototype. As a next step I'd like to render the article pages using
-server-side Handlebars templates and implement a few single-page applications for search
-and browsing. While keeping the articles rendering server-side (so that they make sense
-for Web search engines for example) and ideally using the same languages (GraphQL and
-Handlebars) either server- or client-side.
+That aggregated JSON content is retrieved using server-side GraphQL queries so that a single
+request provides all the page content and navigation.
+
+Those `.json` URLs are also accessible from the outside if client-side rendering is preferred.
+
+As a next step, to demonstrate "universal querying and rendering" the plan is to implement
+a small single-page application for content browsing, using client-side GraphQL queries and
+client-side Handlebars templates.
+
+With this we'll get the best of both worlds: server-side queries and rendering for the article
+pages (so that they make sense for Web search engines for example) and client-side queries and
+rendering for the single-page applications that our website needs.
+
+Using GraphQL and Handlebars in both cases, with a small quantity simple Java code to implement
+the content querying and aggregation code.
 
 ## Client-side GraphQL queries
 
@@ -77,3 +87,28 @@ Then start the demo Sling instance using
     -af src/main/resources/features/feature-graphql-example-website.json 
 
 And open the above mentioned start page.
+
+## Under the hood
+The following explanations apply to the article and navigation pages. The (upcoming) single-page apps
+will use different mechanisms.
+
+The scripts and source code mentioned below are foud in the source code and initial content of this
+demo module.
+
+The GraphQL core retrieves a schema for the current Sling Resource by making a request with 
+the `.GQLschema` extension. You can see the schemas by adding that extension to article and navigation pages.
+
+The server-side GraphQL queries are defined in `json.gql` scripts for each resource type.
+
+Based on that script's name, according to the usual Sling conventions it is used by the Sling GraphQL
+ScriptEngine to execute the query and return a simple JSON document that provides everything needed
+to render the page in one request. You can see those JSON documents by adding a `.json` extension to
+article and navigation pages.
+
+This JSON document includes navigation information (the content sections for now) and processed content
+like the `seeAlso` links which are fleshed out by the `SeeAlsoDataFetcher` as the raw content doesn't 
+provide enough information to build meaningful links. Such `DataFetcher` are then available for both
+server-side and client-side GraphQL queries.
+
+For this demo, the `.rawjson` extension provides the default Sling JSON rendering, for comparison or
+troubleshooting purposes.
