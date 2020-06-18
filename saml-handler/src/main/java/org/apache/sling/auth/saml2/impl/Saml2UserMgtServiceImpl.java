@@ -127,7 +127,9 @@ public class Saml2UserMgtServiceImpl implements Saml2UserMgtService {
                 Group managedGroup = (Group) allGroups.next();
                 // if group has managedProperty flag set true
                 Value[] valueList = managedGroup.getProperty("managedGroup");
-                if (valueList == null && user.getGroupMembership().contains(managedGroup.getID())) {
+                if (valueList == null &&
+                        (user.getGroupMembership().contains(managedGroup.getID()) ||
+                        user.getGroupMembership().contains("/"+managedGroup.getID()))) {
                     // the group does not have the managedGroup flag
                     // AND the group is in the ext users groupMembership list
                     managedGroup.setProperty("managedGroup", vf.createValue(true));
