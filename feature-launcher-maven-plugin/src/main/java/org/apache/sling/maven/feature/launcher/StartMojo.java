@@ -19,12 +19,15 @@
 package org.apache.sling.maven.feature.launcher;
 
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.lang.ProcessBuilder.Redirect;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
@@ -54,12 +57,22 @@ public class StartMojo
     @Parameter( defaultValue = "${project.build.directory}", property = "outputDir", required = true )
     private File outputDirectory;
     
-    // TODO - support multiple dependencies and also have proper parameter names
     @Parameter(required = true)
-    private Dependency toLaunch;
-
-    @Parameter
-    private Map<String, String> frameworkProperties = new HashMap<String, String>();
+    private List<Launch> launches;
+    
+    // <launches>
+    //   <launch>
+    //     <id>...</id>
+    //     <dependency>...</dependency>
+    //     <launcherArguments>
+    //        <frameworkProperties>
+    //          <org.osgi.service.http.port>8090</org.osgi.service.http.port>
+    //        </framweworkProperties>
+    //        ...
+    //     </launcherArguments>
+    //     <environment>
+    //        <JAVA_HOME>...</JAVA_HOME>
+    //     </environment>
 
     @Component
     private ArtifactResolver resolver;
@@ -76,11 +89,6 @@ public class StartMojo
         
         try {
             RepositorySystemSession repositorySession = mavenSession.getRepositorySession();
-            Artifact artifact = toArtifact(toLaunch);
-            
-            ArtifactResult result = resolver.resolveArtifact(repositorySession, new ArtifactRequest(artifact, null, null));
-            File featureFile = result.getArtifact().getFile();
-
             
             // TODO - this should be inferred from the plugin's pom.xml dependency (not the project's pom.xml)
             Dependency featureLauncherDep = project.getDependencies().stream()
@@ -97,28 +105,79 @@ public class StartMojo
             File workDir = new File(outputDirectory, "launchers");
             workDir.mkdirs();
             
-            List<String> args = new ArrayList<>();
-            args.add(System.getenv("JAVA_HOME") + File.separatorChar + "bin" + File.separatorChar + "java");
-            args.add("-jar");
-            args.add(launcher.getAbsolutePath());
-            args.add("-f");
-            args.add(featureFile.getAbsolutePath());
+            for ( Launch launch : launches ) {
             
-            for ( var frameworkProperty : frameworkProperties.entrySet() ) {
-                args.add("-D");
-                args.add(frameworkProperty.getKey()+"="+frameworkProperty.getValue());
+                // TODO - validate it is actually a feature
+                Artifact artifact = toArtifact(launch.getFeature());
+                
+                ArtifactResult result = resolver.resolveArtifact(repositorySession, new ArtifactRequest(artifact, null, null));
+                File featureFile = result.getArtifact().getFile();
+                
+                List<String> args = new ArrayList<>();
+                args.add(System.getenv("JAVA_HOME") + File.separatorChar + "bin" + File.separatorChar + "java");
+                args.add("-jar");
+                args.add(launcher.getAbsolutePath());
+                args.add("-f");
+                args.add(featureFile.getAbsolutePath());
+                args.add("-p");
+                args.add(launch.getId()); // TODO - validate launch id is a valid file name
+                
+                for ( var frameworkProperty : launch.getLauncherArguments().getFrameworkProperties().entrySet() ) {
+                    args.add("-D");
+                    args.add(frameworkProperty.getKey()+"="+frameworkProperty.getValue());
+                }
+                
+                // TODO - add support for all arguments supported by the feature launcher
+                ProcessBuilder pb = new ProcessBuilder(args);
+                pb.redirectOutput(Redirect.INHERIT);
+                pb.redirectInput(Redirect.INHERIT);
+                pb.directory(workDir);
+                
+                getLog().info("Starting launch with id " + launch.getId());
+                
+                CountDownLatch latch = new CountDownLatch(1);
+                
+                Process process = pb.start();
+                
+                Thread monitor = new Thread("launch-monitor-" + launch.getId()) {
+                    @Override
+                    public void run() {
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+                        String line;
+                        try {
+                            while ( (line = reader.readLine()) != null ) {
+                                System.out.println(line);
+//                                getLog().info("Checking line '" + line);
+                                if ( line.contains("Framework started")) {
+//                                    getLog().info("STARTED!");
+                                    latch.countDown();
+                                    break;
+                                }
+                            }
+                        } catch (IOException e) {
+                            getLog().warn(e.getMessage(), e);
+                        }
+                    }
+                };
+                monitor.start();
+                getLog().info("Waiting for " + launch.getId() + " to start");
+                boolean started = latch.await(30, TimeUnit.SECONDS);
+                if ( !started ) {
+                    process.destroy();
+                    boolean stopped = process.waitFor(30, TimeUnit.SECONDS);
+                    if ( !stopped ) 
+                        process.destroyForcibly();
+                    throw new MojoExecutionException("Launch " + launch.getId() + " failed to start in the allocated time.");
+                }
+                
+                
+                // TODO - reliably stop started processes in case 'stop' is not invoked
+                
+                Processes.addProcess(launch.getId(), process);
             }
-            
-            // TODO - add support for all arguments supported by the feature launcher
-            ProcessBuilder pb = new ProcessBuilder(args);
-            pb.inheritIO();
-            pb.directory(workDir);
-            Process process = pb.start();
-            
-            // TODO - reliably stop started processes in case 'stop' is not invoked
-            
-            Processes.set(process);
-        } catch (ArtifactResolutionException | IOException e) {
+
+            // TODO - properly handle interrupted exception
+        } catch (ArtifactResolutionException | IOException | InterruptedException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
     }

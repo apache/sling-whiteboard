@@ -18,21 +18,36 @@
  */
 package org.apache.sling.maven.feature.launcher;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import org.apache.maven.model.Dependency;
 
-// TODO - refactor to a Mojo Component
-public class Processes {
+public class Launch {
 
-    private static final Map<String, Process> processes = new HashMap<>();
-    
-    public static void addProcess(String id, Process process) {
-        // TODO - check for duplicates
-        processes.put(id, process);
+    private String id;
+    private Dependency feature;
+    private LauncherArguments launcherArguments;
+
+    public String getId() {
+        return id;
     }
-    
-    public static Optional<Process> get(String id) {
-        return Optional.ofNullable(processes.get(id));
+
+    public void setId(String id) {
+        this.id = id;
     }
+
+    public Dependency getFeature() {
+        return feature;
+    }
+
+    public void setFeature(Dependency feature) {
+        this.feature = feature;
+    }
+
+    public LauncherArguments getLauncherArguments() {
+        return launcherArguments;
+    }
+
+    public void setLauncherArguments(LauncherArguments launcherArguments) {
+        this.launcherArguments = launcherArguments;
+    }
+
 }

@@ -20,19 +20,16 @@ package org.apache.sling.maven.feature.launcher;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
-// TODO - refactor to a Mojo Component
-public class Processes {
+public class LauncherArguments {
 
-    private static final Map<String, Process> processes = new HashMap<>();
+    private Map<String, String> frameworkProperties = new HashMap<>();
     
-    public static void addProcess(String id, Process process) {
-        // TODO - check for duplicates
-        processes.put(id, process);
+    public Map<String, String> getFrameworkProperties() {
+        return frameworkProperties;
     }
     
-    public static Optional<Process> get(String id) {
-        return Optional.ofNullable(processes.get(id));
+    public void setFrameworkProperties(Map<String, String> frameworkProperties) {
+        this.frameworkProperties = frameworkProperties;
     }
 }
