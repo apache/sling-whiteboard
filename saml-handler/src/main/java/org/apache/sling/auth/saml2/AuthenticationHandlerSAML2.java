@@ -314,7 +314,7 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
             throw new SAML2RuntimeException(e);
         }
 
-        logger.info("Request: "+ requestForIDP.getClass());
+        logger.info("Request: {}", requestForIDP.getClass());
         Helpers.logSAMLObject(requestForIDP);
 
         logger.info("Redirecting to IDP");
