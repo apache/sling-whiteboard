@@ -26,6 +26,7 @@ import java.io.InputStreamReader;
 import java.lang.ProcessBuilder.Redirect;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -122,7 +123,7 @@ public class StartMojo
                 args.add("-p");
                 args.add(launch.getId()); // TODO - validate launch id is a valid file name
                 
-                for ( var frameworkProperty : launch.getLauncherArguments().getFrameworkProperties().entrySet() ) {
+                for ( Map.Entry<String, String> frameworkProperty : launch.getLauncherArguments().getFrameworkProperties().entrySet() ) {
                     args.add("-D");
                     args.add(frameworkProperty.getKey()+"="+frameworkProperty.getValue());
                 }
