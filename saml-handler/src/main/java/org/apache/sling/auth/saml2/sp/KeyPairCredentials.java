@@ -20,6 +20,7 @@
 
 package org.apache.sling.auth.saml2.sp;
 
+import org.apache.sling.auth.saml2.SAML2RuntimeException;
 import org.opensaml.security.credential.CredentialSupport;
 import org.opensaml.security.x509.BasicX509Credential;
 import java.io.FileInputStream;
@@ -47,24 +48,24 @@ public class KeyPairCredentials {
             KeyPair keyPair = new KeyPair(publicKey, (PrivateKey) key);
             return CredentialSupport.getSimpleCredential(cert,keyPair.getPrivate() );
         } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
+            throw new SAML2RuntimeException(e);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new SAML2RuntimeException(e);
         } catch (java.security.KeyStoreException e) {
-            throw new RuntimeException(e);
+            throw new SAML2RuntimeException(e);
         }  catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
+            throw new SAML2RuntimeException(e);
         } catch (CertificateException e) {
-            throw new RuntimeException(e);
+            throw new SAML2RuntimeException(e);
         } catch (UnrecoverableKeyException e) {
-            throw new RuntimeException(e);
+            throw new SAML2RuntimeException(e);
         } finally {
             try {
                 if (fis != null) {
                     fis.close();
                 }
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new SAML2RuntimeException(e);
             }
         }
     }

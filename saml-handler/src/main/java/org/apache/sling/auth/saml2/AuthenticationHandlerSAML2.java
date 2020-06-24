@@ -311,7 +311,7 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
         try {
             encoder.initialize();
         } catch (ComponentInitializationException e) {
-            throw new RuntimeException(e);
+            throw new SAML2RuntimeException(e);
         }
 
         logger.info("Request: "+ requestForIDP.getClass());
@@ -321,7 +321,7 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
         try {
             encoder.encode();
         } catch (MessageEncodingException e) {
-            throw new RuntimeException(e);
+            throw new SAML2RuntimeException(e);
         }
     }
 
@@ -385,9 +385,9 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
             httpPostDecoder.decode();
         } catch (MessageDecodingException e) {
             logger.error("MessageDecodingException");
-            throw new RuntimeException(e);
+            throw new SAML2RuntimeException(e);
         } catch (ComponentInitializationException e) {
-            throw new RuntimeException(e);
+            throw new SAML2RuntimeException(e);
         }
         return httpPostDecoder.getMessageContext();
     }
@@ -400,14 +400,14 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
         try {
             return decrypter.decrypt(encryptedAssertion);
         } catch (DecryptionException e) {
-            throw new RuntimeException(e);
+            throw new SAML2RuntimeException(e);
         }
     }
 
     private void verifyAssertionSignature(final Assertion assertion) {
         if (!assertion.isSigned()) {
             logger.error("Halting");
-            throw new RuntimeException("The SAML Assertion was not signed!");
+            throw new SAML2RuntimeException("The SAML Assertion was not signed!");
         }
         try {
             SAMLSignatureProfileValidator profileValidator = new SAMLSignatureProfileValidator();
@@ -416,7 +416,7 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
             SignatureValidator.validate(assertion.getSignature(), this.getIdpVerificationCert());
             logger.info("SAML Assertion signature verified");
         } catch (SignatureException e) {
-            throw new RuntimeException("SAML Assertion signature problem", e);
+            throw new SAML2RuntimeException("SAML Assertion signature problem", e);
         }
     }
 
@@ -481,7 +481,7 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
             saml2UserMgtService.cleanUp();
             return samlUser;
         } else if (saml2User != null && saml2User.getId() == null){
-            throw new RuntimeException("SAML2 User ID attribute name (saml2userIDAttr) is not correctly configured.");
+            throw new SAML2RuntimeException("SAML2 User ID attribute name (saml2userIDAttr) is not correctly configured.");
         }
         return null;
     }
@@ -494,7 +494,7 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
             return authInfo;
         } catch (RepositoryException e) {
             logger.error("failed to build Authentication Info");
-            throw new RuntimeException(e);
+            throw new SAML2RuntimeException(e);
         }
     }
 
@@ -571,7 +571,7 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
         try {
             resp.sendRedirect(gotoURL);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new SAML2RuntimeException(e);
         }
     }
 
@@ -689,13 +689,13 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
                 authData = null;
                 authData = tokenStore.encode(expires, authInfo.getUser());
             } catch (InvalidKeyException e) {
-                throw new RuntimeException(e);
+                throw new SAML2RuntimeException(e);
             } catch (IllegalStateException e) {
-                throw new RuntimeException(e);
+                throw new SAML2RuntimeException(e);
             } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException(e);
+                throw new SAML2RuntimeException(e);
             } catch (NoSuchAlgorithmException e) {
-                throw new RuntimeException(e);
+                throw new SAML2RuntimeException(e);
             }
 
             if (authData != null) {

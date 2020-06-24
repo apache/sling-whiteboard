@@ -28,8 +28,7 @@
     POST Binding for communicating security assertions from an identity provider such as Shibboleth.</description>
 
   <properties>
-   <opensaml.version>4.0.1</opensaml.version>
-    <!-- <opensaml.version>3.4.5</opensaml.version> -->
+   <opensaml.version>4.0.1</opensaml.version>    
     <sling.host>localhost</sling.host>
     <sling.port>8080</sling.port>
     <sling.user>admin</sling.user>
@@ -57,8 +56,6 @@ which is licensed under the Apache-2.0 license.
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <!--<source>8</source>
-          <target>8</target> -->
          <source>11</source>
          <target>11</target>
         </configuration>
@@ -190,14 +187,12 @@ which is licensed under the Apache-2.0 license.
         <scope>provided</scope>
     </dependency>
 
-<!-- NOTE: Make sure you install oak-auth-external at the same version as the other oak bundles-->
-    <!-- <dependency>
-        <groupId>org.apache.jackrabbit</groupId>
-        <artifactId>oak-auth-external</artifactId>
-        <version>1.6.1</version>
-        <scope>provided</scope>
-    </dependency> -->
-
+<!-- NOTE: Make sure oak-auth-external bundle is Active at the same version as Oak
+groupId: org.apache.jackrabbit
+artifactId: oak-auth-external
+version: <matching oak version> 
+scope: provided  
+-->
     <dependency>
       <groupId>org.apache.jackrabbit</groupId>
       <artifactId>oak-auth-external</artifactId>

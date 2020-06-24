@@ -54,7 +54,7 @@ public class Activator implements BundleActivator {
                 logger.info(jceProvider.getInfo());
             }
         } catch (InitializationException e) {
-            throw new Error("Java Cryptographic Extension could not initialize. " +
+            throw new SAML2RuntimeException("Java Cryptographic Extension could not initialize. " +
                     "This happens when JCE implementation is incomplete, and not meeting OpenSAML standards.", e);
         }
 

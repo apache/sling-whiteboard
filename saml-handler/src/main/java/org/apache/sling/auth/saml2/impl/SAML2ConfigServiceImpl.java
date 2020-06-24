@@ -53,8 +53,6 @@ public class SAML2ConfigServiceImpl implements SAML2ConfigService {
     public static final String GOTO_URL_SESSION_ATTRIBUTE = "gotoURL";
     public static final String SAML2_REQUEST_ID = "saml2RequestID";
     public static final String AUTHENTICATED_SESSION_ATTRIBUTE = "authenticated";
-    public static final String SESSIONINDEX_SESSION_ATTRIBUTE = "SessionIndex";
-    public static final String NAMEID_SESSION_ATTRIBUTE = "NameID";
 
     @Activate
     protected void activate(final AuthenticationHandlerSAML2Config config, ComponentContext componentContext) {
