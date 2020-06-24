@@ -162,7 +162,8 @@ public class StartMojo
                 };
                 monitor.start();
                 getLog().info("Waiting for " + launch.getId() + " to start");
-                boolean started = latch.await(30, TimeUnit.SECONDS);
+                // TODO - configurable timeouts
+                boolean started = latch.await(3, TimeUnit.MINUTES);
                 if ( !started ) {
                     process.destroy();
                     boolean stopped = process.waitFor(30, TimeUnit.SECONDS);
