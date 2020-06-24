@@ -39,7 +39,7 @@
     </prerequisites>
 
     <properties>
-        <sling.java.version>11</sling.java.version>
+        <sling.java.version>8</sling.java.version>
         <maven.version>3.3.9</maven.version>
     </properties>
 
