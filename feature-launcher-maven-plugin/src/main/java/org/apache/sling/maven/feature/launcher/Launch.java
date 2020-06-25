@@ -18,9 +18,13 @@
  */
 package org.apache.sling.maven.feature.launcher;
 
+import java.util.regex.Pattern;
+
 import org.apache.maven.model.Dependency;
 
 public class Launch {
+    
+    private static final Pattern ID_PATTERN = Pattern.compile("[a-zA-Z0-9_\\-\\.]+");
 
     private String id;
     private Dependency feature;
@@ -50,4 +54,21 @@ public class Launch {
         this.launcherArguments = launcherArguments;
     }
 
+    public void validate() {
+        if ( id == null || id.trim().isEmpty() ) 
+            throw new IllegalArgumentException("Missing id");
+        
+        if ( !ID_PATTERN.matcher(id).matches() )
+            throw new IllegalArgumentException("Invalid id '" + id + "'. Allowed characters are digits, numbers, '-','_' and '.'.");
+        
+        if ( feature == null )
+            throwInvalid("required field 'feature' is missing");
+        
+        if ( ! "slingosgifeature".equals(feature.getType()) )
+            throwInvalid("type must be 'slingosgifeature' but is '" + feature.getType()+"'");
+    }
+    
+    private void throwInvalid(String reason) {
+        throw new IllegalArgumentException("Invalid launch '" + id + "': " + reason);
+    }
 }
