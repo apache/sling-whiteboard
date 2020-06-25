@@ -110,8 +110,8 @@ public class StartMojo
             workDir.mkdirs();
             
             for ( Launch launch : launches ) {
-            
-                // TODO - validate it is actually a feature
+                launch.validate();
+
                 Artifact artifact = toArtifact(launch.getFeature());
                 
                 ArtifactResult result = resolver.resolveArtifact(repositorySession, new ArtifactRequest(artifact, null, null));
@@ -124,7 +124,7 @@ public class StartMojo
                 args.add("-f");
                 args.add(featureFile.getAbsolutePath());
                 args.add("-p");
-                args.add(launch.getId()); // TODO - validate launch id is a valid file name
+                args.add(launch.getId());
                 
                 for ( Map.Entry<String, String> frameworkProperty : launch.getLauncherArguments().getFrameworkProperties().entrySet() ) {
                     args.add("-D");
@@ -150,10 +150,8 @@ public class StartMojo
                         String line;
                         try {
                             while ( (line = reader.readLine()) != null ) {
-                                System.out.println(line);
-//                                getLog().info("Checking line '" + line);
+                                System.out.println(line); // NOSONAR - we pass through the subprocess stderr
                                 if ( line.contains("Framework started")) {
-//                                    getLog().info("STARTED!");
                                     latch.countDown();
                                     break;
                                 }
@@ -175,9 +173,11 @@ public class StartMojo
                 processes.startTracking(launch.getId(), process);
             }
 
-            // TODO - properly handle interrupted exception
-        } catch (ArtifactResolutionException | IOException | InterruptedException e) {
+        } catch (ArtifactResolutionException | IOException e) {
             throw new MojoExecutionException(e.getMessage(), e);
+        } catch ( InterruptedException e ) {
+            Thread.currentThread().interrupt();
+            throw new MojoExecutionException("Execution interrupted", e);
         }
     }
 
