@@ -79,18 +79,41 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>org.apache.sling</groupId>
+                <artifactId>slingfeature-maven-plugin</artifactId>
+                <version>1.3.6</version>
+                <extensions>true</extensions>
+                <!-- TODO - seems we can't attach non-aggregates -->
+                <configuration>
+                    <aggregates>
+                        <aggregate>
+                            <classifier>main</classifier>
+                            <filesInclude>model.json</filesInclude>
+                        </aggregate>
+                    </aggregates>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>attach-features</goal>
+                            <goal>aggregate-features</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>@project.groupId@</groupId>
                 <artifactId>@project.artifactId@</artifactId>
                 <version>@project.version@</version>
                 <configuration>
                     <launches>
                         <launch>
-                            <id>sling-12-oak-tar</id>
+                            <id>model</id>
                             <feature>
                                 <groupId>org.apache.sling</groupId>
-                                <artifactId>org.apache.sling.starter</artifactId>
-                                <version>12-SNAPSHOT</version>
-                                <classifier>oak_tar</classifier>
+                                <artifactId>simple-it</artifactId>
+                                <version>1.0-SNAPSHOT</version>
+                                <classifier>main</classifier>
                                 <type>slingosgifeature</type>
                             </feature>
                             <launcherArguments>
@@ -118,7 +141,7 @@
                 <version>2.22.2</version>
                 <configuration>
                     <systemPropertyVariables>
-                        <SLING_HTTP_PORT>${http.port}</SLING_HTTP_PORT>
+                        <HTTP_PORT>${http.port}</HTTP_PORT>
                     </systemPropertyVariables>
                 </configuration>
                 <executions>
