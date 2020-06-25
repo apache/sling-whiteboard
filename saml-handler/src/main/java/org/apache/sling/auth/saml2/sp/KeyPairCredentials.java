@@ -23,50 +23,34 @@ package org.apache.sling.auth.saml2.sp;
 import org.apache.sling.auth.saml2.SAML2RuntimeException;
 import org.opensaml.security.credential.CredentialSupport;
 import org.opensaml.security.x509.BasicX509Credential;
-import java.io.FileInputStream;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
-public class KeyPairCredentials {
+public class KeyPairCredentials extends JksCredentials {
 
-    public static BasicX509Credential getCredential(
+    public static BasicX509Credential getCredential (
             final String jksPath,
-            final String jksPassword,
+            final char[] jksPassword,
             final String certAlias,
-            final String keysPassword) {
-        FileInputStream fis = null;
+            final char[] keysPassword) {
+        // Try-with-Resources closes file input stream automatically
         try {
-            KeyStore keyStore = KeyStore.getInstance("JKS");
-            fis = new FileInputStream(jksPath);
-            keyStore.load(new FileInputStream(jksPath), jksPassword.toCharArray());
-            Key key = keyStore.getKey(certAlias, keysPassword.toCharArray());
+            KeyStore keyStore = getKeyStore(jksPath, jksPassword);
+            Key key = keyStore.getKey(certAlias, keysPassword);
             X509Certificate cert = (X509Certificate) keyStore.getCertificate(certAlias);
             PublicKey publicKey = cert.getPublicKey();
             KeyPair keyPair = new KeyPair(publicKey, (PrivateKey) key);
             return CredentialSupport.getSimpleCredential(cert,keyPair.getPrivate() );
-        } catch (FileNotFoundException e) {
-            throw new SAML2RuntimeException(e);
-        } catch (IOException e) {
-            throw new SAML2RuntimeException(e);
         } catch (java.security.KeyStoreException e) {
             throw new SAML2RuntimeException(e);
         }  catch (NoSuchAlgorithmException e) {
             throw new SAML2RuntimeException(e);
-        } catch (CertificateException e) {
-            throw new SAML2RuntimeException(e);
         } catch (UnrecoverableKeyException e) {
             throw new SAML2RuntimeException(e);
-        } finally {
-            try {
-                if (fis != null) {
-                    fis.close();
-                }
-            } catch (IOException e) {
-                throw new SAML2RuntimeException(e);
-            }
         }
     }
 }

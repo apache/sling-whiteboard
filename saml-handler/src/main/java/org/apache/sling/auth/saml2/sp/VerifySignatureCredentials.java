@@ -24,46 +24,24 @@ package org.apache.sling.auth.saml2.sp;
 import org.apache.sling.auth.saml2.SAML2RuntimeException;
 import org.opensaml.security.credential.Credential;
 import org.opensaml.security.x509.BasicX509Credential;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.security.*;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
-
-public class VerifySignatureCredentials {
+public class VerifySignatureCredentials extends JksCredentials {
 
     public static Credential getCredential(
             final String jksPath,
-            final String jksPassword,
+            final char[] jksPassword,
             final String certAlias) {
-        FileInputStream fis = null;
+
         try {
-            KeyStore keyStore = KeyStore.getInstance("JKS");
-            fis = new FileInputStream(jksPath);
-            keyStore.load(new FileInputStream(jksPath), jksPassword.toCharArray());
+            KeyStore keyStore = getKeyStore(jksPath, jksPassword);
             X509Certificate cert = (X509Certificate) keyStore.getCertificate(certAlias);
             BasicX509Credential x509Credential = new BasicX509Credential(cert);
             return x509Credential;
-        } catch (FileNotFoundException e) {
-            throw new SAML2RuntimeException(e);
-        } catch (IOException e) {
-            throw new SAML2RuntimeException(e);
         } catch (java.security.KeyStoreException e) {
             throw new SAML2RuntimeException(e);
-        }  catch (NoSuchAlgorithmException e) {
-            throw new SAML2RuntimeException(e);
-        } catch (CertificateException e) {
-            throw new SAML2RuntimeException(e);
-        } finally {
-            try {
-                if (fis != null) {
-                    fis.close();
-                }
-            } catch (IOException e) {
-                throw new SAML2RuntimeException(e);
-            }
         }
     }
+
 }

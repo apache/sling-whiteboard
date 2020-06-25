@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  *
- * Contributed by Cris Rockwell and the Regents of the University of Michigan.
  */
 
 package org.apache.sling.auth.saml2;
@@ -98,7 +97,8 @@ public @interface AuthenticationHandlerSAML2Config {
     String jksFileLocation() default "";
 
     @AttributeDefinition(name = "JKS Password (storepass)",
-        description="Password needed for accessing the JKS")
+        description="Password needed for accessing the JKS",
+        type = AttributeType.PASSWORD)
     String jksStorePassword() default "";
 
     @AttributeDefinition(name = "IDP Signing Certificate Alias",
@@ -110,7 +110,8 @@ public @interface AuthenticationHandlerSAML2Config {
     String spKeysAlias() default "";
 
     @AttributeDefinition(name = "SP Keystore Password (keystore)",
-        description="Password needed for accessing the Service Provider (SP) Key Pair identified by the SP Keystore Alias")
+        description="Password needed for accessing the Service Provider (SP) Key Pair identified by the SP Keystore Alias",
+        type = AttributeType.PASSWORD)
     String spKeysPassword() default "";
 
 }

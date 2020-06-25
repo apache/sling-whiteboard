@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  *
- * Contributed by Cris Rockwell and the Regents of the University of Michigan.
  */
 
 package org.apache.sling.auth.saml2;
@@ -142,13 +141,13 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
             //      set encryption keys
             this.spKeypair = KeyPairCredentials.getCredential(
                     saml2ConfigService.getJksFileLocation(),
-                    saml2ConfigService.getJksStorePassword(),
+                    saml2ConfigService.getJksStorePassword().toCharArray(),
                     saml2ConfigService.getSpKeysAlias(),
-                    saml2ConfigService.getSpKeysPassword());
+                    saml2ConfigService.getSpKeysPassword().toCharArray());
             //      set credential for signing
             this.idpVerificationCert = VerifySignatureCredentials.getCredential(
                     saml2ConfigService.getJksFileLocation(),
-                    saml2ConfigService.getJksStorePassword(),
+                    saml2ConfigService.getJksStorePassword().toCharArray(),
                     saml2ConfigService.getIdpCertAlias());
         }
     }
