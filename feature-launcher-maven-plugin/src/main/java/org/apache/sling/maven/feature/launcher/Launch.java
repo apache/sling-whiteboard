@@ -29,6 +29,7 @@ public class Launch {
     private String id;
     private Dependency feature;
     private LauncherArguments launcherArguments;
+    private int startTimeoutSeconds = 30;
 
     public String getId() {
         return id;
@@ -53,6 +54,14 @@ public class Launch {
     public void setLauncherArguments(LauncherArguments launcherArguments) {
         this.launcherArguments = launcherArguments;
     }
+    
+    public int getStartTimeoutSeconds() {
+        return startTimeoutSeconds;
+    }
+    
+    public void setStartTimeoutSeconds(int startTimeoutSeconds) {
+        this.startTimeoutSeconds = startTimeoutSeconds;
+    }
 
     public void validate() {
         if ( id == null || id.trim().isEmpty() ) 
@@ -60,6 +69,9 @@ public class Launch {
         
         if ( !ID_PATTERN.matcher(id).matches() )
             throw new IllegalArgumentException("Invalid id '" + id + "'. Allowed characters are digits, numbers, '-','_' and '.'.");
+        
+        if ( startTimeoutSeconds < 0 )
+            throwInvalid("startTimeout value '" + startTimeoutSeconds + "' is negative" );
         
         if ( feature == null )
             throwInvalid("required field 'feature' is missing");

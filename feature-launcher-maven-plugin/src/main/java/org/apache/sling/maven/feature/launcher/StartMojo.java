@@ -163,11 +163,10 @@ public class StartMojo
                 };
                 monitor.start();
                 getLog().info("Waiting for " + launch.getId() + " to start");
-                // TODO - configurable timeouts
-                boolean started = latch.await(3, TimeUnit.MINUTES);
+                boolean started = latch.await(launch.getStartTimeoutSeconds(), TimeUnit.SECONDS);
                 if ( !started ) {
                     ProcessTracker.stop(process);
-                    throw new MojoExecutionException("Launch " + launch.getId() + " failed to start in the allocated time.");
+                    throw new MojoExecutionException("Launch " + launch.getId() + " failed to start in " + launch.getStartTimeoutSeconds() + " seconds.");
                 }
                 
                 processes.startTracking(launch.getId(), process);

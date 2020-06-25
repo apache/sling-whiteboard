@@ -98,6 +98,7 @@
                                     <org.osgi.service.http.port>${http.port}</org.osgi.service.http.port>
                                 </frameworkProperties>
                             </launcherArguments>
+                            <startTimeoutSeconds>180</startTimeoutSeconds>
                         </launch>
                     </launches>
                     <toLaunch>
