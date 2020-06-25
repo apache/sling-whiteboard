@@ -82,4 +82,14 @@ public class LaunchTest {
         launch.validate();
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void invalidLaunch_negativeTimeout() {
+        
+        Launch launch = new Launch();
+        launch.setId("feature");
+        launch.setFeature(validDep);
+        launch.setStartTimeoutSeconds(-10);
+        launch.validate();
+    }
+
 }
