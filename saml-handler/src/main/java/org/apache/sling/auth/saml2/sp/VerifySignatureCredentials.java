@@ -29,6 +29,10 @@ import java.security.cert.X509Certificate;
 
 public class VerifySignatureCredentials extends JksCredentials {
 
+    private VerifySignatureCredentials(){
+        super();
+    }
+
     public static Credential getCredential(
             final String jksPath,
             final char[] jksPassword,

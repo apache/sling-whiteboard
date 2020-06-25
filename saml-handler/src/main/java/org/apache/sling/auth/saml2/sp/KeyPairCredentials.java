@@ -28,6 +28,10 @@ import java.security.cert.X509Certificate;
 
 public class KeyPairCredentials extends JksCredentials {
 
+    private KeyPairCredentials(){
+        super();
+    }
+
     public static BasicX509Credential getCredential (
             final String jksPath,
             final char[] jksPassword,
@@ -40,11 +44,7 @@ public class KeyPairCredentials extends JksCredentials {
             PublicKey publicKey = cert.getPublicKey();
             KeyPair keyPair = new KeyPair(publicKey, (PrivateKey) key);
             return CredentialSupport.getSimpleCredential(cert,keyPair.getPrivate() );
-        } catch (java.security.KeyStoreException e) {
-            throw new SAML2RuntimeException(e);
-        }  catch (NoSuchAlgorithmException e) {
-            throw new SAML2RuntimeException(e);
-        } catch (UnrecoverableKeyException e) {
+        } catch (java.security.KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException e) {
             throw new SAML2RuntimeException(e);
         }
     }

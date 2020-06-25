@@ -31,21 +31,17 @@ import java.security.cert.CertificateException;
 
 public abstract class JksCredentials {
 
+    protected JksCredentials(){
+
+    }
+
     public static KeyStore getKeyStore(String filePathToJKS, char[] jksPassword) {
         // Try-with-Resources closes file input stream automatically
         try (InputStream fis = new FileInputStream(filePathToJKS)){
             KeyStore keyStore = KeyStore.getInstance("JKS");
             keyStore.load(fis, jksPassword);
             return keyStore;
-        } catch (FileNotFoundException e) {
-            throw new SAML2RuntimeException(e);
-        } catch (IOException e) {
-            throw new SAML2RuntimeException(e);
-        } catch (java.security.KeyStoreException e) {
-            throw new SAML2RuntimeException(e);
-        }  catch (NoSuchAlgorithmException e) {
-            throw new SAML2RuntimeException(e);
-        } catch (CertificateException e) {
+        } catch (IOException | java.security.KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
             throw new SAML2RuntimeException(e);
         }
     }

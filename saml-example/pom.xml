@@ -36,22 +36,8 @@
     <noContent>false</noContent>
   </properties>
 
-<!--  <dependencies>-->
-<!--    <dependency>-->
-<!--      <groupId>${project.groupId}</groupId>-->
-<!--      <artifactId>org.apache.sling.auth.saml2</artifactId>-->
-<!--      <version>${project.version}</version>-->
-<!--    </dependency>-->
-<!--    <dependency>-->
-<!--      <groupId>org.apache.jackrabbit</groupId>-->
-<!--      <artifactId>oak-auth-external</artifactId>-->
-<!--      <version>1.26.0</version>-->
-<!--    </dependency>-->
-<!--  </dependencies>-->
 
   <build>
-
-
     <plugins>
 
       <plugin>
@@ -88,31 +74,31 @@
         </executions>
       </plugin>
 
-<!--      <plugin>-->
-<!--        <groupId>io.wcm.maven.plugins</groupId>-->
-<!--        <artifactId>wcmio-content-package-maven-plugin</artifactId>-->
-<!--        <extensions>true</extensions>-->
-<!--        <configuration>-->
-<!--          <serviceURL>http://${sling.host}:${sling.port}/bin/cpm/package.service.html</serviceURL>-->
-<!--          <userId>${sling.user}</userId>-->
-<!--          <password>${sling.password}</password>-->
-<!--          <failOnMissingEmbed>true</failOnMissingEmbed>-->
-<!--          <group>${project.groupId}</group>-->
-<!--        </configuration>-->
-<!--        <executions>-->
-<!--          <execution>-->
-<!--            <id>aggregate</id>-->
-<!--            <goals>-->
-<!--              <goal>package</goal>-->
-<!--            </goals>-->
-<!--            <phase>site</phase>-->
-<!--            <configuration>-->
-<!--              <embeddedTarget>/apps/apidocs/install</embeddedTarget>-->
+      <plugin>
+        <groupId>io.wcm.maven.plugins</groupId>
+        <artifactId>wcmio-content-package-maven-plugin</artifactId>
+        <extensions>true</extensions>
+        <configuration>
+          <serviceURL>http://${sling.host}:${sling.port}/bin/cpm/package.service.html</serviceURL>
+          <userId>${sling.user}</userId>
+          <password>${sling.password}</password>
+          <failOnMissingEmbed>true</failOnMissingEmbed>
+          <group>${project.groupId}</group>
+        </configuration>
+        <executions>
+          <execution>
+            <id>aggregate</id>
+            <goals>
+              <goal>package</goal>
+            </goals>
+            <phase>site</phase>
+            <configuration>
+              <embeddedTarget>/apps/apidocs/install</embeddedTarget>
 
-<!--            </configuration>-->
-<!--          </execution>-->
-<!--        </executions>-->
-<!--      </plugin>-->
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
 
     </plugins>
   </build>
