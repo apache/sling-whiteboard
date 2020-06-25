@@ -1,0 +1,14 @@
+{
+  "id":"${project.groupId}:${project.artifactId}:model:${project.version}",
+  "bundles": [
+    "org.apache.felix/org.apache.felix.scr/2.1.20",
+    "org.apache.felix/org.apache.felix.log/1.2.2",
+    "org.apache.felix/org.apache.felix.configadmin/1.9.16",
+    "org.osgi/org.osgi.util.promise/1.1.1",
+    "org.osgi/org.osgi.util.function/1.1.0",
+    "org.osgi/org.osgi.util.converter/1.0.1",
+    "org.apache.commons/commons-lang3/3.9",
+    "org.apache.felix/org.apache.felix.http.jetty/4.0.16",
+    "org.apache.felix/org.apache.felix.http.servlet-api/1.1.2"
+  ]
+}

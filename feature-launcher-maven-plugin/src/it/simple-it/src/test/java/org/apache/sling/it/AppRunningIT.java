@@ -16,18 +16,18 @@
  */
 package org.apache.sling.it;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 import  org.apache.http.impl.client.*;
 import  org.apache.http.client.methods.*;
 
-public class SlingRunningIT {
+public class AppRunningIT {
 
     @Test
-    public void slingIsUp() throws Exception {
+    public void slinappIsUp() throws Exception {
 
-        int port = Integer.getInteger("SLING_HTTP_PORT", 8080);
+        int port = Integer.getInteger("HTTP_PORT", 8080);
 
         try ( CloseableHttpClient httpclient = HttpClients.createDefault() ) {
             HttpGet get = new HttpGet("http://localhost:" + port + "/");
@@ -35,15 +35,15 @@ public class SlingRunningIT {
                 try ( CloseableHttpResponse response = httpclient.execute(get) ) {
                     System.out.println("Status line = " + response.getStatusLine().toString());
                     int statusCode = response.getStatusLine().getStatusCode();
-                    if ( (statusCode / 100 == 2) || (statusCode / 100 == 3) ) {
-                        System.out.println("Sling is ready");
+                    if ( (statusCode / 100 < 5 ) ) {
+                        System.out.println("App is ready");
                         return;
                     }
                     Thread.sleep(1000l);
                 }
             }
 
-            throw new RuntimeException("Sling is not yet ready, failing");
+            fail("App is not yet ready, failing");
         }
     }
 }
