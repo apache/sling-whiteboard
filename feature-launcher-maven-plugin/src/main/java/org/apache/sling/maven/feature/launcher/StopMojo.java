@@ -19,11 +19,11 @@
 package org.apache.sling.maven.feature.launcher;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -34,15 +34,16 @@ public class StopMojo extends AbstractMojo {
     @Parameter(required = true)
     private List<Launch> launches;
     
+    @Component
+    private ProcessTracker processes;
+    
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         
         try {
             for ( Launch launch : launches ) {
                 getLog().info("Stopping launch with id " + launch.getId());
-                Process process = Processes.get(launch.getId()).get();
-                process.destroy();
-                process.waitFor(30, TimeUnit.SECONDS);
+                processes.stop(launch.getId());
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

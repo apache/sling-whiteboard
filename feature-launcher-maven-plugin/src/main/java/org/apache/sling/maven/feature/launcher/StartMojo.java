@@ -84,6 +84,9 @@ public class StartMojo
     @Parameter(property = "session", readonly = true, required = true)
     protected MavenSession mavenSession;
     
+    @Component
+    private ProcessTracker processes;
+    
     public void execute()
         throws MojoExecutionException, MojoFailureException
     {
@@ -165,17 +168,11 @@ public class StartMojo
                 // TODO - configurable timeouts
                 boolean started = latch.await(3, TimeUnit.MINUTES);
                 if ( !started ) {
-                    process.destroy();
-                    boolean stopped = process.waitFor(30, TimeUnit.SECONDS);
-                    if ( !stopped ) 
-                        process.destroyForcibly();
+                    ProcessTracker.stop(process);
                     throw new MojoExecutionException("Launch " + launch.getId() + " failed to start in the allocated time.");
                 }
                 
-                
-                // TODO - reliably stop started processes in case 'stop' is not invoked
-                
-                Processes.addProcess(launch.getId(), process);
+                processes.startTracking(launch.getId(), process);
             }
 
             // TODO - properly handle interrupted exception
