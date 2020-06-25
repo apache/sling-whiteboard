@@ -16,8 +16,8 @@
  * specific language governing permissions and limitations
  * under the License.
  *
- * Contributed by Cris Rockwell and the Regents of the University of Michigan.
  */
+
 package org.apache.sling.auth.saml2.impl;
 
 import org.apache.sling.auth.saml2.AuthenticationHandlerSAML2Config;

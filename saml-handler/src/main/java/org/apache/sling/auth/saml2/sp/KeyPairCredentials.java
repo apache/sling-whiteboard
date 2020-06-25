@@ -33,7 +33,6 @@ public class KeyPairCredentials extends JksCredentials {
             final char[] jksPassword,
             final String certAlias,
             final char[] keysPassword) {
-        // Try-with-Resources closes file input stream automatically
         try {
             KeyStore keyStore = getKeyStore(jksPath, jksPassword);
             Key key = keyStore.getKey(certAlias, keysPassword);

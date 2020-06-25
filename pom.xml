@@ -47,6 +47,7 @@
           <module>starter-system-info</module>
           <module>metrics-prometheus</module>
           <module>saml-handler</module>
+      <module>org.apache.sling.auth.saml2.example</module>
     </modules>
 
 </project>
