@@ -23,11 +23,7 @@ package org.apache.sling.auth.saml2.sp;
 import org.apache.sling.auth.saml2.SAML2RuntimeException;
 import org.opensaml.security.credential.CredentialSupport;
 import org.opensaml.security.x509.BasicX509Credential;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.security.*;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
 public class KeyPairCredentials extends JksCredentials {
