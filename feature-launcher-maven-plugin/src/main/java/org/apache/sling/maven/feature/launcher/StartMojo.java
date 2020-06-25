@@ -44,19 +44,22 @@ import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.impl.ArtifactResolver;
+import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
 
 @Mojo( name = "start", defaultPhase = LifecyclePhase.PRE_INTEGRATION_TEST )
-public class StartMojo
-    extends AbstractMojo
-{
+public class StartMojo extends AbstractMojo {
+    
     /**
      * Location of the file.
      */
     @Parameter( defaultValue = "${project.build.directory}", property = "outputDir", required = true )
     private File outputDirectory;
+
+    @Parameter( required = true, defaultValue = "1.1.4")
+    private String featureLauncherVersion;
     
     @Parameter(required = true)
     private List<Launch> launches;
@@ -78,6 +81,9 @@ public class StartMojo
     @Component
     private ArtifactResolver resolver;
 
+    @Parameter(defaultValue = "${project.remotePluginRepositories}", readonly = true)
+    private List<RemoteRepository> remoteRepos;
+
     @Parameter(property = "project", readonly = true, required = true)
     protected MavenProject project;
 
@@ -87,22 +93,14 @@ public class StartMojo
     @Component
     private ProcessTracker processes;
     
-    public void execute()
-        throws MojoExecutionException, MojoFailureException
-    {
-        
+    public void execute() throws MojoExecutionException, MojoFailureException {
+
+        Artifact launcherArtifact = new DefaultArtifact("org.apache.sling:org.apache.sling.feature.launcher:" + featureLauncherVersion);
+
         try {
             RepositorySystemSession repositorySession = mavenSession.getRepositorySession();
-            
-            // TODO - this should be inferred from the plugin's pom.xml dependency (not the project's pom.xml)
-            Dependency featureLauncherDep = project.getDependencies().stream()
-                .filter( d -> d.getGroupId().equals("org.apache.sling") && d.getArtifactId().equals("org.apache.sling.feature.launcher"))
-                .findFirst()
-                .orElseThrow( () -> new MojoFailureException("No feature launcher dependency found"));
-            
-            Artifact launcherArtifact = toArtifact(featureLauncherDep);
             File launcher = resolver
-                .resolveArtifact(repositorySession, new ArtifactRequest(launcherArtifact, null, null))
+                .resolveArtifact(repositorySession, new ArtifactRequest(launcherArtifact, remoteRepos, null))
                 .getArtifact()
                 .getFile();
             
@@ -114,7 +112,7 @@ public class StartMojo
 
                 Artifact artifact = toArtifact(launch.getFeature());
                 
-                ArtifactResult result = resolver.resolveArtifact(repositorySession, new ArtifactRequest(artifact, null, null));
+                ArtifactResult result = resolver.resolveArtifact(repositorySession, new ArtifactRequest(artifact, remoteRepos, null));
                 File featureFile = result.getArtifact().getFile();
                 
                 List<String> args = new ArrayList<>();
