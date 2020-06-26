@@ -25,10 +25,10 @@ import java.util.Map;
  */
 public interface Feature extends FeatureArtifact {
     /**
-     * Get the title.
-     * @return The title.
+     * Get the name.
+     * @return The name.
      */
-    String getTitle();
+    String getName();
 
     /**
      * Get the description.

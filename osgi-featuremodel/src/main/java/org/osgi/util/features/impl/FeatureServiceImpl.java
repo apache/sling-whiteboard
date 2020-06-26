@@ -57,7 +57,7 @@ public class FeatureServiceImpl { //implements FeatureService {
         String id = json.getString("id");
         FeatureBuilder builder = builderFactory.newFeatureBuilder(ID.fromMavenID(id));
 
-        builder.setTitle(json.getString("title", null));
+        builder.setName(json.getString("title", null));
         builder.setDescription(json.getString("description", null));
         builder.setVendor(json.getString("vendor", null));
         builder.setLicense(json.getString("license", null));
@@ -310,8 +310,8 @@ public class FeatureServiceImpl { //implements FeatureService {
     }
 
     private void copyAttrs(Feature f, FeatureBuilder fb) {
-        if (f.getTitle() != null)
-            fb.setTitle(f.getTitle());
+        if (f.getName() != null)
+            fb.setName(f.getName());
 
         if (f.getDescription() != null)
             fb.setDescription(f.getDescription());
