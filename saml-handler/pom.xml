@@ -198,7 +198,7 @@ scope: provided
       <artifactId>oak-auth-external</artifactId>
       <version>1.26.0</version>
       <scope>provided</scope>
-  </dependency>
+    </dependency>
 
 
 <!--    Apache Commons -->
