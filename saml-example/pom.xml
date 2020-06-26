@@ -22,11 +22,12 @@
   </parent>
 
 
-  <artifactId>org.apache.sling.auth.saml2.example</artifactId>
-  <name>Example Configs for SAML2 Service Provider</name>
-  <version>0.2.0</version>
+  <name>SAML2 Example Parent</name>
+  <groupId>org.apache.sling.auth.saml2</groupId>
+  <artifactId>saml2.example-parent</artifactId>
+  <version>0.2.0-SNAPSHOT</version>
   <description>Deploys test configurations to SLing for SAML2 Sign On</description>
-  <packaging>content-package</packaging>
+  <packaging>pom</packaging>
 
   <properties>
     <sling.host>localhost</sling.host>
@@ -36,71 +37,12 @@
     <noContent>false</noContent>
   </properties>
 
+  <modules>
+    <module>core</module>
+    <module>example-content</module>
+  </modules>
 
-  <build>
-    <plugins>
 
-      <plugin>
-        <groupId>org.apache.jackrabbit</groupId>
-        <artifactId>filevault-package-maven-plugin</artifactId>
-        <extensions>true</extensions>
-        <configuration>
-          <name>SAML2 Example Config, User and ACL Package</name>
-          <group>${project.groupId}</group>
-          <version>${project.version}</version>
-          <packageType>mixed</packageType>
-          <filters>
-            <filter>
-              <root>/apps/sling/saml2</root>
-            </filter>
-          </filters>
-        </configuration>
-      </plugin>
 
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>ianal-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>verify-legal-files</id>
-            <goals>
-              <goal>verify-legal-files</goal>
-            </goals>
-            <configuration>
-              <!-- Fail the build if any artifacts are missing legal files -->
-              <strict>false</strict>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>io.wcm.maven.plugins</groupId>
-        <artifactId>wcmio-content-package-maven-plugin</artifactId>
-        <extensions>true</extensions>
-        <configuration>
-          <serviceURL>http://${sling.host}:${sling.port}/bin/cpm/package.service.html</serviceURL>
-          <userId>${sling.user}</userId>
-          <password>${sling.password}</password>
-          <failOnMissingEmbed>true</failOnMissingEmbed>
-          <group>${project.groupId}</group>
-        </configuration>
-        <executions>
-          <execution>
-            <id>aggregate</id>
-            <goals>
-              <goal>package</goal>
-            </goals>
-            <phase>site</phase>
-            <configuration>
-              <embeddedTarget>/apps/apidocs/install</embeddedTarget>
-
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-    </plugins>
-  </build>
 
 </project>
