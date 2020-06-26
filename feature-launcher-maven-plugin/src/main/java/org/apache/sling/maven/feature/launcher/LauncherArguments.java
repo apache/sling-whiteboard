@@ -18,18 +18,18 @@
  */
 package org.apache.sling.maven.feature.launcher;
 
-import java.util.Optional;
+import java.util.HashMap;
+import java.util.Map;
 
-// TODO - refactor to a Mojo Component
-public class Processes {
+public class LauncherArguments {
 
-    private static Process process;
+    private Map<String, String> frameworkProperties = new HashMap<>();
     
-    public static void set(Process process) {
-        Processes.process = process;
+    public Map<String, String> getFrameworkProperties() {
+        return frameworkProperties;
     }
     
-    public static Optional<Process> get() {
-        return Optional.ofNullable(process);
+    public void setFrameworkProperties(Map<String, String> frameworkProperties) {
+        this.frameworkProperties = frameworkProperties;
     }
 }
