@@ -35,30 +35,28 @@ import java.security.cert.CertificateException;
 
 public class Activator implements BundleActivator {
 
-    private static final Logger logger = LoggerFactory.getLogger(BundleActivator.class);
+    private static final Logger logger = LoggerFactory.getLogger(Activator.class);
 
     @Override
     public void start(BundleContext bundleContext) throws Exception {
-        logger.info("SAML2 Example Bundle");
+        logger.info("SAML2 Example Bundle started");
         createExampleJks();
     }
 
     @Override
     public void stop(BundleContext bundleContext) throws Exception {
-
+        logger.info("SAML2 Example Bundle stopped");
     }
 
     void createExampleJks(){
         KeyStore ks = null;
-        try {
-            File file = new File("./sling/keys/exampleSaml2.jks");
+        File file = new File("./sling/keys/exampleSaml2.jks");
+        try (FileOutputStream fos = new FileOutputStream(file)){
             char[] password = "password".toCharArray();
             ks = KeyStore.getInstance(KeyStore.getDefaultType());
             if (!file.exists()) {
-                FileOutputStream fos = new FileOutputStream(file);
                 ks.load(null, password);
                 ks.store(fos, password);
-                fos.close();
                 logger.info("Example JKS created");
             } else {
                 logger.info("Example JKS exists");

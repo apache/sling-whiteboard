@@ -23,7 +23,6 @@ package org.apache.sling.auth.saml2.sp;
 
 import org.apache.sling.auth.saml2.SAML2RuntimeException;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.*;
