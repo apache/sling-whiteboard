@@ -24,6 +24,7 @@ import org.opensaml.core.config.InitializationService;
 import org.opensaml.xmlsec.config.impl.JavaCryptoValidationInitializer;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.startlevel.BundleStartLevel;
 import org.osgi.framework.wiring.BundleWiring;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,9 +34,13 @@ import java.security.Security;
 public class Activator implements BundleActivator {
 
     private static final Logger logger = LoggerFactory.getLogger(BundleActivator.class);
+    private static final int START_LEVEL = 19;
 
     public void start(BundleContext context) throws Exception {
-        //Classloading
+        // Setting Start Level to a value lower than the JCR Install bundle to enable proper start up sequence.
+        context.getBundle().adapt(BundleStartLevel.class).setStartLevel(START_LEVEL);
+
+        // Classloading
         BundleWiring bundleWiring = context.getBundle().adapt(BundleWiring.class);
         ClassLoader loader = bundleWiring.getClassLoader();
         Thread thread = Thread.currentThread();
