@@ -48,7 +48,6 @@
           <module>metrics-prometheus</module>
           <module>saml-handler</module>
           <module>saml-example</module>
-          <module>feature-launcher-maven-plugin</module>
     </modules>
 
 </project>
