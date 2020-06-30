@@ -8,6 +8,7 @@ Import-Package:!com.beust*,!antlr*,!org.apache.log.*,!org.apache.oro.text.perl*,
 !org.apache.tools.ant.*,!org.jdom*,!com.sun.org.apache.xerces.internal*,!sun.io,!org.bouncycastle.*,!javax.xml.bind.*,\
 !com.werken.xpath.*,!org.apache.xml.dtm.*,!org.apache.xml.utils.*,!org.apache.xpath.*,\
 !junit.framework*,!org.dom4j.*,!com.sun.msv.*,!sun.misc,javax.annotation;version=0.0.0,!org.relaxng.datatype.*,*
+Export-Package:org.apache.jackrabbit.oak.spi.security.authentication.external.*
 -removeheaders: Include-Resource, Private-Package
 -includeresource:\
 metrics-core-[0-9\.]+.jar;lib:=true,\

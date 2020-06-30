@@ -187,17 +187,13 @@ which is licensed under the Apache-2.0 license.
         <scope>provided</scope>
     </dependency>
 
-<!-- NOTE: Make sure oak-auth-external bundle is Active at the same version as Oak
-groupId: org.apache.jackrabbit
-artifactId: oak-auth-external
-version: <matching oak version> 
-scope: provided  
+<!--
+Export-Package:org.apache.jackrabbit.oak.spi.security.authentication.external.*
 -->
     <dependency>
       <groupId>org.apache.jackrabbit</groupId>
       <artifactId>oak-auth-external</artifactId>
       <version>1.26.0</version>
-      <scope>provided</scope>
     </dependency>
 
 
