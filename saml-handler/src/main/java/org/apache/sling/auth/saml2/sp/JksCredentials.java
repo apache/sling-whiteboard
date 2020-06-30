@@ -27,6 +27,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.*;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+
+/**
+ * Abstract class that provides a method of opening a keystore
+ */
 
 public abstract class JksCredentials {
 
@@ -34,7 +39,12 @@ public abstract class JksCredentials {
 
     }
 
-    public static KeyStore getKeyStore(String filePathToJKS, char[] jksPassword) {
+    /**
+     * @param filePathToJKS Path to the JKS file. Usually it will be relative to the Sling instances, for example, "./sling/exampleSaml2.jks"
+     * @param jksPassword Password for the JKS as a char[]
+     * @return A Keystore instance or throws an uncaught Runtime exception intending to halt the caller's processes.
+     */
+    protected static KeyStore getKeyStore(String filePathToJKS, char[] jksPassword) {
         // Try-with-Resources closes file input stream automatically
         try (InputStream fis = new FileInputStream(filePathToJKS)){
             KeyStore keyStore = KeyStore.getInstance("JKS");
@@ -44,4 +54,5 @@ public abstract class JksCredentials {
             throw new SAML2RuntimeException(e);
         }
     }
+
 }

@@ -26,12 +26,25 @@ import org.opensaml.security.x509.BasicX509Credential;
 import java.security.*;
 import java.security.cert.X509Certificate;
 
+/**
+ * To sign and encrypt outgoing SAML messages a KeyPair credential is required
+ */
 public class KeyPairCredentials extends JksCredentials {
 
     private KeyPairCredentials(){
         super();
     }
 
+    /**
+     * Returns a BasicX509Credential representing the key pair of the SAML Service Provider
+     * This credential is used to encrypt and cryptographically sign SAML messages sent to the Identity Provider.
+     *
+     * @param jksPath
+     * @param jksPassword
+     * @param certAlias
+     * @param keysPassword
+     * @return
+     */
     public static BasicX509Credential getCredential (
             final String jksPath,
             final char[] jksPassword,

@@ -27,11 +27,23 @@ import org.opensaml.security.x509.BasicX509Credential;
 import java.security.*;
 import java.security.cert.X509Certificate;
 
+/**
+ * This is used when SAML messages are signed by the Identity Provider.
+ */
 public class VerifySignatureCredentials extends JksCredentials {
 
     private VerifySignatureCredentials(){
         super();
     }
+
+    /**
+     * The public x509 credential as provided by this method is used to verify the signature of incoming SAML Requests.
+     *
+     * @param jksPath The path to the JKS holding the Certification
+     * @param jksPassword Password of the Java KeyStore
+     * @param certAlias The Alias of the public key credential used to create the X509
+     * @return
+     */
 
     public static Credential getCredential(
             final String jksPath,

@@ -39,22 +39,22 @@ Procedure for localhost testing
 
 ### Start and Configure an External Identity Provider 
 1. Start a Keycloak Server 
-`docker run -p 8484:8080 -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin quay.io/keycloak/keycloak:10.0.2`
+`docker run -p 8484:8080 -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin  jboss/keycloak`
 2. Login using http://localhost:8484/auth/admin/ 
    - username: admin, password: admin
 3. Configure a Realm   
    - Click "Add Realm" 
-   - Select the file located at `saml-handler/src/main/resources/sling-realm-export.json` 
+   - Select the file located at `saml-example/src/main/resources/sling-realm-export.json` 
 ![](src/main/resources/realm-add.png)
 Note. The preconfigured realm contains configuration for the client and the groups, but does not contain users.
 4. Add user(s)
    - Select Users under the "Sling" Realm
       ![](src/main/resources/user-create.png)   
-   - Set user attributes
+   - Set user attributes; specifically "userid"   
       ![](src/main/resources/user-set-attribute.png)
-   - Set user password
+   - Set user password 
       ![](src/main/resources/user-set-password.png)
-   - Set user groups
+   - Set user groups; specifically join "pcms-authors"
       ![](src/main/resources/user-add-groups.png)  
    
 
@@ -62,10 +62,12 @@ Note. The preconfigured realm contains configuration for the client and the grou
 
 ### Sling SAML2 Service Provider Setup   
 
-1. Start Sling
-2. Use Felix "/system/console" to install bundle [org.apache.jackrabbit.oak-auth-external](https://mvnrepository.com/artifact/org.apache.jackrabbit/oak-auth-external) corresponding to the JCR Oak version in your instance (e.g. 1.26.0)
-3. Run `mvn clean install -P autoInstallBundle` to the SAML2 Bundle. Verify the state is Active
-4. Use Composum to install the localhost test package "src/main/resources/localhostExample-1.zip" 
+1. Start Sling (Assuming a new instance of Sling 12-SNAPSHOT)
+2. Run `mvn clean install -P autoInstallBundle` from saml-handler project  
+Note: saml-handler is the core bundle offering SAML2 Sign on
+3. Run `mvn clean install -P autoInstallPackage` from saml-example project  
+Note: saml-example is example setup package containing:  OSGI configurations, service-user and ACL's. 
+This setup is detailed in the section below.
 
 
 #### Configurations, Service User and ACL's 

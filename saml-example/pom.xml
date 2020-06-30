@@ -138,11 +138,6 @@
                       <artifactId>org.apache.sling.junit.core</artifactId>
                       <generateFilter>true</generateFilter>
                     </embedded>
-                    <embedded>
-                      <groupId>org.apache.jackrabbit</groupId>
-                      <artifactId>oak-auth-external</artifactId>
-                      <generateFilter>true</generateFilter>
-                    </embedded>
                   </embeddeds>
 
                 </configuration>

@@ -477,11 +477,12 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
             User samlUser = saml2UserMgtService.getOrCreateSamlUser(saml2User);
             saml2UserMgtService.updateGroupMembership(saml2User);
             saml2UserMgtService.updateUserProperties(saml2User);
-            saml2UserMgtService.cleanUp();
             return samlUser;
         } else if (saml2User != null && saml2User.getId() == null){
+            saml2UserMgtService.cleanUp();
             throw new SAML2RuntimeException("SAML2 User ID attribute name (saml2userIDAttr) is not correctly configured.");
         }
+        saml2UserMgtService.cleanUp();
         return null;
     }
 
