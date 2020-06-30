@@ -22,12 +22,11 @@
   </parent>
 
 
-  <name>SAML2 Example Parent</name>
   <groupId>org.apache.sling.auth.saml2</groupId>
-  <artifactId>saml2.example-parent</artifactId>
+  <artifactId>saml2.example-content</artifactId>
+  <name>Example Configs for SAML2 Service Provider</name>
   <version>0.2.0-SNAPSHOT</version>
   <description>Deploys test configurations to SLing for SAML2 Sign On</description>
-  <packaging>pom</packaging>
 
   <properties>
     <sling.host>localhost</sling.host>
@@ -37,12 +36,121 @@
     <noContent>false</noContent>
   </properties>
 
-  <modules>
-    <module>core</module>
-    <module>example-content</module>
-  </modules>
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.jackrabbit</groupId>
+      <artifactId>oak-auth-external</artifactId>
+      <version>1.26.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.junit.core</artifactId>
+      <version>1.0.26</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
 
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/content/jcr_root/apps/runmodes/config</directory>
+        <targetPath>apps/runmodes/config</targetPath>
+      </resource>
+      <resource>
+        <directory>src/main/content/jcr_root/apps/saml/config</directory>
+        <targetPath>apps/saml/config</targetPath>
+      </resource>
+    </resources>
 
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>ianal-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>verify-legal-files</id>
+            <goals>
+              <goal>verify-legal-files</goal>
+            </goals>
+            <configuration>
+              <!--
+              It will WARN about the artifact missing legal files.
+              The legal files are in the artifact in paths below below
+                jcr_root/META-INF/DEPENDENCIES
+                jcr_root/META-INF/LICENSE
+                jcr_root/META-INF/NOTICE
+               -->
+              <strict>false</strict>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
 
+    </plugins>
+  </build>
 
+  <profiles>
+    <profile>
+      <id>autoInstallPackage</id>
+      <properties>
+        <targetServiceUrl>http://${sling.host}:${sling.port}/bin/cpm/package.service.html</targetServiceUrl>
+      </properties>
+      <build>
+
+        <plugins>
+          <plugin>
+            <groupId>io.wcm.maven.plugins</groupId>
+            <artifactId>wcmio-content-package-maven-plugin</artifactId>
+            <extensions>true</extensions>
+            <configuration>
+              <serviceURL>${targetServiceUrl}</serviceURL>
+              <group>${project.groupId}</group>
+              <skip>${noContent}</skip>
+              <userId>${sling.user}</userId>
+              <password>${sling.password}</password>
+            </configuration>
+            <executions>
+              <execution>
+                <id>install-package</id>
+                <goals>
+                  <goal>install</goal>
+                </goals>
+              </execution>
+              <execution>
+                <goals>
+                  <goal>package</goal>
+                </goals>
+
+                <configuration>
+                  <filters>
+                    <filter>
+                      <root>/apps/runmodes/config/org.apache.sling.jcr.repoinit.RepositoryInitializer-saml.config</root>
+                    </filter>
+                    <filter>
+                      <root>/apps/saml/config</root>
+                    </filter>
+                  </filters>
+                  <embeddedTarget>/apps/sling/saml2/install</embeddedTarget>
+                  <embeddeds>
+                    <embedded>
+                      <groupId>org.apache.sling</groupId>
+                      <artifactId>org.apache.sling.junit.core</artifactId>
+                      <generateFilter>true</generateFilter>
+                    </embedded>
+                    <embedded>
+                      <groupId>org.apache.jackrabbit</groupId>
+                      <artifactId>oak-auth-external</artifactId>
+                      <generateFilter>true</generateFilter>
+                    </embedded>
+                  </embeddeds>
+
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
