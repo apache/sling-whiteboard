@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.*;
 import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
+
 
 /**
  * Abstract class that provides a method of opening a keystore
