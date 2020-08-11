@@ -7,7 +7,7 @@ require "string"
 --]]
 function handle(r)
     r.content_type = "text/plain"
-    r:puts("max-age=5 at " .. os.time() .. "\n")
+    r:puts("max-age=5 at " .. os.date() .. "\n")
     r.headers_out["Cache-Control"] = 'max-age=5'
     return apache2.OK
 end

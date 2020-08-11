@@ -8,7 +8,7 @@ local os = require 'os'
 --]]
 function handle(r)
     r.content_type = "text/plain"
-    r:puts("Cache-Control: Private at " .. os.time() .. "\n")
+    r:puts("Cache-Control: Private at " .. os.date() .. "\n")
     r.headers_out["Cache-Control"] = 'Private'
     return apache2.OK
 end
