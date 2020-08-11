@@ -15,6 +15,7 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ *
  */
 
 package org.apache.sling.auth.saml2;
@@ -75,30 +76,42 @@ public @interface AuthenticationHandlerSAML2Config {
         description="")
     String saml2IDPDestination() default "http://localhost:8080/idp/profile/SAML2/Redirect/SSO";
 
+    @AttributeDefinition(name = "Logout URL",
+            description="Redirect User to this URL when they logout")
+    String saml2LogoutURL() default "https://sling.apache.org/";
+
     @AttributeDefinition(
-        name = "SP Authentication Handler",
-        description = " SAML2 Authentication Handler Enabled",
+        name = "Service Provider Enabled",
+        description = "SAML2 Web Profile Service Provider Authentication Handler Enabled",
         type = AttributeType.BOOLEAN )
     boolean saml2SPEnabled() default false;
 
+    @AttributeDefinition(
+            name = "Sign and Encrypt Assertions",
+            description = "Highly Recommended for security",
+            type = AttributeType.BOOLEAN )
+    boolean saml2SPEncryptAndSign() default false;
+
     @AttributeDefinition(name = "Java Keystore (.jks) file location",
         description="File location of the Java Keystore JKS")
-    String jksFileLocation() default "./sling/keys/samlKeystore.jks";
+    String jksFileLocation() default "";
 
     @AttributeDefinition(name = "JKS Password (storepass)",
-        description="Password needed for accessing the JKS")
-    String jksStorePassword() default "jksStorePassword";
+        description="Password needed for accessing the JKS",
+        type = AttributeType.PASSWORD)
+    String jksStorePassword() default "";
 
     @AttributeDefinition(name = "IDP Signing Certificate Alias",
         description="Alias of certificate to be used when verifying Identity Provider signature")
-    String idpCertAlias() default "idpCert";
+    String idpCertAlias() default "";
 
     @AttributeDefinition(name = "SP Keystore Alias",
         description="Alias identifying the Service Provider (SP) Encryption Key-pair (keystore alias)")
-    String spKeysAlias() default "samlKeys";
+    String spKeysAlias() default "";
 
     @AttributeDefinition(name = "SP Keystore Password (keystore)",
-        description="Password needed for accessing the Service Provider (SP) Key Pair identified by the SP Keystore Alias")
-    String spKeysPassword() default "keystore";
+        description="Password needed for accessing the Service Provider (SP) Key Pair identified by the SP Keystore Alias",
+        type = AttributeType.PASSWORD)
+    String spKeysPassword() default "";
 
 }

@@ -20,23 +20,24 @@
 
 package org.apache.sling.auth.saml2;
 
-public interface SAML2ConfigService {
-    String[] getSaml2Path();
-    String getEntityID();
-    String getAcsPath();
-    String getACSURL();
-    String getSaml2userHome();
-    String getSaml2userIDAttr();
-    String getSaml2groupMembershipAttr();
-    String getSaml2SessionAttr();
-    String getSaml2IDPDestination();
-    boolean getSaml2SPEnabled();
-    boolean getSaml2SPEncryptAndSign();
-    String[] getSyncAttrs();
-    String getJksFileLocation();
-    String getJksStorePassword();
-    String getSpKeysAlias();
-    String getIdpCertAlias();
-    String getSpKeysPassword();
-    String getSaml2LogoutURL();
+/**
+ * The SAML2RuntimeException is thrown when problems are encountered when processing SAML2 requests,
+ * and it is intended to halt the sign on process.
+ *
+ *
+ * @author cmrockwe@umich.edu
+ */
+public class SAML2RuntimeException extends RuntimeException {
+
+    public SAML2RuntimeException(String message, Throwable cause){
+        super(message, cause);
+    }
+
+    public SAML2RuntimeException(Throwable cause){
+        super(cause);
+    }
+
+    public SAML2RuntimeException(String message){
+        super(message);
+    }
 }

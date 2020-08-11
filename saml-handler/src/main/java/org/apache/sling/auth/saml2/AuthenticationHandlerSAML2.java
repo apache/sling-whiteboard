@@ -15,6 +15,7 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ *
  */
 
 package org.apache.sling.auth.saml2;
@@ -26,7 +27,6 @@ import org.apache.sling.auth.core.AuthUtil;
 import org.apache.sling.auth.saml2.sp.*;
 import org.apache.sling.auth.saml2.impl.SAML2ConfigServiceImpl;
 import org.apache.sling.auth.saml2.impl.Saml2Credentials;
-import org.joda.time.DateTime;
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
 import org.opensaml.core.xml.schema.XSString;
@@ -42,6 +42,7 @@ import org.opensaml.saml.saml2.core.*;
 import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.saml2.encryption.Decrypter;
 import org.opensaml.saml.saml2.metadata.Endpoint;
+import org.opensaml.saml.saml2.metadata.SingleLogoutService;
 import org.opensaml.saml.saml2.metadata.SingleSignOnService;
 import org.opensaml.saml.security.impl.SAMLSignatureProfileValidator;
 import org.opensaml.security.credential.Credential;
@@ -73,6 +74,7 @@ import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 
@@ -101,7 +103,7 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
     public static final String AUTH_STORAGE_SESSION_TYPE = "session";
     public static final String AUTH_TYPE = "SAML2";
     public static final String TOKEN_FILENAME = "saml2-cookie-tokens.bin";
-    private SessionStorage authStorage;
+    private SessionStorage storageAuthInfo;
     private long sessionTimeout;
     private static Logger logger = LoggerFactory.getLogger(AuthenticationHandlerSAML2.class);
     static final String SERVICE_NAME = "org.apache.sling.auth.saml2.AuthenticationHandlerSAML2";
@@ -129,23 +131,25 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
     @Activate @Modified
     protected void activate(ComponentContext componentContext)
             throws InvalidKeyException, NoSuchAlgorithmException, IllegalStateException, UnsupportedEncodingException {
-        this.authStorage = new SessionStorage(SAML2ConfigServiceImpl.AUTHENTICATED_SESSION_ATTRIBUTE);
+        this.storageAuthInfo = new SessionStorage(SAML2ConfigServiceImpl.AUTHENTICATED_SESSION_ATTRIBUTE);
         this.sessionTimeout = MINUTES * timeoutMinutes;
         this.path = saml2ConfigService.getSaml2Path();
 
         final File tokenFile = getTokenFile(componentContext.getBundleContext());
         this.tokenStore = new TokenStore(tokenFile, sessionTimeout, false);
-//      set encryption keys
-        this.spKeypair = KeyPairCredentials.getCredential(
-                saml2ConfigService.getJksFileLocation(),
-                saml2ConfigService.getJksStorePassword(),
-                saml2ConfigService.getSpKeysAlias(),
-                saml2ConfigService.getSpKeysPassword());
-//      set credential for signing
-        this.idpVerificationCert = VerifySignatureCredentials.getCredential(
-                saml2ConfigService.getJksFileLocation(),
-                saml2ConfigService.getJksStorePassword(),
-                saml2ConfigService.getIdpCertAlias());
+        if (saml2ConfigService.getSaml2SPEncryptAndSign()) {
+            //      set encryption keys
+            this.spKeypair = KeyPairCredentials.getCredential(
+                    saml2ConfigService.getJksFileLocation(),
+                    saml2ConfigService.getJksStorePassword().toCharArray(),
+                    saml2ConfigService.getSpKeysAlias(),
+                    saml2ConfigService.getSpKeysPassword().toCharArray());
+            //      set credential for signing
+            this.idpVerificationCert = VerifySignatureCredentials.getCredential(
+                    saml2ConfigService.getJksFileLocation(),
+                    saml2ConfigService.getJksStorePassword().toCharArray(),
+                    saml2ConfigService.getIdpCertAlias());
+        }
     }
 
     private Credential getSpKeypair(){
@@ -168,13 +172,19 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
             if (reqURI.equals(saml2ConfigService.getAcsPath())){
                 doClassloading();
                 MessageContext messageContext = decodeHttpPostSamlResp(httpServletRequest);
+                Assertion assertion = null;
                 boolean relayStateIsOk = validateRelayState(httpServletRequest, messageContext);
-                // If relay state from request = relay state from session))
+                // If relay state from request == relay state from session))
                 if (relayStateIsOk) {
                     Response response = (Response) messageContext.getMessage();
-                    EncryptedAssertion encryptedAssertion = response.getEncryptedAssertions().get(0);
-                    Assertion assertion = decryptAssertion(encryptedAssertion);
-                    verifyAssertionSignature(assertion);
+                    if (saml2ConfigService.getSaml2SPEncryptAndSign()) {
+                        EncryptedAssertion encryptedAssertion = response.getEncryptedAssertions().get(0);
+                        assertion = decryptAssertion(encryptedAssertion);
+                        verifyAssertionSignature(assertion);
+                    } else {
+                        // Not using encryption
+                        assertion = response.getAssertions().get(0);
+                    }
                     if (validateSaml2Conditions(httpServletRequest, assertion)){
                         logger.debug("Decrypted Assertion: ");
                         Helpers.logSAMLObject(assertion);
@@ -188,14 +198,15 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
 // 2.  try credentials from the session
             } else {
                 // Request context is not the ACS path, so get the authInfo from session.
-                String authData = authStorage.getString(httpServletRequest);
+                String authData = storageAuthInfo.getString(httpServletRequest);
                 if (authData != null) {
                     if (tokenStore.isValid(authData)) {
                         return buildAuthInfo(authData);
                     } else {
                         // clear the token from the session, its invalid and we should get rid of it
                         // so that the invalid cookie isn't present on the authN operation.
-                        authStorage.clear(httpServletRequest, httpServletResponse);
+                        clearSessionAttributes(httpServletRequest, httpServletResponse);
+
                         if ( AuthUtil.isValidateRequest(httpServletRequest)) {
                             // signal the requestCredentials method a previous login failure
                             httpServletRequest.setAttribute(FAILURE_REASON, SamlReason.TIMEOUT);
@@ -206,6 +217,11 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
             }
         }
         return null;
+    }
+
+    private void clearSessionAttributes(final HttpServletRequest httpServletRequest,
+                                        final HttpServletResponse httpServletResponse) {
+        storageAuthInfo.clear(httpServletRequest, httpServletResponse);
     }
 
     /**
@@ -270,16 +286,19 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
 
 
     private void redirectUserWithRequest(final HttpServletRequest httpServletRequest ,
-                     final HttpServletResponse httpServletResponse, final AuthnRequest authnRequest) {
+                     final HttpServletResponse httpServletResponse, final RequestAbstractType requestForIDP) {
         MessageContext context = new MessageContext();
-        context.setMessage(authnRequest);
+        context.setMessage(requestForIDP);
         SAMLBindingContext bindingContext = context.getSubcontext(SAMLBindingContext.class, true);
-
-        setRelayStateOnSession(httpServletRequest, bindingContext);
-        setRequestIDOnSession(httpServletRequest, authnRequest);
         SAMLPeerEntityContext peerEntityContext = context.getSubcontext(SAMLPeerEntityContext.class, true);
         SAMLEndpointContext endpointContext = peerEntityContext.getSubcontext(SAMLEndpointContext.class, true);
-        endpointContext.setEndpoint(getIPDEndpoint());
+        if (requestForIDP instanceof AuthnRequest) {
+            setRelayStateOnSession(httpServletRequest, bindingContext);
+            setRequestIDOnSession(httpServletRequest, (AuthnRequest)requestForIDP);
+            endpointContext.setEndpoint(getIPDEndpoint());
+        } else if (requestForIDP instanceof LogoutRequest){
+            endpointContext.setEndpoint(getSLOEndpoint());
+        }
         SignatureSigningParameters signatureSigningParameters = new SignatureSigningParameters();
         signatureSigningParameters.setSigningCredential(this.getSpKeypair());
         signatureSigningParameters.setSignatureAlgorithm(SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA256);
@@ -291,24 +310,32 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
         try {
             encoder.initialize();
         } catch (ComponentInitializationException e) {
-            throw new RuntimeException(e);
+            throw new SAML2RuntimeException(e);
         }
 
-        logger.info("AuthnRequest: ");
-        Helpers.logSAMLObject(authnRequest);
+        logger.info("Request: {}", requestForIDP.getClass());
+        Helpers.logSAMLObject(requestForIDP);
 
         logger.info("Redirecting to IDP");
         try {
             encoder.encode();
         } catch (MessageEncodingException e) {
-            throw new RuntimeException(e);
+            throw new SAML2RuntimeException(e);
         }
     }
+
 
     private Endpoint getIPDEndpoint() {
         SingleSignOnService endpoint = Helpers.buildSAMLObject(SingleSignOnService.class);
         endpoint.setBinding(SAMLConstants.SAML2_REDIRECT_BINDING_URI);
         endpoint.setLocation(saml2ConfigService.getSaml2IDPDestination());
+        return endpoint;
+    }
+
+    private Endpoint getSLOEndpoint() {
+        SingleLogoutService endpoint = Helpers.buildSAMLObject(SingleLogoutService.class);
+        endpoint.setBinding(SAMLConstants.SAML2_PAOS_BINDING_URI);
+        endpoint.setLocation(saml2ConfigService.getSaml2LogoutURL());
         return endpoint;
     }
 
@@ -323,7 +350,7 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
      */
     private AuthnRequest buildAuthnRequest() {
         AuthnRequest authnRequest = Helpers.buildSAMLObject(AuthnRequest.class);
-        authnRequest.setIssueInstant(new DateTime());
+        authnRequest.setIssueInstant(Instant.now());
         authnRequest.setDestination(saml2ConfigService.getSaml2IDPDestination());
         authnRequest.setProtocolBinding(SAMLConstants.SAML2_POST_BINDING_URI);
         // Entity ID
@@ -357,9 +384,9 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
             httpPostDecoder.decode();
         } catch (MessageDecodingException e) {
             logger.error("MessageDecodingException");
-            throw new RuntimeException(e);
+            throw new SAML2RuntimeException(e);
         } catch (ComponentInitializationException e) {
-            throw new RuntimeException(e);
+            throw new SAML2RuntimeException(e);
         }
         return httpPostDecoder.getMessageContext();
     }
@@ -372,14 +399,14 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
         try {
             return decrypter.decrypt(encryptedAssertion);
         } catch (DecryptionException e) {
-            throw new RuntimeException(e);
+            throw new SAML2RuntimeException(e);
         }
     }
 
     private void verifyAssertionSignature(final Assertion assertion) {
         if (!assertion.isSigned()) {
             logger.error("Halting");
-            throw new RuntimeException("The SAML Assertion was not signed!");
+            throw new SAML2RuntimeException("The SAML Assertion was not signed!");
         }
         try {
             SAMLSignatureProfileValidator profileValidator = new SAMLSignatureProfileValidator();
@@ -388,7 +415,7 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
             SignatureValidator.validate(assertion.getSignature(), this.getIdpVerificationCert());
             logger.info("SAML Assertion signature verified");
         } catch (SignatureException e) {
-            throw new RuntimeException("SAML Assertion signature problem", e);
+            throw new SAML2RuntimeException("SAML Assertion signature problem", e);
         }
     }
 
@@ -446,13 +473,16 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
         }
 
         boolean setUpOk = saml2UserMgtService.setUp();
-        if (setUpOk) {
+        if (setUpOk && saml2User != null && saml2User.getId() != null) {
             User samlUser = saml2UserMgtService.getOrCreateSamlUser(saml2User);
             saml2UserMgtService.updateGroupMembership(saml2User);
             saml2UserMgtService.updateUserProperties(saml2User);
-            saml2UserMgtService.cleanUp();
             return samlUser;
+        } else if (saml2User != null && saml2User.getId() == null){
+            saml2UserMgtService.cleanUp();
+            throw new SAML2RuntimeException("SAML2 User ID attribute name (saml2userIDAttr) is not correctly configured.");
         }
+        saml2UserMgtService.cleanUp();
         return null;
     }
 
@@ -464,7 +494,7 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
             return authInfo;
         } catch (RepositoryException e) {
             logger.error("failed to build Authentication Info");
-            throw new RuntimeException(e);
+            throw new SAML2RuntimeException(e);
         }
     }
 
@@ -510,9 +540,10 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
             return false;
         }
         final SubjectConfirmationData subjectConfirmationData = subjectConfirmations.get(0).getSubjectConfirmationData();
-        final DateTime notOnOrAfter = subjectConfirmationData.getNotOnOrAfter();
+        final Instant notOnOrAfter = subjectConfirmationData.getNotOnOrAfter();
         // validate expiration
-        final boolean validTime = notOnOrAfter.isAfterNow();
+
+        final boolean validTime = notOnOrAfter.isAfter(Instant.now());
         if (!validTime) {
             logger.error("SAML2 Subject Confirmation failed validation: Expired.");
         }
@@ -531,18 +562,21 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
         return validTime && validRecipient && validID;
     }
 
+
+
+
     private void redirectToGotoURL(HttpServletRequest req, HttpServletResponse resp) {
         String gotoURL = (String)req.getSession().getAttribute(SAML2ConfigServiceImpl.GOTO_URL_SESSION_ATTRIBUTE);
         logger.info("Redirecting to requested URL: " + gotoURL);
         try {
             resp.sendRedirect(gotoURL);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new SAML2RuntimeException(e);
         }
     }
 
     /**
-     * Drops any credential and authentication details from the request and asks the client to do the same.
+     * Drops credential and authentication details from the request and redirects client to a Logout URL.
      *
      * @param httpServletRequest
      * @param httpServletResponse
@@ -550,8 +584,12 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
      */
     @Override
     public void dropCredentials(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws IOException {
-        authStorage.clear(httpServletRequest, httpServletResponse);
+        clearSessionAttributes(httpServletRequest, httpServletResponse);
+        if(!saml2ConfigService.getSaml2LogoutURL().isEmpty()){
+            httpServletResponse.sendRedirect(saml2ConfigService.getSaml2LogoutURL());
+        }
     }
+
 
     /**
      * Called after an unsuccessful login attempt. This implementation makes sure
@@ -568,7 +606,7 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
          */
 
         // clear authentication data from Cookie or Http Session
-        authStorage.clear(request, response);
+        clearSessionAttributes(request, response);
 
         // signal the reason for login failure
         request.setAttribute(FAILURE_REASON, SamlReason.INVALID_CREDENTIALS);
@@ -651,19 +689,19 @@ public class AuthenticationHandlerSAML2 extends DefaultAuthenticationFeedbackHan
                 authData = null;
                 authData = tokenStore.encode(expires, authInfo.getUser());
             } catch (InvalidKeyException e) {
-                throw new RuntimeException(e);
+                throw new SAML2RuntimeException(e);
             } catch (IllegalStateException e) {
-                throw new RuntimeException(e);
+                throw new SAML2RuntimeException(e);
             } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException(e);
+                throw new SAML2RuntimeException(e);
             } catch (NoSuchAlgorithmException e) {
-                throw new RuntimeException(e);
+                throw new SAML2RuntimeException(e);
             }
 
             if (authData != null) {
-                authStorage.setString(request, authData);
+                storageAuthInfo.setString(request, authData);
             } else {
-                authStorage.clear(request, response);
+                clearSessionAttributes(request, response);
             }
         }
     }
