@@ -119,30 +119,26 @@ public class Saml2UserMgtServiceImpl implements Saml2UserMgtService {
         // get list of groups from assertion (see ConsumerServlet::doUserManagement)
         try {
             User jrcUser = (User) this.userManager.getAuthorizable(user.getId());
-
             Iterator<Authorizable> allGroups = userManager.findAuthorizables("jcr:primaryType", "rep:Group");
-
-            // iterate the managed groups
+            // get and iterate all groups
             while (allGroups.hasNext()) {
                 Group managedGroup = (Group) allGroups.next();
-                // if group has managedProperty flag set true
+                // IF a group has managedProperty flag set true
                 Value[] valueList = managedGroup.getProperty("managedGroup");
                 if (valueList == null && user.getGroupMembership().contains(managedGroup.getID())) {
-                    // the group does not have the managedGroup flag
+                    // IF the group does not have the managedGroup flag
                     // AND the group is in the ext users groupMembership list
+                    // THEN set the managedGroup flag and add user
                     managedGroup.setProperty("managedGroup", vf.createValue(true));
-                }
-
-                // if the users' list of groups (from assertion) contains the managed group...
-                Value[] isManaged = managedGroup.getProperty("managedGroup");
-                if (isManaged != null &&
-                    isManaged.length > 0 &&
-                    isManaged[0].getBoolean()) {
+                    managedGroup.addMember(jrcUser);
+                } else if (valueList != null && valueList.length > 0 && valueList[0].getBoolean()) {
+                    // IF the group has the managedGroup flag set
+                    // AND the users list of groups (from assertion) contains this group ID
+                    // THEN add the user to the managed group
+                    // ELSE remove the user from the managed group
                     if (user.getGroupMembership().contains(managedGroup.getID())) {
                         managedGroup.addMember(jrcUser);
                     } else {
-                        // for groups that are not in the list of groups from users' assertion
-                        // remove the user from the managed group if they are an existing member
                         managedGroup.removeMember(jrcUser);
                     }
                 }

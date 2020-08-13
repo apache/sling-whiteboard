@@ -21,48 +21,43 @@
 package org.apache.sling.auth.saml2.sp;
 
 
+import org.apache.sling.auth.saml2.SAML2RuntimeException;
 import org.opensaml.security.credential.Credential;
 import org.opensaml.security.x509.BasicX509Credential;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.security.*;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
+/**
+ * This is used when SAML messages are signed by the Identity Provider.
+ */
+public class VerifySignatureCredentials extends JksCredentials {
 
-public class VerifySignatureCredentials {
+    private VerifySignatureCredentials(){
+        super();
+    }
+
+    /**
+     * The public x509 credential as provided by this method is used to verify the signature of incoming SAML Requests.
+     *
+     * @param jksPath The path to the JKS holding the Certification
+     * @param jksPassword Password of the Java KeyStore
+     * @param certAlias The Alias of the public key credential used to create the X509
+     * @return
+     */
 
     public static Credential getCredential(
             final String jksPath,
-            final String jksPassword,
+            final char[] jksPassword,
             final String certAlias) {
-        FileInputStream fis = null;
+
         try {
-            KeyStore keyStore = KeyStore.getInstance("JKS");
-            fis = new FileInputStream(jksPath);
-            keyStore.load(new FileInputStream(jksPath), jksPassword.toCharArray());
+            KeyStore keyStore = getKeyStore(jksPath, jksPassword);
             X509Certificate cert = (X509Certificate) keyStore.getCertificate(certAlias);
             BasicX509Credential x509Credential = new BasicX509Credential(cert);
             return x509Credential;
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         } catch (java.security.KeyStoreException e) {
-            throw new RuntimeException(e);
-        }  catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        } catch (CertificateException e) {
-            throw new RuntimeException(e);
-        } finally {
-            try {
-                if (fis != null) {
-                    fis.close();
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            throw new SAML2RuntimeException(e);
         }
     }
+
 }

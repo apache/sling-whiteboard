@@ -1,7 +1,8 @@
 # Apache Sling SAML2 Handler (NOT FOR PRODUCTION)
 
-This project is intended to be a contribution to the [Apache Sling](https://sling.apache.org) project;
- it has a SAML2 Service Provider Authentication Handler and the associated SAML2 servlets and utilities. It is a work in progress and not production ready!
+This contribution to the [Apache Sling](https://sling.apache.org) project;
+ provides a SAML2 Web Profile Service Provider Authentication. 
+
 
 ## Overview
 https://en.wikipedia.org/wiki/SAML_2.0
@@ -9,165 +10,221 @@ https://en.wikipedia.org/wiki/SAML_2.0
 * The SAMLRequest uses HTTP Redirect Binding, and the contained Authn Request object instructs the IDP to use HTTP Post Binding. 
 
 ![](src/main/resources/Saml2SP.png)
- 
-## Features  
-Sling applications to authenticate users against Identity Providers (idp) 
-such as Keycloak or Shibboleth using SAML2 protocols.
+   
+Sling applications may authenticate users against an Identity Provider (idp) 
+such as Keycloak Server or Shibboleth IDP.
 
-Synchronize user management based on the SAML2 Assertion and OSGi bundle configs  
-  - Create the user upon successful IDP authentication
-  - Sync user membership of groups as defined in the OSGi configs (Pending)
-
-`sp` is the package for service provider classes   
-`Helpers` hold static utility methods used with the OpenSAML V3 library  
-The parent `saml2` package has interface definitions, the bundle Activator
-
-### OSGI Requirements
-It is assumed the Sling environment provides certain bundles. The SAML2 bundle will not activate without:  
-* org.apache.jackrabbit.oak-auth-external
+### Requirements
+- Java 11
+- Sling 11 or 12
+- An external SAML2 identity provider
 
 
- 
- 
-## JKS Options  
-Just as Jetty requires a JKS to enable https, the SAML2 SP bundle requires a JKS to hold the IDP's signing certificate and to hold the SAML2 Service providers encryption key-pair. One suggestion is to locate these under the sling folder...
- 
- 
- `$ cd sling`   
- `$ mkdir keys`  
- `$ cd keys`
-  
-### Enable Jetty HTTPS
-
-Create KeyStore & Generate Self Signed Cert (not for prod). While https on Jetty is technically not required, it serves a few purposes here: provides better security for direct access, and confirms the Java Keystore is configured properly and accessible by the sling system user. 
-  
-#### Make a JKS to hold a SSL (self-signed) Certificate 
- `$ keytool -genkeypair -keyalg RSA -validity 365 -alias sslstore -keystore sslKeystore.jks -keypass jettykeypass
--storepass  JKSPassord -dname "CN=localhost, OU=LSA Technology Services, O=University of Michigan,L=Ann Arbor, S=MI, C=US"`
-
-Note: Make note of the JKS filename and path, storepass, keypass, and cert alias.  
-
-#### Configure https on Jetty   
-The following are based on the example sslKeystore contained under resources.  
-org.apache.felix.https.enable=B"true"  
-org.osgi.service.http.port.secure=I"443"  
-org.apache.felix.https.keystore="./sling/keys/sslKeystore.jks"  
-org.apache.felix.https.keystore.password="JKSPassord"  
-org.apache.felix.https.keystore.key.password="jettykeypass" 
-org.apache.felix.https.truststore.password="JKSPassord"     
-
-![](src/main/resources/jettyHttps.png)
-
-Note: To use the example sslKeystore.jks, copy it to your Sling folder ./sling/keys/sslKeystore.jks  
-After enabling Jetty to use https over port 2443, you will need to accept the browser security warning when accessing https://localhost:2443/ due to the use of a self-signed certificate.
-
-## IDP Test Setup
-Run an IDP locally.  
-1. Assuming Sling runs on 8080, use the docker commnd to run Keycloak on port *8088* sign into the IDP using admin:admin   
-1.1. `docker run -p 8088:8080 -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin quay.io/keycloak/keycloak:9.0.2`  
-or run it in standalone https://www.keycloak.org/docs/latest/getting_started/  
-1.2. Configure the IDP manually with some basic settings such as the one described below;   
-    * create a localhost realm with a Client ID set to https://localhost:2443/ or whatever entity identifier you want
-    * convert the realm cert (http://localhost:8088/auth/admin/master/console/#/realms/localhost/keys) from pem to der
-    * save this file and import it into the JKS giving it an alias localhost. The SP uses this validate the IDP's signature
-    * Enabled = On
-    * Include AuthnStatement = On
-    * Sign Assertions = On
-    * Encrypt Assertions = On
-    * Client Signature Required = Off (This could be an open issue. Works for shib-idp not keycloak)
-    * Valid Redirect URIs = https://localhost:2443/*
-    * Base URL = https://localhost:2443/
-    * Master SAML Processing URL = https://localhost:2443/          
-2. Create a User & a Group
-    * Username = saml2-example   
-    * Password = password
-    * Group: pcms-authors
-    * Assign the user to the group
-    * Configure the IDP to release the group
-    * Decide or set an attribute to for the User ID
-    * Add an other user attributes desired to be released
-    * Intercept the SAML Response and verify the content
-      
-
-References
-https://www.keycloak.org/getting-started/getting-started-docker
-
-Links  
-admin:admin log-in http://localhost:8088/auth/admin  
-localhost realm http://localhost:8088/auth/admin/master/console/#/realms/localhost/clients
-     
-### Put your Service Provider KeyPair into a JKS 
-Option 1: Generate using Keytool  
-`$ keytool -genkey -alias samlKeys -keyalg RSA -keystore samlKeystore.jks`  
-Make note of the storepass, alias, filename, and key password.  
-These will all be needed to configure SP encryption.  
-The generated JKS should be imported into your Keycloak localhost Client "SAML Keys"
-
-Option 2: Import Existing into jks  
-`$ keytool -importkeystore -srckeystore serviceProviderKeys.p12 -destkeystore samlKeystore.jks
--srcstoretype pkcs12 -alias spKeysAlias`
- 
- 
-
-### Put your Identity Provider's Signing Certificate into SAML JKS
-Get the cert.pem from Realm Setting > Keys
-Copy pem cert and paste into a text file
-
------BEGIN CERTIFICATE-----   
-MIICoTCCAYkCBgFxqKn5fjANBgkqhkiG9w0BAQsFADAUMRIwEAYDVQQDDAlsb2Nh   
-bGhvc3QwHhcNMjAwNDIzMjAwOTAzWhcNMzAwNDIzMjAxMDQzWjAUMRIwEAYDVQQD   
-....   
------END CERTIFICATE-----
-    
-`$ keytool -import -file idp-signing.pem  -keystore samlKeystore.jks -alias IDPSigningAlias`
+### User Management
+User management is based on the OSGi bundle configuration and SAML2 Assertion    
+  - Upon successful authentication, a user is created
+  - The user may be added to a JCR group membership under certain conditions: 
+    - This bundle has an OSGI config `saml2groupMembershipAttr` set with the value of the name of the SAML group membership attribute. 
+    - The users SAML assertion contains an attribute matching the configuration above
+    - The value of the users group membership attribute is a name of an existing JCR group   
+  - `syncAttrs` can be used to synchronize user properties released by the IDP for profile properties such as given name, family name, email, and phone.      
+   
 
 
-## SAML2 Service Provider Configurations
-### Apache Felix JAAS Configuration Factory Configuration (OSGI) 
-jaas.controlFlag=Sufficient  
-jaas.ranking=110  
-jaas.realmName=jackrabbit.oak  
-jaas.classname=org.apache.sling.auth.saml2.sp.Saml2LoginModule  
 
+## Localhost Setup
+Procedure for localhost testing
+
+### Start and Configure an External Identity Provider 
+1. Start a Keycloak Server 
+`docker run -p 8484:8080 -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin  jboss/keycloak`
+2. Login using http://localhost:8484/auth/admin/ 
+   - username: admin, password: admin
+3. Configure a Realm   
+   - Click "Add Realm" 
+   - Select the file located at `saml-example/src/main/resources/sling-realm-export.json` 
+![](src/main/resources/realm-add.png)
+Note. The preconfigured realm contains configuration for the client and the groups, but does not contain users.
+4. Add user(s)
+   - Select Users under the "Sling" Realm
+      ![](src/main/resources/user-create.png)   
+   - Set user attributes; specifically "userid"   
+      ![](src/main/resources/user-set-attribute.png)
+   - Set user password 
+      ![](src/main/resources/user-set-password.png)
+   - Set user groups; specifically join "pcms-authors"
+      ![](src/main/resources/user-add-groups.png)  
+   
+
+
+
+### Sling SAML2 Service Provider Setup   
+
+1. Start Sling (Assuming a new instance of Sling 12-SNAPSHOT)
+2. Run `mvn clean install -P autoInstallBundle` from saml-handler project  
+Note: saml-handler is the core bundle offering SAML2 Sign on
+3. Run `mvn clean install -P autoInstallPackage` from saml-example project  
+Note: saml-example is example setup package containing:  OSGI configurations, service-user and ACL's. 
+This setup is detailed in the section below.
+
+
+#### Configurations, Service User and ACL's 
+Note: the following are contained in localhostExample-1.zip
+
+Provide a [JAAS OSGI Config](http://localhost:8080/system/console/configMgr/org.apache.felix.jaas.Configuration.factory) as shown below
+- jaas.controlFlag=Sufficient  
+- jaas.ranking=110  
+- jaas.realmName=jackrabbit.oak  
+- jaas.classname=org.apache.sling.auth.saml2.sp.Saml2LoginModule  
 ![](src/main/resources/jaasConfiguration.png)
 
-### SAML2 SP Service User Mapper (OSGI and ACL)
-Configure a Service User to handle the User Management.  
-org.apache.sling.auth.saml2:Saml2UserMgtService=saml2-user-mgt
+Provide a [Service User Mapper OSGI Config](http://localhost:8080/system/console/configMgr/org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended)
+- org.apache.sling.auth.saml2:Saml2UserMgtService=saml2-user-mgt
 ![](src/main/resources/serviceUserMapping.png)
 
-Grant the system user `saml2-user-mgt` sufficient ACL's to create and write to users home.
+Set up the system user "saml2-user-mgt"
+- visit [Composum Users](http://localhost:8080/bin/users.html) as admin
+- Create service user "saml2-user-mgt"
+- Provide an ACL rule for  granting `jcr:all` to this user on the `/home` path 
 ![](src/main/resources/saml2-user-mgt-acls.png)
 
+   
+Provide a [SAML2 OSGI Configuration](http://localhost:8080/system/console/configMgr/org.apache.sling.auth.saml2.impl.SAML2ConfigServiceImpl) 
+- path=http://localhost:8080/  
+- service.ranking=1000  
+- entityID=http://localhost:8080/  
+- acsPath=/sp/consumer
+- saml2userIDAttr=urn:oid:0.9.2342.19200300.100.1.1
+- saml2userHome=/home/users/saml  
+- saml2groupMembershipAttr=  
+- saml2SessionAttr=saml2AuthInfo  
+- saml2IDPDestination=http://localhost:8484/idp/profile/SAML2/Rediect/SSO   
+- saml2SPEnabled=true   
+- jksFileLocation=   
+- jksStorePassword=   
+- idpCertAlias=
+- spKeysAlias=
+- spKeysPassword=
+![](src/main/resources/saml2localKeycloak.png)   
 
+Use [Composum Users](http://localhost:8080/bin/users.html) to create the group "pcms-authors" to test automatic group membership assignment
 
-### SAML2 SP Configuration Example (OSGI)
-path=https://localhost:2443/  
-service.ranking=1000  
-entityID=https://localhost:2443/  
-acsPath=/sp/consumer  
-saml2userIDAttr=urn:oid:2.5.4.42  
-saml2userHome=/home/users/saml  
-saml2groupMembershipAttr=  
-saml2SessionAttr=saml2AuthInfo  
-saml2IDPDestination=https://localhost:8088/idp/profile/SAML2/Rediect/SSO   
-saml2SPEnabled=true   
-jksFileLocation=./sling/keys/slingSP.jks   
-jksStorePassword=storepass   
-idpCertAlias=localhost
-spKeysAlias=slingSP
-spKeysPassword=encPassword
-
-![](src/main/resources/saml2localKeycloak.png)
-
-Note: After configuring the SAML2 authentication handler, the Sling Form login can still be accessed directly http://localhost:8080/system/sling/form/login?resource=%2F
-
-Optionally, configure Keycloak to release a group to the Sling Client and create that group within Sling. Add the group ID (from the assetion) to the OSGI configuration.
+Notes:     
+   - Users home "/home/users/saml" will be created once the first user successfully authenticates.    
+   - After configuring the SAML2 authentication handler, the Sling Form login can still be accessed directly http://localhost:8080/system/sling/form/login?resource=%2F
+   - See below technical notes for certificate, keys, signing and encryption   
 
 ## Test   
-Visit https://localhost:2443 and observe login takes place on the http://localhost:8088 Keycloak Identity Provider.
+Visit http://localhost:8080 and observe login takes place on the http://localhost:8484 Keycloak Server IDP
 ![](src/main/resources/userSignInToIDP.png)
 
-Enter the credentials saml2-example:password, and observe user is granted access to the system.
+Enter credentials for the user you created, and observe user is granted access to the system.
 ![](src/main/resources/signedInUser.png)
 
+
+
+
+ 
+## Certificates, SSL, Signing and Encryption  
+This portion discusses encryption which can be very critical for the security of this solution. 
+
+Decide a location on the file system for the Keystores. For example, under the sling folder   
+      `$ mkdir sling/keys`  
+      `$ cd sling/keys`
+      
+### Enable Jetty HTTPS
+It's a good idea to configure SSL for Jetty providing https binding. 
+
+1. Create KeyStore & generate a self-signed certificate (not for production). 
+    - Generate self-signed private key and public certificate 
+      - $ openssl req -newkey rsa:2048 -nodes -keyout key.pem -x509 -days 365 -out certificate.pem 
+    - Review Certificate (Optional) 
+      - $ openssl x509 -text -noout -in certificate.pem
+    - Combine key and certificate in a PKCS#12 (P12) bundle  
+      - $ openssl pkcs12 -inkey key.pem -in certificate.pem -export -out sslKeystore.p12
+      - JKSPassord   
+2. Configure SSL and https port binding for Jetty. The following are based on the example sslKeystore.p12 created above.   
+    * org.apache.felix.https.enable=B"true"  
+    * org.osgi.service.http.port.secure=I"8443"  
+    * org.apache.felix.https.keystore="./sling/keys/sslKeystore.p12"
+    * org.apache.felix.https.truststore="./sling/keys/sslKeystore.p12"  
+    * org.apache.felix.https.keystore.password="JKSPassord"  
+    * org.apache.felix.https.keystore.key.password="JKSPassord" 
+    * org.apache.felix.https.truststore.password="JKSPassord"         
+
+![](src/main/resources/jettyHttpsP12.png)
+
+
+     
+### SAML Service Provider (SP) Keystore Detail and Example 
+Aside from the Jetty SSL credentials discussed above, there are two other credentials to consider for a SAML2 Service Provider (SP).
+* Service Provider (SP) Keypair     
+* Identity Provider (IDP) Signing Certificate    
+
+
+#### Keystore Setup (Localhost) Example 
+The SP Keypair is used by the IDP and SP to encrypt and decrypt SAML2 responses. It should be unique for each service provider.  
+Note that the SP Keypair is also used to cryptographically sign SAML requests sent from the SP to the IDP.
+
+1. Generate a new keypair for the Service Provider (SP) from ./sling/keys      
+    * `openssl req -newkey rsa:2048 -nodes -keyout samlSPkey.pem -x509 -days 365 -out samlSPcert.pem`
+    * `openssl pkcs12 -inkey samlSPkey.pem -in samlSPcert.pem -export -out samlSPkeystore.p12`         
+    * View details about the generated keypair 
+        * `$ keytool -list -v -keystore samlSPkeystore.p12`  
+    * Make note of the storepass, alias, filename, and key password. These will all be needed to configure SP encryption.
+2. Import the SP's pubic certificate (samlSPcert.pem) you made to the Keycloak Sling client 
+    * Turn on "Encrypt Assertions" and save. This will expose a new tab for SAML Keys.
+    * From the "SAML Keys" tab import using the 'Certificate PEM' option.     
+    * Select the public certificate for the SP Keypair 
+![](src/main/resources/importSPPEMCert.png)
+3. Import the Keycloak signing certificate
+   * Select the Keys tab from the Sling realm
+   * Under public keys, click and view Certificate. 
+![](src/main/resources/getIDPpublicCert.png)   
+   * Copy paste to a file signingCert.pem
+   * Import the cert.pem to the keystore 
+     * `$ keytool -import -file signingCert.pem -keystore samlKeystore.jks -alias idpsigningalias`
+
+#### Example OSGI Settings for SAML2 SP to use Keystore
+
+##### config/org/apache/sling/auth/saml2/impl/SAML2ConfigServiceImpl.config
+
+* acsPath="/sp/consumer"
+* entityID="https://localhost:8443/"
+* idpCertAlias="idpsigningalias"
+* jksFileLocation="./sling/keys/samlSPkeystore.p12"
+* jksStorePassword="samlStorePassword"
+* path=["https://localhost:8443/"]
+* saml2IDPDestination="http://localhost:8484/auth/realms/sling/protocol/saml"
+* saml2LogoutURL="https://sling.apache.org/"
+* saml2SPEnabled=B"true"
+* saml2SPEncryptAndSign=B"true"
+* saml2SessionAttr="saml2AuthInfo"
+* saml2groupMembershipAttr="urn:oid:2.16.840.1.113719.1.1.4.1.25"
+* saml2userHome="/home/users/saml"
+* saml2userIDAttr="urn:oid:0.9.2342.19200300.100.1.1"
+* service.pid="org.apache.sling.auth.saml2.impl.SAML2ConfigServiceImpl"
+* service.ranking=I"42"
+* spKeysAlias="1"
+* spKeysPassword="samlStorePassword"
+* syncAttrs=[ "urn:oid:2.5.4.4", "urn:oid:2.5.4.42", "phone", "urn:oid:1.2.840.113549.1.9.1", ]
+
+
+## Attribution
+This module was contributed to Apache Sling by Cris Rockwell and Regents of the University of Michigan.
+
+## License 
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+  http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
