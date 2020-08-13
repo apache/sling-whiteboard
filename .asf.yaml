@@ -4,6 +4,4 @@ github:
     - java
     - sling
     - experimental
-jenkins:
-  github_whitelist:
-    - cmrockwell
+
