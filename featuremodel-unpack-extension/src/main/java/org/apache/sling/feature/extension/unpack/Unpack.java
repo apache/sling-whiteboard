@@ -84,13 +84,19 @@ public class Unpack
         try
         {
             String dir = context.get("dir");
-            if (dir == null) {
-                dir = defaultMapping;
+            boolean override;
+            if (dir == null && this.defaultMapping != null) {
+                dir = this.registry.get(defaultMapping).get("dir");
+                override = Boolean.parseBoolean(this.registry.get(defaultMapping).get("override"));
             }
+            else {
+                override = Boolean.parseBoolean(context.get("override"));
+            }
+
             if (dir == null) {
                 throw new IllegalStateException("No target dir and no default configured");
             }
-            unpack(dir, url, Boolean.parseBoolean(context.get("override")));
+            unpack(dir, url, override);
         } catch (IOException ex) {
             throw new UncheckedIOException(ex);
         }
@@ -120,7 +126,7 @@ public class Unpack
         }
 
         try (JarFile jarFile = IOUtils.getJarFileFromURL(url, true, null)) {
-            jarFile.stream().filter(((Predicate<JarEntry>) JarEntry::isDirectory).negate()).forEach(entry -> {
+            jarFile.stream().filter(entry -> !entry.isDirectory() && !entry.getName().toLowerCase().startsWith("meta-inf/")).forEach(entry -> {
                 File target = new File(base, entry.getName());
                 if (target.getParentFile().toPath().startsWith(base.toPath())) {
                     if (target.getParentFile().isDirectory() || target.getParentFile().mkdirs()) {
