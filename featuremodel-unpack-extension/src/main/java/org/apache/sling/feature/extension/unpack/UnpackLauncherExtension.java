@@ -40,6 +40,10 @@ public class UnpackLauncherExtension implements ExtensionHandler
         {
             String mapping = extensionContext.getFrameworkProperties().get(UNPACK_MAPPING_KEY);
 
+            if (mapping == null || mapping.isEmpty()) {
+                mapping = System.getProperty(UNPACK_MAPPING_KEY);
+            }
+
             if (mapping != null && !mapping.isEmpty())
             {
                 return Unpack.fromMapping(mapping).handle(extension, new ArtifactProvider() {

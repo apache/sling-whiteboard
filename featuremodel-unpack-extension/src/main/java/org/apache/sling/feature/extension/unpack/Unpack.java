@@ -69,15 +69,49 @@ public class Unpack
                 String dir = this.registry.get(extension.getName()).get("dir");
                 boolean override = Boolean.parseBoolean(this.registry.get(extension.getName()).get("override"));
                 URL url = provider.provide(artifact.getId());
+                String key = this.registry.get(extension.getName()).get("key");
+                String value = this.registry.get(extension.getName()).get("value");
                 Map<String, String> context = new HashMap<>();
                 context.put("dir", dir);
                 context.put("override", Boolean.toString(override));
+                context.put("key", key);
+                context.put("value", value);
                 handler.accept(url, context);
             }
             return true;
         } else {
             return false;
         }
+    }
+
+    public boolean handle(URL url, Map<String, String> context) {
+        String dir = context.get("dir");
+        String key;
+        String value;
+        if (dir == null && this.defaultMapping != null){
+            dir = this.registry.get(defaultMapping).get("dir");
+            key = this.registry.get(defaultMapping).get("key");
+            value = this.registry.get(defaultMapping).get("value");
+        }
+        else {
+            key = context.get("key");
+            value = this.registry.get(defaultMapping).get("value");
+        }
+        if (dir == null) {
+            return false;
+        }
+        if (key != null)
+        {
+            try (JarFile jarFile = IOUtils.getJarFileFromURL(url, true, null))
+            {
+                return jarFile.getManifest().getMainAttributes().containsKey(key) && jarFile.getManifest().getMainAttributes().getValue(key).equalsIgnoreCase(value);
+            }
+            catch (IOException ex)
+            {
+                throw new UncheckedIOException(ex);
+            }
+        }
+        return false;
     }
 
     public void unpack(URL url, Map<String, String> context) {
@@ -106,7 +140,7 @@ public class Unpack
     {
         Map<String, Map<String, String>> registry = new HashMap<>();
 
-        // Syntax: system-fonts;dir:=abc;overwrite:=true,customer-fonts;dir:=eft;default=true
+        // Syntax: system-fonts;dir:=abc;overwrite:=true,customer-fonts;dir:=eft;default=true;key=foobar;value=baz
         Clause[] extClauses = Parser.parseHeader(mapping);
         for (Clause c : extClauses) {
             Map<String,String> cfg = new HashMap<>();
