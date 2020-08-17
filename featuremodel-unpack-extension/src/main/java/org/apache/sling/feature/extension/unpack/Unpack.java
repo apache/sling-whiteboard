@@ -19,10 +19,20 @@
 package org.apache.sling.feature.extension.unpack;
 
 
+import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URL;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Predicate;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import org.apache.felix.utils.manifest.Clause;
 import org.apache.felix.utils.manifest.Directive;
@@ -31,23 +41,38 @@ import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.builder.ArtifactProvider;
+import org.apache.sling.feature.io.IOUtils;
 
 public class Unpack
 {
     private final Map<String, Map<String, String>> registry;
+    private final String defaultMapping;
 
     private Unpack(Map<String, Map<String, String>> registry) {
         this.registry = registry;
+        defaultMapping = registry.entrySet().stream()
+            .filter(entry -> Boolean.parseBoolean(entry.getValue().get("default")))
+            .findFirst()
+            .map(entry -> entry.getKey())
+            .orElse(null);
     }
 
-    public boolean handle(Extension extension, ArtifactProvider provider) throws Exception
+    public boolean handle(Extension extension, ArtifactProvider provider) {
+        return handle(extension, provider, this::unpack);
+    }
+
+    public boolean handle(Extension extension, ArtifactProvider provider, BiConsumer<URL, Map<String, String>> handler)
     {
         if (extension.getType() == ExtensionType.ARTIFACTS &&
             this.registry.containsKey(extension.getName())) {
             for (Artifact artifact : extension.getArtifacts()) {
-                unpack(this.registry.get(extension.getName()).get("dir"),
-                    provider.provide(artifact.getId()),
-                    Boolean.parseBoolean(this.registry.get(extension.getName()).get("override")));
+                String dir = this.registry.get(extension.getName()).get("dir");
+                boolean override = Boolean.parseBoolean(this.registry.get(extension.getName()).get("override"));
+                URL url = provider.provide(artifact.getId());
+                Map<String, String> context = new HashMap<>();
+                context.put("dir", dir);
+                context.put("override", Boolean.toString(override));
+                handler.accept(url, context);
             }
             return true;
         } else {
@@ -55,11 +80,27 @@ public class Unpack
         }
     }
 
+    public void unpack(URL url, Map<String, String> context) {
+        try
+        {
+            String dir = context.get("dir");
+            if (dir == null) {
+                dir = defaultMapping;
+            }
+            if (dir == null) {
+                throw new IllegalStateException("No target dir and no default configured");
+            }
+            unpack(dir, url, Boolean.parseBoolean(context.get("override")));
+        } catch (IOException ex) {
+            throw new UncheckedIOException(ex);
+        }
+    }
+
     public static Unpack fromMapping(String mapping)
     {
         Map<String, Map<String, String>> registry = new HashMap<>();
 
-        // Syntax: system-fonts;dir:=abc;overwrite:=true,customer-fonts;dir:=eft
+        // Syntax: system-fonts;dir:=abc;overwrite:=true,customer-fonts;dir:=eft;default=true
         Clause[] extClauses = Parser.parseHeader(mapping);
         for (Clause c : extClauses) {
             Map<String,String> cfg = new HashMap<>();
@@ -72,7 +113,44 @@ public class Unpack
         return new Unpack(registry);
     }
 
-    private void unpack(String dir, URL url, boolean override) throws Exception {
+    private void unpack(String dir, URL url, boolean override) throws IOException {
+        File base = new File(dir);
+        if (!base.isDirectory() && !base.mkdirs()) {
+            throw new IOException("Unable to find or created base dir: " + base);
+        }
 
+        try (JarFile jarFile = IOUtils.getJarFileFromURL(url, true, null)) {
+            jarFile.stream().filter(((Predicate<JarEntry>) JarEntry::isDirectory).negate()).forEach(entry -> {
+                File target = new File(base, entry.getName());
+                if (target.getParentFile().toPath().startsWith(base.toPath())) {
+                    if (target.getParentFile().isDirectory() || target.getParentFile().mkdirs()) {
+                        try
+                        {
+                            if (override)
+                            {
+                                Files.copy(jarFile.getInputStream(entry), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                            }
+                            else if (!target.exists())
+                            {
+                                try
+                                {
+                                    Files.copy(jarFile.getInputStream(entry), target.toPath());
+                                } catch (FileAlreadyExistsException ex) {
+
+                                }
+                            }
+                        } catch (IOException ex) {
+                            throw new UncheckedIOException(ex);
+                        }
+                    }
+                    else {
+                        throw new IllegalStateException("Can't create parent dir:" + target.getParentFile());
+                    }
+                }
+                else {
+                    throw new IllegalStateException("Zip slip detected for: " + entry.getName());
+                }
+            });
+        }
     }
 }
