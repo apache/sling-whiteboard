@@ -44,17 +44,16 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Component(service = { InstallTaskFactory.class, ResourceTransformer.class })
-public class BinaryPackageInstallerPlugin implements InstallTaskFactory, ResourceTransformer {
-    public static final String BINARY_ARCHIVE_VERSION_HEADER = "Binary-Archive-Version";
-    public static final String TYPE_BINARY_ARCHIVE = "binaryarchive";
+public class UnpackArchiveInstallerPlugin implements InstallTaskFactory, ResourceTransformer {
+    public static final String TYPE_UNPACK_ARCHIVE = "unpackarchive";
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final Unpack unpack;
 
     @Activate
-    public BinaryPackageInstallerPlugin(BundleContext bc) {
-        unpack = Unpack.fromMapping(bc.getProperty(BinaryArtifactExtensionHandler.BINARY_EXTENSIONS_PROP));
+    public UnpackArchiveInstallerPlugin(BundleContext bc) {
+        unpack = Unpack.fromMapping(bc.getProperty(UnpackArchiveExtensionHandler.UNPACK_EXTENSIONS_PROP));
     }
 
     @Override
@@ -91,11 +90,11 @@ public class BinaryPackageInstallerPlugin implements InstallTaskFactory, Resourc
                 if (idx2 >= 0) {
                     name = name.substring(0, idx2);
                 }
-                aid = new ArtifactId("binary.packages", name, resource.getDigest(), null, null);
+                aid = new ArtifactId("unpack.packages", name, resource.getDigest(), null, null);
             }
 
             TransformationResult tr = new TransformationResult();
-            tr.setResourceType(TYPE_BINARY_ARCHIVE);
+            tr.setResourceType(TYPE_UNPACK_ARCHIVE);
             tr.setId(aid.getGroupId() + ":" + aid.getArtifactId());
             tr.setInputStream(resource.getInputStream());
             tr.setAttributes(context);
@@ -111,15 +110,14 @@ public class BinaryPackageInstallerPlugin implements InstallTaskFactory, Resourc
     @Override
     public InstallTask createTask(TaskResourceGroup group) {
         TaskResource tr = group.getActiveResource();
-        if (!TYPE_BINARY_ARCHIVE.equals(tr.getType())) {
+        if (!TYPE_UNPACK_ARCHIVE.equals(tr.getType())) {
             return null;
         }
-        if (tr.getState() == ResourceState.UNINSTALL) {
-            // TODO do we need to delete it?
+        if (tr.getState() != ResourceState.INSTALL) {
             return null;
         }
 
-        return new InstallBinaryArchiveTask(group, unpack, logger);
+        return new InstallUnpackArchiveTask(group, unpack, logger);
     }
 
 }

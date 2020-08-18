@@ -29,14 +29,14 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 
 @Component
-public class BinaryArtifactExtensionHandler implements ExtensionHandler {
-    static final String BINARY_EXTENSIONS_PROP = "org.apache.sling.feature.binary.extensions";
+public class UnpackArchiveExtensionHandler implements ExtensionHandler {
+    static final String UNPACK_EXTENSIONS_PROP = "org.apache.sling.feature.unpack.extensions";
 
     private final Unpack unpack;
 
     @Activate
-    public BinaryArtifactExtensionHandler(BundleContext bc) {
-        unpack = Unpack.fromMapping(bc.getProperty(BINARY_EXTENSIONS_PROP));
+    public UnpackArchiveExtensionHandler(BundleContext bc) {
+        unpack = Unpack.fromMapping(bc.getProperty(UNPACK_EXTENSIONS_PROP));
     }
 
     @Override

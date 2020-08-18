@@ -27,12 +27,12 @@ import org.slf4j.Logger;
 import java.io.IOException;
 import java.util.Map;
 
-public class InstallBinaryArchiveTask extends InstallTask {
+public class InstallUnpackArchiveTask extends InstallTask {
 
     private final Logger logger;
     private final Unpack unpack;
 
-    public InstallBinaryArchiveTask(TaskResourceGroup erl, Unpack unpack, Logger logger) {
+    public InstallUnpackArchiveTask(TaskResourceGroup erl, Unpack unpack, Logger logger) {
         super(erl);
 
         this.logger = logger;
@@ -41,12 +41,12 @@ public class InstallBinaryArchiveTask extends InstallTask {
 
     @Override
     public void execute(InstallationContext ctx) {
+        @SuppressWarnings("unchecked")
         Map<String,Object> context = (Map<String, Object>) getResource().getAttribute("context");
         if (context == null)
             return;
 
         try {
-            // TODO handle 'Font-Archive-Contents' (or 'Binary-Archive-Contents')?
             unpack.unpack(getResource().getInputStream(), context);
         } catch (IOException e) {
             logger.error("Problem unpacking {}", getResource().getURL(), e);
@@ -55,7 +55,6 @@ public class InstallBinaryArchiveTask extends InstallTask {
 
     @Override
     public String getSortKey() {
-        // TODO is this right?
         return getResource().getEntityId();
     }
 }
