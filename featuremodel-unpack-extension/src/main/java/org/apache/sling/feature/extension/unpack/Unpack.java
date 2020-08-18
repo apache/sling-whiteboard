@@ -72,7 +72,7 @@ public class Unpack
                 String key = this.registry.get(extension.getName()).get("key");
                 String value = this.registry.get(extension.getName()).get("value");
                 Map<String, Object> context = new HashMap<>();
-                context.put("artifact.id", artifact.getId().toMvnId());
+                context.put("artifact.id", artifact.getId());
                 context.put("dir", dir);
                 context.put("override", Boolean.toString(override));
                 context.put("key", key);

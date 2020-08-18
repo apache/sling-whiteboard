@@ -32,6 +32,8 @@ import org.apache.sling.installer.api.tasks.TransformationResult;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -39,23 +41,25 @@ import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.jar.JarInputStream;
-import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 
 @Component(service = { InstallTaskFactory.class, ResourceTransformer.class })
-//@Designate(ocd = BinaryPackageInstallerPlugin.Config.class)
 public class BinaryPackageInstallerPlugin implements InstallTaskFactory, ResourceTransformer {
     public static final String BINARY_ARCHIVE_VERSION_HEADER = "Binary-Archive-Version";
     public static final String TYPE_BINARY_ARCHIVE = "binaryarchive";
 
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    private final Unpack unpack;
+
     @Activate
-    private BundleContext bundleContext;
+    public BinaryPackageInstallerPlugin(BundleContext bc) {
+        unpack = Unpack.fromMapping(bc.getProperty(BinaryArtifactExtensionHandler.BINARY_EXTENSIONS_PROP));
+    }
 
     @Override
     public TransformationResult[] transform(RegisteredResource resource) {
         if (!InstallableResource.TYPE_FILE.equals(resource.getType())) {
-//                || !handledExtension(resource.getURL())) {
             return null;
         }
 
@@ -64,31 +68,22 @@ public class BinaryPackageInstallerPlugin implements InstallTaskFactory, Resourc
             dict = new Hashtable<>();
         }
 
-        Unpack unpack = (Unpack) dict.get("__unpack__");
-        if (unpack == null) {
-            unpack = Unpack.fromMapping(bundleContext.getProperty(bundleContext.getProperty(
-                BinaryArtifactExtensionHandler.BINARY_EXTENSIONS_PROP)));
-            dict.put("__unpack__", unpack);
-        }
+        Map<String,Object> context = Collections.list(dict.keys()).stream()
+                .collect(Collectors.toMap(Function.identity(), dict::get));
 
-        // Should be something like
-//        if (!unpack.handles(resource.getInputStream())) {
-//            return null;
-//        }
-
-        try (JarInputStream jis = new JarInputStream(resource.getInputStream())) {
-            Manifest mf = jis.getManifest();
-            if (!"1".equals(mf.getMainAttributes().getValue(BINARY_ARCHIVE_VERSION_HEADER))) {
+        try {
+            if (!unpack.handles(resource.getInputStream(), context)) {
                 return null;
             }
         } catch (IOException e) {
-            // Couldn't read the manifest, maybe not a Jar file
+            logger.warn("Unable to read stream from {}", resource.getURL(), e);
             return null;
         }
-
         try {
             ArtifactId aid = (ArtifactId) dict.get("artifact.id");
             if (aid == null) {
+                // If aid is not set, the archive doesn't come from a feature model, and we'd have
+                // to generate some sort of ID for it...
                 String u = resource.getURL();
                 int idx = u.lastIndexOf('/');
                 String name = u.substring(idx + 1);
@@ -103,18 +98,14 @@ public class BinaryPackageInstallerPlugin implements InstallTaskFactory, Resourc
             tr.setResourceType(TYPE_BINARY_ARCHIVE);
             tr.setId(aid.getGroupId() + ":" + aid.getArtifactId());
             tr.setInputStream(resource.getInputStream());
-            Map<String,Object> attrs = Collections.list(dict.keys()).stream()
-                       .collect(Collectors.toMap(Function.identity(), dict::get));
-            tr.setAttributes(attrs);
-            tr.getAttributes().put("context", attrs);
+            tr.setAttributes(context);
+            tr.getAttributes().put("context", context);
 
             return new TransformationResult [] {tr};
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            logger.warn("Problem processing {}", resource.getURL(), e);
+            return null;
         }
-
-        return null;
     }
 
     @Override
@@ -124,11 +115,11 @@ public class BinaryPackageInstallerPlugin implements InstallTaskFactory, Resourc
             return null;
         }
         if (tr.getState() == ResourceState.UNINSTALL) {
-            // TODO
+            // TODO do we need to delete it?
             return null;
         }
 
-        return new InstallBinaryArchiveTask(group);
+        return new InstallBinaryArchiveTask(group, unpack, logger);
     }
 
 }

@@ -22,33 +22,40 @@ import org.apache.sling.feature.extension.unpack.Unpack;
 import org.apache.sling.installer.api.tasks.InstallTask;
 import org.apache.sling.installer.api.tasks.InstallationContext;
 import org.apache.sling.installer.api.tasks.TaskResourceGroup;
+import org.slf4j.Logger;
 
+import java.io.IOException;
 import java.util.Map;
 
 public class InstallBinaryArchiveTask extends InstallTask {
 
-    public InstallBinaryArchiveTask(TaskResourceGroup erl) {
+    private final Logger logger;
+    private final Unpack unpack;
+
+    public InstallBinaryArchiveTask(TaskResourceGroup erl, Unpack unpack, Logger logger) {
         super(erl);
+
+        this.logger = logger;
+        this.unpack = unpack;
     }
 
     @Override
     public void execute(InstallationContext ctx) {
-        Unpack unpack = (Unpack) getResource().getAttribute("__unpack__");
-        if (unpack == null)
+        Map<String,Object> context = (Map<String, Object>) getResource().getAttribute("context");
+        if (context == null)
             return;
 
-        Map<String,Object> context = (Map<String, Object>) getResource().getAttribute("context");
-        unpack.unpack(null, context);
-//        unpack.unpack(url, context); // TODO I only have an Inputstream
-
-        // TODO handle 'Font-Archive-Contents' (or 'Binary-Archive-Contents')?
-
+        try {
+            // TODO handle 'Font-Archive-Contents' (or 'Binary-Archive-Contents')?
+            unpack.unpack(getResource().getInputStream(), context);
+        } catch (IOException e) {
+            logger.error("Problem unpacking {}", getResource().getURL(), e);
+        }
     }
 
     @Override
     public String getSortKey() {
-        // TODO Auto-generated method stub
-        return "999";
+        // TODO is this right?
+        return getResource().getEntityId();
     }
-
 }
