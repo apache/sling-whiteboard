@@ -205,7 +205,7 @@ public class Unpack
             List<String> roots = parseRoots(indexValue);
             for (ZipEntry entry = jarInputStream.getNextEntry(); entry != null; entry = jarInputStream.getNextEntry())
             {
-                if (!entry.isDirectory() && isRoot(roots, entry.getName()))
+                if (!entry.isDirectory() && !entry.getName().toLowerCase().startsWith("meta-inf/") && isRoot(roots, entry.getName()))
                 {
                     File target = new File(base, relativize(roots, entry.getName()));
                     if (target.getParentFile().toPath().startsWith(base.toPath()))
