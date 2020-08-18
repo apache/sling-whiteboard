@@ -28,7 +28,9 @@ import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 
+import java.util.Dictionary;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Map;
 
 @Component
@@ -49,9 +51,9 @@ public class BinaryArtifactExtensionHandler implements ExtensionHandler {
         return unpack.handle(extension, context.getArtifactProvider(),
                 (u,m) -> {
                     // TODO maybe Unpack can use Map<String,Object> as context?
-                    Map<String,Object> m2 = new HashMap<>(m);
+                    Dictionary<String,Object> m2 = new Hashtable<>(m);
                     m2.put("__unpack__", unpack);
-                    m2.put("artifact.id", ArtifactId.fromMvnId(m.get("artifact.id")));
+                    m2.put("artifact.id", ArtifactId.fromMvnId((String) m.get("artifact.id")));
 
                     context.addInstallableArtifact((ArtifactId) m2.get("artifact.id"), u, m2);
                 }

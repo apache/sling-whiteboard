@@ -45,7 +45,7 @@ public class TestUnpack
         Unpack unpack = Unpack.fromMapping("test;default:=true;dir:=\"" + tmp.getPath() + "\"");
         URL url = createZipFile("test1");
 
-        unpack.unpack(url, Collections.emptyMap());
+        unpack.unpack(url.openStream(), Collections.emptyMap());
 
         Assert.assertTrue(equals("test1", url));
     }

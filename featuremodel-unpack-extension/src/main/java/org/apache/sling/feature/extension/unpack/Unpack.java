@@ -26,10 +26,10 @@ import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.builder.ArtifactProvider;
-import org.apache.sling.feature.io.IOUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.file.FileAlreadyExistsException;
@@ -39,7 +39,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
-import java.util.jar.JarFile;
+import java.util.jar.JarInputStream;
+import java.util.jar.Manifest;
+import java.util.zip.ZipEntry;
 
 public class Unpack
 {
@@ -59,7 +61,7 @@ public class Unpack
         return handle(extension, provider, this::unpack);
     }
 
-    public boolean handle(Extension extension, ArtifactProvider provider, BiConsumer<URL, Map<String, String>> handler)
+    public boolean handle(Extension extension, ArtifactProvider provider, BiConsumer<URL, Map<String, Object>> handler)
     {
         if (extension.getType() == ExtensionType.ARTIFACTS &&
             this.registry.containsKey(extension.getName())) {
@@ -69,7 +71,7 @@ public class Unpack
                 URL url = provider.provide(artifact.getId());
                 String key = this.registry.get(extension.getName()).get("key");
                 String value = this.registry.get(extension.getName()).get("value");
-                Map<String, String> context = new HashMap<>();
+                Map<String, Object> context = new HashMap<>();
                 context.put("artifact.id", artifact.getId().toMvnId());
                 context.put("dir", dir);
                 context.put("override", Boolean.toString(override));
@@ -83,53 +85,74 @@ public class Unpack
         }
     }
 
-    public boolean handle(URL url, Map<String, String> context) {
-        String dir = context.get("dir");
+    public boolean handles(InputStream stream, Map<String, Object> context) {
+        String contextDir = (String) context.get("dir");
+        String dir;
         String key;
         String value;
-        if (dir == null && this.defaultMapping != null){
+        if (contextDir == null && this.defaultMapping != null){
             dir = this.registry.get(defaultMapping).get("dir");
             key = this.registry.get(defaultMapping).get("key");
             value = this.registry.get(defaultMapping).get("value");
         }
         else {
-            key = context.get("key");
-            value = this.registry.get(defaultMapping).get("value");
+            dir = contextDir;
+            key = (String) context.get("key");
+            value = (String) context.get("value");
         }
         if (dir == null) {
             return false;
         }
-        if (key != null)
+        else if (key != null && value != null)
         {
-            try (JarFile jarFile = IOUtils.getJarFileFromURL(url, true, null))
+            try (JarInputStream jarInputStream = new JarInputStream(stream))
             {
-                return jarFile.getManifest().getMainAttributes().containsKey(key) && jarFile.getManifest().getMainAttributes().getValue(key).equalsIgnoreCase(value);
+                Manifest mf = jarInputStream.getManifest();
+                if (mf != null) {
+                    return value.equalsIgnoreCase(mf.getMainAttributes().getValue(key));
+                }
             }
-            catch (IOException ex)
+            catch (Exception ex)
             {
-                throw new UncheckedIOException(ex);
+                return false;
             }
         }
+        else if (contextDir != null) {
+            return true;
+        }
+
         return false;
     }
 
-    public void unpack(URL url, Map<String, String> context) {
+
+    private void unpack(URL url, Map<String, Object> context) {
         try
         {
-            String dir = context.get("dir");
+            unpack(url.openStream(), context);
+        }
+        catch (IOException e)
+        {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    public void unpack(InputStream stream, Map<String, Object> context) {
+        try
+        {
+            String dir = (String) context.get("dir");
             boolean override;
             if (dir == null && this.defaultMapping != null) {
                 dir = this.registry.get(defaultMapping).get("dir");
                 override = Boolean.parseBoolean(this.registry.get(defaultMapping).get("override"));
             }
             else {
-                override = Boolean.parseBoolean(context.get("override"));
+                override = Boolean.parseBoolean((String) context.get("override"));
             }
 
             if (dir == null) {
                 throw new IllegalStateException("No target dir and no default configured");
             }
-            unpack(dir, url, override);
+            unpack(dir, stream, override);
         } catch (IOException ex) {
             throw new UncheckedIOException(ex);
         }
@@ -152,44 +175,49 @@ public class Unpack
         return new Unpack(registry);
     }
 
-    private void unpack(String dir, URL url, boolean override) throws IOException {
+    private void unpack(String dir, InputStream stream, boolean override) throws IOException {
         File base = new File(dir);
         if (!base.isDirectory() && !base.mkdirs()) {
             throw new IOException("Unable to find or created base dir: " + base);
         }
 
-        try (JarFile jarFile = IOUtils.getJarFileFromURL(url, true, null)) {
-            jarFile.stream().filter(entry -> !entry.isDirectory() && !entry.getName().toLowerCase().startsWith("meta-inf/")).forEach(entry -> {
-                File target = new File(base, entry.getName());
-                if (target.getParentFile().toPath().startsWith(base.toPath())) {
-                    if (target.getParentFile().isDirectory() || target.getParentFile().mkdirs()) {
-                        try
+        try (JarInputStream jarInputStream = new JarInputStream(stream)) {
+            for (ZipEntry entry = jarInputStream.getNextEntry(); entry != null; entry = jarInputStream.getNextEntry())
+            {
+                if (!entry.isDirectory() && !entry.getName().toLowerCase().startsWith("meta-inf/"))
+                {
+                    File target = new File(base, entry.getName());
+                    if (target.getParentFile().toPath().startsWith(base.toPath()))
+                    {
+                        if (target.getParentFile().isDirectory() || target.getParentFile().mkdirs())
                         {
                             if (override)
                             {
-                                Files.copy(jarFile.getInputStream(entry), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                                Files.copy(jarInputStream, target.toPath(), StandardCopyOption.REPLACE_EXISTING);
                             }
                             else if (!target.exists())
                             {
                                 try
                                 {
-                                    Files.copy(jarFile.getInputStream(entry), target.toPath());
-                                } catch (FileAlreadyExistsException ex) {
+                                    Files.copy(jarInputStream, target.toPath());
+                                }
+                                catch (FileAlreadyExistsException ex)
+                                {
 
                                 }
                             }
-                        } catch (IOException ex) {
-                            throw new UncheckedIOException(ex);
+                        }
+                        else
+                        {
+                            throw new IOException("Can't create parent dir:" + target.getParentFile());
                         }
                     }
-                    else {
-                        throw new IllegalStateException("Can't create parent dir:" + target.getParentFile());
+                    else
+                    {
+                        throw new IOException("Zip slip detected for: " + entry.getName());
                     }
                 }
-                else {
-                    throw new IllegalStateException("Zip slip detected for: " + entry.getName());
-                }
-            });
+            }
         }
     }
 }

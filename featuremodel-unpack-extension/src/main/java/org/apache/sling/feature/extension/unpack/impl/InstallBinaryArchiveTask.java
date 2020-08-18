@@ -37,7 +37,7 @@ public class InstallBinaryArchiveTask extends InstallTask {
         if (unpack == null)
             return;
 
-        Map<String,String> context = (Map<String, String>) getResource().getAttribute("context");
+        Map<String,Object> context = (Map<String, Object>) getResource().getAttribute("context");
         unpack.unpack(null, context);
 //        unpack.unpack(url, context); // TODO I only have an Inputstream
 
