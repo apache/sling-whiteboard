@@ -49,21 +49,6 @@ public class BinaryPackageInstallerPlugin implements InstallTaskFactory, Resourc
     public static final String BINARY_ARCHIVE_VERSION_HEADER = "Binary-Archive-Version";
     public static final String TYPE_BINARY_ARCHIVE = "binaryarchive";
 
-    /*
-    @ObjectClassDefinition(name = "Binary Package Installer",
-            description = "This component supports installing binary packages into the OSGi installer")
-    public @interface Config {
-        String directory();
-
-        String overwrite() default "true";
-
-//        String [] file_extensions() default {".bin", ".fonts"}; // TODO
-    }
-
-    @Activate
-    private Config config;
-    */
-
     @Activate
     private BundleContext bundleContext;
 
@@ -123,16 +108,6 @@ public class BinaryPackageInstallerPlugin implements InstallTaskFactory, Resourc
             tr.setAttributes(attrs);
             tr.getAttributes().put("context", attrs);
 
-            /*
-            Map<String, Object> attributes = new HashMap<>();
-            // TODO try to read attributes from resource
-            Object dir = dict.get("dir");
-            attributes.put("dir", dir != null ? dir : config.directory());
-            Object ow = dict.get("overwrite");
-            attributes.put("overwrite", ow != null ? ow : config.overwrite());
-            tr.setAttributes(attributes);
-            */
-
             return new TransformationResult [] {tr};
         } catch (IOException e) {
             // TODO Auto-generated catch block
@@ -141,17 +116,6 @@ public class BinaryPackageInstallerPlugin implements InstallTaskFactory, Resourc
 
         return null;
     }
-
-    /*
-    private boolean handledExtension(String url) {
-        for (String fe : config.file_extensions()) {
-            if (url.endsWith(fe)) {
-                return true;
-            }
-        }
-        return false;
-    }
-    */
 
     @Override
     public InstallTask createTask(TaskResourceGroup group) {

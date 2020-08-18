@@ -35,29 +35,11 @@ import java.util.Map;
 public class BinaryArtifactExtensionHandler implements ExtensionHandler {
     static final String BINARY_EXTENSIONS_PROP = "org.apache.sling.feature.binary.extensions";
 
-//    private final Map<String, Map<String, String>> binaryExtensions;
-
     private final BundleContext bundleContext;
 
     @Activate
     public BinaryArtifactExtensionHandler(BundleContext bc) {
         bundleContext = bc;
-        /*
-        Map<String, Map<String, String>> be = new HashMap<>();
-
-        // Syntax: system-fonts;dir:=abc;overwrite:=true,customer-fonts;dir:=eft
-        Clause[] extClauses = Parser.parseHeader(bc.getProperty(BINARY_EXTENSIONS_PROP));
-        for (Clause c : extClauses) {
-            Map<String,String> cfg = new HashMap<>();
-
-            for (Directive d : c.getDirectives()) {
-                cfg.put(d.getName(), d.getValue());
-            }
-            be.put(c.getName(), Collections.unmodifiableMap(cfg));
-        }
-
-        binaryExtensions = Collections.unmodifiableMap(be);
-        */
     }
 
     @Override
@@ -74,32 +56,6 @@ public class BinaryArtifactExtensionHandler implements ExtensionHandler {
                     context.addInstallableArtifact((ArtifactId) m2.get("artifact.id"), u, m2);
                 }
             );
-
-//        return unpack.handle(extension, context.getArtifactProvider(),
-//                (u,m) -> context.addInstallableArtifact(u, m));
-        /*
-
-        if (extension.getType() != ExtensionType.ARTIFACTS ||
-                binaryExtensions.get(extension.getName()) == null) {
-            return false;
-        } else {
-            Map<String,String> extensionConfig = binaryExtensions.getOrDefault(extension.getName(),
-                    Collections.emptyMap());
-
-            for (Artifact art : extension.getArtifacts()) {
-                URL artifact = context.getArtifactProvider().provide(art.getId());
-
-                Hashtable<String,Object> props = new Hashtable<>();
-                props.put("artifact.id", art.getId());
-                // the props.computeIfAbsent() ensures that entries aren't put in map if they have no value
-                props.computeIfAbsent("dir", v -> extensionConfig.get("dir"));
-                props.computeIfAbsent("overwrite", v -> extensionConfig.get("overwrite"));
-
-                context.addInstallableArtifact(art.getId(), artifact, props);
-            }
-            return true;
-        }
-        */
     }
 }
 
