@@ -30,7 +30,7 @@ import java.util.Map;
 public class InstallUnpackArchiveTask extends InstallTask {
 
     private final Logger logger;
-    private final Unpack unpack;
+    final Unpack unpack;
 
     public InstallUnpackArchiveTask(TaskResourceGroup erl, Unpack unpack, Logger logger) {
         super(erl);

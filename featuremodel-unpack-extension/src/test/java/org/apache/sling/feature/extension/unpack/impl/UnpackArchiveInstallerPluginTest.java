@@ -22,6 +22,9 @@ import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.extension.unpack.Unpack;
 import org.apache.sling.installer.api.InstallableResource;
 import org.apache.sling.installer.api.tasks.RegisteredResource;
+import org.apache.sling.installer.api.tasks.ResourceState;
+import org.apache.sling.installer.api.tasks.TaskResource;
+import org.apache.sling.installer.api.tasks.TaskResourceGroup;
 import org.apache.sling.installer.api.tasks.TransformationResult;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -132,5 +135,35 @@ public class UnpackArchiveInstallerPluginTest {
 
         Map<String,Object> ctx = tr.getAttributes();
         assertSame(ctx, ctx.get("context"));
+    }
+
+    @Test
+    public void testCreateTask() {
+        Unpack unpack = Mockito.mock(Unpack.class);
+        UnpackArchiveInstallerPlugin aeip = new UnpackArchiveInstallerPlugin(unpack);
+
+        TaskResource tr1 = Mockito.mock(TaskResource.class);
+        TaskResourceGroup gr1 = Mockito.mock(TaskResourceGroup.class);
+        Mockito.when(gr1.getActiveResource()).thenReturn(tr1);
+        assertNull(aeip.createTask(gr1));
+
+        TaskResource tr2 = Mockito.mock(TaskResource.class);
+        Mockito.when(tr2.getType())
+            .thenReturn(UnpackArchiveInstallerPlugin.TYPE_UNPACK_ARCHIVE);
+        Mockito.when(tr2.getState()).thenReturn(ResourceState.UNINSTALL);
+        TaskResourceGroup gr2 = Mockito.mock(TaskResourceGroup.class);
+        Mockito.when(gr2.getActiveResource()).thenReturn(tr2);
+        assertNull(aeip.createTask(gr2));
+
+        TaskResource tr3 = Mockito.mock(TaskResource.class);
+        Mockito.when(tr3.getType())
+            .thenReturn(UnpackArchiveInstallerPlugin.TYPE_UNPACK_ARCHIVE);
+        Mockito.when(tr3.getState()).thenReturn(ResourceState.INSTALL);
+        TaskResourceGroup gr3 = Mockito.mock(TaskResourceGroup.class);
+        Mockito.when(gr3.getActiveResource()).thenReturn(tr3);
+        InstallUnpackArchiveTask task =
+                (InstallUnpackArchiveTask) aeip.createTask(gr3);
+
+        assertSame(unpack, task.unpack);
     }
 }
