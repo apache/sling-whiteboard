@@ -35,12 +35,16 @@ import java.net.URL;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 
 public class Unpack
@@ -71,12 +75,14 @@ public class Unpack
                 URL url = provider.provide(artifact.getId());
                 String key = this.registry.get(extension.getName()).get("key");
                 String value = this.registry.get(extension.getName()).get("value");
+                String index = this.registry.get(extension.getName()).get("index");
                 Map<String, Object> context = new HashMap<>();
                 context.put("artifact.id", artifact.getId());
                 context.put("dir", dir);
                 context.put("override", Boolean.toString(override));
                 context.put("key", key);
                 context.put("value", value);
+                context.put("index", index);
                 handler.accept(url, context);
             }
             return true;
@@ -141,18 +147,21 @@ public class Unpack
         {
             String dir = (String) context.get("dir");
             boolean override;
+            String index;
             if (dir == null && this.defaultMapping != null) {
                 dir = this.registry.get(defaultMapping).get("dir");
                 override = Boolean.parseBoolean(this.registry.get(defaultMapping).get("override"));
+                index = this.registry.get(defaultMapping).get("index");
             }
             else {
                 override = Boolean.parseBoolean((String) context.get("override"));
+                index = (String) context.get("index");
             }
 
             if (dir == null) {
                 throw new IllegalStateException("No target dir and no default configured");
             }
-            unpack(dir, stream, override);
+            unpack(dir, stream, override, index);
         } catch (IOException ex) {
             throw new UncheckedIOException(ex);
         }
@@ -164,6 +173,7 @@ public class Unpack
 
         // Syntax: system-fonts;dir:=abc;overwrite:=true,customer-fonts;dir:=eft;default:=true;key:=foobar;value:=baz
         Clause[] extClauses = Parser.parseHeader(mapping);
+
         for (Clause c : extClauses) {
             Map<String,String> cfg = new HashMap<>();
 
@@ -175,18 +185,29 @@ public class Unpack
         return new Unpack(registry);
     }
 
-    private void unpack(String dir, InputStream stream, boolean override) throws IOException {
+    private void unpack(String dir, InputStream stream, boolean override, String index) throws IOException {
         File base = new File(dir);
         if (!base.isDirectory() && !base.mkdirs()) {
             throw new IOException("Unable to find or created base dir: " + base);
         }
 
         try (JarInputStream jarInputStream = new JarInputStream(stream)) {
+            String indexValue = null;
+            if (index != null)
+            {
+                Manifest mf = jarInputStream.getManifest();
+                if (mf != null)
+                {
+                    indexValue = mf.getMainAttributes().getValue(index);
+                }
+            }
+
+            List<String> roots = parseRoots(indexValue);
             for (ZipEntry entry = jarInputStream.getNextEntry(); entry != null; entry = jarInputStream.getNextEntry())
             {
-                if (!entry.isDirectory() && !entry.getName().toLowerCase().startsWith("meta-inf/"))
+                if (!entry.isDirectory() && isRoot(roots, entry.getName()))
                 {
-                    File target = new File(base, entry.getName());
+                    File target = new File(base, relativize(roots, entry.getName()));
                     if (target.getParentFile().toPath().startsWith(base.toPath()))
                     {
                         if (target.getParentFile().isDirectory() || target.getParentFile().mkdirs())
@@ -219,5 +240,30 @@ public class Unpack
                 }
             }
         }
+    }
+
+    private boolean isRoot(List<String> roots, String path) {
+        return roots.stream().anyMatch(root -> ("/" + path).startsWith(root));
+    }
+
+    private List<String> parseRoots(String index) {
+        List<String> roots = new ArrayList<>();
+
+        if (index != null) {
+            roots.addAll(Stream.of(Parser.parseDelimitedString(index, ",")).map(root -> root.endsWith("/") ? root : root + "/").map(root -> root.startsWith("/") ? root : "/" + root).collect(Collectors.toList()));
+        }
+        else {
+            roots.add("/");
+        }
+        return roots;
+    }
+
+    private String relativize(List<String> roots, String path) {
+        for (String root : roots) {
+            if (("/" + path).startsWith(root)) {
+                return path.substring(root.length() -1);
+            }
+        }
+        throw new IllegalStateException("Can't find a root for: " + path);
     }
 }

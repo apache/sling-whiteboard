@@ -25,7 +25,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
@@ -42,26 +46,39 @@ public class TestUnpack
     {
         File tmp = File.createTempFile("foo", "dir");
         tmp.delete();
-        Unpack unpack = Unpack.fromMapping("test;default:=true;dir:=\"" + tmp.getPath() + "\"");
+        Unpack unpack = Unpack.fromMapping("test;default:=true;dir:=\"" + tmp.getPath() + "\";index:=\"Unpack-Index\";key:=binary;value:=1");
         URL url = createZipFile("test1");
 
         unpack.unpack(url.openStream(), Collections.emptyMap());
 
-        Assert.assertTrue(equals("test1", url));
+        Assert.assertTrue(equals("test1", tmp));
     }
 
+    private List<String> childs(File file, String prefix) {
+        List<String> result = new ArrayList<>();
+        for (File child : file.listFiles()) {
+            if (child.isDirectory()) {
+                result.addAll(childs(child, prefix + "/" + child.getName()));
+            }
+            else {
+                result.add(prefix + "/" + child.getName());
+            }
+        }
+        return result;
+    }
     private URL createZipFile(String base) throws IOException {
         File tmp = File.createTempFile("foo", ".zip");
         tmp.deleteOnExit();
         Manifest mf = new Manifest();
         mf.getMainAttributes().putValue("Manifest-Version", "1");
         mf.getMainAttributes().putValue("binary", "1");
+        mf.getMainAttributes().putValue("Unpack-Index", "sub1,sub2");
         try (JarOutputStream jarOutputStream = new JarOutputStream(new FileOutputStream(tmp), mf);
              BufferedReader reader = new BufferedReader(new InputStreamReader(TestUnpack.class.getResourceAsStream(base + "/index.txt"), "UTF-8")))
         {
             for (String line = reader.readLine(); line != null; line = reader.readLine())
             {
-                jarOutputStream.putNextEntry(new ZipEntry(line));
+                jarOutputStream.putNextEntry(new ZipEntry(line.contains("sub1") ? "sub1/" + line : line.contains("sub2") ? "sub2/" + line : line ));
                 try (InputStream inputStream = TestUnpack.class.getResourceAsStream(base + "/" + line)) {
                     byte[] buffer = new byte[64 * 1024];
                     for (int i = inputStream.read(buffer); i != -1; i = inputStream.read(buffer)) {
@@ -73,14 +90,19 @@ public class TestUnpack
         return tmp.toURI().toURL();
     }
 
-    private boolean equals(String base, URL jar) throws IOException {
-        try (JarFile jarFile = IOUtils.getJarFileFromURL(jar, false, null);
-             BufferedReader reader = new BufferedReader(new InputStreamReader(TestUnpack.class.getResourceAsStream(base + "/index.txt"), "UTF-8"))) {
+    private boolean equals(String base, File file) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(TestUnpack.class.getResourceAsStream(base + "/index.txt"), "UTF-8"))) {
+            Set<String> content = new HashSet<>();
+            List<String> childs = childs(file, "");
             for (String line = reader.readLine(); line != null; line = reader.readLine())
             {
-                if (jarFile.getEntry(line)==null) {
+                if (!childs.contains("/" + line)) {
                     return false;
                 }
+                content.add(line);
+            }
+            if (childs.stream().anyMatch(entry -> !content.contains(entry.substring(1)))) {
+                return false;
             }
         }
         return true;
