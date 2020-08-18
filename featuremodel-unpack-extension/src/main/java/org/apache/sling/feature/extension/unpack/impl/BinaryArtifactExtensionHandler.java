@@ -18,33 +18,31 @@
  */
 package org.apache.sling.feature.extension.unpack.impl;
 
-import org.apache.felix.utils.manifest.Clause;
-import org.apache.felix.utils.manifest.Directive;
-import org.apache.felix.utils.manifest.Parser;
-import org.apache.sling.feature.Artifact;
+import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Extension;
-import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.extension.unpack.Unpack;
 import org.apache.sling.feature.spi.context.ExtensionHandler;
 import org.apache.sling.feature.spi.context.ExtensionHandlerContext;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 
-import java.net.URL;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
 
 @Component
 public class BinaryArtifactExtensionHandler implements ExtensionHandler {
-    private static final String BINARY_EXTENSIONS_PROP = "org.apache.sling.feature.binary.extensions";
+    static final String BINARY_EXTENSIONS_PROP = "org.apache.sling.feature.binary.extensions";
 
-    private final Map<String, Map<String, String>> binaryExtensions;
+//    private final Map<String, Map<String, String>> binaryExtensions;
+
+    private final BundleContext bundleContext;
 
     @Activate
     public BinaryArtifactExtensionHandler(BundleContext bc) {
+        bundleContext = bc;
+        /*
         Map<String, Map<String, String>> be = new HashMap<>();
 
         // Syntax: system-fonts;dir:=abc;overwrite:=true,customer-fonts;dir:=eft
@@ -59,10 +57,28 @@ public class BinaryArtifactExtensionHandler implements ExtensionHandler {
         }
 
         binaryExtensions = Collections.unmodifiableMap(be);
+        */
     }
 
     @Override
     public boolean handle(ExtensionHandlerContext context, Extension extension, Feature feature) throws Exception {
+        Unpack unpack = Unpack.fromMapping(bundleContext.getProperty(BINARY_EXTENSIONS_PROP));
+
+        return unpack.handle(extension, context.getArtifactProvider(),
+                (u,m) -> {
+                    // TODO maybe Unpack can use Map<String,Object> as context?
+                    Map<String,Object> m2 = new HashMap<>(m);
+                    m2.put("__unpack__", unpack);
+                    m2.put("artifact.id", ArtifactId.fromMvnId(m.get("artifact.id")));
+
+                    context.addInstallableArtifact((ArtifactId) m2.get("artifact.id"), u, m2);
+                }
+            );
+
+//        return unpack.handle(extension, context.getArtifactProvider(),
+//                (u,m) -> context.addInstallableArtifact(u, m));
+        /*
+
         if (extension.getType() != ExtensionType.ARTIFACTS ||
                 binaryExtensions.get(extension.getName()) == null) {
             return false;
@@ -83,6 +99,7 @@ public class BinaryArtifactExtensionHandler implements ExtensionHandler {
             }
             return true;
         }
+        */
     }
 }
 

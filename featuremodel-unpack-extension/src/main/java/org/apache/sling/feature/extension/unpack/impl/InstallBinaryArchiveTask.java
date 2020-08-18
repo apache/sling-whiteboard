@@ -18,21 +18,30 @@
  */
 package org.apache.sling.feature.extension.unpack.impl;
 
-import org.apache.sling.feature.extension.unpack.impl.BinaryPackageInstallerPlugin.Config;
+import org.apache.sling.feature.extension.unpack.Unpack;
 import org.apache.sling.installer.api.tasks.InstallTask;
 import org.apache.sling.installer.api.tasks.InstallationContext;
 import org.apache.sling.installer.api.tasks.TaskResourceGroup;
 
+import java.util.Map;
+
 public class InstallBinaryArchiveTask extends InstallTask {
 
-    public InstallBinaryArchiveTask(TaskResourceGroup erl, Config config) {
+    public InstallBinaryArchiveTask(TaskResourceGroup erl) {
         super(erl);
-        // TODO Auto-generated constructor stub
     }
 
     @Override
     public void execute(InstallationContext ctx) {
-        // TODO Auto-generated method stub
+        Unpack unpack = (Unpack) getResource().getAttribute("__unpack__");
+        if (unpack == null)
+            return;
+
+        Map<String,String> context = (Map<String, String>) getResource().getAttribute("context");
+        unpack.unpack(null, context);
+//        unpack.unpack(url, context); // TODO I only have an Inputstream
+
+        // TODO handle 'Font-Archive-Contents' (or 'Binary-Archive-Contents')?
 
     }
 

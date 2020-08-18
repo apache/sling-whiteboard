@@ -19,6 +19,15 @@
 package org.apache.sling.feature.extension.unpack;
 
 
+import org.apache.felix.utils.manifest.Clause;
+import org.apache.felix.utils.manifest.Directive;
+import org.apache.felix.utils.manifest.Parser;
+import org.apache.sling.feature.Artifact;
+import org.apache.sling.feature.Extension;
+import org.apache.sling.feature.ExtensionType;
+import org.apache.sling.feature.builder.ArtifactProvider;
+import org.apache.sling.feature.io.IOUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -30,18 +39,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
-import java.util.function.Predicate;
-import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-
-import org.apache.felix.utils.manifest.Clause;
-import org.apache.felix.utils.manifest.Directive;
-import org.apache.felix.utils.manifest.Parser;
-import org.apache.sling.feature.Artifact;
-import org.apache.sling.feature.Extension;
-import org.apache.sling.feature.ExtensionType;
-import org.apache.sling.feature.builder.ArtifactProvider;
-import org.apache.sling.feature.io.IOUtils;
 
 public class Unpack
 {
@@ -72,6 +70,7 @@ public class Unpack
                 String key = this.registry.get(extension.getName()).get("key");
                 String value = this.registry.get(extension.getName()).get("value");
                 Map<String, String> context = new HashMap<>();
+                context.put("artifact.id", artifact.getId().toMvnId());
                 context.put("dir", dir);
                 context.put("override", Boolean.toString(override));
                 context.put("key", key);
@@ -140,7 +139,7 @@ public class Unpack
     {
         Map<String, Map<String, String>> registry = new HashMap<>();
 
-        // Syntax: system-fonts;dir:=abc;overwrite:=true,customer-fonts;dir:=eft;default=true;key=foobar;value=baz
+        // Syntax: system-fonts;dir:=abc;overwrite:=true,customer-fonts;dir:=eft;default:=true;key:=foobar;value:=baz
         Clause[] extClauses = Parser.parseHeader(mapping);
         for (Clause c : extClauses) {
             Map<String,String> cfg = new HashMap<>();

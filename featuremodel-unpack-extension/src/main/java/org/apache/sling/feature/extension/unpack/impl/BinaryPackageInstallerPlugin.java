@@ -19,6 +19,7 @@
 package org.apache.sling.feature.extension.unpack.impl;
 
 import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.extension.unpack.Unpack;
 import org.apache.sling.installer.api.InstallableResource;
 import org.apache.sling.installer.api.tasks.InstallTask;
 import org.apache.sling.installer.api.tasks.InstallTaskFactory;
@@ -28,25 +29,27 @@ import org.apache.sling.installer.api.tasks.ResourceTransformer;
 import org.apache.sling.installer.api.tasks.TaskResource;
 import org.apache.sling.installer.api.tasks.TaskResourceGroup;
 import org.apache.sling.installer.api.tasks.TransformationResult;
+import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.metatype.annotations.Designate;
-import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Dictionary;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
+import java.util.stream.Collectors;
 
 @Component(service = { InstallTaskFactory.class, ResourceTransformer.class })
-@Designate(ocd = BinaryPackageInstallerPlugin.Config.class)
+//@Designate(ocd = BinaryPackageInstallerPlugin.Config.class)
 public class BinaryPackageInstallerPlugin implements InstallTaskFactory, ResourceTransformer {
     public static final String BINARY_ARCHIVE_VERSION_HEADER = "Binary-Archive-Version";
     public static final String TYPE_BINARY_ARCHIVE = "binaryarchive";
 
+    /*
     @ObjectClassDefinition(name = "Binary Package Installer",
             description = "This component supports installing binary packages into the OSGi installer")
     public @interface Config {
@@ -54,32 +57,51 @@ public class BinaryPackageInstallerPlugin implements InstallTaskFactory, Resourc
 
         String overwrite() default "true";
 
-        String [] file_extensions() default {".bin", ".fonts"}; // TODO
+//        String [] file_extensions() default {".bin", ".fonts"}; // TODO
     }
 
     @Activate
     private Config config;
+    */
+
+    @Activate
+    private BundleContext bundleContext;
 
     @Override
     public TransformationResult[] transform(RegisteredResource resource) {
-        if (!InstallableResource.TYPE_FILE.equals(resource.getType())
-                || !handledExtension(resource.getURL())) {
+        if (!InstallableResource.TYPE_FILE.equals(resource.getType())) {
+//                || !handledExtension(resource.getURL())) {
+            return null;
+        }
+
+        Dictionary<String, Object> dict = resource.getDictionary();
+        if (dict == null) {
+            dict = new Hashtable<>();
+        }
+
+        Unpack unpack = (Unpack) dict.get("__unpack__");
+        if (unpack == null) {
+            unpack = Unpack.fromMapping(bundleContext.getProperty(bundleContext.getProperty(
+                BinaryArtifactExtensionHandler.BINARY_EXTENSIONS_PROP)));
+            dict.put("__unpack__", unpack);
+        }
+
+        // Should be something like
+//        if (!unpack.handles(resource.getInputStream())) {
+//            return null;
+//        }
+
+        try (JarInputStream jis = new JarInputStream(resource.getInputStream())) {
+            Manifest mf = jis.getManifest();
+            if (!"1".equals(mf.getMainAttributes().getValue(BINARY_ARCHIVE_VERSION_HEADER))) {
+                return null;
+            }
+        } catch (IOException e) {
+            // Couldn't read the manifest, maybe not a Jar file
             return null;
         }
 
         try {
-            try (JarInputStream jis = new JarInputStream(resource.getInputStream())) {
-                Manifest mf = jis.getManifest();
-                if (!"1".equals(mf.getMainAttributes().getValue(BINARY_ARCHIVE_VERSION_HEADER))) {
-                    return null;
-                }
-            }
-
-            Dictionary<String, Object> dict = resource.getDictionary();
-            if (dict == null) {
-                dict = new Hashtable<>();
-            }
-
             ArtifactId aid = (ArtifactId) dict.get("artifact.id");
             if (aid == null) {
                 String u = resource.getURL();
@@ -96,7 +118,12 @@ public class BinaryPackageInstallerPlugin implements InstallTaskFactory, Resourc
             tr.setResourceType(TYPE_BINARY_ARCHIVE);
             tr.setId(aid.getGroupId() + ":" + aid.getArtifactId());
             tr.setInputStream(resource.getInputStream());
+            Map<String,Object> attrs = Collections.list(dict.keys()).stream()
+                       .collect(Collectors.toMap(Function.identity(), dict::get));
+            tr.setAttributes(attrs);
+            tr.getAttributes().put("context", attrs);
 
+            /*
             Map<String, Object> attributes = new HashMap<>();
             // TODO try to read attributes from resource
             Object dir = dict.get("dir");
@@ -104,6 +131,7 @@ public class BinaryPackageInstallerPlugin implements InstallTaskFactory, Resourc
             Object ow = dict.get("overwrite");
             attributes.put("overwrite", ow != null ? ow : config.overwrite());
             tr.setAttributes(attributes);
+            */
 
             return new TransformationResult [] {tr};
         } catch (IOException e) {
@@ -114,6 +142,7 @@ public class BinaryPackageInstallerPlugin implements InstallTaskFactory, Resourc
         return null;
     }
 
+    /*
     private boolean handledExtension(String url) {
         for (String fe : config.file_extensions()) {
             if (url.endsWith(fe)) {
@@ -122,6 +151,7 @@ public class BinaryPackageInstallerPlugin implements InstallTaskFactory, Resourc
         }
         return false;
     }
+    */
 
     @Override
     public InstallTask createTask(TaskResourceGroup group) {
@@ -134,8 +164,7 @@ public class BinaryPackageInstallerPlugin implements InstallTaskFactory, Resourc
             return null;
         }
 
-
-        return new InstallBinaryArchiveTask(group, config);
+        return new InstallBinaryArchiveTask(group);
     }
 
 }
