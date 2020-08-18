@@ -49,11 +49,15 @@ public class UnpackArchiveInstallerPlugin implements InstallTaskFactory, Resourc
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final Unpack unpack;
+    final Unpack unpack;
 
     @Activate
     public UnpackArchiveInstallerPlugin(BundleContext bc) {
-        unpack = Unpack.fromMapping(bc.getProperty(UnpackArchiveExtensionHandler.UNPACK_EXTENSIONS_PROP));
+        this(Unpack.fromMapping(bc.getProperty(UnpackArchiveExtensionHandler.UNPACK_EXTENSIONS_PROP)));
+    }
+
+    UnpackArchiveInstallerPlugin(Unpack unpack) {
+        this.unpack = unpack;
     }
 
     @Override
