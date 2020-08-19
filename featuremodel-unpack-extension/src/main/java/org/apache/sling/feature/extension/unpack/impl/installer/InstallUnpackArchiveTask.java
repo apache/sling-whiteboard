@@ -16,16 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.sling.feature.extension.unpack.impl;
+package org.apache.sling.feature.extension.unpack.impl.installer;
+
+import java.io.IOException;
+import java.util.Map;
 
 import org.apache.sling.feature.extension.unpack.Unpack;
 import org.apache.sling.installer.api.tasks.InstallTask;
 import org.apache.sling.installer.api.tasks.InstallationContext;
 import org.apache.sling.installer.api.tasks.TaskResourceGroup;
 import org.slf4j.Logger;
-
-import java.io.IOException;
-import java.util.Map;
 
 public class InstallUnpackArchiveTask extends InstallTask {
 

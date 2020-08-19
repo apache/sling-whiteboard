@@ -19,14 +19,6 @@
 package org.apache.sling.feature.extension.unpack;
 
 
-import org.apache.felix.utils.manifest.Clause;
-import org.apache.felix.utils.manifest.Directive;
-import org.apache.felix.utils.manifest.Parser;
-import org.apache.sling.feature.Artifact;
-import org.apache.sling.feature.Extension;
-import org.apache.sling.feature.ExtensionType;
-import org.apache.sling.feature.builder.ArtifactProvider;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,6 +38,14 @@ import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
+
+import org.apache.felix.utils.manifest.Clause;
+import org.apache.felix.utils.manifest.Directive;
+import org.apache.felix.utils.manifest.Parser;
+import org.apache.sling.feature.Artifact;
+import org.apache.sling.feature.Extension;
+import org.apache.sling.feature.ExtensionType;
+import org.apache.sling.feature.builder.ArtifactProvider;
 
 public class Unpack
 {

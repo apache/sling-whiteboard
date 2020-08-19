@@ -16,7 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.sling.feature.extension.unpack.impl;
+package org.apache.sling.feature.extension.unpack.impl.installer;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Dictionary;
+import java.util.Hashtable;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.extension.unpack.Unpack;
@@ -34,14 +42,6 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Dictionary;
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Component(service = { InstallTaskFactory.class, ResourceTransformer.class })
 public class UnpackArchiveInstallerPlugin implements InstallTaskFactory, ResourceTransformer {

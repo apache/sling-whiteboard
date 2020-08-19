@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.sling.feature.extension.unpack.impl;
+package org.apache.sling.feature.extension.unpack.impl.installer;
 
 import org.apache.sling.feature.extension.unpack.Unpack;
 import org.apache.sling.installer.api.tasks.TaskResource;

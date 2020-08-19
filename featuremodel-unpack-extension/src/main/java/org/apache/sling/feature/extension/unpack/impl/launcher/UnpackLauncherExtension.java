@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.sling.feature.extension.unpack;
+package org.apache.sling.feature.extension.unpack.impl.launcher;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -26,6 +26,7 @@ import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.builder.ArtifactProvider;
+import org.apache.sling.feature.extension.unpack.Unpack;
 import org.apache.sling.feature.launcher.spi.extensions.ExtensionContext;
 import org.apache.sling.feature.launcher.spi.extensions.ExtensionHandler;
 

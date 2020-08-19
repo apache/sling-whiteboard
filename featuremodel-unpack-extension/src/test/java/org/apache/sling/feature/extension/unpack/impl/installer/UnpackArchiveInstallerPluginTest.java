@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.sling.feature.extension.unpack.impl;
+package org.apache.sling.feature.extension.unpack.impl.installer;
 
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.extension.unpack.Unpack;

@@ -1,1 +1,1 @@
-org.apache.sling.feature.extension.unpack.UnpackLauncherExtension
+org.apache.sling.feature.extension.unpack.impl.launcher.UnpackLauncherExtension
