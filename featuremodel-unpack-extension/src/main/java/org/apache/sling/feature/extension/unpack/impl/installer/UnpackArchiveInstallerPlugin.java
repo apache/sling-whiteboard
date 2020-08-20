@@ -53,7 +53,7 @@ public class UnpackArchiveInstallerPlugin implements InstallTaskFactory, Resourc
 
     @Activate
     public UnpackArchiveInstallerPlugin(BundleContext bc) {
-        this(Unpack.fromMapping(bc.getProperty(UnpackArchiveExtensionHandler.UNPACK_EXTENSIONS_PROP)));
+        this(Unpack.fromMapping(bc.getProperty(Unpack.UNPACK_EXTENSIONS_PROP)));
     }
 
     UnpackArchiveInstallerPlugin(Unpack unpack) {

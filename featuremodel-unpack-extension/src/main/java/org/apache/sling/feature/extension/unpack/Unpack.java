@@ -47,8 +47,9 @@ import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.builder.ArtifactProvider;
 
-public class Unpack
-{
+public class Unpack {
+    public static final String UNPACK_EXTENSIONS_PROP = "org.apache.sling.feature.unpack.extensions";
+
     private final Map<String, Map<String, String>> registry;
     private final String defaultMapping;
 
@@ -96,34 +97,27 @@ public class Unpack
         String dir;
         String key;
         String value;
-        if (contextDir == null && this.defaultMapping != null){
+        if (contextDir == null && this.defaultMapping != null) {
             dir = this.registry.get(defaultMapping).get("dir");
             key = this.registry.get(defaultMapping).get("key");
             value = this.registry.get(defaultMapping).get("value");
-        }
-        else {
+        } else {
             dir = contextDir;
             key = (String) context.get("key");
             value = (String) context.get("value");
         }
         if (dir == null) {
             return false;
-        }
-        else if (key != null && value != null)
-        {
-            try (JarInputStream jarInputStream = new JarInputStream(stream))
-            {
+        } else if (key != null && value != null) {
+            try (JarInputStream jarInputStream = new JarInputStream(stream)) {
                 Manifest mf = jarInputStream.getManifest();
                 if (mf != null) {
                     return value.equalsIgnoreCase(mf.getMainAttributes().getValue(key));
                 }
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 return false;
             }
-        }
-        else if (contextDir != null) {
+        } else if (contextDir != null) {
             return true;
         }
 
@@ -132,19 +126,15 @@ public class Unpack
 
 
     private void unpack(URL url, Map<String, Object> context) {
-        try
-        {
+        try {
             unpack(url.openStream(), context);
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
     public void unpack(InputStream stream, Map<String, Object> context) {
-        try
-        {
+        try {
             String dir = (String) context.get("dir");
             boolean override;
             String index;
@@ -152,8 +142,7 @@ public class Unpack
                 dir = this.registry.get(defaultMapping).get("dir");
                 override = Boolean.parseBoolean(this.registry.get(defaultMapping).get("override"));
                 index = this.registry.get(defaultMapping).get("index");
-            }
-            else {
+            } else {
                 override = Boolean.parseBoolean((String) context.get("override"));
                 index = (String) context.get("index");
             }
@@ -167,8 +156,7 @@ public class Unpack
         }
     }
 
-    public static Unpack fromMapping(String mapping)
-    {
+    public static Unpack fromMapping(String mapping) {
         Map<String, Map<String, String>> registry = new HashMap<>();
 
         // Syntax: system-fonts;dir:=abc;overwrite:=true,customer-fonts;dir:=eft;default:=true;key:=foobar;value:=baz
@@ -193,48 +181,32 @@ public class Unpack
 
         try (JarInputStream jarInputStream = new JarInputStream(stream)) {
             String indexValue = null;
-            if (index != null)
-            {
+            if (index != null) {
                 Manifest mf = jarInputStream.getManifest();
-                if (mf != null)
-                {
+                if (mf != null) {
                     indexValue = mf.getMainAttributes().getValue(index);
                 }
             }
 
             List<String> roots = parseRoots(indexValue);
-            for (ZipEntry entry = jarInputStream.getNextEntry(); entry != null; entry = jarInputStream.getNextEntry())
-            {
-                if (!entry.isDirectory() && !entry.getName().toLowerCase().startsWith("meta-inf/") && isRoot(roots, entry.getName()))
-                {
+            for (ZipEntry entry = jarInputStream.getNextEntry(); entry != null; entry = jarInputStream.getNextEntry()) {
+                if (!entry.isDirectory() && !entry.getName().toLowerCase().startsWith("meta-inf/") && isRoot(roots, entry.getName())) {
                     File target = new File(base, relativize(roots, entry.getName()));
-                    if (target.getParentFile().toPath().startsWith(base.toPath()))
-                    {
-                        if (target.getParentFile().isDirectory() || target.getParentFile().mkdirs())
-                        {
-                            if (override)
-                            {
+                    if (target.getParentFile().toPath().startsWith(base.toPath())) {
+                        if (target.getParentFile().isDirectory() || target.getParentFile().mkdirs()) {
+                            if (override) {
                                 Files.copy(jarInputStream, target.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                            }
-                            else if (!target.exists())
-                            {
-                                try
-                                {
+                            } else if (!target.exists()) {
+                                try {
                                     Files.copy(jarInputStream, target.toPath());
-                                }
-                                catch (FileAlreadyExistsException ex)
-                                {
+                                } catch (FileAlreadyExistsException ex) {
 
                                 }
                             }
-                        }
-                        else
-                        {
+                        } else {
                             throw new IOException("Can't create parent dir:" + target.getParentFile());
                         }
-                    }
-                    else
-                    {
+                    } else {
                         throw new IOException("Zip slip detected for: " + entry.getName());
                     }
                 }
@@ -251,8 +223,7 @@ public class Unpack
 
         if (index != null) {
             roots.addAll(Stream.of(Parser.parseDelimitedString(index, ",")).map(root -> root.endsWith("/") ? root : root + "/").map(root -> root.startsWith("/") ? root : "/" + root).collect(Collectors.toList()));
-        }
-        else {
+        } else {
             roots.add("/");
         }
         return roots;

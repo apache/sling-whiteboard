@@ -34,7 +34,7 @@ public class UnpackArchiveExtensionHandlerTest {
     @Test
     public void testCreateUnpacker() throws Exception {
         BundleContext bc = Mockito.mock(BundleContext.class);
-        Mockito.when(bc.getProperty(UnpackArchiveExtensionHandler.UNPACK_EXTENSIONS_PROP))
+        Mockito.when(bc.getProperty(Unpack.UNPACK_EXTENSIONS_PROP))
             .thenReturn("foobar;dir:=/abc;default:=true");
 
         UnpackArchiveExtensionHandler uaeh = new UnpackArchiveExtensionHandler(bc);

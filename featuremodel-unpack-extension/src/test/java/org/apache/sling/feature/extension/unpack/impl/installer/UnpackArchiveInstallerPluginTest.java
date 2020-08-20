@@ -44,7 +44,7 @@ public class UnpackArchiveInstallerPluginTest {
     @Test
     public void testCreatePlugin() throws Exception {
         BundleContext bc = Mockito.mock(BundleContext.class);
-        Mockito.when(bc.getProperty(UnpackArchiveExtensionHandler.UNPACK_EXTENSIONS_PROP))
+        Mockito.when(bc.getProperty(Unpack.UNPACK_EXTENSIONS_PROP))
             .thenReturn("foobar;dir:=/abc;default:=true");
 
         UnpackArchiveInstallerPlugin aeip = new UnpackArchiveInstallerPlugin(bc);

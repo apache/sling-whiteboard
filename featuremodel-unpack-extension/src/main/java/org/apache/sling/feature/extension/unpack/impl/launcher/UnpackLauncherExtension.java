@@ -30,33 +30,23 @@ import org.apache.sling.feature.extension.unpack.Unpack;
 import org.apache.sling.feature.launcher.spi.extensions.ExtensionContext;
 import org.apache.sling.feature.launcher.spi.extensions.ExtensionHandler;
 
-public class UnpackLauncherExtension implements ExtensionHandler
-{
-    public static final String UNPACK_MAPPING_KEY = UnpackLauncherExtension.class.getPackage().getName() + ".mapping";
-
+public class UnpackLauncherExtension implements ExtensionHandler {
     @Override
-    public boolean handle(ExtensionContext extensionContext, Extension extension) throws Exception
-    {
-        if (extension.getType() == ExtensionType.ARTIFACTS)
-        {
-            String mapping = extensionContext.getFrameworkProperties().get(UNPACK_MAPPING_KEY);
+    public boolean handle(ExtensionContext extensionContext, Extension extension) throws Exception {
+        if (extension.getType() == ExtensionType.ARTIFACTS) {
+            String mapping = extensionContext.getFrameworkProperties().get(Unpack.UNPACK_EXTENSIONS_PROP);
 
             if (mapping == null || mapping.isEmpty()) {
-                mapping = System.getProperty(UNPACK_MAPPING_KEY);
+                mapping = System.getProperty(Unpack.UNPACK_EXTENSIONS_PROP);
             }
 
-            if (mapping != null && !mapping.isEmpty())
-            {
+            if (mapping != null && !mapping.isEmpty()) {
                 return Unpack.fromMapping(mapping).handle(extension, new ArtifactProvider() {
                     @Override
-                    public URL provide(ArtifactId artifactId)
-                    {
-                        try
-                        {
+                    public URL provide(ArtifactId artifactId) {
+                        try {
                             return extensionContext.getArtifactFile(artifactId);
-                        }
-                        catch (IOException e)
-                        {
+                        } catch (IOException e) {
                             throw new UncheckedIOException(e);
                         }
                     }

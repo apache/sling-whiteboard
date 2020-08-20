@@ -30,13 +30,12 @@ import org.osgi.service.component.annotations.Component;
 
 @Component
 public class UnpackArchiveExtensionHandler implements ExtensionHandler {
-    static final String UNPACK_EXTENSIONS_PROP = "org.apache.sling.feature.unpack.extensions";
 
     final Unpack unpack;
 
     @Activate
     public UnpackArchiveExtensionHandler(BundleContext bc) {
-        this(Unpack.fromMapping(bc.getProperty(UNPACK_EXTENSIONS_PROP)));
+        this(Unpack.fromMapping(bc.getProperty(Unpack.UNPACK_EXTENSIONS_PROP)));
     }
 
     UnpackArchiveExtensionHandler(Unpack unpack) {

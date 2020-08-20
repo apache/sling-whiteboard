@@ -37,11 +37,9 @@ import java.util.zip.ZipEntry;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestUnpack
-{
+public class TestUnpack {
     @Test
-    public void testUnzip() throws IOException
-    {
+    public void testUnzip() throws IOException {
         File tmp = File.createTempFile("foo", "dir");
         tmp.delete();
         Unpack unpack = Unpack.fromMapping("test;default:=true;dir:=\"" + tmp.getPath() + "\";index:=\"Unpack-Index\";key:=binary;value:=1");
@@ -57,8 +55,7 @@ public class TestUnpack
         for (File child : file.listFiles()) {
             if (child.isDirectory()) {
                 result.addAll(childs(child, prefix + "/" + child.getName()));
-            }
-            else {
+            } else {
                 result.add(prefix + "/" + child.getName());
             }
         }
@@ -72,10 +69,8 @@ public class TestUnpack
         mf.getMainAttributes().putValue("binary", "1");
         mf.getMainAttributes().putValue("Unpack-Index", "sub1,sub2");
         try (JarOutputStream jarOutputStream = new JarOutputStream(new FileOutputStream(tmp), mf);
-             BufferedReader reader = new BufferedReader(new InputStreamReader(TestUnpack.class.getResourceAsStream(base + "/index.txt"), "UTF-8")))
-        {
-            for (String line = reader.readLine(); line != null; line = reader.readLine())
-            {
+             BufferedReader reader = new BufferedReader(new InputStreamReader(TestUnpack.class.getResourceAsStream(base + "/index.txt"), "UTF-8"))) {
+            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 jarOutputStream.putNextEntry(new ZipEntry(line.contains("sub1") ? "sub1/" + line : line.contains("sub2") ? "sub2/" + line : line ));
                 try (InputStream inputStream = TestUnpack.class.getResourceAsStream(base + "/" + line)) {
                     byte[] buffer = new byte[64 * 1024];
@@ -92,8 +87,7 @@ public class TestUnpack
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(TestUnpack.class.getResourceAsStream(base + "/index.txt"), "UTF-8"))) {
             Set<String> content = new HashSet<>();
             List<String> childs = childs(file, "");
-            for (String line = reader.readLine(); line != null; line = reader.readLine())
-            {
+            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 if (!childs.contains("/" + line)) {
                     return false;
                 }
