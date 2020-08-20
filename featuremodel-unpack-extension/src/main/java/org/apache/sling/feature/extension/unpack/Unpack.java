@@ -66,8 +66,7 @@ public class Unpack {
         return handle(extension, provider, this::unpack);
     }
 
-    public boolean handle(Extension extension, ArtifactProvider provider, BiConsumer<URL, Map<String, Object>> handler)
-    {
+    public boolean handle(Extension extension, ArtifactProvider provider, BiConsumer<URL, Map<String, Object>> handler) {
         if (extension.getType() == ExtensionType.ARTIFACTS &&
             this.registry.containsKey(extension.getName())) {
             for (Artifact artifact : extension.getArtifacts()) {
