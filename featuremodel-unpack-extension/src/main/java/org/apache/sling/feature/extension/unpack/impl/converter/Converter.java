@@ -61,7 +61,7 @@ public class Converter {
                     if (!target.getParentFile().isDirectory() && !target.getParentFile().mkdirs()) {
                         throw new IOException("Unable to create parent dir: " + target.getParentFile());
                     }
-                    Files.move(tmp.toPath(), target.toPath());
+                    Files.move(tmp.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
                 }
             }
             feature.getExtensions().add(extension);
