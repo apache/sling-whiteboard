@@ -1,0 +1,3 @@
+sub1/test1.txt
+sub2/test1.txt
+sub2/test2.txt

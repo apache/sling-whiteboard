@@ -25,11 +25,11 @@ import java.util.Map;
 public interface FeatureBuilder {
 
     /**
-     * Set the Feature Title.
-     * @param title The Title.
+     * Set the Feature Name.
+     * @param name The Name.
      * @return This builder.
      */
-    FeatureBuilder setTitle(String title); // TODO do we need this one?
+    FeatureBuilder setName(String name);
 
     /**
      * Set the Vendor.

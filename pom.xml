@@ -47,6 +47,7 @@
           <module>starter-system-info</module>
           <module>metrics-prometheus</module>
           <module>saml-handler</module>
+          <module>saml-example</module>
     </modules>
 
 </project>

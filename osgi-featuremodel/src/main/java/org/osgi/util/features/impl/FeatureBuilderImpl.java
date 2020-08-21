@@ -16,12 +16,12 @@
  */
 package org.osgi.util.features.impl;
 
-import org.osgi.util.features.ID;
+import org.osgi.util.features.Feature;
+import org.osgi.util.features.FeatureBuilder;
 import org.osgi.util.features.FeatureBundle;
 import org.osgi.util.features.FeatureConfiguration;
 import org.osgi.util.features.FeatureExtension;
-import org.osgi.util.features.Feature;
-import org.osgi.util.features.FeatureBuilder;
+import org.osgi.util.features.ID;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,7 +34,7 @@ import java.util.Objects;
 class FeatureBuilderImpl implements FeatureBuilder {
     private final ID id;
 
-    private String title;
+    private String name;
     private String description;
     private String vendor;
     private String license;
@@ -52,8 +52,8 @@ class FeatureBuilderImpl implements FeatureBuilder {
     }
 
     @Override
-    public FeatureBuilder setTitle(String title) {
-        this.title = title;
+    public FeatureBuilder setName(String name) {
+        this.name = name;
         return this;
     }
 
@@ -129,13 +129,13 @@ class FeatureBuilderImpl implements FeatureBuilder {
 
     @Override
     public Feature build() {
-        return new FeatureImpl(id, title,
+        return new FeatureImpl(id, name,
                 description, vendor, license, location, complete, isFinal,
                 bundles, configurations, extensions, variables);
     }
 
     private static class FeatureImpl extends ArtifactImpl implements Feature {
-        private final String title;
+        private final String name;
         private final String description;
         private final String vendor;
         private final String license;
@@ -148,12 +148,12 @@ class FeatureBuilderImpl implements FeatureBuilder {
         private final Map<String,FeatureExtension> extensions;
         private final Map<String,String> variables;
 
-        private FeatureImpl(ID id, String aTitle, String desc, String vnd, String lic, String loc,
+        private FeatureImpl(ID id, String aName, String desc, String vnd, String lic, String loc,
                 boolean comp, boolean fin, List<FeatureBundle> bs, Map<String,FeatureConfiguration> cs,
                 Map<String,FeatureExtension> es, Map<String,String> vars) {
             super(id);
 
-            title = aTitle;
+            name = aName;
             description = desc;
             vendor = vnd;
             license = lic;
@@ -168,8 +168,8 @@ class FeatureBuilderImpl implements FeatureBuilder {
         }
 
         @Override
-        public String getTitle() {
-            return title;
+        public String getName() {
+            return name;
         }
 
         @Override
@@ -227,7 +227,7 @@ class FeatureBuilderImpl implements FeatureBuilder {
             final int prime = 31;
             int result = super.hashCode();
             result = prime * result + Objects.hash(bundles, complete, configurations, description, isFinal, license, location,
-                    title, variables, vendor);
+                    name, variables, vendor);
             return result;
         }
 
@@ -243,7 +243,7 @@ class FeatureBuilderImpl implements FeatureBuilder {
             return Objects.equals(bundles, other.bundles) && complete == other.complete
                     && Objects.equals(configurations, other.configurations) && Objects.equals(description, other.description)
                     && isFinal == other.isFinal && Objects.equals(license, other.license)
-                    && Objects.equals(location, other.location) && Objects.equals(title, other.title)
+                    && Objects.equals(location, other.location) && Objects.equals(name, other.name)
                     && Objects.equals(variables, other.variables) && Objects.equals(vendor, other.vendor);
         }
 

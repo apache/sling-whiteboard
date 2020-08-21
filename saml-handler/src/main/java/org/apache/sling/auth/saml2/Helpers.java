@@ -20,7 +20,7 @@
 
 package org.apache.sling.auth.saml2;
 
-import net.shibboleth.utilities.java.support.security.RandomIdentifierGenerationStrategy;
+import net.shibboleth.utilities.java.support.security.impl.RandomIdentifierGenerationStrategy;
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.core.xml.XMLObjectBuilderFactory;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;

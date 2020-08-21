@@ -1,0 +1,2 @@
+Conditional-Package: org.apache.felix.utils.manifest
+Import-Package: !org.apache.sling.feature.launcher.*,*
