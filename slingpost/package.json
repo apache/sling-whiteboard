@@ -1,0 +1,31 @@
+{
+  "name": "@apachesling/slingpost",
+  "version": "1.0.0",
+  "description": "This module is part of the Apache Sling project. It enables modifying content in the Apache Sling repository using the Sling Post Servlet.",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apache/sling-whiteboard.git",
+    "directory": "slingpost"
+  },
+  "scripts": {
+    "coverage": "jest --coverage",
+    "test": "jest",
+    "updatedocs": "npx jsdoc2md index.js > docs/jsdoc.md"
+  },
+  "author": "Apache Sling",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "fetch": "^1.1.0",
+    "form-data": "^3.0.0",
+    "glob": "^7.1.6",
+    "path": "^0.12.7",
+    "winston": "^3.2.1"
+  },
+  "devDependencies": {
+    "formidable": "^1.2.2",
+    "jest": "^26.0.1",
+    "jest-fetch-mock": "^3.0.3",
+    "jsdoc-to-markdown": "^5.0.3"
+  }
+}
