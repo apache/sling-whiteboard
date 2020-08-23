@@ -46,8 +46,8 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.models.annotations.Via;
-import org.apache.sling.models.persistor.annotations.Ignore;
 import org.apache.sling.models.persistor.ModelPersistor;
+import org.apache.sling.models.persistor.annotations.Ignore;
 
 /**
  * Utility methods around object reflection.
@@ -154,14 +154,22 @@ public class ReflectionUtils {
      * @return <code>false</code> if field is to be considered transient,
      * <code>true</code> otherwise
      */
-    public static boolean isNotTransient(Field field) {
-        if (field != null && Modifier.isTransient(field.getModifiers())) {
+    public static boolean isNotTransient(Field field, boolean isUpdate) {
+        if (field == null) {
+            return true;
+        }
+        if (Modifier.isTransient(field.getModifiers())) {
             // if property is covered using @Named annotation it shall not be excluded
             Named aemProperty = field.getAnnotation(Named.class);
             return aemProperty != null;
         } else {
             // is the property annotated with @Ignore?
-            return field == null || field.getAnnotation(Ignore.class) == null;
+            Ignore ignore = field.getAnnotation(Ignore.class);
+            if (ignore == null) {
+                return true;
+            } else {
+                return isUpdate ? !ignore.onUpdate() : !ignore.onCreate();
+            }
         }
     }
 
@@ -193,6 +201,9 @@ public class ReflectionUtils {
             } catch (ClassCastException ex) {
                 return false;
             }
+        } else if (Collection.class.isAssignableFrom(clazz)) {
+            ParameterizedType p = (ParameterizedType) field.getGenericType();
+            clazz = (Class) p.getActualTypeArguments()[0];
         }
         if (UNSUPPORTED_CLASSES.contains(clazz)) {
             return false;
@@ -262,6 +273,32 @@ public class ReflectionUtils {
 
     public static boolean isPrimitiveFieldType(Class<?> fieldType) {
         return getSupportedPropertyTypes().contains(fieldType);
+    }
+
+    public static boolean isCollectionOfPrimitiveType(Field field) {
+        Type genericType = field.getGenericType();
+        if (Collection.class.isAssignableFrom(field.getType())
+                && genericType != null
+                && genericType instanceof ParameterizedType) {
+            ParameterizedType t = (ParameterizedType) genericType;
+            Class parameterClass = (Class) t.getActualTypeArguments()[0];
+            return isPrimitiveFieldType(parameterClass);
+        } else {
+            return false;
+        }
+    }
+
+    public static Object getStorableValue(Object o) {
+        if (o == null) {
+            return null;
+        }
+        if (o.getClass().isArray()) {
+            return (Object[]) o;
+        }
+        if (o instanceof Collection) {
+            return ((Collection) o).toArray(new Object[]{});
+        }
+        return o;
     }
 
     /**

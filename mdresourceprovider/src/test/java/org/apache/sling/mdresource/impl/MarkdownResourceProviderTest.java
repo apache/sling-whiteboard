@@ -53,7 +53,7 @@ public class MarkdownResourceProviderTest {
         assertThat("resource", resource, notNullValue());
         assertThat("resource.getValueMap()", resource.getValueMap(), notNullValue());
         assertThat("resource.getMetadata()", resource.getResourceMetadata(), notNullValue());
-        assertThat("resource.getMetadata().getPath()", resource.getResourceMetadata().getResolutionPath(), equalTo("/md-test"));
+        assertThat("resource.getMetadata().getPath()", resource.getResourceMetadata().getResolutionPath(), equalTo("/md-test2"));
         
         assertThat("valueMap[jcr:title]", resource.getValueMap().get("jcr:title", String.class), equalTo("Simple markdown file"));
         assertThat("valueMap[jcr:description]", resource.getValueMap().get("jcr:description", String.class),

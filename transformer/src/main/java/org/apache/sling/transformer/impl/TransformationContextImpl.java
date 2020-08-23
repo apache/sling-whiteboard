@@ -13,9 +13,6 @@
  */
 package org.apache.sling.transformer.impl;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,6 +25,7 @@ import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.commons.html.Html;
 import org.apache.sling.commons.html.HtmlElement;
 import org.apache.sling.transformer.TransformationContext;
+import org.apache.sling.transformer.TransformationStep;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
@@ -47,10 +45,13 @@ public class TransformationContextImpl implements TransformationContext {
     private SlingHttpServletRequest request;
     private SlingHttpServletResponse response;
     private boolean reset;
+    private List<TransformationStep> steps;
 
-    public TransformationContextImpl(SlingHttpServletRequest request, SlingHttpServletResponse response) {
+    public TransformationContextImpl(SlingHttpServletRequest request, SlingHttpServletResponse response,
+            List<TransformationStep> steps) {
         this.request = request;
         this.response = response;
+        this.steps = steps;
     }
 
     /**
@@ -58,7 +59,7 @@ public class TransformationContextImpl implements TransformationContext {
      * the accept method of the consumer so that they may be passed on to the next
      * process.
      */
-    public void next(HtmlElement... elements) {
+    public void doNextStep(HtmlElement... elements) {
         if (reset) {
             list.clear();
             reset = false;
@@ -66,7 +67,7 @@ public class TransformationContextImpl implements TransformationContext {
         Collections.addAll(list, elements);
     }
 
-    public void next(String html) {
+    public void doNextStep(String html) {
         if (reset) {
             list.clear();
             reset = false;
@@ -79,7 +80,7 @@ public class TransformationContextImpl implements TransformationContext {
         return list.stream();
     }
 
-    public Map<String, Object> getContext() {
+    public Map<String, Object> getState() {
         return context;
     }
 
@@ -92,13 +93,9 @@ public class TransformationContextImpl implements TransformationContext {
     }
 
     @Override
-    public PrintWriter getWriter() throws IOException  {
-        return response.getWriter();
+    public List<TransformationStep> getSteps() {
+        return steps;
     }
-
-    @Override
-    public OutputStream getOutputStream() throws IOException {
-        return response.getOutputStream();
-    }
+    
 
 }

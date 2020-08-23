@@ -17,11 +17,13 @@
 package org.apache.sling.transformer.impl;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.transformer.TransformationConstants;
 import org.apache.sling.transformer.TransformationManager;
 import org.apache.sling.transformer.TransformationStep;
 import org.osgi.framework.Constants;
@@ -61,9 +63,26 @@ public class TransformationManagerImpl implements TransformationManager {
     }
 
     private boolean doStep(Map<String, Object> properties, SlingHttpServletRequest request) {
-        properties.keySet().forEach(key -> {
+        Iterator<String> it = properties.keySet().iterator();
+        while (it.hasNext()) {
+            String key = it.next();
+            switch (key) {
+            case TransformationConstants.PATHS:
+                String value = (String) properties.get(key);
+                if (!request.getRequestURI().matches(value)) {
+                    return false;
+                }
+                break;
+            case TransformationConstants.EXTENSIONS:
+                String extension = (String) properties.get(key);
+                if (!request.getRequestURI().endsWith(extension)) {
+                    return false;
+                }
+                break;
+            default:
+            }
 
-        });
+        }
         return true;
     }
 

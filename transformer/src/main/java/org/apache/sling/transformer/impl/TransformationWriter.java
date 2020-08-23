@@ -19,32 +19,56 @@ package org.apache.sling.transformer.impl;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.sling.commons.html.Html;
+import org.apache.sling.commons.html.HtmlElement;
 import org.apache.sling.commons.html.util.HtmlElements;
+import org.apache.sling.transformer.TransformationContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TransformationWriter extends Writer {
 
     private Writer originalWriter;
 
-    private TransformationStepWrapper wrapper;
+    private StringBuilder buffer;
 
-    public TransformationWriter(TransformationContextImpl process) throws IOException {
-        this.originalWriter = process.getWriter();
-        this.wrapper = new TransformationStepWrapper(new LinkTransformer(), process);
+    private TransformationStepWrapper[] steps;
+    
+    private static final Logger log = LoggerFactory.getLogger(TransformationWriter.class);
+
+    public TransformationWriter(TransformationContext context) throws IOException {
+        super();
+        log.debug("TransformationWriter initialized with {} steps", context.getState());
+        this.originalWriter = context.getResponse().getWriter();
+        this.buffer = new StringBuilder();
+        steps = context.getSteps().stream().map( step -> {
+            return new TransformationStepWrapper(step, context);
+        }).toArray(TransformationStepWrapper[]::new);
+        
+   
     }
 
     @Override
     public void write(char[] cbuf, int off, int len) throws IOException {
-        String foo = Html.stream(String.valueOf(cbuf, off, len))
-                .flatMap(wrapper)
-                .map(HtmlElements.TO_HTML)
-                .collect(Collectors.joining());
-        originalWriter.write(foo.toCharArray(), 0, foo.toCharArray().length);
+        buffer.append(String.copyValueOf(cbuf, off, len));
+    }
+    
+    private void writeLocal(String string) throws IOException {
+        Stream<HtmlElement> stream = Html.stream(string);
+        for (int index = 0; index < steps.length; ++index ) {
+            stream = stream.flatMap(steps[index]);
+            log.error("adding {}", steps[index]);
+        }
+        char[] cache = stream.map(HtmlElements.TO_HTML).collect(Collectors.joining()).toCharArray();
+        originalWriter.write(cache, 0, cache.length);
     }
 
     @Override
     public void flush() throws IOException {
+        writeLocal(buffer.toString());
+        buffer.setLength(0);
         originalWriter.flush();
     }
 

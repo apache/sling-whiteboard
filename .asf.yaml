@@ -1,0 +1,7 @@
+github:
+  description: Apache Sling Whiteboard - testing ground for new ideas
+  labels:
+    - java
+    - sling
+    - experimental
+

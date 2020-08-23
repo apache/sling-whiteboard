@@ -4,7 +4,7 @@ time-to-first-request
 This HTTP proxy, written in NodeJS, starts a Docker
 container on demand when an HTTP request is received.
 
-It is used to measure the time-to-first-request on containers.
+It can be used to measure the _time to first successful request_ on containers.
 
 To run this use:
 

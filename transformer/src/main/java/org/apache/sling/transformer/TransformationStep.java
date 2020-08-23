@@ -18,8 +18,36 @@ package org.apache.sling.transformer;
 
 import org.apache.sling.commons.html.HtmlElement;
 
+/**
+ * Defines the service that will be used to modify the html as it's passed back
+ *
+ */
 public interface TransformationStep {
 
-    public void handle(HtmlElement element, TransformationContext process);
+    /**
+     * Called at the beginning of the filter transformation process before any steps
+     * are triggered
+     * 
+     * @param context
+     */
+    default void before(TransformationContext context) {
+    }
+
+    /**
+     * called for each element
+     * 
+     * @param element
+     * @param context
+     */
+    public void step(HtmlElement element, TransformationContext context);
+
+    /**
+     * Called after all steps have occurred but before a flush has been
+     * triggered
+     * 
+     * @param context
+     */
+    default void after(TransformationContext context) {
+    }
 
 }
