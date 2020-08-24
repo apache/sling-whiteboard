@@ -19,8 +19,10 @@
 package org.apache.sling.feature.extension.unpack.impl.converter;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.URL;
@@ -29,6 +31,9 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Predicate;
 
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
@@ -36,43 +41,95 @@ import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionState;
 import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.extension.unpack.Unpack;
 import org.apache.sling.feature.io.json.FeatureJSONWriter;
 
 public class Converter {
     public static void main(String[] args) throws Exception {
-        if (args.length > 1) {
-            File base = new File(args[0]);
+        if (args.length > 4) {
+            ArtifactId id = ArtifactId.fromMvnId(args[0]);
+
+            String name = args[1];
+            if (name == null || name.trim().isEmpty()) {
+                throw new IllegalStateException("Invalid extension name: " + name);
+            }
+
+            File featureFile = new File(args[2]);
+            if (!featureFile.getParentFile().isDirectory() && !featureFile.mkdirs()) {
+                throw new IOException("Unable to create target dir: " + featureFile.getParentFile());
+            }
+            File base = new File(args[3]);
             if (!base.isDirectory() && !base.mkdirs()) {
                 throw new IOException("Unable to create base dir: " + base);
             }
-            Feature feature = new Feature(new ArtifactId("cm", "cm-fonts", "0.0.1", null,  "slingosgifeature"));
-            Extension extension = new Extension(ExtensionType.ARTIFACTS, "user-fonts", ExtensionState.REQUIRED);
-            for (int i = 1; i < args.length; i++) {
-                String arg = args[i];
-                URL url = new URL(arg);
-                File tmp = File.createTempFile("fonts", ".zip");
-                try (DigestInputStream inputStream = new DigestInputStream(url.openStream(), MessageDigest.getInstance("SHA-512"))) {
-                    Files.copy(inputStream, tmp.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                    String digest = bytesToHex(inputStream.getMessageDigest().digest());
 
-                    Artifact artifact = new Artifact(new ArtifactId("cm", "cm-fonts", "0.0.1", digest,  "zip"));
+            String key = null;
+            String value = null;
+
+            List<String> urls = new ArrayList<>();
+            for (int i = 4; i < args.length;i++) {
+                if (args[i].startsWith("key=")) {
+                    key = args[i].substring("key=".length());
+                } else if (args[i].startsWith("value=")) {
+                    value = args[i].substring("value=".length());
+                }
+                else{
+                    urls.add(args[i]);
+                }
+            }
+
+            Predicate<InputStream> check;
+            if (key != null && !key.trim().isEmpty() && value != null && !value.trim().isEmpty()) {
+                final String keyF = key;
+                final String valueF = value;
+                check = (stream) -> Unpack.handles(keyF, valueF, stream);
+            } else {
+                check = inputStream -> true;
+            }
+
+            List<String> unhandled = convert(id, name, featureFile, base, check, urls);
+
+            System.out.println(String.join(" ", unhandled));
+        }
+    }
+
+    public static List<String> convert(ArtifactId featureId, String extensionName, File featureFile, File repository, Predicate<InputStream> filter, List<String> urls) throws Exception {
+        Feature feature = new Feature(featureId);
+
+        List<String> unhandled = new ArrayList<>();
+
+        Extension extension = new Extension(ExtensionType.ARTIFACTS, extensionName, ExtensionState.REQUIRED);
+
+        for (String urlString : urls) {
+            URL url = new URL(urlString);
+            File tmp = File.createTempFile("unpack", ".zip");
+            try (DigestInputStream inputStream = new DigestInputStream(url.openStream(), MessageDigest.getInstance("SHA-512"))) {
+                Files.copy(inputStream, tmp.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                String digest = bytesToHex(inputStream.getMessageDigest().digest());
+
+                if (filter.test(new FileInputStream(tmp))){
+                    Artifact artifact = new Artifact(new ArtifactId(featureId.getGroupId(), featureId.getArtifactId(), featureId.getVersion(), digest, "zip"));
                     extension.getArtifacts().add(artifact);
-                    File target = new File(base, artifact.getId().toMvnPath());
+                    File target = new File(repository, artifact.getId().toMvnPath());
                     if (!target.getParentFile().isDirectory() && !target.getParentFile().mkdirs()) {
                         throw new IOException("Unable to create parent dir: " + target.getParentFile());
                     }
                     Files.move(tmp.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                } else {
+                    unhandled.add(urlString);
                 }
-            }
-            feature.getExtensions().add(extension);
-            File target = new File(base, feature.getId().toMvnPath());
-            if (!target.getParentFile().isDirectory() && !target.getParentFile().mkdirs()) {
-                throw new IOException("Unable to create parent dir: " + target.getParentFile());
-            }
-            try (Writer writer = new OutputStreamWriter(new FileOutputStream(target), StandardCharsets.UTF_8)) {
-                FeatureJSONWriter.write(writer, feature);
+            } finally {
+                tmp.delete();
             }
         }
+
+        feature.getExtensions().add(extension);
+
+        try (Writer writer = new OutputStreamWriter(new FileOutputStream(featureFile), StandardCharsets.UTF_8)) {
+            FeatureJSONWriter.write(writer, feature);
+        }
+
+        return unhandled;
     }
 
     private static final byte[] HEX_ARRAY = "0123456789ABCDEF".getBytes();

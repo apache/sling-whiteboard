@@ -69,13 +69,13 @@ public class Unpack {
     public boolean handle(Extension extension, ArtifactProvider provider, BiConsumer<URL, Map<String, Object>> handler) {
         if (extension.getType() == ExtensionType.ARTIFACTS &&
             this.registry.containsKey(extension.getName())) {
+            String dir = this.registry.get(extension.getName()).get("dir");
+            boolean override = Boolean.parseBoolean(this.registry.get(extension.getName()).get("override"));
+            String key = this.registry.get(extension.getName()).get("key");
+            String value = this.registry.get(extension.getName()).get("value");
+            String index = this.registry.get(extension.getName()).get("index");
+
             for (Artifact artifact : extension.getArtifacts()) {
-                String dir = this.registry.get(extension.getName()).get("dir");
-                boolean override = Boolean.parseBoolean(this.registry.get(extension.getName()).get("override"));
-                URL url = provider.provide(artifact.getId());
-                String key = this.registry.get(extension.getName()).get("key");
-                String value = this.registry.get(extension.getName()).get("value");
-                String index = this.registry.get(extension.getName()).get("index");
                 Map<String, Object> context = new HashMap<>();
                 context.put("artifact.id", artifact.getId());
                 context.put("dir", dir);
@@ -83,6 +83,7 @@ public class Unpack {
                 context.put("key", key);
                 context.put("value", value);
                 context.put("index", index);
+                URL url = provider.provide(artifact.getId());
                 handler.accept(url, context);
             }
             return true;
@@ -108,19 +109,25 @@ public class Unpack {
         if (dir == null) {
             return false;
         } else if (key != null && value != null) {
-            try (JarInputStream jarInputStream = new JarInputStream(stream)) {
-                Manifest mf = jarInputStream.getManifest();
-                if (mf != null) {
-                    return value.equalsIgnoreCase(mf.getMainAttributes().getValue(key));
-                }
-            } catch (Exception ex) {
-                return false;
-            }
+            return handles(key, value, stream);
         } else if (contextDir != null) {
             return true;
         }
 
         return false;
+    }
+
+    public static boolean handles(String key, String value, InputStream inputStream) {
+        try (JarInputStream jarInputStream = new JarInputStream(inputStream)) {
+            Manifest mf = jarInputStream.getManifest();
+            if (mf != null) {
+                return value.equalsIgnoreCase(mf.getMainAttributes().getValue(key));
+            } else {
+                return false;
+            }
+        } catch (Exception ex) {
+            return false;
+        }
     }
 
 
