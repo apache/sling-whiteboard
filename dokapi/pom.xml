@@ -82,7 +82,17 @@
           <commandlineArgs>-s src/test/resources/features/feature-sling12.json -af src/test/resources/features/feature-dokapi-test.json</commandlineArgs>
         </configuration>
       </plugin>
-    </plugins>
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>launcher/**</exclude>
+            <exclude>conf/**</exclude>
+        </excludes>
+      </configuration>
+    </plugin>
+</plugins>
   </build>
 
   <dependencies>
@@ -118,6 +128,12 @@
       <artifactId>org.apache.sling.kickstart</artifactId>
       <version>0.0.2</version>
       <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.commons.johnzon</artifactId>
+      <version>1.2.2</version>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 
