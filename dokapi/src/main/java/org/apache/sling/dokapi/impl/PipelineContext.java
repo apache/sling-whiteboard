@@ -30,6 +30,7 @@ public class PipelineContext {
     private final SlingHttpServletRequest request;
     public final Resource resource;
     public final JsonObjectBuilder api;
+    public final JsonObjectBuilder navigation;
     public final JsonObjectBuilder metadata;
     public final JsonObjectBuilder children;
     public final JsonObjectBuilder content;
@@ -38,17 +39,17 @@ public class PipelineContext {
         this.request = request;
         resource = request.getResource();
 
-        // TODO should create these on demand
         api = Json.createObjectBuilder();
+        navigation = Json.createObjectBuilder();
         metadata = Json.createObjectBuilder();
         children = Json.createObjectBuilder();
         content = Json.createObjectBuilder();
 
-        api.add("_url", pathToUrl(resource.getPath()));
+        navigation.add("self", pathToUrl(resource.getPath()));
         if(resource.getParent() != null) {
-            api.add("_parentUrl", pathToUrl(resource.getParent().getPath()));
+            navigation.add("parent", pathToUrl(resource.getParent().getPath()));
         }
-        api.add("_id", resource.getPath());
+        api.add("id", resource.getPath());
     }
 
     private void maybeAdd(JsonObjectBuilder target, String key, JsonObjectBuilder src) {
@@ -61,6 +62,7 @@ public class PipelineContext {
     JsonObject build() {
         final JsonObjectBuilder b = Json.createObjectBuilder();
         maybeAdd(b, "api", api);
+        maybeAdd(b, "navigation", navigation);
         maybeAdd(b, "metadata", metadata);
         maybeAdd(b, "content", content);
         maybeAdd(b, "children", children);

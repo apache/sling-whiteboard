@@ -26,6 +26,7 @@ import javax.json.JsonObjectBuilder;
 import org.apache.sling.api.resource.ValueMap;
 
 class P {
+    static final String [] IGNORE_RESOURCE_PREIX = { "jcr:", "rep:", "oak:" };
     static final String [] TITLE_PROPS = { "jcr:title", "title" };
     static final String [] NAME_PROPS = { "jcr:name", "name" };
     static final String [] TEXT_PROPS = { "jcr:text", "text" };
@@ -51,7 +52,7 @@ class P {
     }
 
     static void maybeAddOneOf(JsonObjectBuilder b, String propName, ValueMap vm, String [] props) {
-        for(String prop : NAME_PROPS) {
+        for(String prop : props) {
             if(maybeAdd(b, prop, propName, vm)) {
                 break;
             }
@@ -63,7 +64,12 @@ class P {
     }
 
     static boolean ignoreResource(String name) {
-        return name.startsWith("rep:");
+        for(String prefix : IGNORE_RESOURCE_PREIX) {
+            if(name.startsWith(prefix)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     static String convertName(String in) {

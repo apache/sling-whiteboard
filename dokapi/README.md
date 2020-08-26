@@ -28,3 +28,7 @@ Build and start this with
 And open the _dokapi_ root page at
 
     http://localhost:8080
+
+After that...well, the API is supposed to be _discoverable_ so you should find your way!
+
+The `/content/articles` subtree is where the most interesting content is, for now.
