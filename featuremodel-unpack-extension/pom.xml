@@ -30,6 +30,8 @@
 
     <properties>
         <jdk.version>8</jdk.version>
+        <license-maven-plugin.version>1.16</license-maven-plugin.version>
+        <appassembler-maven-plugin.version>2.0.0</appassembler-maven-plugin.version>
     </properties>
 
     <build>
@@ -46,8 +48,81 @@
                     <excludes>
                         <exclude>src/main/resources/META-INF/services/**</exclude>
                         <exclude>src/test/resources/**</exclude>
+                        <exclude>src/main/legal/NOTICE-with-deps</exclude>
                     </excludes>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>${license-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>add-third-party</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>add-third-party</goal>
+                        </goals>
+                        <configuration>
+                            <fileTemplate>${basedir}/src/main/legal/LICENSE-with-deps</fileTemplate>
+                            <thirdPartyFilename>LICENSE-with-deps</thirdPartyFilename>
+                            <sortArtifactByName>true</sortArtifactByName>
+                            <excludedScopes>test</excludedScopes>
+                            <licenseMerges>
+                                <licenseMerge>The Apache Software License, Version 2.0|Apache License, Version 2.0|Apache Public License 2.0</licenseMerge>
+                            </licenseMerges>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>appassembler-maven-plugin</artifactId>
+                <version>${appassembler-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>assemble</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <repositoryLayout>flat</repositoryLayout>
+                    <repositoryName>lib</repositoryName>
+                    <useWildcardClassPath>true</useWildcardClassPath>
+                    <extraJvmArguments>-Dproject.artifactId=${project.artifactId} -Dproject.version=${project.version} -Dbuild.timestamp=${maven.build.timestamp} -Duser.timezone=UTC -Dfile.encoding=UTF-8</extraJvmArguments>
+                    <defaultJvmSettings>-Xms500m -Xmx500m -XX:PermSize=128m -XX:-UseGCOverheadLimit</defaultJvmSettings>
+                    <licenseHeaderFile>${basedir}/src/main/legal/license-header</licenseHeaderFile>
+                    <programs>
+                        <program>
+                            <mainClass>org.apache.sling.feature.extension.unpack.impl.converter.Converter</mainClass>
+                            <name>fc</name>
+                        </program>
+                    </programs>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <finalName>${project.build.finalName}</finalName>
+                            <tarLongFileMode>gnu</tarLongFileMode>
+                            <appendAssemblyId>false</appendAssemblyId>
+                            <descriptors>
+                                <descriptor>${basedir}/src/main/assembly/bin.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
