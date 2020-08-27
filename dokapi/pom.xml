@@ -36,6 +36,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <http.port>8080</http.port>
   </properties>
 
   <build>
@@ -79,7 +80,7 @@
         </executions>
         <configuration>
           <mainClass>org.apache.sling.kickstart.app.KickstartStarter</mainClass>
-          <commandlineArgs>-s src/test/resources/features/feature-sling12.json -af src/test/resources/features/feature-dokapi-test.json</commandlineArgs>
+          <commandlineArgs>-s src/test/resources/features/feature-sling12.json -af src/test/resources/features/feature-dokapi-test.json -p ${http.port}</commandlineArgs>
         </configuration>
       </plugin>
       <plugin>
