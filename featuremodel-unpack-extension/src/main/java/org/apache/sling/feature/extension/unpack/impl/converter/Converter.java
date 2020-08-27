@@ -32,8 +32,10 @@ import java.nio.file.StandardCopyOption;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
@@ -74,7 +76,7 @@ public class Converter {
                     value = args[i].substring("value=".length());
                 }
                 else{
-                    urls.add(args[i]);
+                    urls.addAll(Arrays.asList(args[i].split(" ")).stream().map(String::trim).filter(((Predicate<String>)String::isEmpty).negate()).collect(Collectors.toList()));
                 }
             }
 
@@ -108,7 +110,7 @@ public class Converter {
                 String digest = bytesToHex(inputStream.getMessageDigest().digest());
 
                 if (filter.test(new FileInputStream(tmp))){
-                    Artifact artifact = new Artifact(new ArtifactId(featureId.getGroupId(), featureId.getArtifactId(), featureId.getVersion(), digest, "zip"));
+                    Artifact artifact = new Artifact(new ArtifactId(featureId.getGroupId(), featureId.getArtifactId(), featureId.getVersion(), (featureId.getClassifier() != null ? featureId.getClassifier() + "-" : "" ) + digest, "zip"));
                     extension.getArtifacts().add(artifact);
                     File target = new File(repository, artifact.getId().toMvnPath());
                     if (!target.getParentFile().isDirectory() && !target.getParentFile().mkdirs()) {
