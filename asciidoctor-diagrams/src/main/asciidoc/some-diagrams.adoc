@@ -20,6 +20,14 @@
 
 [plantuml,auth-protocol-plantuml]
 ....
+skinparam roundcorner 20
+skinparam sequence {
+  BackgroundColor PaleGreen
+  ArrowColor SeaGreen
+  BorderColor SpringGreen
+}
+
+actor Bob #blue
 Alice -> Bob: Authentication Request
 Bob --> Alice: Authentication Response
 
