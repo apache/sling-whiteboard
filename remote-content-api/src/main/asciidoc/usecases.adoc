@@ -1,0 +1,50 @@
+[plantuml,client-side-rendering]
+....
+@startuml
+
+node "Sling Server" {
+  database [Sling Content Repository] as sling
+  component [Content Access API] as capi
+}
+
+actor developer
+
+node "Client Browser" {
+  artifact [Rendering Code] as rendering
+}
+
+sling -> capi
+capi -u-> developer : http
+capi -> rendering : JSON Content
+
+@enduml
+....
+
+[plantuml,edge-side-rendering]
+....
+@startuml
+
+node "Sling Server" {
+  database [Sling Content Repository] as sling
+  database [Rendering Templates] as templates
+  component [Content Access API] as capi
+}
+
+node "Content Distribution Network" {
+  component [Edge-side rendering] as rendering
+  database [Edge-side caching] as caching
+}
+
+component [Client Browser] as browser
+
+actor developer
+
+sling -> capi
+capi -u-> developer : http
+capi -> rendering : JSON Content + Templates
+templates -u-> capi
+rendering -> caching
+caching -> browser : http
+
+@enduml
+....
