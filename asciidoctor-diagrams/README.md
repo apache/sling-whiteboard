@@ -36,9 +36,14 @@ in this project.
 The following diagram generation tools should work on a standard Maven setup.
 
 #### ditaa diagram
+
+See http://ditaa.sourceforge.net/#usage for usage information.
+
 ![](src/docs/generated-diagrams/asciidoctor-diagram-ditaa.png)
 
 #### PlantUML diagram
+
+See https://plantuml.com and https://crashedmind.github.io/PlantUMLHitchhikersGuide/
 
 ![](src/docs/generated-diagrams/auth-protocol-plantuml.png)
 
