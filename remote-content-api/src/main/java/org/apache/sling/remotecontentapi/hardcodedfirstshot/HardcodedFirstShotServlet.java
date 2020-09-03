@@ -21,9 +21,7 @@ package org.apache.sling.remotecontentapi.hardcodedfirstshot;
 
 import java.io.IOException;
 
-import javax.json.Json;
 import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 import javax.servlet.Servlet;
 
 import org.apache.sling.api.SlingHttpServletRequest;

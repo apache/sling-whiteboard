@@ -61,8 +61,8 @@ public class PipelineContext {
         final JsonObjectBuilder b = Json.createObjectBuilder();
         maybeAdd(b, "navigation", navigation);
         maybeAdd(b, "metadata", metadata);
-        maybeAdd(b, "content", content);
         maybeAdd(b, "children", children);
+        maybeAdd(b, "content", content);
         return b.build();
     }
 

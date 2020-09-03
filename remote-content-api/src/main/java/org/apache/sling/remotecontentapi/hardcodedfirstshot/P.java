@@ -25,33 +25,37 @@ import javax.json.JsonObjectBuilder;
 
 import org.apache.sling.api.resource.ValueMap;
 
-class P {
+public class P {
     static final String [] IGNORE_RESOURCE_PREIX = { "jcr:", "rep:", "oak:" };
     static final String [] TITLE_PROPS = { "jcr:title", "title" };
     static final String [] NAME_PROPS = { "jcr:name", "name" };
     static final String [] TEXT_PROPS = { "jcr:text", "text" };
     static final String [] DESCRIPTION_PROPS = { "jcr:description", "description" };
 
-    static boolean maybeAdd(JsonObjectBuilder b, String propName, String jsonName, ValueMap vm) {
+    public static boolean maybeAdd(JsonObjectBuilder b, String propName, String jsonName, ValueMap vm) {
         if(vm.containsKey(propName)) {
             final Object value = vm.get(propName);
             if(value != null) {
-                if(value instanceof Object[]) {
-                    final JsonArrayBuilder a = Json.createArrayBuilder();
-                    for(Object o : (Object[])value) {
-                        a.add(o.toString());
-                    }
-                    b.add(jsonName, a.build());
-                } else {
-                    b.add(jsonName, value.toString());
-                }
+                addValue(b, jsonName, value);
             }
             return true;
         }
         return false;
     }
 
-    static void maybeAddOneOf(JsonObjectBuilder b, String propName, ValueMap vm, String [] props) {
+    public static void addValue(JsonObjectBuilder json, String key, Object value) {
+        if(value instanceof Object[]) {
+            final JsonArrayBuilder a = Json.createArrayBuilder();
+            for(Object o : (Object[])value) {
+                a.add(o.toString());
+            }
+            json.add(key, a.build());
+        } else {
+            json.add(key, value.toString());
+        }
+    }
+
+    public static void maybeAddOneOf(JsonObjectBuilder b, String propName, ValueMap vm, String [] props) {
         for(String prop : props) {
             if(maybeAdd(b, prop, propName, vm)) {
                 break;
@@ -59,11 +63,11 @@ class P {
         }
     }
 
-    static boolean ignoreProperty(String key) {
+    public static boolean ignoreProperty(String key) {
         return key.startsWith("jcr:");
     }
 
-    static boolean ignoreResource(String name) {
+    public static boolean ignoreResource(String name) {
         for(String prefix : IGNORE_RESOURCE_PREIX) {
             if(name.startsWith(prefix)) {
                 return true;
@@ -72,11 +76,11 @@ class P {
         return false;
     }
 
-    static String convertName(String in) {
+    public static String convertName(String in) {
         return in.replace("sling:", "_");
     }
 
-    static boolean isMetadata(String propName) {
+    public static boolean isMetadata(String propName) {
         return propName.startsWith("sling:");
     }
 }
