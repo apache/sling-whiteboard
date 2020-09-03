@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.sling.remotecontentapi.impl;
+package org.apache.sling.remotecontentapi.hardcodedfirstshot;
 
 import java.io.IOException;
 
@@ -31,7 +31,10 @@ import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
 import org.osgi.service.component.annotations.Component;
 
-/** Main Remote Content API servlet */
+/** This is a first shot at this remote content API, that
+ *  works well with the (simplistic) test content
+ *  found under /content/articles
+ */
 @Component(service = Servlet.class,
     name="org.apache.sling.servlets.get.DefaultGetServlet",
     property = {
@@ -43,10 +46,10 @@ import org.osgi.service.component.annotations.Component;
 
             "sling.servlet.methods=GET",
             "sling.servlet.methods=HEAD",
-            "sling.servlet.selectors=dkp",
+            "sling.servlet.selectors=hfs",
             "sling.servlet.extension=json",
     })
-public class RemoteContentApiServlet extends SlingSafeMethodsServlet {
+public class HardcodedFirstShotServlet extends SlingSafeMethodsServlet {
     private static final long serialVersionUID = 1L;
 
     @Override

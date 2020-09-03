@@ -17,8 +17,18 @@
  * under the License.
  */
 
-package org.apache.sling.remotecontentapi.impl;
+package org.apache.sling.remotecontentapi.hardcodedfirstshot;
 
-public interface JsonProcessor {
-    void process(PipelineContext pc);
+import org.apache.sling.api.resource.ValueMap;
+
+class ContentProcessor implements JsonProcessor {
+    @Override
+    public void process(PipelineContext pc) {
+        final ValueMap vm = pc.resource.adaptTo(ValueMap.class);
+        for(String key : vm.keySet()) {
+            if(!P.ignoreProperty(key) && !P.isMetadata(key)) {
+                P.maybeAdd(pc.content, key, P.convertName(key), vm);
+            }
+        }
+    }
 }

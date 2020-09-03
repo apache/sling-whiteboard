@@ -1,4 +1,4 @@
 {
     "sling:resourceType" : "sling:redirect",
-    "sling:target" : "/content.dkp.json"
+    "sling:target" : "/content.hfs.json"
 }

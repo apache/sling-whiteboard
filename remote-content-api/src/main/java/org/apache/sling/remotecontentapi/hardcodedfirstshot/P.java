@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.sling.remotecontentapi.impl;
+package org.apache.sling.remotecontentapi.hardcodedfirstshot;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
