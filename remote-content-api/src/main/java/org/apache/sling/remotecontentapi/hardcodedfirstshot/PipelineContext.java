@@ -66,13 +66,20 @@ public class PipelineContext {
         return b.build();
     }
 
-    String pathToUrl(String path) {
+    String pathToUrlNoJsonExtension(String path) {
         return String.format(
-            "%s://%s:%d%s.%s.%s",
+            "%s://%s:%d%s",
             request.getScheme(),
             request.getServerName(),
             request.getServerPort(),
-            path,
+            path
+        );
+    }
+
+    String pathToUrl(String path) {
+        return String.format(
+            "%s.%s.%s",
+            pathToUrlNoJsonExtension(path),
             request.getRequestPathInfo().getSelectorString(),
             request.getRequestPathInfo().getExtension()
         );
