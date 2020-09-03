@@ -80,7 +80,7 @@
         </executions>
         <configuration>
           <mainClass>org.apache.sling.kickstart.app.KickstartStarter</mainClass>
-          <commandlineArgs>-s src/test/resources/features/feature-sling12.json -af src/test/resources/features/feature-dokapi-test.json -p ${http.port}</commandlineArgs>
+          <commandlineArgs>-s src/test/resources/features/feature-sling12.json -af src/test/resources/features/feature-remote-content-api.json -p ${http.port}</commandlineArgs>
         </configuration>
       </plugin>
       <plugin>

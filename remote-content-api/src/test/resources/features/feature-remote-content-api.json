@@ -6,9 +6,18 @@
   "license":"Apache License, Version 2.0",
   "variables":{},
   "bundles":[
-    "org.apache.sling:org.apache.sling.dokapi:0.0.1-SNAPSHOT"
+    "org.apache.sling:org.apache.sling.experimental.remote.content.api:0.0.1-SNAPSHOT"
+  ],
+  "content-packages:ARTIFACTS|required":[
+    "com.adobe.aem.guides:aem-guides-wknd.ui.content.sample:zip:0.0.4"
   ],
   "configurations":{
+    "org.apache.sling.jcr.base.internal.LoginAdminWhitelist.fragment~installer-packages":{
+      "whitelist.bundles":[
+        "org.apache.sling.installer.factory.packages"
+      ],
+      "whitelist.name":"installer-packages"
+    },
     "org.apache.sling.commons.log.LogManager.factory.config~debug.log" : {
       "org.apache.sling.commons.log.file": "logs/debug.log",
       "org.apache.sling.commons.log.level": "INFO",

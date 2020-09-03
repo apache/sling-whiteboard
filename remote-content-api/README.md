@@ -58,3 +58,9 @@ suggested templates, keyed by extension and selectors, with the content in order
 the edge-side rendering code.
 
 ![](src/docs/generated-diagrams/edge-side-rendering.png)
+
+## Test Content
+
+The test content uses `com.adobe.aem.guides:aem-guides-wknd.ui.content.sample` which is MIT
+licensed. Minimal "fake" JCR nodetype definitions are used to allow this content to load, as
+we don't really care about the details of these node types besides their names.

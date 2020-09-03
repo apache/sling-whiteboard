@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.sling.dokapi.impl;
+package org.apache.sling.remotecontentapi.impl;
 
 import org.apache.sling.api.resource.ValueMap;
 

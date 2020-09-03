@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.sling.dokapi.impl;
+package org.apache.sling.remotecontentapi.impl;
 
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;

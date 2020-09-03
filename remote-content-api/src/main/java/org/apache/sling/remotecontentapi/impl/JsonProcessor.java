@@ -17,18 +17,8 @@
  * under the License.
  */
 
-package org.apache.sling.dokapi.impl;
+package org.apache.sling.remotecontentapi.impl;
 
-import org.apache.sling.api.resource.ValueMap;
-
-class MetadataProcessor implements JsonProcessor {
-    @Override
-    public void process(PipelineContext pc) {
-        final ValueMap vm = pc.resource.adaptTo(ValueMap.class);
-        for(String key : vm.keySet()) {
-            if(!P.ignoreProperty(key) && P.isMetadata(key)) {
-                P.maybeAdd(pc.metadata, key, P.convertName(key), vm);
-            }
-        }
-    }
+public interface JsonProcessor {
+    void process(PipelineContext pc);
 }

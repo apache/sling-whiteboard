@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.sling.dokapi.impl;
+package org.apache.sling.remotecontentapi.impl;
 
 import java.io.IOException;
 
@@ -31,7 +31,7 @@ import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
 import org.osgi.service.component.annotations.Component;
 
-/** Main Dokapi servlet */
+/** Main Remote Content API servlet */
 @Component(service = Servlet.class,
     name="org.apache.sling.servlets.get.DefaultGetServlet",
     property = {
@@ -46,7 +46,7 @@ import org.osgi.service.component.annotations.Component;
             "sling.servlet.selectors=dkp",
             "sling.servlet.extension=json",
     })
-public class DokapiServlet extends SlingSafeMethodsServlet {
+public class RemoteContentApiServlet extends SlingSafeMethodsServlet {
     private static final long serialVersionUID = 1L;
 
     @Override
