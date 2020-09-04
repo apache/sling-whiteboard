@@ -77,6 +77,11 @@ public class P {
     }
 
     public static String convertName(String in) {
+        if("sling:resourceType".equals(in)) {
+            return "_componentType";
+        } else if("sling:resourceSuperType".equals(in)) {
+            return "_componentSuperType";
+        }
         return in.replace("sling:", "_");
     }
 

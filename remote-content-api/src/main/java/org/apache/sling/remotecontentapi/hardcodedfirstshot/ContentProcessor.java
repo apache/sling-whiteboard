@@ -47,6 +47,6 @@ class ContentProcessor implements JsonProcessor {
 
     @Override
     public void process(PipelineContext pc) {
-        pc.content.addAll(new ResourceConverter(pc.resource, new ConverterContext(pc)).getJson());
+        new ResourceConverter(pc.resource, new ConverterContext(pc)).addTo(pc.content);
     }
 }
