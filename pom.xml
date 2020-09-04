@@ -48,6 +48,7 @@
           <module>metrics-prometheus</module>
           <module>saml-handler</module>
           <module>saml-example</module>
+          <module>hc-resource</module>
     </modules>
 
 </project>
