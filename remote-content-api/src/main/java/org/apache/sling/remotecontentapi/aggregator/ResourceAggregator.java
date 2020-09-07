@@ -42,70 +42,61 @@ public class ResourceAggregator {
     private final Context context;
     private final Resource resource;
 
-    static class ResourceProcessor {
-        private final Context context;
+    private void addProperties(JsonObjectBuilder json, Resource r, ValueMap vm) {
+        if(vm != null) {
+            // Add an _id to all components which have a resource type
+            if(vm.containsKey(SLING_RESOURCE_TYPE)) {
+                json.add("_id", r.getPath());
+            }
 
-        ResourceProcessor(Context context) {
-            this.context = context;
-        }
-
-        private void addProperties(JsonObjectBuilder json, Resource r, ValueMap vm) {
-            if(vm != null) {
-                // Add an _id to all components which have a resource type
-                if(vm.containsKey(SLING_RESOURCE_TYPE)) {
-                    json.add("_id", r.getPath());
-                }
-
-                final PropertyProcessor pp = new PropertyProcessor();
-                for(Map.Entry<String, Object> entry : vm.entrySet()) {
-                    pp.process(json, entry.getKey(), entry.getValue());
-                }
+            for(Map.Entry<String, Object> entry : vm.entrySet()) {
+                processProperty(json, entry.getKey(), entry.getValue());
             }
         }
+    }
 
-        private void addChild(JsonObjectBuilder parent, JsonObjectBuilder childJson, Resource r, ValueMap vm) {
-            if(context.getRelativePath(r).isEmpty()) {
-                // at content root, do not add intermediate element
-                parent.addAll(childJson);
+    private void addChild(JsonObjectBuilder parent, JsonObjectBuilder childJson, Resource r, ValueMap vm) {
+        if(context.getRelativePath(r).isEmpty()) {
+            // at content root, do not add intermediate element
+            parent.addAll(childJson);
+        } else {
+            if("jcr:content".equals(r.getName())) {
+                parent.add("_composite", childJson);
             } else {
-                if("jcr:content".equals(r.getName())) {
-                    parent.add("_composite", childJson);
-                } else {
-                    parent.add(r.getName(), childJson);
-                }
+                parent.add(r.getName(), childJson);
             }
         }
+    }
 
-        /** True if r is a "document" like a website
-         *  page, that shouldn't be recursed into when
-         *  visiting content.
-         */
-        private boolean isDocument(Resource r) {
-                // TODO shouldn't be hardcoded, of course...but we'll need
-                // to differentiate between our first-class content objects
-                // and their content.
-               return isNodeType(r.adaptTo(ValueMap.class), "cq:Page");
-        }
+    /** True if r is a "document" like a website
+     *  page, that shouldn't be recursed into when
+     *  visiting content.
+     */
+    private static boolean isDocument(Resource r) {
+        // TODO shouldn't be hardcoded, of course...but we'll need
+        // to differentiate between our first-class content objects
+        // and their content.
+        return isNodeType(r.adaptTo(ValueMap.class), "cq:Page");
+    }
 
-        public void addTo(JsonObjectBuilder parentJson, Resource r) {
-            final ValueMap vm = r.adaptTo(ValueMap.class);
+    private void addTo(JsonObjectBuilder parentJson, Resource r) {
+        final ValueMap vm = r.adaptTo(ValueMap.class);
 
-            if(isNodeType(vm, "nt:file")) {
-                // nt:file nodes: emit just a link
-                parentJson.add("file", Json.createObjectBuilder()
-                    .add("url", context.getUrlForPath(r.getPath(), false))
-                );
-            } else {
-                // general node: add a child JSON node with its name, properties and non-document child nodes
-                final JsonObjectBuilder childJson = Json.createObjectBuilder();
-                addProperties(childJson, r, vm);
-                for(Resource child : r.getChildren()) {
-                    if(!isDocument(child)) {
-                        addTo(childJson, child);
-                    }
+        if(isNodeType(vm, "nt:file")) {
+            // nt:file nodes: emit just a link
+            parentJson.add("file", Json.createObjectBuilder()
+                .add("url", context.getUrlForPath(r.getPath(), false))
+            );
+        } else {
+            // general node: add a child JSON node with its name, properties and non-document child nodes
+            final JsonObjectBuilder childJson = Json.createObjectBuilder();
+            addProperties(childJson, r, vm);
+            for(Resource child : r.getChildren()) {
+                if(!isDocument(child)) {
+                    addTo(childJson, child);
                 }
-                addChild(parentJson, childJson, r, vm);
             }
+            addChild(parentJson, childJson, r, vm);
         }
     }
 
@@ -113,28 +104,26 @@ public class ResourceAggregator {
         return vm == null ? false : nodeType.equals(vm.get("jcr:primaryType", String.class));
     }
 
-    static class PropertyProcessor {
-        public void process(JsonObjectBuilder json, String key, Object value) {
-            if(value != null) {
-                final String newName = processName(key);
-                if(newName != null) {
-                    P.addValue(json, newName, value);
-                }
+    private void processProperty(JsonObjectBuilder json, String key, Object value) {
+        if(value != null) {
+            final String newName = processPropertyName(key);
+            if(newName != null) {
+                P.addValue(json, newName, value);
             }
         }
+    }
 
-        private String processName(String propertyName) {
-            if(!propertyName.contains(":")) {
-                return propertyName;
-            } else if(propertyName.equals("jcr:title")) {
-                return "_title";
-            } else if(propertyName.equals("jcr:description")) {
-                return "_description";
-            } else if(propertyName.equals(SLING_RESOURCE_TYPE)) {
-                return "_componentType";
-            } else {
-                return null;
-            }
+    private String processPropertyName(String propertyName) {
+        if(!propertyName.contains(":")) {
+            return propertyName;
+        } else if(propertyName.equals("jcr:title")) {
+            return "_title";
+        } else if(propertyName.equals("jcr:description")) {
+            return "_description";
+        } else if(propertyName.equals(SLING_RESOURCE_TYPE)) {
+            return "_componentType";
+        } else {
+            return null;
         }
     }
 
@@ -144,6 +133,6 @@ public class ResourceAggregator {
     }
 
     public void addTo(JsonObjectBuilder content) {
-        new ResourceProcessor(context).addTo(content, resource);
+        addTo(content, resource);
     }
 }
