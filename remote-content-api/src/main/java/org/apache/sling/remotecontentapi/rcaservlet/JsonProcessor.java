@@ -17,8 +17,8 @@
  * under the License.
  */
 
-package org.apache.sling.remotecontentapi.hardcodedfirstshot;
+package org.apache.sling.remotecontentapi.rcaservlet;
 
 public interface JsonProcessor {
-    void process(PipelineContext pc);
+    void process(PipelineContext pc) throws Exception;
 }

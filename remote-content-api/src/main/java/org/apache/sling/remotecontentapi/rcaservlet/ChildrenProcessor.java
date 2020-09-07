@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.sling.remotecontentapi.hardcodedfirstshot;
+package org.apache.sling.remotecontentapi.rcaservlet;
 
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;

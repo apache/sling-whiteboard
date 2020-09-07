@@ -17,49 +17,41 @@
  * under the License.
  */
 
-package org.apache.sling.remotecontentapi.hardcodedfirstshot;
+package org.apache.sling.remotecontentapi.aggregator;
 
 import java.io.IOException;
 
-import javax.json.JsonObject;
 import javax.servlet.Servlet;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
 import org.osgi.service.component.annotations.Component;
 
-/** This is a first shot at this remote content API, that
- *  works well with the (simplistic) test content
- *  found under /content/articles
+/** Servlet that output no content, for resource types like
+ *  folders who do not have their own content.
+ *  (TODO: those can have titles and descriptions, should output that)
  */
 @Component(service = Servlet.class,
-    name="org.apache.sling.servlets.get.DefaultGetServlet",
     property = {
-            "service.description=Sling Dokapi Servlet",
+            "service.description=Apache Sling Content Aggregator Servlet",
             "service.vendor=The Apache Software Foundation",
 
-            "sling.servlet.resourceTypes=sling/servlet/default",
+            "sling.servlet.resourceTypes=sling/Folder",
+            "sling.servlet.resourceTypes=sling/OrderedFolder",
             "sling.servlet.prefix:Integer=-1",
 
             "sling.servlet.methods=GET",
             "sling.servlet.methods=HEAD",
-            "sling.servlet.selectors=hfs",
+            "sling.servlet.selectors=s:cagg",
             "sling.servlet.extension=json",
     })
-public class HardcodedFirstShotServlet extends SlingSafeMethodsServlet {
+public class NoContentAggregatorServlet extends SlingSafeMethodsServlet {
     private static final long serialVersionUID = 1L;
 
     @Override
     public void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
-        final PipelineContext pc = new PipelineContext(request);
-        new MetadataProcessor().process(pc);
-        new ChildrenProcessor().process(pc);
-        new ContentProcessor().process(pc);
-        final JsonObject json = pc.build();
-
-        response.setCharacterEncoding("UTF-8");
-        response.setContentType("application/json");
-        response.getWriter().write(json.toString());
+        response.setStatus(HttpServletResponse.SC_OK);
     }
 }

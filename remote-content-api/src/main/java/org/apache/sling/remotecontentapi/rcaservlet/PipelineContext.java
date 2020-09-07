@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.sling.remotecontentapi.hardcodedfirstshot;
+package org.apache.sling.remotecontentapi.rcaservlet;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -32,16 +32,15 @@ public class PipelineContext {
     public final JsonObjectBuilder navigation;
     public final JsonObjectBuilder metadata;
     public final JsonObjectBuilder children;
-    public final JsonObjectBuilder content;
+    private JsonObject content;
 
-    PipelineContext(SlingHttpServletRequest request) {
+    public PipelineContext(SlingHttpServletRequest request) {
         this.request = request;
         resource = request.getResource();
 
         navigation = Json.createObjectBuilder();
         metadata = Json.createObjectBuilder();
         children = Json.createObjectBuilder();
-        content = Json.createObjectBuilder();
 
         navigation.add("self", pathToUrl(resource.getPath()));
         if(resource.getParent() != null) {
@@ -57,16 +56,22 @@ public class PipelineContext {
         }
     }
 
+    public void setContent(JsonObject content) {
+        this.content = content;
+    }
+
     JsonObject build() {
         final JsonObjectBuilder b = Json.createObjectBuilder();
         maybeAdd(b, "navigation", navigation);
         maybeAdd(b, "metadata", metadata);
         maybeAdd(b, "children", children);
-        maybeAdd(b, "content", content);
+        if(content != null && !content.isEmpty()) {
+            b.add("content", content);
+        }
         return b.build();
     }
 
-    String pathToUrlNoJsonExtension(String path) {
+    public String pathToUrlNoJsonExtension(String path) {
         return String.format(
             "%s://%s:%d%s",
             request.getScheme(),
@@ -76,7 +81,7 @@ public class PipelineContext {
         );
     }
 
-    String pathToUrl(String path) {
+    public String pathToUrl(String path) {
         return String.format(
             "%s.%s.%s",
             pathToUrlNoJsonExtension(path),

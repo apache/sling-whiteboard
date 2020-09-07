@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.sling.remotecontentapi.resourceconverter;
+package org.apache.sling.remotecontentapi.aggregator;
 
 import java.util.Map;
 
@@ -26,9 +26,9 @@ import javax.json.JsonObjectBuilder;
 
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ValueMap;
-import org.apache.sling.remotecontentapi.hardcodedfirstshot.P;
+import org.apache.sling.remotecontentapi.rcaservlet.P;
 
-public class ResourceConverter {
+public class ResourceAggregator {
     public static final String SLING_RESOURCE_TYPE = "sling:resourceType";
     
     public static interface Context {
@@ -76,6 +76,17 @@ public class ResourceConverter {
             }
         }
 
+        /** True if r is a "document" like a website
+         *  page, that shouldn't be recursed into when
+         *  visiting content.
+         */
+        private boolean isDocument(Resource r) {
+                // TODO shouldn't be hardcoded, of course...but we'll need
+                // to differentiate between our first-class content objects
+                // and their content.
+               return isNodeType(r.adaptTo(ValueMap.class), "cq:Page");
+        }
+
         public void addTo(JsonObjectBuilder parentJson, Resource r) {
             final ValueMap vm = r.adaptTo(ValueMap.class);
 
@@ -85,11 +96,13 @@ public class ResourceConverter {
                     .add("url", context.getUrlForPath(r.getPath(), false))
                 );
             } else {
-                // general node: add a child JSON node with its name, properties and child nodes
+                // general node: add a child JSON node with its name, properties and non-document child nodes
                 final JsonObjectBuilder childJson = Json.createObjectBuilder();
                 addProperties(childJson, r, vm);
                 for(Resource child : r.getChildren()) {
-                    addTo(childJson, child);
+                    if(!isDocument(child)) {
+                        addTo(childJson, child);
+                    }
                 }
                 addChild(parentJson, childJson, r, vm);
             }
@@ -125,7 +138,7 @@ public class ResourceConverter {
         }
     }
 
-    public ResourceConverter(Resource r, Context ctx) {
+    public ResourceAggregator(Resource r, Context ctx) {
         context = ctx;
         resource = r;
     }

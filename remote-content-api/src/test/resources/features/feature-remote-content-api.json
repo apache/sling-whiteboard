@@ -6,7 +6,8 @@
   "license":"Apache License, Version 2.0",
   "variables":{},
   "bundles":[
-    "org.apache.sling:org.apache.sling.experimental.remote.content.api:0.0.1-SNAPSHOT"
+    "org.apache.sling:org.apache.sling.experimental.remote.content.api:0.0.1-SNAPSHOT",
+    "org.apache.sling:org.apache.sling.servlet-helpers:1.4.2"
   ],
   "content-packages:ARTIFACTS|required":[
     "com.adobe.aem.guides:aem-guides-wknd.ui.content.sample:zip:0.0.4"

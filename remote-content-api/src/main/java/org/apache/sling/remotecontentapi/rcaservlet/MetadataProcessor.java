@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.sling.remotecontentapi.hardcodedfirstshot;
+package org.apache.sling.remotecontentapi.rcaservlet;
 
 import org.apache.sling.api.resource.ValueMap;
 
