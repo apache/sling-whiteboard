@@ -17,18 +17,33 @@
  * under the License.
  */
 
-package org.apache.sling.remotecontentapi.rcaservlet;
+package org.apache.sling.remotecontentapi.xyz;
 
-import org.apache.sling.api.resource.ValueMap;
+import org.apache.sling.api.SlingHttpServletRequest;
 
-class MetadataProcessor implements JsonProcessor {
-    @Override
-    public void process(PipelineContext pc) {
-        final ValueMap vm = pc.resource.adaptTo(ValueMap.class);
-        for(String key : vm.keySet()) {
-            if(!P.ignoreProperty(key) && P.isMetadata(key)) {
-                P.maybeAdd(pc.metadata, key, P.convertName(key), vm);
-            }
-        }
+class UrlBuilder {
+    private SlingHttpServletRequest request;
+
+    UrlBuilder(SlingHttpServletRequest request) {
+        this.request = request;
+    }
+
+    public String pathToUrlNoExtension(String path) {
+        return String.format(
+            "%s://%s:%d%s",
+            request.getScheme(),
+            request.getServerName(),
+            request.getServerPort(),
+            path
+        );
+    }
+
+    public String pathToUrl(String path) {
+        return String.format(
+            "%s.%s.%s",
+            pathToUrlNoExtension(path),
+            request.getRequestPathInfo().getSelectorString(),
+            request.getRequestPathInfo().getExtension()
+        );
     }
 }

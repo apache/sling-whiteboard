@@ -17,28 +17,27 @@
  * under the License.
  */
 
-package org.apache.sling.remotecontentapi.rcaservlet;
+package org.apache.sling.remotecontentapi.xyz;
 
 import java.io.IOException;
 
 import javax.json.JsonObject;
 import javax.servlet.Servlet;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
+import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.servlets.ServletResolver;
 import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
-/** This is a first shot at this remote content API, that
- *  works well with the (simplistic) test content
- *  found under /content/articles
+/** Experimenting with dynamic generators, which might become
+ *  script-driven.
  */
 @Component(service = Servlet.class,
     property = {
-            "service.description=Sling Remote Content Access Servlet",
+            "service.description=Sling XYZ Servlet",
             "service.vendor=The Apache Software Foundation",
 
             "sling.servlet.resourceTypes=sling/servlet/default",
@@ -46,10 +45,10 @@ import org.osgi.service.component.annotations.Reference;
 
             "sling.servlet.methods=GET",
             "sling.servlet.methods=HEAD",
-            "sling.servlet.selectors=s:rca",
+            "sling.servlet.selectors=s:xyz",
             "sling.servlet.extension=json",
     })
-public class RemoteContentAccessServlet extends SlingSafeMethodsServlet {
+public class XyzServlet extends SlingSafeMethodsServlet {
     private static final long serialVersionUID = 1L;
 
     @Reference
@@ -57,18 +56,16 @@ public class RemoteContentAccessServlet extends SlingSafeMethodsServlet {
 
     @Override
     public void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
-        final PipelineContext pc = new PipelineContext(request);
+        final XyzContext context = new XyzContext(request);
 
-        try {
-            new MetadataProcessor().process(pc);
-            new ChildrenProcessor().process(pc);
-            new ContentProcessor(servletResolver).process(pc);
-        } catch(IOException ioe) {
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ioe.getMessage());
-            return;
-        }
-        
-        final JsonObject json = pc.build();
+        final Resource r = request.getResource();
+        final UrlBuilder urlb = new UrlBuilder(request);
+        final ProcessingRuleSelector s = new ProcessingRuleSelector(servletResolver);
+        s.getRule(ProcessingRuleSelector.RuleType.METADATA, r).process(context.metadata, urlb);
+        s.getRule(ProcessingRuleSelector.RuleType.CHILDREN, r).process(context.children, urlb);
+        s.getRule(ProcessingRuleSelector.RuleType.CONTENT, r).process(context.content, urlb);
+
+        final JsonObject json = context.build();
 
         response.setCharacterEncoding("UTF-8");
         response.setContentType("application/json");

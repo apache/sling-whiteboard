@@ -17,8 +17,12 @@
  * under the License.
  */
 
-package org.apache.sling.remotecontentapi.rcaservlet;
+package org.apache.sling.remotecontentapi.xyz;
 
-public interface JsonProcessor {
-    void process(PipelineContext pc) throws Exception;
+import java.io.IOException;
+
+import javax.json.JsonObjectBuilder;
+
+interface ProcessingRule {
+    void process(JsonObjectBuilder b, UrlBuilder urlb) throws IOException;
 }

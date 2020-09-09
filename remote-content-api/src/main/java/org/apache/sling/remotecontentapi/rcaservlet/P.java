@@ -26,11 +26,11 @@ import javax.json.JsonObjectBuilder;
 import org.apache.sling.api.resource.ValueMap;
 
 public class P {
-    static final String [] IGNORE_RESOURCE_PREIX = { "jcr:", "rep:", "oak:" };
-    static final String [] TITLE_PROPS = { "jcr:title", "title" };
-    static final String [] NAME_PROPS = { "jcr:name", "name" };
-    static final String [] TEXT_PROPS = { "jcr:text", "text" };
-    static final String [] DESCRIPTION_PROPS = { "jcr:description", "description" };
+    public static final String [] IGNORE_RESOURCE_PREIX = { "jcr:", "rep:", "oak:" };
+    public static final String [] TITLE_PROPS = { "jcr:title", "title" };
+    public static final String [] NAME_PROPS = { "jcr:name", "name" };
+    public static final String [] TEXT_PROPS = { "jcr:text", "text" };
+    public static final String [] DESCRIPTION_PROPS = { "jcr:description", "description" };
 
     public static boolean maybeAdd(JsonObjectBuilder b, String propName, String jsonName, ValueMap vm) {
         if(vm.containsKey(propName)) {
