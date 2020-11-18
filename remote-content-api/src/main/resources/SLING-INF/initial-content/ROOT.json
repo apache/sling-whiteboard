@@ -1,4 +1,4 @@
 {
     "sling:resourceType" : "sling:redirect",
-    "sling:target" : "/content.s:jr.json"
+    "sling:target" : "/content.s:ts.json"
 }
