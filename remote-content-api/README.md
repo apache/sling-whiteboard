@@ -3,6 +3,8 @@
 This is an _early days_ experiment to implement a document-oriented
 Remote Content Access HTTP API for Sling content.
 
+**STATUS** as of November 26th 2020: a simple way of converting Sling Resources to tree-like structures is implemented and used to generate a navigable HTTP API. The next step is to inject the [Sling Type System](https://cwiki.apache.org/confluence/display/SLING/Sling+Type+System%3A+motivation+and+requirements) ideas as a declarative way to customize the Resource conversions, define which Resource properties are useful for navigation, which ones can be ignored, how deep to recurse to build a document etc.
+
 _Document-oriented_ means that the API exposes higher level objects than
 Sling resources, typically documents which represent website pages and
 similar content objects.
