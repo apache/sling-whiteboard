@@ -34,11 +34,16 @@ public class ContentContentMapper implements ContentMapper {
 
     @Override
     public void map(@NotNull Resource r, @NotNull MappingTarget.TargetNode dest, UrlBuilder urlb) {
+        // TODO use the type system to decide which properties to render here,
+        // using a renderInContent annotation on the property?
         dest
             .addValue("source", getClass().getName())
             .addValue("path", r.getPath())
         ;
         addValues(dest, r);
+
+        // TODO use the type system to decide whether to recurse under this Resource
+        // to render more content
     }
 
     private static void addValues(MappingTarget.TargetNode dest, Resource r) {
