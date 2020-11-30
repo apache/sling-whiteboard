@@ -13,3 +13,9 @@ To activate debugging, use the standard `MAVEN_OPTS` - the Java code is started
 directly in the Maven process.
 
 The `/content/articles` subtree is where the most interesting content is, for now.
+
+## Test Content
+
+The test content uses `com.adobe.aem.guides:aem-guides-wknd.ui.content.sample` which is MIT
+licensed. Minimal "fake" JCR nodetype definitions are used to allow this content to load, as
+we don't really care about the details of these node types besides their names.

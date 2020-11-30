@@ -26,8 +26,8 @@ import java.util.List;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 
-import org.apache.sling.contentmapper.MappingTarget;
-import org.apache.sling.contentmapper.MappingTarget.TargetNode;
+import org.apache.sling.contentmapper.api.MappingTarget;
+import org.apache.sling.contentmapper.api.MappingTarget.TargetNode;
 
 /** A TargetNode that outputs to a JSON document */
 public class JsonTargetNode implements MappingTarget.TargetNode {

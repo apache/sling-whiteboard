@@ -19,11 +19,9 @@
 
 package org.apache.sling.contentmapper.impl;
 
-import java.util.Map;
-
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.contentmapper.ContentMapper;
-import org.apache.sling.contentmapper.MappingTarget;
+import org.apache.sling.contentmapper.api.ContentMapper;
+import org.apache.sling.contentmapper.api.MappingTarget;
 import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Component;
 

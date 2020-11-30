@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.sling.contentmapper;
+package org.apache.sling.contentmapper.api;
 
 import org.apache.sling.api.adapter.Adaptable;
 import org.jetbrains.annotations.NotNull;

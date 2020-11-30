@@ -17,15 +17,15 @@
  * under the License.
  */
 
-package org.apache.sling.testservlet;
+package org.apache.sling.remotecontentapi.testservlet;
 
 import org.apache.sling.api.SlingHttpServletRequest;
-import org.apache.sling.contentmapper.ContentMapper;
+import org.apache.sling.contentmapper.api.ContentMapper;
 
-class UrlBuilder implements ContentMapper.UrlBuilder {
+class TestUrlBuilder implements ContentMapper.UrlBuilder {
     private SlingHttpServletRequest request;
 
-    UrlBuilder(SlingHttpServletRequest request) {
+    TestUrlBuilder(SlingHttpServletRequest request) {
         this.request = request;
     }
 

@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.sling.testservlet;
+package org.apache.sling.remotecontentapi.testservlet;
 
 import java.io.IOException;
 
@@ -26,8 +26,8 @@ import javax.servlet.Servlet;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
-import org.apache.sling.contentmapper.ContentMapper;
-import org.apache.sling.contentmapper.MappingTarget;
+import org.apache.sling.contentmapper.api.ContentMapper;
+import org.apache.sling.contentmapper.api.MappingTarget;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -55,7 +55,7 @@ public class TestServlet extends SlingSafeMethodsServlet {
     public void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
 
         MappingTarget.TargetNode target = mappingTarget.newTargetNode();
-        contentMapper.map(request.getResource(), target, new UrlBuilder(request));
+        contentMapper.map(request.getResource(), target, new TestUrlBuilder(request));
         response.setCharacterEncoding("UTF-8");
         response.setContentType("application/json");
         response.getWriter().write(target.adaptTo(String.class));

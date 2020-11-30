@@ -28,10 +28,10 @@
     <relativePath />
   </parent>
 
-  <artifactId>org.apache.sling.experimental.remote.content.api</artifactId>
+  <artifactId>org.apache.sling.experimental.contentmapper</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 
-  <name>Apache Sling Document-Oriented HTTP API</name>
+  <name>Apache Sling Document-Oriented Content Mapper</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -64,12 +64,6 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.sling</groupId>
-      <artifactId>org.apache.sling.api</artifactId>
-      <version>2.18.4</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>org.osgi</groupId>
       <artifactId>org.osgi.service.component.annotations</artifactId>
       <scope>provided</scope>
@@ -80,8 +74,9 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.api</artifactId>
+      <version>2.18.4</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -103,85 +98,4 @@
       <scope>provided</scope>
     </dependency>
   </dependencies>
-
-  <profiles>
-    <profile>
-      <id>diagrams</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <properties>
-        <asciidoctor.maven.plugin.version>2.0.0</asciidoctor.maven.plugin.version>
-        <asciidoctorj.version>2.4.0</asciidoctorj.version>
-        <asciidoctorj.diagram.version>2.0.2</asciidoctorj.diagram.version>
-        <jruby.version>9.2.11.1</jruby.version>
-        <plantuml.version>1.2020.16</plantuml.version>
-      </properties>
-      <build>
-        <defaultGoal>process-resources</defaultGoal>
-        <plugins>
-          <plugin>
-            <groupId>org.asciidoctor</groupId>
-            <artifactId>asciidoctor-maven-plugin</artifactId>
-            <version>${asciidoctor.maven.plugin.version}</version>
-            <dependencies>
-              <!-- Comment this section to use the default jruby artifact provided by the plugin -->
-              <dependency>
-                <groupId>org.jruby</groupId>
-                <artifactId>jruby-complete</artifactId>
-                <version>${jruby.version}</version>
-              </dependency>
-              <!-- Comment this section to use the default AsciidoctorJ artifact provided by the plugin -->
-              <dependency>
-                <groupId>org.asciidoctor</groupId>
-                <artifactId>asciidoctorj</artifactId>
-                <version>${asciidoctorj.version}</version>
-              </dependency>
-              <dependency>
-                <groupId>org.asciidoctor</groupId>
-                <artifactId>asciidoctorj-diagram</artifactId>
-                <version>${asciidoctorj.diagram.version}</version>
-              </dependency>
-            </dependencies>
-            <configuration>
-              <sourceDirectory>src/main/asciidoc</sourceDirectory>
-              <requires>
-                <require>asciidoctor-diagram</require>
-              </requires>
-              <attributes>
-                <!-- Example below shows how to specify in this pom instead of System's PATH, the location of dot command of Graphviz, required by PlantUML libraries -->
-                <!-- Windows:
-                        <graphvizdot>C:\Program Files (x86)\Graphviz2.38\bin\dot.exe</graphvizdot>
-                    -->
-                <!-- *nix :
-                        <graphvizdot>/usr/local/bin/dot</graphvizdot>
-                    -->
-              </attributes>
-            </configuration>
-            <executions>
-              <execution>
-                <id>generate-html-doc</id>
-                <phase>generate-resources</phase>
-                <goals>
-                  <goal>process-asciidoc</goal>
-                </goals>
-                <configuration>
-                  <backend>html5</backend>
-                  <attributes>
-                    <imagesdir>${basedir}/src/docs/generated-diagrams</imagesdir>
-                    <toc>left</toc>
-                    <icons>font</icons>
-                    <sectanchors>true</sectanchors>
-                    <idprefix/>
-                    <idseparator>-</idseparator>
-                  </attributes>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
-
 </project>
