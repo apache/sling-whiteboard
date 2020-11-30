@@ -25,20 +25,7 @@ synchronously.
 
 ## How to run this
 
-Build and start this with
-
-    mvn clean install exec:java
-
-And open the root page at
-
-    http://localhost:8080
-
-After that...well, the API is supposed to be _discoverable_ so you should find your way!
-
-To activate debugging, use the standard `MAVEN_OPTS` - the Java code is started
-directly in the Maven process.
-
-The `/content/articles` subtree is where the most interesting content is, for now.
+See the sibling `sample-app` module.
 
 ## Use Cases
 
