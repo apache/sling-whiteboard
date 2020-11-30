@@ -4,7 +4,7 @@ This is a set of modules meant to demonstrate a Remote Content API for Sling,
 based on the Type System idea described at
 https://cwiki.apache.org/confluence/display/SLING/Sling+Type+System%3A+motivation+and+requirements
 
-It's very much a work in progress for now.
+It's very much a work in progress for now, see [SLING-9950](https://issues.apache.org/jira/browse/SLING-9950)
 
 See the [sample-app](./sample-app) folder for how to run the examples.
 
