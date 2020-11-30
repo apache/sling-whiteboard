@@ -36,9 +36,7 @@
 
   <modules>
       <module>content-mapper</module>
-<!-- not yet
       <module>type-system</module>
--->      
       <module>sample-app</module>
   </modules>
 
