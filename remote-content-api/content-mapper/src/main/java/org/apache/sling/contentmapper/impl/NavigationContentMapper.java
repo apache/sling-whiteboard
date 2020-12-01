@@ -45,12 +45,12 @@ public class NavigationContentMapper implements ContentMapper {
             dest.addValue("parent", urlb.pathToUrl(parent.getPath()));
         }
 
-        // TODO use the type system to decide which child Resources
-        // to render here - via an isDocumentRoot annotation on types?
         final MappingTarget.TargetNode children = dest.addChild("children");
         for(Resource child : r.getChildren()) {
             final Type t = typeSystem.getType(child);
             if(TypeUtil.hasAnnotation(t, NAVIGABLE)) {
+                // TODO use the type system to decide which properties to render
+                // (rendering hints)
                 children
                 .addChild(child.getName())
                 .addValue("url", urlb.pathToUrl(child.getPath()))

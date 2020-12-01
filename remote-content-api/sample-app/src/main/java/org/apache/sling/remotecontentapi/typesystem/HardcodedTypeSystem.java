@@ -33,6 +33,8 @@ import static org.apache.sling.contentmapper.api.AnnotationNames.NAVIGABLE;
 import static org.apache.sling.contentmapper.api.AnnotationNames.VISIT_CONTENT;
 import static org.apache.sling.contentmapper.api.AnnotationNames.DOCUMENT_ROOT;
 import static org.apache.sling.contentmapper.api.AnnotationNames.VISIT_CONTENT_RESOURCE_NAME_PATTERN;
+import static org.apache.sling.contentmapper.api.AnnotationNames.RENDER_HINT_EXCLUDE_PROPERTY_REGEXP;
+import static org.apache.sling.contentmapper.api.AnnotationNames.RENDER_HINT_INCLUDE_PROPERTY_REGEXP;
 
 /** Temporary hardcoded type system for this prototype, until we
  *  have the actual type system
@@ -61,6 +63,8 @@ public class HardcodedTypeSystem implements TypeSystem {
             .withAnnotation(NAVIGABLE, TRUE)
             .withAnnotation(VISIT_CONTENT, TRUE)
             .withAnnotation(VISIT_CONTENT_RESOURCE_NAME_PATTERN, "jcr:content")
+            .withAnnotation(RENDER_HINT_INCLUDE_PROPERTY_REGEXP, "sling:ResourceType|cq:tags")
+            .withAnnotation(RENDER_HINT_EXCLUDE_PROPERTY_REGEXP, "jcr:.*|cq:.*")
         );
         addType(
             Builder.forResourceType("sling:Folder")

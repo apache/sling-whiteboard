@@ -28,4 +28,6 @@ public interface AnnotationNames {
     String DOCUMENT_ROOT = SLING_PREFIX + "documentRoot";
     String VISIT_CONTENT = SLING_PREFIX + "visitContent";
     String VISIT_CONTENT_RESOURCE_NAME_PATTERN = SLING_PREFIX + "visitContentResourceNamePattern";
+    String RENDER_HINT_INCLUDE_PROPERTY_REGEXP = SLING_PREFIX + "includePropertyRegexp";
+    String RENDER_HINT_EXCLUDE_PROPERTY_REGEXP = SLING_PREFIX + "excludePropertyRegexp";
 }

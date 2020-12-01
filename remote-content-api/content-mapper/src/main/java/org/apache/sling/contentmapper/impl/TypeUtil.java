@@ -21,6 +21,8 @@ package org.apache.sling.contentmapper.impl;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
+
 import org.apache.sling.experimental.typesystem.Type;
 import org.apache.sling.experimental.typesystem.Annotation;
 
@@ -44,5 +46,10 @@ class TypeUtil {
             return opt.isPresent() ? opt.get().getValue() : null;
         }
         return null;
+    }
+
+    static Pattern getAnnotationPattern(Type t, String name) {
+        final String str = getAnnotationValue(t, name);
+        return str == null ? null : Pattern.compile(str);
     }
 }

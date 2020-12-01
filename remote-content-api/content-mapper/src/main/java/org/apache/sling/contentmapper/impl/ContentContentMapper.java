@@ -45,20 +45,14 @@ public class ContentContentMapper implements ContentMapper {
     @Override
     public void map(@NotNull Resource r, @NotNull MappingTarget.TargetNode dest, UrlBuilder urlb) {
         final Type t = typeSystem.getType(r);
-        mapResource(r, dest, urlb, t, TypeUtil.hasAnnotation(t, DOCUMENT_ROOT));
+        final RenderingHints hints = new RenderingHints(t);
+        dest.addValue("path", r.getPath());
+        mapResource(r, dest, urlb, t, hints, TypeUtil.hasAnnotation(t, DOCUMENT_ROOT));
     }
 
     private void mapResource(@NotNull Resource r, @NotNull MappingTarget.TargetNode dest, 
-        UrlBuilder urlb, Type parentType, boolean recurse) {
-
-        // TODO use the type system to decide which properties to render here,
-        // using a renderInContent annotation on the property?
-        dest
-            .addValue("source", getClass().getName())
-            .addValue("path", r.getPath())
-            .addValue("sling:resourceType", r.getResourceType())
-        ;
-        addValues(dest, r);
+        UrlBuilder urlb, Type parentType, RenderingHints hints, boolean recurse) {
+        addValues(dest, r, hints);
 
         // TODO detect too much recursion?
         if(recurse) {
@@ -70,16 +64,19 @@ public class ContentContentMapper implements ContentMapper {
                 final Type childType = typeSystem.getType(child);
                 if(TypeUtil.hasAnnotation(childType, VISIT_CONTENT)) {
                     final MappingTarget.TargetNode childDest = dest.addChild(child.getName());
-                    mapResource(child, childDest, urlb, childType, true);
+                    mapResource(child, childDest, urlb, childType, hints, true);
                 }
             }
         }
     }
 
-    private static void addValues(MappingTarget.TargetNode dest, Resource r) {
+    private static void addValues(MappingTarget.TargetNode dest, Resource r, RenderingHints hints) {
         final ValueMap vm = r.adaptTo(ValueMap.class);
         if(vm != null) {
             for(Map.Entry<String, Object> e : vm.entrySet()) {
+                if(!hints.renderProperty(e.getKey())) {
+                    continue;
+                }
                 final Object value = e.getValue();
                 if(value instanceof Object[]) {
                     dest.addValue(e.getKey(), Arrays.asList((Object[])value));
