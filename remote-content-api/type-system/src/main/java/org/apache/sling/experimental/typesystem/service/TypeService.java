@@ -20,6 +20,7 @@ package org.apache.sling.experimental.typesystem.service;
 
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.experimental.typesystem.Type;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.annotation.versioning.ProviderType;
 
@@ -36,6 +37,6 @@ public interface TypeService {
      * @return the {@code Type}, if one was defined; {@code null} otherwise
      */
     @Nullable
-    Type getType(Resource resource);
+    Type getType(@NotNull Resource resource);
 
 }
