@@ -82,6 +82,16 @@ public class HardcodedTypeSystem implements TypeSystem {
             Builder.forResourceType("wknd/components/page")
             .withAnnotation(VISIT_CONTENT, TRUE)
         );
+
+        // for /content/articles examples
+        addType(
+            Builder.forResourceType("samples/section")
+            .withAnnotation(NAVIGABLE, TRUE)
+        );
+        addType(
+            Builder.forResourceType("samples/article")
+            .withAnnotation(NAVIGABLE, TRUE)
+        );
     }
 
     static void addType(Builder b) {
@@ -92,6 +102,9 @@ public class HardcodedTypeSystem implements TypeSystem {
     @Override
     public @Nullable Type getType(@NotNull Resource resource) {
         Type result = types.get(resource.getResourceType());
+        if(result == null) {
+            result = types.get(resource.getResourceSuperType());
+        }
         if(result == null) {
             result = DEFAULT_TYPE;
         }
