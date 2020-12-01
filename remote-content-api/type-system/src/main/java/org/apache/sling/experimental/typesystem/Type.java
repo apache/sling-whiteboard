@@ -52,8 +52,20 @@ public interface Type {
     @Nullable
     String getResourceSuperType();
 
-
+    /**
+     * Returns the set of properties {@code this} {@code Type} has. The properties are self-descriptive.
+     *
+     * @return the set of properties
+     */
     @NotNull
     Set<Property> getProperties();
+
+    /**
+     * Returns the set of annotations {@code this} {@code Type} has.
+     *
+     * @return the set of annotations
+     */
+    @NotNull
+    Set<Annotation> getAnnotations();
 
 }

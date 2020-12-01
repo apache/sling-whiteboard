@@ -18,24 +18,65 @@
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 package org.apache.sling.experimental.typesystem;
 
+import java.util.Set;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.annotation.versioning.ProviderType;
 
+/**
+ * The {@code Property} class encapsulates the information regarding {@link Type}s properties, defining their names, types, optionality,
+ * etc.
+ *
+ * @param <T> the type of the property
+ */
 @ProviderType
 public interface Property<T> {
 
+    /**
+     * If a property is namespaced, this method will return the corresponding namespace.
+     *
+     * @return the property's namespace or {@code null}
+     */
     @Nullable
     String getNamespace();
 
+    /**
+     * Returns the property's name.
+     *
+     * @return the property's name
+     */
     @NotNull
     String getName();
 
+    /**
+     * Returns the type of the property.
+     *
+     * @return the type of the property
+     */
     @NotNull
     Class<T> getType();
 
+    /**
+     * Returns the value of this property.
+     *
+     * @return the value of this property of {@code null}
+     */
     @Nullable
     T getValue();
 
+    /**
+     * Returns {@code true} if this is a required property, {@code false} otherwise.
+     *
+     * @return {@code true} if this is a required property, {@code false} otherwise
+     */
     boolean isRequired();
+
+    /**
+     * Returns the set of annotations {@code this} {@code Property} has.
+     *
+     * @return the set of annotations
+     */
+    @NotNull
+    Set<Annotation> getAnnotations();
 }
