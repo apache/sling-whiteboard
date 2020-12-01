@@ -26,24 +26,54 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.contentmapper.api.ContentMapper;
 import org.apache.sling.contentmapper.api.MappingTarget;
+import org.apache.sling.experimental.typesystem.Type;
+import org.apache.sling.experimental.typesystem.service.TypeSystem;
 import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
+import static org.apache.sling.contentmapper.api.AnnotationNames.VISIT_CONTENT;
+import static org.apache.sling.contentmapper.api.AnnotationNames.DOCUMENT_ROOT;
+import static org.apache.sling.contentmapper.api.AnnotationNames.VISIT_CONTENT_RESOURCE_NAME_PATTERN;
 
 @Component(service = ContentMapper.class, property = { ContentMapper.ROLE + "=content" })
 public class ContentContentMapper implements ContentMapper {
 
+    @Reference
+    private TypeSystem typeSystem;
+
     @Override
     public void map(@NotNull Resource r, @NotNull MappingTarget.TargetNode dest, UrlBuilder urlb) {
+        final Type t = typeSystem.getType(r);
+        mapResource(r, dest, urlb, t, TypeUtil.hasAnnotation(t, DOCUMENT_ROOT));
+    }
+
+    private void mapResource(@NotNull Resource r, @NotNull MappingTarget.TargetNode dest, 
+        UrlBuilder urlb, Type parentType, boolean recurse) {
+
         // TODO use the type system to decide which properties to render here,
         // using a renderInContent annotation on the property?
         dest
             .addValue("source", getClass().getName())
             .addValue("path", r.getPath())
+            .addValue("sling:resourceType", r.getResourceType())
         ;
         addValues(dest, r);
 
-        // TODO use the type system to decide whether to recurse under this Resource
-        // to render more content
+        // TODO detect too much recursion?
+        if(recurse) {
+            final String namePattern = TypeUtil.getAnnotationValue(parentType, VISIT_CONTENT_RESOURCE_NAME_PATTERN);
+            for(Resource child : r.getChildren()) {
+                if(namePattern != null && !child.getName().equals(namePattern)) {
+                    continue;
+                }
+                final Type childType = typeSystem.getType(child);
+                if(TypeUtil.hasAnnotation(childType, VISIT_CONTENT)) {
+                    final MappingTarget.TargetNode childDest = dest.addChild(child.getName());
+                    mapResource(child, childDest, urlb, childType, true);
+                }
+            }
+        }
     }
 
     private static void addValues(MappingTarget.TargetNode dest, Resource r) {

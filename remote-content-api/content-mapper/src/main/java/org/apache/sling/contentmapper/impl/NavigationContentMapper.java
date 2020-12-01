@@ -22,12 +22,20 @@ package org.apache.sling.contentmapper.impl;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.contentmapper.api.ContentMapper;
 import org.apache.sling.contentmapper.api.MappingTarget;
+import org.apache.sling.experimental.typesystem.Type;
+import org.apache.sling.experimental.typesystem.service.TypeSystem;
 import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
+import static org.apache.sling.contentmapper.api.AnnotationNames.NAVIGABLE;
 
 @Component(service = ContentMapper.class, property = { ContentMapper.ROLE + "=navigation" })
 public class NavigationContentMapper implements ContentMapper {
 
+    @Reference
+    private TypeSystem typeSystem;
+    
     @Override
     public void map(@NotNull Resource r, @NotNull MappingTarget.TargetNode dest, UrlBuilder urlb) {
         dest.addValue("self", urlb.pathToUrl(r.getPath()));
@@ -41,13 +49,15 @@ public class NavigationContentMapper implements ContentMapper {
         // to render here - via an isDocumentRoot annotation on types?
         final MappingTarget.TargetNode children = dest.addChild("children");
         for(Resource child : r.getChildren()) {
-            // TODO use the type system to decide which Properties to render
-            // here - via a renderInNav annotation on the property?
-            children
+            final Type t = typeSystem.getType(child);
+            if(TypeUtil.hasAnnotation(t, NAVIGABLE)) {
+                children
                 .addChild(child.getName())
                 .addValue("url", urlb.pathToUrl(child.getPath()))
                 .addValue("path", child.getPath())
-            ;
+                .addValue("sling:resourceType", child.getResourceType())
+                ;
+            }
         }
     }
 }

@@ -1,4 +1,4 @@
 {
     "sling:resourceType" : "sling:redirect",
-    "sling:target" : "/content.s:ts.json"
+    "sling:target" : "/content.rakam.json"
 }

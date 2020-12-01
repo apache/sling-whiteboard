@@ -39,7 +39,7 @@ import org.osgi.service.component.annotations.Reference;
 
             "sling.servlet.methods=GET",
             "sling.servlet.methods=HEAD",
-            "sling.servlet.selectors=s:ts",
+            "sling.servlet.selectors=rakam",
             "sling.servlet.extension=json",
     })
 public class TestServlet extends SlingSafeMethodsServlet {

@@ -8,6 +8,7 @@
   "bundles":[
     "org.apache.sling:org.apache.sling.experimental.contentmapper:0.0.1-SNAPSHOT",
     "org.apache.sling:org.apache.sling.experimental.remote.content.api.sample.app:0.0.1-SNAPSHOT",
+    "org.apache.sling:org.apache.sling.experimental.type-system:0.0.1-SNAPSHOT",
     "org.apache.sling:org.apache.sling.servlet-helpers:1.4.2"
   ],
   "content-packages:ARTIFACTS|required":[
