@@ -28,7 +28,7 @@ import org.osgi.annotation.versioning.ProviderType;
  * The {@code TypeService} allows retrieving {@link Type} information for a certain resource.
  */
 @ProviderType
-public interface TypeService {
+public interface TypeSystem {
 
     /**
      * Retrieves a {@link Resource}'s {@link Type}, if one was defined.
