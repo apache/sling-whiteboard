@@ -19,27 +19,26 @@
 
 package org.apache.sling.contentmapper.impl;
 
-import java.util.regex.Pattern;
+import java.util.Set;
+import java.util.HashSet;
 
 import org.apache.sling.experimental.typesystem.Type;
-import static org.apache.sling.contentmapper.api.AnnotationNames.RENDER_HINT_EXCLUDE_PROPERTY_REGEXP;
-import static org.apache.sling.contentmapper.api.AnnotationNames.RENDER_HINT_INCLUDE_PROPERTY_REGEXP;
+import static org.apache.sling.contentmapper.api.AnnotationNames.NAVIGATION_PROPERTIES_LIST;
 
-class RenderingHints {
-    private final Pattern includeProperty;
-    private final Pattern excludeProperty;
+class NavigationPropertiesSelector implements PropertiesSelector {
+    private final Set<String> propertiesToRender = new HashSet<>();
 
-    RenderingHints(Type t) {
-        includeProperty = TypeUtil.getAnnotationPattern(t, RENDER_HINT_INCLUDE_PROPERTY_REGEXP);
-        excludeProperty = TypeUtil.getAnnotationPattern(t, RENDER_HINT_EXCLUDE_PROPERTY_REGEXP);
+    NavigationPropertiesSelector(Type t) {
+        final String list = TypeUtil.getAnnotationValue(t, NAVIGATION_PROPERTIES_LIST);
+        if(list != null) {
+            for(String prop : list.split(",")) {
+                propertiesToRender.add(prop.trim());
+            }
+        }
     }
 
-    boolean renderProperty(String name) {
-        if(includeProperty != null && includeProperty.matcher(name).matches()) {
-            return true;
-        } else if(excludeProperty != null && excludeProperty.matcher(name).matches()) {
-            return false;
-        }
-        return true;
+    @Override
+    public boolean renderProperty(String name) {
+        return propertiesToRender.contains(name);
     }
 }

@@ -17,18 +17,8 @@
  * under the License.
  */
 
-package org.apache.sling.contentmapper.api;
+package org.apache.sling.contentmapper.impl;
 
-import org.osgi.annotation.versioning.ProviderType;
-
-@ProviderType
-public interface AnnotationNames {
-    String SLING_PREFIX = "sling:";
-    String NAVIGABLE = SLING_PREFIX + "isNavigable";
-    String DOCUMENT_ROOT = SLING_PREFIX + "documentRoot";
-    String VISIT_CONTENT = SLING_PREFIX + "visitContent";
-    String VISIT_CONTENT_RESOURCE_NAME_PATTERN = SLING_PREFIX + "visitContentResourceNamePattern";
-    String CONTENT_INCLUDE_PROPERTY_REGEXP = SLING_PREFIX + "includePropertyRegexp";
-    String CONTENT_EXCLUDE_PROPERTY_REGEXP = SLING_PREFIX + "excludePropertyRegexp";
-    String NAVIGATION_PROPERTIES_LIST = SLING_PREFIX + "navigationPropertiesList";
+interface PropertiesSelector {
+    boolean renderProperty(String name);
 }

@@ -19,11 +19,7 @@
 
 package org.apache.sling.contentmapper.impl;
 
-import java.util.Arrays;
-import java.util.Map;
-
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.contentmapper.api.ContentMapper;
 import org.apache.sling.contentmapper.api.MappingTarget;
 import org.apache.sling.experimental.typesystem.Type;
@@ -39,20 +35,22 @@ import static org.apache.sling.contentmapper.api.AnnotationNames.VISIT_CONTENT_R
 @Component(service = ContentMapper.class, property = { ContentMapper.ROLE + "=content" })
 public class ContentContentMapper implements ContentMapper {
 
+    private final PropertiesMapper propertiesMapper = new PropertiesMapper();
+
     @Reference
     private TypeSystem typeSystem;
 
     @Override
     public void map(@NotNull Resource r, @NotNull MappingTarget.TargetNode dest, UrlBuilder urlb) {
         final Type t = typeSystem.getType(r);
-        final RenderingHints hints = new RenderingHints(t);
+        final ContentPropertiesSelector hints = new ContentPropertiesSelector(t);
         dest.addValue("path", r.getPath());
         mapResource(r, dest, urlb, t, hints, TypeUtil.hasAnnotation(t, DOCUMENT_ROOT));
     }
 
     private void mapResource(@NotNull Resource r, @NotNull MappingTarget.TargetNode dest, 
-        UrlBuilder urlb, Type parentType, RenderingHints hints, boolean recurse) {
-        addValues(dest, r, hints);
+        UrlBuilder urlb, Type parentType, ContentPropertiesSelector selector, boolean recurse) {
+        propertiesMapper.mapProperties(dest, r, selector);
 
         // TODO detect too much recursion?
         if(recurse) {
@@ -64,24 +62,7 @@ public class ContentContentMapper implements ContentMapper {
                 final Type childType = typeSystem.getType(child);
                 if(TypeUtil.hasAnnotation(childType, VISIT_CONTENT)) {
                     final MappingTarget.TargetNode childDest = dest.addChild(child.getName());
-                    mapResource(child, childDest, urlb, childType, hints, true);
-                }
-            }
-        }
-    }
-
-    private static void addValues(MappingTarget.TargetNode dest, Resource r, RenderingHints hints) {
-        final ValueMap vm = r.adaptTo(ValueMap.class);
-        if(vm != null) {
-            for(Map.Entry<String, Object> e : vm.entrySet()) {
-                if(!hints.renderProperty(e.getKey())) {
-                    continue;
-                }
-                final Object value = e.getValue();
-                if(value instanceof Object[]) {
-                    dest.addValue(e.getKey(), Arrays.asList((Object[])value));
-                } else {
-                    dest.addValue(e.getKey(), String.valueOf(value));
+                    mapResource(child, childDest, urlb, childType, selector, true);
                 }
             }
         }

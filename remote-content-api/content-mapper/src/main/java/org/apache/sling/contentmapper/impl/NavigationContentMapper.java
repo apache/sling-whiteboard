@@ -29,9 +29,12 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 import static org.apache.sling.contentmapper.api.AnnotationNames.NAVIGABLE;
+import static org.apache.sling.contentmapper.api.AnnotationNames.NAVIGATION_PROPERTIES_LIST;
 
 @Component(service = ContentMapper.class, property = { ContentMapper.ROLE + "=navigation" })
 public class NavigationContentMapper implements ContentMapper {
+
+    private final PropertiesMapper propertiesMapper = new PropertiesMapper();
 
     @Reference
     private TypeSystem typeSystem;
@@ -45,18 +48,22 @@ public class NavigationContentMapper implements ContentMapper {
             dest.addValue("parent", urlb.pathToUrl(parent.getPath()));
         }
 
+        // TODO add annotations to control recursion in navigation mode
+        // for cq:Page in our test content, for example, we need to render
+        // the jcr:content/jcr:title
         final MappingTarget.TargetNode children = dest.addChild("children");
         for(Resource child : r.getChildren()) {
             final Type t = typeSystem.getType(child);
             if(TypeUtil.hasAnnotation(t, NAVIGABLE)) {
-                // TODO use the type system to decide which properties to render
-                // (rendering hints)
-                children
-                .addChild(child.getName())
+                final MappingTarget.TargetNode childTarget = children.addChild(child.getName());
+                childTarget
                 .addValue("url", urlb.pathToUrl(child.getPath()))
                 .addValue("path", child.getPath())
                 .addValue("sling:resourceType", child.getResourceType())
                 ;
+
+                final PropertiesSelector selector = new NavigationPropertiesSelector(t);
+                propertiesMapper.mapProperties(childTarget, child, selector);
             }
         }
     }
