@@ -65,7 +65,7 @@ var templateSource = '\
   <h1>Sling Remote Content API :: HTTP proxying renderer</h1> \
   <div class="debug">\
   This is proxying content from a Sling instance at <a href="{{proxyInfo.origin}}">{{proxyInfo.origin}}</a>\
-  where the experimental <a href="https://github.com/apache/sling-whiteboard/tree/master/remote-content-api">Sling Remote Content API</a> must be installed.\
+  where the document-oriented <a href="https://github.com/apache/sling-whiteboard/tree/master/remote-content-api">Sling Remote Content API</a> must be installed.\
   <br>Source code is found in the <a href="https://github.com/apache/sling-whiteboard/tree/master/remote-content-api/openwhisk-rendering">openwhisk-rendering</a> module there<br>\
   {{proxyInfo.contentRendererInfo}}<br>\
   </div>\
