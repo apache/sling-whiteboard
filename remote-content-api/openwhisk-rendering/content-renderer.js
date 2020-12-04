@@ -35,25 +35,54 @@ class HandlebarsRenderer {
 var renderers = {}
 
 var DEFAULT_RENDERER = new HandlebarsRenderer('\
-    <h3>{{title}}</h3>\
-    This is the default renderer<br>\
+    <h3>Default renderer</h3>\
     <b>Path</b>:{{path}}<br>\
     <b>sling:resourceType</b>:{{sling:resourceType}}<br>\
-    {{{text}}}\
-    ');
+    ')
 
 renderers["samples/article"] = new HandlebarsRenderer('\
-      <h3>{{section}}: {{title}}</h3>\
+      <h3>Articles renderer</h3>\
+      <h4>{{title}}</h4>\
       <div><b>tags</b>:{{tags}}</div>\
       <blockquote>{{{text}}}</blockquote>\
-    ');
+    ')
 
-renderers["samples/section"] = new HandlebarsRenderer('This is the <b>{{name}}</b> section.')
+renderers["samples/section"] = new HandlebarsRenderer('\
+    <h3>Articles section renderer</h3>\
+    This is the <b>{{name}}</b> section.\
+    ')
 
-// Need to recurse in the content and dispatch to more renderers
-renderers["wknd/components/page"] = new HandlebarsRenderer('\
-    <h3>WKND page - TODO this renderer is very incomplete</h3>\
-    <div>tags: {{jcr:content.cq:tags}}</div>\
+class WkndPageRenderer extends HandlebarsRenderer {
+    constructor(templateSrc) {
+        super(templateSrc)
+    }
+
+    collectResourceTypes(resource, targetSet) {
+        for(const key in resource) {
+            const prop = resource[key]
+            if("sling:resourceType" == key) {
+                targetSet.add(`${prop} ${renderers[prop] ? " (renderer provided)": ""}`)
+            } else if(typeof prop == "object") {
+                this.collectResourceTypes(prop, targetSet)
+            }
+        }
+    }
+
+    render(content) { 
+        content.rendererInfo = { resourceTypes:new Set() }
+        this.collectResourceTypes(content, content.rendererInfo.resourceTypes)
+        return super.render(content)
+    }
+}
+renderers["wknd/components/page"] = new WkndPageRenderer('\
+    <h3>WKND page renderer</h3>\n\
+    <div>tags: {{jcr:content.cq:tags}}</div>\n\
+    <h4>We will need renderers for the following resource types, found in the page content:</h4>\n\
+    <ul>\n\
+      {{#each rendererInfo.resourceTypes}}\n\
+      <li>{{this}}</li>\n\
+      {{/each}}\
+    </ul></div>\n\
     ');
 
 class ContentRenderer {
