@@ -40,7 +40,8 @@ var templateSource = '\
     ul {\
       list-style-type: none;\
     }\
-    .navigation li {\
+    .navigation li,\
+    .content li {\
       margin:0;\
       padding:0;\
     }\
@@ -57,6 +58,9 @@ var templateSource = '\
     }\
     .raw pre {\
       background-color: #EEE;\
+    }\
+    .nested {\
+      margin-left:1em;\
     }\
   </style>\
   </head>\

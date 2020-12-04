@@ -34,10 +34,21 @@ class HandlebarsRenderer {
 
 var renderers = {}
 
+var JUST_RECURSE_RENDERER = new HandlebarsRenderer('\
+    {{#each this}}\
+    <div class="nested">\
+    {{{renderObject this}}}\
+    </div>\n\
+    {{/each}}\
+    ')
+
 var DEFAULT_RENDERER = new HandlebarsRenderer('\
-    <h3>Default renderer</h3>\
-    <b>Path</b>:{{path}}<br>\
-    <b>sling:resourceType</b>:{{sling:resourceType}}<br>\
+    <em>Default renderer for resourceType <b>{{sling:resourceType}}</b></em><br>\n\
+    {{#each this}}\
+    <div class="nested">\
+    {{{renderObject this}}}\
+    </div>\n\
+    {{/each}}\
     ')
 
 renderers["samples/article"] = new HandlebarsRenderer('\
@@ -70,6 +81,7 @@ class WkndPageRenderer extends HandlebarsRenderer {
 
     render(content) { 
         content.rendererInfo = { resourceTypes:new Set() }
+        content.omitdefaultRendering = true
         this.collectResourceTypes(content, content.rendererInfo.resourceTypes)
         return super.render(content)
     }
@@ -77,38 +89,95 @@ class WkndPageRenderer extends HandlebarsRenderer {
 renderers["wknd/components/page"] = new WkndPageRenderer('\
     <h3>WKND page renderer</h3>\n\
     <div>tags: {{jcr:content.cq:tags}}</div>\n\
-    <h4>We will need renderers for the following resource types, found in the page content:</h4>\n\
+    <h4>We need renderers for the following resource types, found in the page content:</h4>\n\
     <ul>\n\
       {{#each rendererInfo.resourceTypes}}\n\
       <li>{{this}}</li>\n\
       {{/each}}\
-    </ul></div>\n\
+    </ul>\n\
+    \
+    {{#each this}}\
+      <div class="nested">\
+        {{{renderObject this}}}\
+      </div>\n\
+    {{/each}}\
+    \
     ');
+
+renderers["wknd/components/image"] = new HandlebarsRenderer('\
+    The image from <b>{{fileReference}}</b> comes here\n\
+    ')
+
+renderers["wknd/components/contentfragment"] = new HandlebarsRenderer('\
+    Content Fragment <b>{{fragmentPath}}</b> comes here\n\
+    {{#if text}}\n\
+     <blockquote>{{text}}</blockquote></div>\n\
+     {{/if}}\n\
+     ')
+
+renderers["wknd/components/image-list"] = new HandlebarsRenderer('\
+    Image list with tags <b>{{tags}}</b>\
+')
+
+class NamedComponentRenderer extends HandlebarsRenderer {
+    constructor(name) {
+        super(`\
+            Rendering a <b>${name}</b> component\
+            {{#each this}}\
+            <div class="nested">\
+            {{{renderObject this}}}\
+            </div>\n\
+            {{/each}}\
+            `)
+    }
+}
+
+[
+    "wknd/components/breadcrumb",
+].forEach(rt => renderers[rt] = JUST_RECURSE_RENDERER);
+
+[
+    "wknd/components/container",
+    "wknd/components/grid",
+    "wknd/components/tabs",
+].forEach(rt => renderers[rt] = new NamedComponentRenderer(rt));
+
+function renderObject(content) {
+    if(typeof content != "object") {
+        return
+    }
+    var renderer = renderers[getResourceType(content, false)]
+    if(!renderer) {
+        renderer = renderers[getResourceType(content, true)]
+    }
+    if(!renderer) {
+        if(content["jcr:content"]) {
+            renderer = JUST_RECURSE_RENDERER
+        } else if(!getResourceType(content, false) && !getResourceType(content, true)) {
+            renderer = JUST_RECURSE_RENDERER
+        } else {
+            renderer = DEFAULT_RENDERER
+        }
+    }
+    return renderer.render(content)
+}
+
+Handlebars.registerHelper("renderObject", renderObject)
+
+function getResourceType(content, supertype) {
+    var result = null;
+    var key = supertype ? "sling:resourceSuperType" : "sling:resourceType"
+    result = content[key]
+    return result;
+}
 
 class ContentRenderer {
     info() {
         return `The ContentRenderer only supports a limited set of sling:resourceType values: ${Object.keys(renderers)}`
     }
 
-    getResourceType(content, supertype) {
-        var result = null;
-        var key = supertype ? "sling:resourceSuperType" : "sling:resourceType"
-        result = content[key]
-        if(!result && content["jcr:content"]) {
-            result = content["jcr:content"][key]
-        }
-        return result;
-    }
-
     render(content) {
-        var renderer = renderers[this.getResourceType(content, false)]
-        if(!renderer) {
-            renderer = renderers[this.getResourceType(content, true)]
-        }
-        if(!renderer) {
-            renderer = DEFAULT_RENDERER
-        }
-        return renderer.render(content)
+        return renderObject(content)
     }
 }
 
