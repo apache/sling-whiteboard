@@ -53,6 +53,9 @@ public class HardcodedTypeSystem implements TypeSystem {
     private static final String TRUE = "true";
 
     static {
+        // Although these definitions are in Java code for this early prototype, the
+        // plan is to move to a mini-language (DSL) to avoid having to use Java
+        // code for what is actually just declarative statements.
         DEFAULT_TYPE = Builder
             .forResourceType(SLING_DEFAULT_RESOURCE_TYPE)
             .withAnnotation(VISIT_CONTENT, TRUE)
