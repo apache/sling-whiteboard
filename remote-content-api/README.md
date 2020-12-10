@@ -1,4 +1,4 @@
-# Sling Type System and Remote Content API prototypes
+# Sling Type System and Document-oriented Remote Content API prototypes
 
 This is a set of modules meant to demonstrate a Remote Content API for Sling,
 based on the Type System idea described at
