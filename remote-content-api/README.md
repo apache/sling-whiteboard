@@ -1,8 +1,11 @@
-# Sling Type System and Document-oriented Remote Content API prototypes
+# Sling Document-oriented Remote Content API and Type System prototypes
 
-This is a set of modules meant to demonstrate a Remote Content API for Sling,
+This is a set of modules meant to demonstrate a Document-oriented Remote Content API for Sling,
 based on the Type System idea described at
 https://cwiki.apache.org/confluence/display/SLING/Sling+Type+System%3A+motivation+and+requirements
+
+_Document-oriented_ means the API returns full documents like Web pages in a single request, using
+configurable aggregations driven by Type System annotations.
 
 It's very much a work in progress for now, see [SLING-9950](https://issues.apache.org/jira/browse/SLING-9950)
 
