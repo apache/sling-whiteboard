@@ -28,6 +28,7 @@
     <artifactId>org.apache.sling.jcr.repositorymaintainance</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <name>Apache Sling JCR Repository Maintainance</name>
+    <description>Maintainance jobs for the JCR repository</description>
 
     <properties>
         <sling.java.version>8</sling.java.version>
@@ -71,6 +72,39 @@
                         <goals>
                             <goal>report</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.sling</groupId>
+                <artifactId>slingfeature-maven-plugin</artifactId>
+                <version>1.4.18</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <framework>
+                        <groupId>org.apache.felix</groupId>
+                        <artifactId>org.apache.felix.framework</artifactId>
+                        <version>6.0.3</version>
+                    </framework>
+                    <aggregates>
+                        <aggregate>
+                            <classifier>default</classifier>
+                            <filesInclude>**/*.json</filesInclude>
+                            <title>Apache Sling JCR Repository Maintainance - Default</title>
+                        </aggregate>
+                    </aggregates>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-features</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>aggregate-features</goal>
+                            <goal>attach-features</goal>
+                        </goals>
+                        <configuration>
+                            <replacePropertyVariables>project.version</replacePropertyVariables>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

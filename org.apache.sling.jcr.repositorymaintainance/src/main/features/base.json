@@ -1,0 +1,15 @@
+{
+    "bundles": [
+        {
+            "id": "org.apache.sling:org.apache.sling.jcr.repositorymaintainance:${project.version}",
+            "start-order": "20"
+        }
+    ],
+    "repoinit:TEXT|true": [
+        "create service user sling-versionmgr",
+        "set ACL for sling-versionmgr",
+        "allow   jcr:write,jcr:nodeTypeManagement,jcr:versionManagement    on /",
+        "allow   jcr:read    on /jcr:system/jcr:versionStorage",
+        "end"
+    ]
+}

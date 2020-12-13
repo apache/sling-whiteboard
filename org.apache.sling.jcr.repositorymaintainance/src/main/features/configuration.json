@@ -1,0 +1,17 @@
+{
+    "configurations": {
+        "org.apache.sling.repositorymaintainance.internal.DataStoreCleanupScheduler": {
+            "scheduler.expression": "0 0 2 ? * *"
+        },
+        "org.apache.sling.repositorymaintainance.internal.RevisionCleanupScheduler": {
+            "scheduler.expression": "0 0 2 ? * *"
+        },
+        "org.apache.sling.repositorymaintainance.internal.VersionCleanup": {
+            "scheduler.expression": "0 0 2 ? * *"
+        },
+        "org.apache.sling.repositorymaintainance.internal.VersionCleanupPath~default": {
+            "path": "/",
+            "limit": 5
+        }
+    }
+}
