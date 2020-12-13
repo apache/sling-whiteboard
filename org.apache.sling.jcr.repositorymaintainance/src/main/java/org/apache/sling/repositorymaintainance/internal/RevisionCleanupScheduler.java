@@ -19,6 +19,7 @@ package org.apache.sling.repositorymaintainance.internal;
 import org.apache.jackrabbit.oak.api.jmx.RepositoryManagementMBean;
 import org.apache.sling.repositorymaintainance.RepositoryManagementUtil;
 import org.apache.sling.repositorymaintainance.RevisionCleanupConfig;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.Reference;
@@ -35,11 +36,15 @@ public class RevisionCleanupScheduler implements Runnable {
 
     private static final Logger log = LoggerFactory.getLogger(RevisionCleanupScheduler.class);
 
-    private RepositoryManagementMBean repositoryManager;
+    private final RepositoryManagementMBean repositoryManager;
 
-    @Reference
-    public void setRepositoryManager(final RepositoryManagementMBean repositoryManager) {
+    private final String schedulerExpression;
+
+    @Activate
+    public RevisionCleanupScheduler(final RevisionCleanupConfig config,
+            @Reference final RepositoryManagementMBean repositoryManager) {
         this.repositoryManager = repositoryManager;
+        this.schedulerExpression = config.scheduler_expression();
     }
 
     public void run() {
@@ -51,4 +56,10 @@ public class RevisionCleanupScheduler implements Runnable {
         }
     }
 
+    /**
+     * @return the schedulerExpression
+     */
+    protected String getSchedulerExpression() {
+        return schedulerExpression;
+    }
 }

@@ -33,9 +33,21 @@ public class RepositoryManagementUtil {
     }
 
     public static boolean isRunning(CompositeData status) {
+        return StatusCode.RUNNING == getStatusCode(status);
+    }
+
+    public static boolean isValid(CompositeData status) {
+        StatusCode statusCode = getStatusCode(status);
+        return statusCode != StatusCode.UNAVAILABLE && statusCode != StatusCode.FAILED;
+    }
+
+    public static StatusCode getStatusCode(CompositeData status) {
         int c = ((Integer) status.get("code"));
-        return StatusCode.RUNNING == Arrays.stream(StatusCode.values()).filter(sc -> sc.ordinal() == c).findFirst()
-                .orElse(StatusCode.NONE);
+        return Arrays.stream(StatusCode.values()).filter(sc -> sc.ordinal() == c).findFirst().orElse(StatusCode.NONE);
+    }
+
+    public static String getMessage(CompositeData status) {
+        return ((String) status.get("message"));
     }
 
 }

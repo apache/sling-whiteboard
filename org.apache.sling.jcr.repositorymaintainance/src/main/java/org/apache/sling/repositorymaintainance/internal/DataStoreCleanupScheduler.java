@@ -19,6 +19,7 @@ package org.apache.sling.repositorymaintainance.internal;
 import org.apache.jackrabbit.oak.api.jmx.RepositoryManagementMBean;
 import org.apache.sling.repositorymaintainance.DataStoreCleanupConfig;
 import org.apache.sling.repositorymaintainance.RepositoryManagementUtil;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.Reference;
@@ -35,11 +36,15 @@ public class DataStoreCleanupScheduler implements Runnable {
 
     private static final Logger log = LoggerFactory.getLogger(DataStoreCleanupScheduler.class);
 
-    private RepositoryManagementMBean repositoryManager;
+    private final RepositoryManagementMBean repositoryManager;
 
-    @Reference
-    public void setRepositoryManager(final RepositoryManagementMBean repositoryManager) {
+    private final String schedulerExpression;
+
+    @Activate
+    public DataStoreCleanupScheduler(final DataStoreCleanupConfig config,
+            @Reference final RepositoryManagementMBean repositoryManager) {
         this.repositoryManager = repositoryManager;
+        this.schedulerExpression = config.scheduler_expression();
     }
 
     public void run() {
@@ -49,6 +54,13 @@ public class DataStoreCleanupScheduler implements Runnable {
         } else {
             log.warn("DataStore Garbage Collection already running!");
         }
+    }
+
+    /**
+     * @return the schedulerExpression
+     */
+    protected String getSchedulerExpression() {
+        return schedulerExpression;
     }
 
 }

@@ -16,13 +16,17 @@
  */
 package org.apache.sling.repositorymaintainance.internal;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.never;
+
+import java.lang.annotation.Annotation;
 
 import javax.management.openmbean.CompositeData;
 
 import org.apache.jackrabbit.oak.api.jmx.RepositoryManagementMBean;
 import org.apache.jackrabbit.oak.api.jmx.RepositoryManagementMBean.StatusCode;
 import org.apache.sling.repositorymaintainance.CompositeDataMock;
+import org.apache.sling.repositorymaintainance.DataStoreCleanupConfig;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -30,7 +34,6 @@ public class DataStoreCleanupSchedulerTest {
 
     @Test
     public void testRunnable() {
-        final DataStoreCleanupScheduler dscs = new DataStoreCleanupScheduler();
 
         Integer id = 1;
         final RepositoryManagementMBean repositoryManager = Mockito.mock(RepositoryManagementMBean.class);
@@ -39,8 +42,8 @@ public class DataStoreCleanupSchedulerTest {
         CompositeData doneCd = CompositeDataMock.init().put("id", id).put("code", StatusCode.SUCCEEDED.ordinal())
                 .build();
         Mockito.when(repositoryManager.getDataStoreGCStatus()).thenReturn(doneCd);
-        dscs.setRepositoryManager(repositoryManager);
-
+        final DataStoreCleanupScheduler dscs = new DataStoreCleanupScheduler(Mockito.mock(DataStoreCleanupConfig.class),
+                repositoryManager);
         dscs.run();
 
         Mockito.verify(repositoryManager).startDataStoreGC(Mockito.anyBoolean());
@@ -48,7 +51,6 @@ public class DataStoreCleanupSchedulerTest {
 
     @Test
     public void testRunCheck() {
-        final DataStoreCleanupScheduler dscs = new DataStoreCleanupScheduler();
 
         Integer id = 1;
         final RepositoryManagementMBean repositoryManager = Mockito.mock(RepositoryManagementMBean.class);
@@ -56,11 +58,34 @@ public class DataStoreCleanupSchedulerTest {
         Mockito.when(repositoryManager.startDataStoreGC(false)).thenReturn(startingCd);
         CompositeData doneCd = CompositeDataMock.init().put("id", id).put("code", StatusCode.RUNNING.ordinal()).build();
         Mockito.when(repositoryManager.getDataStoreGCStatus()).thenReturn(doneCd);
-        dscs.setRepositoryManager(repositoryManager);
+        final DataStoreCleanupScheduler dscs = new DataStoreCleanupScheduler(Mockito.mock(DataStoreCleanupConfig.class),
+                repositoryManager);
 
         dscs.run();
 
         Mockito.verify(repositoryManager, never()).startDataStoreGC(Mockito.anyBoolean());
+    }
+
+    @Test
+    public void testSheduledExpression() {
+        final String EXPECTED = "* * * * *";
+        final DataStoreCleanupScheduler dscs = new DataStoreCleanupScheduler(new DataStoreCleanupConfig() {
+
+            @Override
+            public Class<? extends Annotation> annotationType() {
+                // TODO Auto-generated method stub
+                return null;
+            }
+
+            @Override
+            public String scheduler_expression() {
+                return EXPECTED;
+            }
+
+        }, null);
+
+        assertEquals(EXPECTED, dscs.getSchedulerExpression());
+
     }
 
 }

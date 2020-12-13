@@ -16,13 +16,17 @@
  */
 package org.apache.sling.repositorymaintainance.internal;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.never;
+
+import java.lang.annotation.Annotation;
 
 import javax.management.openmbean.CompositeData;
 
 import org.apache.jackrabbit.oak.api.jmx.RepositoryManagementMBean;
 import org.apache.jackrabbit.oak.api.jmx.RepositoryManagementMBean.StatusCode;
 import org.apache.sling.repositorymaintainance.CompositeDataMock;
+import org.apache.sling.repositorymaintainance.RevisionCleanupConfig;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -30,7 +34,6 @@ public class RevisionCleanupSchedulerTest {
 
     @Test
     public void testRunnable() {
-        final RevisionCleanupScheduler rcs = new RevisionCleanupScheduler();
 
         Integer id = 1;
         final RepositoryManagementMBean repositoryManager = Mockito.mock(RepositoryManagementMBean.class);
@@ -39,7 +42,8 @@ public class RevisionCleanupSchedulerTest {
         CompositeData doneCd = CompositeDataMock.init().put("id", (Integer) id + 1)
                 .put("code", StatusCode.SUCCEEDED.ordinal()).build();
         Mockito.when(repositoryManager.getRevisionGCStatus()).thenReturn(doneCd);
-        rcs.setRepositoryManager(repositoryManager);
+        final RevisionCleanupScheduler rcs = new RevisionCleanupScheduler(Mockito.mock(RevisionCleanupConfig.class),
+                repositoryManager);
 
         rcs.run();
 
@@ -48,18 +52,40 @@ public class RevisionCleanupSchedulerTest {
 
     @Test
     public void testRunning() {
-        final RevisionCleanupScheduler rcs = new RevisionCleanupScheduler();
 
         Integer id = 1;
         final RepositoryManagementMBean repositoryManager = Mockito.mock(RepositoryManagementMBean.class);
         CompositeData runningCd = CompositeDataMock.init().put("id", id).put("code", StatusCode.RUNNING.ordinal())
                 .build();
         Mockito.when(repositoryManager.getRevisionGCStatus()).thenReturn(runningCd);
-        rcs.setRepositoryManager(repositoryManager);
+
+        final RevisionCleanupScheduler rcs = new RevisionCleanupScheduler(Mockito.mock(RevisionCleanupConfig.class),
+                repositoryManager);
 
         rcs.run();
 
         Mockito.verify(repositoryManager, never()).startRevisionGC();
     }
 
+    @Test
+    public void testSheduledExpression() {
+        final String EXPECTED = "* * * * *";
+        final RevisionCleanupScheduler rcs = new RevisionCleanupScheduler(new RevisionCleanupConfig() {
+
+            @Override
+            public Class<? extends Annotation> annotationType() {
+                // TODO Auto-generated method stub
+                return null;
+            }
+
+            @Override
+            public String scheduler_expression() {
+                return EXPECTED;
+            }
+
+        }, null);
+
+        assertEquals(EXPECTED, rcs.getSchedulerExpression());
+
+    }
 }

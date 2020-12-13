@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
 /**
  * 
  */
-@Component(service = { Runnable.class, DynamicMBean.class }, property = {
+@Component(service = { VersionCleanupMBean.class, Runnable.class, DynamicMBean.class }, property = {
         "jmx.objectname=org.apache.sling.repositorymaintainance:type=VersionCleanup" }, configurationPolicy = ConfigurationPolicy.REQUIRE, immediate = true)
 @Designate(ocd = VersionCleanupConfig.class)
 public class VersionCleanup extends AnnotatedStandardMBean implements Runnable, VersionCleanupMBean {
