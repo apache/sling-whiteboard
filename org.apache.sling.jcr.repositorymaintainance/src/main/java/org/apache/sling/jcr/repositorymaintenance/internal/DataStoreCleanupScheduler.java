@@ -14,11 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.repositorymaintainance.internal;
+package org.apache.sling.jcr.repositorymaintenance.internal;
 
 import org.apache.jackrabbit.oak.api.jmx.RepositoryManagementMBean;
-import org.apache.sling.repositorymaintainance.DataStoreCleanupConfig;
-import org.apache.sling.repositorymaintainance.RepositoryManagementUtil;
+import org.apache.sling.jcr.repositorymaintenance.DataStoreCleanupConfig;
+import org.apache.sling.jcr.repositorymaintenance.RepositoryManagementUtil;
+import org.apache.sling.jcr.repositorymaintenance.RunnableJob;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
@@ -32,7 +33,7 @@ import org.slf4j.LoggerFactory;
  */
 @Component(service = { Runnable.class }, configurationPolicy = ConfigurationPolicy.REQUIRE, immediate = true)
 @Designate(ocd = DataStoreCleanupConfig.class)
-public class DataStoreCleanupScheduler implements Runnable {
+public class DataStoreCleanupScheduler implements RunnableJob {
 
     private static final Logger log = LoggerFactory.getLogger(DataStoreCleanupScheduler.class);
 
@@ -59,7 +60,7 @@ public class DataStoreCleanupScheduler implements Runnable {
     /**
      * @return the schedulerExpression
      */
-    protected String getSchedulerExpression() {
+    public String getSchedulerExpression() {
         return schedulerExpression;
     }
 

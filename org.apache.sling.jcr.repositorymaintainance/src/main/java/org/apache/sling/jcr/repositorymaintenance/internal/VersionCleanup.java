@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.repositorymaintainance.internal;
+package org.apache.sling.jcr.repositorymaintenance.internal;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,11 +37,13 @@ import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
-import org.apache.sling.repositorymaintainance.VersionCleanupConfig;
+import org.apache.sling.jcr.repositorymaintenance.VersionCleanupConfig;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicyOption;
 import org.osgi.service.metatype.annotations.Designate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +52,7 @@ import org.slf4j.LoggerFactory;
  * 
  */
 @Component(service = { VersionCleanupMBean.class, Runnable.class, DynamicMBean.class }, property = {
-        "jmx.objectname=org.apache.sling.repositorymaintainance:type=VersionCleanup" }, configurationPolicy = ConfigurationPolicy.REQUIRE, immediate = true)
+        "jmx.objectname=org.apache.sling.jcr.repositorymaintenance:type=VersionCleanup" }, configurationPolicy = ConfigurationPolicy.REQUIRE, immediate = true)
 @Designate(ocd = VersionCleanupConfig.class)
 public class VersionCleanup extends AnnotatedStandardMBean implements Runnable, VersionCleanupMBean {
 
@@ -63,11 +65,13 @@ public class VersionCleanup extends AnnotatedStandardMBean implements Runnable, 
     private final List<VersionCleanupPath> versionCleanupConfigs;
 
     @Activate
-    public VersionCleanup(@Reference final List<VersionCleanupPath> versionCleanupConfigs,
+    public VersionCleanup(
+            @Reference(cardinality = ReferenceCardinality.AT_LEAST_ONE, policyOption = ReferencePolicyOption.GREEDY) final List<VersionCleanupPath> versionCleanupConfigs,
             @Reference final ResourceResolverFactory factory) {
         super(VersionCleanupMBean.class);
         this.factory = factory;
         this.versionCleanupConfigs = versionCleanupConfigs;
+        versionCleanupConfigs.sort((c1, c2) -> c1.getPath().compareTo(c2.getPath()) * -1);
 
     }
 
@@ -171,7 +175,7 @@ public class VersionCleanup extends AnnotatedStandardMBean implements Runnable, 
         lastCleanedVersions = 0;
         try {
             try (final ResourceResolver adminResolver = factory.getServiceResourceResolver(
-                    Collections.singletonMap(ResourceResolverFactory.SUBSERVICE, "sling-cms-versionmgr"))) {
+                    Collections.singletonMap(ResourceResolverFactory.SUBSERVICE, "sling-versionmgr"))) {
                 final Resource versionRoot = adminResolver.getResource("/jcr:system/jcr:versionStorage");
                 final Session session = Optional.ofNullable(versionRoot.getResourceResolver().adaptTo(Session.class))
                         .orElseThrow(() -> new RepositoryException("Failed to get session"));

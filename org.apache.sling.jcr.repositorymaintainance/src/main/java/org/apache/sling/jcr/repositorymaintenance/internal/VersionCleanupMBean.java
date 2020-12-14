@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.repositorymaintainance.internal;
+package org.apache.sling.jcr.repositorymaintenance.internal;
 
 import org.apache.jackrabbit.oak.api.jmx.Description;
 

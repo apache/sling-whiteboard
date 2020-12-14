@@ -1,15 +1,15 @@
 {
     "configurations": {
-        "org.apache.sling.repositorymaintainance.internal.DataStoreCleanupScheduler": {
+        "org.apache.sling.jcr.repositorymaintenance.internal.DataStoreCleanupScheduler": {
             "scheduler.expression": "0 0 2 ? * *"
         },
-        "org.apache.sling.repositorymaintainance.internal.RevisionCleanupScheduler": {
+        "org.apache.sling.jcr.repositorymaintenance.internal.RevisionCleanupScheduler": {
             "scheduler.expression": "0 0 2 ? * *"
         },
-        "org.apache.sling.repositorymaintainance.internal.VersionCleanup": {
+        "org.apache.sling.jcr.repositorymaintenance.internal.VersionCleanup": {
             "scheduler.expression": "0 0 2 ? * *"
         },
-        "org.apache.sling.repositorymaintainance.internal.VersionCleanupPath~default": {
+        "org.apache.sling.jcr.repositorymaintenance.internal.VersionCleanupPath~default": {
             "path": "/",
             "limit": 5
         }

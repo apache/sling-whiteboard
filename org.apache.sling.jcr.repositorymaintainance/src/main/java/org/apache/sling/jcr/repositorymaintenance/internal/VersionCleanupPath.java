@@ -14,20 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.repositorymaintainance.internal;
+package org.apache.sling.jcr.repositorymaintenance.internal;
 
 import java.util.List;
 
 import javax.jcr.RepositoryException;
 
-import org.apache.sling.repositorymaintainance.VersionCleanupPathConfig;
+import org.apache.sling.jcr.repositorymaintenance.VersionCleanupPathConfig;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.metatype.annotations.Designate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component(service = VersionCleanupPath.class, immediate = true)
 @Designate(ocd = VersionCleanupPathConfig.class, factory = true)
 public class VersionCleanupPath implements Comparable<VersionCleanupPath> {
+
+    private static final Logger log = LoggerFactory.getLogger(VersionCleanupPath.class);
 
     private final boolean keepVersions;
     private final int limit;
@@ -68,8 +72,20 @@ public class VersionCleanupPath implements Comparable<VersionCleanupPath> {
 
     public static final VersionCleanupPath getMatchingConfiguration(
             final List<VersionCleanupPath> versionCleanupConfigs, final String path) throws RepositoryException {
+        log.trace("Evaluating configurations {} for path {}", versionCleanupConfigs, path);
         return versionCleanupConfigs.stream().filter(c -> path.startsWith(c.getPath())).findFirst()
                 .orElseThrow(() -> new RepositoryException("Failed to find version cleanup configuration for " + path));
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#toString()
+     */
+
+    @Override
+    public String toString() {
+        return "VersionCleanupPath [keepVersions=" + keepVersions + ", limit=" + limit + ", path=" + path + "]";
     }
 
 }

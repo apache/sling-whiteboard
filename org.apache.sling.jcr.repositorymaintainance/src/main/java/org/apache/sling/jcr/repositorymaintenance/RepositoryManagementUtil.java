@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.repositorymaintainance;
+package org.apache.sling.jcr.repositorymaintenance;
 
 import java.util.Arrays;
 

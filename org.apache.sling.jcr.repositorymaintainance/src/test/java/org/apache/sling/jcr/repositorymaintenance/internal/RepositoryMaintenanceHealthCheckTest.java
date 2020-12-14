@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.repositorymaintainance.internal;
+package org.apache.sling.jcr.repositorymaintenance.internal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -24,12 +24,16 @@ import javax.management.openmbean.CompositeData;
 
 import org.apache.felix.hc.api.Result;
 import org.apache.jackrabbit.oak.api.jmx.RepositoryManagementMBean;
-import org.apache.sling.repositorymaintainance.CompositeDataMock;
+import org.apache.sling.jcr.repositorymaintenance.CompositeDataMock;
+import org.apache.sling.jcr.repositorymaintenance.internal.DataStoreCleanupScheduler;
+import org.apache.sling.jcr.repositorymaintenance.internal.RepositoryMaintenanceHealthCheck;
+import org.apache.sling.jcr.repositorymaintenance.internal.RevisionCleanupScheduler;
+import org.apache.sling.jcr.repositorymaintenance.internal.VersionCleanupMBean;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-public class RepositoryMaintainceHealthCheckTest {
+public class RepositoryMaintenanceHealthCheckTest {
 
     private CompositeData successCompositeData;
     private CompositeData failedCompositeData;
@@ -44,7 +48,7 @@ public class RepositoryMaintainceHealthCheckTest {
 
     @Test
     public void testNothingRegistered() {
-        RepositoryMaintainceHealthCheck repositoryHealthCheck = new RepositoryMaintainceHealthCheck();
+        RepositoryMaintenanceHealthCheck repositoryHealthCheck = new RepositoryMaintenanceHealthCheck();
 
         RepositoryManagementMBean repositoryManagementMBean = Mockito.mock(RepositoryManagementMBean.class);
         Mockito.when(repositoryManagementMBean.getRevisionGCStatus()).thenReturn(successCompositeData);
@@ -57,7 +61,7 @@ public class RepositoryMaintainceHealthCheckTest {
 
     @Test
     public void testAllSuccessful() {
-        RepositoryMaintainceHealthCheck repositoryHealthCheck = new RepositoryMaintainceHealthCheck();
+        RepositoryMaintenanceHealthCheck repositoryHealthCheck = new RepositoryMaintenanceHealthCheck();
 
         DataStoreCleanupScheduler dataStoreCleanupScheduler = Mockito.mock(DataStoreCleanupScheduler.class);
         repositoryHealthCheck.setDataStoreCleanupScheduler(dataStoreCleanupScheduler);
@@ -81,7 +85,7 @@ public class RepositoryMaintainceHealthCheckTest {
 
     @Test
     public void testDataStoreFailure() {
-        RepositoryMaintainceHealthCheck repositoryHealthCheck = new RepositoryMaintainceHealthCheck();
+        RepositoryMaintenanceHealthCheck repositoryHealthCheck = new RepositoryMaintenanceHealthCheck();
 
         RepositoryManagementMBean repositoryManagementMBean = Mockito.mock(RepositoryManagementMBean.class);
         Mockito.when(repositoryManagementMBean.getRevisionGCStatus()).thenReturn(successCompositeData);
@@ -110,7 +114,7 @@ public class RepositoryMaintainceHealthCheckTest {
 
     @Test
     public void testRevisionFailure() {
-        RepositoryMaintainceHealthCheck repositoryHealthCheck = new RepositoryMaintainceHealthCheck();
+        RepositoryMaintenanceHealthCheck repositoryHealthCheck = new RepositoryMaintenanceHealthCheck();
 
         DataStoreCleanupScheduler dataStoreCleanupScheduler = Mockito.mock(DataStoreCleanupScheduler.class);
         repositoryHealthCheck.setDataStoreCleanupScheduler(dataStoreCleanupScheduler);
@@ -139,7 +143,7 @@ public class RepositoryMaintainceHealthCheckTest {
 
     @Test
     public void testVersionFailure() {
-        RepositoryMaintainceHealthCheck repositoryHealthCheck = new RepositoryMaintainceHealthCheck();
+        RepositoryMaintenanceHealthCheck repositoryHealthCheck = new RepositoryMaintenanceHealthCheck();
 
         DataStoreCleanupScheduler dataStoreCleanupScheduler = Mockito.mock(DataStoreCleanupScheduler.class);
         repositoryHealthCheck.setDataStoreCleanupScheduler(dataStoreCleanupScheduler);

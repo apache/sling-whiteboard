@@ -14,13 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.repositorymaintainance;
+package org.apache.sling.jcr.repositorymaintenance;
 
-import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
 
-@ObjectClassDefinition(name = "%version.cleanup.name", description = "%version.cleanup.description", localization = "OSGI-INF/l10n/bundle")
-public @interface VersionCleanupConfig {
+/**
+ * Configuration for the Reference Mapping Transformer
+ */
+@ObjectClassDefinition(name = "%revision.cleanup.name", description = "%revision.cleanup.description", localization = "OSGI-INF/l10n/bundle")
+public @interface RevisionCleanupConfig {
 
     @AttributeDefinition(name = "%scheduler.expression.name", description = "%scheduler.expression.description")
     String scheduler_expression();

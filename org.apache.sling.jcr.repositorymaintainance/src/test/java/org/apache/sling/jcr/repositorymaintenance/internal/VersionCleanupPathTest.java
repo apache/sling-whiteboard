@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.repositorymaintainance.internal;
+package org.apache.sling.jcr.repositorymaintenance.internal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -27,7 +27,8 @@ import java.util.stream.Collectors;
 
 import javax.jcr.RepositoryException;
 
-import org.apache.sling.repositorymaintainance.VersionCleanupPathConfig;
+import org.apache.sling.jcr.repositorymaintenance.VersionCleanupPathConfig;
+import org.apache.sling.jcr.repositorymaintenance.internal.VersionCleanupPath;
 import org.junit.Test;
 
 public class VersionCleanupPathTest {

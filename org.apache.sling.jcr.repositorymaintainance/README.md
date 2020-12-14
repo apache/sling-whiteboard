@@ -6,14 +6,14 @@
 
 This project provides reference implementation of maintainance jobs for maintaining a Apache Jackrabbit OAK repository in Apache Sling.
 
-This includes the following maintaince jobs:
+This includes the following Maintenance jobs:
 
 - [DataStoreCleanupScheduler](src/main/java/org/apache/sling/repositorymaintainance/internal/DataStoreCleanupScheduler.java) - Run the [RepositoryManagementMBean.startDataStoreGC(true)](https://jackrabbit.apache.org/oak/docs/apidocs/org/apache/jackrabbit/oak/api/jmx/RepositoryManagementMBean.html#startDataStoreGC-boolean-) method to perform a Garbage Collection of the Data Store
 - [RevisionCleanupScheduler](src/main/java/org/apache/sling/repositorymaintainance/internal/RevisionCleanupScheduler.java) - Run the [RepositoryManagementMBean.startRevisionGC()](https://jackrabbit.apache.org/oak/docs/apidocs/org/apache/jackrabbit/oak/api/jmx/RepositoryManagementMBean.html#startRevisionGC--) method to perform a Garbage Collection of the Revision Store
 - [VersionCleanup](src/main/java/org/apache/sling/repositorymaintainance/internal/VersionCleanup.java) - Job to traverse the JCR Version Store
   and remove versions (oldest-first) exceeding a configurable limit
 
-As well as a [Health Check](src/main/java/org/apache/sling/repositorymaintainance/internal/RepositoryMaintainceHealthCheck.java) to ensure the jobs are scheduled and have not failed.
+As well as a [Health Check](src/main/java/org/apache/sling/repositorymaintainance/internal/RepositoryMaintenanceHealthCheck.java) to ensure the jobs are scheduled and have not failed.
 
 ## Configuration
 

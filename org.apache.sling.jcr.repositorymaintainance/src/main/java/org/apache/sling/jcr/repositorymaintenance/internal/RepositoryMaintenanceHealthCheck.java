@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.repositorymaintainance.internal;
+package org.apache.sling.jcr.repositorymaintenance.internal;
 
 import javax.management.openmbean.CompositeData;
 
@@ -22,15 +22,16 @@ import org.apache.felix.hc.api.FormattingResultLog;
 import org.apache.felix.hc.api.HealthCheck;
 import org.apache.felix.hc.api.Result;
 import org.apache.jackrabbit.oak.api.jmx.RepositoryManagementMBean;
-import org.apache.sling.repositorymaintainance.RepositoryManagementUtil;
+import org.apache.sling.jcr.repositorymaintenance.RepositoryManagementUtil;
+import org.apache.sling.jcr.repositorymaintenance.RunnableJob;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicyOption;
 
 @Component(service = HealthCheck.class, property = { HealthCheck.TAGS + "=oak", HealthCheck.TAGS + "=system-resource",
-        HealthCheck.NAME + "=Apache Sling JCR Repository Maintaince" }, immediate = true)
-public class RepositoryMaintainceHealthCheck implements HealthCheck {
+        HealthCheck.NAME + "=Apache Sling JCR Repository Maintenance" }, immediate = true)
+public class RepositoryMaintenanceHealthCheck implements HealthCheck {
 
     private DataStoreCleanupScheduler dataStoreCleanupScheduler;
 
@@ -40,7 +41,7 @@ public class RepositoryMaintainceHealthCheck implements HealthCheck {
 
     private VersionCleanupMBean versionCleanup;
 
-    @Reference(cardinality = ReferenceCardinality.OPTIONAL, policyOption = ReferencePolicyOption.GREEDY, service = Runnable.class, target = "(component.name=org.apache.sling.repositorymaintainance.internal.DataStoreCleanupScheduler)")
+    @Reference(cardinality = ReferenceCardinality.OPTIONAL, policyOption = ReferencePolicyOption.GREEDY, service = Runnable.class, target = "(component.name=org.apache.sling.jcr.repositorymaintenance.internal.DataStoreCleanupScheduler)")
     public void setDataStoreCleanupScheduler(Runnable dataStoreCleanupScheduler) {
         this.dataStoreCleanupScheduler = (DataStoreCleanupScheduler) dataStoreCleanupScheduler;
     }
@@ -50,7 +51,7 @@ public class RepositoryMaintainceHealthCheck implements HealthCheck {
         this.repositoryManagementMBean = repositoryManagementMBean;
     }
 
-    @Reference(cardinality = ReferenceCardinality.OPTIONAL, policyOption = ReferencePolicyOption.GREEDY, service = Runnable.class, target = "(component.name=org.apache.sling.repositorymaintainance.internal.RevisionCleanupScheduler)")
+    @Reference(cardinality = ReferenceCardinality.OPTIONAL, policyOption = ReferencePolicyOption.GREEDY, service = Runnable.class, target = "(component.name=org.apache.sling.jcr.repositorymaintenance.internal.RevisionCleanupScheduler)")
     public void setRevisionCleanupScheduler(Runnable revisionCleanupScheduler) {
         this.revisionCleanupScheduler = (RevisionCleanupScheduler) revisionCleanupScheduler;
     }
@@ -60,37 +61,30 @@ public class RepositoryMaintainceHealthCheck implements HealthCheck {
         this.versionCleanup = versionCleanup;
     }
 
+    private void evaluateJobStatus(FormattingResultLog log, String jobName, RunnableJob job, CompositeData status) {
+        if (job != null) {
+            log.debug("{} Schedule: {}", jobName, job.getSchedulerExpression());
+        } else {
+            log.warn("{} not registered", jobName);
+        }
+        if (RepositoryManagementUtil.isValid(status)) {
+            log.debug("{} Last Status: {}", jobName, RepositoryManagementUtil.getStatusCode(status).name());
+            log.debug("{} Last Message: {}", jobName, RepositoryManagementUtil.getMessage(status));
+        } else {
+            log.critical("{} Last Status: {}", jobName, RepositoryManagementUtil.getStatusCode(status).name());
+            log.critical("{} Last Message: {}", jobName, RepositoryManagementUtil.getMessage(status));
+        }
+    }
+
     @Override
     public Result execute() {
         FormattingResultLog log = new FormattingResultLog();
 
-        if (dataStoreCleanupScheduler != null) {
-            log.debug("DataStoreCleanup Schedule: {}", dataStoreCleanupScheduler.getSchedulerExpression());
-        } else {
-            log.warn("DataStoreCleanup not registered");
-        }
-        CompositeData status = repositoryManagementMBean.getDataStoreGCStatus();
-        if (RepositoryManagementUtil.isValid(status)) {
-            log.debug("DataStoreCleanup Last Status: {}", RepositoryManagementUtil.getStatusCode(status).name());
-            log.debug("DataStoreCleanup Last Message: {}", RepositoryManagementUtil.getMessage(status));
-        } else {
-            log.critical("DataStoreCleanup Last Status: {}", RepositoryManagementUtil.getStatusCode(status).name());
-            log.critical("DataStoreCleanup Last Message: {}", RepositoryManagementUtil.getMessage(status));
-        }
+        evaluateJobStatus(log, "DataStoreCleanupScheduler", dataStoreCleanupScheduler,
+                repositoryManagementMBean.getDataStoreGCStatus());
 
-        if (revisionCleanupScheduler != null) {
-            log.debug("RevisionCleanup Schedule: {}", revisionCleanupScheduler.getSchedulerExpression());
-        } else {
-            log.warn("RevisionCleanup not registered");
-        }
-        status = repositoryManagementMBean.getRevisionGCStatus();
-        if (RepositoryManagementUtil.isValid(status)) {
-            log.debug("RevisionCleanup Last Status: {}", RepositoryManagementUtil.getStatusCode(status).name());
-            log.debug("RevisionCleanup Last Message: {}", RepositoryManagementUtil.getMessage(status));
-        } else {
-            log.critical("RevisionCleanup Last Status: {}", RepositoryManagementUtil.getStatusCode(status).name());
-            log.critical("RevisionCleanup Last Message: {}", RepositoryManagementUtil.getMessage(status));
-        }
+        evaluateJobStatus(log, "RevisionCleanupScheduler", revisionCleanupScheduler,
+                repositoryManagementMBean.getRevisionGCStatus());
 
         if (versionCleanup != null) {
             if (versionCleanup.isFailed()) {
