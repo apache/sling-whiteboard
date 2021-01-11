@@ -52,7 +52,8 @@ import org.slf4j.LoggerFactory;
  * 
  */
 @Component(service = { VersionCleanupMBean.class, Runnable.class, DynamicMBean.class }, property = {
-        "jmx.objectname=org.apache.sling.jcr.repositorymaintenance:type=VersionCleanup" }, configurationPolicy = ConfigurationPolicy.REQUIRE, immediate = true)
+        "jmx.objectname=org.apache.sling.jcr.repositorymaintenance:type=VersionCleanup",
+        "scheduler.concurrent:Boolean=false" }, configurationPolicy = ConfigurationPolicy.REQUIRE, immediate = true)
 @Designate(ocd = VersionCleanupConfig.class)
 public class VersionCleanup extends AnnotatedStandardMBean implements Runnable, VersionCleanupMBean {
 
@@ -169,6 +170,7 @@ public class VersionCleanup extends AnnotatedStandardMBean implements Runnable, 
     }
 
     private void doRun() {
+        log.info("Running version cleanup");
         boolean interrupted = false;
         boolean succeeded = false;
         String failureMessage = null;

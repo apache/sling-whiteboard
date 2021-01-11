@@ -31,7 +31,8 @@ import org.slf4j.LoggerFactory;
 /**
  * Service for running the Jackrabbit OAK Segment Store cleanup on a schedule.
  */
-@Component(service = { Runnable.class }, configurationPolicy = ConfigurationPolicy.REQUIRE, immediate = true)
+@Component(service = { Runnable.class }, property = {
+        "scheduler.concurrent:Boolean=false" }, configurationPolicy = ConfigurationPolicy.REQUIRE, immediate = true)
 @Designate(ocd = RevisionCleanupConfig.class)
 public class RevisionCleanupScheduler implements RunnableJob {
 
