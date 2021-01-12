@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 import javax.jcr.RepositoryException;
 
 import org.apache.sling.jcr.repositorymaintenance.VersionCleanupPathConfig;
-import org.apache.sling.jcr.repositorymaintenance.internal.VersionCleanupPath;
 import org.junit.Test;
 
 public class VersionCleanupPathTest {

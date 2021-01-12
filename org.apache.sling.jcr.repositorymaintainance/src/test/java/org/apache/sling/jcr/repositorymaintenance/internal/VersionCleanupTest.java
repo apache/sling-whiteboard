@@ -49,8 +49,6 @@ import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.jcr.repositorymaintenance.VersionCleanupPathConfig;
-import org.apache.sling.jcr.repositorymaintenance.internal.VersionCleanup;
-import org.apache.sling.jcr.repositorymaintenance.internal.VersionCleanupPath;
 import org.apache.sling.testing.mock.sling.ResourceResolverType;
 import org.apache.sling.testing.mock.sling.junit.SlingContext;
 import org.junit.Before;

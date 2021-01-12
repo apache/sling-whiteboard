@@ -27,7 +27,6 @@ import org.apache.jackrabbit.oak.api.jmx.RepositoryManagementMBean;
 import org.apache.jackrabbit.oak.api.jmx.RepositoryManagementMBean.StatusCode;
 import org.apache.sling.jcr.repositorymaintenance.CompositeDataMock;
 import org.apache.sling.jcr.repositorymaintenance.RevisionCleanupConfig;
-import org.apache.sling.jcr.repositorymaintenance.internal.RevisionCleanupScheduler;
 import org.junit.Test;
 import org.mockito.Mockito;
 
