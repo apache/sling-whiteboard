@@ -30,10 +30,6 @@
     <name>Apache Sling JCR Repository Maintainance</name>
     <description>Maintainance jobs for the JCR repository</description>
 
-    <properties>
-        <sling.java.version>8</sling.java.version>
-    </properties>
-
     <build>
         <plugins>
             <plugin>
@@ -43,10 +39,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>8</source>
-                    <target>8</target>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
