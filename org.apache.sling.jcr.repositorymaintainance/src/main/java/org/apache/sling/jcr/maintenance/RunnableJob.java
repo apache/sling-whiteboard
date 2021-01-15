@@ -14,34 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.jcr.repositorymaintenance.internal;
-
-import org.apache.jackrabbit.oak.api.jmx.Description;
+package org.apache.sling.jcr.maintenance;
 
 /**
- * JMX MBean interface for the version cleanup tool to enable introspection into
- * the state of
+ * Interface to add a method to get the scheduler expression for a runnable job
  */
-
-@Description("Cleanup versions")
-public interface VersionCleanupMBean {
-
-    @Description("Whether or not the service is running")
-    boolean isRunning();
-
-    @Description("Whether or not the service is failed")
-    boolean isFailed();
-
-    @Description("The last message")
-    String getLastMessage();
-
-    @Description("The count of the last cleaned versions")
-    long getLastCleanedVersionsCount();
-
-    @Description("Start running the job, will stop any running instances")
-    void start();
-
-    @Description("Stop the running instance or do nothing")
-    void stop();
-
+public interface RunnableJob extends Runnable {
+    String getSchedulerExpression();
 }

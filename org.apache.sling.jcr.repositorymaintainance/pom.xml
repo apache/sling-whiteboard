@@ -25,10 +25,14 @@
         <version>40</version>
         <relativePath />
     </parent>
-    <artifactId>org.apache.sling.jcr.repositorymaintainance</artifactId>
+    <artifactId>org.apache.sling.jcr.maintenance</artifactId>
     <version>1.0.0-SNAPSHOT</version>
-    <name>Apache Sling JCR Repository Maintainance</name>
-    <description>Maintainance jobs for the JCR repository</description>
+    <name>Apache Sling JCR Maintenance</name>
+    <description>Maintenance jobs for the JCR</description>
+
+    <properties>
+        <bnd.baseline.fail.on.missing>false</bnd.baseline.fail.on.missing>
+    </properties>
 
     <build>
         <plugins>
@@ -82,7 +86,7 @@
                         <aggregate>
                             <classifier>default</classifier>
                             <filesInclude>**/*.json</filesInclude>
-                            <title>Apache Sling JCR Repository Maintainance - Default</title>
+                            <title>Apache Sling JCR Maintenance - Default</title>
                         </aggregate>
                     </aggregates>
                 </configuration>

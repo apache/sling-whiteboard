@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.jcr.repositorymaintenance.internal;
+package org.apache.sling.jcr.maintenance.internal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -48,7 +48,7 @@ import org.apache.jackrabbit.commons.cnd.ParseException;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.ResourceResolverFactory;
-import org.apache.sling.jcr.repositorymaintenance.VersionCleanupPathConfig;
+import org.apache.sling.jcr.maintenance.VersionCleanupPathConfig;
 import org.apache.sling.testing.mock.sling.ResourceResolverType;
 import org.apache.sling.testing.mock.sling.junit.SlingContext;
 import org.junit.Before;

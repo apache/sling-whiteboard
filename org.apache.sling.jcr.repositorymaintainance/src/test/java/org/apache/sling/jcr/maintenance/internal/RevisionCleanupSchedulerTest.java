@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.jcr.repositorymaintenance.internal;
+package org.apache.sling.jcr.maintenance.internal;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.never;
@@ -25,12 +25,12 @@ import javax.management.openmbean.CompositeData;
 
 import org.apache.jackrabbit.oak.api.jmx.RepositoryManagementMBean;
 import org.apache.jackrabbit.oak.api.jmx.RepositoryManagementMBean.StatusCode;
-import org.apache.sling.jcr.repositorymaintenance.CompositeDataMock;
-import org.apache.sling.jcr.repositorymaintenance.DataStoreCleanupConfig;
+import org.apache.sling.jcr.maintenance.CompositeDataMock;
+import org.apache.sling.jcr.maintenance.RevisionCleanupConfig;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-public class DataStoreCleanupSchedulerTest {
+public class RevisionCleanupSchedulerTest {
 
     @Test
     public void testRunnable() {
@@ -39,37 +39,38 @@ public class DataStoreCleanupSchedulerTest {
         final RepositoryManagementMBean repositoryManager = Mockito.mock(RepositoryManagementMBean.class);
         CompositeData startingCd = CompositeDataMock.init().put("id", id).build();
         Mockito.when(repositoryManager.startDataStoreGC(false)).thenReturn(startingCd);
-        CompositeData doneCd = CompositeDataMock.init().put("id", id).put("code", StatusCode.SUCCEEDED.ordinal())
-                .build();
-        Mockito.when(repositoryManager.getDataStoreGCStatus()).thenReturn(doneCd);
-        final DataStoreCleanupScheduler dscs = new DataStoreCleanupScheduler(Mockito.mock(DataStoreCleanupConfig.class),
+        CompositeData doneCd = CompositeDataMock.init().put("id", (Integer) id + 1)
+                .put("code", StatusCode.SUCCEEDED.ordinal()).build();
+        Mockito.when(repositoryManager.getRevisionGCStatus()).thenReturn(doneCd);
+        final RevisionCleanupScheduler rcs = new RevisionCleanupScheduler(Mockito.mock(RevisionCleanupConfig.class),
                 repositoryManager);
-        dscs.run();
 
-        Mockito.verify(repositoryManager).startDataStoreGC(Mockito.anyBoolean());
+        rcs.run();
+
+        Mockito.verify(repositoryManager).startRevisionGC();
     }
 
     @Test
-    public void testRunCheck() {
+    public void testRunning() {
 
         Integer id = 1;
         final RepositoryManagementMBean repositoryManager = Mockito.mock(RepositoryManagementMBean.class);
-        CompositeData startingCd = CompositeDataMock.init().put("id", id).build();
-        Mockito.when(repositoryManager.startDataStoreGC(false)).thenReturn(startingCd);
-        CompositeData doneCd = CompositeDataMock.init().put("id", id).put("code", StatusCode.RUNNING.ordinal()).build();
-        Mockito.when(repositoryManager.getDataStoreGCStatus()).thenReturn(doneCd);
-        final DataStoreCleanupScheduler dscs = new DataStoreCleanupScheduler(Mockito.mock(DataStoreCleanupConfig.class),
+        CompositeData runningCd = CompositeDataMock.init().put("id", id).put("code", StatusCode.RUNNING.ordinal())
+                .build();
+        Mockito.when(repositoryManager.getRevisionGCStatus()).thenReturn(runningCd);
+
+        final RevisionCleanupScheduler rcs = new RevisionCleanupScheduler(Mockito.mock(RevisionCleanupConfig.class),
                 repositoryManager);
 
-        dscs.run();
+        rcs.run();
 
-        Mockito.verify(repositoryManager, never()).startDataStoreGC(Mockito.anyBoolean());
+        Mockito.verify(repositoryManager, never()).startRevisionGC();
     }
 
     @Test
     public void testSheduledExpression() {
         final String EXPECTED = "* * * * *";
-        final DataStoreCleanupScheduler dscs = new DataStoreCleanupScheduler(new DataStoreCleanupConfig() {
+        final RevisionCleanupScheduler rcs = new RevisionCleanupScheduler(new RevisionCleanupConfig() {
 
             @Override
             public Class<? extends Annotation> annotationType() {
@@ -84,8 +85,7 @@ public class DataStoreCleanupSchedulerTest {
 
         }, null);
 
-        assertEquals(EXPECTED, dscs.getSchedulerExpression());
+        assertEquals(EXPECTED, rcs.getSchedulerExpression());
 
     }
-
 }

@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.jcr.repositorymaintenance.internal;
+package org.apache.sling.jcr.maintenance.internal;
 
 import org.apache.jackrabbit.oak.api.jmx.RepositoryManagementMBean;
-import org.apache.sling.jcr.repositorymaintenance.DataStoreCleanupConfig;
-import org.apache.sling.jcr.repositorymaintenance.RepositoryManagementUtil;
-import org.apache.sling.jcr.repositorymaintenance.RunnableJob;
+import org.apache.sling.jcr.maintenance.DataStoreCleanupConfig;
+import org.apache.sling.jcr.maintenance.RepositoryManagementUtil;
+import org.apache.sling.jcr.maintenance.RunnableJob;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;

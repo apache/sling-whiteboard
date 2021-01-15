@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.jcr.repositorymaintenance.internal;
+package org.apache.sling.jcr.maintenance.internal;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,7 +37,7 @@ import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
-import org.apache.sling.jcr.repositorymaintenance.VersionCleanupConfig;
+import org.apache.sling.jcr.maintenance.VersionCleanupConfig;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
@@ -52,7 +52,7 @@ import org.slf4j.LoggerFactory;
  * 
  */
 @Component(service = { VersionCleanupMBean.class, Runnable.class, DynamicMBean.class }, property = {
-        "jmx.objectname=org.apache.sling.jcr.repositorymaintenance:type=VersionCleanup",
+        "jmx.objectname=org.apache.sling.jcr.maintenance:type=VersionCleanup",
         "scheduler.concurrent:Boolean=false" }, configurationPolicy = ConfigurationPolicy.REQUIRE, immediate = true)
 @Designate(ocd = VersionCleanupConfig.class)
 public class VersionCleanup extends AnnotatedStandardMBean implements Runnable, VersionCleanupMBean {

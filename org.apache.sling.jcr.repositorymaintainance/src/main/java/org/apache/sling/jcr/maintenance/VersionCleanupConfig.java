@@ -14,24 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.jcr.repositorymaintenance;
+package org.apache.sling.jcr.maintenance;
 
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
-/**
- * Configuration to configure how version cleanup works on a per-path basis
- */
-@ObjectClassDefinition(name = "%version.cleanup.path.name", description = "%version.cleanup.path.description", localization = "OSGI-INF/l10n/bundle")
-public @interface VersionCleanupPathConfig {
+@ObjectClassDefinition(name = "%version.cleanup.name", description = "%version.cleanup.description", localization = "OSGI-INF/l10n/bundle")
+public @interface VersionCleanupConfig {
 
-    @AttributeDefinition(name = "%version.path.name", description = "%version.path.description")
-    String path();
-
-    @AttributeDefinition(name = "%version.limit.name", description = "%version.limit.description")
-    int limit();
-
-    @AttributeDefinition(name = "%version.keepVersions.name", description = "%version.keepVersions.description")
-    boolean keepVersions();
+    @AttributeDefinition(name = "%scheduler.expression.name", description = "%scheduler.expression.description")
+    String scheduler_expression();
 
 }

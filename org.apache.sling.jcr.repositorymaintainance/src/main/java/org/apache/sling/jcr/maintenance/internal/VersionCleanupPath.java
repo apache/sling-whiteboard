@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.jcr.repositorymaintenance.internal;
+package org.apache.sling.jcr.maintenance.internal;
 
 import java.util.List;
 
 import javax.jcr.RepositoryException;
 
-import org.apache.sling.jcr.repositorymaintenance.VersionCleanupPathConfig;
+import org.apache.sling.jcr.maintenance.VersionCleanupPathConfig;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.metatype.annotations.Designate;

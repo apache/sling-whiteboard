@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.jcr.repositorymaintenance.internal;
+package org.apache.sling.jcr.maintenance.internal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -24,7 +24,7 @@ import javax.management.openmbean.CompositeData;
 
 import org.apache.felix.hc.api.Result;
 import org.apache.jackrabbit.oak.api.jmx.RepositoryManagementMBean;
-import org.apache.sling.jcr.repositorymaintenance.CompositeDataMock;
+import org.apache.sling.jcr.maintenance.CompositeDataMock;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;

@@ -14,15 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.jcr.repositorymaintenance;
+package org.apache.sling.jcr.maintenance.internal;
 
-import org.osgi.service.metatype.annotations.AttributeDefinition;
-import org.osgi.service.metatype.annotations.ObjectClassDefinition;
+import org.apache.jackrabbit.oak.api.jmx.Description;
 
-@ObjectClassDefinition(name = "%version.cleanup.name", description = "%version.cleanup.description", localization = "OSGI-INF/l10n/bundle")
-public @interface VersionCleanupConfig {
+/**
+ * JMX MBean interface for the version cleanup tool to enable introspection into
+ * the state of
+ */
 
-    @AttributeDefinition(name = "%scheduler.expression.name", description = "%scheduler.expression.description")
-    String scheduler_expression();
+@Description("Cleanup versions")
+public interface VersionCleanupMBean {
+
+    @Description("Whether or not the service is running")
+    boolean isRunning();
+
+    @Description("Whether or not the service is failed")
+    boolean isFailed();
+
+    @Description("The last message")
+    String getLastMessage();
+
+    @Description("The count of the last cleaned versions")
+    long getLastCleanedVersionsCount();
+
+    @Description("Start running the job, will stop any running instances")
+    void start();
+
+    @Description("Stop the running instance or do nothing")
+    void stop();
 
 }

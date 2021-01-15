@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.jcr.repositorymaintenance.internal;
+package org.apache.sling.jcr.maintenance.internal;
 
 import javax.management.openmbean.CompositeData;
 
@@ -22,15 +22,15 @@ import org.apache.felix.hc.api.FormattingResultLog;
 import org.apache.felix.hc.api.HealthCheck;
 import org.apache.felix.hc.api.Result;
 import org.apache.jackrabbit.oak.api.jmx.RepositoryManagementMBean;
-import org.apache.sling.jcr.repositorymaintenance.RepositoryManagementUtil;
-import org.apache.sling.jcr.repositorymaintenance.RunnableJob;
+import org.apache.sling.jcr.maintenance.RepositoryManagementUtil;
+import org.apache.sling.jcr.maintenance.RunnableJob;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicyOption;
 
 @Component(service = HealthCheck.class, property = { HealthCheck.TAGS + "=oak", HealthCheck.TAGS + "=system-resource",
-        HealthCheck.NAME + "=Apache Sling JCR Repository Maintenance" }, immediate = true)
+        HealthCheck.NAME + "=Apache Sling JCR Maintenance" }, immediate = true)
 public class RepositoryMaintenanceHealthCheck implements HealthCheck {
 
     private DataStoreCleanupScheduler dataStoreCleanupScheduler;
@@ -41,7 +41,7 @@ public class RepositoryMaintenanceHealthCheck implements HealthCheck {
 
     private VersionCleanupMBean versionCleanup;
 
-    @Reference(cardinality = ReferenceCardinality.OPTIONAL, policyOption = ReferencePolicyOption.GREEDY, service = Runnable.class, target = "(component.name=org.apache.sling.jcr.repositorymaintenance.internal.DataStoreCleanupScheduler)")
+    @Reference(cardinality = ReferenceCardinality.OPTIONAL, policyOption = ReferencePolicyOption.GREEDY, service = Runnable.class, target = "(component.name=org.apache.sling.jcr.maintenance.internal.DataStoreCleanupScheduler)")
     public void setDataStoreCleanupScheduler(Runnable dataStoreCleanupScheduler) {
         this.dataStoreCleanupScheduler = (DataStoreCleanupScheduler) dataStoreCleanupScheduler;
     }
@@ -51,7 +51,7 @@ public class RepositoryMaintenanceHealthCheck implements HealthCheck {
         this.repositoryManagementMBean = repositoryManagementMBean;
     }
 
-    @Reference(cardinality = ReferenceCardinality.OPTIONAL, policyOption = ReferencePolicyOption.GREEDY, service = Runnable.class, target = "(component.name=org.apache.sling.jcr.repositorymaintenance.internal.RevisionCleanupScheduler)")
+    @Reference(cardinality = ReferenceCardinality.OPTIONAL, policyOption = ReferencePolicyOption.GREEDY, service = Runnable.class, target = "(component.name=org.apache.sling.jcr.maintenance.internal.RevisionCleanupScheduler)")
     public void setRevisionCleanupScheduler(Runnable revisionCleanupScheduler) {
         this.revisionCleanupScheduler = (RevisionCleanupScheduler) revisionCleanupScheduler;
     }
