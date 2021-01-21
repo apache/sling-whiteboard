@@ -63,12 +63,13 @@ public class ChunkedDistributionServlet extends SlingAllMethodsServlet {
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response)
             throws ServletException, IOException {
-        String history = request.getParameter("history");
+        String type = request.getParameter("type");
+        QueryType queryType = type !=null ? QueryType.valueOf(type) : QueryType.ALL;
         TimeZone tz = TimeZone.getTimeZone("UTC");
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
         df.setTimeZone(tz);
         PrintWriter wr = response.getWriter();
-        Collection<Job> jobs = jobMananger.findJobs(history != null ? QueryType.HISTORY : QueryType.ALL, ChunkedDistribution.TOPIC, 10, (Map<String, Object>[]) null);
+        Collection<Job> jobs = jobMananger.findJobs(queryType, ChunkedDistribution.TOPIC, 10, (Map<String, Object>[]) null);
         wr.println("Jobs");
         printJobs(df, wr, jobs);
     }
