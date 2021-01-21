@@ -125,8 +125,7 @@ public class ChunkedDistribution implements JobExecutor {
         } catch (Exception e) {
             String firstPath = paths.iterator().next();
             String msg = "Error creating distribution request first path " + firstPath + " msg: " + e.getMessage();
-            context.log(msg);
-            log.warn(msg, e);
+            throw new RuntimeException(msg, e);
         }
     }
     

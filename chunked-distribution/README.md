@@ -34,3 +34,7 @@
 ## Observe progress
     
     watch -t -d curl -u admin:admin http://localhost:8080/libs/sling/distribution/tree
+
+## See history of failed or stopped jobs
+    
+    watch -t -d curl -u admin:admin http://localhost:8080/libs/sling/distribution/tree?type=HISTORY
