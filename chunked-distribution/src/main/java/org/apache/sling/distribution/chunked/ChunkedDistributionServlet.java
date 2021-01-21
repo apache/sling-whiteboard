@@ -63,15 +63,20 @@ public class ChunkedDistributionServlet extends SlingAllMethodsServlet {
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response)
             throws ServletException, IOException {
+        String history = request.getParameter("history");
         TimeZone tz = TimeZone.getTimeZone("UTC");
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
         df.setTimeZone(tz);
         PrintWriter wr = response.getWriter();
-        Collection<Job> jobs = jobMananger.findJobs(QueryType.ACTIVE, ChunkedDistribution.TOPIC, -1, (Map<String, Object>[]) null);
+        Collection<Job> jobs = jobMananger.findJobs(history != null ? QueryType.HISTORY : QueryType.ALL, ChunkedDistribution.TOPIC, 10, (Map<String, Object>[]) null);
         wr.println("Jobs");
+        printJobs(df, wr, jobs);
+    }
+
+    private void printJobs(DateFormat df, PrintWriter wr, Collection<Job> jobs) {
         for (Job job : jobs) {
             String startedAt = df.format(job.getProcessingStarted().getTime());
-            wr.println(String.format("id: %s, step: %d/%d, startedAt: %s", job.getId(), job.getFinishedProgressStep(),  job.getProgressStepCount(), startedAt));
+            wr.println(String.format("id: %s, status:%s, step: %d/%d, startedAt: %s", job.getId(), job.getJobState().toString(), job.getFinishedProgressStep(),  job.getProgressStepCount(), startedAt));
             String[] log = job.getProgressLog();
             if (log != null) {
                 for (String line : log) {
