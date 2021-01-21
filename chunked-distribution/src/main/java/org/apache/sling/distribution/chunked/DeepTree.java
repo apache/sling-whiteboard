@@ -32,25 +32,28 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DeepTree {
-    private Logger log = LoggerFactory.getLogger(this.getClass());
+    private static Logger log = LoggerFactory.getLogger(DeepTree.class);
     private List<String> paths = new ArrayList<>();
+    private Mode mode;
     
-    public static List<String> getPaths(Resource baseResource) {
-        DeepTree walker = new DeepTree(baseResource);
+    public static List<String> getPaths(Resource baseResource, Mode mode) {
+        String path = Objects.requireNonNull(baseResource).getPath();
+        log.info("Getting deep tree for {} using mode {}", path, mode);
+        DeepTree walker = new DeepTree(mode);
+        walker.walkTreeRecursively(baseResource);
+        log.info("Getting deep tree for {} finished with {} results", path, walker.paths.size());
         return walker.paths;
     }
     
-    private DeepTree(Resource baseResource) {
-        log.info("Getting deep tree for {}", Objects.requireNonNull(baseResource).getPath());
-        walkTreeRecursively(baseResource);
-        log.info("Getting deep tree finished with {} results", paths.size());
+    private DeepTree(Mode mode) {
+        this.mode = mode;
     }
     
     public void walkTreeRecursively(Resource baseResource) {
         try {
             Node baseNode = baseResource.adaptTo(Node.class);
             boolean isHierarchyNode = baseNode.isNodeType("nt:hierarchyNode");
-            if (isHierarchyNode) {
+            if (mode == Mode.AllNodes || isHierarchyNode) {
                 paths.add(baseResource.getPath());
                 Iterable<Resource> childrenIter = baseResource.getChildren();
                 List<Resource> children = getChildren(childrenIter.iterator());
@@ -70,6 +73,5 @@ public class DeepTree {
             children.add(childrenIt.next());
         }
         return children;
-    }
-    
+    };
 }

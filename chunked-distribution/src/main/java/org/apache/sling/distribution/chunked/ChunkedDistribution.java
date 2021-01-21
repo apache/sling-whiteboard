@@ -42,8 +42,10 @@ import org.slf4j.LoggerFactory;
 
 @Component(property = { JobConsumer.PROPERTY_TOPICS + "=" + ChunkedDistribution.TOPIC })
 public class ChunkedDistribution implements JobExecutor {
-    private static final int CHUNK_SIZE = 100;
-
+    public static final int DEFAULT_CHUNK_SIZE = 1000;
+    public static final String KEY_PATH = "path";
+    public static final String KEY_MODE = "mode";
+    public static final String KEY_CHUNK_SIZE = "chunkSize";
     public static final String TOPIC = "sling/whiteboard/distribution/chunked";
 
     private Logger log = LoggerFactory.getLogger(this.getClass());
@@ -61,53 +63,71 @@ public class ChunkedDistribution implements JobExecutor {
     @Override
     public JobExecutionResult process(Job job, JobExecutionContext context) {
         try {
-            String path = Objects.requireNonNull(job.getProperty("path", String.class), "No path parameter provided");
+            String path = requireParam(job, KEY_PATH, String.class);
+            String modeSt = requireParam(job, KEY_MODE, String.class);
+            Mode mode = Mode.valueOf(modeSt);
+            Integer chunkSize = requireParam(job, KEY_CHUNK_SIZE, Integer.class);
+            log.info("Starting chunked tree distribution for path {}", path);
             try (ResourceResolver resolver = resolverFactory.getServiceResourceResolver(null)) {
-                distribute(resolver, path, context);
+                distribute(resolver, path, mode, chunkSize, context);
+                log.info("Finished chunked tree distribution for path {}", path);
                 return context.result().succeeded();
             }
         } catch (Exception e) {
+            log.warn(e.getMessage(), e);
+            context.log(e.getMessage());
             return context.result().message(e.getMessage()).cancelled();
         }
         
     }
 
-    public void distribute(ResourceResolver resolver, String path, JobExecutionContext context) {
-        Resource parent = Objects.requireNonNull(resolver.getResource(path), "No resource present at path " + path);
+    private <T> T requireParam(Job job, String key, Class<T> type) {
+        return Objects.requireNonNull(job.getProperty(key, type), "No " + key + " parameter provided");
+    }
 
-        List<String> paths = DeepTree.getPaths(parent);
-        List<List<String>> chunks = getChunks(paths);
+    public void distribute(ResourceResolver resolver, String path, Mode mode, Integer chunkSize, JobExecutionContext context) {
+        Resource parent = Objects.requireNonNull(resolver.getResource(path), "No resource present at path " + path);
+        context.log("Getting tree nodes for path=" + path);
+        List<String> paths = DeepTree.getPaths(parent, mode);
+        List<List<String>> chunks = getChunks(paths, chunkSize);
         context.initProgress(chunks.size(), -1);
+        int progress = 0;
         for (List<String> chunk : chunks) {
             context.incrementProgressCount(1);
-            distributeChunk(resolver, chunk);
+            progress ++;
+            String firstPath = chunk.iterator().next();
+            String msg = String.format("Distributing chunk %d/%d starting with %s", progress, chunks.size(), firstPath);
+            log.info(msg);
+            context.log(msg);
+            distributeChunk(resolver, chunk, context);
             if (context.isStopped()) {
                 throw new RuntimeException("Job stopped");
             }
         }
     }
 
-    private List<List<String>> getChunks(List<String> paths) {
+    private List<List<String>> getChunks(List<String> paths, Integer chunkSize) {
         List<List<String>> chunks = new ArrayList<>();
         int c = 0;
         while (c < paths.size()) {
-            int next = Math.min(paths.size(), c + CHUNK_SIZE);
+            int next = Math.min(paths.size(), c + chunkSize);
             chunks.add(paths.subList(c, next));
             c = next;
         }
         return chunks;
     }
 
-    private void distributeChunk(ResourceResolver resolver, List<String> paths) {
-        String firstPath = paths.iterator().next();
+    private void distributeChunk(ResourceResolver resolver, List<String> paths, JobExecutionContext context) {
         try {
             String[] pathsAr = paths.toArray(new String[] {});
-            log.info("Distributing chunk starting with {}", firstPath);
             DistributionRequest request = new SimpleDistributionRequest(DistributionRequestType.ADD, pathsAr);
             distributor.distribute("publish", resolver, request);
-            log.info("Distributing request created");
         } catch (Exception e) {
-            log.warn("Error creating distribution request", firstPath);
+            String firstPath = paths.iterator().next();
+            String msg = "Error creating distribution request first path " + firstPath + " msg: " + e.getMessage();
+            context.log(msg);
+            log.warn(msg, e);
         }
     }
+    
 }

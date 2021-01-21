@@ -75,7 +75,7 @@ public class ChunkedDistributionTest {
         when(job.getProperty("path", String.class)).thenReturn("/test");
         when(distributor.distribute(Mockito.eq("publish"), Mockito.any(ResourceResolver.class), requestCaptor.capture())).thenReturn(resp);
         
-        dist.distribute(resolver, "/test", jcontext);
+        dist.distribute(resolver, "/test", Mode.OnlyHierarchyNodes, ChunkedDistribution.DEFAULT_CHUNK_SIZE, jcontext);
         
         DistributionRequest request = requestCaptor.getValue();
         

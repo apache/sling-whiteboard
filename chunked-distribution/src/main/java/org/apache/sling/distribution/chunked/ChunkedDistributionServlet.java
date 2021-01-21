@@ -19,8 +19,13 @@
 package org.apache.sling.distribution.chunked;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TimeZone;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
@@ -28,7 +33,9 @@ import javax.servlet.ServletException;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
+import org.apache.sling.event.jobs.Job;
 import org.apache.sling.event.jobs.JobManager;
+import org.apache.sling.event.jobs.JobManager.QueryType;
 import org.apache.sling.servlets.annotations.SlingServletPaths;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
 import org.osgi.service.component.annotations.Activate;
@@ -56,15 +63,48 @@ public class ChunkedDistributionServlet extends SlingAllMethodsServlet {
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response)
             throws ServletException, IOException {
+        TimeZone tz = TimeZone.getTimeZone("UTC");
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
+        df.setTimeZone(tz);
+        PrintWriter wr = response.getWriter();
+        Collection<Job> jobs = jobMananger.findJobs(QueryType.ACTIVE, ChunkedDistribution.TOPIC, -1, (Map<String, Object>[]) null);
+        wr.println("Jobs");
+        for (Job job : jobs) {
+            String startedAt = df.format(job.getProcessingStarted().getTime());
+            wr.println(String.format("id: %s, step: %d/%d, startedAt: %s", job.getId(), job.getFinishedProgressStep(),  job.getProgressStepCount(), startedAt));
+            String[] log = job.getProgressLog();
+            if (log != null) {
+                for (String line : log) {
+                    wr.println("  " + line);
+                }
+            }
+        }
     }
 
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response)
             throws ServletException, IOException {
-        String path = request.getParameter("path");
+        PrintWriter wr = response.getWriter();
+        String command = request.getParameter("command");
+        String jobId = request.getParameter("id");
+        if ("stop".equals(command)) {
+            jobMananger.stopJobById(jobId);
+            wr.println("Sent stop signal to " + jobId);
+            return;
+        }
+        String path = request.getParameter(ChunkedDistribution.KEY_PATH);
+        String modeSt = request.getParameter(ChunkedDistribution.KEY_MODE);
+        String mode = modeSt != null ? modeSt : Mode.OnlyHierarchyNodes.name();
+
+        String chunkSizeSt = request.getParameter(ChunkedDistribution.KEY_CHUNK_SIZE);
+        Integer chunkSize = chunkSizeSt != null ? Integer.parseInt(chunkSizeSt) : ChunkedDistribution.DEFAULT_CHUNK_SIZE;
+        
         Map<String, Object> props = new HashMap<>();
         props.put("path", path);
-        jobMananger.addJob(ChunkedDistribution.TOPIC, props);
+        props.put("mode", mode);
+        props.put("chunkSize", chunkSize);
+        Job job = jobMananger.addJob(ChunkedDistribution.TOPIC, props);
+        wr.println(job.getId());
     }
     
 }
