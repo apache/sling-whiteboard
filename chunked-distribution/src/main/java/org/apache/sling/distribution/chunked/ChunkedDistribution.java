@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory;
 public class ChunkedDistribution implements JobExecutor {
     private static final int CHUNK_SIZE = 100;
 
-    public static final String TOPIC = "sling/distribution";
+    public static final String TOPIC = "sling/whiteboard/distribution/chunked";
 
     private Logger log = LoggerFactory.getLogger(this.getClass());
 

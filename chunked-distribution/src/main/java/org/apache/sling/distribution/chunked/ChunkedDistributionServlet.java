@@ -38,7 +38,7 @@ import org.osgi.service.component.annotations.Reference;
 @Component(service = { Servlet.class })
 @SlingServletPaths("/libs/sling/distribution/tree")
 @SlingServletResourceTypes(
-    resourceTypes="/sling/distribution/tree", 
+    resourceTypes="sling/distribution/tree", 
     methods= {"GET", "POST"},
     extensions="html"
 )
