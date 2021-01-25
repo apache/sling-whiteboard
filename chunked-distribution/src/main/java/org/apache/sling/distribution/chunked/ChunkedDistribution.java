@@ -21,6 +21,7 @@ package org.apache.sling.distribution.chunked;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -62,19 +63,19 @@ public class ChunkedDistribution implements JobExecutor {
 
     @Override
     public JobExecutionResult process(Job job, JobExecutionContext context) {
+        String path = requireParam(job, KEY_PATH, String.class);
+        String modeSt = requireParam(job, KEY_MODE, String.class);
+        Mode mode = Mode.valueOf(modeSt);
+        Integer chunkSize = requireParam(job, KEY_CHUNK_SIZE, Integer.class);
+        log.info("Starting chunked tree distribution for path {}", path);
         try {
-            String path = requireParam(job, KEY_PATH, String.class);
-            String modeSt = requireParam(job, KEY_MODE, String.class);
-            Mode mode = Mode.valueOf(modeSt);
-            Integer chunkSize = requireParam(job, KEY_CHUNK_SIZE, Integer.class);
-            log.info("Starting chunked tree distribution for path {}", path);
             try (ResourceResolver resolver = resolverFactory.getServiceResourceResolver(null)) {
                 distribute(resolver, path, mode, chunkSize, context);
                 log.info("Finished chunked tree distribution for path {}", path);
                 return context.result().succeeded();
             }
         } catch (Exception e) {
-            log.warn(e.getMessage(), e);
+            log.warn("Error distributing tree {} with mode {}", path, mode, e);
             context.log(e.getMessage());
             return context.result().message(e.getMessage()).cancelled();
         }
@@ -119,7 +120,7 @@ public class ChunkedDistribution implements JobExecutor {
 
     private void distributeChunk(ResourceResolver resolver, List<String> paths, JobExecutionContext context) {
         try {
-            String[] pathsAr = paths.toArray(new String[] {});
+            String[] pathsAr = quote(paths);
             DistributionRequest request = new SimpleDistributionRequest(DistributionRequestType.ADD, pathsAr);
             distributor.distribute("publish", resolver, request);
         } catch (Exception e) {
@@ -128,5 +129,14 @@ public class ChunkedDistribution implements JobExecutor {
             throw new RuntimeException(msg, e);
         }
     }
-    
+
+    private String[] quote(List<String> paths) {
+        return paths.stream().map(this::quotePath).toArray(String[]::new);
+    }
+
+    // Workaround for https://issues.apache.org/jira/browse/SLING-10088
+    private String quotePath(String path) {
+        return (path.contains("(")) ? Pattern.quote(path) : path;
+    }
+
 }
