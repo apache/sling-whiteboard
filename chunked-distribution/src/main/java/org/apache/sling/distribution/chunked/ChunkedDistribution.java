@@ -120,7 +120,7 @@ public class ChunkedDistribution implements JobExecutor {
 
     private void distributeChunk(ResourceResolver resolver, List<String> paths, JobExecutionContext context) {
         try {
-            String[] pathsAr = quote(paths);
+            String[] pathsAr = paths.toArray(new String[] {});
             DistributionRequest request = new SimpleDistributionRequest(DistributionRequestType.ADD, pathsAr);
             distributor.distribute("publish", resolver, request);
         } catch (Exception e) {
@@ -128,15 +128,6 @@ public class ChunkedDistribution implements JobExecutor {
             String msg = "Error creating distribution request first path " + firstPath + " msg: " + e.getMessage();
             throw new RuntimeException(msg, e);
         }
-    }
-
-    private String[] quote(List<String> paths) {
-        return paths.stream().map(this::quotePath).toArray(String[]::new);
-    }
-
-    // Workaround for https://issues.apache.org/jira/browse/SLING-10088
-    private String quotePath(String path) {
-        return (path.contains("(")) ? Pattern.quote(path) : path;
     }
 
 }
