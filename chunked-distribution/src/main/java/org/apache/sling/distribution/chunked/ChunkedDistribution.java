@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
 
 @Component(property = { JobConsumer.PROPERTY_TOPICS + "=" + ChunkedDistribution.TOPIC })
 public class ChunkedDistribution implements JobExecutor {
-    public static final int DEFAULT_CHUNK_SIZE = 1000;
+    public static final int DEFAULT_CHUNK_SIZE = 100;
     public static final String KEY_PATH = "path";
     public static final String KEY_MODE = "mode";
     public static final String KEY_CHUNK_SIZE = "chunkSize";
