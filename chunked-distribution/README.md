@@ -20,11 +20,11 @@
     
 ## Distribute path with just hierarchy noes
 
-    curl -i -u admin:admin -F path=<path> http://localhost:8080/libs/sling/distribution/tree
+    curl -i -u "admin:$PASSWORD" http://localhost:8080/libs/sling/distribution/tree -F chunkSize=15 -F path=
     
 ## Distribute path with all nodes
 
-    curl -i -u admin:admin -F path=<path> -Fmode=AllNodes http://localhost:8080/libs/sling/distribution/tree
+    curl -i -u admin:admin http://localhost:8080/libs/sling/distribution/tree -F mode=AllNodes -F path=<path> 
     
 
 ## Get jobs
