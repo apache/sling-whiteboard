@@ -19,9 +19,13 @@
 package org.apache.sling.distribution.chunked;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Pattern;
+
+import javax.jcr.Node;
 
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -120,8 +124,18 @@ public class ChunkedDistribution implements JobExecutor {
 
     private void distributeChunk(ResourceResolver resolver, List<String> paths, JobExecutionContext context) {
         try {
+            Set<String> deepPaths = new HashSet<>();
+            
+            for (String path : paths) {
+                Resource res = resolver.getResource(path);
+                Node node = res.adaptTo(Node.class);
+                if (node.isNodeType("dam:Asset")) {
+                    deepPaths.add(path);
+                }
+            }
+            
             String[] pathsAr = paths.toArray(new String[] {});
-            DistributionRequest request = new SimpleDistributionRequest(DistributionRequestType.ADD, pathsAr);
+            DistributionRequest request = new SimpleDistributionRequest(DistributionRequestType.ADD, pathsAr, deepPaths);
             distributor.distribute("publish", resolver, request);
         } catch (Exception e) {
             String firstPath = paths.iterator().next();
