@@ -54,12 +54,6 @@
                 <groupId>biz.aQute.bnd</groupId>
                 <artifactId>bnd-maven-plugin</artifactId>
             </plugin>
-            <plugin>
-                <groupId>com.adobe.granite.maven</groupId>
-                <artifactId>granitepackage-maven-plugin</artifactId>
-                <version>1.1.4</version>
-                <extensions>true</extensions>
-            </plugin>
         </plugins>
     </build>
 
