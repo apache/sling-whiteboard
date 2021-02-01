@@ -47,7 +47,7 @@ public class DeepTreeTest {
                 }
             }
             
-            List<String> paths = DeepTree.getPaths(base, Mode.OnlyHierarchyNodes);
+            List<String> paths = DeepTree.getPaths(base);
             assertThat(paths.size(), Matchers.equalTo(100 + 10 + 1));
         }
     }

@@ -34,26 +34,24 @@ import org.slf4j.LoggerFactory;
 public class DeepTree {
     private static Logger log = LoggerFactory.getLogger(DeepTree.class);
     private List<String> paths = new ArrayList<>();
-    private Mode mode;
     
-    public static List<String> getPaths(Resource baseResource, Mode mode) {
+    public static List<String> getPaths(Resource baseResource) {
         String path = Objects.requireNonNull(baseResource).getPath();
-        log.info("Getting deep tree for {} using mode {}", path, mode);
-        DeepTree walker = new DeepTree(mode);
+        log.info("Getting deep tree for {}", path);
+        DeepTree walker = new DeepTree();
         walker.walkTreeRecursively(baseResource);
         log.info("Getting deep tree for {} finished with {} results", path, walker.paths.size());
         return walker.paths;
     }
     
-    private DeepTree(Mode mode) {
-        this.mode = mode;
+    private DeepTree() {
     }
     
     public void walkTreeRecursively(Resource baseResource) {
         try {
             Node baseNode = baseResource.adaptTo(Node.class);
             boolean isHierarchyNode = baseNode.isNodeType("nt:hierarchyNode");
-            if (mode == Mode.AllNodes || isHierarchyNode) {
+            if (isHierarchyNode) {
                 paths.add(baseResource.getPath());
                 Iterable<Resource> childrenIter = baseResource.getChildren();
                 List<Resource> children = getChildren(childrenIter.iterator());

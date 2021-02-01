@@ -20,10 +20,10 @@ package org.apache.sling.distribution.chunked;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import javax.jcr.Node;
 
@@ -55,6 +55,8 @@ public class ChunkedDistribution implements JobExecutor {
 
     private Logger log = LoggerFactory.getLogger(this.getClass());
 
+    private Set<String> shallowNodeTypes = new HashSet<>();
+    
     Distributor distributor;
 
     ResourceResolverFactory resolverFactory;
@@ -63,6 +65,9 @@ public class ChunkedDistribution implements JobExecutor {
     public ChunkedDistribution(@Reference Distributor distributor, @Reference ResourceResolverFactory resolverFactory) {
         this.distributor = distributor;
         this.resolverFactory = resolverFactory;
+        this.shallowNodeTypes.add("sling:Folder");
+        this.shallowNodeTypes.add("sling:OrderedFolder");
+        this.shallowNodeTypes.add("cq:Page");
     }
 
     @Override
@@ -93,7 +98,7 @@ public class ChunkedDistribution implements JobExecutor {
     public void distribute(ResourceResolver resolver, String path, Mode mode, Integer chunkSize, JobExecutionContext context) {
         Resource parent = Objects.requireNonNull(resolver.getResource(path), "No resource present at path " + path);
         context.log("Getting tree nodes for path=" + path);
-        List<String> paths = DeepTree.getPaths(parent, mode);
+        List<String> paths = DeepTree.getPaths(parent);
         List<List<String>> chunks = getChunks(paths, chunkSize);
         context.initProgress(chunks.size(), -1);
         int progress = 0;
@@ -124,17 +129,26 @@ public class ChunkedDistribution implements JobExecutor {
 
     private void distributeChunk(ResourceResolver resolver, List<String> paths, JobExecutionContext context) {
         try {
+            List<String> allPaths = new ArrayList<>();
             Set<String> deepPaths = new HashSet<>();
             
             for (String path : paths) {
+                allPaths.add(path);
                 Resource res = resolver.getResource(path);
-                Node node = res.adaptTo(Node.class);
-                if (node.isNodeType("dam:Asset")) {
-                    deepPaths.add(path);
+                Iterator<Resource> childIt = res.getChildren().iterator();
+                while (childIt.hasNext()) {
+                    Resource child = childIt.next();
+                    Node node = child.adaptTo(Node.class);
+                    String type = node.getPrimaryNodeType().getName();
+                    if (!shallowNodeTypes.contains(type)) {
+                        String childPath = child.getPath();
+                        allPaths.add(childPath);
+                        deepPaths.add(child.getPath());
+                    }
                 }
             }
             
-            String[] pathsAr = paths.toArray(new String[] {});
+            String[] pathsAr = allPaths.toArray(new String[] {});
             DistributionRequest request = new SimpleDistributionRequest(DistributionRequestType.ADD, pathsAr, deepPaths);
             distributor.distribute("publish", resolver, request);
         } catch (Exception e) {
