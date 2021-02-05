@@ -68,6 +68,7 @@ public class ChunkedDistribution implements JobExecutor {
         this.shallowNodeTypes.add("sling:Folder");
         this.shallowNodeTypes.add("sling:OrderedFolder");
         this.shallowNodeTypes.add("cq:Page");
+        this.shallowNodeTypes.add("cq:Tag");
     }
 
     @Override
