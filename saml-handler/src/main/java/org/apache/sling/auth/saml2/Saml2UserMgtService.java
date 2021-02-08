@@ -27,6 +27,7 @@ public interface Saml2UserMgtService {
 
     boolean setUp();
     User getOrCreateSamlUser(Saml2User user);
+    User getOrCreateSamlUser(Saml2User user, String userHome);
     boolean updateGroupMembership(Saml2User user);
     boolean updateUserProperties(Saml2User user);
     void cleanUp();

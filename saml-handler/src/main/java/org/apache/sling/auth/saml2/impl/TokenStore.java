@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package org.apache.sling.auth.saml2;
+package org.apache.sling.auth.saml2.impl;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The <code>TokenStore</code> class provides the secure token hash
- * implementation used by the {@link AuthenticationHandlerSAML2} to generate,
+ * implementation used by the {@link AuthenticationHandlerSAML2Impl} to generate,
  * validate and persist secure tokens.
  *
  * Derivative Work of sling-org-apache-sling-auth-form <code>Token Store</code>

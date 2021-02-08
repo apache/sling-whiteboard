@@ -193,7 +193,7 @@ Export-Package:org.apache.jackrabbit.oak.spi.security.authentication.external.*
     <dependency>
       <groupId>org.apache.jackrabbit</groupId>
       <artifactId>oak-auth-external</artifactId>
-      <version>1.26.0</version>
+      <version>1.32.0</version>
     </dependency>
 
 

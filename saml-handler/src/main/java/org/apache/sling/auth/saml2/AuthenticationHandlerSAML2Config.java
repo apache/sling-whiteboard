@@ -20,6 +20,7 @@
 
 package org.apache.sling.auth.saml2;
 
+import org.apache.sling.auth.saml2.impl.AuthenticationHandlerSAML2Impl;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.AttributeType;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
@@ -28,7 +29,7 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 /**
  * The configuration for <code>SAML2</code> in Apache Sling
  *
- * @see AuthenticationHandlerSAML2
+ * @see AuthenticationHandlerSAML2Impl
  */
 
 @ObjectClassDefinition(name="SAML2 Service Provider (SP) Configuration",
