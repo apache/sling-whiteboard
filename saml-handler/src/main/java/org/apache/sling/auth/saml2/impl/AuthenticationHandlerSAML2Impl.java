@@ -80,6 +80,7 @@ import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 //configurationPid = "org.apache.sling.auth.saml2.impl.SAML2ConfigServiceImpl",
 @Component(
@@ -473,7 +474,13 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
 
         boolean setUpOk = saml2UserMgtService.setUp();
         if (setUpOk && saml2User != null && saml2User.getId() != null) {
-            User samlUser = saml2UserMgtService.getOrCreateSamlUser(saml2User);
+            User samlUser;
+            if(Objects.nonNull(getSaml2userHome()) && !getSaml2userHome().isEmpty()){
+                samlUser = saml2UserMgtService.getOrCreateSamlUser(saml2User, this.getSaml2userHome());
+            } else {
+                samlUser = saml2UserMgtService.getOrCreateSamlUser(saml2User);
+            }
+                         
             saml2UserMgtService.updateGroupMembership(saml2User);
             saml2UserMgtService.updateUserProperties(saml2User);
             return samlUser;
