@@ -82,7 +82,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-//configurationPid = "org.apache.sling.auth.saml2.impl.SAML2ConfigServiceImpl",
 @Component(
         service = AuthenticationHandler.class ,
         name = AuthenticationHandlerSAML2Impl.SERVICE_NAME,
@@ -106,7 +105,7 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
     private long sessionTimeout;
     private static Logger logger = LoggerFactory.getLogger(AuthenticationHandlerSAML2Impl.class);
     static final String SERVICE_NAME = "org.apache.sling.auth.saml2.AuthenticationHandlerSAML2";
-    private String[] path;
+    private String path;
     private Credential spKeypair;
     private Credential idpVerificationCert;
 
@@ -166,52 +165,33 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
     @Override
     public AuthenticationInfo extractCredentials(final HttpServletRequest httpServletRequest,
                                                  final HttpServletResponse httpServletResponse)  {
-// 1. If the request is POST to the ACS URL, it needs to extract the Auth Info from the SAML data POST'ed
-        if (this.getSaml2SPEnabled() ) {
-            String reqURI = httpServletRequest.getRequestURI();
-            if (reqURI.equals(this.getAcsPath())){
-                doClassloading();
-                MessageContext messageContext = decodeHttpPostSamlResp(httpServletRequest);
-                Assertion assertion = null;
-                boolean relayStateIsOk = validateRelayState(httpServletRequest, messageContext);
-                // If relay state from request == relay state from session))
-                if (relayStateIsOk) {
-                    Response response = (Response) messageContext.getMessage();
-                    if (this.getSaml2SPEncryptAndSign()) {
-                        EncryptedAssertion encryptedAssertion = response.getEncryptedAssertions().get(0);
-                        assertion = decryptAssertion(encryptedAssertion);
-                        verifyAssertionSignature(assertion);
-                    } else {
-                        // Not using encryption
-                        assertion = response.getAssertions().get(0);
-                    }
-                    if (validateSaml2Conditions(httpServletRequest, assertion)){
-                        logger.debug("Decrypted Assertion: ");
-                        Helpers.logSAMLObject(assertion);
-                        User extUser = doUserManagement(assertion);
-                        AuthenticationInfo newAuthInfo = this.buildAuthInfo(extUser);
-                        return newAuthInfo;
-                    }
-                    logger.error("Validation of SubjectConfirmation failed");
-                }
-                return null;
-// 2.  try credentials from the session
-            } else {
-                // Request context is not the ACS path, so get the authInfo from session.
-                String authData = storageAuthInfo.getString(httpServletRequest);
-                if (authData != null) {
-                    if (tokenStore.isValid(authData)) {
-                        return buildAuthInfo(authData);
-                    } else {
-                        // clear the token from the session, its invalid and we should get rid of it
-                        // so that the invalid cookie isn't present on the authN operation.
-                        clearSessionAttributes(httpServletRequest, httpServletResponse);
+// 0. if disabled return null
+        if(!this.getSaml2SPEnabled()){
+            return null;
+        }
 
-                        if ( AuthUtil.isValidateRequest(httpServletRequest)) {
-                            // signal the requestCredentials method a previous login failure
-                            httpServletRequest.setAttribute(FAILURE_REASON, SamlReason.TIMEOUT);
-                            return AuthenticationInfo.FAIL_AUTH;
-                        }
+// 1. If the request is POST to the ACS URL, it needs to extract the Auth Info from the SAML data POST'ed
+        final String reqURI = httpServletRequest.getRequestURI();
+        if (reqURI.equals(this.getAcsPath())) {
+            return processAssertionConsumerService(httpServletRequest,httpServletResponse);
+        }
+// else, RequestURI is not the ACS path
+
+// 2.  try credentials from the session
+        if ( !this.getSaml2Path().isEmpty() && reqURI.startsWith(this.getSaml2Path())) {
+            final String authData = storageAuthInfo.getString(httpServletRequest);
+            if (authData != null) {
+                if (tokenStore.isValid(authData)) {
+                    return buildAuthInfo(authData);
+                } else {
+                    // clear the token from the session, its invalid and we should get rid of it
+                    // so that the invalid cookie isn't present on the authN operation.
+                    clearSessionAttributes(httpServletRequest, httpServletResponse);
+
+                    if ( AuthUtil.isValidateRequest(httpServletRequest)) {
+                        // signal the requestCredentials method a previous login failure
+                        httpServletRequest.setAttribute(FAILURE_REASON, SamlReason.TIMEOUT);
+                        return AuthenticationInfo.FAIL_AUTH;
                     }
                 }
             }
@@ -222,6 +202,35 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
     private void clearSessionAttributes(final HttpServletRequest httpServletRequest,
                                         final HttpServletResponse httpServletResponse) {
         storageAuthInfo.clear(httpServletRequest, httpServletResponse);
+    }
+
+    private AuthenticationInfo processAssertionConsumerService(final HttpServletRequest httpServletRequest,
+                                                               final HttpServletResponse httpServletResponse){
+        doClassloading();
+        MessageContext messageContext = decodeHttpPostSamlResp(httpServletRequest);
+        Assertion assertion = null;
+        boolean relayStateIsOk = validateRelayState(httpServletRequest, messageContext);
+        // If relay state from request == relay state from session))
+        if (relayStateIsOk) {
+            Response response = (Response) messageContext.getMessage();
+            if (this.getSaml2SPEncryptAndSign()) {
+                EncryptedAssertion encryptedAssertion = response.getEncryptedAssertions().get(0);
+                assertion = decryptAssertion(encryptedAssertion);
+                verifyAssertionSignature(assertion);
+            } else {
+                // Not using encryption
+                assertion = response.getAssertions().get(0);
+            }
+            if (validateSaml2Conditions(httpServletRequest, assertion)) {
+                logger.debug("Decrypted Assertion: ");
+                Helpers.logSAMLObject(assertion);
+                User extUser = doUserManagement(assertion);
+                AuthenticationInfo newAuthInfo = this.buildAuthInfo(extUser);
+                return newAuthInfo;
+            }
+            logger.error("Validation of SubjectConfirmation failed");
+        }
+        return null;
     }
 
     /**

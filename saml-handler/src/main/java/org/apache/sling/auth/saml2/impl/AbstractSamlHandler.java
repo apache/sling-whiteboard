@@ -22,14 +22,11 @@ package org.apache.sling.auth.saml2.impl;
 
 import org.apache.sling.auth.core.spi.DefaultAuthenticationFeedbackHandler;
 import org.apache.sling.auth.saml2.AuthenticationHandlerSAML2Config;
-import org.osgi.service.component.ComponentContext;
-import org.osgi.service.component.annotations.Activate;
-
 
 abstract class AbstractSamlHandler extends DefaultAuthenticationFeedbackHandler {
 
     // OSGI Configs
-    private String[] path;
+    private String path;
     private String saml2SessAttr;
     private String saml2IDPDestination;
     private boolean saml2SPEnabled = false;
@@ -72,7 +69,7 @@ abstract class AbstractSamlHandler extends DefaultAuthenticationFeedbackHandler 
     }
 
 //    GETTERS
-    String[] getSaml2Path() {
+    String getSaml2Path() {
         return this.path;
     }
     String getSaml2userIDAttr() {

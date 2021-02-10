@@ -38,8 +38,8 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 public @interface AuthenticationHandlerSAML2Config {
 
     @AttributeDefinition(name = "Path",
-        description="One or more URL paths (String) for which this AuthenticationHandler is applied")
-    String[] path() default {};
+        description="Path under which this AuthenticationHandler should be used")
+    String path() default "";
 
     @AttributeDefinition(name = "Service Ranking",
         description="Integer value used to select auth'n handler when 2 or more handlers have paths of the same length.")
