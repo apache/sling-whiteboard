@@ -100,12 +100,11 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
     private Saml2UserMgtService saml2UserMgtService;
     public static final String AUTH_STORAGE_SESSION_TYPE = "session";
     public static final String AUTH_TYPE = "SAML2";
-    public static final String TOKEN_FILENAME = "saml2-cookie-tokens.bin";
+    static final String TOKEN_FILENAME = "saml2-cookie-tokens.bin";
     private SessionStorage storageAuthInfo;
     private long sessionTimeout;
     private static Logger logger = LoggerFactory.getLogger(AuthenticationHandlerSAML2Impl.class);
     static final String SERVICE_NAME = "org.apache.sling.auth.saml2.AuthenticationHandlerSAML2";
-    private String path;
     private Credential spKeypair;
     private Credential idpVerificationCert;
 
@@ -119,7 +118,7 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
      * The factor to convert minute numbers into milliseconds used internally
      */
     private static final long MINUTES = 60L * 1000L;
-    private static final long timeoutMinutes = 240; // 4 hr
+    private static final long TIMEOUT_MIN = 240; // 4 hr
 
     /**
      * The {@link TokenStore} used to persist and check authentication data
@@ -130,9 +129,8 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
     protected void activate(final AuthenticationHandlerSAML2Config config, ComponentContext componentContext)
             throws InvalidKeyException, NoSuchAlgorithmException, IllegalStateException, UnsupportedEncodingException {
         this.setConfigs(config);
-        this.storageAuthInfo = new SessionStorage(this.AUTHENTICATED_SESSION_ATTRIBUTE);
-        this.sessionTimeout = MINUTES * timeoutMinutes;
-        this.path = this.getSaml2Path();
+        this.storageAuthInfo = new SessionStorage(AUTHENTICATED_SESSION_ATTRIBUTE);
+        this.sessionTimeout = MINUTES * TIMEOUT_MIN;
 
         final File tokenFile = getTokenFile(componentContext.getBundleContext());
         this.tokenStore = new TokenStore(tokenFile, sessionTimeout, false);
@@ -154,6 +152,7 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
     private Credential getSpKeypair(){
         return this.spKeypair;
     }
+
     private Credential getIdpVerificationCert(){
         return this.idpVerificationCert;
     }
@@ -225,8 +224,7 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
                 logger.debug("Decrypted Assertion: ");
                 Helpers.logSAMLObject(assertion);
                 User extUser = doUserManagement(assertion);
-                AuthenticationInfo newAuthInfo = this.buildAuthInfo(extUser);
-                return newAuthInfo;
+                return this.buildAuthInfo(extUser);
             }
             logger.error("Validation of SubjectConfirmation failed");
         }
@@ -282,7 +280,7 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
     }
 
     private void setGotoURLOnSession(final HttpServletRequest request) {
-        SessionStorage sessionStorage = new SessionStorage(this.GOTO_URL_SESSION_ATTRIBUTE);
+        SessionStorage sessionStorage = new SessionStorage(GOTO_URL_SESSION_ATTRIBUTE);
         sessionStorage.setString(request , request.getRequestURL().toString());
     }
 
@@ -441,8 +439,8 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
         }
         // start a user object
         Saml2User saml2User = new Saml2User();
-        // get list of configured attribute names to synchronize from the IDP assertion to the user's properties
 
+        // get list of configured attribute names to synchronize from the IDP assertion to the user's properties
         List<String> attrNamesToSync = null;
         if (this.getSyncAttrs() != null && this.getSyncAttrs().length > 0) {
             attrNamesToSync = Arrays.asList(this.getSyncAttrs());
@@ -451,33 +449,11 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
         // iterate the attribute assertions
         for (Attribute attribute : assertion.getAttributeStatements().get(0).getAttributes()) {
             if (attribute.getName().equals(this.getSaml2userIDAttr())) {
-                logger.debug("username attr name: " + attribute.getName());
-                for (XMLObject attributeValue : attribute.getAttributeValues()) {
-                    if ( ((XSString) attributeValue).getValue() != null ) {
-                        saml2User.setId( ((XSString) attributeValue).getValue());
-                        logger.debug("username value: " + saml2User.getId());
-                    }
-                }
+                setUserId(attribute, saml2User);
             } else if (attribute.getName().equals(this.getSaml2groupMembershipAttr())) {
-                logger.debug("group attr name: " + attribute.getName());
-                for (XMLObject attributeValue : attribute.getAttributeValues()) {
-                    if ( ((XSString) attributeValue).getValue() != null ) {
-                        saml2User.addGroupMembership( ((XSString) attributeValue).getValue());
-                        logger.debug("managed group {} added: ", ((XSString) attributeValue).getValue());
-                    }
-                }
+                setGroupMembership(attribute, saml2User);
             } else if (attrNamesToSync != null && attrNamesToSync.contains(attribute.getName())) {
-                for (XMLObject attributeValue : attribute.getAttributeValues()) {
-                    if ( ((XSString) attributeValue).getValue() != null ) {
-                        if (attribute.getFriendlyName() != null && !attribute.getFriendlyName().isEmpty()) {
-                            saml2User.addUserProperty(attribute.getFriendlyName(), attributeValue);
-                            logger.debug("sync attr name: " + attribute.getFriendlyName());
-                            logger.debug("attribute value: " + ((XSString) attributeValue).getValue());
-                        } else {
-                            logger.warn("attribute has no friendly name and cannot be added: " + ((XSString) attributeValue).getValue());
-                        }
-                    }
-                }
+                syncUserAttributes(attribute, saml2User);
             }
         }
 
@@ -499,6 +475,40 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
         }
         saml2UserMgtService.cleanUp();
         return null;
+    }
+
+    private void setUserId(Attribute attribute, Saml2User saml2User) {
+        logger.debug("username attr name: " + attribute.getName());
+        for (XMLObject attributeValue : attribute.getAttributeValues()) {
+            if ( ((XSString) attributeValue).getValue() != null ) {
+                saml2User.setId( ((XSString) attributeValue).getValue());
+                logger.debug("username value: {0}", saml2User.getId());
+            }
+        }
+    }
+
+    private void setGroupMembership(Attribute attribute, Saml2User saml2User) {
+        logger.debug("group attr name: " + attribute.getName());
+        for (XMLObject attributeValue : attribute.getAttributeValues()) {
+            if ( ((XSString) attributeValue).getValue() != null ) {
+                saml2User.addGroupMembership( ((XSString) attributeValue).getValue());
+                logger.debug("managed group {} added: ", ((XSString) attributeValue).getValue());
+            }
+        }
+    }
+
+    private void syncUserAttributes(Attribute attribute, Saml2User saml2User) {
+        for (XMLObject attributeValue : attribute.getAttributeValues()) {
+            if ( ((XSString) attributeValue).getValue() != null ) {
+                if (attribute.getFriendlyName() != null && !attribute.getFriendlyName().isEmpty()) {
+                    saml2User.addUserProperty(attribute.getFriendlyName(), attributeValue);
+                    logger.debug("sync attr name: {0}", attribute.getFriendlyName());
+                    logger.debug("attribute value: {0}", ((XSString) attributeValue).getValue());
+                } else {
+                    logger.warn("attribute has no friendly name and cannot be added: {0}", ((XSString) attributeValue).getValue());
+                }
+            }
+        }
     }
 
     private AuthenticationInfo buildAuthInfo(final User user){
