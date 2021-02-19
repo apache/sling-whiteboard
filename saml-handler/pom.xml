@@ -34,6 +34,7 @@
     <sling.user>admin</sling.user>
     <sling.password>admin</sling.password>
     <bnd.baseline.skip>true</bnd.baseline.skip>
+    <powermock.version>2.0.9</powermock.version>
     <noticeStatement>This module includes modified code from webprofile-ref-project-v3 [1],
 which is licensed under the Apache-2.0 license.
 
@@ -79,6 +80,25 @@ which is licensed under the Apache-2.0 license.
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.12</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-module-junit4</artifactId>
+      <version>${powermock.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-api-mockito2</artifactId>
+      <version>${powermock.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jmock</groupId>
+      <artifactId>jmock-junit4</artifactId>
+      <version>2.12.0</version>
       <scope>test</scope>
     </dependency>
 
