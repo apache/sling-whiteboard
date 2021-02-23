@@ -35,6 +35,10 @@
     <sling.password>admin</sling.password>
     <bnd.baseline.skip>true</bnd.baseline.skip>
     <powermock.version>2.0.9</powermock.version>
+    <exam.version>4.11.0</exam.version>
+    <pax.vm.options>
+      -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5015
+    </pax.vm.options>
     <noticeStatement>This module includes modified code from webprofile-ref-project-v3 [1],
 which is licensed under the Apache-2.0 license.
 
@@ -47,12 +51,10 @@ which is licensed under the Apache-2.0 license.
         <groupId>biz.aQute.bnd</groupId>
         <artifactId>bnd-maven-plugin</artifactId>
       </plugin>
-
       <plugin>
         <groupId>org.apache.sling</groupId>
         <artifactId>sling-maven-plugin</artifactId>
       </plugin>
-
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -61,7 +63,6 @@ which is licensed under the Apache-2.0 license.
          <target>11</target>
         </configuration>
       </plugin>
-
       <plugin>
         <groupId>org.apache.rat</groupId>
         <artifactId>apache-rat-plugin</artifactId>
@@ -70,6 +71,37 @@ which is licensed under the Apache-2.0 license.
             <exclude>**/dependency-reduced-pom.xml</exclude>
             <exclude>**/*.vm</exclude>
           </excludes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <redirectTestOutputToFile>true</redirectTestOutputToFile>
+          <systemProperties>
+            <property>
+              <name>bundle.filename</name>
+              <value>${basedir}/target/${project.build.finalName}.jar</value>
+            </property>
+          </systemProperties>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <configuration>
+          <redirectTestOutputToFile>true</redirectTestOutputToFile>
+          <includes>
+            <include>**/*IT.java</include>
+          </includes>
         </configuration>
       </plugin>
     </plugins> 
@@ -99,6 +131,50 @@ which is licensed under the Apache-2.0 license.
       <groupId>org.jmock</groupId>
       <artifactId>jmock-junit4</artifactId>
       <version>2.12.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.testing.clients</artifactId>
+      <version>2.0.8</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Pax Exam -->
+    <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.testing.paxexam</artifactId>
+      <version>2.0.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.ops4j.pax.exam</groupId>
+      <artifactId>pax-exam</artifactId>
+      <version>${exam.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.ops4j.pax.exam</groupId>
+      <artifactId>pax-exam-cm</artifactId>
+      <version>${exam.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.ops4j.pax.exam</groupId>
+      <artifactId>pax-exam-container-forked</artifactId>
+      <version>${exam.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.ops4j.pax.exam</groupId>
+      <artifactId>pax-exam-junit4</artifactId>
+      <version>${exam.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.ops4j.pax.exam</groupId>
+      <artifactId>pax-exam-link-mvn</artifactId>
+      <version>${exam.version}</version>
       <scope>test</scope>
     </dependency>
 

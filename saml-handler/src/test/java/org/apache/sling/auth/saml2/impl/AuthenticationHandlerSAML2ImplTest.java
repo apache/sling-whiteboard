@@ -23,6 +23,7 @@ import org.hamcrest.core.StringStartsWith;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.api.Invocation;
+import org.junit.Before;
 import org.junit.Test;
 import org.hamcrest.Description;
 import org.junit.runner.RunWith;
@@ -32,7 +33,10 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.jmock.api.Action;
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.apache.sling.auth.saml2.AuthenticationHandlerSAML2Config;
 import static org.apache.sling.auth.saml2.impl.AuthenticationHandlerSAML2Impl.TOKEN_FILENAME;
 import static org.junit.Assert.assertEquals;
 
@@ -133,5 +137,6 @@ public class AuthenticationHandlerSAML2ImplTest {
             description.appendText("returns new File(root, arg0)");
         }
     }
+
 }
 
