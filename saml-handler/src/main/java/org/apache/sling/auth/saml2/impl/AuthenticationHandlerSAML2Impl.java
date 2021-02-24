@@ -57,6 +57,7 @@ import org.opensaml.xmlsec.keyinfo.impl.StaticKeyInfoCredentialResolver;
 import org.opensaml.xmlsec.signature.support.SignatureConstants;
 import org.opensaml.xmlsec.signature.support.SignatureException;
 import org.opensaml.xmlsec.signature.support.SignatureValidator;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.wiring.BundleWiring;
@@ -355,7 +356,7 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
      * https://bitbucket.org/srasmusson/webprofile-ref-project-v3/src/master/src/main/java/no/steras/opensamlbook/sp/AccessFilter.java
      * https://bitbucket.org/srasmusson/webprofile-ref-project-v3/src/master/src/main/java/no/steras/opensamlbook/sp/ConsumerServlet.java
      */
-    private AuthnRequest buildAuthnRequest() {
+    AuthnRequest buildAuthnRequest() {
         AuthnRequest authnRequest = Helpers.buildSAMLObject(AuthnRequest.class);
         authnRequest.setIssueInstant(Instant.now());
         authnRequest.setDestination(this.getSaml2IDPDestination());
