@@ -35,7 +35,7 @@
     <sling.password>admin</sling.password>
     <bnd.baseline.skip>true</bnd.baseline.skip>
     <powermock.version>2.0.9</powermock.version>
-    <exam.version>4.11.0</exam.version>
+    <exam.version>4.13.3</exam.version>
     <pax.vm.options>
       -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5015
     </pax.vm.options>
@@ -95,14 +95,16 @@ which is licensed under the Apache-2.0 license.
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-failsafe-plugin</artifactId>
-        <configuration>
-          <redirectTestOutputToFile>true</redirectTestOutputToFile>
-          <includes>
-            <include>**/*IT.java</include>
-          </includes>
-        </configuration>
+        <groupId>org.apache.servicemix.tooling</groupId>
+        <artifactId>depends-maven-plugin</artifactId>
+        <version>1.4.0</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>generate-depends-file</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins> 
   </build>
@@ -164,13 +166,15 @@ which is licensed under the Apache-2.0 license.
       <scope>test</scope>
     </dependency>
 
-    <!-- Pax Exam -->
+    <!-- Sling Testing PaxExam -->
     <dependency>
       <groupId>org.apache.sling</groupId>
       <artifactId>org.apache.sling.testing.paxexam</artifactId>
-      <version>2.0.0</version>
+      <version>3.1.0</version>
       <scope>test</scope>
     </dependency>
+
+    <!-- Pax Exam -->
     <dependency>
       <groupId>org.ops4j.pax.exam</groupId>
       <artifactId>pax-exam</artifactId>
@@ -199,6 +203,13 @@ which is licensed under the Apache-2.0 license.
       <groupId>org.ops4j.pax.exam</groupId>
       <artifactId>pax-exam-link-mvn</artifactId>
       <version>${exam.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.inject</groupId>
+      <artifactId>javax.inject</artifactId>
+      <version>1</version>
       <scope>test</scope>
     </dependency>
 

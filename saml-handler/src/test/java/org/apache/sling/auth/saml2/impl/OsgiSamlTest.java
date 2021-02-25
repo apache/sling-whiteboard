@@ -111,9 +111,12 @@ public class OsgiSamlTest {
 
     @Test
     public void test_authn_request(){
-        BundleContext bundleContext = MockOsgi.newBundleContext();
-//        MockResourceResolverFactory factory = new MockResourceResolverFactory();
-        ResourceResolverFactory mockFactory = Mockito.mock(ResourceResolverFactory.class);
+        Saml2UserMgtService userMgtService = osgiContext.registerService(new Saml2UserMgtServiceImpl());
+        AuthenticationHandlerSAML2Impl samlHandler = osgiContext.registerInjectActivateService(new AuthenticationHandlerSAML2Impl());
+
+//        BundleContext bundleContext = MockOsgi.newBundleContext();
+//        MockResourceResolverFactory mockFactory = new MockResourceResolverFactory();
+//        ResourceResolverFactory mockFactory = Mockito.mock(ResourceResolverFactory.class);
 
 //        MockOsgi.injectServices(mockFactory, bundleContext);
 
