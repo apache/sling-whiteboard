@@ -31,4 +31,5 @@ public interface AnnotationNames {
     String CONTENT_INCLUDE_PROPERTY_REGEXP = SLING_PREFIX + "includePropertyRegexp";
     String CONTENT_EXCLUDE_PROPERTY_REGEXP = SLING_PREFIX + "excludePropertyRegexp";
     String NAVIGATION_PROPERTIES_LIST = SLING_PREFIX + "navigationPropertiesList";
+    String DEREFERENCE_BY_PATH = SLING_PREFIX + "dereferenceByPath";
 }

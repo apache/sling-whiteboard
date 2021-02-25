@@ -36,6 +36,7 @@ import static org.apache.sling.contentmapper.api.AnnotationNames.VISIT_CONTENT_R
 import static org.apache.sling.contentmapper.api.AnnotationNames.CONTENT_EXCLUDE_PROPERTY_REGEXP;
 import static org.apache.sling.contentmapper.api.AnnotationNames.CONTENT_INCLUDE_PROPERTY_REGEXP;
 import static org.apache.sling.contentmapper.api.AnnotationNames.NAVIGATION_PROPERTIES_LIST;
+import static org.apache.sling.contentmapper.api.AnnotationNames.DEREFERENCE_BY_PATH;
 
 /** Temporary hardcoded type system for this prototype, until we
  *  have the actual type system
@@ -84,6 +85,15 @@ public class HardcodedTypeSystem implements TypeSystem {
         );
         addType(
             Builder.forResourceType("wknd/components/page")
+            .withAnnotation(VISIT_CONTENT, TRUE)
+        );
+        addType(
+            Builder.forResourceType("wknd/components/image")
+            .withAnnotation(VISIT_CONTENT, TRUE)
+            .withAnnotation(DEREFERENCE_BY_PATH, "fileReference")
+        );
+        addType(
+            Builder.forResourceType("wknd/components/carousel")
             .withAnnotation(VISIT_CONTENT, TRUE)
         );
 

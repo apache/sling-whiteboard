@@ -1,7 +1,7 @@
 {
   "id":"org.apache.sling:org.apache.sling.dokapi:slingosgifeature:sling12:0.0.1-SNAPSHOT",
-  "title":"Apache Sling Dokapi Testing",
-  "description":"Demo website for dokapi API",
+  "title":"Apache Sling Remote Content API Sample App",
+  "description":"Demonstrates the Remote Content API",
   "vendor":"The Apache Software Foundation",
   "license":"Apache License, Version 2.0",
   "variables":{},
@@ -21,7 +21,7 @@
       ],
       "whitelist.name":"installer-packages"
     },
-    "org.apache.sling.commons.log.LogManager.factory.config~debug.log" : {
+    "org.apache.sling.commons.log.LogManager.factory.config~info.log" : {
       "org.apache.sling.commons.log.file": "logs/debug.log",
       "org.apache.sling.commons.log.level": "INFO",
       "org.apache.sling.commons.log.names":
@@ -32,6 +32,15 @@
           "org.apache.sling.servlethelpers.internalrequests",
           "org.apache.sling.graphql",
           "org.apache.sling.scripting"
+        ],
+      "org.apache.sling.commons.log.pattern": "%-5level [%-50logger{50}] %message ## %mdc{sling.InternalRequest} %n"
+    },
+    "org.apache.sling.commons.log.LogManager.factory.config~debug.log" : {
+      "org.apache.sling.commons.log.file": "logs/debug.log",
+      "org.apache.sling.commons.log.level": "DEBUG",
+      "org.apache.sling.commons.log.names":
+        [
+          "org.apache.sling.contentmapper"
         ],
       "org.apache.sling.commons.log.pattern": "%-5level [%-50logger{50}] %message ## %mdc{sling.InternalRequest} %n"
     }
