@@ -19,28 +19,44 @@
 
 package org.apache.sling.auth.saml2.impl;
 
+import org.apache.sling.auth.saml2.SAML2RuntimeException;
 import org.hamcrest.core.StringStartsWith;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.api.Invocation;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.hamcrest.Description;
 import org.junit.runner.RunWith;
+import org.opensaml.core.config.InitializationException;
+import org.opensaml.core.config.InitializationService;
+import org.opensaml.xmlsec.config.impl.JavaCryptoValidationInitializer;
+import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.jmock.api.Action;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.apache.sling.auth.saml2.Activator;
 import java.io.File;
+import java.security.Provider;
+import java.security.Security;
 
 import static org.apache.sling.auth.saml2.impl.AuthenticationHandlerSAML2Impl.TOKEN_FILENAME;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(AuthenticationHandlerSAML2Impl.class)
 @PowerMockIgnore("jdk.internal.reflect.*")
 public class AuthenticationHandlerSAML2ImplTest {
+
+    private static final Logger logger = LoggerFactory.getLogger(AuthenticationHandlerSAML2ImplTest.class);
 
     @Test
     public void test_getTokenFile() {
@@ -134,6 +150,7 @@ public class AuthenticationHandlerSAML2ImplTest {
             description.appendText("returns new File(root, arg0)");
         }
     }
+
 
 }
 

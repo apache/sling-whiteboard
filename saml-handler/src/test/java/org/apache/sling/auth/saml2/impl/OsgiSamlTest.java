@@ -20,41 +20,66 @@
 
 package org.apache.sling.auth.saml2.impl;
 
+import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.ResourceResolverFactory;
+import org.apache.sling.auth.saml2.Helpers;
 import org.apache.sling.auth.saml2.Saml2UserMgtService;
 import org.apache.sling.testing.mock.osgi.MockOsgi;
 import org.apache.sling.testing.mock.osgi.junit.OsgiContext;
 import org.apache.sling.testing.resourceresolver.MockResourceResolverFactory;
+import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.opensaml.core.config.InitializationException;
+import org.opensaml.messaging.context.MessageContext;
+import org.opensaml.saml.common.SAMLObject;
 import org.opensaml.saml.common.xml.SAMLConstants;
+import org.opensaml.saml.saml2.core.ArtifactResponse;
 import org.opensaml.saml.saml2.core.AuthnRequest;
+import org.opensaml.saml.saml2.core.Issuer;
+import org.opensaml.saml.saml2.core.Response;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
-
+import org.apache.sling.auth.saml2.Activator;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Dictionary;
 import java.util.Hashtable;
+
+import static org.apache.sling.auth.saml2.Activator.initializeOpenSaml;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.when;
 
 public class OsgiSamlTest {
 
     @Rule
     public final OsgiContext osgiContext = new OsgiContext();
+    Saml2UserMgtService userMgtService;
+    AuthenticationHandlerSAML2Impl samlHandler;
+
+    @BeforeClass
+    public static void initializeOpenSAML(){
+        try {
+            initializeOpenSaml();
+        } catch (InitializationException e) {
+            fail(e.getMessage());
+        }
+    }
 
     @Before
     public void setup(){
@@ -64,6 +89,8 @@ public class OsgiSamlTest {
 //            configureUserConfigMgr();
             ResourceResolverFactory mockFactory = Mockito.mock(ResourceResolverFactory.class);
             osgiContext.registerService(ResourceResolverFactory.class, mockFactory);
+            userMgtService = osgiContext.registerService(new Saml2UserMgtServiceImpl());
+            samlHandler = osgiContext.registerInjectActivateService(new AuthenticationHandlerSAML2Impl());
         } catch (Exception e){
             fail(e.getMessage());
         }
@@ -71,8 +98,6 @@ public class OsgiSamlTest {
 
     @Test
     public void test_default_configs() {
-        Saml2UserMgtService userMgtService = osgiContext.registerService(new Saml2UserMgtServiceImpl());
-        AuthenticationHandlerSAML2Impl samlHandler = osgiContext.registerInjectActivateService(new AuthenticationHandlerSAML2Impl());
         assertNotNull(samlHandler);
         assertEquals("{}",samlHandler.getSaml2Path());
         assertFalse(samlHandler.getSaml2SPEnabled());
@@ -96,8 +121,6 @@ public class OsgiSamlTest {
 
     @Test
     public void test_disabled_saml_handler(){
-        Saml2UserMgtService userMgtService = osgiContext.registerService(new Saml2UserMgtServiceImpl());
-        AuthenticationHandlerSAML2Impl samlHandler = osgiContext.registerInjectActivateService(new AuthenticationHandlerSAML2Impl());
         assertFalse(samlHandler.getSaml2SPEnabled());
         final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
         final HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
@@ -111,27 +134,37 @@ public class OsgiSamlTest {
 
     @Test
     public void test_authn_request(){
-        Saml2UserMgtService userMgtService = osgiContext.registerService(new Saml2UserMgtServiceImpl());
-        AuthenticationHandlerSAML2Impl samlHandler = osgiContext.registerInjectActivateService(new AuthenticationHandlerSAML2Impl());
-
-//        BundleContext bundleContext = MockOsgi.newBundleContext();
-//        MockResourceResolverFactory mockFactory = new MockResourceResolverFactory();
-//        ResourceResolverFactory mockFactory = Mockito.mock(ResourceResolverFactory.class);
-
-//        MockOsgi.injectServices(mockFactory, bundleContext);
-
-//        Saml2UserMgtService userMgtService = new Saml2UserMgtServiceImpl();
-//        MockOsgi.injectServices(userMgtService, bundleContext);
-//        AuthenticationHandlerSAML2Impl samlHandler = new AuthenticationHandlerSAML2Impl();
-//        MockOsgi.injectServices(samlHandler, bundleContext);
-//        MockOsgi.activate(samlHandler, bundleContext);
-//        AuthnRequest authnRequest = samlHandler.buildAuthnRequest();
-//        assertNotNull(authnRequest);
-//        assertEquals(samlHandler.getSaml2IDPDestination(), authnRequest.getDestination());
-//        assertTrue(authnRequest.getIssueInstant().isBefore(Instant.now()));
-//        assertEquals(SAMLConstants.SAML2_POST_BINDING_URI, authnRequest.getProtocolBinding());
-//        assertEquals(samlHandler.getACSURL(), authnRequest.getAssertionConsumerServiceURL());
-//        assertTrue(authnRequest.getID().length()<10);
+        AuthnRequest authnRequest = samlHandler.buildAuthnRequest();
+        assertNotNull(authnRequest);
+        assertEquals(samlHandler.getSaml2IDPDestination(), authnRequest.getDestination());
+        assertTrue(authnRequest.getIssueInstant().isBefore(Instant.now()));
+        assertEquals(SAMLConstants.SAML2_POST_BINDING_URI, authnRequest.getProtocolBinding());
+        assertEquals(samlHandler.getACSURL(), authnRequest.getAssertionConsumerServiceURL());
+        assertTrue(authnRequest.getID().length()==33);
+    }
+    
+    @Test
+    public void test_decodeHttpPostSamlResp(){
+        SlingHttpServletRequest request = Mockito.mock(SlingHttpServletRequest.class);
+        when(request.getMethod()).thenReturn("POST");
+        // <?xml version="1.0" encoding="UTF-8"?>
+        // <samlp:Response ID="foo" IssueInstant="1970-01-01T00:00:00.000Z" Version="2.0"
+        //   xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol">
+        //   <samlp:Status>
+        //      <samlp:StatusCode Value="urn:oasis:names:tc:SAML:2.0:status:Success"/>
+        //   </samlp:Status>
+        // </samlp:Response>
+        when(request.getParameter("SAMLResponse")).thenReturn("PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHNhbWxwOlJlc3Bvbn"
+            + "NlIElEPSJmb28iIElzc3VlSW5zdGFudD0iMTk3MC0wMS0wMVQwMDowMDowMC4wMDBaIiBWZXJzaW9uPSIyLjAiIHhtbG5zOnN"
+            + "hbWxwPSJ1cm46b2FzaXM6bmFtZXM6dGM6U0FNTDoyLjA6cHJvdG9jb2wiPjxzYW1scDpTdGF0dXM+PHNhbWxwOlN0YXR1c0Nv"
+            + "ZGUgVmFsdWU9InVybjpvYXNpczpuYW1lczp0YzpTQU1MOjIuMDpzdGF0dXM6U3VjY2VzcyIvPjwvc2FtbHA6U3RhdHVzPjwvc"
+            + "2FtbHA6UmVzcG9uc2U+");
+        MessageContext messageContext = samlHandler.decodeHttpPostSamlResp(request);
+        assertTrue(messageContext.getMessage() instanceof Response);
+        Response response = (Response) messageContext.getMessage();
+        assertEquals("urn:oasis:names:tc:SAML:2.0:status:Success", response.getStatus().getStatusCode().getValue());
+        assertEquals("foo", response.getID());
+        assertEquals("urn:oasis:names:tc:SAML:2.0:protocol", response.getElementQName().getNamespaceURI());
     }
 
     private void configureJaas() throws IOException {

@@ -57,7 +57,6 @@ import org.opensaml.xmlsec.keyinfo.impl.StaticKeyInfoCredentialResolver;
 import org.opensaml.xmlsec.signature.support.SignatureConstants;
 import org.opensaml.xmlsec.signature.support.SignatureException;
 import org.opensaml.xmlsec.signature.support.SignatureValidator;
-import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.wiring.BundleWiring;
@@ -382,7 +381,7 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
         return nameIDPolicy;
     }
 
-    private MessageContext decodeHttpPostSamlResp(final HttpServletRequest request) {
+    MessageContext decodeHttpPostSamlResp(final HttpServletRequest request) {
         HTTPPostDecoder httpPostDecoder = new HTTPPostDecoder();
         ParserPool parserPool = XMLObjectProviderRegistrySupport.getParserPool();
         httpPostDecoder.setParserPool(parserPool);
@@ -390,13 +389,13 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
         try {
             httpPostDecoder.initialize();
             httpPostDecoder.decode();
+            return httpPostDecoder.getMessageContext();
         } catch (MessageDecodingException e) {
             logger.error("MessageDecodingException");
             throw new SAML2RuntimeException(e);
         } catch (ComponentInitializationException e) {
             throw new SAML2RuntimeException(e);
         }
-        return httpPostDecoder.getMessageContext();
     }
 
     private Assertion decryptAssertion(final EncryptedAssertion encryptedAssertion) {
@@ -800,4 +799,5 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
         }
         return tokenFile.getAbsoluteFile();
     }
+
 }
