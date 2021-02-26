@@ -205,7 +205,13 @@ which is licensed under the Apache-2.0 license.
       <version>${exam.version}</version>
       <scope>test</scope>
     </dependency>
-
+    <!-- Apache Felix -->
+    <dependency>
+      <groupId>org.apache.felix</groupId>
+      <artifactId>org.apache.felix.framework</artifactId>
+      <version>6.0.3</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>javax.inject</groupId>
       <artifactId>javax.inject</artifactId>
