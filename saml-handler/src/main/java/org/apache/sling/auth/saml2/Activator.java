@@ -53,39 +53,13 @@ public class Activator implements BundleActivator {
         Thread thread = Thread.currentThread();
         thread.setContextClassLoader(InitializationService.class.getClassLoader());
         try {
-            InitializationService.initialize();
-        } finally {
-            thread.setContextClassLoader(loader);
-        }
-
-        logger.info("Activating Apache Sling SAML2 SP Bundle. And Initializing JCE, Java Cryptographic Extension");
-        JavaCryptoValidationInitializer jcvi = new JavaCryptoValidationInitializer();
-        try {
-            jcvi.init();
-            for (Provider jceProvider : Security.getProviders()) {
-                logger.info(jceProvider.getInfo());
-            }
+            initializeOpenSaml();
         } catch (InitializationException e) {
             throw new SAML2RuntimeException("Java Cryptographic Extension could not initialize. " +
                     "This happens when JCE implementation is incomplete, and not meeting OpenSAML standards.", e);
+        } finally {
+            thread.setContextClassLoader(loader);
         }
-
-/*
-TODO: What is the proper way around this classloading problem?
-One suggestion in this post
-https://medium.com/@dehami.deshan/commencing-migration-towards-the-checked-flag-opensaml-3-cc62d3faa3b0
-
-...fixes a issue similar to what is discussed below
-https://shibboleth.1660669.n2.nabble.com/Null-returned-by-XMLObjectProviderRegistrySupport-getBuilderFactory-td7643173.html
-
-...and here
-https://stackoverflow.com/questions/37948303/opensaml3-resource-not-found-default-config-xml-in-osgi-container
-
-...and here
-https://stackoverflow.com/questions/2198928/better-handling-of-thread-context-classloader-in-osgi?noredirect=1&lq=1
-
-*/
-
     }
 
     public void stop(BundleContext context) throws Exception {
@@ -107,6 +81,16 @@ https://stackoverflow.com/questions/2198928/better-handling-of-thread-context-cl
             }
         } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e) {
             logger.error("Error encountered creating JKS", e);
+        }
+    }
+
+    public static void initializeOpenSaml() throws InitializationException{
+        JavaCryptoValidationInitializer jcvi = new JavaCryptoValidationInitializer();
+        jcvi.init();
+        InitializationService.initialize();
+        logger.info("Activating Apache Sling SAML2 SP Bundle. And Initializing JCE, Java Cryptographic Extension");
+        for (Provider jceProvider : Security.getProviders()) {
+            System.out.print(jceProvider.getInfo());
         }
     }
 }

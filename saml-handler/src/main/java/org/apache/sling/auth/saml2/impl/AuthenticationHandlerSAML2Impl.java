@@ -332,14 +332,14 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
     }
 
 
-    private Endpoint getIPDEndpoint() {
+    Endpoint getIPDEndpoint() {
         SingleSignOnService endpoint = Helpers.buildSAMLObject(SingleSignOnService.class);
         endpoint.setBinding(SAMLConstants.SAML2_REDIRECT_BINDING_URI);
         endpoint.setLocation(this.getSaml2IDPDestination());
         return endpoint;
     }
 
-    private Endpoint getSLOEndpoint() {
+    Endpoint getSLOEndpoint() {
         SingleLogoutService endpoint = Helpers.buildSAMLObject(SingleLogoutService.class);
         endpoint.setBinding(SAMLConstants.SAML2_PAOS_BINDING_URI);
         endpoint.setLocation(this.getSaml2LogoutURL());
@@ -355,7 +355,7 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
      * https://bitbucket.org/srasmusson/webprofile-ref-project-v3/src/master/src/main/java/no/steras/opensamlbook/sp/AccessFilter.java
      * https://bitbucket.org/srasmusson/webprofile-ref-project-v3/src/master/src/main/java/no/steras/opensamlbook/sp/ConsumerServlet.java
      */
-    private AuthnRequest buildAuthnRequest() {
+    AuthnRequest buildAuthnRequest() {
         AuthnRequest authnRequest = Helpers.buildSAMLObject(AuthnRequest.class);
         authnRequest.setIssueInstant(Instant.now());
         authnRequest.setDestination(this.getSaml2IDPDestination());
@@ -368,20 +368,20 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
         return authnRequest;
     }
 
-    private Issuer buildIssuer() {
+    Issuer buildIssuer() {
         Issuer issuer = Helpers.buildSAMLObject(Issuer.class);
         issuer.setValue(this.getEntityID());
         return issuer;
     }
 
-    private NameIDPolicy buildNameIdPolicy() {
+    NameIDPolicy buildNameIdPolicy() {
         NameIDPolicy nameIDPolicy = Helpers.buildSAMLObject(NameIDPolicy.class);
         nameIDPolicy.setAllowCreate(true);
         nameIDPolicy.setFormat(NameIDType.TRANSIENT);
         return nameIDPolicy;
     }
 
-    private MessageContext decodeHttpPostSamlResp(final HttpServletRequest request) {
+    MessageContext decodeHttpPostSamlResp(final HttpServletRequest request) {
         HTTPPostDecoder httpPostDecoder = new HTTPPostDecoder();
         ParserPool parserPool = XMLObjectProviderRegistrySupport.getParserPool();
         httpPostDecoder.setParserPool(parserPool);
@@ -389,13 +389,13 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
         try {
             httpPostDecoder.initialize();
             httpPostDecoder.decode();
+            return httpPostDecoder.getMessageContext();
         } catch (MessageDecodingException e) {
             logger.error("MessageDecodingException");
             throw new SAML2RuntimeException(e);
         } catch (ComponentInitializationException e) {
             throw new SAML2RuntimeException(e);
         }
-        return httpPostDecoder.getMessageContext();
     }
 
     private Assertion decryptAssertion(final EncryptedAssertion encryptedAssertion) {
@@ -799,4 +799,5 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
         }
         return tokenFile.getAbsoluteFile();
     }
+
 }

@@ -48,6 +48,7 @@ public class Helpers {
 
     private static Logger logger = LoggerFactory.getLogger(Helpers.class);
     private static RandomIdentifierGenerationStrategy secureRandomIdGenerator;
+    private static String DEFAULT_ELEMENT_NAME = "DEFAULT_ELEMENT_NAME";
     static {
         secureRandomIdGenerator = new RandomIdentifierGenerationStrategy();
     }
@@ -56,7 +57,7 @@ public class Helpers {
         T object = null;
         try {
             XMLObjectBuilderFactory builderFactory = XMLObjectProviderRegistrySupport.getBuilderFactory();
-            QName defaultElementName = (QName) clazz.getDeclaredField("DEFAULT_ELEMENT_NAME").get(null);
+            QName defaultElementName = (QName) clazz.getDeclaredField(DEFAULT_ELEMENT_NAME).get(null);
             object = (T)builderFactory.getBuilder(defaultElementName).buildObject(defaultElementName);
         } catch (IllegalAccessException e) {
             throw new IllegalArgumentException("Could not create SAML object");

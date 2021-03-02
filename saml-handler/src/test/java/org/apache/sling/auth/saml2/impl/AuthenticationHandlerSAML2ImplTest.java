@@ -31,15 +31,19 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.jmock.api.Action;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.File;
-
 import static org.apache.sling.auth.saml2.impl.AuthenticationHandlerSAML2Impl.TOKEN_FILENAME;
 import static org.junit.Assert.assertEquals;
+
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(AuthenticationHandlerSAML2Impl.class)
 @PowerMockIgnore("jdk.internal.reflect.*")
 public class AuthenticationHandlerSAML2ImplTest {
+
+    private static final Logger logger = LoggerFactory.getLogger(AuthenticationHandlerSAML2ImplTest.class);
 
     @Test
     public void test_getTokenFile() {
@@ -133,5 +137,7 @@ public class AuthenticationHandlerSAML2ImplTest {
             description.appendText("returns new File(root, arg0)");
         }
     }
+
+
 }
 
