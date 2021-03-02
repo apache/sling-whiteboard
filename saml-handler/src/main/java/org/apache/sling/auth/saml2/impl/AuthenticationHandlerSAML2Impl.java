@@ -368,13 +368,13 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
         return authnRequest;
     }
 
-    private Issuer buildIssuer() {
+    Issuer buildIssuer() {
         Issuer issuer = Helpers.buildSAMLObject(Issuer.class);
         issuer.setValue(this.getEntityID());
         return issuer;
     }
 
-    private NameIDPolicy buildNameIdPolicy() {
+    NameIDPolicy buildNameIdPolicy() {
         NameIDPolicy nameIDPolicy = Helpers.buildSAMLObject(NameIDPolicy.class);
         nameIDPolicy.setAllowCreate(true);
         nameIDPolicy.setFormat(NameIDType.TRANSIENT);

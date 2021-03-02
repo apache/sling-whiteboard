@@ -23,6 +23,7 @@ package org.apache.sling.auth.saml2.impl;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.ResourceResolverFactory;
+import org.apache.sling.auth.core.spi.AuthenticationHandler;
 import org.apache.sling.auth.saml2.Helpers;
 import org.apache.sling.auth.saml2.Saml2UserMgtService;
 import org.apache.sling.testing.mock.osgi.MockOsgi;
@@ -41,6 +42,7 @@ import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.saml2.core.ArtifactResponse;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.core.Issuer;
+import org.opensaml.saml.saml2.core.NameIDPolicy;
 import org.opensaml.saml.saml2.core.Response;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -49,12 +51,15 @@ import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.apache.sling.auth.saml2.Activator;
+import org.osgi.service.component.ComponentContext;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Dictionary;
 import java.util.Hashtable;
+import java.util.Map;
 
 import static org.apache.sling.auth.saml2.Activator.initializeOpenSaml;
 import static org.junit.Assert.assertEquals;
@@ -142,7 +147,7 @@ public class OsgiSamlTest {
         assertEquals(samlHandler.getACSURL(), authnRequest.getAssertionConsumerServiceURL());
         assertTrue(authnRequest.getID().length()==33);
     }
-    
+
     @Test
     public void test_decodeHttpPostSamlResp(){
         SlingHttpServletRequest request = Mockito.mock(SlingHttpServletRequest.class);
@@ -165,6 +170,19 @@ public class OsgiSamlTest {
         assertEquals("urn:oasis:names:tc:SAML:2.0:status:Success", response.getStatus().getStatusCode().getValue());
         assertEquals("foo", response.getID());
         assertEquals("urn:oasis:names:tc:SAML:2.0:protocol", response.getElementQName().getNamespaceURI());
+    }
+
+    @Test
+    public void test_buildIssuer(){
+        Issuer issuer = samlHandler.buildIssuer();
+        assertEquals(samlHandler.getEntityID(), issuer.getValue());
+    }
+
+    @Test
+    public void test_buildNameIdPolicy(){
+        NameIDPolicy nameIDPolicy = samlHandler.buildNameIdPolicy();
+        assertTrue(nameIDPolicy.getAllowCreate());
+        assertEquals("urn:oasis:names:tc:SAML:2.0:nameid-format:transient", nameIDPolicy.getFormat());
     }
 
     private void configureJaas() throws IOException {
@@ -200,4 +218,6 @@ public class OsgiSamlTest {
         Dictionary<String, Object> serviceUserProps = new Hashtable<>();
         serviceUserProps.put("user.mapping",new String[]{"org.apache.sling.auth.saml2:Saml2UserMgtService=saml2-user-mgt"});
     }
+
+
 }
