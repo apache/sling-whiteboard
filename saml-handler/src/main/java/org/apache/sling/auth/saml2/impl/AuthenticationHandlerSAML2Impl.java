@@ -332,14 +332,14 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
     }
 
 
-    private Endpoint getIPDEndpoint() {
+    Endpoint getIPDEndpoint() {
         SingleSignOnService endpoint = Helpers.buildSAMLObject(SingleSignOnService.class);
         endpoint.setBinding(SAMLConstants.SAML2_REDIRECT_BINDING_URI);
         endpoint.setLocation(this.getSaml2IDPDestination());
         return endpoint;
     }
 
-    private Endpoint getSLOEndpoint() {
+    Endpoint getSLOEndpoint() {
         SingleLogoutService endpoint = Helpers.buildSAMLObject(SingleLogoutService.class);
         endpoint.setBinding(SAMLConstants.SAML2_PAOS_BINDING_URI);
         endpoint.setLocation(this.getSaml2LogoutURL());

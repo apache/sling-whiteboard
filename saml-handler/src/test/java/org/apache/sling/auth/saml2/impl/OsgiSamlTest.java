@@ -26,6 +26,7 @@ import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.auth.core.spi.AuthenticationHandler;
 import org.apache.sling.auth.saml2.Helpers;
 import org.apache.sling.auth.saml2.Saml2UserMgtService;
+import org.apache.sling.auth.saml2.sp.Saml2User;
 import org.apache.sling.testing.mock.osgi.MockOsgi;
 import org.apache.sling.testing.mock.osgi.junit.OsgiContext;
 import org.apache.sling.testing.resourceresolver.MockResourceResolverFactory;
@@ -44,6 +45,7 @@ import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.core.Issuer;
 import org.opensaml.saml.saml2.core.NameIDPolicy;
 import org.opensaml.saml.saml2.core.Response;
+import org.opensaml.saml.saml2.metadata.Endpoint;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
@@ -185,6 +187,25 @@ public class OsgiSamlTest {
         assertEquals("urn:oasis:names:tc:SAML:2.0:nameid-format:transient", nameIDPolicy.getFormat());
     }
 
+    @Test
+    public void test_getIPDEndpoint(){
+        Endpoint endpoint = samlHandler.getIPDEndpoint();
+        assertEquals("http://localhost:8080/idp/profile/SAML2/Redirect/SSO", endpoint.getLocation());
+        assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",endpoint.getBinding());
+    }
+
+    @Test
+    public void test_getSLOEndpoint(){
+        Endpoint endpoint = samlHandler.getSLOEndpoint();
+        assertEquals("https://sling.apache.org/", endpoint.getLocation());
+        assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:PAOS",endpoint.getBinding());
+    }
+
+//    @Test
+//    public void test_setUserId(){
+//        Saml2User saml2User = new Saml2User();
+//    }
+
     private void configureJaas() throws IOException {
         final ConfigurationAdmin configAdmin = osgiContext.getService(ConfigurationAdmin.class);
         Configuration jaasConfig = configAdmin.getConfiguration("org.apache.felix.jaas.Configuration.factory");
@@ -218,6 +239,4 @@ public class OsgiSamlTest {
         Dictionary<String, Object> serviceUserProps = new Hashtable<>();
         serviceUserProps.put("user.mapping",new String[]{"org.apache.sling.auth.saml2:Saml2UserMgtService=saml2-user-mgt"});
     }
-
-
 }
