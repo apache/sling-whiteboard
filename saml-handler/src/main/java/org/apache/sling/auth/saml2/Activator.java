@@ -45,7 +45,7 @@ public class Activator implements BundleActivator {
         context.getBundle().adapt(BundleStartLevel.class).setStartLevel(START_LEVEL);
 
         // Example JKS
-        createExampleJks();
+//        createExampleJks();
 
         // Classloading
         BundleWiring bundleWiring = context.getBundle().adapt(BundleWiring.class);
@@ -90,7 +90,8 @@ public class Activator implements BundleActivator {
         InitializationService.initialize();
         logger.info("Activating Apache Sling SAML2 SP Bundle. And Initializing JCE, Java Cryptographic Extension");
         for (Provider jceProvider : Security.getProviders()) {
-            System.out.print(jceProvider.getInfo());
+//            System.out.print(jceProvider.getInfo());
+            logger.info(jceProvider.getInfo());
         }
     }
 }
