@@ -42,7 +42,8 @@ public class Activator implements BundleActivator {
 
     public void start(BundleContext context) throws Exception {
         // Setting Start Level to a value lower than the JCR Install bundle to enable proper start up sequence.
-        context.getBundle().adapt(BundleStartLevel.class).setStartLevel(START_LEVEL);
+// commented the next line out as it interferes with the normal bundle startup        
+//        context.getBundle().adapt(BundleStartLevel.class).setStartLevel(START_LEVEL);
 
         // Example JKS
 //        createExampleJks();

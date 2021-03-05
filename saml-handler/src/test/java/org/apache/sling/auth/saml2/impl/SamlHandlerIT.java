@@ -28,6 +28,9 @@ import org.junit.runner.RunWith;
 import org.ops4j.pax.exam.Configuration;
 import org.ops4j.pax.exam.Option;
 import org.ops4j.pax.exam.junit.PaxExam;
+import org.ops4j.pax.exam.options.ModifiableCompositeOption;
+import org.ops4j.pax.exam.options.extra.VMOption;
+
 import javax.inject.Inject;
 
 import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
@@ -51,6 +54,7 @@ import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
 import static org.ops4j.pax.exam.CoreOptions.systemProperty;
 import static org.ops4j.pax.exam.CoreOptions.systemTimeout;
 import static org.ops4j.pax.exam.CoreOptions.vmOption;
+import static org.ops4j.pax.exam.cm.ConfigurationAdminOptions.newConfiguration;
 
 /**
  * PAX Exam Tests are a Work in Progress
@@ -77,12 +81,12 @@ public class SamlHandlerIT extends TestSupport {
     HttpService httpService;
 
 //    Not working
-//    @Filter(value = "(authtype=SAML2)")
-//    @Inject
-//    AuthenticationHandler authHandler;
-//
-//    @Inject
-//    Saml2UserMgtService saml2UserMgtService;
+    @Filter(value = "(authtype=SAML2)")
+    @Inject
+    AuthenticationHandler authHandler;
+
+    @Inject
+    Saml2UserMgtService saml2UserMgtService;
 
     @Configuration
     public Option[] configuration() {
@@ -124,8 +128,28 @@ public class SamlHandlerIT extends TestSupport {
             // build artifact
             junitBundles(),
             logback(),
+            optionalRemoteDebug(),
+            // supply the required configuration so the auth handler service will activate
+            newConfiguration("org.apache.sling.auth.saml2.AuthenticationHandlerSAML2")
+                //TODO: populate any configuration values here
+                .asOption(),
+            
         };
     }
+
+    /**
+     * Optionally configure remote debugging on the port supplied by the "debugPort"
+     * system property.
+     */
+    protected ModifiableCompositeOption optionalRemoteDebug() {
+        VMOption option = null;
+        String property = System.getProperty("debugPort");
+        if (property != null) {
+            option = vmOption(String.format("-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=%s", property));
+        }
+        return composite(option);
+    }
+
 
     protected Option slingQuickstart() {
         final String workingDirectory = workingDirectory(); // from TestSupport
@@ -157,8 +181,8 @@ public class SamlHandlerIT extends TestSupport {
         assertNotNull(configurationAdmin);
         assertNotNull(authenticationSupport);
         assertNotNull(httpService);
-//        assertNotNull(saml2UserMgtService);
-//        assertNotNull(authHandler);
+        assertNotNull(saml2UserMgtService);
+        assertNotNull(authHandler);
         logBundles();
     }
 }
