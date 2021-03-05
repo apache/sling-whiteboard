@@ -54,7 +54,6 @@ import static org.ops4j.pax.exam.CoreOptions.vmOption;
 
 /**
  * PAX Exam Tests are a Work in Progress
- * and disabled until proven useful.
  */
 @RunWith(PaxExam.class)
 @ExamReactorStrategy(PerClass.class)
@@ -77,12 +76,13 @@ public class SamlHandlerIT extends TestSupport {
     @Inject
     HttpService httpService;
 
-    @Filter(value = "(authtype=SAML2)")
-    @Inject
-    AuthenticationHandler authHandler;
-
-    @Inject
-    Saml2UserMgtService saml2UserMgtService;
+//    Not working
+//    @Filter(value = "(authtype=SAML2)")
+//    @Inject
+//    AuthenticationHandler authHandler;
+//
+//    @Inject
+//    Saml2UserMgtService saml2UserMgtService;
 
     @Configuration
     public Option[] configuration() {
@@ -153,7 +153,6 @@ public class SamlHandlerIT extends TestSupport {
 
     @Test
     public void test_setup(){
-//        PAX is impossible
         assertNotNull(bundleContext);
         assertNotNull(configurationAdmin);
         assertNotNull(authenticationSupport);
