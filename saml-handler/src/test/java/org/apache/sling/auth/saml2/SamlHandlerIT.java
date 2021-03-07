@@ -17,7 +17,8 @@
  * under the License.
  */
 
-package org.apache.sling.auth.saml2.impl;
+package org.apache.sling.auth.saml2;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
@@ -28,8 +29,6 @@ import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.auth.core.AuthenticationSupport;
 import org.apache.sling.auth.core.spi.AuthenticationHandler;
-import org.apache.sling.auth.saml2.Saml2UserMgtService;
-import org.apache.sling.auth.saml2.Saml2User;
 import org.apache.sling.testing.paxexam.SlingOptions;
 import org.apache.sling.testing.paxexam.TestSupport;
 import org.junit.After;
@@ -63,7 +62,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.when;
 import static org.ops4j.pax.exam.CoreOptions.composite;
 import static org.ops4j.pax.exam.CoreOptions.junitBundles;
 import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
@@ -155,6 +153,7 @@ public class SamlHandlerIT extends TestSupport {
             junitBundles(),
             logback(),
             optionalRemoteDebug(),
+            optionalJacoco(),
             factoryConfiguration("org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended")
                 .put("user.mapping", new String[]{"org.apache.sling.auth.saml2:Saml2UserMgtService=saml2-user-mgt"})
                 .asOption(),
@@ -198,6 +197,15 @@ public class SamlHandlerIT extends TestSupport {
             option = vmOption(String.format("-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=%s", property));
         }
         return composite(option);
+    }
+
+    protected ModifiableCompositeOption optionalJacoco(){
+        VMOption jacocoCommand = null;
+        final String jacocoOpt = System.getProperty("jacoco.command");
+        if (StringUtils.isNotEmpty(jacocoOpt)) {
+            jacocoCommand = new VMOption(jacocoOpt);
+        }
+        return composite(jacocoCommand);
     }
 
     protected Option slingQuickstart() {
