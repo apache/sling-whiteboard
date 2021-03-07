@@ -196,15 +196,6 @@ public class OsgiSamlTest {
         assertEquals("212-555-1234",samlUser.getUserProperties().get("phone"));
         assertEquals("test-user", samlUser.getId());
         assertTrue( samlUser.getGroupMembership().contains("test-group"));
-        try {
-            assertNull(samlUser.getDeclaredGroups());
-        } catch (ExternalIdentityException e) {
-            fail(e.getMessage());
-        }
-        assertNull(samlUser.getProperties());
-        assertNull(samlUser.getIntermediatePath());
-        assertNull(samlUser.getPrincipalName());
-        assertNull(samlUser.getExternalId());
     }
 
     @Test (expected = IllegalArgumentException.class)
