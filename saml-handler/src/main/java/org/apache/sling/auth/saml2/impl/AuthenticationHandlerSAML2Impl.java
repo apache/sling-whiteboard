@@ -28,6 +28,7 @@ import org.apache.sling.auth.saml2.AuthenticationHandlerSAML2;
 import org.apache.sling.auth.saml2.AuthenticationHandlerSAML2Config;
 import org.apache.sling.auth.saml2.Helpers;
 import org.apache.sling.auth.saml2.SAML2RuntimeException;
+import org.apache.sling.auth.saml2.Saml2User;
 import org.apache.sling.auth.saml2.Saml2UserMgtService;
 import org.apache.sling.auth.saml2.sp.*;
 import org.opensaml.core.xml.XMLObject;

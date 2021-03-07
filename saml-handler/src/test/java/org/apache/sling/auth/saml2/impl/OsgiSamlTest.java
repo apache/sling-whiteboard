@@ -20,48 +20,36 @@
 
 package org.apache.sling.auth.saml2.impl;
 
+import org.apache.jackrabbit.oak.spi.security.authentication.external.ExternalIdentityException;
 import org.apache.sling.api.SlingHttpServletRequest;
-import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.ResourceResolverFactory;
-import org.apache.sling.auth.core.spi.AuthenticationHandler;
 import org.apache.sling.auth.saml2.Helpers;
+import org.apache.sling.auth.saml2.Saml2User;
 import org.apache.sling.auth.saml2.Saml2UserMgtService;
-import org.apache.sling.auth.saml2.sp.Saml2User;
-import org.apache.sling.testing.mock.osgi.MockOsgi;
 import org.apache.sling.testing.mock.osgi.junit.OsgiContext;
-import org.apache.sling.testing.resourceresolver.MockResourceResolverFactory;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.opensaml.core.config.InitializationException;
+import org.opensaml.core.xml.XMLObject;
+import org.opensaml.core.xml.schema.XSString;
 import org.opensaml.messaging.context.MessageContext;
-import org.opensaml.saml.common.SAMLObject;
 import org.opensaml.saml.common.xml.SAMLConstants;
-import org.opensaml.saml.saml2.core.ArtifactResponse;
+import org.opensaml.saml.saml2.core.Assertion;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.core.Issuer;
 import org.opensaml.saml.saml2.core.NameIDPolicy;
 import org.opensaml.saml.saml2.core.Response;
 import org.opensaml.saml.saml2.metadata.Endpoint;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.FrameworkUtil;
-import org.osgi.framework.wiring.BundleWiring;
-import org.osgi.service.cm.Configuration;
-import org.osgi.service.cm.ConfigurationAdmin;
-import org.apache.sling.auth.saml2.Activator;
-import org.osgi.service.component.ComponentContext;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.Instant;
-import java.util.Dictionary;
-import java.util.Hashtable;
-import java.util.Map;
 
 import static org.apache.sling.auth.saml2.Activator.initializeOpenSaml;
 import static org.junit.Assert.assertEquals;
@@ -91,9 +79,6 @@ public class OsgiSamlTest {
     @Before
     public void setup(){
         try {
-//            configureAnonAccess();
-//            configureJaas();
-//            configureUserConfigMgr();
             ResourceResolverFactory mockFactory = Mockito.mock(ResourceResolverFactory.class);
             osgiContext.registerService(ResourceResolverFactory.class, mockFactory);
             userMgtService = osgiContext.registerService(new Saml2UserMgtServiceImpl());
@@ -201,42 +186,27 @@ public class OsgiSamlTest {
         assertEquals("urn:oasis:names:tc:SAML:2.0:bindings:PAOS",endpoint.getBinding());
     }
 
-//    @Test
-//    public void test_setUserId(){
-//        Saml2User saml2User = new Saml2User();
-//    }
-
-    private void configureJaas() throws IOException {
-        final ConfigurationAdmin configAdmin = osgiContext.getService(ConfigurationAdmin.class);
-        Configuration jaasConfig = configAdmin.getConfiguration("org.apache.felix.jaas.Configuration.factory");
-        Dictionary<String, Object> props = new Hashtable<>();
-        props.put("jaas.classname", "org.apache.sling.auth.saml2.sp.Saml2LoginModule");
-        props.put("jaas.controlFlag", "Sufficient");
-        props.put("jaas.realmName", "jackrabbit.oak");
-        props.put("jaas.ranking", 110);
-        jaasConfig.update(props);
-    }
-
-    private void configureAnonAccess() throws IOException {
-        final ConfigurationAdmin configAdmin = osgiContext.getService(ConfigurationAdmin.class);
-        Configuration anonConfig = configAdmin.getConfiguration("org.apache.sling.engine.impl.auth.SlingAuthenticator");
-        Dictionary<String, Object> props = new Hashtable<>();
-        props.put("auth.annonymous", false);
-        anonConfig.update(props);
-    }
-
-    private void configureUserConfigMgr() throws IOException {
-        final ConfigurationAdmin configAdmin = osgiContext.getService(ConfigurationAdmin.class);
-        //repoinit
-        Configuration repoinitConfig = configAdmin.getConfiguration("org.apache.sling.jcr.repoinit.RepositoryInitializer");
-        Dictionary<String, Object> jaasProps = new Hashtable<>();
-        jaasProps.put("scripts", new String[]{
-"create service user saml2-user-mgt\n\nset ACL for saml2-user-mgt\n\nallow jcr:all on /home\n\nend\n\ncreate group sling-authors with path /home/groups/sling-authors"
-        });
-        repoinitConfig.update(jaasProps);
-        //Service User
-        Configuration serviceUserConfig = configAdmin.getConfiguration("org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended");
-        Dictionary<String, Object> serviceUserProps = new Hashtable<>();
-        serviceUserProps.put("user.mapping",new String[]{"org.apache.sling.auth.saml2:Saml2UserMgtService=saml2-user-mgt"});
+    @Test
+    public void test_saml2user(){
+        Saml2User samlUser = new Saml2User("test-user");
+        Saml2User samlUser2 = new Saml2User();
+        samlUser2.setId("test-user");
+        assertTrue(samlUser.getId().equals(samlUser2.getId()));
+        samlUser.addGroupMembership("test-group");
+        XSString xmlObject = Mockito.mock(XSString.class);
+        when(xmlObject.getValue()).thenReturn("212-555-1234");
+        samlUser.addUserProperty("phone", xmlObject);
+        assertEquals("212-555-1234",samlUser.getUserProperties().get("phone"));
+        assertEquals("test-user", samlUser.getId());
+        assertTrue( samlUser.getGroupMembership().contains("test-group"));
+        try {
+            assertNull(samlUser.getDeclaredGroups());
+        } catch (ExternalIdentityException e) {
+            fail(e.getMessage());
+        }
+        assertNull(samlUser.getProperties());
+        assertNull(samlUser.getIntermediatePath());
+        assertNull(samlUser.getPrincipalName());
+        assertNull(samlUser.getExternalId());
     }
 }
