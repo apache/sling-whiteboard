@@ -42,7 +42,7 @@ public @interface AuthenticationHandlerSAML2Config {
     String path() default "";
 
     @AttributeDefinition(name = "Service Ranking",
-        description="Integer value used to select auth'n handler when 2 or more handlers have paths of the same length.")
+        description="Integer value used to select with handler when multiple handlers have path")
     int service_ranking() default 42;
 
     @AttributeDefinition(name = "Service Provider Entity ID",

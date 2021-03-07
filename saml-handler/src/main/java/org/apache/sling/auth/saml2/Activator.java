@@ -24,30 +24,16 @@ import org.opensaml.core.config.InitializationService;
 import org.opensaml.xmlsec.config.impl.JavaCryptoValidationInitializer;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.startlevel.BundleStartLevel;
 import org.osgi.framework.wiring.BundleWiring;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.security.*;
-import java.security.cert.CertificateException;
 
 public class Activator implements BundleActivator {
 
     private static final Logger logger = LoggerFactory.getLogger(BundleActivator.class);
-    private static final int START_LEVEL = 19;
-
 
     public void start(BundleContext context) throws Exception {
-        // Setting Start Level to a value lower than the JCR Install bundle to enable proper start up sequence.
-// commented the next line out as it interferes with the normal bundle startup        
-//        context.getBundle().adapt(BundleStartLevel.class).setStartLevel(START_LEVEL);
-
-        // Example JKS
-//        createExampleJks();
-
         // Classloading
         BundleWiring bundleWiring = context.getBundle().adapt(BundleWiring.class);
         ClassLoader loader = bundleWiring.getClassLoader();
@@ -61,28 +47,11 @@ public class Activator implements BundleActivator {
         } finally {
             thread.setContextClassLoader(loader);
         }
+        // TODO add the Jaas config related to SAML2 so it's one less thing to configure
     }
 
     public void stop(BundleContext context) throws Exception {
-        // do something at bundle stop
-    }
-
-    void createExampleJks(){
-        KeyStore ks = null;
-        File file = new File("./sling/exampleSaml2.jks");
-        try (FileOutputStream fos = new FileOutputStream(file)){
-            char[] password = "password".toCharArray();
-            ks = KeyStore.getInstance(KeyStore.getDefaultType());
-            if (!file.exists()) {
-                ks.load(null, password);
-                ks.store(fos, password);
-                logger.info("Example JKS created");
-            } else {
-                logger.info("Example JKS exists");
-            }
-        } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e) {
-            logger.error("Error encountered creating JKS", e);
-        }
+        // TODO remove the Jaas config related to SAML2 so authentication in general isn't broken when bundle is deactivated
     }
 
     public static void initializeOpenSaml() throws InitializationException{
@@ -91,7 +60,6 @@ public class Activator implements BundleActivator {
         InitializationService.initialize();
         logger.info("Activating Apache Sling SAML2 SP Bundle. And Initializing JCE, Java Cryptographic Extension");
         for (Provider jceProvider : Security.getProviders()) {
-//            System.out.print(jceProvider.getInfo());
             logger.info(jceProvider.getInfo());
         }
     }
