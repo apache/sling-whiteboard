@@ -223,7 +223,7 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
             }
             if (validateSaml2Conditions(httpServletRequest, assertion)) {
                 logger.debug("Decrypted Assertion: ");
-                Helpers.logSAMLObject(assertion);
+//                Helpers.logSAMLObject(assertion);
                 User extUser = doUserManagement(assertion);
                 return this.buildAuthInfo(extUser);
             }
@@ -322,7 +322,7 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
         }
 
         logger.info("Request: {}", requestForIDP.getClass());
-        Helpers.logSAMLObject(requestForIDP);
+//        Helpers.logSAMLObject(requestForIDP);
 
         logger.info("Redirecting to IDP");
         try {

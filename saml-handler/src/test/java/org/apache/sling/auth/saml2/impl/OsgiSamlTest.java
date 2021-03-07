@@ -22,6 +22,7 @@ package org.apache.sling.auth.saml2.impl;
 
 import org.apache.jackrabbit.oak.spi.security.authentication.external.ExternalIdentityException;
 import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.auth.saml2.Helpers;
 import org.apache.sling.auth.saml2.Saml2User;
@@ -33,18 +34,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.opensaml.core.config.InitializationException;
-import org.opensaml.core.xml.XMLObject;
 import org.opensaml.core.xml.schema.XSString;
 import org.opensaml.messaging.context.MessageContext;
 import org.opensaml.saml.common.xml.SAMLConstants;
-import org.opensaml.saml.saml2.core.Assertion;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.core.Issuer;
 import org.opensaml.saml.saml2.core.NameIDPolicy;
 import org.opensaml.saml.saml2.core.Response;
 import org.opensaml.saml.saml2.metadata.Endpoint;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -209,4 +206,10 @@ public class OsgiSamlTest {
         assertNull(samlUser.getPrincipalName());
         assertNull(samlUser.getExternalId());
     }
+
+    @Test (expected = IllegalArgumentException.class)
+    public void test_buildSAMLObjectNoSuchFieldException(){
+        Helpers.buildSAMLObject(Resource.class);
+    }
+
 }
