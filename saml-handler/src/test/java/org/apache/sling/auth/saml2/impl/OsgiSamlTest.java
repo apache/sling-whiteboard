@@ -20,13 +20,13 @@
 
 package org.apache.sling.auth.saml2.impl;
 
-import org.apache.jackrabbit.oak.spi.security.authentication.external.ExternalIdentityException;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.auth.saml2.Helpers;
 import org.apache.sling.auth.saml2.Saml2User;
 import org.apache.sling.auth.saml2.Saml2UserMgtService;
+import org.apache.sling.testing.mock.osgi.MockOsgi;
 import org.apache.sling.testing.mock.osgi.junit.OsgiContext;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -34,20 +34,27 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.opensaml.core.config.InitializationException;
+import org.opensaml.core.xml.XMLObjectBuilder;
+import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
 import org.opensaml.core.xml.schema.XSString;
 import org.opensaml.messaging.context.MessageContext;
+import org.opensaml.saml.common.SAMLVersion;
 import org.opensaml.saml.common.xml.SAMLConstants;
+import org.opensaml.saml.saml2.core.Assertion;
+import org.opensaml.saml.saml2.core.Attribute;
+import org.opensaml.saml.saml2.core.AttributeStatement;
+import org.opensaml.saml.saml2.core.AttributeValue;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.core.Issuer;
 import org.opensaml.saml.saml2.core.NameIDPolicy;
 import org.opensaml.saml.saml2.core.Response;
 import org.opensaml.saml.saml2.metadata.Endpoint;
+import org.osgi.framework.BundleContext;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.Instant;
-
 import static org.apache.sling.auth.saml2.Activator.initializeOpenSaml;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -61,8 +68,10 @@ public class OsgiSamlTest {
 
     @Rule
     public final OsgiContext osgiContext = new OsgiContext();
+    BundleContext bundleContext;
     Saml2UserMgtService userMgtService;
     AuthenticationHandlerSAML2Impl samlHandler;
+    XMLObjectBuilder<XSString> valueBuilder;
 
     @BeforeClass
     public static void initializeOpenSAML(){
@@ -75,8 +84,14 @@ public class OsgiSamlTest {
 
     @Before
     public void setup(){
+        valueBuilder = XMLObjectProviderRegistrySupport.getBuilderFactory().getBuilderOrThrow(XSString.TYPE_NAME);
         try {
+            bundleContext = MockOsgi.newBundleContext();
             ResourceResolverFactory mockFactory = Mockito.mock(ResourceResolverFactory.class);
+//            Saml2UserMgtService saml2UserMgtService = new Saml2UserMgtServiceImpl();
+//            MockOsgi.injectServices(mockFactory, bundleContext);
+//            MockOsgi.injectServices(saml2UserMgtService, bundleContext);
+//            MockOsgi.activate(saml2UserMgtService, bundleContext);
             osgiContext.registerService(ResourceResolverFactory.class, mockFactory);
             userMgtService = osgiContext.registerService(new Saml2UserMgtServiceImpl());
             samlHandler = osgiContext.registerInjectActivateService(new AuthenticationHandlerSAML2Impl());
@@ -119,6 +134,35 @@ public class OsgiSamlTest {
         } catch (IOException e){
             fail(e.getMessage());
         }
+    }
+
+    @Test
+    public void test_doUserManagement(){
+        // returns null
+        assertNull(samlHandler.doUserManagement(null));
+        Assertion assertion1 = Helpers.buildSAMLObject(Assertion.class);
+        assertNull(samlHandler.doUserManagement(assertion1));
+        Assertion assertion2 = Helpers.buildSAMLObject(Assertion.class);
+        assertion2.getAttributeStatements().add(Helpers.buildSAMLObject(AttributeStatement.class));
+        assertNull(samlHandler.doUserManagement(assertion2));
+
+        // returns null
+        Assertion assertion3 = Helpers.buildSAMLObject(Assertion.class);
+        assertion3.setIssueInstant(Instant.ofEpochMilli(0));
+        assertion3.setVersion(SAMLVersion.VERSION_20);
+        assertion3.setID("ASSERTION_3");
+        AttributeStatement anyAttrStmt = Helpers.buildSAMLObject(AttributeStatement.class);
+        Attribute anyAttribute = Helpers.buildSAMLObject(Attribute.class);
+        anyAttribute.setName("anyKey");
+        final XSString value = valueBuilder.buildObject(AttributeValue.DEFAULT_ELEMENT_NAME, XSString.TYPE_NAME);
+        value.setValue("bar");
+        anyAttribute.getAttributeValues().add(value);
+        anyAttrStmt.getAttributes().add(anyAttribute);
+        assertion3.getAttributeStatements().add(anyAttrStmt);
+
+//        userMgtService.
+//        assertNull(samlHandler.doUserManagement(assertion3));
+
     }
 
     @Test
@@ -196,15 +240,6 @@ public class OsgiSamlTest {
         assertEquals("212-555-1234",samlUser.getUserProperties().get("phone"));
         assertEquals("test-user", samlUser.getId());
         assertTrue( samlUser.getGroupMembership().contains("test-group"));
-        try {
-            assertNull(samlUser.getDeclaredGroups());
-        } catch (ExternalIdentityException e) {
-            fail(e.getMessage());
-        }
-        assertNull(samlUser.getProperties());
-        assertNull(samlUser.getIntermediatePath());
-        assertNull(samlUser.getPrincipalName());
-        assertNull(samlUser.getExternalId());
     }
 
     @Test (expected = IllegalArgumentException.class)

@@ -272,7 +272,7 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
         return false;
     }
 
-    private void doClassloading(){
+    void doClassloading(){
         // Classloading
         BundleWiring bundleWiring = FrameworkUtil.getBundle(AuthenticationHandlerSAML2Impl.class).adapt(BundleWiring.class);
         ClassLoader loader = bundleWiring.getClassLoader();
@@ -431,10 +431,10 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
      * End Privat attribution
      */
 
-    private User doUserManagement(final Assertion assertion) {
-        if (assertion.getAttributeStatements() == null ||
-                assertion.getAttributeStatements().get(0) == null ||
-                assertion.getAttributeStatements().get(0).getAttributes() == null) {
+    User doUserManagement(final Assertion assertion) {
+        if (assertion == null ||
+                assertion.getAttributeStatements().size() == 0 ||
+                assertion.getAttributeStatements().get(0).getAttributes().size() == 0) {
             logger.warn("SAML Assertion Attribute Statement or Attributes was null ");
             return null;
         }

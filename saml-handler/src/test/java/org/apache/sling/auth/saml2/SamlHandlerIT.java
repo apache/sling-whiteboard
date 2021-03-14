@@ -29,6 +29,7 @@ import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.auth.core.AuthenticationSupport;
 import org.apache.sling.auth.core.spi.AuthenticationHandler;
+import org.apache.sling.auth.saml2.impl.AuthenticationHandlerSAML2Impl;
 import org.apache.sling.testing.paxexam.SlingOptions;
 import org.apache.sling.testing.paxexam.TestSupport;
 import org.junit.After;
