@@ -115,6 +115,10 @@ public class OsgiSamlTest {
         try {
             bundleContext = MockOsgi.newBundleContext();
             ResourceResolverFactory mockFactory = Mockito.mock(ResourceResolverFactory.class);
+//            Saml2UserMgtService saml2UserMgtService = new Saml2UserMgtServiceImpl();
+//            MockOsgi.injectServices(mockFactory, bundleContext);
+//            MockOsgi.injectServices(saml2UserMgtService, bundleContext);
+//            MockOsgi.activate(saml2UserMgtService, bundleContext);
             osgiContext.registerService(ResourceResolverFactory.class, mockFactory);
             userMgtService = osgiContext.registerService(new Saml2UserMgtServiceImpl());
             samlHandler = osgiContext.registerInjectActivateService(new AuthenticationHandlerSAML2Impl());
