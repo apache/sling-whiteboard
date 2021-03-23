@@ -433,8 +433,8 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
 
     User doUserManagement(final Assertion assertion) {
         if (assertion == null ||
-                assertion.getAttributeStatements().size() == 0 ||
-                assertion.getAttributeStatements().get(0).getAttributes().size() == 0) {
+                assertion.getAttributeStatements().isEmpty() ||
+                assertion.getAttributeStatements().get(0).getAttributes().isEmpty()) {
             logger.warn("SAML Assertion Attribute Statement or Attributes was null ");
             return null;
         }

@@ -24,10 +24,15 @@ import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.auth.saml2.Helpers;
+import org.apache.sling.auth.saml2.SAML2RuntimeException;
 import org.apache.sling.auth.saml2.Saml2User;
 import org.apache.sling.auth.saml2.Saml2UserMgtService;
+import org.apache.sling.auth.saml2.sp.KeyPairCredentials;
+import org.apache.sling.auth.saml2.sp.VerifySignatureCredentials;
 import org.apache.sling.testing.mock.osgi.MockOsgi;
 import org.apache.sling.testing.mock.osgi.junit.OsgiContext;
+import org.bouncycastle.cert.CertIOException;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -49,13 +54,28 @@ import org.opensaml.saml.saml2.core.Issuer;
 import org.opensaml.saml.saml2.core.NameIDPolicy;
 import org.opensaml.saml.saml2.core.Response;
 import org.opensaml.saml.saml2.metadata.Endpoint;
+import org.opensaml.security.credential.Credential;
+import org.opensaml.security.x509.BasicX509Credential;
 import org.osgi.framework.BundleContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.time.Instant;
+import java.util.Dictionary;
+import java.util.Hashtable;
+
 import static org.apache.sling.auth.saml2.Activator.initializeOpenSaml;
+import static org.apache.sling.auth.saml2.impl.JKSHelper.KEYSTORE_TEST_PASSWORD;
+import static org.apache.sling.auth.saml2.impl.JKSHelper.KEYSTORE_TEST_PATH;
+import static org.apache.sling.auth.saml2.impl.JKSHelper.SP_ALIAS;
+import static org.apache.sling.auth.saml2.impl.JKSHelper.SP_TEST_PASSWORD;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -71,15 +91,22 @@ public class OsgiSamlTest {
     BundleContext bundleContext;
     Saml2UserMgtService userMgtService;
     AuthenticationHandlerSAML2Impl samlHandler;
+    AuthenticationHandlerSAML2Impl saml2handlerJKS;
     XMLObjectBuilder<XSString> valueBuilder;
+    static KeyStore testKeyStore;
+
+    private static Logger logger = LoggerFactory.getLogger(OsgiSamlTest.class);
 
     @BeforeClass
     public static void initializeOpenSAML(){
         try {
             initializeOpenSaml();
+            testKeyStore = JKSHelper.createExampleJks();
+            JKSHelper.addTestingCertsToKeystore(testKeyStore);
         } catch (InitializationException e) {
             fail(e.getMessage());
         }
+
     }
 
     @Before
@@ -88,13 +115,10 @@ public class OsgiSamlTest {
         try {
             bundleContext = MockOsgi.newBundleContext();
             ResourceResolverFactory mockFactory = Mockito.mock(ResourceResolverFactory.class);
-//            Saml2UserMgtService saml2UserMgtService = new Saml2UserMgtServiceImpl();
-//            MockOsgi.injectServices(mockFactory, bundleContext);
-//            MockOsgi.injectServices(saml2UserMgtService, bundleContext);
-//            MockOsgi.activate(saml2UserMgtService, bundleContext);
             osgiContext.registerService(ResourceResolverFactory.class, mockFactory);
             userMgtService = osgiContext.registerService(new Saml2UserMgtServiceImpl());
             samlHandler = osgiContext.registerInjectActivateService(new AuthenticationHandlerSAML2Impl());
+            setup_saml2handlerJKS();
         } catch (Exception e){
             fail(e.getMessage());
         }
@@ -247,4 +271,59 @@ public class OsgiSamlTest {
         Helpers.buildSAMLObject(Resource.class);
     }
 
+    @Test
+    public void test_withJKS() throws NoSuchAlgorithmException, CertificateException, CertIOException, OperatorCreationException, KeyStoreException {
+        assertEquals("./target/exampleSaml2.jks", saml2handlerJKS.getJksFileLocation());
+        assertEquals("password", saml2handlerJKS.getJksStorePassword());
+        assertTrue(saml2handlerJKS.getSaml2SPEncryptAndSign());
+        assertTrue(saml2handlerJKS.getSaml2SPEnabled());
+    }
+
+    @Test
+    public void test_JKS_sp_KeyPair() {
+        BasicX509Credential spX509Cred = KeyPairCredentials
+            .getCredential( saml2handlerJKS.getJksFileLocation(),
+                saml2handlerJKS.getJksStorePassword().toCharArray(),
+                saml2handlerJKS.getSpKeysAlias(),
+                saml2handlerJKS.getSpKeysPassword().toCharArray()
+            );
+        assertNotNull(spX509Cred);
+    }
+
+    @Test (expected = SAML2RuntimeException.class)
+    public void test_JKS_bad_sp_KeyPair() {
+        BasicX509Credential spX509Cred = KeyPairCredentials
+            .getCredential( saml2handlerJKS.getJksFileLocation(),
+                    saml2handlerJKS.getJksStorePassword().toCharArray(),
+                    saml2handlerJKS.getSpKeysAlias(),
+                    "bad password".toCharArray()
+                );
+    }
+
+    @Test (expected = SAML2RuntimeException.class)
+    public void test_JKS_bad_idp_cert() {
+        Credential idpX509Cred = VerifySignatureCredentials
+            .getCredential( saml2handlerJKS.getJksFileLocation(),
+                    "bad password".toCharArray(),
+                    saml2handlerJKS.getIdpCertAlias()
+            );
+    }
+
+
+    void setup_saml2handlerJKS(){
+        Dictionary<String, Object> props = new Hashtable<>();
+        props.put("jksFileLocation","./target/exampleSaml2.jks");
+        props.put("saml2SPEnabled",true);
+        props.put("saml2SPEncryptAndSign",true);
+        props.put("jksStorePassword","password");
+        props.put("idpCertAlias","idpCertAlias");
+        props.put("spKeysAlias","spAlias");
+        props.put("spKeysPassword","sppassword");
+        try {
+            saml2handlerJKS = osgiContext.registerInjectActivateService(new AuthenticationHandlerSAML2Impl(), props);
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }
 }
