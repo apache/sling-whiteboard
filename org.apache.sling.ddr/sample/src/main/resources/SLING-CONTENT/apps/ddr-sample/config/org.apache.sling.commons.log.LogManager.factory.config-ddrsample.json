@@ -1,0 +1,8 @@
+{
+        "org.apache.sling.commons.log.pattern":"{0,date,yyyy-MM-dd HH:mm:ss.SSS} {4} [{3}] {5}",
+        "org.apache.sling.commons.log.names":[
+                "org.apache.sling.ddr"
+        ],
+        "org.apache.sling.commons.log.level":"debug",
+        "org.apache.sling.commons.log.file":"logs/ddr.log"
+}

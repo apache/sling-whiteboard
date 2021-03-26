@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!--
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements.  See the NOTICE file
@@ -50,7 +50,7 @@
           <module>saml-example</module>
           <module>hc-resource</module>
           <module>instance-stopper</module>
-    </modules>
+      <module>org.apache.sling.ddr</module>
+  </modules>
 
 </project>
-

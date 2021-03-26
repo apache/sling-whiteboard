@@ -1,0 +1,5 @@
+{
+  "jcr:primaryType": "sling:Folder",
+  "jcr:title": "Declarative Dynamic Resource Root",
+  "jcr:description": "Declarative Dynamic Resource Apps Root folder"
+}
