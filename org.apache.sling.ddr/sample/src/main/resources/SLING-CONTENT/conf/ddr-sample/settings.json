@@ -1,0 +1,23 @@
+{
+  "jcr:primaryType": "sling:Folder",
+  "dynamic": {
+    "jcr:mixinTypes": [
+      "rep:AccessControllable"
+    ],
+    "jcr:primaryType": "slingddr:Folder",
+    "slingddr:target": "/apps/ddr-dynamic/components",
+    "button1": {
+      "componentGroup": "Dynamic.Content",
+      "jcr:description": "Dynamic Test Button",
+      "jcr:primaryType": "sling:Folder",
+      "jcr:title": "Button-1",
+      "sling:resourceSuperType": "ddr-static/button"
+    },
+    "text1": {
+      "componentGroup": "Dynamic.Content",
+      "jcr:primaryType": "sling:Folder",
+      "jcr:title": "Text-1",
+      "sling:resourceSuperType": "ddr-static/text"
+    }
+  }
+}

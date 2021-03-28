@@ -57,6 +57,7 @@
                             SLING-CONTENT/apps/ddr-sample;path:=/apps/ddr-sample;overwrite:=true;overwriteProperties:=true,
                             SLING-CONTENT/apps/ddr-dynamic;path:=/apps/ddr-dynamic;overwrite:=true;overwriteProperties:=true,
                             SLING-CONTENT/apps/ddr-static;path:=/apps/ddr-static;overwrite:=true;overwriteProperties:=true,
+                            SLING-CONTENT/conf/ddr-sample;path:=/conf/ddr-sample;overwrite:=true;overwriteProperties:=true,
                             SLING-CONTENT/content/ddr-sample;path:=/content/ddr-sample;overwrite:=true;overwriteProperties:=true
                         </Sling-Initial-Content>
                     </instructions>

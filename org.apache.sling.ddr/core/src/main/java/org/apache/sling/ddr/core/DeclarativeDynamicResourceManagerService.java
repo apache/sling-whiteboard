@@ -28,17 +28,20 @@ import org.apache.sling.serviceusermapping.ServiceUserMapped;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicyOption;
-import org.osgi.service.metatype.annotations.AttributeDefinition;
-import org.osgi.service.metatype.annotations.Designate;
-import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.UnsupportedRepositoryOperationException;
+import javax.jcr.observation.Event;
+import javax.jcr.observation.EventIterator;
+import javax.jcr.observation.EventListener;
+import javax.jcr.query.Query;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -49,23 +52,24 @@ import static org.apache.sling.ddr.api.Constants.JCR_PRIMARY_TYPE;
 import static org.apache.sling.ddr.api.Constants.REP_POLICY;
 
 @Component(
-    service= DeclarativeDynamicResourceManager.class,
-    immediate = true,
-    configurationPolicy = ConfigurationPolicy.REQUIRE
+    service = { DeclarativeDynamicResourceManager.class, EventListener.class },
+    immediate = true
 )
-@Designate(ocd = DeclarativeDynamicResourceManagerService.Configuration.class, factory = true)
 public class DeclarativeDynamicResourceManagerService
-    implements DeclarativeDynamicResourceManager
+    implements DeclarativeDynamicResourceManager, EventListener
 {
-    @ObjectClassDefinition(
-        name = "Declarative Dynamic Component Resource Provider",
-        description = "Configuration of the Dynamic Component Resource Provider")
-    public @interface Configuration {
-        @AttributeDefinition(
-            name = "Dynamic Component Target Path",
-            description="Path to the Folder where the Dynamic Components will added to dynamically")
-        String dynamic_component_target_path();
-    }
+    public static final int EVENT_TYPES =
+        Event.NODE_ADDED |
+        Event.NODE_REMOVED |
+        Event.NODE_MOVED |
+        Event.PROPERTY_ADDED |
+        Event.PROPERTY_CHANGED |
+        Event.PROPERTY_REMOVED;
+
+    public static final String DDR_NODE_TYPE = "slingddr:Folder";
+    public static final String DDR_TARGET_PROPERTY_NAME = "slingddr:target";
+    public static final String[] NODE_TYPES = new String[] { DDR_NODE_TYPE };
+    public static final String CONFIGURATION_ROOT_PATH = "/conf";
 
     @Reference
     private ResourceResolverFactory resourceResolverFactory;
@@ -81,14 +85,82 @@ public class DeclarativeDynamicResourceManagerService
 
     private Map<String, DeclarativeDynamicResourceProvider> registeredServices = new HashMap<>();
     private BundleContext bundleContext;
-    private String dynamicTargetPath;
+//    private String dynamicTargetPath;
 
     @Activate
-    private void activate(BundleContext bundleContext, Configuration configuration) {
-        log.info("Activate Started, bundle context: '{}'", bundleContext);
+    private void activate(BundleContext bundleContext) {
         this.bundleContext = bundleContext;
-        dynamicTargetPath = configuration.dynamic_component_target_path();
-        log.info("Dynamic Target Path: '{}'", dynamicTargetPath);
+        log.info("Activate Started, bundle context: '{}'", bundleContext);
+        try (ResourceResolver resourceResolver = resourceResolverFactory.getServiceResourceResolver(
+            new HashMap<String, Object>() {{ put(ResourceResolverFactory.SUBSERVICE, DYNAMIC_COMPONENTS_SERVICE_USER); }}
+        )) {
+            // Register an Event Listener to get informed when
+            Session session = resourceResolver.adaptTo(Session.class);
+            if (session != null) {
+                log.info("Register Event Listener on Path: '{}'", CONFIGURATION_ROOT_PATH);
+                session.getWorkspace().getObservationManager().addEventListener(
+                    this, EVENT_TYPES, CONFIGURATION_ROOT_PATH,
+                    true, null, null, true
+                );
+            } else {
+                log.warn("Resource Resolver could not be adapted to Session");
+            }
+            // To make sure we get all we will query all existing nodes
+            Resource root = resourceResolver.getResource(CONFIGURATION_ROOT_PATH);
+            log.info("Manual Check for Existing Nodes in: '{}'", CONFIGURATION_ROOT_PATH);
+            if(root != null) {
+                Iterator<Resource> i = resourceResolver.findResources(
+                    "SELECT * FROM [slingddr:Folder]",
+                    Query.JCR_SQL2
+                );
+                while(i.hasNext()) {
+                    Resource item = i.next();
+                    log.info("Handle Found DDR Resource: '{}'", item);
+                    handleDDRResource(item);
+                }
+            }
+        } catch (LoginException e) {
+            log.error("Failed to Activation Resource", e);
+        } catch (UnsupportedRepositoryOperationException e) {
+            log.error("Failed to Activation Resource", e);
+        } catch (RepositoryException e) {
+            log.error("Failed to Activation Resource", e);
+        }
+    }
+
+    private void handleDDRResource(Resource ddrSourceResource) {
+        if(ddrSourceResource != null) {
+            ValueMap properties = ddrSourceResource.getValueMap();
+            String ddrTargetPath = properties.get(DDR_TARGET_PROPERTY_NAME, String.class);
+            log.info("Found DDR Target Path: '{}'", ddrTargetPath);
+            if (ddrTargetPath != null) {
+                Resource ddrTargetResource = ddrSourceResource.getResourceResolver().getResource(ddrTargetPath);
+                if(ddrTargetResource != null) {
+                    DeclarativeDynamicResourceProviderHandler service = new DeclarativeDynamicResourceProviderHandler();
+                    log.info("Dynamic Target: '{}', Dynamic Provider: '{}'", ddrSourceResource, ddrSourceResource);
+                    long id = service.registerService(bundleContext.getBundle(), ddrTargetPath, ddrSourceResource.getPath(), resourceResolverFactory);
+                    log.info("After Registering Tenant RP: service: '{}', id: '{}'", service, id);
+                    registeredServices.put(ddrTargetResource.getPath(), service);
+                    Iterator<Resource> i = ddrSourceResource.listChildren();
+                    while (i.hasNext()) {
+                        Resource provided = i.next();
+                        String componentName = provided.getName();
+                        if (componentName.equals(REP_POLICY)) {
+                            continue;
+                        }
+                        log.info("Provided Dynamic: '{}'", provided);
+                        ValueMap childProperties = provided.getValueMap();
+                        String primaryType = childProperties.get(JCR_PRIMARY_TYPE, String.class);
+                        log.info("Dynamic Child Source: '{}', Primary Type: '{}'", componentName, primaryType);
+                        if (componentName != null && !componentName.isEmpty() && dynamicComponentFilterNotifier != null) {
+                            dynamicComponentFilterNotifier.addDeclarativeDynamicResource(
+                                ddrTargetPath + '/' + componentName, provided
+                            );
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public void update(String dynamicProviderPath) {
@@ -96,32 +168,7 @@ public class DeclarativeDynamicResourceManagerService
             new HashMap<String, Object>() {{ put(ResourceResolverFactory.SUBSERVICE, DYNAMIC_COMPONENTS_SERVICE_USER); }}
         )) {
             Resource dynamicProvider = resourceResolver.getResource(dynamicProviderPath);
-            Resource dynamicTarget = resourceResolver.getResource(dynamicTargetPath);
-            log.info("Dynamic Resource Provider: '{}', Target: '{}'", dynamicProvider, dynamicTarget);
-            if(dynamicProvider != null) {
-                DeclarativeDynamicResourceProviderHandler service = new DeclarativeDynamicResourceProviderHandler();
-                log.info("Dynamic Target: '{}', Dynamic Provider: '{}'", dynamicTarget, dynamicProvider);
-                long id = service.registerService(bundleContext.getBundle(), dynamicTargetPath, dynamicProviderPath, resourceResolverFactory);
-                log.info("After Registering Tenant RP: service: '{}', id: '{}'", service, id);
-                registeredServices.put(dynamicTarget.getPath(), service);
-                Iterator<Resource> i = dynamicProvider.listChildren();
-                while (i.hasNext()) {
-                    Resource provided = i.next();
-                    String componentName = provided.getName();
-                    if (componentName.equals(REP_POLICY)) {
-                        continue;
-                    }
-                    log.info("Provided Dynamic: '{}'", provided);
-                    ValueMap childProperties = provided.getValueMap();
-                    String primaryType = childProperties.get(JCR_PRIMARY_TYPE, String.class);
-                    log.info("Dynamic Child Source: '{}', Primary Type: '{}'", componentName, primaryType);
-                    if (componentName != null && !componentName.isEmpty() && dynamicComponentFilterNotifier != null) {
-                        dynamicComponentFilterNotifier.addDeclarativeDynamicResource(
-                            dynamicTargetPath + '/' + componentName, provided
-                        );
-                    }
-                }
-            }
+            handleDDRResource(dynamicProvider);
         } catch (LoginException e) {
             log.error("Was not able to obtain Service Resource Resolver", e);
         }
@@ -133,6 +180,40 @@ public class DeclarativeDynamicResourceManagerService
             log.info("Before UnRegistering Tenant RP, service: '{}'", service);
             service.unregisterService();
             log.info("After UnRegistering Tenant RP, service: '{}'", service);
+        }
+    }
+
+    @Override
+    public void onEvent(EventIterator events) {
+        try (ResourceResolver resourceResolver = resourceResolverFactory.getServiceResourceResolver(
+            new HashMap<String, Object>() {{ put(ResourceResolverFactory.SUBSERVICE, DYNAMIC_COMPONENTS_SERVICE_USER); }}
+        )) {
+            while (events.hasNext()) {
+                Event event = events.nextEvent();
+                String path = event.getPath();
+                switch (event.getType()) {
+                    case Event.PROPERTY_ADDED:
+                    case Event.PROPERTY_CHANGED:
+                        int index = path.lastIndexOf('/');
+                        if(index > 0) {
+                            path = path.substring(0, index -1);
+                        }
+                    case Event.NODE_ADDED:
+                        Resource source = resourceResolver.getResource(path);
+                        if(source != null) {
+                            handleDDRResource(source);
+                        }
+                        break;
+                    case Event.NODE_MOVED:
+                        //AS TODO: Handle later
+                        break;
+                    case Event.PROPERTY_REMOVED:
+                        //AS TODO: Handle later
+//                        break;
+                }
+            }
+        } catch (LoginException | RepositoryException e) {
+            log.error("Failed to Handle Events", e);
         }
     }
 }

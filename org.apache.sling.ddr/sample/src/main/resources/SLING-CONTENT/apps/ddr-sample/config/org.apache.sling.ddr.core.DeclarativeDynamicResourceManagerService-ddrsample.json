@@ -1,4 +1,0 @@
-{
-  "jcr:primaryType": "sling:OsgiConfig",
-  "dynamic.component.target.path": "/apps/ddr-dynamic/components"
-}

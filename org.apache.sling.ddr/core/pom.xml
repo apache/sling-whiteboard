@@ -52,6 +52,9 @@
                             Private-Package,
                             Include-Resource
                         </_removeheaders>
+                        <Sling-Nodetypes>
+                            SLING-CONTENT/nodetypes/ddr.cnd
+                        </Sling-Nodetypes>
                         <Sling-Initial-Content>
                             SLING-CONTENT/apps/ddr;path:=/apps/ddr;overwrite:=true;overwriteProperties:=true
                         </Sling-Initial-Content>
