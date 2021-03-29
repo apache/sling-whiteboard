@@ -32,6 +32,6 @@ Try this by going to the System Console **Bundles** and stop the **org.apache.sl
 Refershing the **/apps/ddr-dynamic** folder in composum will not display any child resources. Restart
 the bundle now again and make sure the child resources are there again.
 Now we want to see these components but open the content on **/ddr-sample/button.html**. This will
-show *Hello Button: * followed by the path of the resource.
+show *Hello Button* or *Hello Text*.
 
 Andreas Schaefer: 3/27/2021

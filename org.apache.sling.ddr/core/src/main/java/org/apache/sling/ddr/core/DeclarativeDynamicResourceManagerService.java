@@ -37,7 +37,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
-import javax.jcr.UnsupportedRepositoryOperationException;
 import javax.jcr.observation.Event;
 import javax.jcr.observation.EventIterator;
 import javax.jcr.observation.EventListener;
@@ -85,22 +84,24 @@ public class DeclarativeDynamicResourceManagerService
 
     private Map<String, DeclarativeDynamicResourceProvider> registeredServices = new HashMap<>();
     private BundleContext bundleContext;
-//    private String dynamicTargetPath;
+    // Keep the Resource Resolver around otherwise the Event Listener will not work anymore
+    private ResourceResolver resourceResolver;
 
     @Activate
     private void activate(BundleContext bundleContext) {
         this.bundleContext = bundleContext;
         log.info("Activate Started, bundle context: '{}'", bundleContext);
-        try (ResourceResolver resourceResolver = resourceResolverFactory.getServiceResourceResolver(
-            new HashMap<String, Object>() {{ put(ResourceResolverFactory.SUBSERVICE, DYNAMIC_COMPONENTS_SERVICE_USER); }}
-        )) {
+        try {
+            resourceResolver = resourceResolverFactory.getServiceResourceResolver(
+                new HashMap<String, Object>() {{ put(ResourceResolverFactory.SUBSERVICE, DYNAMIC_COMPONENTS_SERVICE_USER); }}
+            );
             // Register an Event Listener to get informed when
             Session session = resourceResolver.adaptTo(Session.class);
             if (session != null) {
                 log.info("Register Event Listener on Path: '{}'", CONFIGURATION_ROOT_PATH);
                 session.getWorkspace().getObservationManager().addEventListener(
                     this, EVENT_TYPES, CONFIGURATION_ROOT_PATH,
-                    true, null, null, true
+                    true, null, null, false
                 );
             } else {
                 log.warn("Resource Resolver could not be adapted to Session");
@@ -120,11 +121,9 @@ public class DeclarativeDynamicResourceManagerService
                 }
             }
         } catch (LoginException e) {
-            log.error("Failed to Activation Resource", e);
-        } catch (UnsupportedRepositoryOperationException e) {
-            log.error("Failed to Activation Resource", e);
+            log.error("Unable to obtain our Service Resource Resolver --> DDR disabled", e);
         } catch (RepositoryException e) {
-            log.error("Failed to Activation Resource", e);
+            log.error("Failed to Obtain the Observation Manager to register for Resource Events --> DDR disabled", e);
         }
     }
 
@@ -181,16 +180,21 @@ public class DeclarativeDynamicResourceManagerService
             service.unregisterService();
             log.info("After UnRegistering Tenant RP, service: '{}'", service);
         }
+        if(resourceResolver != null) {
+            resourceResolver.close();
+        }
     }
 
     @Override
     public void onEvent(EventIterator events) {
+        log.info("Handle Events: '{}'", events);
         try (ResourceResolver resourceResolver = resourceResolverFactory.getServiceResourceResolver(
             new HashMap<String, Object>() {{ put(ResourceResolverFactory.SUBSERVICE, DYNAMIC_COMPONENTS_SERVICE_USER); }}
         )) {
             while (events.hasNext()) {
                 Event event = events.nextEvent();
                 String path = event.getPath();
+                log.info("Handle Event: '{}', path: '{}', type: '{}'", event, path, event.getType());
                 switch (event.getType()) {
                     case Event.PROPERTY_ADDED:
                     case Event.PROPERTY_CHANGED:
@@ -198,8 +202,10 @@ public class DeclarativeDynamicResourceManagerService
                         if(index > 0) {
                             path = path.substring(0, index -1);
                         }
+                        log.info("Property Added or Changed, path: '{}'", path);
                     case Event.NODE_ADDED:
                         Resource source = resourceResolver.getResource(path);
+                        log.info("Source Resource found: '{}'", source);
                         if(source != null) {
                             handleDDRResource(source);
                         }
