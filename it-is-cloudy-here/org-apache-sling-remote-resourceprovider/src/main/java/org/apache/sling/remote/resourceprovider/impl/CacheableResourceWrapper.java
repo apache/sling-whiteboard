@@ -79,7 +79,7 @@ class CacheableResourceWrapper extends ResourceWrapper {
     @SuppressWarnings("unchecked")
     public <AdapterType> AdapterType adaptTo(Class<AdapterType> type) {
         RemoteResourceReference remoteResourceReference = resource.getRemoteResourceReference();
-        if (type == ValueMap.class) {
+        if (type == ValueMap.class || type == Map.class) {
             return (AdapterType) getValueMap();
         }
         if (type == InputStream.class && remoteResourceReference.getType() == RemoteResourceReference.Type.FILE) {

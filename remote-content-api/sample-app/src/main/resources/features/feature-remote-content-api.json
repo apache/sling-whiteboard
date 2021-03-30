@@ -1,0 +1,48 @@
+{
+  "id":"org.apache.sling:org.apache.sling.dokapi:slingosgifeature:sling12:0.0.1-SNAPSHOT",
+  "title":"Apache Sling Remote Content API Sample App",
+  "description":"Demonstrates the Remote Content API",
+  "vendor":"The Apache Software Foundation",
+  "license":"Apache License, Version 2.0",
+  "variables":{},
+  "bundles":[
+    "org.apache.sling:org.apache.sling.experimental.contentmapper:0.0.1-SNAPSHOT",
+    "org.apache.sling:org.apache.sling.experimental.remote.content.api.sample.app:0.0.1-SNAPSHOT",
+    "org.apache.sling:org.apache.sling.experimental.type-system:0.0.1-SNAPSHOT",
+    "org.apache.sling:org.apache.sling.servlet-helpers:1.4.2"
+  ],
+  "content-packages:ARTIFACTS|required":[
+    "com.adobe.aem.guides:aem-guides-wknd.ui.content.sample:zip:0.0.4"
+  ],
+  "configurations":{
+    "org.apache.sling.jcr.base.internal.LoginAdminWhitelist.fragment~installer-packages":{
+      "whitelist.bundles":[
+        "org.apache.sling.installer.factory.packages"
+      ],
+      "whitelist.name":"installer-packages"
+    },
+    "org.apache.sling.commons.log.LogManager.factory.config~info.log" : {
+      "org.apache.sling.commons.log.file": "logs/debug.log",
+      "org.apache.sling.commons.log.level": "INFO",
+      "org.apache.sling.commons.log.names":
+        [
+          "org.apache.sling.engine",
+          "org.apache.sling.servlet",
+          "org.apache.sling.servlets",
+          "org.apache.sling.servlethelpers.internalrequests",
+          "org.apache.sling.graphql",
+          "org.apache.sling.scripting"
+        ],
+      "org.apache.sling.commons.log.pattern": "%-5level [%-50logger{50}] %message ## %mdc{sling.InternalRequest} %n"
+    },
+    "org.apache.sling.commons.log.LogManager.factory.config~debug.log" : {
+      "org.apache.sling.commons.log.file": "logs/debug.log",
+      "org.apache.sling.commons.log.level": "DEBUG",
+      "org.apache.sling.commons.log.names":
+        [
+          "org.apache.sling.contentmapper"
+        ],
+      "org.apache.sling.commons.log.pattern": "%-5level [%-50logger{50}] %message ## %mdc{sling.InternalRequest} %n"
+    }
+  }
+}

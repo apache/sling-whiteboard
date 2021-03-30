@@ -1,0 +1,69 @@
+....
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+....
+
+[plantuml,client-side-rendering]
+....
+@startuml
+
+node "Sling Server" {
+  database [Sling Content Repository] as sling
+  component [Content Access API] as capi
+}
+
+actor developer
+
+node "Client Browser" {
+  artifact [Rendering Code] as rendering
+}
+
+sling -> capi
+capi -u-> developer : http
+capi -> rendering : JSON Content
+
+@enduml
+....
+
+[plantuml,edge-side-rendering]
+....
+@startuml
+
+node "Sling Server" {
+  database [Sling Content Repository] as sling
+  database [Rendering Templates] as templates
+  component [Content Access API] as capi
+}
+
+node "Content Distribution Network" {
+  component [Edge-side rendering] as rendering
+  database [Edge-side caching] as caching
+}
+
+component [Client Browser] as browser
+
+actor developer
+
+sling -> capi
+capi -u-> developer : http
+capi -> rendering : JSON Content + Templates
+templates -u-> capi
+rendering -> caching
+caching -> browser : http
+
+@enduml
+....

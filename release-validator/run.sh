@@ -62,7 +62,7 @@ mkdir ${RELEASE_FOLDER} 2>/dev/null
 
 # Download the release artifacts
 prints "Downloading release artifacts" "info"
-try wget -e "robots=off" --wait 1 -nv -r -np "--reject=html,index.html.tmp" \
+try wget -e "robots=off" -nv -r -np "--reject=html,index.html.tmp" \
   "--follow-tags=" -P "$RELEASE_FOLDER" -nH "--cut-dirs=3" \
   "https://repository.apache.org/content/repositories/orgapachesling-${RELEASE_ID}/org/apache/sling/"
 

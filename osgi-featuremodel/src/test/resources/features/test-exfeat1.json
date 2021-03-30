@@ -1,0 +1,17 @@
+{
+    "id" : "org.apache.sling:test-extension-feature:1.0.0",
+    "extensions" : {
+        "my-text-ex": {
+            "kind": "optional",
+            "text": "ABC" 
+        },
+        "my-art-ex": {
+            "artifacts": ["g:a:1", "g:a:2"],
+            "kind": "mandatory" 
+        },
+        "my-json-ex": {
+           "kind": "transient", 
+            "json": {"foo": [1, 2, 3] }
+        }
+    }
+}
