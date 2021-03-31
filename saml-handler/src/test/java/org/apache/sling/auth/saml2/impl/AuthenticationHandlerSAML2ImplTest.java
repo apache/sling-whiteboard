@@ -19,42 +19,135 @@
 
 package org.apache.sling.auth.saml2.impl;
 
+import org.apache.jackrabbit.api.security.user.User;
+import org.apache.sling.auth.core.spi.AuthenticationInfo;
+import org.apache.sling.auth.saml2.AuthenticationHandlerSAML2;
 import org.hamcrest.core.StringStartsWith;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.api.Invocation;
+import org.junit.Before;
 import org.junit.Test;
 import org.hamcrest.Description;
-import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.osgi.framework.BundleContext;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 import org.jmock.api.Action;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import javax.jcr.RepositoryException;
 import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.util.UUID;
+
 import static org.apache.sling.auth.saml2.impl.AuthenticationHandlerSAML2Impl.TOKEN_FILENAME;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
-
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(AuthenticationHandlerSAML2Impl.class)
-@PowerMockIgnore("jdk.internal.reflect.*")
 public class AuthenticationHandlerSAML2ImplTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(AuthenticationHandlerSAML2ImplTest.class);
+    private TokenStore store;
+    private static final long sessionTimeoutMsec = 60 * 1000L;
+    private static final long defaultExpirationTimeMsec = System.currentTimeMillis() + sessionTimeoutMsec / 2;
+    private static final boolean defaultFastSeed = false;
+    private static final String userId = "user_" + UUID.randomUUID();
+    private String encodedToken;
+    private File tokenFile;
+    private int additionalFileIndex;
+
+    private File additionalTokenFile() {
+        return new File(tokenFile.getParent(), tokenFile.getName() + "-" + additionalFileIndex++);
+    }
+
+    @Before
+    public void setup() throws Exception {
+        tokenFile = File.createTempFile(getClass().getName(), "tokenstore");
+        store = new TokenStore(tokenFile, sessionTimeoutMsec, defaultFastSeed);
+        encodedToken = store.encode(defaultExpirationTimeMsec, userId);
+    }
 
     @Test
-    public void test_getTokenFile() {
-        final File root = new File("bundle999").getAbsoluteFile();
-        final File tokenFileExpected = new File("bundle999/"+TOKEN_FILENAME).getAbsoluteFile();
+    public void validTokenTest() throws Exception {
+        assertTrue(store.isValid(encodedToken));
+    }
+
+    @Test
+    public void invalidTokensTest() throws Exception {
+        final String [] invalid = {
+                "1@21@3",
+                "nothing",
+                "0@bad@token"
+        };
+        for(String token : invalid) {
+            assertFalse(store.isValid(token));
+        }
+    }
+
+    @Test
+    public void expiredTokenTest() throws Exception {
+        final String expired = store.encode(1, userId);
+        Thread.sleep(50);
+        assertFalse(store.isValid(expired));
+    }
+
+    @Test
+    public void loadTokenFileTest() throws Exception {
+        final TokenStore newStore = new TokenStore(tokenFile, sessionTimeoutMsec, defaultFastSeed);
+        assertTrue(newStore.isValid(encodedToken));
+
+        final TokenStore emptyStore = new TokenStore(additionalTokenFile(), sessionTimeoutMsec, defaultFastSeed);
+        assertFalse(emptyStore.isValid(encodedToken));
+    }
+
+    @Test
+    public void encodingPartsTest() throws Exception {
+
+        // Test with both a normal and "fast seed" store
+        final TokenStore [] testStores = {
+                new TokenStore(additionalTokenFile(), sessionTimeoutMsec, true),
+                new TokenStore(additionalTokenFile(), sessionTimeoutMsec, false)
+        };
+
+        for(TokenStore testStore : testStores) {
+            String lastHexNumber = "";
+            for(int i=1 ; i < 100; i++) {
+                final String uniqueUserId = "user-" + i;
+                final String [] parts = TokenStore.split(testStore.encode(123, uniqueUserId));
+
+                // First a unique large hex number
+                assertFalse(parts[0].equals(lastHexNumber));
+                lastHexNumber = parts[0];
+                new BigInteger(lastHexNumber, 16);
+                assertTrue(lastHexNumber.length() > 20);
+
+                // Then the timeout prefixed by something else
+                assertEquals("123", parts[1].substring(1));
+
+                // Then the user id
+                assertEquals(uniqueUserId, parts[2]);
+            }
+        }
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void nullTokenFileTest() throws Exception {
+        new TokenStore(null, sessionTimeoutMsec, defaultFastSeed);
+    }
+
+    @Test
+    public void test_tokens() throws RepositoryException, UnsupportedEncodingException, NoSuchAlgorithmException, InvalidKeyException {
+        // setup handler
+        final AuthenticationHandlerSAML2Impl handler = new AuthenticationHandlerSAML2Impl();
+        // setup token file
+        final File root = new File("target").getAbsoluteFile();
+        final File tokenFileExpected = new File("target/"+TOKEN_FILENAME).getAbsoluteFile();
         final SlingHomeAction slingHome = new SlingHomeAction();
         slingHome.setSlingHome(new File("sling").getAbsolutePath());
-
         Mockery context = new Mockery();
         final BundleContext bundleContext = context.mock(BundleContext.class);
-
         context.checking(new Expectations() {
             {
                 // mock access to sling.home framework property
@@ -63,7 +156,7 @@ public class AuthenticationHandlerSAML2ImplTest {
 
                 // mock no data file support with file names starting with sl
                 allowing(bundleContext).getDataFile(
-                        with(new StringStartsWith("sl")));
+                    with(new StringStartsWith("sl")));
                 will(returnValue(null));
 
                 // mock data file support for any other name
@@ -71,10 +164,45 @@ public class AuthenticationHandlerSAML2ImplTest {
                 will(new RVA(root));
             }
         });
-        final AuthenticationHandlerSAML2Impl handler = new AuthenticationHandlerSAML2Impl();
-        // test files relative to bundle context
         File tokenFileActual = handler.getTokenFile(bundleContext);
+        // setup token store
+        handler.initializeTokenStore(tokenFileActual);
+        // verify token file
         assertEquals(tokenFileExpected, tokenFileActual);
+//        assertEquals(0,handler.getTokenStore().getActiveToken());
+
+        // setup mock users
+        User user = Mockito.mock(User.class);
+        when(user.getID()).thenReturn("test-user");
+        User userExp = Mockito.mock(User.class);
+        when(userExp.getID()).thenReturn("expired-user");
+        AuthenticationInfo authenticationInfo = handler.buildAuthInfo(user);
+        AuthenticationInfo authenticationInfoExp = handler.buildAuthInfo(userExp);
+        long not_expired = System.currentTimeMillis() ;
+        long expired = System.currentTimeMillis() - handler.sessionTimeout - 1;
+        String token = handler.getTokenStore().encode(not_expired, authenticationInfo.getUser());
+        String expired_token = handler.getTokenStore().encode(expired, authenticationInfoExp.getUser());
+        // verify tokens
+        String[] partsExp = TokenStore.split(expired_token);
+        String[] parts = TokenStore.split(token);
+        assertEquals(3, partsExp.length);
+        assertEquals(3, parts.length);
+        assertTrue(handler.needsRefresh(expired_token, handler.sessionTimeout));
+        assertFalse(handler.getTokenStore().isValid(expired_token));
+//        assertFalse(handler.needsRefresh(token, handler.sessionTimeout));
+//        assertTrue(handler.getTokenStore().isValid(token));
+    }
+
+    @Test
+    public void test_buildAuthInfo() throws RepositoryException {
+        final AuthenticationHandlerSAML2Impl handler = new AuthenticationHandlerSAML2Impl();
+        assertTrue(handler.needsRefresh(null,0));
+        User user = Mockito.mock(User.class);
+        when(user.getID()).thenReturn("test-user");
+        AuthenticationInfo authenticationInfo = handler.buildAuthInfo(user);
+        assertEquals(AuthenticationHandlerSAML2Impl.AUTH_TYPE, authenticationInfo.getAuthType());
+        assertEquals("test-user", authenticationInfo.getUser());
+
     }
 
     @Test
