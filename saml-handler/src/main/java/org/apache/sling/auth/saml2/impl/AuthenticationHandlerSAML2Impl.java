@@ -103,7 +103,7 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
     public static final String AUTH_TYPE = "SAML2";
     static final String TOKEN_FILENAME = "saml2-cookie-tokens.bin";
     private SessionStorage storageAuthInfo;
-    private long sessionTimeout;
+    long sessionTimeout;
     private static Logger logger = LoggerFactory.getLogger(AuthenticationHandlerSAML2Impl.class);
     static final String SERVICE_NAME = "org.apache.sling.auth.saml2.AuthenticationHandlerSAML2";
     private Credential spKeypair;
@@ -130,11 +130,8 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
     protected void activate(final AuthenticationHandlerSAML2Config config, ComponentContext componentContext)
             throws InvalidKeyException, NoSuchAlgorithmException, IllegalStateException, UnsupportedEncodingException {
         this.setConfigs(config);
-        this.storageAuthInfo = new SessionStorage(AUTHENTICATED_SESSION_ATTRIBUTE);
-        this.sessionTimeout = MINUTES * TIMEOUT_MIN;
-
         final File tokenFile = getTokenFile(componentContext.getBundleContext());
-        this.tokenStore = new TokenStore(tokenFile, sessionTimeout, false);
+        initializeTokenStore(tokenFile);
         if (this.getSaml2SPEncryptAndSign()) {
             //      set encryption keys
             this.spKeypair = KeyPairCredentials.getCredential(
@@ -150,11 +147,19 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
         }
     }
 
-    private Credential getSpKeypair(){
+    void initializeTokenStore(File file) throws NoSuchAlgorithmException, InvalidKeyException, UnsupportedEncodingException {
+        this.storageAuthInfo = new SessionStorage(AUTHENTICATED_SESSION_ATTRIBUTE);
+        this.sessionTimeout = MINUTES * TIMEOUT_MIN;
+        this.tokenStore = new TokenStore(file, sessionTimeout, false);
+    }
+
+    TokenStore getTokenStore(){ return this.tokenStore; }
+
+    Credential getSpKeypair(){
         return this.spKeypair;
     }
 
-    private Credential getIdpVerificationCert(){
+    Credential getIdpVerificationCert(){
         return this.idpVerificationCert;
     }
 
@@ -512,8 +517,7 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
         }
     }
 
-    private AuthenticationInfo buildAuthInfo(final User user){
-        //AUTHENTICATION_INFO_CREDENTIALS
+    AuthenticationInfo buildAuthInfo(final User user){
         try {
             AuthenticationInfo authInfo = new AuthenticationInfo(AUTH_TYPE, user.getID());
             authInfo.put("user.jcr.credentials", new Saml2Credentials(user.getID()));
@@ -525,7 +529,6 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
     }
 
     private AuthenticationInfo buildAuthInfo(final String authData) {
-        //AUTHENTICATION_INFO_CREDENTIALS
         final String userId = getUserId(authData);
         if (userId == null) {
             return null;
@@ -678,14 +681,6 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
     }
 
 
-    private String getAuthData(final AuthenticationInfo info) {
-        Object data = info.get(AUTHENTICATED_SESSION_ATTRIBUTE);
-        if (data instanceof String) {
-            return (String) data;
-        }
-        return null;
-    }
-
     /**
      * Ensures the authentication data is set (if not set yet) and the expiry time
      * is prolonged (if auth data already existed).
@@ -703,17 +698,16 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
                                  final AuthenticationInfo authInfo) {
 
         // get current authentication data, may be missing after first login
-        String authData = getAuthData(authInfo);
+        String token = storageAuthInfo.getString(request);
 
         // check whether we have to "store" or create the data
-        final boolean refreshCookie = needsRefresh(authData, this.sessionTimeout);
+        final boolean refreshCookie = needsRefresh(token, this.sessionTimeout);
 
         // add or refresh the stored auth hash
         if (refreshCookie) {
             long expires = System.currentTimeMillis() + this.sessionTimeout;
             try {
-                authData = null;
-                authData = tokenStore.encode(expires, authInfo.getUser());
+                token = tokenStore.encode(expires, authInfo.getUser());
             } catch (InvalidKeyException e) {
                 throw new SAML2RuntimeException(e);
             } catch (IllegalStateException e) {
@@ -724,8 +718,8 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
                 throw new SAML2RuntimeException(e);
             }
 
-            if (authData != null) {
-                storageAuthInfo.setString(request, authData);
+            if (token != null) {
+                storageAuthInfo.setString(request, token);
             } else {
                 clearSessionAttributes(request, response);
             }
@@ -739,7 +733,7 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
      *            time to live for the session
      * @return true or false
      */
-    private boolean needsRefresh(final String authData, final long sessionTimeout) {
+    boolean needsRefresh(final String authData, final long sessionTimeout) {
         boolean updateCookie = false;
         if (authData == null) {
             updateCookie = true;

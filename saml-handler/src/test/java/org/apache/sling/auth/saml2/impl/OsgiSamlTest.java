@@ -57,9 +57,6 @@ import org.opensaml.saml.saml2.metadata.Endpoint;
 import org.opensaml.security.credential.Credential;
 import org.opensaml.security.x509.BasicX509Credential;
 import org.osgi.framework.BundleContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -70,12 +67,7 @@ import java.security.cert.CertificateException;
 import java.time.Instant;
 import java.util.Dictionary;
 import java.util.Hashtable;
-
 import static org.apache.sling.auth.saml2.Activator.initializeOpenSaml;
-import static org.apache.sling.auth.saml2.impl.JKSHelper.KEYSTORE_TEST_PASSWORD;
-import static org.apache.sling.auth.saml2.impl.JKSHelper.KEYSTORE_TEST_PATH;
-import static org.apache.sling.auth.saml2.impl.JKSHelper.SP_ALIAS;
-import static org.apache.sling.auth.saml2.impl.JKSHelper.SP_TEST_PASSWORD;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -94,8 +86,6 @@ public class OsgiSamlTest {
     AuthenticationHandlerSAML2Impl saml2handlerJKS;
     XMLObjectBuilder<XSString> valueBuilder;
     static KeyStore testKeyStore;
-
-    private static Logger logger = LoggerFactory.getLogger(OsgiSamlTest.class);
 
     @BeforeClass
     public static void initializeOpenSAML(){
@@ -291,7 +281,11 @@ public class OsgiSamlTest {
                 saml2handlerJKS.getSpKeysAlias(),
                 saml2handlerJKS.getSpKeysPassword().toCharArray()
             );
-        assertNotNull(spX509Cred);
+        Credential idpCert = VerifySignatureCredentials.getCredential(saml2handlerJKS.getJksFileLocation(),
+                saml2handlerJKS.getJksStorePassword().toCharArray(),
+                saml2handlerJKS.getIdpCertAlias());
+        assertEquals(saml2handlerJKS.getIdpVerificationCert().getPublicKey().toString(), idpCert.getPublicKey().toString());
+        assertEquals(saml2handlerJKS.getSpKeypair().getPublicKey().toString(), spX509Cred.getPublicKey().toString());
     }
 
     @Test (expected = SAML2RuntimeException.class)
