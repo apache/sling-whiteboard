@@ -25,6 +25,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -92,7 +93,7 @@ class TokenStore {
     /**
      * A ring of tokens used to encrypt.
      */
-    private volatile SecretKey[] currentTokens;
+    private SecretKey[] currentTokens;
 
     /**
      * A secure random used for generating new tokens.
@@ -146,7 +147,7 @@ class TokenStore {
         final SecretKey secretKey = new SecretKeySpec(b, HMAC_SHA1);
         final Mac m = Mac.getInstance(HMAC_SHA1);
         m.init(secretKey);
-        m.update(UTF_8.getBytes(UTF_8));
+        m.update(UTF_8.getBytes(StandardCharsets.UTF_8));
         m.doFinal();
     }
 
@@ -269,7 +270,7 @@ class TokenStore {
      *
      * @return the current token.
      */
-    private synchronized int getActiveToken() {
+    synchronized int getActiveToken() {
         if (System.currentTimeMillis() > nextUpdate
                 || currentTokens[currentToken] == null) {
             // cycle so that during a typical ttl the tokens get completely
@@ -294,7 +295,7 @@ class TokenStore {
     /**
      * Stores the current set of tokens to the token file
      */
-    private void saveTokens() {
+    void saveTokens() {
         try( FileOutputStream fout = new FileOutputStream(tmpTokenFile); DataOutputStream keyOutputStream = new DataOutputStream(fout)) {
             File parent = tokenFile.getAbsoluteFile().getParentFile();
             log.info("Token File {} parent {} ", tokenFile, parent);
