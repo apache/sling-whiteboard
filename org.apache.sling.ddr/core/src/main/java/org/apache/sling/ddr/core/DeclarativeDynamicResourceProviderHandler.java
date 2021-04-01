@@ -69,14 +69,14 @@ public class DeclarativeDynamicResourceProviderHandler
     private String providerRootPath;
     private boolean active;
     private ResourceResolverFactory resourceResolverFactory;
-    private Map<String, String> allowedDDRFilter;
-    private Map<String, String> prohibitedDDRFilter;
+    private Map<String, List<String>> allowedDDRFilter;
+    private Map<String, List<String>> prohibitedDDRFilter;
 
     //---------- Service Registration
 
     public long registerService(
         Bundle bundle, String targetRootPath, String providerRootPath, ResourceResolverFactory resourceResolverFactory,
-        Map<String, String> allowedDDRFilter, Map<String, String> prohibitedDDRFilter
+        Map<String, List<String>> allowedDDRFilter, Map<String, List<String>> prohibitedDDRFilter
     ) {
         this.targetRootPath = targetRootPath;
         this.providerRootPath = providerRootPath;
@@ -278,29 +278,25 @@ public class DeclarativeDynamicResourceProviderHandler
         super.stop();
     }
 
-    private boolean filterSource(Resource source) {
-        if(allowedDDRFilter.isEmpty() && prohibitedDDRFilter.isEmpty()) {
-            return true;
-        }
-        if(source == null) {
-            return false;
-        }
+    boolean filterSource(Resource source) {
+        if(allowedDDRFilter.isEmpty() && prohibitedDDRFilter.isEmpty()) { return true; }
+        if(source == null) { return false; }
         ValueMap properties = source.getValueMap();
         if(!allowedDDRFilter.isEmpty()) {
-            for(Entry<String,String> filter: allowedDDRFilter.entrySet()) {
+            for (Entry<String, List<String>> filter : allowedDDRFilter.entrySet()) {
                 String propertyValue = properties.get(filter.getKey(), String.class);
-                if(propertyValue != null) {
-                    if(!filter.getValue().equals(propertyValue)) {
+                if (propertyValue != null) {
+                    if (!filter.getValue().contains(propertyValue)) {
                         return false;
                     }
                 }
             }
-            for(Entry<String,String> filter: prohibitedDDRFilter.entrySet()) {
-                String propertyValue = properties.get(filter.getKey(), String.class);
-                if(propertyValue != null) {
-                    if(filter.getValue().equals(propertyValue)) {
-                        return false;
-                    }
+        }
+        for(Entry<String,List<String>> filter: prohibitedDDRFilter.entrySet()) {
+            String propertyValue = properties.get(filter.getKey(), String.class);
+            if(propertyValue != null) {
+                if(filter.getValue().contains(propertyValue)) {
+                    return false;
                 }
             }
         }

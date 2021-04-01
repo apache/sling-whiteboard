@@ -44,17 +44,19 @@ import javax.jcr.observation.Event;
 import javax.jcr.observation.EventIterator;
 import javax.jcr.observation.EventListener;
 import javax.jcr.query.Query;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import static org.apache.sling.ddr.api.Constants.CONFIGURATION_ROOT_PATH;
 import static org.apache.sling.ddr.api.Constants.DDR_NODE_TYPE;
 import static org.apache.sling.ddr.api.Constants.DDR_TARGET_PROPERTY_NAME;
 import static org.apache.sling.ddr.api.Constants.DYNAMIC_COMPONENTS_SERVICE_USER;
 import static org.apache.sling.ddr.api.Constants.EQUALS;
-import static org.apache.sling.ddr.api.Constants.JCR_PRIMARY_TYPE;
-import static org.apache.sling.ddr.api.Constants.REP_POLICY;
 
 @Component(
     service = { DeclarativeDynamicResourceManager.class, EventListener.class },
@@ -75,7 +77,7 @@ public class DeclarativeDynamicResourceManagerService
         @AttributeDefinition(
             name = "Prohibited DDR Filter",
             description="Prohibited Resources to become a DDR in a format of: <property name>=<property value>. Any matching entry is prohibited.")
-        String[] prohibited_ddr_filter() default { "sling:resourceType=nt:file", "sling:resourceType=nt:resource" };
+        String[] prohibited_ddr_filter();
     }
 
     public static final int EVENT_TYPES =
@@ -89,11 +91,9 @@ public class DeclarativeDynamicResourceManagerService
     public static final String[] NODE_TYPES = new String[] { DDR_NODE_TYPE };
 
     @Reference
-//    private ResourceResolverFactory resourceResolverFactory;
     ResourceResolverFactory resourceResolverFactory;
 
     @Reference(cardinality = ReferenceCardinality.OPTIONAL)
-//    private DeclarativeDynamicResourceListener dynamicComponentFilterNotifier;
     DeclarativeDynamicResourceListener dynamicComponentFilterNotifier;
 
     // Make sure that the Service User Mapping is available before obtaining the Service Resource Resolver
@@ -107,8 +107,8 @@ public class DeclarativeDynamicResourceManagerService
     // Keep the Resource Resolver around otherwise the Event Listener will not work anymore
     private ResourceResolver resourceResolver;
 
-    private Map<String, String> allowedFilter = new HashMap<>();
-    private Map<String, String> prohibitedFilter = new HashMap<>();
+    private Map<String, List<String>> allowedFilter = new HashMap<>();
+    private Map<String, List<String>> prohibitedFilter = new HashMap<>();
 
     @Activate
     void activate(BundleContext bundleContext, Configuration configuration) {
@@ -155,14 +155,21 @@ public class DeclarativeDynamicResourceManagerService
         }
     }
 
-    private void handleDDRFilter(String[] filters, Map<String,String> filterMap) {
+    private void handleDDRFilter(String[] filters, Map<String, List<String>> filterMap) {
         if(filters != null && filters.length > 0) {
             for(String filter: filters) {
                 int index = filter.indexOf('=');
                 if(index > 0 && index < filter.length() - 1) {
                     String name = filter.substring(0, index);
                     String value = filter.substring(index + 1);
-                    filterMap.put(name, value);
+                    List<String> values = filterMap.get(name);
+                    if(values == null) {
+                        values = new ArrayList<>();
+                        filterMap.put(name, values);
+                    }
+                    if(!values.contains(value)) {
+                        values.add(value);
+                    }
                 }
             }
         }
@@ -184,23 +191,9 @@ public class DeclarativeDynamicResourceManagerService
                     );
                     log.info("After Registering Tenant RP: service: '{}', id: '{}'", service, id);
                     registeredServices.put(ddrTargetResource.getPath(), service);
-                    Iterator<Resource> i = ddrSourceResource.listChildren();
-                    while (i.hasNext()) {
-                        Resource provided = i.next();
-                        String componentName = provided.getName();
-                        if (componentName.equals(REP_POLICY)) {
-                            continue;
-                        }
-                        log.info("Provided Dynamic: '{}'", provided);
-                        ValueMap childProperties = provided.getValueMap();
-                        String primaryType = childProperties.get(JCR_PRIMARY_TYPE, String.class);
-                        log.info("Dynamic Child Source: '{}', Primary Type: '{}'", componentName, primaryType);
-                        if (componentName != null && !componentName.isEmpty() && dynamicComponentFilterNotifier != null) {
-                            dynamicComponentFilterNotifier.addDeclarativeDynamicResource(
-                                ddrTargetPath + '/' + componentName, provided
-                            );
-                        }
-                    }
+                    dynamicComponentFilterNotifier.addDeclarativeDynamicResource(
+                        ddrTargetPath, ddrSourceResource
+                    );
                 }
             }
         }
@@ -219,10 +212,11 @@ public class DeclarativeDynamicResourceManagerService
 
     @Deactivate
     private void deactivate() {
-        for(DeclarativeDynamicResourceProvider service: registeredServices.values()) {
-            log.info("Before UnRegistering Tenant RP, service: '{}'", service);
-            service.unregisterService();
-            log.info("After UnRegistering Tenant RP, service: '{}'", service);
+        for(Entry<String, DeclarativeDynamicResourceProvider> entry: registeredServices.entrySet()) {
+            log.info("Before UnRegistering Tenant RP, service: '{}'", entry.getValue());
+            entry.getValue().unregisterService();
+            dynamicComponentFilterNotifier.removeDynamicDeclarativeResource(entry.getKey());
+            log.info("After UnRegistering Tenant RP, service: '{}'", entry.getValue());
         }
         if(resourceResolver != null) {
             resourceResolver.close();
@@ -265,6 +259,10 @@ public class DeclarativeDynamicResourceManagerService
         } catch (LoginException | RepositoryException e) {
             log.error("Failed to Handle Events", e);
         }
+    }
+
+    Map<String, DeclarativeDynamicResourceProvider> getRegisteredServices() {
+        return Collections.unmodifiableMap(registeredServices);
     }
 }
 

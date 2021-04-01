@@ -1,0 +1,7 @@
+{
+  "allowed.ddr.filter": [],
+  "prohibited.ddr.filter": [
+    "sling:resourceType=nt:file",
+    "sling:resourceType=nt:resource"
+  ]
+}

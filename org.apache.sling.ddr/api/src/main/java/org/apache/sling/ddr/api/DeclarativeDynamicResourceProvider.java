@@ -19,6 +19,7 @@ package org.apache.sling.ddr.api;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.osgi.framework.Bundle;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -37,7 +38,7 @@ public interface DeclarativeDynamicResourceProvider {
      */
     long registerService(
         Bundle bundle, String targetRootPath, String providerRootPath, ResourceResolverFactory resourceResolverFactory,
-        Map<String, String> allowedDDRFilter, Map<String, String> prohibitedDDRFilter
+        Map<String, List<String>> allowedDDRFilter, Map<String, List<String>> prohibitedDDRFilter
     );
 
     /** Remove the Registration of this Service **/

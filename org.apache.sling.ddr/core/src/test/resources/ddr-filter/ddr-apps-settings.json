@@ -1,0 +1,6 @@
+{
+  "sling:resourceType": "sling:Folder",
+  "dynamicFilter": {
+    "sling:resourceType": "sling:Folder"
+  }
+}
