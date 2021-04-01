@@ -17,7 +17,7 @@
 //  under the License.
 //
 
-<slingddr='http://sling.apache.org/jcr/ddr/1.0'>
+<sling = 'http://sling.apache.org/jcr/sling/1.0'>
 
-[slingddr:Folder] > sling:Folder
-  - slingddr:target (string)
+[sling:DDR] > sling:Folder
+  - sling:ddrTarget (string)

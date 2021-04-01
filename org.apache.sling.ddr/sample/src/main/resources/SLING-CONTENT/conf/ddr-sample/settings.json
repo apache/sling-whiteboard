@@ -4,8 +4,8 @@
     "jcr:mixinTypes": [
       "rep:AccessControllable"
     ],
-    "jcr:primaryType": "slingddr:Folder",
-    "slingddr:target": "/apps/ddr-dynamic/components",
+    "jcr:primaryType": "sling:DDR",
+    "sling:ddrTarget": "/apps/ddr-dynamic/components",
     "button1": {
       "componentGroup": "Dynamic.Content",
       "jcr:description": "Dynamic Test Button",

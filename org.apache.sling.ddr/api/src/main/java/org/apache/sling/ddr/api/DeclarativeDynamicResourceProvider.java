@@ -19,6 +19,8 @@ package org.apache.sling.ddr.api;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.osgi.framework.Bundle;
 
+import java.util.Map;
+
 /**
  * Declarative Dynamic Resource Provier interface
  */
@@ -33,7 +35,10 @@ public interface DeclarativeDynamicResourceProvider {
      * @param resourceResolverFactory Resource Resolver Factory that allows to create new Synthetic Resources
      * @return
      */
-    long registerService(Bundle bundle, String targetRootPath, String providerRootPath, ResourceResolverFactory resourceResolverFactory);
+    long registerService(
+        Bundle bundle, String targetRootPath, String providerRootPath, ResourceResolverFactory resourceResolverFactory,
+        Map<String, String> allowedDDRFilter, Map<String, String> prohibitedDDRFilter
+    );
 
     /** Remove the Registration of this Service **/
     void unregisterService();

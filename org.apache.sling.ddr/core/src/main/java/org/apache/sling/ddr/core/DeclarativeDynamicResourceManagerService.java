@@ -32,6 +32,9 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicyOption;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,6 +48,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import static org.apache.sling.ddr.api.Constants.CONFIGURATION_ROOT_PATH;
+import static org.apache.sling.ddr.api.Constants.DDR_NODE_TYPE;
+import static org.apache.sling.ddr.api.Constants.DDR_TARGET_PROPERTY_NAME;
 import static org.apache.sling.ddr.api.Constants.DYNAMIC_COMPONENTS_SERVICE_USER;
 import static org.apache.sling.ddr.api.Constants.EQUALS;
 import static org.apache.sling.ddr.api.Constants.JCR_PRIMARY_TYPE;
@@ -54,9 +60,24 @@ import static org.apache.sling.ddr.api.Constants.REP_POLICY;
     service = { DeclarativeDynamicResourceManager.class, EventListener.class },
     immediate = true
 )
+@Designate(ocd = DeclarativeDynamicResourceManagerService.Configuration.class, factory = true)
 public class DeclarativeDynamicResourceManagerService
     implements DeclarativeDynamicResourceManager, EventListener
 {
+    @ObjectClassDefinition(
+        name = "Declarative Dynamic Component Resource Manager",
+        description = "Configuration of the Dynamic Component Resource Manager")
+    public @interface Configuration {
+        @AttributeDefinition(
+            name = "Allowed DDR Filter",
+            description="Allowed Resources to become a DDR in a format of: <property name>=<property value>. If any entries are provided all others are not allowed.")
+        String[] allowed_ddr_filter();
+        @AttributeDefinition(
+            name = "Prohibited DDR Filter",
+            description="Prohibited Resources to become a DDR in a format of: <property name>=<property value>. Any matching entry is prohibited.")
+        String[] prohibited_ddr_filter() default { "sling:resourceType=nt:file", "sling:resourceType=nt:resource" };
+    }
+
     public static final int EVENT_TYPES =
         Event.NODE_ADDED |
         Event.NODE_REMOVED |
@@ -65,16 +86,15 @@ public class DeclarativeDynamicResourceManagerService
         Event.PROPERTY_CHANGED |
         Event.PROPERTY_REMOVED;
 
-    public static final String DDR_NODE_TYPE = "slingddr:Folder";
-    public static final String DDR_TARGET_PROPERTY_NAME = "slingddr:target";
     public static final String[] NODE_TYPES = new String[] { DDR_NODE_TYPE };
-    public static final String CONFIGURATION_ROOT_PATH = "/conf";
 
     @Reference
-    private ResourceResolverFactory resourceResolverFactory;
+//    private ResourceResolverFactory resourceResolverFactory;
+    ResourceResolverFactory resourceResolverFactory;
 
     @Reference(cardinality = ReferenceCardinality.OPTIONAL)
-    private DeclarativeDynamicResourceListener dynamicComponentFilterNotifier;
+//    private DeclarativeDynamicResourceListener dynamicComponentFilterNotifier;
+    DeclarativeDynamicResourceListener dynamicComponentFilterNotifier;
 
     // Make sure that the Service User Mapping is available before obtaining the Service Resource Resolver
     @Reference(policyOption= ReferencePolicyOption.GREEDY, target="(" + ServiceUserMapped.SUBSERVICENAME + EQUALS + DYNAMIC_COMPONENTS_SERVICE_USER + ")")
@@ -87,14 +107,21 @@ public class DeclarativeDynamicResourceManagerService
     // Keep the Resource Resolver around otherwise the Event Listener will not work anymore
     private ResourceResolver resourceResolver;
 
+    private Map<String, String> allowedFilter = new HashMap<>();
+    private Map<String, String> prohibitedFilter = new HashMap<>();
+
     @Activate
-    private void activate(BundleContext bundleContext) {
+    void activate(BundleContext bundleContext, Configuration configuration) {
         this.bundleContext = bundleContext;
         log.info("Activate Started, bundle context: '{}'", bundleContext);
+        // Parsing the Allowed / Prohibited DDR Filters
+        handleDDRFilter(configuration.allowed_ddr_filter(), allowedFilter);
+        handleDDRFilter(configuration.prohibited_ddr_filter(), prohibitedFilter);
         try {
             resourceResolver = resourceResolverFactory.getServiceResourceResolver(
                 new HashMap<String, Object>() {{ put(ResourceResolverFactory.SUBSERVICE, DYNAMIC_COMPONENTS_SERVICE_USER); }}
             );
+            log.info("Service Resource Resolver: '{}'", resourceResolver);
             // Register an Event Listener to get informed when
             Session session = resourceResolver.adaptTo(Session.class);
             if (session != null) {
@@ -108,12 +135,13 @@ public class DeclarativeDynamicResourceManagerService
             }
             // To make sure we get all we will query all existing nodes
             Resource root = resourceResolver.getResource(CONFIGURATION_ROOT_PATH);
-            log.info("Manual Check for Existing Nodes in: '{}'", CONFIGURATION_ROOT_PATH);
+            log.info("Manual Check for Existing Nodes in: '{}', root-res: '{}'", CONFIGURATION_ROOT_PATH, root);
             if(root != null) {
                 Iterator<Resource> i = resourceResolver.findResources(
-                    "SELECT * FROM [slingddr:Folder]",
+                    "SELECT * FROM [" + DDR_NODE_TYPE + "]",
                     Query.JCR_SQL2
                 );
+                log.info("DDR Nodes by Type: '{}', has next: '{}'", i, i.hasNext());
                 while(i.hasNext()) {
                     Resource item = i.next();
                     log.info("Handle Found DDR Resource: '{}'", item);
@@ -127,6 +155,19 @@ public class DeclarativeDynamicResourceManagerService
         }
     }
 
+    private void handleDDRFilter(String[] filters, Map<String,String> filterMap) {
+        if(filters != null && filters.length > 0) {
+            for(String filter: filters) {
+                int index = filter.indexOf('=');
+                if(index > 0 && index < filter.length() - 1) {
+                    String name = filter.substring(0, index);
+                    String value = filter.substring(index + 1);
+                    filterMap.put(name, value);
+                }
+            }
+        }
+    }
+
     private void handleDDRResource(Resource ddrSourceResource) {
         if(ddrSourceResource != null) {
             ValueMap properties = ddrSourceResource.getValueMap();
@@ -137,7 +178,10 @@ public class DeclarativeDynamicResourceManagerService
                 if(ddrTargetResource != null) {
                     DeclarativeDynamicResourceProviderHandler service = new DeclarativeDynamicResourceProviderHandler();
                     log.info("Dynamic Target: '{}', Dynamic Provider: '{}'", ddrSourceResource, ddrSourceResource);
-                    long id = service.registerService(bundleContext.getBundle(), ddrTargetPath, ddrSourceResource.getPath(), resourceResolverFactory);
+                    long id = service.registerService(
+                        bundleContext.getBundle(), ddrTargetPath, ddrSourceResource.getPath(), resourceResolverFactory,
+                        allowedFilter, prohibitedFilter
+                    );
                     log.info("After Registering Tenant RP: service: '{}', id: '{}'", service, id);
                     registeredServices.put(ddrTargetResource.getPath(), service);
                     Iterator<Resource> i = ddrSourceResource.listChildren();

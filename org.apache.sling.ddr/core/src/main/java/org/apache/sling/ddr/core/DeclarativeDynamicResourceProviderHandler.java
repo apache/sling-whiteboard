@@ -38,6 +38,8 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import static org.apache.sling.api.resource.Resource.RESOURCE_TYPE_NON_EXISTING;
 import static org.apache.sling.ddr.api.Constants.DYNAMIC_COMPONENTS_SERVICE_USER;
@@ -67,13 +69,20 @@ public class DeclarativeDynamicResourceProviderHandler
     private String providerRootPath;
     private boolean active;
     private ResourceResolverFactory resourceResolverFactory;
+    private Map<String, String> allowedDDRFilter;
+    private Map<String, String> prohibitedDDRFilter;
 
     //---------- Service Registration
 
-    public long registerService(Bundle bundle, String targetRootPath, String providerRootPath, ResourceResolverFactory resourceResolverFactory) {
+    public long registerService(
+        Bundle bundle, String targetRootPath, String providerRootPath, ResourceResolverFactory resourceResolverFactory,
+        Map<String, String> allowedDDRFilter, Map<String, String> prohibitedDDRFilter
+    ) {
         this.targetRootPath = targetRootPath;
         this.providerRootPath = providerRootPath;
         this.resourceResolverFactory = resourceResolverFactory;
+        this.allowedDDRFilter = allowedDDRFilter;
+        this.prohibitedDDRFilter = prohibitedDDRFilter;
         log.info("Target Root Path: '{}', Provider Root Paths: '{}'", targetRootPath, providerRootPath);
 
         final Dictionary<String, Object> props = new Hashtable<>();
@@ -139,7 +148,9 @@ public class DeclarativeDynamicResourceProviderHandler
             log.info("1. After Getting Resource from Parent, path: '{}', resource: '{}'", resourcePath, answer);
             if(answer == null) {
                 Resource source = resourceResolver.getResource(providerRootPath);
-                answer = createSyntheticFromResource(resourceResolver, source, resourcePath);
+                if(filterSource(source)) {
+                    answer = createSyntheticFromResource(resourceResolver, source, resourcePath);
+                }
             }
         } else if(resourcePath.startsWith(targetRootPath)) {
             log.info("2. Before Getting Resource from Parent, path: '{}'", resourcePath);
@@ -163,7 +174,9 @@ public class DeclarativeDynamicResourceProviderHandler
                             providerRoot = resourceResolver1.getResource(providerRootPath);
                             Resource source = providerRoot.getChild(name);
                             if (source != null && !source.isResourceType(RESOURCE_TYPE_NON_EXISTING)) {
-                                answer = createSyntheticFromResource(resourceResolver, source, resourcePath);
+                                if(filterSource(source)) {
+                                    answer = createSyntheticFromResource(resourceResolver, source, resourcePath);
+                                }
                             }
                         } catch (LoginException e) {
                             log.error("Was not able to obtain Service Resource Resolver", e);
@@ -171,7 +184,9 @@ public class DeclarativeDynamicResourceProviderHandler
                     } else {
                         Resource source = providerRoot.getChild(name);
                         if (source != null && !source.isResourceType(RESOURCE_TYPE_NON_EXISTING)) {
-                            answer = createSyntheticFromResource(resourceResolver, source, resourcePath);
+                            if(filterSource(source)) {
+                                answer = createSyntheticFromResource(resourceResolver, source, resourcePath);
+                            }
                         }
                     }
                 }
@@ -232,7 +247,9 @@ public class DeclarativeDynamicResourceProviderHandler
                             log.warn("Reference: '{}' provided by does not resolve to a resource", referencePath);
                         }
                     } else {
-                        items.add(createSyntheticFromResource(resourceResolver, child, targetRootPath + SlASH + child.getName()));
+                        if(filterSource(child)) {
+                            items.add(createSyntheticFromResource(resourceResolver, child, targetRootPath + SlASH + child.getName()));
+                        }
                     }
                 }
             }
@@ -259,5 +276,34 @@ public class DeclarativeDynamicResourceProviderHandler
     public void stop() {
         log.info("Provider Stop");
         super.stop();
+    }
+
+    private boolean filterSource(Resource source) {
+        if(allowedDDRFilter.isEmpty() && prohibitedDDRFilter.isEmpty()) {
+            return true;
+        }
+        if(source == null) {
+            return false;
+        }
+        ValueMap properties = source.getValueMap();
+        if(!allowedDDRFilter.isEmpty()) {
+            for(Entry<String,String> filter: allowedDDRFilter.entrySet()) {
+                String propertyValue = properties.get(filter.getKey(), String.class);
+                if(propertyValue != null) {
+                    if(!filter.getValue().equals(propertyValue)) {
+                        return false;
+                    }
+                }
+            }
+            for(Entry<String,String> filter: prohibitedDDRFilter.entrySet()) {
+                String propertyValue = properties.get(filter.getKey(), String.class);
+                if(propertyValue != null) {
+                    if(filter.getValue().equals(propertyValue)) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
 }

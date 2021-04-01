@@ -22,8 +22,8 @@ The Declarative Dynamic Resource (DDR) is composed of these components:
 
 The DDR is using its own Service User **ddr-serviceuser** that is used to read and handle DDRs.
 
-Any source folder needs to set the **jcr:primaryType** to **slingddr:Folder** and set the property
-**slingddr:target** to the path of the target folder of its DDR. That path needs to be absolute and
+Any source folder needs to set the **jcr:primaryType** to **sling:DDR** and set the property
+**sling:ddrTarget** to the path of the target folder of its DDR. That path needs to be absolute and
 point to an existing resource. Keep in mind that this path points to the parent of a DDR as each node
 inside the source is creating a DDR with the path of the target as parent and the source name as
 name of the DDR. Keep in mind that **no resource with that name** can existing in the target folder

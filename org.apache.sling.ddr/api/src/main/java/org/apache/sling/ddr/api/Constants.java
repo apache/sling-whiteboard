@@ -37,4 +37,8 @@ public interface Constants {
     char CLOSING_MULTIPLE = '}';
     String MULTI_SEPARATOR = ";";
 
+    String DDR_NODE_TYPE = "sling:DDR";
+    String DDR_TARGET_PROPERTY_NAME = "sling:ddrTarget";
+    String CONFIGURATION_ROOT_PATH = "/conf";
+    String DDR_INDICATOR = "sling:ddrActive";
 }

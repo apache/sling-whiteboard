@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import static org.apache.sling.ddr.api.Constants.DDR_INDICATOR;
 import static org.apache.sling.ddr.api.Constants.SLING_RESOURCE_SUPER_TYPE_PROPERTY;
 
 public class DeclarativeDynamicResourceImpl
@@ -61,6 +62,7 @@ public class DeclarativeDynamicResourceImpl
                 parameters.put(entry.getKey(), entry.getValue() + "");
             }
         }
+        parameters.put(DDR_INDICATOR, "true");
         ResourceMetadata metadata = new ResourceMetadataWrapper();
         metadata.setParameterMap(parameters);
         metadata.setResolutionPath(targetPath);

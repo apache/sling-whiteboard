@@ -1,0 +1,18 @@
+{
+  "sling:resourceType": "sling:Folder",
+  "test": {
+    "sling:resourceType": "sling:Folder",
+    "settings": {
+      "sling:resourceType": "sling:Folder",
+      "dynamic": {
+        "sling:resourceType": "sling:DDR",
+        "sling:ddrTarget": "/apps/dynamic",
+        "test1": {
+          "sling:resourceType": "test/conf",
+          "sling:resourceSuperType": "test/static",
+          "jcr:title": "Test-1"
+        }
+      }
+    }
+  }
+}
