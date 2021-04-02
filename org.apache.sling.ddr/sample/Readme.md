@@ -29,7 +29,7 @@ After the installation open Sling in a browser and then go to **composum** brows
 Here go to **/apps/ddr-dynamic** and you will find two child nodes **button1** and **text1**.
 These resources are fully dynamic mean that they would go away if the DDR core is disabled.
 Try this by going to the System Console **Bundles** and stop the **org.apache.sling.ddr.core** bundle.
-Refershing the **/apps/ddr-dynamic** folder in composum will not display any child resources. Restart
+Refreshing the **/apps/ddr-dynamic** folder in composum will not display any child resources. Restart
 the bundle now again and make sure the child resources are there again.
 Now we want to see these components but open the content on **/ddr-sample/button.html**. This will
 show *Hello Button* or *Hello Text*.

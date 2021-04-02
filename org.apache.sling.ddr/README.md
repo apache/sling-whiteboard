@@ -29,4 +29,7 @@ inside the source is creating a DDR with the path of the target as parent and th
 name of the DDR. Keep in mind that **no resource with that name** can existing in the target folder
 otherwise it will be shadowed by the existing resource.
 
+**Note**: any dynamic resource will have a property called **sling:ddrActive** with value **true** that
+marks this resource as a DDR.
+
 Andreas Schaefer, 3/27/2021
