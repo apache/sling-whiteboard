@@ -81,8 +81,8 @@ public class DeclarativeDynamicResourceProviderHandler
         this.targetRootPath = targetRootPath;
         this.providerRootPath = providerRootPath;
         this.resourceResolverFactory = resourceResolverFactory;
-        this.allowedDDRFilter = allowedDDRFilter;
-        this.prohibitedDDRFilter = prohibitedDDRFilter;
+        this.allowedDDRFilter = allowedDDRFilter == null ? new HashMap<String, List<String>>(): allowedDDRFilter;
+        this.prohibitedDDRFilter = prohibitedDDRFilter == null ? new HashMap<String, List<String>>(): prohibitedDDRFilter;
         log.info("Target Root Path: '{}', Provider Root Paths: '{}'", targetRootPath, providerRootPath);
 
         final Dictionary<String, Object> props = new Hashtable<>();
