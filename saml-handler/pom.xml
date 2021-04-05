@@ -36,6 +36,8 @@
     <bnd.baseline.skip>true</bnd.baseline.skip>
     <powermock.version>2.0.9</powermock.version>
     <exam.version>4.13.3</exam.version>
+    <maven.compiler.source>1.11</maven.compiler.source>
+    <maven.compiler.target>1.11</maven.compiler.target>
     <pax.vm.options>
       -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5015
     </pax.vm.options>
@@ -59,8 +61,8 @@ which is licensed under the Apache-2.0 license.
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-         <source>9</source>
-         <target>9</target>
+         <source>11</source>
+         <target>11</target>
         </configuration>
       </plugin>
       <plugin>
@@ -70,6 +72,7 @@ which is licensed under the Apache-2.0 license.
           <excludes combine.children="append">
             <exclude>**/dependency-reduced-pom.xml</exclude>
             <exclude>**/*.vm</exclude>
+            <exclude>src/test/resources/*</exclude>
           </excludes>
         </configuration>
       </plugin>
@@ -318,7 +321,8 @@ which is licensed under the Apache-2.0 license.
     <dependency>
       <groupId>org.apache.sling</groupId>
       <artifactId>org.apache.sling.api</artifactId>
-      <version>[2.16.2,2.20.0]</version>
+<!--      <version>[2.16.2,2.20.0]</version>-->
+      <version>[2.16.2,2.23.0]</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -329,14 +333,16 @@ which is licensed under the Apache-2.0 license.
     </dependency>
 
 <!--
-Export-Package:org.apache.jackrabbit.oak.spi.security.authentication.external.*
+this was removed from bnd.bnd
+because it became difficult manage a version range while using a specific version in IT tests
+Export-Package:org.apache.jackrabbit.oak.spi.security.authentication.external.*   
 -->
     <dependency>
       <groupId>org.apache.jackrabbit</groupId>
       <artifactId>oak-auth-external</artifactId>
-      <version>[1.32]</version>
+      <version>[1.32.0,1.38.0]</version>
+      <scope>provided</scope>
     </dependency>
-
 
 <!--    Apache Commons -->
     <dependency>
