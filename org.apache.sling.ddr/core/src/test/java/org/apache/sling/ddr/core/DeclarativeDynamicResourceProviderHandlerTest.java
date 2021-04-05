@@ -113,7 +113,7 @@ public class DeclarativeDynamicResourceProviderHandlerTest {
             context.bundleContext().getBundle(), dynamicResourceRoot, confResourceRoot,
             resourceResolverFactory, null,
             new HashMap<String, List<String>>() {{
-                put("sling:resourceType", Arrays.asList("nt:file"));
+                put("jcr:primaryType", Arrays.asList("nt:file"));
             }}
         );
 
@@ -152,7 +152,7 @@ public class DeclarativeDynamicResourceProviderHandlerTest {
             context.bundleContext().getBundle(), dynamicResourceRoot, confResourceRoot,
             resourceResolverFactory, null,
             new HashMap<String, List<String>>() {{
-                put("sling:resourceType", Arrays.asList("nt:file", "nt:resource"));
+                put("jcr:primaryType", Arrays.asList("nt:file", "nt:resource"));
             }}
         );
 

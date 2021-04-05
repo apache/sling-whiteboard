@@ -8,19 +8,21 @@
         "sling:resourceType": "sling:DDR",
         "sling:ddrTarget": "/apps/dynamicFilter",
         "test1": {
+          "jcr:primaryType": "sling:Folder",
           "sling:resourceType": "test/conf",
           "sling:resourceSuperType": "test/static",
           "jcr:title": "Test-1"
         },
         "test2": {
-          "sling:resourceType": "nt:file",
-          "sling:resourceSuperType": "test/static",
-          "jcr:title": "Test-2"
+          "jcr:primaryType": "nt:file",
+          "jcr:content": {
+            "jcr:primaryType": "nt:resource",
+            "jcr:data": ""
+          }
         },
         "test3": {
-          "sling:resourceType": "nt:resource",
-          "sling:resourceSuperType": "test/static",
-          "jcr:title": "Test-3"
+          "jcr:primaryType": "nt:resource",
+          "jcr:data": ""
         }
       }
     }

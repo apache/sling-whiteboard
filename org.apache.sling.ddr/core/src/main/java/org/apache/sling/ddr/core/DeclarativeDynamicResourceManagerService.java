@@ -62,7 +62,7 @@ import static org.apache.sling.ddr.api.Constants.EQUALS;
     service = { DeclarativeDynamicResourceManager.class, EventListener.class },
     immediate = true
 )
-@Designate(ocd = DeclarativeDynamicResourceManagerService.Configuration.class, factory = true)
+@Designate(ocd = DeclarativeDynamicResourceManagerService.Configuration.class, factory = false)
 public class DeclarativeDynamicResourceManagerService
     implements DeclarativeDynamicResourceManager, EventListener
 {
@@ -72,11 +72,11 @@ public class DeclarativeDynamicResourceManagerService
     public @interface Configuration {
         @AttributeDefinition(
             name = "Allowed DDR Filter",
-            description="Allowed Resources to become a DDR in a format of: <property name>=<property value>. If any entries are provided all others are not allowed.")
+            description="If not empty filters out any resource without a single match, format: <property name>=<property value>")
         String[] allowed_ddr_filter();
         @AttributeDefinition(
             name = "Prohibited DDR Filter",
-            description="Prohibited Resources to become a DDR in a format of: <property name>=<property value>. Any matching entry is prohibited.")
+            description="Filters out any resource with a single match, format: <property name>=<property value>")
         String[] prohibited_ddr_filter();
     }
 
@@ -191,9 +191,11 @@ public class DeclarativeDynamicResourceManagerService
                     );
                     log.info("After Registering Tenant RP: service: '{}', id: '{}'", service, id);
                     registeredServices.put(ddrTargetResource.getPath(), service);
-                    dynamicComponentFilterNotifier.addDeclarativeDynamicResource(
-                        ddrTargetPath, ddrSourceResource
-                    );
+                    if(dynamicComponentFilterNotifier != null) {
+                        dynamicComponentFilterNotifier.addDeclarativeDynamicResource(
+                            ddrTargetPath, ddrSourceResource
+                        );
+                    }
                 }
             }
         }
@@ -215,7 +217,9 @@ public class DeclarativeDynamicResourceManagerService
         for(Entry<String, DeclarativeDynamicResourceProvider> entry: registeredServices.entrySet()) {
             log.info("Before UnRegistering Tenant RP, service: '{}'", entry.getValue());
             entry.getValue().unregisterService();
-            dynamicComponentFilterNotifier.removeDynamicDeclarativeResource(entry.getKey());
+            if(dynamicComponentFilterNotifier != null) {
+                dynamicComponentFilterNotifier.removeDynamicDeclarativeResource(entry.getKey());
+            }
             log.info("After UnRegistering Tenant RP, service: '{}'", entry.getValue());
         }
         if(resourceResolver != null) {

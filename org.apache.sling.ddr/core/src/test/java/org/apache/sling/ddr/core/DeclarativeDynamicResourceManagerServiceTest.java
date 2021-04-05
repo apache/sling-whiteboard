@@ -21,7 +21,6 @@ import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
-import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.ddr.api.DeclarativeDynamicResourceListener;
 import org.apache.sling.testing.mock.sling.NodeTypeDefinitionScanner;
 import org.apache.sling.testing.mock.sling.ResourceResolverType;
@@ -39,15 +38,11 @@ import org.slf4j.LoggerFactory;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
-import javax.jcr.query.Query;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import static org.apache.sling.ddr.api.Constants.DDR_NODE_TYPE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -105,8 +100,8 @@ public class DeclarativeDynamicResourceManagerServiceTest {
         final String testPropertyValue = "Test-1";
 
         log.info("Before Loading Test Resources");
-        context.load().json("/ddr-sources/ddr-conf-settings.json", "/conf");
-        context.load().json("/ddr-sources/ddr-apps-settings.json", "/apps");
+        context.load().json("/ddr-installation/ddr-conf-settings.json", "/conf");
+        context.load().json("/ddr-installation/ddr-apps-settings.json", "/apps");
         log.info("After Loading Test Resources");
         Resource sourceRoot = resourceResolver.getResource("/conf/test/settings/dynamic");
         log.info("Dynamic Test Resource Root: '{}'", sourceRoot);

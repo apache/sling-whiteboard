@@ -283,13 +283,18 @@ public class DeclarativeDynamicResourceProviderHandler
         if(source == null) { return false; }
         ValueMap properties = source.getValueMap();
         if(!allowedDDRFilter.isEmpty()) {
+            boolean found = allowedDDRFilter.isEmpty();
             for (Entry<String, List<String>> filter : allowedDDRFilter.entrySet()) {
                 String propertyValue = properties.get(filter.getKey(), String.class);
                 if (propertyValue != null) {
                     if (!filter.getValue().contains(propertyValue)) {
-                        return false;
+                        found = true;
+                        break;
                     }
                 }
+            }
+            if(!found) {
+                return false;
             }
         }
         for(Entry<String,List<String>> filter: prohibitedDDRFilter.entrySet()) {

@@ -28,10 +28,10 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>org.apache.sling.ddr.sample2</artifactId>
+    <artifactId>org.apache.sling.ddr.sample.after</artifactId>
     <packaging>bundle</packaging>
 
-    <name>Declarative Dynamic Resources - Sample 2</name>
+    <name>Declarative Dynamic Resources - After Installation Sample</name>
     <description>
         Sample Project to showcase how DDRs are used after the original
         deployment of the DDR code. Deploy this manually after the DDR
