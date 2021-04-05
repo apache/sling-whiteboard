@@ -61,14 +61,21 @@ import static org.junit.Assert.fail;
 
 public class JKSHelper {
     private static Logger logger = LoggerFactory.getLogger(JKSHelper.class);
-    static String KEYSTORE_TEST_PATH = "./target/exampleSaml2.jks";
-    static char[] KEYSTORE_TEST_PASSWORD = "password".toCharArray();
-    static String IDP_ALIAS = "idpCertAlias";
-    static String SP_ALIAS = "spAlias";
-    static char[] SP_TEST_PASSWORD = "sppassword".toCharArray();
+    public static String KEYSTORE_TEST_PATH = "./target/exampleSaml2.jks";
+    public static char[] KEYSTORE_TEST_PASSWORD = "password".toCharArray();
+    public static String IDP_ALIAS = "idpcertalias";
+    public static String SP_ALIAS = "spalias";
+    public static char[] SP_TEST_PASSWORD = "sppassword".toCharArray();
+    static String PATH = "";
 
-    static KeyStore createExampleJks(){
-        File file = new File(KEYSTORE_TEST_PATH);
+    public static KeyStore createExampleJks(){
+        PATH = KEYSTORE_TEST_PATH;
+        return createExampleJks(KEYSTORE_TEST_PATH);
+    }
+
+    public static KeyStore createExampleJks(String path){
+        PATH = path;
+        File file = new File(PATH);
         try (FileOutputStream fos = new FileOutputStream(file)){
             KeyStore ks;
             ks = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -87,8 +94,8 @@ public class JKSHelper {
         return null;
     }
 
-    static void addTestingCertsToKeystore(KeyStore testKeyStore){
-        try (FileOutputStream fos = new FileOutputStream(KEYSTORE_TEST_PATH)){
+    public static void addTestingCertsToKeystore(KeyStore testKeyStore){
+        try (FileOutputStream fos = new FileOutputStream(PATH)){
             testKeyStore.load(null, KEYSTORE_TEST_PASSWORD);
             KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
             keyPairGenerator.initialize(4096);
@@ -97,6 +104,7 @@ public class JKSHelper {
             final X509Certificate certIDP = JKSHelper.generate(keyPairIDP, "SHA256withRSA", "localhost", 730);
             final X509Certificate certSP = JKSHelper.generate(keyPairSP, "SHA256withRSA", "localhost", 730);
             testKeyStore.setCertificateEntry(IDP_ALIAS, certIDP);
+            testKeyStore.setKeyEntry(IDP_ALIAS+"key", keyPairIDP.getPrivate(), KEYSTORE_TEST_PASSWORD,  new Certificate[]{certIDP});
             testKeyStore.setKeyEntry(SP_ALIAS, keyPairSP.getPrivate(), SP_TEST_PASSWORD,  new Certificate[]{certSP});
             testKeyStore.store(fos, KEYSTORE_TEST_PASSWORD);
         } catch (Exception e){

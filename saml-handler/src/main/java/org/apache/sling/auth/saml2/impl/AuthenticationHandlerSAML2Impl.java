@@ -134,16 +134,16 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
         initializeTokenStore(tokenFile);
         if (this.getSaml2SPEncryptAndSign()) {
             //      set encryption keys
+            this.idpVerificationCert = VerifySignatureCredentials.getCredential(
+                    this.getJksFileLocation(),
+                    this.getJksStorePassword().toCharArray(),
+                    this.getIdpCertAlias());
             this.spKeypair = KeyPairCredentials.getCredential(
                     this.getJksFileLocation(),
                     this.getJksStorePassword().toCharArray(),
                     this.getSpKeysAlias(),
                     this.getSpKeysPassword().toCharArray());
             //      set credential for signing
-            this.idpVerificationCert = VerifySignatureCredentials.getCredential(
-                    this.getJksFileLocation(),
-                    this.getJksStorePassword().toCharArray(),
-                    this.getIdpCertAlias());
         }
     }
 
@@ -161,6 +161,10 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
 
     Credential getIdpVerificationCert(){
         return this.idpVerificationCert;
+    }
+
+    SessionStorage getStorageAuthInfo(){
+        return this.storageAuthInfo;
     }
 
     /**
@@ -184,7 +188,7 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
 
 // 2.  try credentials from the session
         if ( !this.getSaml2Path().isEmpty() && reqURI.startsWith(this.getSaml2Path())) {
-            final String authData = storageAuthInfo.getString(httpServletRequest);
+            final String authData = getStorageAuthInfo().getString(httpServletRequest);
             if (authData != null) {
                 if (tokenStore.isValid(authData)) {
                     return buildAuthInfo(authData);
@@ -206,7 +210,7 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
 
     private void clearSessionAttributes(final HttpServletRequest httpServletRequest,
                                         final HttpServletResponse httpServletResponse) {
-        storageAuthInfo.clear(httpServletRequest, httpServletResponse);
+        getStorageAuthInfo().clear(httpServletRequest, httpServletResponse);
     }
 
     private AuthenticationInfo processAssertionConsumerService(final HttpServletRequest httpServletRequest,
@@ -263,11 +267,12 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
     @Override
     public boolean requestCredentials(final HttpServletRequest httpServletRequest,
                                       final HttpServletResponse httpServletResponse) throws IOException {
-        // check the referrer to see if the request is for this handler
-        if (!AuthUtil.checkReferer(httpServletRequest, this.getAcsPath())) {
-            // not for this handler, so return
+        // 0. ignore this handler if an authentication handler is requested
+        if (ignoreRequestCredentials(httpServletRequest)) {
+            // consider this handler is not used
             return false;
         }
+
         if (this.getSaml2SPEnabled() ) {
             doClassloading();
             setGotoURLOnSession(httpServletRequest);
@@ -296,7 +301,17 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
         redirectUserWithRequest(httpServletRequest, httpServletResponse, authnRequest);
     }
 
-
+    /**
+     * Returns <code>true</code> if this authentication handler should ignore the
+     * call to {@link #requestCredentials(HttpServletRequest, HttpServletResponse)}.
+     * <p>
+     * This method returns <code>true</code> if the {@link #REQUEST_LOGIN_PARAMETER}
+     * is set to any value other than "SAML2" (the authentication type)
+     */
+    boolean ignoreRequestCredentials(final HttpServletRequest request) {
+        final String requestLogin = request.getParameter(REQUEST_LOGIN_PARAMETER);
+        return requestLogin != null && !AUTH_TYPE.equals(requestLogin);
+    }
 
     private void redirectUserWithRequest(final HttpServletRequest httpServletRequest ,
                      final HttpServletResponse httpServletResponse, final RequestAbstractType requestForIDP) {
@@ -309,8 +324,6 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
             setRelayStateOnSession(httpServletRequest, bindingContext);
             setRequestIDOnSession(httpServletRequest, (AuthnRequest)requestForIDP);
             endpointContext.setEndpoint(getIPDEndpoint());
-        } else if (requestForIDP instanceof LogoutRequest){
-            endpointContext.setEndpoint(getSLOEndpoint());
         }
         SignatureSigningParameters signatureSigningParameters = new SignatureSigningParameters();
         signatureSigningParameters.setSigningCredential(this.getSpKeypair());
@@ -404,9 +417,13 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
         }
     }
 
+    Credential getSPKeyPair(){
+        return this.spKeypair;
+    }
+
     private Assertion decryptAssertion(final EncryptedAssertion encryptedAssertion) {
         // Use SP Private Key to decrypt
-        StaticKeyInfoCredentialResolver keyInfoCredentialResolver = new StaticKeyInfoCredentialResolver(this.spKeypair);
+        StaticKeyInfoCredentialResolver keyInfoCredentialResolver = new StaticKeyInfoCredentialResolver(getSPKeyPair());
         Decrypter decrypter = new Decrypter(null, keyInfoCredentialResolver, new InlineEncryptedKeyResolver());
         decrypter.setRootInNewDocument(true);
         try {
@@ -694,14 +711,14 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
      * @param authInfo
      *            The authentication info used to successful log in
      */
-    private void refreshAuthData(final HttpServletRequest request, final HttpServletResponse response,
+    void refreshAuthData(final HttpServletRequest request, final HttpServletResponse response,
                                  final AuthenticationInfo authInfo) {
 
         // get current authentication data, may be missing after first login
-        String token = storageAuthInfo.getString(request);
+        String token = getStorageAuthInfo().getString(request);
 
         // check whether we have to "store" or create the data
-        final boolean refreshCookie = needsRefresh(token, this.sessionTimeout);
+        final boolean refreshCookie = needsRefresh(token);
 
         // add or refresh the stored auth hash
         if (refreshCookie) {
@@ -719,7 +736,7 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
             }
 
             if (token != null) {
-                storageAuthInfo.setString(request, token);
+                getStorageAuthInfo().setString(request, token);
             } else {
                 clearSessionAttributes(request, response);
             }
@@ -728,12 +745,11 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
 
     /**
      * Refresh the cookie periodically.
+     * Compares current time to saved expiry time
      *
-     * @param sessionTimeout
-     *            time to live for the session
      * @return true or false
      */
-    boolean needsRefresh(final String authData, final long sessionTimeout) {
+    boolean needsRefresh(final String authData) {
         boolean updateCookie = false;
         if (authData == null) {
             updateCookie = true;
@@ -741,7 +757,8 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
             String[] parts = TokenStore.split(authData);
             if (parts != null && parts.length == 3) {
                 long cookieTime = Long.parseLong(parts[1].substring(1));
-                if (System.currentTimeMillis() + (sessionTimeout / 2) > cookieTime) {
+                long timeNow = System.currentTimeMillis();
+                if (timeNow > cookieTime) {
                     updateCookie = true;
                 }
             }
