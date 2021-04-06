@@ -29,8 +29,9 @@ import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.auth.core.AuthenticationSupport;
+import org.apache.sling.auth.core.spi.AuthenticationFeedbackHandler;
 import org.apache.sling.auth.core.spi.AuthenticationHandler;
-import org.apache.sling.auth.saml2.impl.AuthenticationHandlerSAML2Impl;
+import org.apache.sling.auth.core.spi.AuthenticationInfo;
 import org.apache.sling.testing.paxexam.SlingOptions;
 import org.apache.sling.testing.paxexam.TestSupport;
 import org.junit.After;
@@ -59,8 +60,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Base64;
 
@@ -200,13 +201,17 @@ public class SamlHandlerIT extends TestSupport {
                 .asOption(),
             // supply the required configuration so the auth handler service will activate
             testBundle("bundle.filename"), // from TestSupport
+//                urn:oid:1.2.840.113549.1.9.1 = email
+//                urn:oid:2.5.4.4 = surname
+//                urn:oid:2.5.4.42 = givenName
+//                phone is configured but not included
             factoryConfiguration("org.apache.sling.auth.saml2.AuthenticationHandlerSAML2")
                 .put("path", "/")
                 .put("entityID", "http://localhost:8080/")
                 .put("acsPath", "/sp/consumer")
-                .put("saml2userIDAttr", "username")
+                .put("saml2userIDAttr", "urn:oid:0.9.2342.19200300.100.1.1")
                 .put("saml2userHome", "/home/users/saml")
-                .put("saml2groupMembershipAttr", "groupMembership")
+                .put("saml2groupMembershipAttr", "urn:oid:2.16.840.1.113719.1.1.4.1.25")
                 .put("syncAttrs", new String[]{"urn:oid:2.5.4.4","urn:oid:2.5.4.42","phone","urn:oid:1.2.840.113549.1.9.1"})
                 .put("saml2SPEnabled", true)
                 .put("saml2SPEncryptAndSign", false)
@@ -417,5 +422,62 @@ public class SamlHandlerIT extends TestSupport {
         assertNull(authHandlerEnc.extractCredentials(request, response)) ;
     }
 
+    @Test
+    public void test_goodLogin(){
+        String base64EndSamlResp = buildAuthResponse();
+        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+        HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
+        when(request.getRequestURI()).thenReturn("/sp/consumer");
+        when(request.getMethod()).thenReturn("POST");
+        when(request.getParameter("RelayState")).thenReturn("ncu7lhndv8o4o096im9065ijqn");
+        when(request.getHeader("Origin")).thenReturn("http://localhost:8484");
+        when(request.getHeader("Referer")).thenReturn("http://localhost:8484/");
+        HttpSession httpSession = Mockito.mock(HttpSession.class);
+        when(httpSession.getAttribute("saml2AuthInfo")).thenReturn("ncu7lhndv8o4o096im9065ijqn");
+        when(httpSession.getAttribute("saml2RequestID")).thenReturn("_f96afa62dc16b1cc99efab06db0c750d");
+        when(request.getSession(false)).thenReturn(httpSession);
+        when(request.getSession()).thenReturn(httpSession);
+        when(request.getParameter("SAMLResponse")).thenReturn(base64EndSamlResp);
+        AuthenticationInfo authenticationInfo = authHandler.extractCredentials(request, response);
+        assertNotNull(authenticationInfo);
+        assertTrue(((AuthenticationFeedbackHandler)authHandler).authenticationSucceeded(request,response,authenticationInfo));
+    }
 
+    String buildAuthResponse(){
+        LocalDateTime dateTime = LocalDateTime.now();
+        LocalDateTime notBefore = LocalDateTime.now().minusSeconds(3);
+        LocalDateTime notOnOrAfter = LocalDateTime.now().plusMinutes(5);
+        String currentTime = dateTime.format(DateTimeFormatter.ISO_DATE_TIME);
+        String notOnOrAfterTime = notOnOrAfter.format(DateTimeFormatter.ISO_DATE_TIME);
+        String notBeforeTime = notBefore.format(DateTimeFormatter.ISO_DATE_TIME);
+        String samlResp0 = "<samlp:Response Destination=\"http://localhost:8080/sp/consumer\" ID=\"ID_5232eed3-8fd5-4562-92bb-69af0246c341\" InResponseTo=\"_f96afa62dc16b1cc99efab06db0c750d\" ";
+        String issueInstance = "IssueInstant=\""+currentTime+"\" ";
+        String samlResp1 ="Version=\"2.0\" xmlns:saml=\"urn:oasis:names:tc:SAML:2.0:assertion\" xmlns:samlp=\"urn:oasis:names:tc:SAML:2.0:protocol\"><saml:Issuer>http://localhost:8484/auth/realms/sling</saml:Issuer><samlp:Status><samlp:StatusCode Value=\"urn:oasis:names:tc:SAML:2.0:status:Success\"/></samlp:Status><saml:Assertion ID=\"ID_c78146f1-6c37-4ad5-b2ee-0371667c3aeb\" ";
+        //issueInstance
+        String samlResp2 = "Version=\"2.0\" xmlns=\"urn:oasis:names:tc:SAML:2.0:assertion\"><saml:Issuer>http://localhost:8484/auth/realms/sling</saml:Issuer><saml:Subject><saml:NameID Format=\"urn:oasis:names:tc:SAML:2.0:nameid-format:transient\">G-212b1981-a621-4c67-84ac-cd75551a0250</saml:NameID><saml:SubjectConfirmation Method=\"urn:oasis:names:tc:SAML:2.0:cm:bearer\"><saml:SubjectConfirmationData InResponseTo=\"_f96afa62dc16b1cc99efab06db0c750d\" ";
+        String samlResp3 = "Recipient=\"http://localhost:8080/sp/consumer\"/></saml:SubjectConfirmation></saml:Subject><saml:Conditions ";
+        String notBeforeStr = "NotBefore=\""+notBeforeTime+"\" ";
+        String notOnOrAfterStr = "NotOnOrAfter=\""+notOnOrAfterTime+"\" ";
+        String samlResp4 = "><saml:AudienceRestriction><saml:Audience>http://localhost:8080/</saml:Audience></saml:AudienceRestriction></saml:Conditions><saml:AuthnStatement ";
+        String authInstance = "AuthnInstant=\""+notBeforeTime+"\" ";
+        String session = "SessionIndex=\"4d647e71-cc20-4779-ad58-7df15816a8c5::901bf7ca-3984-4a5b-8f8b-c1c737738102\" ";
+        String sessionNotOnOrAfter = "SessionNotOnOrAfter=\""+notOnOrAfterTime+"\"> ";
+        String samlResp5 = "<saml:AuthnContext><saml:AuthnContextClassRef>urn:oasis:names:tc:SAML:2.0:ac:classes:unspecified</saml:AuthnContextClassRef></saml:AuthnContext></saml:AuthnStatement><saml:AttributeStatement><saml:Attribute FriendlyName=\"givenName\" Name=\"urn:oid:2.5.4.42\" NameFormat=\"urn:oasis:names:tc:SAML:2.0:attrname-format:basic\"> <saml:AttributeValue xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"xs:string\">Example</saml:AttributeValue></saml:Attribute><saml:Attribute FriendlyName=\"lastName\" Name=\"lastName\" NameFormat=\"urn:oasis:names:tc:SAML:2.0:attrname-format:basic\"><saml:AttributeValue xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"xs:string\">Saml2</saml:AttributeValue></saml:Attribute><saml:Attribute FriendlyName=\"groupMembership\" Name=\"urn:oid:2.16.840.1.113719.1.1.4.1.25\" NameFormat=\"urn:oasis:names:tc:SAML:2.0:attrname-format:uri\"><saml:AttributeValue xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"xs:string\">all_tenants</saml:AttributeValue><saml:AttributeValue xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"xs:string\">authors</saml:AttributeValue><saml:AttributeValue xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"xs:string\">pcms-authors</saml:AttributeValue></saml:Attribute><saml:Attribute FriendlyName=\"email\" Name=\"urn:oid:1.2.840.113549.1.9.1\" NameFormat=\"urn:oasis:names:tc:SAML:2.0:attrname-format:basic\"><saml:AttributeValue xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"xs:string\">saml2@example.com</saml:AttributeValue></saml:Attribute><saml:Attribute FriendlyName=\"userid\" Name=\"urn:oid:0.9.2342.19200300.100.1.1\" NameFormat=\"urn:oasis:names:tc:SAML:2.0:attrname-format:uri\"><saml:AttributeValue xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"xs:string\">saml2Example</saml:AttributeValue></saml:Attribute><saml:Attribute FriendlyName=\"surname\" Name=\"urn:oid:2.5.4.4\" NameFormat=\"urn:oasis:names:tc:SAML:2.0:attrname-format:basic\"><saml:AttributeValue xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"xs:string\">Saml2</saml:AttributeValue></saml:Attribute><saml:Attribute Name=\"Role\" NameFormat=\"urn:oasis:names:tc:SAML:2.0:attrname-format:basic\"><saml:AttributeValue xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"xs:string\">uma_authorization</saml:AttributeValue></saml:Attribute><saml:Attribute Name=\"Role\" NameFormat=\"urn:oasis:names:tc:SAML:2.0:attrname-format:basic\"><saml:AttributeValue xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"xs:string\">offline_access</saml:AttributeValue></saml:Attribute><saml:Attribute Name=\"Role\" NameFormat=\"urn:oasis:names:tc:SAML:2.0:attrname-format:basic\"><saml:AttributeValue xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"xs:string\">view-profile</saml:AttributeValue></saml:Attribute><saml:Attribute Name=\"Role\" NameFormat=\"urn:oasis:names:tc:SAML:2.0:attrname-format:basic\"><saml:AttributeValue xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"xs:string\">manage-account-links</saml:AttributeValue></saml:Attribute><saml:Attribute Name=\"Role\" NameFormat=\"urn:oasis:names:tc:SAML:2.0:attrname-format:basic\"> <saml:AttributeValue xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"xs:string\">manage-account</saml:AttributeValue></saml:Attribute></saml:AttributeStatement></saml:Assertion></samlp:Response>";
+        String preEncoding =
+                samlResp0 +
+                issueInstance +
+                samlResp1 +
+                issueInstance +
+                samlResp2 +
+                notOnOrAfterStr +
+                samlResp3 +
+                notBeforeStr +
+                notOnOrAfterStr +
+                samlResp4 +
+                authInstance +
+                session +
+                sessionNotOnOrAfter +
+                samlResp5;
+        return Base64.getEncoder().encodeToString(preEncoding.getBytes());
+    }
 }
