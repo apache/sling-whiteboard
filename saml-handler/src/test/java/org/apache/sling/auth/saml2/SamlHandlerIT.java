@@ -190,12 +190,6 @@ public class SamlHandlerIT extends TestSupport {
             factoryConfiguration("org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended")
                 .put("user.mapping", new String[]{"org.apache.sling.auth.saml2:Saml2UserMgtService=saml2-user-mgt"})
                 .asOption(),
-            factoryConfiguration("org.apache.felix.jaas.Configuration.factory")
-                .put("jaas.classname", "org.apache.sling.auth.saml2.sp.Saml2LoginModule")
-                .put("jaas.controlFlag", "Sufficient")
-                .put("jaas.realmName", "jackrabbit.oak")
-                .put("jaas.ranking", 110)
-                .asOption(),
             newConfiguration("org.apache.sling.engine.impl.auth.SlingAuthenticator")
                 .put("auth.annonymous", false)
                 .asOption(),

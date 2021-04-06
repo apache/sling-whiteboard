@@ -24,13 +24,18 @@ import net.shibboleth.utilities.java.support.component.ComponentInitializationEx
 import net.shibboleth.utilities.java.support.xml.ParserPool;
 import org.apache.jackrabbit.api.security.user.User;
 import org.apache.sling.auth.core.AuthUtil;
+import org.apache.sling.auth.core.spi.AuthenticationHandler;
+import org.apache.sling.auth.core.spi.AuthenticationInfo;
 import org.apache.sling.auth.saml2.AuthenticationHandlerSAML2;
 import org.apache.sling.auth.saml2.AuthenticationHandlerSAML2Config;
 import org.apache.sling.auth.saml2.Helpers;
 import org.apache.sling.auth.saml2.SAML2RuntimeException;
 import org.apache.sling.auth.saml2.Saml2User;
 import org.apache.sling.auth.saml2.Saml2UserMgtService;
-import org.apache.sling.auth.saml2.sp.*;
+import org.apache.sling.auth.saml2.sp.KeyPairCredentials;
+import org.apache.sling.auth.saml2.sp.SamlReason;
+import org.apache.sling.auth.saml2.sp.SessionStorage;
+import org.apache.sling.auth.saml2.sp.VerifySignatureCredentials;
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
 import org.opensaml.core.xml.schema.XSString;
@@ -40,10 +45,20 @@ import org.opensaml.messaging.encoder.MessageEncodingException;
 import org.opensaml.saml.common.messaging.context.SAMLBindingContext;
 import org.opensaml.saml.common.messaging.context.SAMLEndpointContext;
 import org.opensaml.saml.common.messaging.context.SAMLPeerEntityContext;
+import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.saml2.binding.decoding.impl.HTTPPostDecoder;
 import org.opensaml.saml.saml2.binding.encoding.impl.HTTPRedirectDeflateEncoder;
-import org.opensaml.saml.saml2.core.*;
-import org.opensaml.saml.common.xml.SAMLConstants;
+import org.opensaml.saml.saml2.core.Assertion;
+import org.opensaml.saml.saml2.core.Attribute;
+import org.opensaml.saml.saml2.core.AuthnRequest;
+import org.opensaml.saml.saml2.core.EncryptedAssertion;
+import org.opensaml.saml.saml2.core.Issuer;
+import org.opensaml.saml.saml2.core.NameIDPolicy;
+import org.opensaml.saml.saml2.core.NameIDType;
+import org.opensaml.saml.saml2.core.RequestAbstractType;
+import org.opensaml.saml.saml2.core.Response;
+import org.opensaml.saml.saml2.core.SubjectConfirmation;
+import org.opensaml.saml.saml2.core.SubjectConfirmationData;
 import org.opensaml.saml.saml2.encryption.Decrypter;
 import org.opensaml.saml.saml2.metadata.Endpoint;
 import org.opensaml.saml.saml2.metadata.SingleLogoutService;
@@ -61,13 +76,16 @@ import org.opensaml.xmlsec.signature.support.SignatureValidator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.wiring.BundleWiring;
-import org.apache.sling.auth.core.spi.AuthenticationHandler;
-import org.apache.sling.auth.core.spi.AuthenticationInfo;
 import org.osgi.service.component.ComponentContext;
-import org.osgi.service.component.annotations.*;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.ConfigurationPolicy;
+import org.osgi.service.component.annotations.Modified;
+import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.metatype.annotations.Designate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import javax.jcr.RepositoryException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -128,7 +146,7 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
 
     @Activate @Modified
     protected void activate(final AuthenticationHandlerSAML2Config config, ComponentContext componentContext)
-            throws InvalidKeyException, NoSuchAlgorithmException, IllegalStateException, UnsupportedEncodingException {
+            throws InvalidKeyException, NoSuchAlgorithmException, IllegalStateException, IOException {
         this.setConfigs(config);
         final File tokenFile = getTokenFile(componentContext.getBundleContext());
         initializeTokenStore(tokenFile);

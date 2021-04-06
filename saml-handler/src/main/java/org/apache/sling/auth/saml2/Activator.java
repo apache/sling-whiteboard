@@ -24,16 +24,29 @@ import org.opensaml.core.config.InitializationService;
 import org.opensaml.xmlsec.config.impl.JavaCryptoValidationInitializer;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.ServiceReference;
 import org.osgi.framework.wiring.BundleWiring;
+import org.osgi.service.cm.Configuration;
+import org.osgi.service.cm.ConfigurationAdmin;
+import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.security.*;
+
+import java.io.IOException;
+import java.security.Provider;
+import java.security.Security;
+import java.util.Dictionary;
+import java.util.Hashtable;
 
 public class Activator implements BundleActivator {
 
     private static final Logger logger = LoggerFactory.getLogger(BundleActivator.class);
 
-    public void start(BundleContext context) throws Exception {
+    private ConfigurationAdmin configAdmin;
+
+    public void start(BundleContext context) throws IOException, InvalidSyntaxException {
         // Classloading
         BundleWiring bundleWiring = context.getBundle().adapt(BundleWiring.class);
         ClassLoader loader = bundleWiring.getClassLoader();
@@ -47,11 +60,16 @@ public class Activator implements BundleActivator {
         } finally {
             thread.setContextClassLoader(loader);
         }
-        // TODO add the Jaas config related to SAML2 so it's one less thing to configure
+        setConfigAdmin(context);
+        if ( needsSamlJaas()){
+            configureSamlJaas();
+        }
     }
 
-    public void stop(BundleContext context) throws Exception {
-        // TODO remove the Jaas config related to SAML2 so authentication in general isn't broken when bundle is deactivated
+    public void stop(BundleContext context) throws IOException, InvalidSyntaxException {
+        if (configAdmin != null){
+            removeSamlJaas();
+        }
     }
 
     public static void initializeOpenSaml() throws InitializationException{
@@ -62,5 +80,37 @@ public class Activator implements BundleActivator {
         for (Provider jceProvider : Security.getProviders()) {
             logger.info(jceProvider.getInfo());
         }
+    }
+
+    protected void configureSamlJaas() throws IOException {
+        Dictionary props = new Hashtable();
+        props.put("jaas.classname", "org.apache.sling.auth.saml2.sp.Saml2LoginModule");
+        props.put("jaas.controlFlag", "Sufficient");
+        props.put("jaas.realmName", "jackrabbit.oak");
+        props.put("jaas.ranking", 110);
+        configAdmin.createFactoryConfiguration("org.apache.felix.jaas.Configuration.factory", null).update(props);
+    }
+
+    protected boolean needsSamlJaas() throws IOException, InvalidSyntaxException {
+        Configuration[] configs = configAdmin.listConfigurations("(jaas.classname=org.apache.sling.auth.saml2.sp.Saml2LoginModule)");
+        if (configs == null){
+            return true;
+        }
+        return false;
+    }
+
+    protected void removeSamlJaas() throws IOException, InvalidSyntaxException {
+        Configuration[] configs = configAdmin.listConfigurations("(jaas.classname=org.apache.sling.auth.saml2.sp.Saml2LoginModule)");
+        if (configs == null){
+            return;
+        }
+        for ( Configuration config : configs){
+            config.delete();
+        }
+    }
+
+    public void setConfigAdmin(BundleContext bundleContext) {
+        ServiceReference serviceReference = bundleContext.getServiceReference(ConfigurationAdmin.class.getName());
+        this.configAdmin = (ConfigurationAdmin) bundleContext.getService(serviceReference);
     }
 }
