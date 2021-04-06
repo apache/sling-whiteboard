@@ -419,11 +419,12 @@ public class SamlHandlerIT extends TestSupport {
         when(httpSession.getAttribute("saml2RequestID")).thenReturn("_4e68b1b1596d142f0e2aac3624c41d1b");
         when(request.getSession(false)).thenReturn(httpSession);
         when(request.getParameter("SAMLResponse")).thenReturn(base64EndSamlResp);
-        assertNull(authHandlerEnc.extractCredentials(request, response)) ;
+        assertNull(authHandlerEnc.extractCredentials(request, response));
+        ((AuthenticationFeedbackHandler)authHandler).authenticationFailed(request,response,null);
     }
 
     @Test
-    public void test_goodLogin(){
+    public void test_goodLogin() throws IOException {
         String base64EndSamlResp = buildAuthResponse();
         HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
         HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
@@ -441,6 +442,7 @@ public class SamlHandlerIT extends TestSupport {
         AuthenticationInfo authenticationInfo = authHandler.extractCredentials(request, response);
         assertNotNull(authenticationInfo);
         assertTrue(((AuthenticationFeedbackHandler)authHandler).authenticationSucceeded(request,response,authenticationInfo));
+        authHandler.dropCredentials(request,response);
     }
 
     String buildAuthResponse(){

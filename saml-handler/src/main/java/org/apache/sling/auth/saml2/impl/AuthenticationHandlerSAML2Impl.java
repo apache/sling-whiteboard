@@ -417,13 +417,10 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
         }
     }
 
-    Credential getSPKeyPair(){
-        return this.spKeypair;
-    }
 
     private Assertion decryptAssertion(final EncryptedAssertion encryptedAssertion) {
         // Use SP Private Key to decrypt
-        StaticKeyInfoCredentialResolver keyInfoCredentialResolver = new StaticKeyInfoCredentialResolver(getSPKeyPair());
+        StaticKeyInfoCredentialResolver keyInfoCredentialResolver = new StaticKeyInfoCredentialResolver(getSpKeypair());
         Decrypter decrypter = new Decrypter(null, keyInfoCredentialResolver, new InlineEncryptedKeyResolver());
         decrypter.setRootInNewDocument(true);
         try {
@@ -545,7 +542,7 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
         }
     }
 
-    private AuthenticationInfo buildAuthInfo(final String authData) {
+    AuthenticationInfo buildAuthInfo(final String authData) {
         final String userId = getUserId(authData);
         if (userId == null) {
             return null;

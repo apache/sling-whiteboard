@@ -23,7 +23,6 @@ import org.apache.jackrabbit.api.security.user.User;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.auth.core.spi.AuthenticationInfo;
-import org.apache.sling.auth.saml2.AuthenticationHandlerSAML2;
 import org.hamcrest.core.StringStartsWith;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -34,7 +33,6 @@ import org.hamcrest.Description;
 import org.mockito.Mockito;
 import org.osgi.framework.BundleContext;
 import org.jmock.api.Action;
-
 import javax.jcr.RepositoryException;
 import javax.servlet.http.HttpSession;
 import java.io.File;
@@ -43,11 +41,10 @@ import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
-
-import static org.apache.sling.auth.saml2.impl.AuthenticationHandlerSAML2Impl.AUTH_TYPE;
 import static org.apache.sling.auth.saml2.impl.AuthenticationHandlerSAML2Impl.TOKEN_FILENAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -185,6 +182,7 @@ public class AuthenticationHandlerSAML2ImplTest {
         assertFalse(handler.needsRefresh(token));
         assertTrue(handler.getTokenStore().isValid(token));
 
+
         // expired token user
         User userExp = Mockito.mock(User.class);
         when(userExp.getID()).thenReturn("expired-user");
@@ -204,7 +202,6 @@ public class AuthenticationHandlerSAML2ImplTest {
         handler.getStorageAuthInfo().getString(request);
         handler.refreshAuthData(request, response, authenticationInfo);
 
-
         // no token user
         SlingHttpServletRequest request2 = Mockito.mock(SlingHttpServletRequest.class);
         HttpSession session2 = Mockito.mock(HttpSession.class);
@@ -214,6 +211,10 @@ public class AuthenticationHandlerSAML2ImplTest {
         AuthenticationInfo authenticationInfoNT = handler.buildAuthInfo(userNoToken);
         handler.getStorageAuthInfo().getString(request2);
         handler.refreshAuthData(request2, response, authenticationInfoNT);
+
+        AuthenticationInfo authenticationInfo2 = handler.buildAuthInfo(encodedToken);
+        assertNotNull(authenticationInfo2);
+        assertEquals(userId, authenticationInfo2.getUser());
     }
 
     @Test
