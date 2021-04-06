@@ -21,10 +21,8 @@
 package org.apache.sling.auth.saml2.impl;
 
 import org.apache.sling.api.SlingHttpServletRequest;
-import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolverFactory;
-import org.apache.sling.auth.core.spi.AuthenticationInfo;
 import org.apache.sling.auth.saml2.Helpers;
 import org.apache.sling.auth.saml2.SAML2RuntimeException;
 import org.apache.sling.auth.saml2.Saml2User;
@@ -69,10 +67,8 @@ import java.security.cert.CertificateException;
 import java.time.Instant;
 import java.util.Dictionary;
 import java.util.Hashtable;
-
 import static org.apache.sling.auth.core.spi.AuthenticationHandler.REQUEST_LOGIN_PARAMETER;
 import static org.apache.sling.auth.saml2.Activator.initializeOpenSaml;
-import static org.apache.sling.auth.saml2.impl.AuthenticationHandlerSAML2Impl.AUTH_TYPE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -185,10 +181,6 @@ public class OsgiSamlTest {
         anyAttribute.getAttributeValues().add(value);
         anyAttrStmt.getAttributes().add(anyAttribute);
         assertion3.getAttributeStatements().add(anyAttrStmt);
-
-//        userMgtService.
-//        assertNull(samlHandler.doUserManagement(assertion3));
-
     }
 
     @Test
