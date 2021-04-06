@@ -1,0 +1,4 @@
+{
+  "jcr:primaryType": "sling:Folder",
+  "sling:resourceSuperType": "ddr-dynamic/components/container1"
+}

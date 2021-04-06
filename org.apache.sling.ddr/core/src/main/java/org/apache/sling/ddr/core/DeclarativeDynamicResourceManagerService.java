@@ -45,6 +45,7 @@ import javax.jcr.observation.EventIterator;
 import javax.jcr.observation.EventListener;
 import javax.jcr.query.Query;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -54,6 +55,7 @@ import java.util.Map.Entry;
 
 import static org.apache.sling.ddr.api.Constants.CONFIGURATION_ROOT_PATH;
 import static org.apache.sling.ddr.api.Constants.DDR_NODE_TYPE;
+import static org.apache.sling.ddr.api.Constants.DDR_REF_PROPERTY_NAME;
 import static org.apache.sling.ddr.api.Constants.DDR_TARGET_PROPERTY_NAME;
 import static org.apache.sling.ddr.api.Constants.DYNAMIC_COMPONENTS_SERVICE_USER;
 import static org.apache.sling.ddr.api.Constants.EQUALS;
@@ -78,6 +80,10 @@ public class DeclarativeDynamicResourceManagerService
             name = "Prohibited DDR Filter",
             description="Filters out any resource with a single match, format: <property name>=<property value>")
         String[] prohibited_ddr_filter();
+        @AttributeDefinition(
+            name = "Followed Link Names",
+            description="Property Names of links to be followed")
+        String[] followed_link_names() default DDR_REF_PROPERTY_NAME;
     }
 
     public static final int EVENT_TYPES =
@@ -109,14 +115,16 @@ public class DeclarativeDynamicResourceManagerService
 
     private Map<String, List<String>> allowedFilter = new HashMap<>();
     private Map<String, List<String>> prohibitedFilter = new HashMap<>();
+    private List<String> followedLinkNames = new ArrayList<>();
 
     @Activate
     void activate(BundleContext bundleContext, Configuration configuration) {
         this.bundleContext = bundleContext;
         log.info("Activate Started, bundle context: '{}'", bundleContext);
         // Parsing the Allowed / Prohibited DDR Filters
-        handleDDRFilter(configuration.allowed_ddr_filter(), allowedFilter);
-        handleDDRFilter(configuration.prohibited_ddr_filter(), prohibitedFilter);
+        parseDDRFilter(configuration.allowed_ddr_filter(), allowedFilter);
+        parseDDRFilter(configuration.prohibited_ddr_filter(), prohibitedFilter);
+        followedLinkNames.addAll(Arrays.asList(configuration.followed_link_names()));
         try {
             resourceResolver = resourceResolverFactory.getServiceResourceResolver(
                 new HashMap<String, Object>() {{ put(ResourceResolverFactory.SUBSERVICE, DYNAMIC_COMPONENTS_SERVICE_USER); }}
@@ -145,7 +153,7 @@ public class DeclarativeDynamicResourceManagerService
                 while(i.hasNext()) {
                     Resource item = i.next();
                     log.info("Handle Found DDR Resource: '{}'", item);
-                    handleDDRResource(item);
+                    handleDDRSource(item);
                 }
             }
         } catch (LoginException e) {
@@ -155,7 +163,7 @@ public class DeclarativeDynamicResourceManagerService
         }
     }
 
-    private void handleDDRFilter(String[] filters, Map<String, List<String>> filterMap) {
+    private void parseDDRFilter(String[] filters, Map<String, List<String>> filterMap) {
         if(filters != null && filters.length > 0) {
             for(String filter: filters) {
                 int index = filter.indexOf('=');
@@ -175,7 +183,7 @@ public class DeclarativeDynamicResourceManagerService
         }
     }
 
-    private void handleDDRResource(Resource ddrSourceResource) {
+    private void handleDDRSource(Resource ddrSourceResource) {
         if(ddrSourceResource != null) {
             ValueMap properties = ddrSourceResource.getValueMap();
             String ddrTargetPath = properties.get(DDR_TARGET_PROPERTY_NAME, String.class);
@@ -187,7 +195,7 @@ public class DeclarativeDynamicResourceManagerService
                     log.info("Dynamic Target: '{}', Dynamic Provider: '{}'", ddrSourceResource, ddrSourceResource);
                     long id = service.registerService(
                         bundleContext.getBundle(), ddrTargetPath, ddrSourceResource.getPath(), resourceResolverFactory,
-                        allowedFilter, prohibitedFilter
+                        allowedFilter, prohibitedFilter, followedLinkNames
                     );
                     log.info("After Registering Tenant RP: service: '{}', id: '{}'", service, id);
                     registeredServices.put(ddrTargetResource.getPath(), service);
@@ -206,7 +214,7 @@ public class DeclarativeDynamicResourceManagerService
             new HashMap<String, Object>() {{ put(ResourceResolverFactory.SUBSERVICE, DYNAMIC_COMPONENTS_SERVICE_USER); }}
         )) {
             Resource dynamicProvider = resourceResolver.getResource(dynamicProviderPath);
-            handleDDRResource(dynamicProvider);
+            handleDDRSource(dynamicProvider);
         } catch (LoginException e) {
             log.error("Was not able to obtain Service Resource Resolver", e);
         }
@@ -249,7 +257,7 @@ public class DeclarativeDynamicResourceManagerService
                         Resource source = resourceResolver.getResource(path);
                         log.info("Source Resource found: '{}'", source);
                         if(source != null) {
-                            handleDDRResource(source);
+                            handleDDRSource(source);
                         }
                         break;
                     case Event.NODE_MOVED:

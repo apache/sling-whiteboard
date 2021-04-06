@@ -160,10 +160,13 @@ public class DeclarativeDynamicResourceManagerServiceTest {
 //        assertEquals("Wrong DDR Source Path", confResourceRoot + "/" + resourceName, source.getPath());
 //    }
 
-    private DeclarativeDynamicResourceManagerService.Configuration createConfiguration(String[] allowed, String[] prohibited) {
+    private DeclarativeDynamicResourceManagerService.Configuration createConfiguration(
+        String[] allowed, String[] prohibited, String ... followedLinkNames
+    ) {
         final DeclarativeDynamicResourceManagerService.Configuration configuration = mock(DeclarativeDynamicResourceManagerService.Configuration.class);
         when(configuration.allowed_ddr_filter()).thenReturn(allowed == null ? new String[] {}: allowed);
         when(configuration.prohibited_ddr_filter()).thenReturn(prohibited == null ? new String[] {}: prohibited);
+        when(configuration.followed_link_names()).thenReturn(followedLinkNames == null ? new String[] {} : followedLinkNames);
         log.info("DDR-Manager Service: '{}'", declarativeDynamicResourceManagerService);
         return configuration;
     }

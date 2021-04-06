@@ -21,3 +21,4 @@
 
 [sling:DDR] > sling:Folder
   - sling:ddrTarget (string)
+  - sling:ddrRef (string)

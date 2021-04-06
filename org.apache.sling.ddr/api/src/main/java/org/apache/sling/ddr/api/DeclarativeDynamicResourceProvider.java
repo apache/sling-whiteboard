@@ -38,7 +38,7 @@ public interface DeclarativeDynamicResourceProvider {
      */
     long registerService(
         Bundle bundle, String targetRootPath, String providerRootPath, ResourceResolverFactory resourceResolverFactory,
-        Map<String, List<String>> allowedDDRFilter, Map<String, List<String>> prohibitedDDRFilter
+        Map<String, List<String>> allowedDDRFilter, Map<String, List<String>> prohibitedDDRFilter, List<String> followedLinkNames
     );
 
     /** Remove the Registration of this Service **/

@@ -114,7 +114,8 @@ public class DeclarativeDynamicResourceProviderHandlerTest {
             resourceResolverFactory, null,
             new HashMap<String, List<String>>() {{
                 put("jcr:primaryType", Arrays.asList("nt:file"));
-            }}
+            }},
+            null
         );
 
         Resource test1 = declarativeDynamicResourceProviderHandler.getResource(
@@ -153,7 +154,8 @@ public class DeclarativeDynamicResourceProviderHandlerTest {
             resourceResolverFactory, null,
             new HashMap<String, List<String>>() {{
                 put("jcr:primaryType", Arrays.asList("nt:file", "nt:resource"));
-            }}
+            }},
+            null
         );
 
         // List all the children and make sure that only one is returned

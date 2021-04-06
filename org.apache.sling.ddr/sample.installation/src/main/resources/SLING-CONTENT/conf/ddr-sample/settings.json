@@ -18,6 +18,20 @@
       "jcr:primaryType": "sling:Folder",
       "jcr:title": "Text-1",
       "sling:resourceSuperType": "ddr-static/text"
+    },
+    "container1": {
+      "componentGroup": "Dynamic.Content",
+      "jcr:primaryType": "sling:Folder",
+      "jcr:title": "Container-1",
+      "sling:resourceSuperType": "ddr-static/container",
+      "containerChild": {
+        "jcr:primaryType": "sling:Folder",
+        "jcr:title": "Container-1 Child"
+      },
+      "containerRef": {
+        "jcr:primaryType": "sling:Folder",
+        "sling:ddrRef": "/apps/ddr-static/ref"
+      }
     }
   }
 }

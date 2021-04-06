@@ -30,7 +30,7 @@ public interface Constants {
 
     String DYNAMIC_COMPONENT_FOLDER_NAME = "dynamic";
 
-    String SlASH = "/";
+    String SLASH = "/";
     String EQUALS = "=";
     String VERTICAL_LINE = "|";
     char OPENING_MULTIPLE = '{';
@@ -39,6 +39,7 @@ public interface Constants {
 
     String DDR_NODE_TYPE = "sling:DDR";
     String DDR_TARGET_PROPERTY_NAME = "sling:ddrTarget";
+    String DDR_REF_PROPERTY_NAME = "sling:ddrRef";
     String CONFIGURATION_ROOT_PATH = "/conf";
     String DDR_INDICATOR = "sling:ddrActive";
 }
