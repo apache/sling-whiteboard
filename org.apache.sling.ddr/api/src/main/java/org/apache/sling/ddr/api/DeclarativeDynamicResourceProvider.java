@@ -47,6 +47,9 @@ public interface DeclarativeDynamicResourceProvider {
     /** @return True if this service is active / registered **/
     boolean isActive();
 
+    /** @return The Parent Path of the Declarative Dynamic Resources are served from **/
+    String getProviderRootPath();
+
     /** @return The Parent Path of the Declarative Dynamic Resources are bound too **/
     String getTargetRootPath();
 

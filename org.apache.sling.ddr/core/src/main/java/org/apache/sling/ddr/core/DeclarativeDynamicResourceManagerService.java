@@ -108,7 +108,8 @@ public class DeclarativeDynamicResourceManagerService
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    private Map<String, DeclarativeDynamicResourceProvider> registeredServices = new HashMap<>();
+    private Map<String, DeclarativeDynamicResourceProvider> registeredServicesByProvider = new HashMap<>();
+    private Map<String, DeclarativeDynamicResourceProvider> registeredServicesByTarget = new HashMap<>();
     private BundleContext bundleContext;
     // Keep the Resource Resolver around otherwise the Event Listener will not work anymore
     private ResourceResolver resourceResolver;
@@ -183,28 +184,31 @@ public class DeclarativeDynamicResourceManagerService
         }
     }
 
-    private void handleDDRSource(Resource ddrSourceResource) {
-        if(ddrSourceResource != null) {
-            ValueMap properties = ddrSourceResource.getValueMap();
-            String ddrTargetPath = properties.get(DDR_TARGET_PROPERTY_NAME, String.class);
-            log.info("Found DDR Target Path: '{}'", ddrTargetPath);
-            if (ddrTargetPath != null) {
-                Resource ddrTargetResource = ddrSourceResource.getResourceResolver().getResource(ddrTargetPath);
+    private void handleDDRSource(Resource resource) {
+        if(resource != null) {
+            // Find the Resource in the tree with the Target Path
+            Resource ddrProvider = findDDRSource(resource);
+            if(ddrProvider != null) {
+                ValueMap properties = ddrProvider.getValueMap();
+                String ddrTargetPath = properties.get(DDR_TARGET_PROPERTY_NAME, String.class);
+                log.info("Found DDR Target Path: '{}'", ddrTargetPath);
+                Resource ddrTargetResource = resource.getResourceResolver().getResource(ddrTargetPath);
                 if(ddrTargetResource != null) {
                     // Check if we already registered that service and if so update it instead of creating a new one
-                    DeclarativeDynamicResourceProvider resourceProvider = registeredServices.get(ddrTargetPath);
-                    if(resourceProvider == null) {
+                    DeclarativeDynamicResourceProvider resourceProvider = registeredServicesByTarget.get(ddrTargetPath);
+                    if (resourceProvider == null) {
                         DeclarativeDynamicResourceProviderHandler service = new DeclarativeDynamicResourceProviderHandler();
-                        log.info("Dynamic Target: '{}', Dynamic Provider: '{}'", ddrSourceResource, ddrSourceResource);
+                        log.info("Dynamic Target: '{}', Dynamic Provider: '{}'", ddrTargetResource, ddrProvider);
                         long id = service.registerService(
-                            bundleContext.getBundle(), ddrTargetPath, ddrSourceResource.getPath(), resourceResolverFactory,
+                            bundleContext.getBundle(), ddrTargetPath, ddrProvider.getPath(), resourceResolverFactory,
                             allowedFilter, prohibitedFilter, followedLinkNames
                         );
                         log.info("After Registering Tenant RP: service: '{}', id: '{}'", service, id);
-                        registeredServices.put(ddrTargetResource.getPath(), service);
+                        registeredServicesByTarget.put(ddrTargetResource.getPath(), service);
+                        registeredServicesByProvider.put(ddrProvider.getPath(), service);
                         if (dynamicComponentFilterNotifier != null) {
                             dynamicComponentFilterNotifier.addDeclarativeDynamicResource(
-                                ddrTargetPath, ddrSourceResource
+                                ddrTargetPath, ddrProvider
                             );
                         }
                     } else {
@@ -213,6 +217,20 @@ public class DeclarativeDynamicResourceManagerService
                 }
             }
         }
+    }
+
+    private Resource findDDRSource(Resource resource) {
+        Resource answer = null;
+        if (resource != null) {
+            ValueMap properties = resource.getValueMap();
+            String ddrTargetPath = properties.get(DDR_TARGET_PROPERTY_NAME, String.class);
+            if (ddrTargetPath == null) {
+                answer = findDDRSource(resource.getParent());
+            } else {
+                answer = resource;
+            }
+        }
+        return answer;
     }
 
     public void update(String dynamicProviderPath) {
@@ -228,7 +246,7 @@ public class DeclarativeDynamicResourceManagerService
 
     @Deactivate
     private void deactivate() {
-        for(Entry<String, DeclarativeDynamicResourceProvider> entry: registeredServices.entrySet()) {
+        for(Entry<String, DeclarativeDynamicResourceProvider> entry: registeredServicesByTarget.entrySet()) {
             log.info("Before UnRegistering Tenant RP, service: '{}'", entry.getValue());
             entry.getValue().unregisterService();
             if(dynamicComponentFilterNotifier != null) {
@@ -236,6 +254,8 @@ public class DeclarativeDynamicResourceManagerService
             }
             log.info("After UnRegistering Tenant RP, service: '{}'", entry.getValue());
         }
+        registeredServicesByProvider.clear();
+        registeredServicesByTarget.clear();
         if(resourceResolver != null) {
             resourceResolver.close();
         }
@@ -260,17 +280,35 @@ public class DeclarativeDynamicResourceManagerService
                         }
                         log.info("Property Added or Changed, path: '{}'", path);
                     case Event.NODE_ADDED:
-                        Resource source = resourceResolver.getResource(path);
-                        log.info("Source Resource found: '{}'", source);
-                        if(source != null) {
-                            handleDDRSource(source);
-                        }
+                        handleNodeAdded(path);
+                        break;
+                    case Event.NODE_REMOVED:
+                        handleNodeRemoved(path);
                         break;
                     case Event.NODE_MOVED:
-                        //AS TODO: Handle later
+                        // The only thing to handle here is when the location changed
+                        Map info = event.getInfo();
+                        Object temp = info.get("srcAbsPath");
+                        if(temp instanceof String) {
+                            // Source found -> get target and update it
+                            String sourcePath = temp.toString();
+                            handleNodeRemoved(sourcePath);
+                            String destPath = info.get("destAbsPath") + "";
+                            handleNodeAdded(destPath);
+                        }
+                        temp = info.get("destAbsPath");
+                        if(temp instanceof String) {
+                            // Destination found -> get target and update it
+                            String destPath = temp.toString();
+                            handleNodeAdded(destPath);
+                        }
                         break;
                     case Event.PROPERTY_REMOVED:
-                        //AS TODO: Handle later
+                        index = path.lastIndexOf('/');
+                        if(index > 0) {
+                            String resourcePath = path.substring(0, index);
+                            handleNodeAdded(resourcePath);
+                        }
 //                        break;
                 }
             }
@@ -279,8 +317,36 @@ public class DeclarativeDynamicResourceManagerService
         }
     }
 
-    Map<String, DeclarativeDynamicResourceProvider> getRegisteredServices() {
-        return Collections.unmodifiableMap(registeredServices);
+    private void handleNodeAdded(String path) {
+        Resource source = resourceResolver.getResource(path);
+        log.info("Source Resource found: '{}'", source);
+        if(source != null) {
+            handleDDRSource(source);
+        }
+    }
+
+    private void handleNodeRemoved(String path) {
+        DeclarativeDynamicResourceProvider toBeRemoved = null;
+        for(Entry<String, DeclarativeDynamicResourceProvider> entry: registeredServicesByProvider.entrySet()) {
+            if(entry.getKey().equals(path)) {
+                // Provider remove -> remove service
+                entry.getValue().unregisterService();
+                toBeRemoved = entry.getValue();
+                break;
+            } else if(path.startsWith(entry.getKey())) {
+                // Sub Provider Node removed -> update Resource Provider
+                entry.getValue().update(path);
+                break;
+            }
+        }
+        if(toBeRemoved != null) {
+            registeredServicesByProvider.remove(toBeRemoved.getProviderRootPath());
+            registeredServicesByTarget.remove(toBeRemoved.getTargetRootPath());
+        }
+    }
+
+    Map<String, DeclarativeDynamicResourceProvider> getRegisteredServicesByTarget() {
+        return Collections.unmodifiableMap(registeredServicesByTarget);
     }
 }
 

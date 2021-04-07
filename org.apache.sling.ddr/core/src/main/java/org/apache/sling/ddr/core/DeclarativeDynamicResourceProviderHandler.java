@@ -127,6 +127,11 @@ public class DeclarativeDynamicResourceProviderHandler
         return targetRootPath;
     }
 
+    @Override
+    public String getProviderRootPath() {
+        return providerRootPath;
+    }
+
     public void update(String path) {
         synchronized (lock) {
             mappings.clear();
