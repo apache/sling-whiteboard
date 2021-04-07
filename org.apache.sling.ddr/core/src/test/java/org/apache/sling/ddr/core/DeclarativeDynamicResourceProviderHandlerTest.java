@@ -91,11 +91,6 @@ public class DeclarativeDynamicResourceProviderHandlerTest {
         catch (RepositoryException ex) {
             throw new RuntimeException("Unable to register namespaces.", ex);
         }
-
-        log.info("Before Loading Test Resources");
-        context.load().json("/ddr-filter/ddr-conf-settings.json", "/conf");
-        context.load().json("/ddr-filter/ddr-apps-settings.json", "/apps");
-        log.info("After Loading Test Resources");
     }
 
     @Test
@@ -107,6 +102,11 @@ public class DeclarativeDynamicResourceProviderHandlerTest {
         String dynamicResourceRoot = "/apps/dynamicFilter";
         final String testPropertyKey = "jcr:title";
         final String testPropertyValue = "Test-1";
+
+        log.info("Before Loading Test Resources");
+        context.load().json("/ddr-filter/ddr-conf-settings.json", "/conf");
+        context.load().json("/ddr-filter/ddr-apps-settings.json", "/apps");
+        log.info("After Loading Test Resources");
 
         Resource dynamicParent = resourceResolver.getResource(dynamicResourceRoot);
         declarativeDynamicResourceProviderHandler.registerService(
@@ -147,6 +147,11 @@ public class DeclarativeDynamicResourceProviderHandlerTest {
         final String testPropertyKey = "jcr:title";
         final String testPropertyValue = "Test-1";
 
+        log.info("Before Loading Test Resources");
+        context.load().json("/ddr-filter/ddr-conf-settings.json", "/conf");
+        context.load().json("/ddr-filter/ddr-apps-settings.json", "/apps");
+        log.info("After Loading Test Resources");
+
         Resource dynamicParent = resourceResolver.getResource(dynamicResourceRoot);
 
         declarativeDynamicResourceProviderHandler.registerService(
@@ -176,5 +181,51 @@ public class DeclarativeDynamicResourceProviderHandlerTest {
         String title = properties.get(testPropertyKey, String.class);
         assertNotNull("Title Property not found", title);
         assertEquals("Title Property wrong", testPropertyValue, title);
+    }
+
+    @Test
+    public void testListReferences() throws Exception {
+        String resourceName = "test1";
+        String confResourceRoot = "/conf/testReference/settings/dynamic";
+        String dynamicResourceRoot = "/apps/dynamicReference";
+        final String testPropertyKey = "jcr:title";
+        final String testPropertyValue = "Test-1";
+
+        context.load().json("/ddr-reference/ddr-conf-settings.json", "/conf");
+        context.load().json("/ddr-reference/ddr-apps-settings.json", "/apps");
+
+        Resource dynamicParent = resourceResolver.getResource(dynamicResourceRoot);
+
+        declarativeDynamicResourceProviderHandler.registerService(
+            context.bundleContext().getBundle(), dynamicResourceRoot, confResourceRoot,
+            resourceResolverFactory, null, null,
+            Arrays.asList("sling:ddrRef")
+        );
+
+        Resource noRef = checkAndGetResource(dynamicParent, "noRef");
+        Resource refNoChild = checkAndGetResource(dynamicParent, "refNoChild");
+        Resource refWithChild = checkAndGetResource(dynamicParent, "refWithChild");
+        Resource refChild = checkAndGetResource(refWithChild, "child");
+        log.info("Ref Child: '{}'", refChild);
+        Resource refGrandchild = checkAndGetResource(refChild, "grandChild");
+        log.info("Ref Grandchild: '{}'", refGrandchild);
+    }
+
+    private Resource checkAndGetResource(Resource parent, String expectedChildName) {
+        Resource answer = null;
+        // List all the children and make sure that only one is returned
+        Iterator<Resource> i = declarativeDynamicResourceProviderHandler.listChildren(
+            resolveContext, parent
+        );
+        assertNotNull("No Iterator returned", i);
+        while(i.hasNext()) {
+            Resource child = i.next();
+            if(child.getName().equals(expectedChildName)) {
+                answer = child;
+                break;
+            }
+        }
+        assertNotNull("Child: '" + expectedChildName + "' not found", answer);
+        return answer;
     }
 }

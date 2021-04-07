@@ -1,4 +1,12 @@
 {
   "jcr:primaryType": "sling:Folder",
-  "jcr:title": "ref-1"
+  "jcr:title": "ref-1",
+  "child": {
+    "jcr:primaryType": "sling:Folder",
+    "jcr:title": "Ref Child",
+    "grandChild": {
+      "jcr:primaryType": "sling:Folder",
+      "jcr:title": "Ref Grandchild"
+    }
+  }
 }

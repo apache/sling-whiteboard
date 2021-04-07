@@ -276,7 +276,11 @@ public class DeclarativeDynamicResourceProviderHandler
         List<Reference> childrenList = new ArrayList<>();
         childrenMappings.put(resourcePath, childrenList);
         String targetPath = providerRootPath + SLASH + postfix;
-        Resource provider = resourceResolver.getResource(targetPath);
+        Reference ref = mappings.get(resourcePath);
+        Resource provider = ref == null || !ref.isRef() ?
+            resourceResolver.getResource(targetPath) :
+            resourceResolver.getResource(ref.getReference());
+            ;
         log.info("Provider, Path: '{}', Resource: '{}'", targetPath, provider);
         if (provider != null) {
             Iterator<Resource> i = provider.listChildren();
@@ -316,8 +320,14 @@ public class DeclarativeDynamicResourceProviderHandler
                     if(!handled) {
                         // Not a reference
                         log.info("Add Path: '{}' to children list", child.getPath());
-                        childrenList.add(new Reference(child.getPath()));
-                        mappings.put(targetRootPath + SLASH + (postfix.isEmpty() ? "" : postfix + SLASH) + child.getName(), new Reference(child.getPath()));
+                        Reference newRef;
+                        if(ref != null && ref.isRef()) {
+                            newRef = new Reference(ref.getSource() + SLASH + child.getName(), child.getPath());
+                        } else {
+                            newRef = new Reference(child.getPath());
+                        }
+                        childrenList.add(newRef);
+                        mappings.put(targetRootPath + SLASH + (postfix.isEmpty() ? "" : postfix + SLASH) + child.getName(), newRef);
                         if(returnChildren) {
                             answer.add(
                                 createSyntheticFromResource(
@@ -345,7 +355,7 @@ public class DeclarativeDynamicResourceProviderHandler
         public Reference(String source, String reference) {
             this.source = source;
             this.reference = reference;
-            this.ref = reference == null || this.reference.equals(this.source);
+            this.ref = reference != null && !this.reference.equals(this.source);
         }
 
         public String getSource() {
