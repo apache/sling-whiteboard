@@ -29,4 +29,13 @@ public interface DeclarativeDynamicResourceManager {
      * @param declarativeDynamicProviderPath Path to the Folder where the declarative dynamic resources are located in
      */
     void update(String declarativeDynamicProviderPath);
+
+    /**
+     * Add a given Path as Reference to listen for changes in references.
+     * If a parent path of that ref is already register it is ignored.
+     *
+     * @param sourcePath Path of the Source of the Reference
+     * @param targetPath Path of the Target of the Reference
+     */
+    void addReference(String sourcePath, String targetPath);
 }

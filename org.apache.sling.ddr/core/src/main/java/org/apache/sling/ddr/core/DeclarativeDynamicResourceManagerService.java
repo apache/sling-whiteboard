@@ -118,6 +118,8 @@ public class DeclarativeDynamicResourceManagerService
     private Map<String, List<String>> prohibitedFilter = new HashMap<>();
     private List<String> followedLinkNames = new ArrayList<>();
 
+    private Map<String, ReferenceEventListener> referenceListeners = new HashMap<>();
+
     @Activate
     void activate(BundleContext bundleContext, Configuration configuration) {
         this.bundleContext = bundleContext;
@@ -127,6 +129,7 @@ public class DeclarativeDynamicResourceManagerService
         parseDDRFilter(configuration.prohibited_ddr_filter(), prohibitedFilter);
         followedLinkNames.addAll(Arrays.asList(configuration.followed_link_names()));
         try {
+            // The Resource Resolver needs to be kept alive until this Service is deactivated due to the Event Listeners
             resourceResolver = resourceResolverFactory.getServiceResourceResolver(
                 new HashMap<String, Object>() {{ put(ResourceResolverFactory.SUBSERVICE, DYNAMIC_COMPONENTS_SERVICE_USER); }}
             );
@@ -186,7 +189,7 @@ public class DeclarativeDynamicResourceManagerService
 
     private void handleDDRSource(Resource resource) {
         if(resource != null) {
-            // Find the Resource in the tree with the Target Path
+            // Find the Provider Root Resource
             Resource ddrProvider = findDDRSource(resource);
             if(ddrProvider != null) {
                 ValueMap properties = ddrProvider.getValueMap();
@@ -201,6 +204,7 @@ public class DeclarativeDynamicResourceManagerService
                         log.info("Dynamic Target: '{}', Dynamic Provider: '{}'", ddrTargetResource, ddrProvider);
                         long id = service.registerService(
                             bundleContext.getBundle(), ddrTargetPath, ddrProvider.getPath(), resourceResolverFactory,
+                            this,
                             allowedFilter, prohibitedFilter, followedLinkNames
                         );
                         log.info("After Registering Tenant RP: service: '{}', id: '{}'", service, id);
@@ -215,10 +219,29 @@ public class DeclarativeDynamicResourceManagerService
                         resourceProvider.update(ddrTargetPath);
                     }
                 }
+            } else {
+                // Provider Resource found -> check that this resource was previous target and if so remove it
+                DeclarativeDynamicResourceProvider toBeRemoved = null;
+                for(Entry<String, DeclarativeDynamicResourceProvider> entry: registeredServicesByProvider.entrySet()) {
+                    if(resource.getPath().startsWith(entry.getKey())) {
+                        toBeRemoved = entry.getValue();
+                        break;
+                    }
+                }
+                if(toBeRemoved != null) {
+                    registeredServicesByProvider.remove(toBeRemoved.getProviderRootPath());
+                    registeredServicesByTarget.remove(toBeRemoved.getTargetRootPath());
+                    toBeRemoved.unregisterService();
+                }
             }
         }
     }
 
+    /**
+     * Find the Resource in the Tree that contains the Target Path
+     * @param resource The resource where the search starts
+     * @return The resource containing the DDR Target Path or null if not found
+     */
     private Resource findDDRSource(Resource resource) {
         Resource answer = null;
         if (resource != null) {
@@ -233,6 +256,7 @@ public class DeclarativeDynamicResourceManagerService
         return answer;
     }
 
+    @Override
     public void update(String dynamicProviderPath) {
         try (ResourceResolver resourceResolver = resourceResolverFactory.getServiceResourceResolver(
             new HashMap<String, Object>() {{ put(ResourceResolverFactory.SUBSERVICE, DYNAMIC_COMPONENTS_SERVICE_USER); }}
@@ -241,6 +265,30 @@ public class DeclarativeDynamicResourceManagerService
             handleDDRSource(dynamicProvider);
         } catch (LoginException e) {
             log.error("Was not able to obtain Service Resource Resolver", e);
+        }
+    }
+
+    @Override
+    public void addReference(String sourcePath, String targetPath) {
+        ReferenceEventListener referenceEventListener = null;
+        for(Entry<String, ReferenceEventListener> entry: referenceListeners.entrySet()) {
+            // If there is already a registered Event Listener for the given target or one of its parents when we ignore it
+            if(targetPath.startsWith(entry.getValue().getReferencedPath())) {
+                referenceEventListener = entry.getValue();
+                break;
+            }
+            //AS TODO: this should be handled by the caller (Resource Provider) as he knows the Provider Root
+//            //AS TODO: Should we only limit this to /conf/.../settings/dynamic ?
+//            if(sourcePath.startsWith(CONFIGURATION_ROOT_PATH)) {
+//                // A reference is pointing inside the Dynamic Folder which is already handled so we ignore it
+//                referenceEventListener = entry.getValue();
+//                break;
+//            }
+        }
+        if(referenceEventListener == null) {
+            referenceEventListener = new ReferenceEventListener();
+            referenceEventListener.registerListener(sourcePath, targetPath, resourceResolver);
+            referenceListeners.put(sourcePath, referenceEventListener);
         }
     }
 
@@ -256,6 +304,18 @@ public class DeclarativeDynamicResourceManagerService
         }
         registeredServicesByProvider.clear();
         registeredServicesByTarget.clear();
+        for(Entry<String, ReferenceEventListener> entry: referenceListeners.entrySet()) {
+            entry.getValue().unregisterListener(resourceResolver);
+        }
+        Session session = resourceResolver.adaptTo(Session.class);
+        if (session != null) {
+            log.info("Register Event Listener on Path: '{}'", CONFIGURATION_ROOT_PATH);
+            try {
+                session.getWorkspace().getObservationManager().removeEventListener(this);
+            } catch (RepositoryException e) {
+                // Ignore
+            }
+        }
         if(resourceResolver != null) {
             resourceResolver.close();
         }
@@ -279,8 +339,10 @@ public class DeclarativeDynamicResourceManagerService
                             path = path.substring(0, index -1);
                         }
                         log.info("Property Added or Changed, path: '{}'", path);
+                        handleNodeChange(path, true);
+                        break;
                     case Event.NODE_ADDED:
-                        handleNodeAdded(path);
+                        handleNodeChange(path, true);
                         break;
                     case Event.NODE_REMOVED:
                         handleNodeRemoved(path);
@@ -290,26 +352,23 @@ public class DeclarativeDynamicResourceManagerService
                         Map info = event.getInfo();
                         Object temp = info.get("srcAbsPath");
                         if(temp instanceof String) {
-                            // Source found -> get target and update it
+                            // Source found -> get target and remove it
                             String sourcePath = temp.toString();
                             handleNodeRemoved(sourcePath);
-                            String destPath = info.get("destAbsPath") + "";
-                            handleNodeAdded(destPath);
                         }
                         temp = info.get("destAbsPath");
                         if(temp instanceof String) {
-                            // Destination found -> get target and update it
+                            // Destination found -> get target and add it
                             String destPath = temp.toString();
-                            handleNodeAdded(destPath);
+                            handleNodeChange(destPath, true);
                         }
                         break;
                     case Event.PROPERTY_REMOVED:
                         index = path.lastIndexOf('/');
                         if(index > 0) {
                             String resourcePath = path.substring(0, index);
-                            handleNodeAdded(resourcePath);
+                            handleNodeChange(resourcePath, false);
                         }
-//                        break;
                 }
             }
         } catch (LoginException | RepositoryException e) {
@@ -317,7 +376,7 @@ public class DeclarativeDynamicResourceManagerService
         }
     }
 
-    private void handleNodeAdded(String path) {
+    private void handleNodeChange(String path, boolean added) {
         Resource source = resourceResolver.getResource(path);
         log.info("Source Resource found: '{}'", source);
         if(source != null) {
@@ -329,8 +388,7 @@ public class DeclarativeDynamicResourceManagerService
         DeclarativeDynamicResourceProvider toBeRemoved = null;
         for(Entry<String, DeclarativeDynamicResourceProvider> entry: registeredServicesByProvider.entrySet()) {
             if(entry.getKey().equals(path)) {
-                // Provider remove -> remove service
-                entry.getValue().unregisterService();
+                // Provider to be removed found
                 toBeRemoved = entry.getValue();
                 break;
             } else if(path.startsWith(entry.getKey())) {
@@ -342,11 +400,66 @@ public class DeclarativeDynamicResourceManagerService
         if(toBeRemoved != null) {
             registeredServicesByProvider.remove(toBeRemoved.getProviderRootPath());
             registeredServicesByTarget.remove(toBeRemoved.getTargetRootPath());
+            toBeRemoved.unregisterService();
         }
     }
 
     Map<String, DeclarativeDynamicResourceProvider> getRegisteredServicesByTarget() {
         return Collections.unmodifiableMap(registeredServicesByTarget);
+    }
+
+    class ReferenceEventListener implements EventListener {
+
+        private String sourcePath;
+        private String referencedPath;
+
+        /** @return The path of where the reference is found **/
+        public String getSourcePath() {
+            return sourcePath;
+        }
+
+        /** @return The path to where the reference points to **/
+        public String getReferencedPath() {
+            return referencedPath;
+        }
+
+        void registerListener(String sourcePath, String referencedPath, ResourceResolver resourceResolver) {
+            this.sourcePath = sourcePath;
+            this.referencedPath = referencedPath;
+            Session session = resourceResolver.adaptTo(Session.class);
+            if (session != null) {
+                log.info("Register Event Listener on Path: '{}'", sourcePath);
+                try {
+                    session.getWorkspace().getObservationManager().addEventListener(
+                        this, EVENT_TYPES, referencedPath,
+                        true, null, null, false
+                    );
+                } catch (RepositoryException e) {
+                    // Ignore
+                }
+            } else {
+                log.warn("Resource Resolver could not be adapted to Session");
+            }
+        }
+
+        void unregisterListener(ResourceResolver resourceResolver) {
+            Session session = resourceResolver.adaptTo(Session.class);
+            if (session != null) {
+                log.info("Unregister Event Listener on Path: '{}'", sourcePath);
+                try {
+                    session.getWorkspace().getObservationManager().removeEventListener(this);
+                } catch (RepositoryException e) {
+                    // Ignore
+                }
+            } else {
+                log.warn("Resource Resolver could not be adapted to Session");
+            }
+        }
+
+        @Override
+        public void onEvent(EventIterator events) {
+            handleNodeChange(sourcePath, false);
+        }
     }
 }
 

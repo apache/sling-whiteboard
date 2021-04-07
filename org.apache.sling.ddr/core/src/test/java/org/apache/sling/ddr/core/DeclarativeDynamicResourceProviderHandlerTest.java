@@ -22,6 +22,7 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.api.resource.ValueMap;
+import org.apache.sling.ddr.api.DeclarativeDynamicResourceManager;
 import org.apache.sling.spi.resource.provider.ResolveContext;
 import org.apache.sling.spi.resource.provider.ResourceContext;
 import org.apache.sling.spi.resource.provider.ResourceProvider;
@@ -53,6 +54,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -67,6 +70,8 @@ public class DeclarativeDynamicResourceProviderHandlerTest {
     private ResolveContext resolveContext;
     @Mock
     private ResourceContext resourceContext;
+    @Mock
+    private DeclarativeDynamicResourceManager declarativeDynamicResourceManager;
 
     @Mock
     private ResourceResolverFactory resourceResolverFactory;
@@ -111,7 +116,7 @@ public class DeclarativeDynamicResourceProviderHandlerTest {
         Resource dynamicParent = resourceResolver.getResource(dynamicResourceRoot);
         declarativeDynamicResourceProviderHandler.registerService(
             context.bundleContext().getBundle(), dynamicResourceRoot, confResourceRoot,
-            resourceResolverFactory, null,
+            resourceResolverFactory, null, null,
             new HashMap<String, List<String>>() {{
                 put("jcr:primaryType", Arrays.asList("nt:file"));
             }},
@@ -156,7 +161,7 @@ public class DeclarativeDynamicResourceProviderHandlerTest {
 
         declarativeDynamicResourceProviderHandler.registerService(
             context.bundleContext().getBundle(), dynamicResourceRoot, confResourceRoot,
-            resourceResolverFactory, null,
+            resourceResolverFactory, null, null,
             new HashMap<String, List<String>>() {{
                 put("jcr:primaryType", Arrays.asList("nt:file", "nt:resource"));
             }},
@@ -196,9 +201,11 @@ public class DeclarativeDynamicResourceProviderHandlerTest {
 
         Resource dynamicParent = resourceResolver.getResource(dynamicResourceRoot);
 
+        doNothing().when(declarativeDynamicResourceManager).addReference(anyString(), anyString());
+
         declarativeDynamicResourceProviderHandler.registerService(
             context.bundleContext().getBundle(), dynamicResourceRoot, confResourceRoot,
-            resourceResolverFactory, null, null,
+            resourceResolverFactory, declarativeDynamicResourceManager,null, null,
             Arrays.asList("sling:ddrRef")
         );
 

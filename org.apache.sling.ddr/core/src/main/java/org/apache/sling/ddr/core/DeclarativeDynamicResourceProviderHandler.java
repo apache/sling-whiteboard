@@ -21,6 +21,7 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.api.resource.ValueMap;
+import org.apache.sling.ddr.api.DeclarativeDynamicResourceManager;
 import org.apache.sling.ddr.api.DeclarativeDynamicResourceProvider;
 import org.apache.sling.spi.resource.provider.ProviderContext;
 import org.apache.sling.spi.resource.provider.ResolveContext;
@@ -67,6 +68,7 @@ public class DeclarativeDynamicResourceProviderHandler
     private String providerRootPath;
     private boolean active;
     private ResourceResolverFactory resourceResolverFactory;
+    private DeclarativeDynamicResourceManager declarativeDynamicResourceManager;
     private Map<String, List<String>> allowedDDRFilter;
     private Map<String, List<String>> prohibitedDDRFilter;
     private List<String> followedLinkNames;
@@ -79,11 +81,13 @@ public class DeclarativeDynamicResourceProviderHandler
 
     public long registerService(
         Bundle bundle, String targetRootPath, String providerRootPath, ResourceResolverFactory resourceResolverFactory,
+        DeclarativeDynamicResourceManager declarativeDynamicResourceManager,
         Map<String, List<String>> allowedDDRFilter, Map<String, List<String>> prohibitedDDRFilter, List<String> followedLinkNames
     ) {
         this.targetRootPath = targetRootPath;
         this.providerRootPath = providerRootPath;
         this.resourceResolverFactory = resourceResolverFactory;
+        this.declarativeDynamicResourceManager = declarativeDynamicResourceManager;
         this.allowedDDRFilter = allowedDDRFilter == null ? new HashMap<String, List<String>>(): allowedDDRFilter;
         this.prohibitedDDRFilter = prohibitedDDRFilter == null ? new HashMap<String, List<String>>(): prohibitedDDRFilter;
         this.followedLinkNames = followedLinkNames == null ? new ArrayList<String>() : followedLinkNames;
@@ -331,6 +335,7 @@ public class DeclarativeDynamicResourceProviderHandler
                                 childrenList.add(new Reference(child.getPath(), referencePath));
                                 String parentPath = targetRootPath + (postfix.isEmpty() ? "" : SLASH + postfix);
                                 mappings.put(parentPath + SLASH + child.getName(), new Reference(child.getPath(), referencePath));
+                                declarativeDynamicResourceManager.addReference(child.getPath(), referencePath);
                                 if(returnChildren) {
                                     answer.add(
                                         createSyntheticFromResource(
