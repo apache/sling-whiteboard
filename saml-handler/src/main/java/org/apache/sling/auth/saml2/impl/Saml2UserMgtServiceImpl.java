@@ -163,7 +163,7 @@ public class Saml2UserMgtServiceImpl implements Saml2UserMgtService {
         try {
             User jcrUser = (User) this.userManager.getAuthorizable(user.getId());
             for (Map.Entry<String,String> entry : user.getUserProperties().entrySet()) {
-                jcrUser.setProperty("./profile/"+entry.getKey(), vf.createValue(entry.getValue()));
+                jcrUser.setProperty(entry.getKey(), vf.createValue(entry.getValue()));
             }
             session.save();
             return true;

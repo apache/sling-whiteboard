@@ -23,6 +23,9 @@ package org.apache.sling.auth.saml2.impl;
 import org.apache.sling.auth.core.spi.DefaultAuthenticationFeedbackHandler;
 import org.apache.sling.auth.saml2.AuthenticationHandlerSAML2Config;
 
+import java.util.HashMap;
+import java.util.Map;
+
 abstract class AbstractSamlHandler extends DefaultAuthenticationFeedbackHandler {
 
     // OSGI Configs
@@ -43,6 +46,7 @@ abstract class AbstractSamlHandler extends DefaultAuthenticationFeedbackHandler 
     private String acsPath;
     private String[] syncAttrs;
     private String saml2LogoutURL;
+    private Map syncAttrMap;
 
     public static final String GOTO_URL_SESSION_ATTRIBUTE = "gotoURL";
     public static final String SAML2_REQUEST_ID = "saml2RequestID";
@@ -66,6 +70,7 @@ abstract class AbstractSamlHandler extends DefaultAuthenticationFeedbackHandler 
         this.acsPath = config.acsPath();
         this.syncAttrs = config.syncAttrs();
         this.saml2LogoutURL = config.saml2LogoutURL();
+        setSyncMap();
     }
 
 //    GETTERS
@@ -120,11 +125,20 @@ abstract class AbstractSamlHandler extends DefaultAuthenticationFeedbackHandler 
     String[] getSyncAttrs() {
         return this.syncAttrs;
     }
+    Map<String,String> getSyncAttrMap(){ return this.syncAttrMap; }
 
     String getACSURL() {
         final String domain = entityID.endsWith("/") ? entityID.substring(0, entityID.length()-1) : entityID;
         return domain + this.getAcsPath();
     }
 
-
+    void setSyncMap(){
+        this.syncAttrMap = new HashMap<>();
+        for(String attr : getSyncAttrs()){
+            String[] parts = attr.split("=");
+            if(parts != null && parts.length==2){
+                this.syncAttrMap.put(parts[0],parts[1]);
+            }
+        }
+    }
 }

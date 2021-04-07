@@ -478,20 +478,14 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
         // start a user object
         Saml2User saml2User = new Saml2User();
 
-        // get list of configured attribute names to synchronize from the IDP assertion to the user's properties
-        List<String> attrNamesToSync = null;
-        if (this.getSyncAttrs() != null && this.getSyncAttrs().length > 0) {
-            attrNamesToSync = Arrays.asList(this.getSyncAttrs());
-        }
-
         // iterate the attribute assertions
         for (Attribute attribute : assertion.getAttributeStatements().get(0).getAttributes()) {
             if (attribute.getName().equals(this.getSaml2userIDAttr())) {
                 setUserId(attribute, saml2User);
             } else if (attribute.getName().equals(this.getSaml2groupMembershipAttr())) {
                 setGroupMembership(attribute, saml2User);
-            } else if (attrNamesToSync != null && attrNamesToSync.contains(attribute.getName())) {
-                syncUserAttributes(attribute, saml2User);
+            } else if (this.getSyncAttrMap() != null && this.getSyncAttrMap().containsKey(attribute.getName())){
+                syncUserAttributes(attribute, saml2User, this.getSyncAttrMap().get(attribute.getName()));
             }
         }
 
@@ -535,16 +529,12 @@ public class AuthenticationHandlerSAML2Impl extends AbstractSamlHandler implemen
         }
     }
 
-    private void syncUserAttributes(Attribute attribute, Saml2User saml2User) {
+    private void syncUserAttributes(Attribute attribute, Saml2User saml2User, String propertyName) {
         for (XMLObject attributeValue : attribute.getAttributeValues()) {
-            if ( ((XSString) attributeValue).getValue() != null ) {
-                if (attribute.getFriendlyName() != null && !attribute.getFriendlyName().isEmpty()) {
-                    saml2User.addUserProperty(attribute.getFriendlyName(), attributeValue);
-                    logger.debug("sync attr name: {0}", attribute.getFriendlyName());
-                    logger.debug("attribute value: {0}", ((XSString) attributeValue).getValue());
-                } else {
-                    logger.warn("attribute has no friendly name and cannot be added: {0}", ((XSString) attributeValue).getValue());
-                }
+            if (((XSString) attributeValue).getValue() != null ) {
+                saml2User.addUserProperty(propertyName, attributeValue);
+                logger.debug("sync attr name: {0}", propertyName);
+                logger.debug("attribute value: {0}", ((XSString) attributeValue).getValue());
             }
         }
     }

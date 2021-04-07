@@ -19,7 +19,6 @@
 
 package org.apache.sling.auth.saml2;
 
-import com.google.common.collect.Iterators;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.user.Authorizable;
@@ -68,7 +67,6 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Iterator;
 import java.util.List;
-
 import static org.apache.sling.auth.core.spi.AuthenticationHandler.REQUEST_LOGIN_PARAMETER;
 import static org.apache.sling.auth.saml2.impl.JKSHelper.IDP_ALIAS;
 import static org.apache.sling.auth.saml2.impl.JKSHelper.SP_ALIAS;
@@ -200,10 +198,10 @@ public class SamlHandlerIT extends TestSupport {
                 .asOption(),
             // supply the required configuration so the auth handler service will activate
             testBundle("bundle.filename"), // from TestSupport
-//                urn:oid:1.2.840.113549.1.9.1 = email
-//                urn:oid:2.5.4.4 = surname
-//                urn:oid:2.5.4.42 = givenName
-//                phone is configured but not included
+//                urn:oid:1.2.840.113549.1.9.1=profile/email
+//                urn:oid:2.5.4.4=profile/surname
+//                urn:oid:2.5.4.42=profile/givenName
+//                phone=profile/phone is configured but not included in assertion
             factoryConfiguration("org.apache.sling.auth.saml2.AuthenticationHandlerSAML2")
                 .put("path", "/")
                 .put("entityID", "http://localhost:8080/")
@@ -211,7 +209,7 @@ public class SamlHandlerIT extends TestSupport {
                 .put("saml2userIDAttr", "urn:oid:0.9.2342.19200300.100.1.1")
                 .put("saml2userHome", "/home/users/saml")
                 .put("saml2groupMembershipAttr", "urn:oid:2.16.840.1.113719.1.1.4.1.25")
-                .put("syncAttrs", new String[]{"urn:oid:2.5.4.4","urn:oid:2.5.4.42","phone","urn:oid:1.2.840.113549.1.9.1"})
+                .put("syncAttrs", new String[]{"urn:oid:2.5.4.4=./profile/surname","urn:oid:2.5.4.42=./profile/givenName","phone=./profile/phone","urn:oid:1.2.840.113549.1.9.1=./profile/email"})
                 .put("saml2SPEnabled", true)
                 .put("saml2SPEncryptAndSign", false)
                 .put("jksFileLocation", "")
