@@ -19,6 +19,7 @@
 
 package org.apache.sling.auth.saml2;
 
+import com.google.common.collect.Iterators;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.api.JackrabbitSession;
 import org.apache.jackrabbit.api.security.user.Authorizable;
@@ -62,8 +63,11 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Iterator;
+import java.util.List;
 
 import static org.apache.sling.auth.core.spi.AuthenticationHandler.REQUEST_LOGIN_PARAMETER;
 import static org.apache.sling.auth.saml2.impl.JKSHelper.IDP_ALIAS;
@@ -72,6 +76,7 @@ import static org.apache.sling.testing.paxexam.SlingOptions.logback;
 import static org.apache.sling.testing.paxexam.SlingOptions.slingAuthForm;
 import static org.apache.sling.testing.paxexam.SlingOptions.slingQuickstartOakTar;
 import static org.apache.sling.testing.paxexam.SlingOptions.versionResolver;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -418,7 +423,10 @@ public class SamlHandlerIT extends TestSupport {
     }
 
     @Test
-    public void test_goodLogin() throws IOException {
+    public void test_goodLogin() throws IOException, RepositoryException {
+        userManager.createGroup("all_tenants");
+        userManager.createGroup("pcms-authors");
+        session.save();
         String base64EndSamlResp = buildAuthResponse();
         HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
         HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
@@ -437,6 +445,26 @@ public class SamlHandlerIT extends TestSupport {
         assertNotNull(authenticationInfo);
         assertTrue(((AuthenticationFeedbackHandler)authHandler).authenticationSucceeded(request,response,authenticationInfo));
         authHandler.dropCredentials(request,response);
+        User user = (User) userManager.getAuthorizable("saml2Example");
+        assertNotNull(user);
+        // verify user properties sync
+        assertEquals("saml2@example.com", user.getProperty("./profile/email")[0].getString());
+        assertEquals("Saml2", user.getProperty("./profile/surname")[0].getString());
+        assertEquals("Example", user.getProperty("./profile/givenName")[0].getString());
+        // verify group membership
+        List groups = new ArrayList<String>();
+        groups.add("all_tenants");
+        groups.add("authors");
+        groups.add("pcms-authors");
+        Iterator<Group> groupsIt = user.declaredMemberOf();
+        while (groupsIt.hasNext()){
+            Group group = groupsIt.next();
+            assertTrue(groups.contains(group.getID()));
+            // verify managedGroup flag
+            assertTrue(group.getProperty("managedGroup")[0].getBoolean());
+        }
+        // authors group was not created initially and still does not exist
+        assertNull(userManager.getAuthorizable("authors"));
     }
 
     String buildAuthResponse(){
