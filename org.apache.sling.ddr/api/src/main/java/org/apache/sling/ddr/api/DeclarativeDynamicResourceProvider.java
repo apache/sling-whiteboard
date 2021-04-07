@@ -50,4 +50,5 @@ public interface DeclarativeDynamicResourceProvider {
     /** @return The Parent Path of the Declarative Dynamic Resources are bound too **/
     String getTargetRootPath();
 
+    void update(String path);
 }

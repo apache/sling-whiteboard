@@ -191,18 +191,24 @@ public class DeclarativeDynamicResourceManagerService
             if (ddrTargetPath != null) {
                 Resource ddrTargetResource = ddrSourceResource.getResourceResolver().getResource(ddrTargetPath);
                 if(ddrTargetResource != null) {
-                    DeclarativeDynamicResourceProviderHandler service = new DeclarativeDynamicResourceProviderHandler();
-                    log.info("Dynamic Target: '{}', Dynamic Provider: '{}'", ddrSourceResource, ddrSourceResource);
-                    long id = service.registerService(
-                        bundleContext.getBundle(), ddrTargetPath, ddrSourceResource.getPath(), resourceResolverFactory,
-                        allowedFilter, prohibitedFilter, followedLinkNames
-                    );
-                    log.info("After Registering Tenant RP: service: '{}', id: '{}'", service, id);
-                    registeredServices.put(ddrTargetResource.getPath(), service);
-                    if(dynamicComponentFilterNotifier != null) {
-                        dynamicComponentFilterNotifier.addDeclarativeDynamicResource(
-                            ddrTargetPath, ddrSourceResource
+                    // Check if we already registered that service and if so update it instead of creating a new one
+                    DeclarativeDynamicResourceProvider resourceProvider = registeredServices.get(ddrTargetPath);
+                    if(resourceProvider == null) {
+                        DeclarativeDynamicResourceProviderHandler service = new DeclarativeDynamicResourceProviderHandler();
+                        log.info("Dynamic Target: '{}', Dynamic Provider: '{}'", ddrSourceResource, ddrSourceResource);
+                        long id = service.registerService(
+                            bundleContext.getBundle(), ddrTargetPath, ddrSourceResource.getPath(), resourceResolverFactory,
+                            allowedFilter, prohibitedFilter, followedLinkNames
                         );
+                        log.info("After Registering Tenant RP: service: '{}', id: '{}'", service, id);
+                        registeredServices.put(ddrTargetResource.getPath(), service);
+                        if (dynamicComponentFilterNotifier != null) {
+                            dynamicComponentFilterNotifier.addDeclarativeDynamicResource(
+                                ddrTargetPath, ddrSourceResource
+                            );
+                        }
+                    } else {
+                        resourceProvider.update(ddrTargetPath);
                     }
                 }
             }

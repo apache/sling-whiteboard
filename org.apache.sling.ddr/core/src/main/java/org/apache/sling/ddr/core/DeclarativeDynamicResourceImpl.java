@@ -53,7 +53,7 @@ public class DeclarativeDynamicResourceImpl
      * @param targetPath Path of the new, dynamic location of the resource
      * @return The Synthetic Resource that will provide the Dynamic Resource
      */
-    public static DeclarativeDynamicResource createSyntheticFromResource(ResourceResolver resourceResolver, Resource source, String targetPath) {
+    public static DeclarativeDynamicResource createSyntheticFromResource(ResourceResolver resourceResolver, Resource source, String targetPath, boolean mark) {
         ValueMap properties = source.getValueMap();
         Map<String,String> parameters = new HashMap<>();
         String resourceSuperType = source.getResourceSuperType();
@@ -62,7 +62,9 @@ public class DeclarativeDynamicResourceImpl
                 parameters.put(entry.getKey(), entry.getValue() + "");
             }
         }
-        parameters.put(DDR_INDICATOR, "true");
+        if(mark) {
+            parameters.put(DDR_INDICATOR, "true");
+        }
         ResourceMetadata metadata = new ResourceMetadataWrapper();
         metadata.setParameterMap(parameters);
         metadata.setResolutionPath(targetPath);

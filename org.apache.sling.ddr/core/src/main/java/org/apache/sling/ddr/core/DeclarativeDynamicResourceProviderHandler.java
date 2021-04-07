@@ -71,6 +71,7 @@ public class DeclarativeDynamicResourceProviderHandler
     private Map<String, List<String>> prohibitedDDRFilter;
     private List<String> followedLinkNames;
 
+    private Object lock = new Object();
     private Map<String,Reference> mappings = new HashMap<>();
     private Map<String,List<Reference>> childrenMappings = new HashMap<>();
 
@@ -126,6 +127,13 @@ public class DeclarativeDynamicResourceProviderHandler
         return targetRootPath;
     }
 
+    public void update(String path) {
+        synchronized (lock) {
+            mappings.clear();
+            childrenMappings.clear();
+        }
+    }
+
     @Override
     public Resource getResource(ResolveContext ctx, String path, ResourceContext resourceContext, Resource parent) {
         ResourceResolver resourceResolver = ctx.getResourceResolver();
@@ -150,19 +158,28 @@ public class DeclarativeDynamicResourceProviderHandler
             }
             log.info("After Getting Resource from Parent, path: '{}', resource: '{}'", resourcePath, answer);
             if(answer == null) {
-                Reference mappedPath = mappings.get(resourcePath);
-                if(mappedPath == null) {
-                    // Obtain parent path and list children then try to re-obtain the mapping, if not found then there is no mapping
-                    int index = resourcePath.lastIndexOf('/');
-                    if(index > 0 && index < resourcePath.length() - 1) {
-                        String parentPath = resourcePath.substring(0, index);
-                        obtainChildren(resourceResolver, parentPath, false);
-                        mappedPath = mappings.get(resourcePath);
+                synchronized (lock) {
+                    Reference mappedPath = mappings.get(resourcePath);
+                    if (mappedPath == null) {
+                        // Obtain parent path and list children then try to re-obtain the mapping, if not found then there is no mapping
+                        int index = resourcePath.lastIndexOf('/');
+                        if (index > 0 && index < resourcePath.length() - 1) {
+                            String parentPath = resourcePath.substring(0, index);
+                            obtainChildren(resourceResolver, parentPath, false);
+                            mappedPath = mappings.get(resourcePath);
+                        }
                     }
-                }
-                if(mappedPath != null) {
-                    Resource source = resourceResolver.getResource(mappedPath.getReference());
-                    answer = createSyntheticFromResource(resourceResolver, source, resourcePath);
+                    if (mappedPath != null) {
+                        Resource source = resourceResolver.getResource(mappedPath.getReference());
+                        int index = resourcePath.lastIndexOf('/');
+                        String parentPath = "";
+                        if (index > 0 && index < resourcePath.length() - 1) {
+                            parentPath = resourcePath.substring(0, index);
+                        }
+                        answer = createSyntheticFromResource(
+                            resourceResolver, source, resourcePath, parentPath.equals(targetRootPath)
+                        );
+                    }
                 }
             }
         } else {
@@ -196,21 +213,26 @@ public class DeclarativeDynamicResourceProviderHandler
                     }
                 }
             }
-            // Obtain the matching resource from the provider
-            List<Reference> childrenList = childrenMappings.get(resourcePath);
-            log.info("Resource Path: '{}', Children List: '{}'", resourcePath, childrenList);
-            if(childrenList != null) {
-                for(Reference childPath: childrenList) {
-                    Resource child = resourceResolver.getResource(childPath.getReference());
-                    int index = childPath.getSource().lastIndexOf('/');
-                    String childName = childPath.getSource().substring(index);
-                    items.add(
-                        createSyntheticFromResource(resourceResolver, child,
-                            resourcePath + childName)
-                    );
+            synchronized (lock) {
+                // Obtain the matching resource from the provider
+                List<Reference> childrenList = childrenMappings.get(resourcePath);
+                log.info("Resource Path: '{}', Children List: '{}'", resourcePath, childrenList);
+                if (childrenList != null) {
+                    for (Reference childPath : childrenList) {
+                        Resource child = resourceResolver.getResource(childPath.getReference());
+                        int index = childPath.getSource().lastIndexOf('/');
+                        String childName = childPath.getSource().substring(index);
+                        items.add(
+                            createSyntheticFromResource(
+                                resourceResolver, child,
+                                resourcePath + childName,
+                                resourcePath.equals(targetRootPath)
+                            )
+                        );
+                    }
+                } else {
+                    items = obtainChildren(resourceResolver, resourcePath, true);
                 }
-            } else {
-                items = obtainChildren(resourceResolver, resourcePath, true);
             }
             answer = items.iterator();
         } else {
@@ -302,12 +324,14 @@ public class DeclarativeDynamicResourceProviderHandler
                             if (reference != null && !reference.isResourceType(RESOURCE_TYPE_NON_EXISTING)) {
                                 log.info("Add Path: '{}' to children list", resourcePath);
                                 childrenList.add(new Reference(child.getPath(), referencePath));
-                                mappings.put(targetRootPath + SLASH + (postfix.isEmpty() ? "" : postfix + SLASH) + child.getName(), new Reference(child.getPath(), referencePath));
+                                String parentPath = targetRootPath + (postfix.isEmpty() ? "" : SLASH + postfix);
+                                mappings.put(parentPath + SLASH + child.getName(), new Reference(child.getPath(), referencePath));
                                 if(returnChildren) {
                                     answer.add(
                                         createSyntheticFromResource(
                                             resourceResolver, reference,
-                                            targetRootPath + SLASH + (postfix.isEmpty() ? "" : postfix + SLASH) + child.getName()
+                                            parentPath + SLASH + child.getName(),
+                                            parentPath.equals(targetRootPath)
                                         )
                                     );
                                 }
@@ -327,12 +351,14 @@ public class DeclarativeDynamicResourceProviderHandler
                             newRef = new Reference(child.getPath());
                         }
                         childrenList.add(newRef);
-                        mappings.put(targetRootPath + SLASH + (postfix.isEmpty() ? "" : postfix + SLASH) + child.getName(), newRef);
+                        String parentPath = targetRootPath + (postfix.isEmpty() ? "" : SLASH + postfix);
+                        mappings.put(parentPath + SLASH + child.getName(), newRef);
                         if(returnChildren) {
                             answer.add(
                                 createSyntheticFromResource(
                                     resourceResolver, child,
-                                    targetRootPath + SLASH + (postfix.isEmpty() ? "" : postfix + SLASH) + child.getName()
+                                    parentPath + SLASH + child.getName(),
+                                    parentPath.equals(targetRootPath)
                                 )
                             );
                         }

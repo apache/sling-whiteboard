@@ -62,7 +62,7 @@ public class DeclarativeDynamicResourceImplTest {
             resourceResolver
         );
         DeclarativeDynamicResource declarativeDynamicResource = DeclarativeDynamicResourceImpl.createSyntheticFromResource(
-            resourceResolver, source, dynamicResourceRoot + "/" + resourceName
+            resourceResolver, source, dynamicResourceRoot + "/" + resourceName, true
         );
         assertEquals("Wrong DD-Resource Name", resourceName, declarativeDynamicResource.getName());
         assertEquals("Wrong Resource Type", resourceType, declarativeDynamicResource.getResourceType());
