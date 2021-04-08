@@ -16,6 +16,7 @@
  */
 package org.apache.sling.ddr.api;
 
+import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.osgi.framework.Bundle;
 
@@ -33,11 +34,11 @@ public interface DeclarativeDynamicResourceProvider {
      * @param bundle The Bundle where the Resource Provider is registered with
      * @param targetRootPath The Parent Path of the Dynamic Resources
      * @param providerRootPath The Source Folder of the Resources that provide the data
-     * @param resourceResolverFactory Resource Resolver Factory that allows to create new Synthetic Resources
+     * @param resourceResolver Resource Resolver to create new Synthetic Resources
      * @return
      */
     long registerService(
-        Bundle bundle, String targetRootPath, String providerRootPath, ResourceResolverFactory resourceResolverFactory,
+        Bundle bundle, String targetRootPath, String providerRootPath, ResourceResolver resourceResolver,
         DeclarativeDynamicResourceManager declarativeDynamicResourceManager,
         Map<String, List<String>> allowedDDRFilter, Map<String, List<String>> prohibitedDDRFilter, List<String> followedLinkNames
     );

@@ -16,10 +16,8 @@
  */
 package org.apache.sling.ddr.core;
 
-import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.ddr.api.DeclarativeDynamicResourceManager;
 import org.apache.sling.ddr.api.DeclarativeDynamicResourceProvider;
@@ -67,7 +65,7 @@ public class DeclarativeDynamicResourceProviderHandler
     private String targetRootPath;
     private String providerRootPath;
     private boolean active;
-    private ResourceResolverFactory resourceResolverFactory;
+    private ResourceResolver resourceResolver;
     private DeclarativeDynamicResourceManager declarativeDynamicResourceManager;
     private Map<String, List<String>> allowedDDRFilter;
     private Map<String, List<String>> prohibitedDDRFilter;
@@ -80,13 +78,13 @@ public class DeclarativeDynamicResourceProviderHandler
     //---------- Service Registration
 
     public long registerService(
-        Bundle bundle, String targetRootPath, String providerRootPath, ResourceResolverFactory resourceResolverFactory,
+        Bundle bundle, String targetRootPath, String providerRootPath, ResourceResolver resourceResolver,
         DeclarativeDynamicResourceManager declarativeDynamicResourceManager,
         Map<String, List<String>> allowedDDRFilter, Map<String, List<String>> prohibitedDDRFilter, List<String> followedLinkNames
     ) {
         this.targetRootPath = targetRootPath;
         this.providerRootPath = providerRootPath;
-        this.resourceResolverFactory = resourceResolverFactory;
+        this.resourceResolver = resourceResolver;
         this.declarativeDynamicResourceManager = declarativeDynamicResourceManager;
         this.allowedDDRFilter = allowedDDRFilter == null ? new HashMap<String, List<String>>(): allowedDDRFilter;
         this.prohibitedDDRFilter = prohibitedDDRFilter == null ? new HashMap<String, List<String>>(): prohibitedDDRFilter;
@@ -145,7 +143,7 @@ public class DeclarativeDynamicResourceProviderHandler
 
     @Override
     public Resource getResource(ResolveContext ctx, String path, ResourceContext resourceContext, Resource parent) {
-        ResourceResolver resourceResolver = ctx.getResourceResolver();
+        ResourceResolver contextResourceResolver = ctx.getResourceResolver();
         log.info("Get Resource, path: '{}', parent: '{}', provider root: '{}'", path, parent, providerRootPath);
         String resourcePath;
         if(path.startsWith(SLASH)) {
@@ -155,7 +153,7 @@ public class DeclarativeDynamicResourceProviderHandler
         }
         Resource answer = null;
         if(resourcePath.startsWith(providerRootPath)) {
-            answer = resourceResolver.getResource(resourcePath);
+            answer = getResource(contextResourceResolver, resourcePath);
         } else if(resourcePath.startsWith(targetRootPath)) {
             log.info("Before Getting Resource from Parent, path: '{}'", resourcePath);
             ResourceProvider parentResourceProvider = ctx.getParentResourceProvider();
@@ -174,25 +172,29 @@ public class DeclarativeDynamicResourceProviderHandler
                         int index = resourcePath.lastIndexOf('/');
                         if (index > 0 && index < resourcePath.length() - 1) {
                             String parentPath = resourcePath.substring(0, index);
-                            obtainChildren(resourceResolver, parentPath, false);
+                            obtainChildren(contextResourceResolver, parentPath, false);
                             mappedPath = mappings.get(resourcePath);
                         }
                     }
                     if (mappedPath != null) {
-                        Resource source = resourceResolver.getResource(mappedPath.getReference());
+                        Resource source = getResource(
+                            contextResourceResolver, mappedPath.isRef() ?
+                                mappedPath.getReference():
+                                mappedPath.getSource()
+                        );
                         int index = resourcePath.lastIndexOf('/');
                         String parentPath = "";
                         if (index > 0 && index < resourcePath.length() - 1) {
                             parentPath = resourcePath.substring(0, index);
                         }
                         answer = createSyntheticFromResource(
-                            resourceResolver, source, resourcePath, parentPath.equals(targetRootPath)
+                            source, resourcePath, parentPath.equals(targetRootPath)
                         );
                     }
                 }
             }
         } else {
-            answer = resourceResolver.getResource(resourcePath);
+            answer = getResource(contextResourceResolver, resourcePath);
         }
         log.info("Return resource: '{}'", answer);
         return answer;
@@ -203,7 +205,7 @@ public class DeclarativeDynamicResourceProviderHandler
         Iterator<Resource> answer = null;
         log.info("List Children, resolve-context: '{}', parent: '{}'", ctx, parent);
         String resourcePath = parent.getPath();
-        ResourceResolver resourceResolver = ctx.getResourceResolver();
+        ResourceResolver contextResourceResolver = ctx.getResourceResolver();
         if(resourcePath.equals(providerRootPath)) {
             // Handle the Source / Provider Path -> no DDRs here
             answer = parent.listChildren();
@@ -228,19 +230,18 @@ public class DeclarativeDynamicResourceProviderHandler
                 log.info("Resource Path: '{}', Children List: '{}'", resourcePath, childrenList);
                 if (childrenList != null) {
                     for (Reference childPath : childrenList) {
-                        Resource child = resourceResolver.getResource(childPath.getReference());
+                        Resource child = getResource(contextResourceResolver, childPath.getReference());
                         int index = childPath.getSource().lastIndexOf('/');
                         String childName = childPath.getSource().substring(index);
                         items.add(
                             createSyntheticFromResource(
-                                resourceResolver, child,
-                                resourcePath + childName,
+                                child, resourcePath + childName,
                                 resourcePath.equals(targetRootPath)
                             )
                         );
                     }
                 } else {
-                    items = obtainChildren(resourceResolver, resourcePath, true);
+                    items = obtainChildren(contextResourceResolver, resourcePath, true);
                 }
             }
             answer = items.iterator();
@@ -298,7 +299,7 @@ public class DeclarativeDynamicResourceProviderHandler
         return true;
     }
 
-    private List<Resource> obtainChildren(ResourceResolver resourceResolver, String resourcePath, boolean returnChildren) {
+    private List<Resource> obtainChildren(ResourceResolver contextResourceResolver, String resourcePath, boolean returnChildren) {
         List<Resource> answer = new ArrayList<>();
         String postfix = resourcePath.substring(targetRootPath.length());
         if (!postfix.isEmpty() && postfix.charAt(0) == '/') {
@@ -308,10 +309,13 @@ public class DeclarativeDynamicResourceProviderHandler
         childrenMappings.put(resourcePath, childrenList);
         String targetPath = providerRootPath + SLASH + postfix;
         Reference ref = mappings.get(resourcePath);
-        Resource provider = ref == null || !ref.isRef() ?
-            resourceResolver.getResource(targetPath) :
-            resourceResolver.getResource(ref.getReference());
-            ;
+        Resource provider =
+            getResource(
+                contextResourceResolver,
+                ref == null || !ref.isRef() ?
+                    targetPath:
+                    ref.getReference()
+            );
         log.info("Provider, Path: '{}', Resource: '{}'", targetPath, provider);
         if (provider != null) {
             Iterator<Resource> i = provider.listChildren();
@@ -329,7 +333,7 @@ public class DeclarativeDynamicResourceProviderHandler
                     for (String followedLinkName : followedLinkNames) {
                         referencePath = properties.get(followedLinkName, String.class);
                         if (referencePath != null && !referencePath.isEmpty()) {
-                            Resource reference = resourceResolver.getResource(referencePath);
+                            Resource reference = getResource(contextResourceResolver, referencePath);
                             if (reference != null && !reference.isResourceType(RESOURCE_TYPE_NON_EXISTING)) {
                                 log.info("Add Path: '{}' to children list", resourcePath);
                                 childrenList.add(new Reference(child.getPath(), referencePath));
@@ -339,7 +343,7 @@ public class DeclarativeDynamicResourceProviderHandler
                                 if(returnChildren) {
                                     answer.add(
                                         createSyntheticFromResource(
-                                            resourceResolver, reference,
+                                            reference,
                                             parentPath + SLASH + child.getName(),
                                             parentPath.equals(targetRootPath)
                                         )
@@ -366,8 +370,7 @@ public class DeclarativeDynamicResourceProviderHandler
                         if(returnChildren) {
                             answer.add(
                                 createSyntheticFromResource(
-                                    resourceResolver, child,
-                                    parentPath + SLASH + child.getName(),
+                                    child, parentPath + SLASH + child.getName(),
                                     parentPath.equals(targetRootPath)
                                 )
                             );
@@ -375,6 +378,17 @@ public class DeclarativeDynamicResourceProviderHandler
                     }
                 }
             }
+        }
+        return answer;
+    }
+
+    private Resource getResource(ResourceResolver contextResourceResolver, String path) {
+        Resource answer = null;
+        if(contextResourceResolver != null) {
+            answer = contextResourceResolver.getResource(path);
+        }
+        if(answer == null) {
+            answer = resourceResolver.getResource(path);
         }
         return answer;
     }

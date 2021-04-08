@@ -203,7 +203,7 @@ public class DeclarativeDynamicResourceManagerService
                         DeclarativeDynamicResourceProviderHandler service = new DeclarativeDynamicResourceProviderHandler();
                         log.info("Dynamic Target: '{}', Dynamic Provider: '{}'", ddrTargetResource, ddrProvider);
                         long id = service.registerService(
-                            bundleContext.getBundle(), ddrTargetPath, ddrProvider.getPath(), resourceResolverFactory,
+                            bundleContext.getBundle(), ddrTargetPath, ddrProvider.getPath(), resourceResolver,
                             this,
                             allowedFilter, prohibitedFilter, followedLinkNames
                         );

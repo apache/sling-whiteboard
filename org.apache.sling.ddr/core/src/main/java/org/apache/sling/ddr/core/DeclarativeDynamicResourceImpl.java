@@ -48,12 +48,11 @@ public class DeclarativeDynamicResourceImpl
      * Creates a Resource that adds a Resource from a given location (source)
      * into a different location (target path)
      *
-     * @param resourceResolver Resource Resolver to be used here
      * @param source Resource that provides the data
      * @param targetPath Path of the new, dynamic location of the resource
      * @return The Synthetic Resource that will provide the Dynamic Resource
      */
-    public static DeclarativeDynamicResource createSyntheticFromResource(ResourceResolver resourceResolver, Resource source, String targetPath, boolean mark) {
+    public static DeclarativeDynamicResource createSyntheticFromResource(Resource source, String targetPath, boolean mark) {
         ValueMap properties = source.getValueMap();
         Map<String,String> parameters = new HashMap<>();
         String resourceSuperType = source.getResourceSuperType();
@@ -71,7 +70,7 @@ public class DeclarativeDynamicResourceImpl
         metadata.setResolutionPathInfo(targetPath);
         metadata.setCreationTime(System.currentTimeMillis());
         return new DeclarativeDynamicResourceImpl(
-            resourceResolver,
+            source.getResourceResolver(),
             metadata,
             source.getResourceType(),
             resourceSuperType

@@ -116,7 +116,7 @@ public class DeclarativeDynamicResourceProviderHandlerTest {
         Resource dynamicParent = resourceResolver.getResource(dynamicResourceRoot);
         declarativeDynamicResourceProviderHandler.registerService(
             context.bundleContext().getBundle(), dynamicResourceRoot, confResourceRoot,
-            resourceResolverFactory, null, null,
+            resourceResolver, null, null,
             new HashMap<String, List<String>>() {{
                 put("jcr:primaryType", Arrays.asList("nt:file"));
             }},
@@ -161,7 +161,7 @@ public class DeclarativeDynamicResourceProviderHandlerTest {
 
         declarativeDynamicResourceProviderHandler.registerService(
             context.bundleContext().getBundle(), dynamicResourceRoot, confResourceRoot,
-            resourceResolverFactory, null, null,
+            resourceResolver, null, null,
             new HashMap<String, List<String>>() {{
                 put("jcr:primaryType", Arrays.asList("nt:file", "nt:resource"));
             }},
@@ -205,7 +205,7 @@ public class DeclarativeDynamicResourceProviderHandlerTest {
 
         declarativeDynamicResourceProviderHandler.registerService(
             context.bundleContext().getBundle(), dynamicResourceRoot, confResourceRoot,
-            resourceResolverFactory, declarativeDynamicResourceManager,null, null,
+            resourceResolver, declarativeDynamicResourceManager,null, null,
             Arrays.asList("sling:ddrRef")
         );
 
