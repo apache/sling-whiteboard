@@ -17,22 +17,16 @@
  * under the License.
  *
  */
-package org.apache.sling.auth.saml2.sp;
+package org.apache.sling.auth.saml2;
 
-import org.apache.jackrabbit.oak.spi.security.authentication.external.ExternalIdentityException;
-import org.apache.jackrabbit.oak.spi.security.authentication.external.ExternalIdentityRef;
-import org.apache.jackrabbit.oak.spi.security.authentication.external.ExternalUser;
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.core.xml.schema.XSString;
-
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class Saml2User implements ExternalUser {
+public class Saml2User {
     private String id;
     private HashMap userProperties;
     private HashSet groupMembership;
@@ -47,38 +41,8 @@ public class Saml2User implements ExternalUser {
         this.id = id;
     }
 
-    @Nonnull
-    @Override
-    public ExternalIdentityRef getExternalId() {
-        return null;
-    }
-
     public String getId() {
         return id;
-    }
-
-    @Nonnull
-    @Override
-    public String getPrincipalName() {
-        return null;
-    }
-
-    @CheckForNull
-    @Override
-    public String getIntermediatePath() {
-        return null;
-    }
-
-    @Nonnull
-    @Override
-    public Iterable<ExternalIdentityRef> getDeclaredGroups() throws ExternalIdentityException {
-        return null;
-    }
-
-    @Nonnull
-    @Override
-    public Map<String, ?> getProperties() {
-        return null;
     }
 
     public Map<String,String> getUserProperties() {

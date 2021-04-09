@@ -20,19 +20,16 @@
 
 package org.apache.sling.auth.saml2.impl;
 
+import org.apache.sling.auth.core.spi.DefaultAuthenticationFeedbackHandler;
 import org.apache.sling.auth.saml2.AuthenticationHandlerSAML2Config;
-import org.apache.sling.auth.saml2.SAML2ConfigService;
-import org.osgi.service.component.ComponentContext;
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.metatype.annotations.Designate;
 
-@Component(service={SAML2ConfigService.class}, immediate = true)
-@Designate(ocd = AuthenticationHandlerSAML2Config.class)
+import java.util.HashMap;
+import java.util.Map;
 
-public class SAML2ConfigServiceImpl implements SAML2ConfigService {
+abstract class AbstractSamlHandler extends DefaultAuthenticationFeedbackHandler {
+
     // OSGI Configs
-    private String[] path;
+    private String path;
     private String saml2SessAttr;
     private String saml2IDPDestination;
     private boolean saml2SPEnabled = false;
@@ -49,13 +46,13 @@ public class SAML2ConfigServiceImpl implements SAML2ConfigService {
     private String acsPath;
     private String[] syncAttrs;
     private String saml2LogoutURL;
+    private Map syncAttrMap;
 
     public static final String GOTO_URL_SESSION_ATTRIBUTE = "gotoURL";
     public static final String SAML2_REQUEST_ID = "saml2RequestID";
     public static final String AUTHENTICATED_SESSION_ATTRIBUTE = "authenticated";
 
-    @Activate
-    protected void activate(final AuthenticationHandlerSAML2Config config, ComponentContext componentContext) {
+    void setConfigs(final AuthenticationHandlerSAML2Config config){
         this.path = config.path();
         this.saml2SessAttr = config.saml2SessionAttr();
         this.saml2SPEnabled = config.saml2SPEnabled();
@@ -73,97 +70,75 @@ public class SAML2ConfigServiceImpl implements SAML2ConfigService {
         this.acsPath = config.acsPath();
         this.syncAttrs = config.syncAttrs();
         this.saml2LogoutURL = config.saml2LogoutURL();
+        setSyncMap();
     }
 
-
-    @Override
-    public String[] getSaml2Path() {
+//    GETTERS
+    String getSaml2Path() {
         return this.path;
     }
-
-    @Override
-    public String getSaml2userIDAttr() {
+    String getSaml2userIDAttr() {
         return this.uidAttrName;
     }
-
-    @Override
-    public String getSaml2userHome() {
+    String getSaml2userHome() {
         return this.samlUserHome;
     }
-
-    @Override
-    public String getSaml2groupMembershipAttr() {
+    String getSaml2groupMembershipAttr() {
         return this.groupMembershipName;
     }
-
-    @Override
-    public String getSaml2SessionAttr() {
+    String getSaml2SessionAttr() {
         return this.saml2SessAttr;
     }
-
-    @Override
-    public String getSaml2IDPDestination() {
+    String getSaml2IDPDestination() {
         return this.saml2IDPDestination;
     }
-
-    @Override
-    public String getEntityID() {
+    String getEntityID() {
         return this.entityID;
     }
-
-    @Override
-    public String getAcsPath() {
+    String getAcsPath() {
         return this.acsPath;
     }
-
-    @Override
-    public boolean getSaml2SPEnabled() {
+    boolean getSaml2SPEnabled() {
         return this.saml2SPEnabled;
     }
-
-    @Override
-    public boolean getSaml2SPEncryptAndSign() {
+    boolean getSaml2SPEncryptAndSign() {
         return this.saml2SPEncryptAndSign;
     }
-
-    @Override
-    public String getSaml2LogoutURL() {
+    String getSaml2LogoutURL() {
         return this.saml2LogoutURL;
     }
-
-    @Override
-    public String getJksFileLocation() {
+    String getJksFileLocation() {
         return this.jksFileLocation;
     }
-
-    @Override
-    public String getJksStorePassword() {
+    String getJksStorePassword() {
         return this.jksStorePassword;
     }
-
-    @Override
-    public String getSpKeysAlias() {
+    String getSpKeysAlias() {
         return this.spKeysAlias;
     }
-
-    @Override
-    public String getSpKeysPassword() {
+    String getSpKeysPassword() {
         return this.spKeysPassword;
     }
-
-    @Override
-    public String getIdpCertAlias() {
+    String getIdpCertAlias() {
         return this.idpCertAlias;
     }
-
-    @Override
-    public String[] getSyncAttrs() {
+    String[] getSyncAttrs() {
         return this.syncAttrs;
     }
+    Map<String,String> getSyncAttrMap(){ return this.syncAttrMap; }
 
-    @Override
-    public String getACSURL() {
+    String getACSURL() {
         final String domain = entityID.endsWith("/") ? entityID.substring(0, entityID.length()-1) : entityID;
         return domain + this.getAcsPath();
+    }
+
+    void setSyncMap(){
+        this.syncAttrMap = new HashMap<>();
+        for(String attr : getSyncAttrs()){
+            String[] parts = attr.split("=");
+            if(parts != null && parts.length==2){
+                this.syncAttrMap.put(parts[0],parts[1]);
+            }
+        }
     }
 }

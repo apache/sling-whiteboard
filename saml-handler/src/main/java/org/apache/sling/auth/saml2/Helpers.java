@@ -21,20 +21,20 @@
 package org.apache.sling.auth.saml2;
 
 import net.shibboleth.utilities.java.support.security.impl.RandomIdentifierGenerationStrategy;
-import org.opensaml.core.xml.XMLObject;
 import org.opensaml.core.xml.XMLObjectBuilderFactory;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
-import org.opensaml.core.xml.io.Marshaller;
-import org.opensaml.core.xml.io.MarshallingException;
-import org.opensaml.saml.common.SignableSAMLObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Element;
 import javax.xml.namespace.QName;
-import javax.xml.transform.*;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import java.io.StringWriter;
+//import org.opensaml.core.xml.XMLObject;
+//import org.w3c.dom.Element;
+//import org.opensaml.core.xml.io.Marshaller;
+//import org.opensaml.core.xml.io.MarshallingException;
+//import org.opensaml.saml.common.SignableSAMLObject;
+//import javax.xml.transform.*;
+//import javax.xml.transform.dom.DOMSource;
+//import javax.xml.transform.stream.StreamResult;
+//import java.io.StringWriter;
 
 /*
  * Attribution:
@@ -48,6 +48,7 @@ public class Helpers {
 
     private static Logger logger = LoggerFactory.getLogger(Helpers.class);
     private static RandomIdentifierGenerationStrategy secureRandomIdGenerator;
+    private static String DEFAULT_ELEMENT_NAME = "DEFAULT_ELEMENT_NAME";
     static {
         secureRandomIdGenerator = new RandomIdentifierGenerationStrategy();
     }
@@ -56,7 +57,7 @@ public class Helpers {
         T object = null;
         try {
             XMLObjectBuilderFactory builderFactory = XMLObjectProviderRegistrySupport.getBuilderFactory();
-            QName defaultElementName = (QName) clazz.getDeclaredField("DEFAULT_ELEMENT_NAME").get(null);
+            QName defaultElementName = (QName) clazz.getDeclaredField(DEFAULT_ELEMENT_NAME).get(null);
             object = (T)builderFactory.getBuilder(defaultElementName).buildObject(defaultElementName);
         } catch (IllegalAccessException e) {
             throw new IllegalArgumentException("Could not create SAML object");
@@ -70,34 +71,35 @@ public class Helpers {
         return secureRandomIdGenerator.generateIdentifier();
     }
 
-    public static void logSAMLObject(final XMLObject object) {
-        Element element = null;
-        if (object instanceof SignableSAMLObject && ((SignableSAMLObject)object).isSigned() && object.getDOM() != null) {
-            element = object.getDOM();
-        } else {
-            try {
-                Marshaller out = XMLObjectProviderRegistrySupport.getMarshallerFactory().getMarshaller(object);
-                out.marshall(object);
-                element = object.getDOM();
-            } catch (MarshallingException e) {
-                logger.error(e.getMessage(), e);
-            }
-        }
-
-        try {
-            Transformer transformer = TransformerFactory.newInstance().newTransformer();
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            StreamResult result = new StreamResult(new StringWriter());
-            DOMSource source = new DOMSource(element);
-            transformer.transform(source, result);
-            String xmlString = result.getWriter().toString();
-
-            logger.debug(xmlString);
-        } catch (TransformerConfigurationException e) {
-            logger.error("TransformerConfigurationException in logSAMLObject", e);
-        } catch (TransformerException e) {
-            logger.error("TransformerException in logSAMLObject", e);
-        }
-    }
+//NOTE:  logSAMLObject may be useful wil developing the and debugging, but not needed for production use cases.
+//    public static void logSAMLObject(final XMLObject object) {
+//        Element element = null;
+//        if (object instanceof SignableSAMLObject && ((SignableSAMLObject)object).isSigned() && object.getDOM() != null) {
+//            element = object.getDOM();
+//        } else {
+//            try {
+//                Marshaller out = XMLObjectProviderRegistrySupport.getMarshallerFactory().getMarshaller(object);
+//                out.marshall(object);
+//                element = object.getDOM();
+//            } catch (MarshallingException e) {
+//                logger.error(e.getMessage(), e);
+//            }
+//        }
+//
+//        try {
+//            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+//            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+//            StreamResult result = new StreamResult(new StringWriter());
+//            DOMSource source = new DOMSource(element);
+//            transformer.transform(source, result);
+//            String xmlString = result.getWriter().toString();
+//
+//            logger.debug(xmlString);
+//        } catch (TransformerConfigurationException e) {
+//            logger.error("TransformerConfigurationException in logSAMLObject", e);
+//        } catch (TransformerException e) {
+//            logger.error("TransformerException in logSAMLObject", e);
+//        }
+//    }
 
 }
