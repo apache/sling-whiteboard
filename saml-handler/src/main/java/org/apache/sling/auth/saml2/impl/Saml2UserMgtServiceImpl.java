@@ -25,8 +25,7 @@ import org.apache.jackrabbit.api.security.user.*;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
-import org.apache.sling.auth.saml2.SAML2ConfigService;
-import org.apache.sling.auth.saml2.sp.Saml2User;
+import org.apache.sling.auth.saml2.Saml2User;
 import org.apache.sling.auth.saml2.Saml2UserMgtService;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -43,17 +42,13 @@ public class Saml2UserMgtServiceImpl implements Saml2UserMgtService {
 
     @Reference
     private ResourceResolverFactory resolverFactory;
-    @Reference
-    private SAML2ConfigService saml2ConfigService;
-
     private ResourceResolver resourceResolver;
     private Session session;
     private UserManager userManager;
-    private JackrabbitSession jrSession;
     private ValueFactory vf;
     private static Logger logger = LoggerFactory.getLogger(Saml2UserMgtServiceImpl.class);
-    public static String SERVICE_NAME = "Saml2UserMgtService";
-    public static String SERVICE_USER = "saml2-user-mgt";
+    public static final String SERVICE_NAME = "Saml2UserMgtService";
+    public static final String SERVICE_USER = "saml2-user-mgt";
 
     @Override
     public boolean setUp() {
@@ -80,7 +75,6 @@ public class Saml2UserMgtServiceImpl implements Saml2UserMgtService {
     public void cleanUp() {
         resourceResolver.close();
         session = null;
-        jrSession = null;
         userManager = null;
         vf = null;
     }
@@ -95,19 +89,30 @@ public class Saml2UserMgtServiceImpl implements Saml2UserMgtService {
             if(jackrabbitUser != null) {
                 return jackrabbitUser;
             }
-
-            if (saml2ConfigService.getSaml2userHome() == null || saml2ConfigService.getSaml2userHome().isEmpty()) {
-                // If Saml2 User Home is not configured, do not specify where the user is made.
-                // User's with null passwords cannot login using passwords
-                jackrabbitUser = userManager.createUser(user.getId(), null);
-            } else {
-                // if Saml2 User Home is configured, then create a principle
-                Principal principal = new SimplePrincipal(user.getId());
-                jackrabbitUser = userManager.createUser(user.getId(), null, principal, saml2ConfigService.getSaml2userHome());
-            }
+            jackrabbitUser = userManager.createUser(user.getId(), null);
             session.save();
             return jackrabbitUser;
+        } catch (RepositoryException e) {
+            logger.error("Could not get User", e);
+        }
+        return null;
+    }
 
+    @Override
+    public User getOrCreateSamlUser(Saml2User user, String userHome) {
+        User jackrabbitUser;
+        try {
+            // find and return the user if it exists
+            Authorizable authorizable = userManager.getAuthorizable(user.getId());
+            jackrabbitUser = (User) authorizable;
+            if(jackrabbitUser != null) {
+                return jackrabbitUser;
+            }
+            // if Saml2 User Home is configured, then create a principle
+            Principal principal = new SimplePrincipal(user.getId());
+            jackrabbitUser = userManager.createUser(user.getId(), null, principal, userHome);
+            session.save();
+            return jackrabbitUser;
         } catch (RepositoryException e) {
             logger.error("Could not get User", e);
         }

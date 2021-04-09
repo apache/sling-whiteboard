@@ -1,0 +1,6 @@
+{
+  "sling:resourceType": "sling:Folder",
+  "dynamic": {
+    "sling:resourceType": "sling:Folder"
+  }
+}

@@ -1,0 +1,4 @@
+{
+  "jcr:primaryType": "sling:Folder",
+  "sling:resourceSuperType": "ddr-after/components/button2"
+}

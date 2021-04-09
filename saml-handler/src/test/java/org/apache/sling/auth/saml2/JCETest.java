@@ -21,9 +21,11 @@ package org.apache.sling.auth.saml2;
 
 import org.junit.Test;
 import org.opensaml.core.config.InitializationException;
+import org.opensaml.core.config.InitializationService;
 import org.opensaml.xmlsec.config.impl.JavaCryptoValidationInitializer;
 import java.security.Provider;
 import java.security.Security;
+import static org.junit.Assert.assertNotNull;
 
 public class JCETest {
 
@@ -32,7 +34,9 @@ public class JCETest {
         JavaCryptoValidationInitializer jcvi = new JavaCryptoValidationInitializer();
         try {
             jcvi.init();
+            InitializationService.initialize();
             for (Provider jceProvider : Security.getProviders()) {
+                assertNotNull(jceProvider.getInfo());
                 System.out.print(jceProvider.getInfo());
             }
         } catch (InitializationException e) {

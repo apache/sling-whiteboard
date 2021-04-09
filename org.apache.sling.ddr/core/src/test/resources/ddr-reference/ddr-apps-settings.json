@@ -1,0 +1,28 @@
+{
+  "sling:resourceType": "sling:Folder",
+  "dynamicReference": {
+    "sling:resourceType": "sling:Folder"
+  },
+  "references": {
+    "sling:resourceType": "sling:Folder",
+    "noChild": {
+      "sling:resourceType": "sling:Folder",
+      "jcr:description": "no child reference"
+    },
+    "withChild": {
+      "sling:resourceType": "sling:Folder",
+      "jcr:title": "With-Child-1",
+      "jcr:description": "with child reference",
+      "child": {
+        "sling:resourceType": "sling:Folder",
+        "jcr:title": "Child-1",
+        "jcr:description": "child reference",
+        "grandChild": {
+          "sling:resourceType": "sling:Folder",
+          "jcr:title": "Grandchild-1",
+          "jcr:description": "grandchild reference"
+        }
+      }
+    }
+  }
+}

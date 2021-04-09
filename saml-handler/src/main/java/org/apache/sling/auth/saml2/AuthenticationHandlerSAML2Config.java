@@ -20,6 +20,7 @@
 
 package org.apache.sling.auth.saml2;
 
+import org.apache.sling.auth.saml2.impl.AuthenticationHandlerSAML2Impl;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.AttributeType;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
@@ -28,7 +29,7 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 /**
  * The configuration for <code>SAML2</code> in Apache Sling
  *
- * @see AuthenticationHandlerSAML2
+ * @see AuthenticationHandlerSAML2Impl
  */
 
 @ObjectClassDefinition(name="SAML2 Service Provider (SP) Configuration",
@@ -37,12 +38,8 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 public @interface AuthenticationHandlerSAML2Config {
 
     @AttributeDefinition(name = "Path",
-        description="One or more URL paths (String) for which this AuthenticationHandler is applied")
-    String[] path() default {};
-
-    @AttributeDefinition(name = "Service Ranking",
-        description="Integer value used to select auth'n handler when 2 or more handlers have paths of the same length.")
-    int service_ranking() default 42;
+        description="Path under which this AuthenticationHandler should be used")
+    String path() default "";
 
     @AttributeDefinition(name = "Service Provider Entity ID",
         description="The Entity ID for the SP")
@@ -65,7 +62,7 @@ public @interface AuthenticationHandlerSAML2Config {
     String saml2groupMembershipAttr() default "";
 
     @AttributeDefinition(name = "Synchronize User Attributes",
-            description="List of Names from SAML Response to Synchronize")
+            description="Map of attributes from SAML Response to Synchronize. For example, urn:oid:1.2.840.113549.1.9.1=./profile/email saves this attribute if it exists under the users profile node with the property name 'email' ")
     String[] syncAttrs() default {};
 
     @AttributeDefinition(name = "SAML2 Session Attribute",

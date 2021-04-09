@@ -1,0 +1,8 @@
+{
+  "jcr:primaryType": "sling:OsgiConfig",
+  "allowed.ddr.filter": [],
+  "prohibited.ddr.filter": [
+    "jcr:primaryType=nt:file",
+    "jcr:primaryType=nt:resource"
+  ]
+}

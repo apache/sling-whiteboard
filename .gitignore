@@ -10,3 +10,4 @@ dependency-reduced-pom.xml
 .vscode
 node_modules
 openwhisk_action.zip
+.java-version

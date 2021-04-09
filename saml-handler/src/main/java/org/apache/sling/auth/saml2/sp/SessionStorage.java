@@ -68,7 +68,7 @@ public class SessionStorage {
      * @param request
      * @param response
      */
-    public void clear(HttpServletRequest request, HttpServletResponse response) {
+    public void clear(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         if (session != null) {
             session.removeAttribute(sessionAttributeName);

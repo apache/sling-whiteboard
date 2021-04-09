@@ -1,0 +1,5 @@
+{
+  "jcr:description": "Root Folder of the Declarative Dynamic Resources (Target)",
+  "jcr:primaryType": "sling:Folder",
+  "jcr:title": "Declarative Dynamic Resource Folder"
+}

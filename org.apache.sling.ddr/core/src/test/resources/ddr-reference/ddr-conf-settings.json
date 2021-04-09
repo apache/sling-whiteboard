@@ -1,0 +1,33 @@
+{
+  "sling:resourceType": "sling:Folder",
+  "testReference": {
+    "sling:resourceType": "sling:Folder",
+    "settings": {
+      "sling:resourceType": "sling:Folder",
+      "dynamic": {
+        "sling:resourceType": "sling:DDR",
+        "sling:ddrTarget": "/apps/dynamicReference",
+        "noRef": {
+          "jcr:primaryType": "sling:Folder",
+          "sling:resourceType": "test/noRef",
+          "sling:resourceSuperType": "test/static",
+          "jcr:title": "No-Ref-1"
+        },
+        "refNoChild": {
+          "jcr:primaryType": "sling:Folder",
+          "sling:resourceType": "test/refNoChild",
+          "sling:resourceSuperType": "test/static",
+          "jcr:title": "Ref-No-Child-1",
+          "sling:ddrRef": "/apps/references/noChild"
+        },
+        "refWithChild": {
+          "jcr:primaryType": "sling:Folder",
+          "sling:resourceType": "test/refWithChild",
+          "sling:resourceSuperType": "test/static",
+          "jcr:title": "Ref-With-Child-1",
+          "sling:ddrRef": "/apps/references/withChild"
+        }
+      }
+    }
+  }
+}

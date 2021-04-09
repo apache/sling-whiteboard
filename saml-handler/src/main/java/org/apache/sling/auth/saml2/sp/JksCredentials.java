@@ -35,10 +35,6 @@ import java.security.cert.CertificateException;
 
 public abstract class JksCredentials {
 
-    protected JksCredentials(){
-
-    }
-
     /**
      * @param filePathToJKS Path to the JKS file. Usually it will be relative to the Sling instances, for example, "./sling/exampleSaml2.jks"
      * @param jksPassword Password for the JKS as a char[]
@@ -55,4 +51,7 @@ public abstract class JksCredentials {
         }
     }
 
+    protected JksCredentials() {
+        throw new IllegalStateException("Utility class");
+    }
 }

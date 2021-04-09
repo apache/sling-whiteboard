@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<ruleset comparisonMethod="maven"
+  xmlns="http://mojo.codehaus.org/versions-maven-plugin/rule/2.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://mojo.codehaus.org/versions-maven-plugin/rule/2.0.0 http://mojo.codehaus.org/versions-maven-plugin/xsd/rule-2.0.0.xsd">
+  <!-- globally ignore version that look like alpha/beta/pre-release style versions -->
+  <ignoreVersions>
+    <ignoreVersion type="regex">(?i).*[-_\.](alpha|b|beta|rc|m|ea)[-_\.]?[0-9]*</ignoreVersion>
+  </ignoreVersions>
+  <!-- ignore known old versions of commons-collections -->
+  <rules>
+    <rule groupId="commons-collections" comparisonMethod="maven">
+      <ignoreVersions>
+        <ignoreVersion>20040616</ignoreVersion>
+        <ignoreVersion>20040102.233541</ignoreVersion>
+        <ignoreVersion>20031027.000000</ignoreVersion>
+        <ignoreVersion>20030418.083655</ignoreVersion>
+      </ignoreVersions>
+    </rule>
+
+    <!-- ignore 4.x versions of servlet until jetty supports servlet 4.x -->
+    <rule groupId="javax.servlet" comparisonMethod="maven">
+      <ignoreVersions>
+        <ignoreVersion type="regex">4.*</ignoreVersion>
+      </ignoreVersions>
+    </rule>
+
+    <!-- jackrabbit uses even number for production ready releases so ignore the odd numbered versions -->
+    <rule groupId="org.apache.jackrabbit" comparisonMethod="maven">
+      <ignoreVersions>
+        <ignoreVersion type="regex">\d+\.\d*[13579]\.\d+</ignoreVersion>
+      </ignoreVersions>
+    </rule>
+
+    <!-- guava version numbers are a mess, so just ignore it completely -->
+    <rule groupId="com.google.guava" comparisonMethod="maven">
+      <ignoreVersions>
+        <ignoreVersion type="regex">.*</ignoreVersion>
+      </ignoreVersions>
+    </rule>
+
+  </rules>
+
+</ruleset>

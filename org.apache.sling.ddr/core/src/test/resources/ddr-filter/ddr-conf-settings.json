@@ -1,0 +1,30 @@
+{
+  "sling:resourceType": "sling:Folder",
+  "testFilter": {
+    "sling:resourceType": "sling:Folder",
+    "settings": {
+      "sling:resourceType": "sling:Folder",
+      "dynamic": {
+        "sling:resourceType": "sling:DDR",
+        "sling:ddrTarget": "/apps/dynamicFilter",
+        "test1": {
+          "jcr:primaryType": "sling:Folder",
+          "sling:resourceType": "test/conf",
+          "sling:resourceSuperType": "test/static",
+          "jcr:title": "Test-1"
+        },
+        "test2": {
+          "jcr:primaryType": "nt:file",
+          "jcr:content": {
+            "jcr:primaryType": "nt:resource",
+            "jcr:data": ""
+          }
+        },
+        "test3": {
+          "jcr:primaryType": "nt:resource",
+          "jcr:data": ""
+        }
+      }
+    }
+  }
+}
