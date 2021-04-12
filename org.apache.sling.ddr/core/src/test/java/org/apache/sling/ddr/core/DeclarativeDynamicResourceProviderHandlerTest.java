@@ -25,7 +25,6 @@ import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.ddr.api.DeclarativeDynamicResourceManager;
 import org.apache.sling.spi.resource.provider.ResolveContext;
 import org.apache.sling.spi.resource.provider.ResourceContext;
-import org.apache.sling.spi.resource.provider.ResourceProvider;
 import org.apache.sling.testing.mock.sling.NodeTypeDefinitionScanner;
 import org.apache.sling.testing.mock.sling.ResourceResolverType;
 import org.apache.sling.testing.mock.sling.junit.SlingContext;
@@ -42,16 +41,19 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.sling.ddr.api.Constants.SLASH;
+import static org.apache.sling.ddr.core.TestUtils.filterResourceByName;
+import static org.apache.sling.ddr.core.TestUtils.getResourcesFromProvider;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
@@ -190,11 +192,8 @@ public class DeclarativeDynamicResourceProviderHandlerTest {
 
     @Test
     public void testListReferences() throws Exception {
-        String resourceName = "test1";
         String confResourceRoot = "/conf/testReference/settings/dynamic";
         String dynamicResourceRoot = "/apps/dynamicReference";
-        final String testPropertyKey = "jcr:title";
-        final String testPropertyValue = "Test-1";
 
         context.load().json("/ddr-reference/ddr-conf-settings.json", "/conf");
         context.load().json("/ddr-reference/ddr-apps-settings.json", "/apps");
@@ -212,26 +211,99 @@ public class DeclarativeDynamicResourceProviderHandlerTest {
         Resource noRef = checkAndGetResource(dynamicParent, "noRef");
         Resource refNoChild = checkAndGetResource(dynamicParent, "refNoChild");
         Resource refWithChild = checkAndGetResource(dynamicParent, "refWithChild");
-        Resource refChild = checkAndGetResource(refWithChild, "child");
-        log.info("Ref Child: '{}'", refChild);
-        Resource refGrandchild = checkAndGetResource(refChild, "grandChild");
+        Resource referencedChild = checkAndGetResource(refWithChild, "child");
+        log.info("Ref Child: '{}'", referencedChild);
+        Resource refWithGrandChild = checkAndGetResource(dynamicParent, "refWithGrandChild");
+        log.info("Ref Grand Child: '{}'", refWithGrandChild);
+        Resource referencedChild2 = checkAndGetResource(refWithGrandChild, "child");
+        log.info("Ref Child: '{}'", referencedChild);
+        Resource refGrandchild = checkAndGetResource(referencedChild2, "grandChild");
         log.info("Ref Grandchild: '{}'", refGrandchild);
     }
 
-    private Resource checkAndGetResource(Resource parent, String expectedChildName) {
-        Resource answer = null;
-        // List all the children and make sure that only one is returned
-        Iterator<Resource> i = declarativeDynamicResourceProviderHandler.listChildren(
-            resolveContext, parent
+    @Test
+    public void testListChildrenWithFailingContextResourceResolver() throws Exception {
+        String confResourceRoot = "/conf/testReference/settings/dynamic";
+        String dynamicResourceRoot = "/apps/dynamicReference";
+
+        context.load().json("/ddr-reference/ddr-conf-settings.json", "/conf");
+        context.load().json("/ddr-reference/ddr-apps-settings.json", "/apps");
+
+        ResourceResolver contextResourceResolver = mock(ResourceResolver.class);
+        when(contextResourceResolver.getResource(anyString())).thenReturn(null);
+        when(resolveContext.getResourceResolver()).thenReturn(contextResourceResolver);
+
+        Resource dynamicParent = resourceResolver.getResource(dynamicResourceRoot);
+
+        doNothing().when(declarativeDynamicResourceManager).addReference(anyString(), anyString());
+
+        declarativeDynamicResourceProviderHandler.registerService(
+            context.bundleContext().getBundle(), dynamicResourceRoot, confResourceRoot,
+            resourceResolver, declarativeDynamicResourceManager,null, null,
+            Arrays.asList("sling:ddrRef")
         );
-        assertNotNull("No Iterator returned", i);
-        while(i.hasNext()) {
-            Resource child = i.next();
-            if(child.getName().equals(expectedChildName)) {
-                answer = child;
-                break;
-            }
-        }
+
+        Resource noRef = checkAndGetResource(dynamicParent, "noRef");
+    }
+
+    @Test
+    public void testUpdates() throws Exception {
+        String resourceName1 = "test1";
+        String newResourceName1 = "test1a";
+        String confResourceRoot = "/conf/testFilter/settings/dynamic";
+        String dynamicResourceRoot = "/apps/dynamicFilter";
+
+        log.info("Before Loading Test Resources");
+        context.load().json("/ddr-filter/ddr-conf-settings.json", "/conf");
+        context.load().json("/ddr-filter/ddr-apps-settings.json", "/apps");
+        log.info("After Loading Test Resources");
+
+        Resource dynamicParent = resourceResolver.getResource(dynamicResourceRoot);
+        declarativeDynamicResourceProviderHandler.registerService(
+            context.bundleContext().getBundle(), dynamicResourceRoot, confResourceRoot,
+            resourceResolver, null, null,
+            new HashMap<String, List<String>>() {{
+                put("jcr:primaryType", Arrays.asList("nt:file"));
+            }},
+            null
+        );
+
+        Resource test1 = declarativeDynamicResourceProviderHandler.getResource(
+            resolveContext, dynamicResourceRoot + "/" + resourceName1, resourceContext, dynamicParent
+        );
+
+        Resource container = declarativeDynamicResourceProviderHandler.getResource(
+            resolveContext, dynamicResourceRoot + "/container", resourceContext, dynamicParent
+        );
+        assertNotNull("Container Resource not found", container);
+
+        Resource newTest1 = declarativeDynamicResourceProviderHandler.getResource(
+            resolveContext, dynamicResourceRoot + "/container/" + resourceName1, resourceContext, dynamicParent
+        );
+        assertNull("To Be Moved Resource must not exist beforehand", newTest1);
+
+        resourceResolver.move(
+            confResourceRoot + SLASH + resourceName1, confResourceRoot + SLASH + "container"
+        );
+
+        // Check that the resource is not found in list
+        List<Resource> resources = getResourcesFromProvider(declarativeDynamicResourceProviderHandler, resolveContext, container);
+        resources = filterResourceByName(resources, true, resourceName1);
+        assertTrue("Moved resource should not have been found here", resources.isEmpty());
+
+        declarativeDynamicResourceProviderHandler.update(confResourceRoot + SLASH + newResourceName1);
+
+        resources = getResourcesFromProvider(declarativeDynamicResourceProviderHandler, resolveContext, container);
+        resources = filterResourceByName(resources, true, resourceName1);
+        assertFalse("Moved resource was not found after update", resources.isEmpty());
+        newTest1 = resources.get(0);
+        assertNotNull("Moved Resource not found", newTest1);
+    }
+
+    private Resource checkAndGetResource(Resource parent, String expectedChildName) {
+        List<Resource> resources = getResourcesFromProvider(declarativeDynamicResourceProviderHandler, resolveContext, parent);
+        resources = filterResourceByName(resources, true, expectedChildName);
+        Resource answer = resources.isEmpty() ? null : resources.get(0);
         assertNotNull("Child: '" + expectedChildName + "' not found", answer);
         return answer;
     }

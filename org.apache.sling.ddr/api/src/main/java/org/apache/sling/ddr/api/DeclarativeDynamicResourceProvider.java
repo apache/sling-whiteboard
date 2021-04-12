@@ -17,7 +17,6 @@
 package org.apache.sling.ddr.api;
 
 import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.osgi.framework.Bundle;
 
 import java.util.List;
@@ -56,4 +55,5 @@ public interface DeclarativeDynamicResourceProvider {
     String getTargetRootPath();
 
     void update(String path);
+
 }

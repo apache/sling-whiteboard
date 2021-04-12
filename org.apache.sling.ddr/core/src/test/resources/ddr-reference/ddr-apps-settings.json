@@ -16,6 +16,16 @@
       "child": {
         "sling:resourceType": "sling:Folder",
         "jcr:title": "Child-1",
+        "jcr:description": "child reference"
+      }
+    },
+    "withGrandChild": {
+      "sling:resourceType": "sling:Folder",
+      "jcr:title": "With-Grand-Child-1",
+      "jcr:description": "with grandchild reference",
+      "child": {
+        "sling:resourceType": "sling:Folder",
+        "jcr:title": "Child-1",
         "jcr:description": "child reference",
         "grandChild": {
           "sling:resourceType": "sling:Folder",

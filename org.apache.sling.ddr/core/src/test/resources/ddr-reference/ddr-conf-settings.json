@@ -26,6 +26,13 @@
           "sling:resourceSuperType": "test/static",
           "jcr:title": "Ref-With-Child-1",
           "sling:ddrRef": "/apps/references/withChild"
+        },
+        "refWithGrandChild": {
+          "jcr:primaryType": "sling:Folder",
+          "sling:resourceType": "test/refWithGrandChild",
+          "sling:resourceSuperType": "test/static",
+          "jcr:title": "Ref-With-Grand-Child-1",
+          "sling:ddrRef": "/apps/references/withGrandChild"
         }
       }
     }

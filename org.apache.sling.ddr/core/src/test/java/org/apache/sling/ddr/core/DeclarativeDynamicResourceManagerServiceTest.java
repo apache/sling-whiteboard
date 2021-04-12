@@ -22,6 +22,9 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.ddr.api.DeclarativeDynamicResourceListener;
+import org.apache.sling.ddr.api.DeclarativeDynamicResourceProvider;
+import org.apache.sling.spi.resource.provider.ResolveContext;
+import org.apache.sling.spi.resource.provider.ResourceProvider;
 import org.apache.sling.testing.mock.sling.NodeTypeDefinitionScanner;
 import org.apache.sling.testing.mock.sling.ResourceResolverType;
 import org.apache.sling.testing.mock.sling.junit.SlingContext;
@@ -38,11 +41,15 @@ import org.slf4j.LoggerFactory;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import static org.apache.sling.ddr.core.TestUtils.filterResourceByName;
+import static org.apache.sling.ddr.core.TestUtils.getResourcesFromProvider;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -62,6 +69,8 @@ public class DeclarativeDynamicResourceManagerServiceTest {
     public SlingContext context = new SlingContext(ResourceResolverType.JCR_OAK);
 
     @Mock
+    private ResolveContext resolveContext;
+    @Mock
     private ResourceResolverFactory resourceResolverFactory;
     @Mock
     private DeclarativeDynamicResourceListener declarativeDynamicResourceListener;
@@ -76,6 +85,7 @@ public class DeclarativeDynamicResourceManagerServiceTest {
     public void setup() throws LoginException, RepositoryException {
         resourceResolver = spy(context.resourceResolver());
         log.info("Adapt Context-RR: '{}' to Session: '{}'", resourceResolver, resourceResolver.adaptTo(Session.class));
+        when(resolveContext.getResourceResolver()).thenReturn(resourceResolver);
         when(resourceResolverFactory.getServiceResourceResolver(any(Map.class)))
             .thenReturn(resourceResolver);
         declarativeDynamicResourceManagerService.resourceResolverFactory = resourceResolverFactory;
@@ -93,11 +103,8 @@ public class DeclarativeDynamicResourceManagerServiceTest {
 
     @Test
     public void testBasics() throws Exception {
-        String resourceName = "test1";
         String confResourceRoot = "/conf/test/settings/dynamic";
         String dynamicResourceRoot = "/apps/dynamic";
-        final String testPropertyKey = "jcr:title";
-        final String testPropertyValue = "Test-1";
 
         log.info("Before Loading Test Resources");
         context.load().json("/ddr-installation/ddr-conf-settings.json", "/conf");
@@ -125,40 +132,51 @@ public class DeclarativeDynamicResourceManagerServiceTest {
         assertEquals("Wrong DDR Source Path", confResourceRoot, source.getPath());
     }
 
-//    @Test
-//    public void testFilters() throws Exception {
-//        String resourceName = "test1";
-//        String confResourceRoot = "/conf/testFilter/settings/dynamic";
-//        String dynamicResourceRoot = "/apps/dynamicFilter";
-////        final String testPropertyKey = "jcr:title";
-////        final String testPropertyValue = "Test-1";
-//
-//        log.info("Before Loading Test Resources");
-//        context.load().json("/ddr-filter/ddr-conf-settings.json", "/conf");
-//        context.load().json("/ddr-filter/ddr-apps-settings.json", "/apps");
-//        log.info("After Loading Test Resources");
-//        Resource sourceRoot = resourceResolver.getResource("/conf/testFilter/settings/dynamic");
-//        log.info("Dynamic Test Resource Root: '{}'", sourceRoot);
-//        when(resourceResolver.findResources(anyString(), anyString())).thenReturn(
-//            Arrays.asList(sourceRoot).iterator()
-//        );
-//
-//        // Listen to newly created DDRs
-//        doAnswer(new ListenerAnswer()).when(declarativeDynamicResourceListener).addDeclarativeDynamicResource(anyString(), any(Resource.class));
-//
-//        // Test a basic, already installed configuration
-//        log.info("DDR-Manager Service: '{}'", declarativeDynamicResourceManagerService);
-//        declarativeDynamicResourceManagerService.activate(context.bundleContext(), createConfiguration(
-//            null, new String[] {"sling:resourceType=nt:file", "sling:resourceType=nt:resource"}));
-//
-//// The Query for Node Type sling:DDR will not return even though a Resource is there
-//        assertFalse("No DDR Registered", ddrMap.isEmpty());
-//        assertEquals("Only one DDR should be Registered", 1, ddrMap.size());
-//        Entry<String, Resource> entry = ddrMap.entrySet().iterator().next();
-//        assertEquals("Wrong DDR Dynamic Path", dynamicResourceRoot + "/" + resourceName, entry.getKey());
-//        Resource source = entry.getValue();
-//        assertEquals("Wrong DDR Source Path", confResourceRoot + "/" + resourceName, source.getPath());
-//    }
+    @Test
+    public void testResourceUpdates() throws Exception {
+        String confResourceRoot = "/conf/test/settings/dynamic";
+        String dynamicResourceRoot = "/apps/dynamic";
+
+        log.info("Before Loading Test Resources");
+        context.load().json("/ddr-installation/ddr-conf-settings.json", "/conf");
+        context.load().json("/ddr-installation/ddr-apps-settings.json", "/apps");
+        log.info("After Loading Test Resources");
+        Resource sourceRoot = resourceResolver.getResource(confResourceRoot);
+        Resource targetRoot = resourceResolver.getResource(dynamicResourceRoot);
+        log.info("Dynamic Test Resource Root: '{}'", sourceRoot);
+        when(resourceResolver.findResources(anyString(), anyString())).thenReturn(
+            Arrays.asList(sourceRoot).iterator()
+        );
+
+        // Listen to newly created DDRs
+        doAnswer(new ListenerAnswer()).when(declarativeDynamicResourceListener).addDeclarativeDynamicResource(anyString(), any(Resource.class));
+
+        // Test a basic, already installed configuration
+        log.info("DDR-Manager Service: '{}'", declarativeDynamicResourceManagerService);
+        declarativeDynamicResourceManagerService.activate(context.bundleContext(), createConfiguration(null, null));
+
+        // Get the children from the DDR
+        Map<String, DeclarativeDynamicResourceProvider> providerMap = declarativeDynamicResourceManagerService.getRegisteredServicesByTarget();
+        assertEquals("Expected only one DDR Provider", 1, providerMap.size());
+        DeclarativeDynamicResourceProvider provider = providerMap.values().iterator().next();
+        assertNotNull("DDR Provider must be defined", provider);
+
+        List<Resource> resources = getResourcesFromProvider((ResourceProvider) provider, resolveContext, targetRoot);
+        assertFalse("Expected a resource but none found", resources.isEmpty());
+        assertEquals("Did not get 'test1' resource", 1, filterResourceByName(resources, true, "test1").size());
+        assertEquals("Got another resource than 'test1'", new ArrayList<>(), filterResourceByName(resources, false, "test1"));
+
+        // Move the resource in from the source
+        resourceResolver.move("/apps/sources/test2", confResourceRoot);
+        Thread.sleep(10000);
+
+        resources = getResourcesFromProvider((ResourceProvider) provider, resolveContext, targetRoot);
+        assertFalse("Expected resources but none found", resources.isEmpty());
+        assertEquals("Did not get 'test1' resource", 1, filterResourceByName(resources, true, "test1").size());
+//AS TODO: The move() of the resource is not triggering the onEvent() on the Resource Manager.
+//        assertEquals("Did not get 'test2' resource", 1, filterResourceByName(resources, true, "test2").size());
+//        assertEquals("Got another resource than 'test1'", new ArrayList<>(), filterResourceByName(resources, false, "test1"));
+    }
 
     private DeclarativeDynamicResourceManagerService.Configuration createConfiguration(
         String[] allowed, String[] prohibited, String ... followedLinkNames
