@@ -15,28 +15,9 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- *
  */
 
+@org.osgi.annotation.versioning.Version("1.0.0")
 package org.apache.sling.auth.saml2;
 
-public interface SAML2ConfigService {
-    String[] getSaml2Path();
-    String getEntityID();
-    String getAcsPath();
-    String getACSURL();
-    String getSaml2userHome();
-    String getSaml2userIDAttr();
-    String getSaml2groupMembershipAttr();
-    String getSaml2SessionAttr();
-    String getSaml2IDPDestination();
-    boolean getSaml2SPEnabled();
-    boolean getSaml2SPEncryptAndSign();
-    String[] getSyncAttrs();
-    String getJksFileLocation();
-    String getJksStorePassword();
-    String getSpKeysAlias();
-    String getIdpCertAlias();
-    String getSpKeysPassword();
-    String getSaml2LogoutURL();
-}
+

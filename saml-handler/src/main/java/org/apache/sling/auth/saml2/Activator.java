@@ -24,89 +24,86 @@ import org.opensaml.core.config.InitializationService;
 import org.opensaml.xmlsec.config.impl.JavaCryptoValidationInitializer;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.startlevel.BundleStartLevel;
+import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.ServiceReference;
 import org.osgi.framework.wiring.BundleWiring;
+import org.osgi.service.cm.Configuration;
+import org.osgi.service.cm.ConfigurationAdmin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.security.*;
-import java.security.cert.CertificateException;
+import java.security.Provider;
+import java.security.Security;
+import java.util.Dictionary;
+import java.util.Hashtable;
 
 public class Activator implements BundleActivator {
 
-    private static final Logger logger = LoggerFactory.getLogger(BundleActivator.class);
-    private static final int START_LEVEL = 19;
+    private static final Logger logger = LoggerFactory.getLogger(Activator.class);
+    private ConfigurationAdmin configAdmin;
 
-
-    public void start(BundleContext context) throws Exception {
-        // Setting Start Level to a value lower than the JCR Install bundle to enable proper start up sequence.
-        context.getBundle().adapt(BundleStartLevel.class).setStartLevel(START_LEVEL);
-
-        // Example JKS
-        createExampleJks();
-
+    public void start(BundleContext context) throws IOException, InvalidSyntaxException {
         // Classloading
         BundleWiring bundleWiring = context.getBundle().adapt(BundleWiring.class);
         ClassLoader loader = bundleWiring.getClassLoader();
         Thread thread = Thread.currentThread();
         thread.setContextClassLoader(InitializationService.class.getClassLoader());
         try {
-            InitializationService.initialize();
-        } finally {
-            thread.setContextClassLoader(loader);
-        }
-
-        logger.info("Activating Apache Sling SAML2 SP Bundle. And Initializing JCE, Java Cryptographic Extension");
-        JavaCryptoValidationInitializer jcvi = new JavaCryptoValidationInitializer();
-        try {
-            jcvi.init();
-            for (Provider jceProvider : Security.getProviders()) {
-                logger.info(jceProvider.getInfo());
-            }
+            initializeOpenSaml();
         } catch (InitializationException e) {
             throw new SAML2RuntimeException("Java Cryptographic Extension could not initialize. " +
                     "This happens when JCE implementation is incomplete, and not meeting OpenSAML standards.", e);
+        } finally {
+            thread.setContextClassLoader(loader);
         }
-
-/*
-TODO: What is the proper way around this classloading problem?
-One suggestion in this post
-https://medium.com/@dehami.deshan/commencing-migration-towards-the-checked-flag-opensaml-3-cc62d3faa3b0
-
-...fixes a issue similar to what is discussed below
-https://shibboleth.1660669.n2.nabble.com/Null-returned-by-XMLObjectProviderRegistrySupport-getBuilderFactory-td7643173.html
-
-...and here
-https://stackoverflow.com/questions/37948303/opensaml3-resource-not-found-default-config-xml-in-osgi-container
-
-...and here
-https://stackoverflow.com/questions/2198928/better-handling-of-thread-context-classloader-in-osgi?noredirect=1&lq=1
-
-*/
-
+        setConfigAdmin(context);
+        if ( needsSamlJaas()){
+            configureSamlJaas();
+        }
     }
 
-    public void stop(BundleContext context) throws Exception {
-        // do something at bundle stop
+    public void stop(BundleContext context) throws IOException, InvalidSyntaxException {
+        if (configAdmin != null){
+            removeSamlJaas();
+        }
     }
 
-    void createExampleJks(){
-        KeyStore ks = null;
-        File file = new File("./sling/exampleSaml2.jks");
-        try (FileOutputStream fos = new FileOutputStream(file)){
-            char[] password = "password".toCharArray();
-            ks = KeyStore.getInstance(KeyStore.getDefaultType());
-            if (!file.exists()) {
-                ks.load(null, password);
-                ks.store(fos, password);
-                logger.info("Example JKS created");
-            } else {
-                logger.info("Example JKS exists");
-            }
-        } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e) {
-            logger.error("Error encountered creating JKS", e);
+    public static void initializeOpenSaml() throws InitializationException{
+        JavaCryptoValidationInitializer jcvi = new JavaCryptoValidationInitializer();
+        jcvi.init();
+        InitializationService.initialize();
+        logger.info("Activating Apache Sling SAML2 SP Bundle. And Initializing JCE, Java Cryptographic Extension");
+        for (Provider jceProvider : Security.getProviders()) {
+            logger.info(jceProvider.getInfo());
         }
+    }
+
+    protected void configureSamlJaas() throws IOException {
+        Dictionary<String, Object> props = new Hashtable();
+        props.put("jaas.classname", "org.apache.sling.auth.saml2.sp.Saml2LoginModule");
+        props.put("jaas.controlFlag", "Sufficient");
+        props.put("jaas.realmName", "jackrabbit.oak");
+        props.put("jaas.ranking", 110);
+        configAdmin.createFactoryConfiguration("org.apache.felix.jaas.Configuration.factory", null).update(props);
+    }
+
+    protected boolean needsSamlJaas() throws IOException, InvalidSyntaxException {
+        Configuration[] configs = configAdmin.listConfigurations("(jaas.classname=org.apache.sling.auth.saml2.sp.Saml2LoginModule)");
+        return configs == null;
+    }
+
+    protected void removeSamlJaas() throws IOException, InvalidSyntaxException {
+        Configuration[] configs = configAdmin.listConfigurations("(jaas.classname=org.apache.sling.auth.saml2.sp.Saml2LoginModule)");
+        if (configs == null){
+            return;
+        }
+        for ( Configuration config : configs){
+            config.delete();
+        }
+    }
+
+    public void setConfigAdmin(BundleContext bundleContext) {
+        ServiceReference<?> serviceReference = bundleContext.getServiceReference(ConfigurationAdmin.class.getName());
+        this.configAdmin = (ConfigurationAdmin) bundleContext.getService(serviceReference);
     }
 }

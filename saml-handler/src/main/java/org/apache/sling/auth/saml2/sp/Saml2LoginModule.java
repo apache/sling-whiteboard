@@ -43,15 +43,11 @@ import java.util.Set;
 
 public class Saml2LoginModule extends AbstractLoginModule {
 
-    static Set<Class> SUPPORTED_CREDENTIALS = new HashSet<Class>();
+    static Set<Class> SUPPORTED_CREDENTIALS = new HashSet<>();
     private final Logger logger = LoggerFactory.getLogger(Saml2LoginModule.class);
 
     static {
         SUPPORTED_CREDENTIALS.add(Saml2Credentials.class);
-    }
-
-    public Saml2LoginModule(){
-
     }
 
     @Nonnull

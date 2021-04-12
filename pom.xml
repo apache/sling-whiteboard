@@ -50,7 +50,7 @@
           <module>saml-example</module>
           <module>hc-resource</module>
           <module>instance-stopper</module>
-      <module>org.apache.sling.ddr</module>
+          <module>org.apache.sling.ddr</module>
   </modules>
 
 </project>

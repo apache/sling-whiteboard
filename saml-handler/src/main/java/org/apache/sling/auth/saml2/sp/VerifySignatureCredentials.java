@@ -49,15 +49,12 @@ public class VerifySignatureCredentials extends JksCredentials {
             final String jksPath,
             final char[] jksPassword,
             final String certAlias) {
-
         try {
             KeyStore keyStore = getKeyStore(jksPath, jksPassword);
             X509Certificate cert = (X509Certificate) keyStore.getCertificate(certAlias);
-            BasicX509Credential x509Credential = new BasicX509Credential(cert);
-            return x509Credential;
+            return new BasicX509Credential(cert);
         } catch (java.security.KeyStoreException e) {
             throw new SAML2RuntimeException(e);
         }
     }
-
 }

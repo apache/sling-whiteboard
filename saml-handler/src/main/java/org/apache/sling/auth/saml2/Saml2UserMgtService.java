@@ -21,13 +21,42 @@
 package org.apache.sling.auth.saml2;
 
 import org.apache.jackrabbit.api.security.user.User;
-import org.apache.sling.auth.saml2.sp.Saml2User;
 
 public interface Saml2UserMgtService {
 
+    /**
+     * Call setUp before using any other Saml2UserMgtService method
+     */
     boolean setUp();
+
+    /**
+     * getOrCreateSamlUser(Saml2User user) will be called if userHome is not configured
+     * @param user
+     * @return
+     */
     User getOrCreateSamlUser(Saml2User user);
+    
+    /**
+     * getOrCreateSamlUser(Saml2User user) will be called if userHome is configured
+     * @param user
+     * @return
+     */
+    User getOrCreateSamlUser(Saml2User user, String userHome);
+    
+    /**
+     * Users group membership will be updated based on the groups contained in the 
+     * configured element of the SAML Assertion
+     */
     boolean updateGroupMembership(Saml2User user);
+
+    /**
+     * Users properties will be updated based on user properties contained in the 
+     * configured properties of the SAML Assertion
+     */
     boolean updateUserProperties(Saml2User user);
+    
+    /**
+     * Call cleanUp after using Saml2UserMgtService methods
+     */
     void cleanUp();
 }
