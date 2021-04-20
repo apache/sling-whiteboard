@@ -23,6 +23,10 @@
         "test3": {
           "jcr:primaryType": "nt:resource",
           "jcr:data": ""
+        },
+        "container": {
+          "jcr:primaryType": "nt:resource",
+          "jcr:data": ""
         }
       }
     }
