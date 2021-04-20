@@ -41,6 +41,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.jcr.observation.Event;
+import javax.jcr.observation.EventIterator;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -53,9 +56,11 @@ import static org.apache.sling.ddr.core.TestUtils.getResourcesFromProvider;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -176,6 +181,53 @@ public class DeclarativeDynamicResourceManagerServiceTest {
 //AS TODO: The move() of the resource is not triggering the onEvent() on the Resource Manager.
 //        assertEquals("Did not get 'test2' resource", 1, filterResourceByName(resources, true, "test2").size());
 //        assertEquals("Got another resource than 'test1'", new ArrayList<>(), filterResourceByName(resources, false, "test1"));
+    }
+
+    @Test
+    public void testResourcePropertiesUpdates() throws Exception {
+        String confResourceRoot = "/conf/test/settings/dynamic";
+        String dynamicResourceRoot = "/apps/dynamic";
+
+        context.load().json("/ddr-installation/ddr-conf-settings.json", "/conf");
+        context.load().json("/ddr-installation/ddr-apps-settings.json", "/apps");
+        Resource sourceRoot = resourceResolver.getResource(confResourceRoot);
+        Resource targetRoot = resourceResolver.getResource(dynamicResourceRoot);
+        when(resourceResolver.findResources(anyString(), anyString())).thenReturn(
+            Arrays.asList(sourceRoot).iterator()
+        );
+
+        // Listen to newly created DDRs
+        doAnswer(new ListenerAnswer()).when(declarativeDynamicResourceListener).addDeclarativeDynamicResource(anyString(), any(Resource.class));
+
+        // Test a basic, already installed configuration
+        log.info("DDR-Manager Service: '{}'", declarativeDynamicResourceManagerService);
+        declarativeDynamicResourceManagerService.activate(context.bundleContext(), createConfiguration(null, null));
+
+        // Get the children from the DDR
+        Map<String, DeclarativeDynamicResourceProvider> providerMap = declarativeDynamicResourceManagerService.getRegisteredServicesByTarget();
+        assertEquals("Expected only one DDR Provider", 1, providerMap.size());
+        DeclarativeDynamicResourceProvider provider = providerMap.values().iterator().next();
+        assertNotNull("DDR Provider must be defined", provider);
+
+        List<Resource> resources = getResourcesFromProvider((ResourceProvider) provider, resolveContext, targetRoot);
+        assertFalse("Expected a resource but none found", resources.isEmpty());
+        assertEquals("Did not get 'test1' resource", 1, filterResourceByName(resources, true, "test1").size());
+        assertEquals("Got another resource than 'test1'", new ArrayList<>(), filterResourceByName(resources, false, "test1"));
+
+        //TODO: Because the Events are not sent out we do it by hand here
+        Event propertyChangeEvent = mock(Event.class);
+        when(propertyChangeEvent.getPath()).thenReturn(confResourceRoot + "/test1/jcr:title");
+        when(propertyChangeEvent.getType()).thenReturn(Event.PROPERTY_CHANGED);
+        EventIterator eventIterator = mock(EventIterator.class);
+        when(eventIterator.hasNext()).thenReturn(true, false);
+        when(eventIterator.nextEvent()).thenReturn(propertyChangeEvent);
+
+        Field mappingsField = provider.getClass().getDeclaredField("mappings");
+        mappingsField.setAccessible(true);
+        assertFalse("Mappings should not be empty", ((Map) mappingsField.get(provider)).isEmpty());
+        doNothing().when(resourceResolver).close();
+        declarativeDynamicResourceManagerService.onEvent(eventIterator);
+        assertTrue("Mappings were not cleared", ((Map) mappingsField.get(provider)).isEmpty());
     }
 
     private DeclarativeDynamicResourceManagerService.Configuration createConfiguration(

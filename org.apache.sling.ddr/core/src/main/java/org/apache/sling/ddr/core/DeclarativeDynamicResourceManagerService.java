@@ -336,7 +336,7 @@ public class DeclarativeDynamicResourceManagerService
                     case Event.PROPERTY_CHANGED:
                         int index = path.lastIndexOf('/');
                         if(index > 0) {
-                            path = path.substring(0, index -1);
+                            path = path.substring(0, index);
                         }
                         log.info("Property Added or Changed, path: '{}'", path);
                         handleNodeChange(path, true);
