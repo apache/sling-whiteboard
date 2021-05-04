@@ -38,6 +38,7 @@
       <module>document-mapper</module>
       <module>type-system</module>
       <module>sample-http-api</module>
+      <module>sample-graphql-api</module>
   </modules>
 
   <build>
