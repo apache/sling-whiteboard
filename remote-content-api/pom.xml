@@ -35,9 +35,9 @@
   <name>Apache Sling Remote Content API Reactor</name>
 
   <modules>
-      <module>content-mapper</module>
+      <module>document-mapper</module>
       <module>type-system</module>
-      <module>sample-app</module>
+      <module>sample-http-api</module>
   </modules>
 
   <build>
