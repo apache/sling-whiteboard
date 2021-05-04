@@ -22,21 +22,49 @@ package org.apache.sling.remotecontentapi.graphql;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.sling.api.resource.Resource;
+import org.apache.sling.documentmapper.api.DocumentMapper;
+import org.apache.sling.documentmapper.api.MappingTarget;
+import org.apache.sling.documentmapper.api.DocumentMapper.UrlBuilder;
 import org.apache.sling.graphql.api.SlingDataFetcher;
 import org.apache.sling.graphql.api.SlingDataFetcherEnvironment;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 @Component(service = SlingDataFetcher.class, property = {"name=samples/document"})
 public class DocumentDataFetcher implements SlingDataFetcher<Object> {
 
+    @Reference(target="(" + MappingTarget.TARGET_TYPE + "=map)")
+    private MappingTarget mappingTarget;
+
+    @Reference(target="(" + DocumentMapper.ROLE + "=content)")
+    private DocumentMapper documentMapper;
+
+    private static final UrlBuilder URL_BUILDER = new UrlBuilder() {
+        @Override
+        public String pathToUrl(String path) {
+            return getClass().getName();
+        }
+    };
+    
     @Override
     public @Nullable Object get(@NotNull SlingDataFetcherEnvironment e) throws Exception {
+        final String path = e.getArgument("path");
+
         final Map<String, Object> data = new HashMap<>();
-        data.put("path", e.getArgument("path"));
+        data.put("path", path);
         data.put("selectors", e.getArgument("selectors"));
-        data.put("body", RandomStructureMap.get());
+
+        // Get the target Resource
+        final Resource target = e.getCurrentResource().getResourceResolver().getResource(path);
+
+        // Use DocumentMapper to build the body
+        final MappingTarget.TargetNode body = mappingTarget.newTargetNode();
+        documentMapper.map(target, body, URL_BUILDER);
+        body.close();
+        data.put("body", body.adaptTo(Map.class));
         return data;
     }
     

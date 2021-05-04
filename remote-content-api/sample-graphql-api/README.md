@@ -19,3 +19,21 @@ the Maven JVM.
 The test content uses `com.adobe.aem.guides:aem-guides-wknd.ui.content.sample` which is MIT
 licensed. Minimal "fake" JCR nodetype definitions are used to allow this content to load, as
 we don't really care about the details of these node types besides their names.
+
+## Example GraphQL queries
+
+    { 
+      document(path:"/content/articles/music/eloy-hahn-on-the-system-of-1080p-et-corrupti-aka-xml", selectors: "not, used, sofar") {
+      	path
+        selectors
+        body
+      }
+    }
+    
+    {
+      document(path:"/content/wknd/us/en/adventures/riverside-camping-australia", selectors: "not,used,yet") {
+      	path
+        selectors
+        body
+      }
+    }
