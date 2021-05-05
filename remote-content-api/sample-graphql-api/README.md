@@ -67,8 +67,14 @@ we don't really care about the details of these node types besides their names.
     }
 
     {
+      document(path:"/open-for-all") {
+        body
+      }
+    }
+
+    {
       documents(
-        lang:"sql",
+        lang:"sql2020",
         query:"""
           select * from nt:unstructured as R
           where [sling:resourceType] = 'wknd/components/carousel'

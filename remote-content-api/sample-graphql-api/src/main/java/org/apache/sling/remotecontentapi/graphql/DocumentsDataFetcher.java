@@ -79,7 +79,14 @@ public class DocumentsDataFetcher implements SlingDataFetcher<Object> {
     
     @Override
     public @Nullable Object get(@NotNull SlingDataFetcherEnvironment e) throws Exception {
-        final String lang = e.getArgument("lang", "xpath");
+        // Use a suffix as we might not keep these built-in language in the long term
+        final String langSuffix = "2020";
+
+        String lang = e.getArgument("lang", "xpath" + langSuffix);
+        if(!lang.endsWith(langSuffix)) {
+            throw new RuntimeException("Query langage must end with suffix " + langSuffix);
+        }
+        lang = lang.replaceAll(langSuffix + "$", "");
         final String query = e.getArgument("query");
         final List<Map<String, Object>> result = new ArrayList<>();
 
