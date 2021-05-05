@@ -43,4 +43,25 @@ we don't really care about the details of these node types besides their names.
         path
         body
       }
-   }
+    }
+
+    {
+      documents(query:"//content//*[jcr:contains(.,'wknd')]") {
+        path
+      }
+    }
+
+    mutation {
+      command(
+        lang:"repoinit",
+        script:"""
+    	    # comments work here
+          set properties on /open-for-all
+            set title to "Look, I changed the title again!"
+          end
+    	    """) 
+      {
+        success
+        output
+      }
+    }

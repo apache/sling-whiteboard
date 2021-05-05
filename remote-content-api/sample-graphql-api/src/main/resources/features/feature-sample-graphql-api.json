@@ -67,6 +67,10 @@
     "end",
     "set properties on /graphql",
     "set sling:resourceType to samples/graphql",
+    "end",
+    "create path /open-for-all",
+    "set ACL on /open-for-all",
+    "allow jcr:all for everyone",
     "end"
   ]
 }

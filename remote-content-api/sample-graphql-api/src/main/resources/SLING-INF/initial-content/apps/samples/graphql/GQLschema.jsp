@@ -20,9 +20,20 @@
 <%@include file="../common/directives.jsp" %>
 
 scalar Object
+
 type Query {
   document(path : String, selectors : [String]) : Document @fetcher(name:"samples/document")
   documents(query : String, selectors : [String]) : [Document] @fetcher(name:"samples/documents")
+}
+
+type Mutation {
+  command(lang: String, script: String) : CommandResult @fetcher(name:"samples/command")
+}
+
+type CommandResult {
+  success: Boolean
+  output: String
+  links: [Link]
 }
 
 type Document {
@@ -30,4 +41,9 @@ type Document {
     selectors : String
     body : Object
     summary : Object
+}
+
+type Link {
+  rel: String
+  url: String
 }
