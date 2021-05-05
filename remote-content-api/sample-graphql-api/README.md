@@ -37,3 +37,10 @@ we don't really care about the details of these node types besides their names.
         body
       }
     }
+
+    {
+      documents(query:"//content/*/*") {
+        path
+        body
+      }
+   }

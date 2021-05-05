@@ -21,11 +21,13 @@
 
 scalar Object
 type Query {
-  document(path : String, selectors : String) : Document @fetcher(name:"samples/document")
+  document(path : String, selectors : [String]) : Document @fetcher(name:"samples/document")
+  documents(query : String, selectors : [String]) : [Document] @fetcher(name:"samples/documents")
 }
 
 type Document {
     path : String
     selectors : String
     body : Object
+    summary : Object
 }
