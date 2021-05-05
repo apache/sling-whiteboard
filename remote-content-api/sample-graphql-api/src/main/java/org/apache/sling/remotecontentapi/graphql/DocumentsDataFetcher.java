@@ -79,11 +79,12 @@ public class DocumentsDataFetcher implements SlingDataFetcher<Object> {
     
     @Override
     public @Nullable Object get(@NotNull SlingDataFetcherEnvironment e) throws Exception {
+        final String lang = e.getArgument("lang", "xpath");
         final String query = e.getArgument("query");
         final List<Map<String, Object>> result = new ArrayList<>();
 
         final ResourceResolver resolver = e.getCurrentResource().getResourceResolver();
-        final Iterator<Resource> it = resolver.findResources(query, "xpath");
+        final Iterator<Resource> it = resolver.findResources(query, lang);
         while(it.hasNext()) {
             result.add(toDocument(it.next()));
         }

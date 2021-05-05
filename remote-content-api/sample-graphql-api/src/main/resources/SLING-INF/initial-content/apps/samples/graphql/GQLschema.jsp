@@ -23,7 +23,7 @@ scalar Object
 
 type Query {
   document(path : String, selectors : [String]) : Document @fetcher(name:"samples/document")
-  documents(query : String, selectors : [String]) : [Document] @fetcher(name:"samples/documents")
+  documents(lang: String, query : String, selectors : [String]) : [Document] @fetcher(name:"samples/documents")
 }
 
 type Mutation {

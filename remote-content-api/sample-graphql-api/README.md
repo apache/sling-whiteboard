@@ -65,3 +65,16 @@ we don't really care about the details of these node types besides their names.
         output
       }
     }
+
+    {
+      documents(
+        lang:"sql",
+        query:"""
+          select * from nt:unstructured as R
+          where [sling:resourceType] = 'wknd/components/carousel'
+          and isdescendantnode(R, '/content/wknd/us/en')
+        """) 
+       {
+        path
+      }
+    }
