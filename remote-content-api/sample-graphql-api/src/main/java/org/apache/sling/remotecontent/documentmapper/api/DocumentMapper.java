@@ -34,6 +34,15 @@ public interface DocumentMapper {
     interface UrlBuilder {
         String pathToUrl(String path);
     }
+
+    public static class Options {
+        public final boolean debug;
+        public final UrlBuilder urlBuilder;
+        public Options(boolean debug, UrlBuilder urlBuilder) {
+            this.debug = debug;
+            this.urlBuilder = urlBuilder;
+        }
+    }
     
-    void map(@NotNull Resource r, @NotNull MappingTarget.TargetNode destination, UrlBuilder urlb);
+    void map(@NotNull Resource r, @NotNull MappingTarget.TargetNode destination, Options opt);
 }

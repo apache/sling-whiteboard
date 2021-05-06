@@ -50,28 +50,39 @@ public class AnnotationsRegistryImpl implements AnnotationsRegistry {
 
     @Activate
     public void activate() {
+        final String generalIgnoreProperties = "jcr:.*|cq:.*|crs:.*|tiff:.*|xmpMM:.*|xmp:.*|psAux:.*";
+        final String [] generalExcludeNodeNames = { "xmpMM:History", "xmpMM:DerivedFrom", "metadata" };
+
         add(
             Annotations.forResourceType("cq:Page")
             .withDocumentRoot(true)
+            .withChildSubstituePath("jcr:content")
             .withNavigable(true)
             .withVisitContent(true)
-            .withVisitContentChildResourceNamePattern("jcr:content")
-            .withIncludePropertyPattern("sling:ResourceType|cq:tags")
-            .withExcludePropertyPattern("jcr:.*|cq:.*")
+            .withIncludePropertyPattern("sling:ResourceType|cq:tags|jcr:title|jcr:description")
+            .withExcludePropertyPattern(generalIgnoreProperties)
+            .withExcludeNodeNames(generalExcludeNodeNames)
         );
         add(
             Annotations.forResourceType("wknd/components/page")
             // TODO shall we only have "visit content"?
             .withDocumentRoot(true)
             .withVisitContent(true)
-            .withIncludePropertyPattern("sling:ResourceType|jcr:description")
-            .withExcludePropertyPattern("jcr:.*|cq:.*")
+            .withIncludePropertyPattern("sling:ResourceType|jcr:title|jcr:description")
+            .withExcludePropertyPattern(generalIgnoreProperties)
+            .withExcludeNodeNames(generalExcludeNodeNames)
         );
         add(
             Annotations.forResourceType("wknd/components/image")
             .withVisitContent(true)
-            .withDereferenceByPathProperties("fileReference")
+            .withResolveByPathPropertyNames("fileReference")
         );
+        add(
+            Annotations.forResourceType("wknd/components/contentfragment")
+            .withVisitContent(true)
+            .withResolveByPathPropertyNames("fragmentPath")
+        );
+        
         /*
         add(
             Builder.forResourceType("sling:Folder")

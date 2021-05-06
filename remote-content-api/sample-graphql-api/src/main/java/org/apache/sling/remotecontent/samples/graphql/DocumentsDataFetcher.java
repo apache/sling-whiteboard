@@ -45,22 +45,21 @@ public class DocumentsDataFetcher implements SlingDataFetcher<Object> {
     @Reference
     private DocumentMapper documentMapper;
 
-    private void addDocumentData(final Map<String, Object> data, String key, Resource r, DocumentMapper mapper) {
+    private void addDocumentData(final Map<String, Object> data, String key, Resource r, DocumentMapper mapper, DocumentMapper.Options opt) {
         final MappingTarget.TargetNode target = mappingTarget.newTargetNode();
-        mapper.map(r, target, new UrlBuilderStub());
+        mapper.map(r, target, opt);
         target.close();
         data.put(key, target.adaptTo(Map.class));
 
     }
 
-    private Map<String, Object> toDocument(Resource r) {
+    private Map<String, Object> toDocument(Resource r, DocumentMapper.Options opt) {
         final Map<String, Object> data = new HashMap<>();
         data.put("path", r.getPath());
 
-        // TODO how to find out whether those fields are actually needed
-        // or how to evaluate them lazily
-        addDocumentData(data, "body", r, documentMapper);
-        addDocumentData(data, "summary", r, documentMapper);
+        // TODO for now those are the same...
+        addDocumentData(data, "body", r, documentMapper, opt);
+        addDocumentData(data, "summary", r, documentMapper, opt);
 
         return data;
     }
@@ -69,6 +68,8 @@ public class DocumentsDataFetcher implements SlingDataFetcher<Object> {
     public @Nullable Object get(@NotNull SlingDataFetcherEnvironment e) throws Exception {
         // Use a suffix as we might not keep these built-in language in the long term
         final String langSuffix = "2020";
+
+        final DocumentMapper.Options opt = new DocumentMapper.Options(e.getArgument("debug", true), new UrlBuilderStub());
 
         String lang = e.getArgument("lang", "xpath" + langSuffix);
         if(!lang.endsWith(langSuffix)) {
@@ -81,7 +82,7 @@ public class DocumentsDataFetcher implements SlingDataFetcher<Object> {
         final ResourceResolver resolver = e.getCurrentResource().getResourceResolver();
         final Iterator<Resource> it = resolver.findResources(query, lang);
         while(it.hasNext()) {
-            result.add(toDocument(it.next()));
+            result.add(toDocument(it.next(), opt));
         }
         return result;
     }

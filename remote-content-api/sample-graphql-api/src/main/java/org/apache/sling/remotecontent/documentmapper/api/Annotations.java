@@ -34,10 +34,12 @@ public class Annotations {
     private boolean navigable;
     private boolean visitContent;
     private boolean documentRoot;
+    private String childSubstitutePath;
     private Pattern visitContentResourceNamePattern;
     private Pattern includePropertyPattern;
     private Pattern excludePropertyPattern;
-    private List<String> dereferenceByPathProperties;
+    private List<String> resolveByPathProperties;
+    private List<String> excludeNodeNames;
 
     private Annotations(String resourceType) {
         this.resourceType = resourceType;
@@ -46,7 +48,7 @@ public class Annotations {
     @Override
     public String toString() {
         return String.format(
-            "RT=%s N=%b VC=%b DR=%b VCRN=%s IP=%s EP=%s DR=%s",
+            "RT=%s N=%b VC=%b DR=%b VCRN=%s IP=%s EP=%s DR=%s ENN=%s",
             resourceType,
             navigable,
             visitContent,
@@ -54,7 +56,8 @@ public class Annotations {
             visitContentResourceNamePattern,
             includePropertyPattern,
             excludePropertyPattern,
-            dereferenceByPathProperties
+            resolveByPathProperties,
+            excludeNodeNames
         );
     }
 
@@ -89,12 +92,24 @@ public class Annotations {
         return result;
     }
 
-    public Collection<String> dereferenceByPathPropertyNames() {
-        if(dereferenceByPathProperties != null) {
-            return dereferenceByPathProperties;
+    public Collection<String> resolveByPathPropertyNames() {
+        if(resolveByPathProperties != null) {
+            return resolveByPathProperties;
         } else {
             return Collections.emptyList();
         }
+    }
+
+    public Collection<String> excludeNodeNames() {
+        if(excludeNodeNames != null) {
+            return excludeNodeNames;
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
+    public String childSubstitutePath() {
+        return childSubstitutePath;
     }
 
     public static Builder forResourceType(String resourceType) {
@@ -137,13 +152,28 @@ public class Annotations {
             return this;
         }
 
-        public Builder withDereferenceByPathProperties(String ... names) {
-            if(target.dereferenceByPathProperties == null) {
-                target.dereferenceByPathProperties = new ArrayList<String>();
+        public Builder withResolveByPathPropertyNames(String ... names) {
+            if(target.resolveByPathProperties == null) {
+                target.resolveByPathProperties = new ArrayList<String>();
             }
             for(String name : names) {
-                target.dereferenceByPathProperties.add(name);
+                target.resolveByPathProperties.add(name);
             }
+            return this;
+        }
+
+        public Builder withExcludeNodeNames(String ... names) {
+            if(target.excludeNodeNames == null) {
+                target.excludeNodeNames = new ArrayList<String>();
+            }
+            for(String name : names) {
+                target.excludeNodeNames.add(name);
+            }
+            return this;
+        }
+
+        public Builder withChildSubstituePath(String path) {
+            target.childSubstitutePath = path;
             return this;
         }
 

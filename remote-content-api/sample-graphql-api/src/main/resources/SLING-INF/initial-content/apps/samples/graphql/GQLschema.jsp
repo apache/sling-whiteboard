@@ -22,8 +22,8 @@
 scalar Object
 
 type Query {
-  document(path : String, selectors : [String]) : Document @fetcher(name:"samples/document")
-  documents(lang: String, query : String, selectors : [String]) : [Document] @fetcher(name:"samples/documents")
+  document(path : String, selectors : [String], debug : Boolean) : Document @fetcher(name:"samples/document")
+  documents(lang: String, query : String, selectors : [String], debug : Boolean) : [Document] @fetcher(name:"samples/documents")
 }
 
 type Mutation {

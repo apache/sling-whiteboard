@@ -42,13 +42,6 @@ public class DocumentDataFetcher implements SlingDataFetcher<Object> {
     @Reference
     private DocumentMapper documentMapper;
 
-    static final UrlBuilder DUMMY_URL_BUILDER = new UrlBuilder() {
-        @Override
-        public String pathToUrl(String path) {
-            return getClass().getName();
-        }
-    };
-    
     @Override
     public @Nullable Object get(@NotNull SlingDataFetcherEnvironment e) throws Exception {
         final String path = e.getArgument("path");
@@ -56,13 +49,14 @@ public class DocumentDataFetcher implements SlingDataFetcher<Object> {
         final Map<String, Object> data = new HashMap<>();
         data.put("path", path);
         data.put("selectors", e.getArgument("selectors"));
+        final DocumentMapper.Options opt = new DocumentMapper.Options(e.getArgument("debug", true), new UrlBuilderStub());
 
         // Get the target Resource
         final Resource target = e.getCurrentResource().getResourceResolver().getResource(path);
 
         // Use DocumentMapper to build the body
         final MappingTarget.TargetNode body = mappingTarget.newTargetNode();
-        documentMapper.map(target, body, DUMMY_URL_BUILDER);
+        documentMapper.map(target, body, opt);
         body.close();
         data.put("body", body.adaptTo(Map.class));
         return data;
