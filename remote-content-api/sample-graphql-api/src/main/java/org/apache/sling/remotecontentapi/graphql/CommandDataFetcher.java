@@ -64,6 +64,8 @@ public class CommandDataFetcher implements SlingDataFetcher<Object> {
             result.put("success", false);
             result.put("output", ex.toString());
         }
+
+        result.put("help", "See https://sling.apache.org/documentation/bundles/repository-initialization.html for information about the repoinit language");
         
         
         return result;

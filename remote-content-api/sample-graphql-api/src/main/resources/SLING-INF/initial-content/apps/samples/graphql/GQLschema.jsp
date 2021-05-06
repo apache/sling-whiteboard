@@ -33,6 +33,7 @@ type Mutation {
 type CommandResult {
   success: Boolean
   output: String
+  help: String
   links: [Link]
 }
 
