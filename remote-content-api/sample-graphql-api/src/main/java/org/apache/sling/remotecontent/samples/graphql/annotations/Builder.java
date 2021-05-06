@@ -17,25 +17,15 @@
  * under the License.
  */
 
-package org.apache.sling.remotecontentapi.typesystem;
+package org.apache.sling.remotecontent.samples.graphql.annotations;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.sling.experimental.typesystem.Annotation;
-import org.apache.sling.experimental.typesystem.Property;
-import org.apache.sling.experimental.typesystem.Type;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-/** Temporary implementation for this prototype, until we
- *  have the actual type system
- */
-
 class Builder {
     private final String resourceType;
-    private final Set<Property> properties = new HashSet<>();
-    private final Set<Annotation> annotations = new HashSet<>();
+    private final Set<AnnotationImpl> annotations = new HashSet<>();
 
     private Builder(String resourceType) {
         this.resourceType = resourceType;
@@ -46,32 +36,11 @@ class Builder {
     }
 
     Builder withAnnotation(String name, String value) {
-        annotations.add(new AnnotationImpl(name, value));
+        annotations.add(new AnnotationImpl(resourceType, name, value));
         return this;
     }
 
-    Type build() {
-        return new Type() {
-
-            @Override
-            public @NotNull String getResourceType() {
-                return resourceType;
-            }
-
-            @Override
-            public @Nullable String getResourceSuperType() {
-                return null;
-            }
-
-            @Override
-            public @NotNull Set<Property> getProperties() {
-                return properties;
-            }
-
-            @Override
-            public @NotNull Set<Annotation> getAnnotations() {
-                return annotations;
-            }
-        };
+    Collection<AnnotationImpl> getAnnotations() {
+        return annotations;
     }
 }

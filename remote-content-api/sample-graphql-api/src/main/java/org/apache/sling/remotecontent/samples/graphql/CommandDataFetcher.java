@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.sling.remotecontentapi.graphql;
+package org.apache.sling.remotecontent.samples.graphql;
 
 import java.io.StringReader;
 import java.util.HashMap;

@@ -6,9 +6,7 @@
   "license":"Apache License, Version 2.0",
   "variables":{},
   "bundles":[
-    "org.apache.sling:org.apache.sling.experimental.documentmapper:0.0.1-SNAPSHOT",
-    "org.apache.sling:org.apache.sling.experimental.remote.content.api.sample.graphql.api:0.0.1-SNAPSHOT",
-    "org.apache.sling:org.apache.sling.experimental.type-system:0.0.1-SNAPSHOT",
+    "org.apache.sling:org.apache.sling.experimental.remotecontent.sample.graphql.api:0.0.1-SNAPSHOT",
     "org.apache.sling:org.apache.sling.servlet-helpers:1.4.2",
     "org.apache.sling:org.apache.sling.graphql.core:0.0.8",
     "com.graphql-java:graphql-java:jar:15.0",

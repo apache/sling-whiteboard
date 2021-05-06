@@ -17,29 +17,19 @@
  * under the License.
  */
 
-package org.apache.sling.remotecontentapi.typesystem;
+package org.apache.sling.remotecontent.documentmapper.impl;
 
-import org.apache.sling.experimental.typesystem.Annotation;
+import org.apache.sling.remotecontent.documentmapper.api.MappingTarget;
+
 import org.jetbrains.annotations.NotNull;
+import org.osgi.service.component.annotations.Component;
 
-class AnnotationImpl implements Annotation {
-
-    private final String name;
-    private final String value;
-
-    AnnotationImpl(String name, String value) {
-        this.name = name;
-        this.value = value;
-    }
+/** MappingTarget that outputs to a JSON document */
+@Component(service = MappingTarget.class, property = { MappingTarget.TARGET_TYPE + "=map" })
+public class MapMappingTarget implements MappingTarget {
 
     @Override
-    public @NotNull String getName() {
-        return name;
+    public @NotNull TargetNode newTargetNode() {
+        return new MapTargetNode("ROOT_THIS_NAME_SHOULD_NOT_APPEAR_IN_OUTPUT");
     }
-
-    @Override
-    public @NotNull String getValue() {
-        return value;
-    }
-
 }

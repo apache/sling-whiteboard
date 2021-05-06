@@ -17,24 +17,29 @@
  * under the License.
  */
 
-package org.apache.sling.remotecontentapi.graphql;
+package org.apache.sling.remotecontent.samples.graphql.annotations;
 
-import org.apache.sling.graphql.api.ScalarConversionException;
-import org.apache.sling.graphql.api.SlingScalarConverter;
-import org.jetbrains.annotations.Nullable;
-import org.osgi.service.component.annotations.Component;
+import org.jetbrains.annotations.NotNull;
 
-/** Passthrough Scalar, used to output unpredictable JSON structures */
-@Component(service = SlingScalarConverter.class, property = { "name=Object" })
-public class ObjectScalar implements SlingScalarConverter<Object, Object> {
+class AnnotationImpl {
 
-    @Override
-    public @Nullable Object parseValue(@Nullable Object input) throws ScalarConversionException {
-        return input;
+    private final String key;
+    private final String value;
+
+    AnnotationImpl(String resourceType, String name, String value) {
+        this.key = makeKey(resourceType, name);
+        this.value = value;
     }
 
-    @Override
-    public @Nullable Object serialize(@Nullable Object value) throws ScalarConversionException {
+    static String makeKey(String resourceType, String annotationName) {
+        return resourceType + "#####" + annotationName;
+    }
+
+    public @NotNull String getKey() {
+        return key;
+    }
+
+    public @NotNull String getValue() {
         return value;
     }
 

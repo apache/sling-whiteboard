@@ -1,6 +1,6 @@
 # Apache Sling Document-Oriented Content API - Sample GraphQL API
 
-To start this, first build the sibling modules then use
+To start this use
 
     mvn clean install exec:java
 
@@ -14,13 +14,17 @@ The standard `MAVEN_OPTS` environment variable can be used to setup
 debugging, as the above does not fork and starts the application with
 the Maven JVM.
 
+At this point, this module does not use snapshots from the sibling modules
+in the Sling whiteboard - this bundle is the only snapshot declared in the
+feature model file that thats this. 
+
 ## Test Content
 
 The test content uses `com.adobe.aem.guides:aem-guides-wknd.ui.content.sample` which is MIT
 licensed. Minimal "fake" JCR nodetype definitions are used to allow this content to load, as
 we don't really care about the details of these node types besides their names.
 
-## Example GraphQL queries
+## Example GraphQL queries
 
     { 
       document(path:"/content/articles/music/eloy-hahn-on-the-system-of-1080p-et-corrupti-aka-xml", selectors: "not, used, sofar") {

@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.sling.remotecontentapi.graphql;
+package org.apache.sling.remotecontent.samples.graphql;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,11 +27,10 @@ import java.util.Map;
 
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.documentmapper.api.DocumentMapper;
-import org.apache.sling.documentmapper.api.MappingTarget;
-import org.apache.sling.documentmapper.api.DocumentMapper.UrlBuilder;
 import org.apache.sling.graphql.api.SlingDataFetcher;
 import org.apache.sling.graphql.api.SlingDataFetcherEnvironment;
+import org.apache.sling.remotecontent.documentmapper.api.DocumentMapper;
+import org.apache.sling.remotecontent.documentmapper.api.MappingTarget;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.service.component.annotations.Component;
@@ -43,23 +42,12 @@ public class DocumentsDataFetcher implements SlingDataFetcher<Object> {
     @Reference(target="(" + MappingTarget.TARGET_TYPE + "=map)")
     private MappingTarget mappingTarget;
 
-    // TODO should be "summary"
-    @Reference(target="(" + DocumentMapper.ROLE + "=navigation)")
-    private DocumentMapper summaryMapper;
-
-    @Reference(target="(" + DocumentMapper.ROLE + "=content)")
-    private DocumentMapper bodyMapper;
-
-    private static final UrlBuilder URL_BUILDER = new UrlBuilder() {
-        @Override
-        public String pathToUrl(String path) {
-            return getClass().getName();
-        }
-    };
+    @Reference
+    private DocumentMapper documentMapper;
 
     private void addDocumentData(final Map<String, Object> data, String key, Resource r, DocumentMapper mapper) {
         final MappingTarget.TargetNode target = mappingTarget.newTargetNode();
-        mapper.map(r, target, URL_BUILDER);
+        mapper.map(r, target, new UrlBuilderStub());
         target.close();
         data.put(key, target.adaptTo(Map.class));
 
@@ -71,8 +59,8 @@ public class DocumentsDataFetcher implements SlingDataFetcher<Object> {
 
         // TODO how to find out whether those fields are actually needed
         // or how to evaluate them lazily
-        addDocumentData(data, "body", r, bodyMapper);
-        addDocumentData(data, "summary", r, summaryMapper);
+        addDocumentData(data, "body", r, documentMapper);
+        addDocumentData(data, "summary", r, documentMapper);
 
         return data;
     }

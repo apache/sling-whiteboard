@@ -17,17 +17,17 @@
  * under the License.
  */
 
-package org.apache.sling.remotecontentapi.graphql;
+package org.apache.sling.remotecontent.samples.graphql;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.documentmapper.api.DocumentMapper;
-import org.apache.sling.documentmapper.api.MappingTarget;
-import org.apache.sling.documentmapper.api.DocumentMapper.UrlBuilder;
 import org.apache.sling.graphql.api.SlingDataFetcher;
 import org.apache.sling.graphql.api.SlingDataFetcherEnvironment;
+import org.apache.sling.remotecontent.documentmapper.api.DocumentMapper;
+import org.apache.sling.remotecontent.documentmapper.api.DocumentMapper.UrlBuilder;
+import org.apache.sling.remotecontent.documentmapper.api.MappingTarget;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.service.component.annotations.Component;
@@ -39,10 +39,10 @@ public class DocumentDataFetcher implements SlingDataFetcher<Object> {
     @Reference(target="(" + MappingTarget.TARGET_TYPE + "=map)")
     private MappingTarget mappingTarget;
 
-    @Reference(target="(" + DocumentMapper.ROLE + "=content)")
+    @Reference
     private DocumentMapper documentMapper;
 
-    private static final UrlBuilder URL_BUILDER = new UrlBuilder() {
+    static final UrlBuilder DUMMY_URL_BUILDER = new UrlBuilder() {
         @Override
         public String pathToUrl(String path) {
             return getClass().getName();
@@ -62,10 +62,9 @@ public class DocumentDataFetcher implements SlingDataFetcher<Object> {
 
         // Use DocumentMapper to build the body
         final MappingTarget.TargetNode body = mappingTarget.newTargetNode();
-        documentMapper.map(target, body, URL_BUILDER);
+        documentMapper.map(target, body, DUMMY_URL_BUILDER);
         body.close();
         data.put("body", body.adaptTo(Map.class));
         return data;
-    }
-    
+    }   
 }
