@@ -19,6 +19,7 @@
 
 package org.apache.sling.remotecontent.documentmapper.api;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -42,6 +43,21 @@ public class Annotations {
         this.resourceType = resourceType;
     }
 
+    @Override
+    public String toString() {
+        return String.format(
+            "RT=%s N=%b VC=%b DR=%b VCRN=%s IP=%s EP=%s DR=%s",
+            resourceType,
+            navigable,
+            visitContent,
+            documentRoot,
+            visitContentResourceNamePattern,
+            includePropertyPattern,
+            excludePropertyPattern,
+            dereferenceByPathProperties
+        );
+    }
+
     // TODO equals + hashcode
 
     public String getResourceType() {
@@ -63,6 +79,7 @@ public class Annotations {
         return visitContentResourceNamePattern == null ? true : visitContentResourceNamePattern.matcher(resourceName).matches();
     }
 
+    // TODO should accept a parent Annotations - other methods as well?
     public boolean includeProperty(String name) {
         // include has priority over exclude
         boolean result = includePropertyPattern == null ? true : includePropertyPattern.matcher(name).matches();
@@ -117,6 +134,16 @@ public class Annotations {
 
         public Builder withExcludePropertyPattern(String p) {
             target.excludePropertyPattern = Pattern.compile(p);
+            return this;
+        }
+
+        public Builder withDereferenceByPathProperties(String ... names) {
+            if(target.dereferenceByPathProperties == null) {
+                target.dereferenceByPathProperties = new ArrayList<String>();
+            }
+            for(String name : names) {
+                target.dereferenceByPathProperties.add(name);
+            }
             return this;
         }
 

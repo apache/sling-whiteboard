@@ -52,7 +52,7 @@
       "org.apache.sling.commons.log.level": "DEBUG",
       "org.apache.sling.commons.log.names":
         [
-          "org.apache.sling.documentmapper",
+          "org.apache.sling.remotecontent",
           "org.apache.sling.graphql"
         ],
       "org.apache.sling.commons.log.pattern": "%-5level [%-50logger{50}] %message ## %mdc{sling.InternalRequest} %n"

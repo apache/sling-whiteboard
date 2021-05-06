@@ -20,6 +20,7 @@
 package org.apache.sling.remotecontent.documentmapper.impl;
 
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Map;
 
 import org.apache.sling.api.resource.Resource;
@@ -38,6 +39,8 @@ class PropertiesMapper {
                 final Object value = e.getValue();
                 if(value instanceof Object[]) {
                     dest.addValue(e.getKey(), Arrays.asList((Object[])value));
+                } else if(value instanceof Calendar) {
+                    dest.addValue(e.getKey(), ((Calendar)value).getTime().toString());
                 } else {
                     dest.addValue(e.getKey(), String.valueOf(value));
                 }

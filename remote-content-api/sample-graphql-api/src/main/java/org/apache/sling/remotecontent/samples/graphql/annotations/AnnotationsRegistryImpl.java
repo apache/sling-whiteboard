@@ -51,7 +51,7 @@ public class AnnotationsRegistryImpl implements AnnotationsRegistry {
     @Activate
     public void activate() {
         add(
-            Annotations.forResourceType("cg:page")
+            Annotations.forResourceType("cq:Page")
             .withDocumentRoot(true)
             .withNavigable(true)
             .withVisitContent(true)
@@ -59,16 +59,20 @@ public class AnnotationsRegistryImpl implements AnnotationsRegistry {
             .withIncludePropertyPattern("sling:ResourceType|cq:tags")
             .withExcludePropertyPattern("jcr:.*|cq:.*")
         );
-        /*
         add(
-            Builder.forResourceType("cq:Page")
-            .withAnnotation(DOCUMENT_ROOT, TRUE)
-            .withAnnotation(NAVIGABLE, TRUE)
-            .withAnnotation(VISIT_CONTENT, TRUE)
-            .withAnnotation(VISIT_CONTENT_RESOURCE_NAME_PATTERN, "jcr:content")
-            .withAnnotation(CONTENT_INCLUDE_PROPERTY_REGEXP, "sling:ResourceType|cq:tags")
-            .withAnnotation(CONTENT_EXCLUDE_PROPERTY_REGEXP, "jcr:.*|cq:.*")
+            Annotations.forResourceType("wknd/components/page")
+            // TODO shall we only have "visit content"?
+            .withDocumentRoot(true)
+            .withVisitContent(true)
+            .withIncludePropertyPattern("sling:ResourceType|jcr:description")
+            .withExcludePropertyPattern("jcr:.*|cq:.*")
         );
+        add(
+            Annotations.forResourceType("wknd/components/image")
+            .withVisitContent(true)
+            .withDereferenceByPathProperties("fileReference")
+        );
+        /*
         add(
             Builder.forResourceType("sling:Folder")
             .withAnnotation(NAVIGABLE, TRUE)
@@ -80,15 +84,6 @@ public class AnnotationsRegistryImpl implements AnnotationsRegistry {
         add(
             Builder.forResourceType("sling:OrderedFolder")
             .withAnnotation(NAVIGABLE, TRUE)
-        );
-        add(
-            Builder.forResourceType("wknd/components/page")
-            .withAnnotation(VISIT_CONTENT, TRUE)
-        );
-        add(
-            Builder.forResourceType("wknd/components/image")
-            .withAnnotation(VISIT_CONTENT, TRUE)
-            .withAnnotation(DEREFERENCE_BY_PATH, "fileReference")
         );
         add(
             Builder.forResourceType("wknd/components/carousel")

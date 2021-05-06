@@ -45,18 +45,20 @@ public class ContentDocumentMapper implements DocumentMapper {
         final String resourceType = r.getResourceType();
         final Annotations annot = annotationsRegistry.getAnnotations(resourceType);
         dest.addValue("path", r.getPath());
+        log.debug("Top level Resource map {} as {}: {}", r.getPath(), r.getResourceType(), annot);
         mapResource(r, dest, urlb, resourceType, annot, annot.isDocumentRoot());
     }
 
     private void mapResource(@NotNull Resource r, @NotNull MappingTarget.TargetNode dest, 
-        UrlBuilder urlb, String parentResourceType, Annotations annot, boolean recurse) {
+        UrlBuilder urlb, String documentResourceType, Annotations documentAnnot, boolean recurse) {
 
-        log.debug("Mapping Resource {} as {}", r.getPath(), r.getResourceType());
-        propertiesMapper.mapProperties(dest, r, annot);
+        log.debug("Mapping Resource {} as {}: {}", r.getPath(), r.getResourceType(), documentAnnot);
+        propertiesMapper.mapProperties(dest, r, documentAnnot);
+        final Annotations thisAnnot = annotationsRegistry.getAnnotations(r.getResourceType());
 
         // Dereference by path if specified
         // TODO detect cycles which might lead to infinite loops
-        annot.dereferenceByPathPropertyNames().forEach(derefPathPropertyName -> {
+        thisAnnot.dereferenceByPathPropertyNames().forEach(derefPathPropertyName -> {
             log.debug("Dereferencing {} on {}", r.getPath(), derefPathPropertyName);
             final ValueMap vm = r.adaptTo(ValueMap.class);
             final String derefPath = vm == null ? null : vm.get(derefPathPropertyName, String.class);
@@ -64,7 +66,7 @@ public class ContentDocumentMapper implements DocumentMapper {
                 final Resource dereferenced = r.getResourceResolver().getResource(derefPath);
                 if(dereferenced != null) {
                     final MappingTarget.TargetNode derefNode = dest.addChild("dereferenced_by_" + derefPathPropertyName);
-                    mapResource(dereferenced, derefNode, urlb, parentResourceType, annot, recurse);
+                    mapResource(dereferenced, derefNode, urlb, documentResourceType, documentAnnot, recurse);
                 }
             }
         });
@@ -73,13 +75,15 @@ public class ContentDocumentMapper implements DocumentMapper {
         if(recurse) {
             log.debug("Recursing into {}", r.getPath());
             for(Resource child : r.getChildren()) {
-                if(!annot.visitChildResource(child.getName())) {
+                final boolean visit = thisAnnot.visitChildResource(child.getName());
+                log.debug("child resource {} visit decision {}", child.getName(), visit);
+                if(!visit) {
                     continue;
                 }
                 final String childResourceType = child.getResourceType();
                 if(annotationsRegistry.getAnnotations(childResourceType).visitContent()) {
                     final MappingTarget.TargetNode childDest = dest.addChild(child.getName());
-                    mapResource(child, childDest, urlb, childResourceType, annot, true);
+                    mapResource(child, childDest, urlb, childResourceType, documentAnnot, true);
                 }
             }
         } else if(log.isDebugEnabled()) {
