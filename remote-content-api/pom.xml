@@ -35,9 +35,6 @@
   <name>Apache Sling Remote Content API Reactor</name>
 
   <modules>
-      <module>document-mapper</module>
-      <module>type-system</module>
-      <module>sample-http-api</module>
       <module>sample-graphql-api</module>
   </modules>
 
@@ -49,6 +46,7 @@
         <configuration>
           <excludes>
             <exclude>**/node_modules/**</exclude>
+            <exclude>unused-for-now/**</exclude>
           </excludes>
         </configuration>
       </plugin>
