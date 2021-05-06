@@ -69,7 +69,7 @@ public class DocumentsDataFetcher implements SlingDataFetcher<Object> {
         // Use a suffix as we might not keep these built-in language in the long term
         final String langSuffix = "2020";
 
-        final DocumentMapper.Options opt = new DocumentMapper.Options(e.getArgument("debug", true), new UrlBuilderStub());
+        final DocumentMapper.Options opt = new DocumentMapper.Options(e.getArgument("debug", false), new UrlBuilderStub());
 
         String lang = e.getArgument("lang", "xpath" + langSuffix);
         if(!lang.endsWith(langSuffix)) {

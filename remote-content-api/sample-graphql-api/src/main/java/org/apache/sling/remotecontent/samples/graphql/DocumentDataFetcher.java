@@ -49,7 +49,7 @@ public class DocumentDataFetcher implements SlingDataFetcher<Object> {
         final Map<String, Object> data = new HashMap<>();
         data.put("path", path);
         data.put("selectors", e.getArgument("selectors"));
-        final DocumentMapper.Options opt = new DocumentMapper.Options(e.getArgument("debug", true), new UrlBuilderStub());
+        final DocumentMapper.Options opt = new DocumentMapper.Options(e.getArgument("debug", false), new UrlBuilderStub());
 
         // Get the target Resource
         final Resource target = e.getCurrentResource().getResourceResolver().getResource(path);
