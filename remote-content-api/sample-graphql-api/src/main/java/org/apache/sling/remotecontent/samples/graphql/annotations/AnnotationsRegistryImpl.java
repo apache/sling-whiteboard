@@ -22,14 +22,10 @@ package org.apache.sling.remotecontent.samples.graphql.annotations;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.sling.api.resource.Resource;
-import org.apache.sling.remotecontent.documentmapper.api.AnnotationRegistry;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.apache.sling.remotecontent.documentmapper.api.Annotations;
+import org.apache.sling.remotecontent.documentmapper.api.AnnotationsRegistry;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-
-import static org.apache.sling.remotecontent.documentmapper.api.AnnotationNames.*;
 
 /** Temporary hardcoded type system for this prototype, until we
  *  have the actual type system
@@ -37,21 +33,33 @@ import static org.apache.sling.remotecontent.documentmapper.api.AnnotationNames.
  *  need to refactor!
  */
 
-@Component(service=AnnotationRegistry.class)
-public class AnnotationRegistryImpl implements AnnotationRegistry {
+@Component(service=AnnotationsRegistry.class)
+public class AnnotationsRegistryImpl implements AnnotationsRegistry {
 
-    private static final String SLING_DEFAULT_RESOURCE_TYPE = "sling/servlet/default";
-    private static final Map<String, String> annotations = new HashMap<>();
+    private static final Map<String, Annotations> annotations = new HashMap<>();
+    private static final Annotations DEFAULT_ANNOTATIONS;
+
+    static {
+        DEFAULT_ANNOTATIONS = Annotations.forResourceType("sling/servlet/default")
+            .withVisitContent(true)
+            .build();
+    }
 
     // TODO in many cases we're just interested in the presence of an annotation, but
     // not its value - refine this in the type system
-    private static final String TRUE = "true";
 
     @Activate
     public void activate() {
-        // Although these definitions are in Java code for this early prototype, the
-        // plan is to move to a mini-language (DSL) to avoid having to use Java
-        // code for what is actually just declarative statements.
+        add(
+            Annotations.forResourceType("cg:page")
+            .withDocumentRoot(true)
+            .withNavigable(true)
+            .withVisitContent(true)
+            .withVisitContentChildResourceNamePattern("jcr:content")
+            .withIncludePropertyPattern("sling:ResourceType|cq:tags")
+            .withExcludePropertyPattern("jcr:.*|cq:.*")
+        );
+        /*
         add(
             Builder.forResourceType("cq:Page")
             .withAnnotation(DOCUMENT_ROOT, TRUE)
@@ -97,20 +105,17 @@ public class AnnotationRegistryImpl implements AnnotationRegistry {
             Builder.forResourceType("samples/article")
             .withAnnotation(NAVIGABLE, TRUE)
         );
+        */
     }
 
-    private void add(Builder b) {
-        b.getAnnotations().forEach(a -> annotations.put(a.getKey(), a.getValue()));
-    }
-
-    @Override
-    public String getAnnotation(String resourceType, String annotationName) {
-        return annotations.get(AnnotationImpl.makeKey(resourceType, annotationName));
+    private void add(Annotations.Builder b) {
+        final Annotations a = b.build();
+        annotations.put(a.getResourceType(), a);
     }
 
     @Override
-    public boolean hasAnnotation(String resourceType, String annotationName) {
-        return annotations.containsKey(AnnotationImpl.makeKey(resourceType, annotationName));
+    public Annotations getAnnotations(String resourceType) {
+        Annotations result = annotations.get(resourceType);
+        return result == null ? DEFAULT_ANNOTATIONS : result;
     }
-
 }

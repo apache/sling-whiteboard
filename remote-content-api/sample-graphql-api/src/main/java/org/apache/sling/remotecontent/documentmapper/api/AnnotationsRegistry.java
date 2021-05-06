@@ -17,18 +17,11 @@
  * under the License.
  */
 
-package org.apache.sling.remotecontent.documentmapper.impl;
+package org.apache.sling.remotecontent.documentmapper.api;
 
-import java.util.regex.Pattern;
+import org.osgi.annotation.versioning.ProviderType;
 
-import org.apache.sling.remotecontent.documentmapper.api.AnnotationRegistry;
-
-/** Annotation utilities 
- *  TODO should not be needed if we tweak the type system APIs just the right way 
- */
-class A {
-    static Pattern getAnnotationPattern(AnnotationRegistry registry, String resourceType, String name) {
-        final String str = registry.getAnnotation(resourceType, name);
-        return str == null ? null : Pattern.compile(str);
-    }
+@ProviderType
+public interface AnnotationsRegistry {
+    Annotations getAnnotations(String resourceType);
 }
