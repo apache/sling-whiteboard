@@ -30,12 +30,10 @@ Examples:
 
   # Sling starter content
   | home/users | jcr:primaryType | rep:AuthorizableFolder |
-  | sling.css | jcr:createdBy | admin |
   | htl/repl| sling:resourceType | repl/components/repl |
 
   # OSGi console
   | system/console/bundles | data[0].symbolicName | org.apache.felix.framework |
 
   # Empty path means root
-  | | sling:target | /index.html |
-  | | sling:resourceType | sling:redirect |
+  | | jcr:primaryType | rep:root |

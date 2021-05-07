@@ -39,9 +39,9 @@ Then status 201
 {
   "jcr:primaryType" : "nt:resource",
   "jcr:mimeType" : "application/octet-stream",
-  "jcr:lastModifiedBy" : #string,
+  "jcr:lastModifiedBy" : "admin",
   "jcr:lastModified" : #string,
-  ":jcr:data" : "10102",
+  ":jcr:data" : 10102,
   "jcr:uuid" : #uuid
 }
 """
