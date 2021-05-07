@@ -19,47 +19,66 @@
 
 package org.apache.sling.documentaggregator.impl;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 
 import org.apache.sling.documentaggregator.api.DocumentTree;
 import org.apache.sling.documentaggregator.api.DocumentTree.DocumentNode;
 
-/** A TargetNode that outputs to a Map document */
-public class MapTargetNode extends HashMap<String, Object> implements DocumentTree.DocumentNode {
+/** A DocumentNode that outputs to a JSON document */
+public class JsonDocumentNode implements DocumentTree.DocumentNode {
 
-    MapTargetNode(String name) {
+    private final String name;
+    private final JsonObjectBuilder builder;
+    private List<JsonDocumentNode> children;
+
+    JsonDocumentNode(String name) {
+        this.name = name;
+        this.builder = Json.createObjectBuilder();
     }
 
     @Override
     public DocumentNode addChild(String name) {
-        final MapTargetNode child = new MapTargetNode(name);
-        put(name, child);
+        if(children == null) {
+            children = new ArrayList<>();
+        }
+        final JsonDocumentNode child = new JsonDocumentNode(name);
+        children.add(child);
         return child;
     }
 
     @Override
     public DocumentNode addValue(String name, Object value) {
-        put(name, value);
+        builder.add(name, String.valueOf(value));
         return this;
     }
 
     @Override
     public DocumentNode addValue(String name, Object[] value) {
-        put(name, value);
+        builder.add(name, String.valueOf(Arrays.asList(value)));
         return this;
     }
 
     @Override
     public <AdapterType> AdapterType adaptTo(Class<AdapterType> type) {
-        if(type.equals(Map.class)) {
-            return (AdapterType)this;
+        if(type.equals(String.class)) {
+            close();
+            return (AdapterType)builder.build().toString();
         }
-        throw new IllegalArgumentException("For now, can only adapt to a Map");
+        throw new IllegalArgumentException("For now, can only adapt to a String");
     }
 
     @Override
     public void close() {
-        // nothing to close
+        if(children != null) {
+            children.stream().forEach(c -> {
+                c.close();
+                builder.add(c.name, c.builder);
+            });
+        }
     }
 }

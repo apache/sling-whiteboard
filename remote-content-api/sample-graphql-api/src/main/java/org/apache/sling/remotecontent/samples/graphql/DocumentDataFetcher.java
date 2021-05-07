@@ -54,7 +54,7 @@ public class DocumentDataFetcher implements SlingDataFetcher<Object> {
         final Resource target = e.getCurrentResource().getResourceResolver().getResource(path);
 
         // Use the aggregator to build the body
-        final DocumentTree.DocumentNode body = mappingTarget.newTargetNode();
+        final DocumentTree.DocumentNode body = mappingTarget.newDocumentNode();
         documentAggregator.aggregate(target, body, opt);
         body.close();
         data.put("body", body.adaptTo(Map.class));

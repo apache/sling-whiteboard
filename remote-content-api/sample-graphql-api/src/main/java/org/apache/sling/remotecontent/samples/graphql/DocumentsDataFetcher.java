@@ -46,7 +46,7 @@ public class DocumentsDataFetcher implements SlingDataFetcher<Object> {
     private DocumentAggregator documentAggregator;
 
     private void addDocumentData(final Map<String, Object> data, String key, Resource r, DocumentAggregator aggregator, DocumentAggregator.Options opt) {
-        final DocumentTree.DocumentNode target = mappingTarget.newTargetNode();
+        final DocumentTree.DocumentNode target = mappingTarget.newDocumentNode();
         aggregator.aggregate(r, target, opt);
         target.close();
         data.put(key, target.adaptTo(Map.class));

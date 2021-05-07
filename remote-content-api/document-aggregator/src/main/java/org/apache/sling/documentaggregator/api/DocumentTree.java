@@ -38,5 +38,5 @@ public interface DocumentTree {
         void close();
     }
 
-    @NotNull DocumentNode newTargetNode();
+    @NotNull DocumentNode newDocumentNode();
 }

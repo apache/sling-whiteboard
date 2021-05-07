@@ -19,6 +19,17 @@
 
 package org.apache.sling.documentaggregator.impl;
 
-interface PropertiesSelector {
-    boolean renderProperty(String name);
+import org.apache.sling.documentaggregator.api.DocumentTree;
+
+import org.jetbrains.annotations.NotNull;
+import org.osgi.service.component.annotations.Component;
+
+/** DocumentTree that generates a JSON document */
+@Component(service = DocumentTree.class, property = { DocumentTree.TARGET_TYPE + "=json" })
+public class JsonDocumentTree implements DocumentTree {
+
+    @Override
+    public @NotNull DocumentNode newDocumentNode() {
+        return new JsonDocumentNode("ROOT_THIS_NAME_SHOULD_NOT_APPEAR_IN_OUTPUT");
+    }
 }

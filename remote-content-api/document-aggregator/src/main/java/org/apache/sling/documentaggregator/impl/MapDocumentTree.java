@@ -24,12 +24,12 @@ import org.apache.sling.documentaggregator.api.DocumentTree;
 import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Component;
 
-/** MappingTarget that outputs to a JSON document */
-@Component(service = DocumentTree.class, property = { DocumentTree.TARGET_TYPE + "=json" })
-public class JsonMappingTarget implements DocumentTree {
+/** DocumentTree that generates a Map of Maps */
+@Component(service = DocumentTree.class, property = { DocumentTree.TARGET_TYPE + "=map" })
+public class MapDocumentTree implements DocumentTree {
 
     @Override
-    public @NotNull DocumentNode newTargetNode() {
-        return new JsonTargetNode("ROOT_THIS_NAME_SHOULD_NOT_APPEAR_IN_OUTPUT");
+    public @NotNull DocumentNode newDocumentNode() {
+        return new MapDocumentNode("ROOT_THIS_NAME_SHOULD_NOT_APPEAR_IN_OUTPUT");
     }
 }
