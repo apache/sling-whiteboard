@@ -19,7 +19,7 @@
 
 package org.apache.sling.remotecontent.samples.graphql;
 
-import org.apache.sling.remotecontent.documentmapper.api.DocumentMapper.UrlBuilder;
+import org.apache.sling.documentaggregator.api.DocumentAggregator.UrlBuilder;
 
 class UrlBuilderStub implements UrlBuilder {
     @Override

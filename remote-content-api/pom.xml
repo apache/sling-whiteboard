@@ -36,6 +36,7 @@
 
   <modules>
       <module>sample-graphql-api</module>
+      <module>document-aggregator</module>
   </modules>
 
   <build>

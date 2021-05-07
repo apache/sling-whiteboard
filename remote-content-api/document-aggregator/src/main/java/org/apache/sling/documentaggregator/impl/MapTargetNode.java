@@ -17,35 +17,35 @@
  * under the License.
  */
 
-package org.apache.sling.remotecontent.documentmapper.impl;
+package org.apache.sling.documentaggregator.impl;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.sling.remotecontent.documentmapper.api.MappingTarget;
-import org.apache.sling.remotecontent.documentmapper.api.MappingTarget.TargetNode;
+import org.apache.sling.documentaggregator.api.DocumentTree;
+import org.apache.sling.documentaggregator.api.DocumentTree.DocumentNode;
 
 /** A TargetNode that outputs to a Map document */
-public class MapTargetNode extends HashMap<String, Object> implements MappingTarget.TargetNode {
+public class MapTargetNode extends HashMap<String, Object> implements DocumentTree.DocumentNode {
 
     MapTargetNode(String name) {
     }
 
     @Override
-    public TargetNode addChild(String name) {
+    public DocumentNode addChild(String name) {
         final MapTargetNode child = new MapTargetNode(name);
         put(name, child);
         return child;
     }
 
     @Override
-    public TargetNode addValue(String name, Object value) {
+    public DocumentNode addValue(String name, Object value) {
         put(name, value);
         return this;
     }
 
     @Override
-    public TargetNode addValue(String name, Object[] value) {
+    public DocumentNode addValue(String name, Object[] value) {
         put(name, value);
         return this;
     }

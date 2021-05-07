@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.sling.remotecontent.documentmapper.impl;
+package org.apache.sling.documentaggregator.impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,11 +26,11 @@ import java.util.List;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 
-import org.apache.sling.remotecontent.documentmapper.api.MappingTarget;
-import org.apache.sling.remotecontent.documentmapper.api.MappingTarget.TargetNode;
+import org.apache.sling.documentaggregator.api.DocumentTree;
+import org.apache.sling.documentaggregator.api.DocumentTree.DocumentNode;
 
 /** A TargetNode that outputs to a JSON document */
-public class JsonTargetNode implements MappingTarget.TargetNode {
+public class JsonTargetNode implements DocumentTree.DocumentNode {
 
     private final String name;
     private final JsonObjectBuilder builder;
@@ -42,7 +42,7 @@ public class JsonTargetNode implements MappingTarget.TargetNode {
     }
 
     @Override
-    public TargetNode addChild(String name) {
+    public DocumentNode addChild(String name) {
         if(children == null) {
             children = new ArrayList<>();
         }
@@ -52,13 +52,13 @@ public class JsonTargetNode implements MappingTarget.TargetNode {
     }
 
     @Override
-    public TargetNode addValue(String name, Object value) {
+    public DocumentNode addValue(String name, Object value) {
         builder.add(name, String.valueOf(value));
         return this;
     }
 
     @Override
-    public TargetNode addValue(String name, Object[] value) {
+    public DocumentNode addValue(String name, Object[] value) {
         builder.add(name, String.valueOf(Arrays.asList(value)));
         return this;
     }

@@ -22,8 +22,8 @@ package org.apache.sling.remotecontent.samples.graphql.annotations;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.sling.remotecontent.documentmapper.api.Annotations;
-import org.apache.sling.remotecontent.documentmapper.api.AnnotationsRegistry;
+import org.apache.sling.documentaggregator.api.Annotations;
+import org.apache.sling.documentaggregator.api.AnnotationsRegistry;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 

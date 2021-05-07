@@ -17,8 +17,30 @@
  * under the License.
  */
 
-package org.apache.sling.remotecontent.documentmapper.impl;
+package org.apache.sling.documentaggregator.api;
 
-interface PropertiesSelector {
-    boolean renderProperty(String name);
+import org.apache.sling.api.resource.Resource;
+import org.jetbrains.annotations.NotNull;
+import org.osgi.annotation.versioning.ProviderType;
+
+/**
+ * Maps Sling {@link Resource} to a {@link DocumentTree.DocumentNode}
+ */
+@ProviderType
+public interface DocumentAggregator {
+
+    interface UrlBuilder {
+        String pathToUrl(String path);
+    }
+
+    public static class Options {
+        public final boolean debug;
+        public final UrlBuilder urlBuilder;
+        public Options(boolean debug, UrlBuilder urlBuilder) {
+            this.debug = debug;
+            this.urlBuilder = urlBuilder;
+        }
+    }
+    
+    void aggregate(@NotNull Resource r, @NotNull DocumentTree.DocumentNode destination, Options opt);
 }

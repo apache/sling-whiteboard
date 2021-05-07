@@ -17,22 +17,22 @@
  * under the License.
  */
 
-package org.apache.sling.remotecontent.documentmapper.impl;
+package org.apache.sling.documentaggregator.impl;
 
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ValueMap;
-import org.apache.sling.remotecontent.documentmapper.api.Annotations;
-import org.apache.sling.remotecontent.documentmapper.api.AnnotationsRegistry;
-import org.apache.sling.remotecontent.documentmapper.api.DocumentMapper;
-import org.apache.sling.remotecontent.documentmapper.api.MappingTarget;
+import org.apache.sling.documentaggregator.api.Annotations;
+import org.apache.sling.documentaggregator.api.AnnotationsRegistry;
+import org.apache.sling.documentaggregator.api.DocumentAggregator;
+import org.apache.sling.documentaggregator.api.DocumentTree;
 import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Component(service = DocumentMapper.class, property = { DocumentMapper.ROLE + "=content" })
-public class ContentDocumentMapper implements DocumentMapper {
+@Component(service = DocumentAggregator.class)
+public class DocumentAggregatorImpl implements DocumentAggregator {
 
     private final PropertiesMapper propertiesMapper = new PropertiesMapper();
     private final Logger log = LoggerFactory.getLogger(getClass());
@@ -41,7 +41,7 @@ public class ContentDocumentMapper implements DocumentMapper {
     private AnnotationsRegistry annotationsRegistry;
 
     @Override
-    public void map(@NotNull Resource originalResource, @NotNull MappingTarget.TargetNode dest, DocumentMapper.Options opt) {
+    public void aggregate(@NotNull Resource originalResource, @NotNull DocumentTree.DocumentNode dest, DocumentAggregator.Options opt) {
         Annotations annot = annotationsRegistry.getAnnotations(originalResource.getResourceType());
         dest.addValue("path", originalResource.getPath());
         final String substPath = annot.childSubstitutePath();
@@ -57,11 +57,11 @@ public class ContentDocumentMapper implements DocumentMapper {
         mapResource(r, dest, opt, r.getResourceType(), annot, annot.isDocumentRoot());
     }
 
-    private void mapResource(@NotNull Resource r, @NotNull MappingTarget.TargetNode dest, 
-        DocumentMapper.Options opt, String documentResourceType, Annotations documentAnnot, boolean recurse) {
+    private void mapResource(@NotNull Resource r, @NotNull DocumentTree.DocumentNode dest, 
+        DocumentAggregator.Options opt, String documentResourceType, Annotations documentAnnot, boolean recurse) {
 
         final Annotations resourceAnnot = annotationsRegistry.getAnnotations(r.getResourceType());
-        final MappingTarget.TargetNode debug = opt.debug ? dest.addChild("sling:dmap:debug") : null;
+        final DocumentTree.DocumentNode debug = opt.debug ? dest.addChild("sling:dmap:debug") : null;
         if(debug != null) {
             debug.addValue("sling:dmap:path", r.getPath());
             debug.addValue("sling:dmap:resourceType", r.getResourceType());
@@ -91,7 +91,7 @@ public class ContentDocumentMapper implements DocumentMapper {
             if(derefPath != null) {
                 final Resource dereferenced = r.getResourceResolver().getResource(derefPath);
                 if(dereferenced != null) {
-                    final MappingTarget.TargetNode derefNode = dest.addChild("sling:dmap:resolved");
+                    final DocumentTree.DocumentNode derefNode = dest.addChild("sling:dmap:resolved");
                     derefNode.addValue("sling:dmap:resolvedFrom", derefPathPropertyName);
                     derefNode.addValue("sling:dmap:resolvePath", derefPath);
                     mapResource(dereferenced, derefNode, opt, documentResourceType, documentAnnot, recurse);
@@ -112,7 +112,7 @@ public class ContentDocumentMapper implements DocumentMapper {
                 }
                 final String childResourceType = child.getResourceType();
                 if(annotationsRegistry.getAnnotations(childResourceType).visitContent()) {
-                    final MappingTarget.TargetNode childDest = dest.addChild(child.getName());
+                    final DocumentTree.DocumentNode childDest = dest.addChild(child.getName());
                     mapResource(child, childDest, opt, childResourceType, documentAnnot, true);
                 }
             }

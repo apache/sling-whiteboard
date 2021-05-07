@@ -17,11 +17,8 @@
  * under the License.
  */
 
-package org.apache.sling.remotecontent.documentmapper.api;
+package org.apache.sling.documentaggregator.impl;
 
-import org.osgi.annotation.versioning.ProviderType;
-
-@ProviderType
-public interface AnnotationsRegistry {
-    Annotations getAnnotations(String resourceType);
+interface PropertiesSelector {
+    boolean renderProperty(String name);
 }

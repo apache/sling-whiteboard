@@ -27,10 +27,10 @@ import java.util.Map;
 
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.documentaggregator.api.DocumentAggregator;
+import org.apache.sling.documentaggregator.api.DocumentTree;
 import org.apache.sling.graphql.api.SlingDataFetcher;
 import org.apache.sling.graphql.api.SlingDataFetcherEnvironment;
-import org.apache.sling.remotecontent.documentmapper.api.DocumentMapper;
-import org.apache.sling.remotecontent.documentmapper.api.MappingTarget;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.service.component.annotations.Component;
@@ -39,27 +39,27 @@ import org.osgi.service.component.annotations.Reference;
 @Component(service = SlingDataFetcher.class, property = {"name=samples/documents"})
 public class DocumentsDataFetcher implements SlingDataFetcher<Object> {
 
-    @Reference(target="(" + MappingTarget.TARGET_TYPE + "=map)")
-    private MappingTarget mappingTarget;
+    @Reference(target="(" + DocumentTree.TARGET_TYPE + "=map)")
+    private DocumentTree mappingTarget;
 
     @Reference
-    private DocumentMapper documentMapper;
+    private DocumentAggregator documentAggregator;
 
-    private void addDocumentData(final Map<String, Object> data, String key, Resource r, DocumentMapper mapper, DocumentMapper.Options opt) {
-        final MappingTarget.TargetNode target = mappingTarget.newTargetNode();
-        mapper.map(r, target, opt);
+    private void addDocumentData(final Map<String, Object> data, String key, Resource r, DocumentAggregator aggregator, DocumentAggregator.Options opt) {
+        final DocumentTree.DocumentNode target = mappingTarget.newTargetNode();
+        aggregator.aggregate(r, target, opt);
         target.close();
         data.put(key, target.adaptTo(Map.class));
 
     }
 
-    private Map<String, Object> toDocument(Resource r, DocumentMapper.Options opt) {
+    private Map<String, Object> toDocument(Resource r, DocumentAggregator.Options opt) {
         final Map<String, Object> data = new HashMap<>();
         data.put("path", r.getPath());
 
         // TODO for now those are the same...
-        addDocumentData(data, "body", r, documentMapper, opt);
-        addDocumentData(data, "summary", r, documentMapper, opt);
+        addDocumentData(data, "body", r, documentAggregator, opt);
+        addDocumentData(data, "summary", r, documentAggregator, opt);
 
         return data;
     }
@@ -69,7 +69,7 @@ public class DocumentsDataFetcher implements SlingDataFetcher<Object> {
         // Use a suffix as we might not keep these built-in language in the long term
         final String langSuffix = "2020";
 
-        final DocumentMapper.Options opt = new DocumentMapper.Options(e.getArgument("debug", false), new UrlBuilderStub());
+        final DocumentAggregator.Options opt = new DocumentAggregator.Options(e.getArgument("debug", false), new UrlBuilderStub());
 
         String lang = e.getArgument("lang", "xpath" + langSuffix);
         if(!lang.endsWith(langSuffix)) {

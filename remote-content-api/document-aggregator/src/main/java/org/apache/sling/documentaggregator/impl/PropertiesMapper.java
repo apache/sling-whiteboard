@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.sling.remotecontent.documentmapper.impl;
+package org.apache.sling.documentaggregator.impl;
 
 import java.util.Arrays;
 import java.util.Calendar;
@@ -25,11 +25,11 @@ import java.util.Map;
 
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ValueMap;
-import org.apache.sling.remotecontent.documentmapper.api.Annotations;
-import org.apache.sling.remotecontent.documentmapper.api.MappingTarget;
+import org.apache.sling.documentaggregator.api.Annotations;
+import org.apache.sling.documentaggregator.api.DocumentTree;
 
 class PropertiesMapper {
-    void mapProperties(MappingTarget.TargetNode dest, Resource r, Annotations annot) {
+    void mapProperties(DocumentTree.DocumentNode dest, Resource r, Annotations annot) {
         final ValueMap vm = r.adaptTo(ValueMap.class);
         if(vm != null) {
             for(Map.Entry<String, Object> e : vm.entrySet()) {

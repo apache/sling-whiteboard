@@ -17,19 +17,19 @@
  * under the License.
  */
 
-package org.apache.sling.remotecontent.documentmapper.impl;
+package org.apache.sling.documentaggregator.impl;
 
-import org.apache.sling.remotecontent.documentmapper.api.MappingTarget;
+import org.apache.sling.documentaggregator.api.DocumentTree;
 
 import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Component;
 
 /** MappingTarget that outputs to a JSON document */
-@Component(service = MappingTarget.class, property = { MappingTarget.TARGET_TYPE + "=map" })
-public class MapMappingTarget implements MappingTarget {
+@Component(service = DocumentTree.class, property = { DocumentTree.TARGET_TYPE + "=json" })
+public class JsonMappingTarget implements DocumentTree {
 
     @Override
-    public @NotNull TargetNode newTargetNode() {
-        return new MapTargetNode("ROOT_THIS_NAME_SHOULD_NOT_APPEAR_IN_OUTPUT");
+    public @NotNull DocumentNode newTargetNode() {
+        return new JsonTargetNode("ROOT_THIS_NAME_SHOULD_NOT_APPEAR_IN_OUTPUT");
     }
 }

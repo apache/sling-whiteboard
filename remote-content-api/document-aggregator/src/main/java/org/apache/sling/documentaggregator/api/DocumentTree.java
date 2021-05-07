@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.sling.remotecontent.documentmapper.api;
+package org.apache.sling.documentaggregator.api;
 
 import org.apache.sling.api.adapter.Adaptable;
 import org.jetbrains.annotations.NotNull;
@@ -28,15 +28,15 @@ import org.osgi.annotation.versioning.ProviderType;
  * document tree, etc.
  */
 @ProviderType
-public interface MappingTarget {
+public interface DocumentTree {
     String TARGET_TYPE = "sling.mapping.target.type";
 
-    interface TargetNode extends Adaptable {
-        TargetNode addChild(String name);
-        TargetNode addValue(String name, Object value);
-        TargetNode addValue(String name, Object [] value);
+    interface DocumentNode extends Adaptable {
+        DocumentNode addChild(String name);
+        DocumentNode addValue(String name, Object value);
+        DocumentNode addValue(String name, Object [] value);
         void close();
     }
 
-    @NotNull TargetNode newTargetNode();
+    @NotNull DocumentNode newTargetNode();
 }

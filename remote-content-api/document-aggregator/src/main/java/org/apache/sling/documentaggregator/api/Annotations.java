@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.sling.remotecontent.documentmapper.api;
+package org.apache.sling.documentaggregator.api;
 
 import java.util.ArrayList;
 import java.util.Collection;

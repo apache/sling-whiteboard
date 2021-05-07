@@ -1,10 +1,11 @@
 # Apache Sling Document-Oriented Content API - Sample GraphQL API
 
-To start this use
+To start this, build the sibling modules with `mvn clean install` in the parent folder
+of this one and then, in this folder, run
 
     mvn clean install exec:java
 
-In this folder, and open http://localhost:8080 - which might require logging in
+Then open http://localhost:8080 - which might require logging in
 at http://localhost:8080/system/console first.
 
 This should redirect you to the main GraphQL endpoint, currently 

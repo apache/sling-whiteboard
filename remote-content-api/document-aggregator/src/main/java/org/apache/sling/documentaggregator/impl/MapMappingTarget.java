@@ -17,32 +17,19 @@
  * under the License.
  */
 
-package org.apache.sling.remotecontent.documentmapper.api;
+package org.apache.sling.documentaggregator.impl;
 
-import org.apache.sling.api.resource.Resource;
+import org.apache.sling.documentaggregator.api.DocumentTree;
+
 import org.jetbrains.annotations.NotNull;
-import org.osgi.annotation.versioning.ProviderType;
+import org.osgi.service.component.annotations.Component;
 
-/**
- * Maps Sling {@link Resource} to a {@link MappingTarget.TargetNode}
- */
-@ProviderType
-public interface DocumentMapper {
+/** MappingTarget that outputs to a JSON document */
+@Component(service = DocumentTree.class, property = { DocumentTree.TARGET_TYPE + "=map" })
+public class MapMappingTarget implements DocumentTree {
 
-    String ROLE = "sling.document.mapper.role";
-    
-    interface UrlBuilder {
-        String pathToUrl(String path);
+    @Override
+    public @NotNull DocumentNode newTargetNode() {
+        return new MapTargetNode("ROOT_THIS_NAME_SHOULD_NOT_APPEAR_IN_OUTPUT");
     }
-
-    public static class Options {
-        public final boolean debug;
-        public final UrlBuilder urlBuilder;
-        public Options(boolean debug, UrlBuilder urlBuilder) {
-            this.debug = debug;
-            this.urlBuilder = urlBuilder;
-        }
-    }
-    
-    void map(@NotNull Resource r, @NotNull MappingTarget.TargetNode destination, Options opt);
 }

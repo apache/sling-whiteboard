@@ -23,11 +23,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.sling.api.resource.Resource;
+import org.apache.sling.documentaggregator.api.DocumentAggregator;
+import org.apache.sling.documentaggregator.api.DocumentTree;
 import org.apache.sling.graphql.api.SlingDataFetcher;
 import org.apache.sling.graphql.api.SlingDataFetcherEnvironment;
-import org.apache.sling.remotecontent.documentmapper.api.DocumentMapper;
-import org.apache.sling.remotecontent.documentmapper.api.DocumentMapper.UrlBuilder;
-import org.apache.sling.remotecontent.documentmapper.api.MappingTarget;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.service.component.annotations.Component;
@@ -36,11 +35,11 @@ import org.osgi.service.component.annotations.Reference;
 @Component(service = SlingDataFetcher.class, property = {"name=samples/document"})
 public class DocumentDataFetcher implements SlingDataFetcher<Object> {
 
-    @Reference(target="(" + MappingTarget.TARGET_TYPE + "=map)")
-    private MappingTarget mappingTarget;
+    @Reference(target="(" + DocumentTree.TARGET_TYPE + "=map)")
+    private DocumentTree mappingTarget;
 
     @Reference
-    private DocumentMapper documentMapper;
+    private DocumentAggregator documentAggregator;
 
     @Override
     public @Nullable Object get(@NotNull SlingDataFetcherEnvironment e) throws Exception {
@@ -49,14 +48,14 @@ public class DocumentDataFetcher implements SlingDataFetcher<Object> {
         final Map<String, Object> data = new HashMap<>();
         data.put("path", path);
         data.put("selectors", e.getArgument("selectors"));
-        final DocumentMapper.Options opt = new DocumentMapper.Options(e.getArgument("debug", false), new UrlBuilderStub());
+        final DocumentAggregator.Options opt = new DocumentAggregator.Options(e.getArgument("debug", false), new UrlBuilderStub());
 
         // Get the target Resource
         final Resource target = e.getCurrentResource().getResourceResolver().getResource(path);
 
-        // Use DocumentMapper to build the body
-        final MappingTarget.TargetNode body = mappingTarget.newTargetNode();
-        documentMapper.map(target, body, opt);
+        // Use the aggregator to build the body
+        final DocumentTree.DocumentNode body = mappingTarget.newTargetNode();
+        documentAggregator.aggregate(target, body, opt);
         body.close();
         data.put("body", body.adaptTo(Map.class));
         return data;
