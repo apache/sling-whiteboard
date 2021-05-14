@@ -19,6 +19,7 @@ package org.osgi.util.features.impl;
 import org.junit.Test;
 import org.osgi.util.features.BuilderFactory;
 import org.osgi.util.features.Feature;
+import org.osgi.util.features.FeatureBuilder;
 import org.osgi.util.features.FeatureBundle;
 import org.osgi.util.features.FeatureConfiguration;
 import org.osgi.util.features.FeatureExtension;
@@ -167,5 +168,51 @@ public class FeatureServiceImplTest {
         assertEquals(FeatureExtension.Kind.TRANSIENT, jsonEx.getKind());
         assertEquals(FeatureExtension.Type.JSON, jsonEx.getType());
         assertEquals("{\"foo\":[1,2,3]}", jsonEx.getJSON());
+    }
+
+    @Test
+    public void testCreateFeature() {
+        BuilderFactory factory = Features.getBuilderFactory();
+
+        FeatureBuilder builder = factory.newFeatureBuilder(new ID("org.acme", "acmeapp", "1.0.0"));
+        builder.setName("The ACME app");
+        builder.setDescription("This is the main ACME app, "
+                + "from where all functionality can be reached.");
+
+        Feature f = builder.build();
+        System.out.println("***" + f);
+    }
+
+    @Test
+    public void testCreateFeatureBundle() {
+        BuilderFactory factory = Features.getBuilderFactory();
+
+        FeatureBuilder builder = factory.newFeatureBuilder(
+            new ID("org.acme", "acmeapp", "1.0.1"));
+        builder.setName("The Acme Application");
+        builder.setLicense("https://opensource.org/licenses/Apache-2.0");
+        builder.setComplete(true);
+
+        FeatureBundle b1 = factory.newBundleBuilder(
+                ID.fromMavenID("org.osgi:org.osgi.util.function:1.1.0"))
+                .build();
+        FeatureBundle b2 = factory.newBundleBuilder(
+                ID.fromMavenID("org.osgi:org.osgi.util.promise:1.1.1"))
+                .build();
+
+        FeatureBundle b3 = factory.newBundleBuilder(
+                ID.fromMavenID("org.apache.commons:commons-email:1.1.5"))
+                .addMetadata("org.acme.javadoc.link",
+                        "https://commons.apache.org/proper/commons-email/javadocs/api-1.5")
+                .build();
+
+        FeatureBundle b4 = factory.newBundleBuilder(
+                ID.fromMavenID("com.acme:acmelib:1.7.2"))
+                .build();
+
+        builder.addBundles(b1, b2, b3, b4);
+
+        Feature f = builder.build();
+        System.out.println("***" + f);
     }
 }
