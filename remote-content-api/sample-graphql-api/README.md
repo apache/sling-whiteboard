@@ -1,5 +1,10 @@
 # Apache Sling Document-Oriented Content API - Sample GraphQL API
 
+This sample provides a GraphQL query and command API that uses the sibling `document-aggregator` module
+to output complete documents that aim to provide everything that's required to render a given Sling resource.
+
+As I write this it doesn't use the SLING-10309 GraphQL pagination features yet, but it should.
+
 To start this, build the sibling modules with `mvn clean install` in the parent folder
 of this one and then, in this folder, run
 
