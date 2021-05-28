@@ -14,14 +14,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.osgi.util.features.impl;
+package org.apache.sling.feature.osgi.impl;
 
-import org.osgi.util.features.Feature;
-import org.osgi.util.features.FeatureBuilder;
-import org.osgi.util.features.FeatureBundle;
-import org.osgi.util.features.FeatureConfiguration;
-import org.osgi.util.features.FeatureExtension;
-import org.osgi.util.features.ID;
+import org.osgi.service.feature.Feature;
+import org.osgi.service.feature.FeatureBuilder;
+import org.osgi.service.feature.FeatureBundle;
+import org.osgi.service.feature.FeatureConfiguration;
+import org.osgi.service.feature.FeatureExtension;
+import org.osgi.service.feature.ID;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,14 +35,16 @@ class FeatureBuilderImpl implements FeatureBuilder {
     private final ID id;
 
     private String name;
+    private String copyright;
     private String description;
-    private String vendor;
+    private String docURL;
     private String license;
-    private String location;
+    private String scm;
+    private String vendor;
     private boolean complete;
-    private boolean isFinal;
 
     private final List<FeatureBundle> bundles = new ArrayList<>();
+    private final List<String> categories = new ArrayList<>();
     private final Map<String,FeatureConfiguration> configurations = new HashMap<>();
     private final Map<String,FeatureExtension> extensions = new HashMap<>();
     private final Map<String,String> variables = new HashMap<>();
@@ -54,6 +56,18 @@ class FeatureBuilderImpl implements FeatureBuilder {
     @Override
     public FeatureBuilder setName(String name) {
         this.name = name;
+        return this;
+    }
+
+    @Override
+    public FeatureBuilder setCopyright(String c) {
+        this.copyright = c;
+        return this;
+    }
+
+    @Override
+    public FeatureBuilder setDocURL(String url) {
+        this.docURL = url;
         return this;
     }
 
@@ -70,20 +84,8 @@ class FeatureBuilderImpl implements FeatureBuilder {
     }
 
     @Override
-    public FeatureBuilder setLocation(String location) {
-        this.location = location;
-        return this;
-    }
-
-    @Override
     public FeatureBuilder setComplete(boolean complete) {
         this.complete = complete;
-        return this;
-    }
-
-    @Override
-    public FeatureBuilder setFinal(boolean isFinal) {
-        this.isFinal = isFinal;
         return this;
     }
 
@@ -94,8 +96,20 @@ class FeatureBuilderImpl implements FeatureBuilder {
     }
 
     @Override
+    public FeatureBuilder setSCM(String scm) {
+        this.scm = scm;
+        return this;
+    }
+
+    @Override
     public FeatureBuilder addBundles(FeatureBundle ... bundles) {
         this.bundles.addAll(Arrays.asList(bundles));
+        return this;
+    }
+
+    @Override
+    public FeatureBuilder addCategories(String ... categories) {
+        this.categories.addAll(Arrays.asList(categories));
         return this;
     }
 
@@ -129,39 +143,43 @@ class FeatureBuilderImpl implements FeatureBuilder {
 
     @Override
     public Feature build() {
-        return new FeatureImpl(id, name,
-                description, vendor, license, location, complete, isFinal,
-                bundles, configurations, extensions, variables);
+        return new FeatureImpl(id, name, copyright, description, docURL,
+                license, scm, vendor, complete,
+                bundles, categories, configurations, extensions, variables);
     }
 
     private static class FeatureImpl extends ArtifactImpl implements Feature {
         private final String name;
+        private final String copyright;
         private final String description;
-        private final String vendor;
+        private final String docURL;
         private final String license;
-        private final String location;
+        private final String scm;
+        private final String vendor;
         private final boolean complete;
-        private final boolean isFinal;
 
         private final List<FeatureBundle> bundles;
+        private final List<String> categories;
         private final Map<String,FeatureConfiguration> configurations;
         private final Map<String,FeatureExtension> extensions;
         private final Map<String,String> variables;
 
-        private FeatureImpl(ID id, String aName, String desc, String vnd, String lic, String loc,
-                boolean comp, boolean fin, List<FeatureBundle> bs, Map<String,FeatureConfiguration> cs,
+        private FeatureImpl(ID id, String aName, String cr, String desc, String docs, String lic, String sc, String vnd,
+                boolean comp, List<FeatureBundle> bs, List<String> cats, Map<String,FeatureConfiguration> cs,
                 Map<String,FeatureExtension> es, Map<String,String> vars) {
             super(id);
 
             name = aName;
+            copyright = cr;
             description = desc;
-            vendor = vnd;
+            docURL = docs;
             license = lic;
-            location = loc;
+            scm = sc;
+            vendor = vnd;
             complete = comp;
-            isFinal = fin;
 
             bundles = Collections.unmodifiableList(bs);
+            categories = Collections.unmodifiableList(cats);
             configurations = Collections.unmodifiableMap(cs);
             extensions = Collections.unmodifiableMap(es);
             variables = Collections.unmodifiableMap(vars);
@@ -188,8 +206,18 @@ class FeatureBuilderImpl implements FeatureBuilder {
         }
 
         @Override
-        public String getLocation() {
-            return location;
+        public String getCopyright() {
+            return copyright;
+        }
+
+        @Override
+        public String getDocURL() {
+            return docURL;
+        }
+
+        @Override
+        public String getSCM() {
+            return scm;
         }
 
         @Override
@@ -198,13 +226,13 @@ class FeatureBuilderImpl implements FeatureBuilder {
         }
 
         @Override
-        public boolean isFinal() {
-            return isFinal;
+        public List<FeatureBundle> getBundles() {
+            return bundles;
         }
 
         @Override
-        public List<FeatureBundle> getBundles() {
-            return bundles;
+        public List<String> getCategories() {
+            return categories;
         }
 
         @Override
@@ -226,8 +254,8 @@ class FeatureBuilderImpl implements FeatureBuilder {
         public int hashCode() {
             final int prime = 31;
             int result = super.hashCode();
-            result = prime * result + Objects.hash(bundles, complete, configurations, description, isFinal, license, location,
-                    name, variables, vendor);
+            result = prime * result + Objects.hash(bundles, categories, complete, configurations, copyright, description, docURL,
+                    extensions, license, name, scm, variables, vendor);
             return result;
         }
 
@@ -237,14 +265,16 @@ class FeatureBuilderImpl implements FeatureBuilder {
                 return true;
             if (!super.equals(obj))
                 return false;
-            if (!(obj instanceof FeatureImpl))
+            if (getClass() != obj.getClass())
                 return false;
             FeatureImpl other = (FeatureImpl) obj;
-            return Objects.equals(bundles, other.bundles) && complete == other.complete
-                    && Objects.equals(configurations, other.configurations) && Objects.equals(description, other.description)
-                    && isFinal == other.isFinal && Objects.equals(license, other.license)
-                    && Objects.equals(location, other.location) && Objects.equals(name, other.name)
-                    && Objects.equals(variables, other.variables) && Objects.equals(vendor, other.vendor);
+            return Objects.equals(bundles, other.bundles) && Objects.equals(categories, other.categories)
+                    && complete == other.complete && Objects.equals(configurations, other.configurations)
+                    && Objects.equals(copyright, other.copyright) && Objects.equals(description, other.description)
+                    && Objects.equals(docURL, other.docURL) && Objects.equals(extensions, other.extensions)
+                    && Objects.equals(license, other.license) && Objects.equals(name, other.name)
+                    && Objects.equals(scm, other.scm) && Objects.equals(variables, other.variables)
+                    && Objects.equals(vendor, other.vendor);
         }
 
         @Override

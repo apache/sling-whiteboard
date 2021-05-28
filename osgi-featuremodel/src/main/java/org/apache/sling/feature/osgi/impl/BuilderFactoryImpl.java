@@ -14,17 +14,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.osgi.util.features.impl;
+package org.apache.sling.feature.osgi.impl;
 
-import org.osgi.util.features.ID;
-import org.osgi.util.features.BuilderFactory;
-import org.osgi.util.features.FeatureBundleBuilder;
-import org.osgi.util.features.FeatureConfigurationBuilder;
-import org.osgi.util.features.FeatureExtensionBuilder;
-import org.osgi.util.features.FeatureBuilder;
-import org.osgi.util.features.MergeContextBuilder;
-import org.osgi.util.features.FeatureExtension.Kind;
-import org.osgi.util.features.FeatureExtension.Type;
+import org.osgi.service.feature.BuilderFactory;
+import org.osgi.service.feature.FeatureBuilder;
+import org.osgi.service.feature.FeatureBundleBuilder;
+import org.osgi.service.feature.FeatureConfigurationBuilder;
+import org.osgi.service.feature.FeatureExtension.Kind;
+import org.osgi.service.feature.FeatureExtension.Type;
+import org.osgi.service.feature.FeatureExtensionBuilder;
+import org.osgi.service.feature.ID;
 
 class BuilderFactoryImpl implements BuilderFactory {
     @Override
@@ -50,10 +49,5 @@ class BuilderFactoryImpl implements BuilderFactory {
     @Override
     public FeatureExtensionBuilder newExtensionBuilder(String name, Type type, Kind kind) {
         return new ExtensionBuilderImpl(name, type, kind);
-    }
-
-    @Override
-    public MergeContextBuilder newMergeContextBuilder() {
-        return new MergeContextBuilderImpl();
     }
 }

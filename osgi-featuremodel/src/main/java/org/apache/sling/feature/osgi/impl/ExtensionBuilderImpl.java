@@ -14,18 +14,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.osgi.util.features.impl;
+package org.apache.sling.feature.osgi.impl;
 
-import org.osgi.util.features.ID;
-import org.osgi.util.features.FeatureExtension;
-import org.osgi.util.features.FeatureExtensionBuilder;
-import org.osgi.util.features.FeatureExtension.Kind;
-import org.osgi.util.features.FeatureExtension.Type;
+import org.osgi.service.feature.FeatureExtension;
+import org.osgi.service.feature.FeatureExtension.Kind;
+import org.osgi.service.feature.FeatureExtension.Type;
+import org.osgi.service.feature.FeatureExtensionBuilder;
+import org.osgi.service.feature.ID;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -34,7 +32,7 @@ class ExtensionBuilderImpl implements FeatureExtensionBuilder {
     private final Type type;
     private final Kind kind;
 
-    private final StringBuilder content = new StringBuilder();
+    private final List<String> content = new ArrayList<>();
 
     ExtensionBuilderImpl(String name, Type type, Kind kind) {
         this.name = name;
@@ -47,7 +45,7 @@ class ExtensionBuilderImpl implements FeatureExtensionBuilder {
         if (type != Type.TEXT)
             throw new IllegalStateException("Cannot add text to extension of type " + type);
 
-        content.append(text);
+        content.add(text);
         return this;
     }
 
@@ -56,8 +54,8 @@ class ExtensionBuilderImpl implements FeatureExtensionBuilder {
         if (type != Type.JSON)
             throw new IllegalStateException("Cannot add text to extension of type " + type);
 
-        content.setLength(0); // Clear any previous value
-        content.append(json);
+        content.clear(); // Clear any previous value
+        content.add(json);
         return this;
     }
 
@@ -77,40 +75,42 @@ class ExtensionBuilderImpl implements FeatureExtensionBuilder {
         if (type != Type.ARTIFACTS)
             throw new IllegalStateException("Cannot add artifacts to extension of type " + type);
 
-        content.append(groupId);
-        content.append(':');
-        content.append(artifactId);
-        content.append(':');
-        content.append(version);
+        StringBuilder aid = new StringBuilder();
+        aid.append(groupId);
+        aid.append(':');
+        aid.append(artifactId);
+        aid.append(':');
+        aid.append(version);
 
         if (at != null) {
-            content.append(':');
-            content.append(at);
+            aid.append(':');
+            aid.append(at);
             if (classifier != null) {
-                content.append(':');
-                content.append(classifier);
+                aid.append(':');
+                aid.append(classifier);
             }
         }
-        content.append('\n');
+        aid.append('\n');
+        content.add(aid.toString());
         return this;
     }
 
     @Override
     public FeatureExtension build() {
-        return new ExtensionImpl(name, type, kind, content.toString());
+        return new ExtensionImpl(name, type, kind, content);
     }
 
     private static class ExtensionImpl implements FeatureExtension {
         private final String name;
         private final Type type;
         private final Kind kind;
-        private final String content;
+        private final List<String> content;
 
-        private ExtensionImpl(String name, Type type, Kind kind, String content) {
+        private ExtensionImpl(String name, Type type, Kind kind, List<String> content) {
             this.name = name;
             this.type = type;
             this.kind = kind;
-            this.content = content;
+            this.content = Collections.unmodifiableList(content);
         }
 
         public String getName() {
@@ -129,10 +129,13 @@ class ExtensionBuilderImpl implements FeatureExtensionBuilder {
             if (type != Type.JSON)
                 throw new IllegalStateException("Extension is not of type JSON " + type);
 
-            return content;
+            if (content.isEmpty())
+                return null;
+
+            return content.get(0);
         }
 
-        public String getText() {
+        public List<String> getText() {
             if (type != Type.TEXT)
                 throw new IllegalStateException("Extension is not of type Text " + type);
 
@@ -140,16 +143,10 @@ class ExtensionBuilderImpl implements FeatureExtensionBuilder {
         }
 
         public List<ID> getArtifacts() {
-            BufferedReader r = new BufferedReader(new StringReader(content));
-
             List<ID> res = new ArrayList<>();
-            String line = null;
-            try {
-                while ((line = r.readLine()) != null) {
-                    res.add(ID.fromMavenID(line));
-                }
-            } catch (IOException e) {
-                // ignore
+
+            for (String s : content) {
+                res.add(ID.fromMavenID(s));
             }
 
             return res;

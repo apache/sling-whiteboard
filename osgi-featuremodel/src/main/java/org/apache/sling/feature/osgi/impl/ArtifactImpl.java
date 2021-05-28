@@ -14,15 +14,37 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.osgi.util.features;
+package org.apache.sling.feature.osgi.impl;
 
-/**
- * An Artifact is an entity with an ID.
- */
-public interface FeatureArtifact {
-    /**
-     * Get the artifact's ID.
-     * @return The ID of this artifact.
-     */
-    ID getID();
+import org.osgi.service.feature.FeatureArtifact;
+import org.osgi.service.feature.ID;
+
+import java.util.Objects;
+
+class ArtifactImpl implements FeatureArtifact {
+    private final ID id;
+
+    ArtifactImpl(ID id) {
+        this.id = id;
+    }
+
+    @Override
+    public ID getID() {
+        return id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!(obj instanceof ArtifactImpl))
+            return false;
+        ArtifactImpl other = (ArtifactImpl) obj;
+        return Objects.equals(id, other.id);
+    }
 }

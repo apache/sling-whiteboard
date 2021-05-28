@@ -14,26 +14,24 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.osgi.util.features.impl;
+package org.apache.sling.feature.osgi.impl;
 
-import org.osgi.util.features.BuilderFactory;
-import org.osgi.util.features.Feature;
-import org.osgi.util.features.FeatureBuilder;
-import org.osgi.util.features.FeatureBundle;
-import org.osgi.util.features.FeatureBundleBuilder;
-import org.osgi.util.features.FeatureConfiguration;
-import org.osgi.util.features.FeatureConfigurationBuilder;
-import org.osgi.util.features.FeatureExtension;
-import org.osgi.util.features.FeatureExtensionBuilder;
-import org.osgi.util.features.ID;
-import org.osgi.util.features.MergeContext;
+import org.osgi.service.feature.BuilderFactory;
+import org.osgi.service.feature.Feature;
+import org.osgi.service.feature.FeatureBuilder;
+import org.osgi.service.feature.FeatureBundle;
+import org.osgi.service.feature.FeatureBundleBuilder;
+import org.osgi.service.feature.FeatureConfiguration;
+import org.osgi.service.feature.FeatureConfigurationBuilder;
+import org.osgi.service.feature.FeatureExtension;
+import org.osgi.service.feature.FeatureExtensionBuilder;
+import org.osgi.service.feature.Features;
+import org.osgi.service.feature.ID;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -44,7 +42,7 @@ import javax.json.JsonObject;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 
-public class FeatureServiceImpl { //implements FeatureService {
+public class FeatureServiceImpl implements Features {
     private final BuilderFactoryImpl builderFactory = new BuilderFactoryImpl();
 
     public BuilderFactory getBuilderFactory() {
@@ -58,15 +56,17 @@ public class FeatureServiceImpl { //implements FeatureService {
         FeatureBuilder builder = builderFactory.newFeatureBuilder(ID.fromMavenID(id));
 
         builder.setName(json.getString("title", null));
+        builder.setCopyright(json.getString("copyright", null));
         builder.setDescription(json.getString("description", null));
-        builder.setVendor(json.getString("vendor", null));
+        builder.setDocURL(json.getString("docURL", null));
         builder.setLicense(json.getString("license", null));
-        builder.setLocation(json.getString("location", null));
+        builder.setSCM(json.getString("scm", null));
+        builder.setVendor(json.getString("vendor", null));
 
         builder.setComplete(json.getBoolean("complete", false));
-        builder.setFinal(json.getBoolean("final", false));
 
         builder.addBundles(getBundles(json));
+        builder.addCategories(getCategories(json));
         builder.addConfigurations(getConfigurations(json));
         builder.addExtensions(getExtensions(json));
 
@@ -110,6 +110,15 @@ public class FeatureServiceImpl { //implements FeatureService {
         }
 
         return bundles.toArray(new FeatureBundle[0]);
+    }
+
+    private String[] getCategories(JsonObject json) {
+        JsonArray ja = json.getJsonArray("categories");
+        if (ja == null)
+            return new String[] {};
+
+        List<String> cats = ja.getValuesAs(JsonString::getString);
+        return cats.toArray(new String[] {});
     }
 
     private FeatureConfiguration[] getConfigurations(JsonObject json) {
@@ -217,112 +226,5 @@ public class FeatureServiceImpl { //implements FeatureService {
     public void writeFeature(Feature feature, Writer jsonWriter) throws IOException {
         // TODO Auto-generated method stub
 
-    }
-
-    public Feature mergeFeatures(ID targetID, Feature f1, Feature f2, MergeContext ctx) {
-        FeatureBuilder fb = builderFactory.newFeatureBuilder(targetID);
-
-        copyAttrs(f1, fb);
-        copyAttrs(f2, fb);
-
-        fb.addBundles(mergeBundles(f1, f2, ctx));
-        fb.addConfigurations(mergeConfigs(f1, f2, ctx));
-        fb.addExtensions(mergeExtensions(f1, f2, ctx));
-
-        return fb.build();
-    }
-
-    private FeatureBundle[] mergeBundles(Feature f1, Feature f2, MergeContext ctx) {
-        List<FeatureBundle> bundles = new ArrayList<>(f1.getBundles());
-        List<FeatureBundle> addedBundles = new ArrayList<>();
-
-        for (FeatureBundle b : f2.getBundles()) {
-            ID bID = b.getID();
-            boolean found = false;
-            for (Iterator<FeatureBundle> it = bundles.iterator(); it.hasNext(); ) {
-                FeatureBundle orgb = it.next();
-                ID orgID = orgb.getID();
-
-                if (bID.getGroupId().equals(orgID.getGroupId()) &&
-                        bID.getArtifactId().equals(orgID.getArtifactId())) {
-                    found = true;
-                    List<FeatureBundle> res = new ArrayList<>(ctx.handleBundleConflict(f1, b, f2, orgb));
-                    if (res.contains(orgb)) {
-                        res.remove(orgb);
-                    } else {
-                        it.remove();
-                    }
-                    addedBundles.addAll(res);
-                }
-            }
-            if (!found) {
-                addedBundles.add(b);
-            }
-        }
-        bundles.addAll(addedBundles);
-        return bundles.toArray(new FeatureBundle[] {});
-    }
-
-    private FeatureConfiguration[] mergeConfigs(Feature f1, Feature f2, MergeContext ctx) {
-        Map<String,FeatureConfiguration> configs = new HashMap<>(f1.getConfigurations());
-        Map<String,FeatureConfiguration> addConfigs = new HashMap<>();
-
-        for (Map.Entry<String,FeatureConfiguration> cfgEntry : f2.getConfigurations().entrySet()) {
-            String pid = cfgEntry.getKey();
-            FeatureConfiguration newCfg = cfgEntry.getValue();
-            FeatureConfiguration orgCfg = configs.get(pid);
-            if (orgCfg != null) {
-                FeatureConfiguration resCfg = ctx.handleConfigurationConflict(f1, orgCfg, f2, newCfg);
-                if (!resCfg.equals(orgCfg)) {
-                    configs.remove(pid);
-                    addConfigs.put(pid, resCfg);
-                }
-            } else {
-                addConfigs.put(pid, newCfg);
-            }
-        }
-
-        configs.putAll(addConfigs);
-        return configs.values().toArray(new FeatureConfiguration[] {});
-    }
-
-    private FeatureExtension[] mergeExtensions(Feature f1, Feature f2, MergeContext ctx) {
-        Map<String,FeatureExtension> extensions = new HashMap<>(f1.getExtensions());
-        Map<String,FeatureExtension> addExtensions = new HashMap<>();
-
-        for (Map.Entry<String,FeatureExtension> exEntry : f2.getExtensions().entrySet()) {
-            String key = exEntry.getKey();
-            FeatureExtension newEx = exEntry.getValue();
-            FeatureExtension orgEx = extensions.get(key);
-            if (orgEx != null) {
-                FeatureExtension resEx = ctx.handleExtensionConflict(f1, orgEx, f2, newEx);
-                if (!resEx.equals(orgEx)) {
-                    extensions.remove(key);
-                    addExtensions.put(key, resEx);
-                }
-            } else {
-                addExtensions.put(key, newEx);
-            }
-        }
-
-        extensions.putAll(addExtensions);
-        return extensions.values().toArray(new FeatureExtension[] {});
-    }
-
-    private void copyAttrs(Feature f, FeatureBuilder fb) {
-        if (f.getName() != null)
-            fb.setName(f.getName());
-
-        if (f.getDescription() != null)
-            fb.setDescription(f.getDescription());
-
-        if (f.getVendor() != null)
-            fb.setVendor(f.getVendor());
-
-        if (f.getLicense() != null)
-            fb.setLicense(f.getLicense());
-
-        if (f.getLocation() != null)
-            fb.setLocation(f.getLocation());
     }
 }

@@ -14,10 +14,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.osgi.util.features.impl;
+package org.apache.sling.feature.osgi.impl;
 
-import org.osgi.util.features.FeatureConfiguration;
-import org.osgi.util.features.FeatureConfigurationBuilder;
+import org.osgi.service.feature.FeatureConfiguration;
+import org.osgi.service.feature.FeatureConfigurationBuilder;
 
 import java.util.Collections;
 import java.util.HashMap;
