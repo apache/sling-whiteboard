@@ -25,14 +25,21 @@
   <ignoreVersions>
     <ignoreVersion type="regex">(?i).*[-_\.](alpha|b|beta|rc|m|ea)[-_\.]?[0-9]*</ignoreVersion>
   </ignoreVersions>
-  <!-- ignore known old versions of commons-collections -->
   <rules>
+    <!-- ignore known old versions of commons-collections -->
     <rule groupId="commons-collections" comparisonMethod="maven">
       <ignoreVersions>
         <ignoreVersion>20040616</ignoreVersion>
         <ignoreVersion>20040102.233541</ignoreVersion>
         <ignoreVersion>20031027.000000</ignoreVersion>
         <ignoreVersion>20030418.083655</ignoreVersion>
+      </ignoreVersions>
+    </rule>
+
+    <rule groupId="commons-io" comparisonMethod="maven">
+      <ignoreVersions>
+        <!-- ignore version affected by: https://issues.apache.org/jira/browse/IO-734 -->
+        <ignoreVersion>2.9.0</ignoreVersion>
       </ignoreVersions>
     </rule>
 
