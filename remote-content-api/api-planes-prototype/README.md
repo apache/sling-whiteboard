@@ -11,6 +11,19 @@ which are useful at the development stage.
 Several GraphQL schemas are available in a number of independent "API planes", providing 
 multiple ways to look at the Sling Resources in a modular way.
 
+## How to run this
+
+To start this, build the sibling modules with mvn clean install in the parent folder of this one and then, in this folder, run
+
+    mvn clean install exec:java
+
+Then open http://localhost:8080 - which might require logging in at http://localhost:8080/system/console first.
+
+    TODO: explain how to access the relevant parts of the prototype,
+    or add a redirect to the right place in the feature file.
+
+The standard MAVEN_OPTS environment variable can be used to setup debugging, as the above does not fork and starts the application with the Maven JVM.
+
 ## API Planes
 
 An API Plane exposes a Sling Resource to the API from a specific angle. The concept is 

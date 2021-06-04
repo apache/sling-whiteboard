@@ -1,0 +1,75 @@
+{
+  "id":"org.apache.sling:org.apache.sling.dokapi:slingosgifeature:sling12:0.0.1-SNAPSHOT",
+  "title":"Apache Sling Document-Oriented API - Sample GraphQL API",
+  "description":"Demonstrates the Document-Oriented Content API via GraphQL",
+  "vendor":"The Apache Software Foundation",
+  "license":"Apache License, Version 2.0",
+  "variables":{},
+  "bundles":[
+    "org.apache.sling:org.apache.sling.experimental.remotecontent.api.planes.prototype:0.0.1-SNAPSHOT",
+    "org.apache.sling:org.apache.sling.document.aggregator:0.0.1-SNAPSHOT",
+    "org.apache.sling:org.apache.sling.servlet-helpers:1.4.2",
+    "org.apache.sling:org.apache.sling.graphql.core:0.0.10",
+    "com.graphql-java:graphql-java:jar:15.0",
+    "org.apache.johnzon:johnzon-mapper:1.2.8",
+    "org.antlr:antlr4-runtime:jar:4.7.2",
+    "com.graphql-java:java-dataloader:jar:2.2.3",
+    "org.reactivestreams:reactive-streams:jar:1.0.2"
+  ],
+  "content-packages:ARTIFACTS|required":[
+    "com.adobe.aem.guides:aem-guides-wknd.ui.content.sample:zip:0.0.4"
+  ],
+  "configurations":{
+    "org.apache.sling.jcr.base.internal.LoginAdminWhitelist.fragment~installer-packages":{
+      "whitelist.bundles":[
+        "org.apache.sling.installer.factory.packages"
+      ],
+      "whitelist.name":"installer-packages"
+    },
+    "org.apache.sling.graphql.core.GraphQLServlet~default" : {
+      "sling.servlet.resourceTypes" : "samples/graphql",
+      "sling.servlet.extensions": "json",
+      "sling.servlet.methods": [ "GET", "POST" ]
+    },
+    "org.apache.sling.servlets.get.DefaultGetServlet" : {
+      "aliases" : [ "json:rawjson" ]
+    },
+    "org.apache.sling.commons.log.LogManager.factory.config~info.log" : {
+      "org.apache.sling.commons.log.file": "logs/debug.log",
+      "org.apache.sling.commons.log.level": "INFO",
+      "org.apache.sling.commons.log.names":
+        [
+          "org.apache.sling.engine",
+          "org.apache.sling.servlet",
+          "org.apache.sling.servlets",
+          "org.apache.sling.servlethelpers.internalrequests",
+          "org.apache.sling.graphql",
+          "org.apache.sling.scripting"
+        ],
+      "org.apache.sling.commons.log.pattern": "%-5level [%-50logger{50}] %message ## %mdc{sling.InternalRequest} %n"
+    },
+    "org.apache.sling.commons.log.LogManager.factory.config~debug.log" : {
+      "org.apache.sling.commons.log.file": "logs/debug.log",
+      "org.apache.sling.commons.log.level": "DEBUG",
+      "org.apache.sling.commons.log.names":
+        [
+          "org.apache.sling.remotecontent",
+          "org.apache.sling.graphql"
+        ],
+      "org.apache.sling.commons.log.pattern": "%-5level [%-50logger{50}] %message ## %mdc{sling.InternalRequest} %n"
+    }
+  },
+  "repoinit:TEXT|true":[
+    "create path /graphql",
+    "set ACL on /graphql",
+    "allow jcr:read for everyone",
+    "end",
+    "set properties on /graphql",
+    "set sling:resourceType to samples/graphql",
+    "end",
+    "create path /open-for-all",
+    "set ACL on /open-for-all",
+    "allow jcr:all for everyone",
+    "end"
+  ]
+}
