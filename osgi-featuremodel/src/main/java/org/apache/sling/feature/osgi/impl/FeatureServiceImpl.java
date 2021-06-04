@@ -16,18 +16,6 @@
  */
 package org.apache.sling.feature.osgi.impl;
 
-import org.osgi.service.feature.BuilderFactory;
-import org.osgi.service.feature.Feature;
-import org.osgi.service.feature.FeatureBuilder;
-import org.osgi.service.feature.FeatureBundle;
-import org.osgi.service.feature.FeatureBundleBuilder;
-import org.osgi.service.feature.FeatureConfiguration;
-import org.osgi.service.feature.FeatureConfigurationBuilder;
-import org.osgi.service.feature.FeatureExtension;
-import org.osgi.service.feature.FeatureExtensionBuilder;
-import org.osgi.service.feature.Features;
-import org.osgi.service.feature.ID;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
@@ -42,7 +30,18 @@ import javax.json.JsonObject;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 
-public class FeatureServiceImpl implements Features {
+import org.osgi.service.feature.BuilderFactory;
+import org.osgi.service.feature.Feature;
+import org.osgi.service.feature.FeatureBuilder;
+import org.osgi.service.feature.FeatureBundle;
+import org.osgi.service.feature.FeatureBundleBuilder;
+import org.osgi.service.feature.FeatureConfiguration;
+import org.osgi.service.feature.FeatureConfigurationBuilder;
+import org.osgi.service.feature.FeatureExtension;
+import org.osgi.service.feature.FeatureExtensionBuilder;
+import org.osgi.service.feature.ID;
+
+public class FeatureServiceImpl {
     private final BuilderFactoryImpl builderFactory = new BuilderFactoryImpl();
 
     public BuilderFactory getBuilderFactory() {
@@ -66,7 +65,9 @@ public class FeatureServiceImpl implements Features {
         builder.setComplete(json.getBoolean("complete", false));
 
         builder.addBundles(getBundles(json));
-        builder.addCategories(getCategories(json));
+        for (String cat : getCategories(json)) {
+            builder.addCategory(cat);        	
+        }
         builder.addConfigurations(getConfigurations(json));
         builder.addExtensions(getExtensions(json));
 

@@ -107,13 +107,14 @@ class FeatureBuilderImpl implements FeatureBuilder {
         return this;
     }
 
+    
     @Override
-    public FeatureBuilder addCategories(String ... categories) {
-        this.categories.addAll(Arrays.asList(categories));
-        return this;
-    }
+	public FeatureBuilder addCategory(String category) {
+    	this.categories.add(category);
+		return this;
+	}
 
-    @Override
+	@Override
     public FeatureBuilder addConfigurations(FeatureConfiguration ... configs) {
         for (FeatureConfiguration cfg : configs) {
             this.configurations.put(cfg.getPid(), cfg);
