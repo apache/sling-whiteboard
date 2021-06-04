@@ -266,8 +266,10 @@ public class SitemapStorage {
         }
         String sitemapFilePath = rootPath + sitemapRoot.getPath() + '/' + sitemapSelector + XML_EXTENSION;
         try (ResourceResolver resolver = resourceResolverFactory.getServiceResourceResolver(AUTH)) {
-            Resource sitemap = resolver.getResource(sitemapFilePath);
-            InputStream data = sitemap != null ? sitemap.adaptTo(InputStream.class) : null;
+            InputStream data = Optional.ofNullable(resolver.getResource(sitemapFilePath))
+                    .map(r -> r.getChild(JcrConstants.JCR_CONTENT))
+                    .map(r -> r.getValueMap().get(JcrConstants.JCR_DATA, InputStream.class))
+                    .orElse(null);
 
             if (data != null) {
                 IOUtils.copyLarge(data, output);
