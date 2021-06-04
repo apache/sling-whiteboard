@@ -61,19 +61,22 @@ we don't really care about the details of these node types besides their names.
       }
     }
 
+    # we probably wouldn't use repoinit in this way - this
+    # is just an example showing how to use a command pattern
+    # via GraphQL mutations
     mutation {
-      command(
-        lang:"repoinit",
-        script:"""
-    	    # comments work here
-          set properties on /open-for-all
-            set title to "Look, I changed the title again!"
-          end
-    	    """) 
-      {
-        success
-        output
-      }
+    command(
+      lang:"repoinit",
+      script:"""
+        # comments work here
+        set properties on /open-for-all
+          set title to "Look, I changed the title again!"
+        end
+      """)
+    {
+      success
+      output
+    }
     }
 
     {
