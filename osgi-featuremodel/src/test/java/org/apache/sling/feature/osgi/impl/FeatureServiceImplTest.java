@@ -16,15 +16,9 @@
  */
 package org.apache.sling.feature.osgi.impl;
 
-import org.apache.sling.feature.osgi.impl.FeatureServiceImpl;
-import org.junit.Before;
-import org.junit.Test;
-import org.osgi.service.feature.BuilderFactory;
-import org.osgi.service.feature.Feature;
-import org.osgi.service.feature.FeatureBuilder;
-import org.osgi.service.feature.FeatureBundle;
-import org.osgi.service.feature.Features;
-import org.osgi.service.feature.ID;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -32,12 +26,16 @@ import java.io.Reader;
 import java.net.URL;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.Test;
+import org.osgi.service.feature.BuilderFactory;
+import org.osgi.service.feature.Feature;
+import org.osgi.service.feature.FeatureBuilder;
+import org.osgi.service.feature.FeatureBundle;
+import org.osgi.service.feature.ID;
 
 public class FeatureServiceImplTest {
-    Features features;
+	FeatureServiceImpl features;
 
     @Before
     public void setUp() {
