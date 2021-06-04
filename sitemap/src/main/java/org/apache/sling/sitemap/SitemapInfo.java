@@ -50,6 +50,13 @@ public interface SitemapInfo {
     int getEntries();
 
     /**
+     * Returns true when the url is pointing to a sitemap-index.
+     *
+     * @return
+     */
+    boolean isIndex();
+
+    /**
      * Returns true if both size and entries are within the configured limits.
      *
      * @return

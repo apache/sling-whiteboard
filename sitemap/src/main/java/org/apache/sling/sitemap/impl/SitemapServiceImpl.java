@@ -98,32 +98,29 @@ public class SitemapServiceImpl implements SitemapService {
         String url = externalizer.externalize(sitemapRoot);
         Collection<String> names = generatorManager.getGenerators(sitemapRoot).keySet();
 
-        if (url == null || names.isEmpty()) {
+        if (url == null) {
             LOG.debug("Could not get absolute url to sitemap: {}", resource.getPath());
             return Collections.emptySet();
         }
 
-        if (names.size() > 1 || requiresSitemapIndex(sitemapRoot)) {
-            return Collections.singletonList(newSitemapInfo(
-                    url + '.' + SitemapServlet.SITEMAP_INDEX_SELECTOR + '.' + SitemapServlet.SITEMAP_EXTENSION,
-                    -1,
-                    -1
-            ));
-        } else {
-            String sitemapSelector = getSitemapSelector(sitemapRoot, getTopLevelSitemapRoot(sitemapRoot),
-                    names.iterator().next());
-            return storage.getSitemaps(sitemapRoot, names).stream()
-                    .filter(info -> info.getSitemapSelector().equals(sitemapSelector))
-                    .findFirst()
-                    .map(storageInfo -> Collections.<SitemapInfo>singleton(newSitemapInfo(
-                            sitemapSelector.equals(SitemapServlet.SITEMAP_SELECTOR)
-                                    ? url + '.' + SitemapServlet.SITEMAP_SELECTOR + '.' + SitemapServlet.SITEMAP_EXTENSION
-                                    : url + '.' + SitemapServlet.SITEMAP_SELECTOR + '.' + sitemapSelector + '.' + SitemapServlet.SITEMAP_EXTENSION,
-                            storageInfo.getSize(),
-                            storageInfo.getEntries()
-                    )))
-                    .orElseGet(Collections::emptySet);
+        Collection<SitemapInfo> infos = new ArrayList<>(names.size() + 1);
+
+        if (requiresSitemapIndex(sitemapRoot)) {
+            infos.add(newSitemapIndexInfo(
+                    url + '.' + SitemapServlet.SITEMAP_INDEX_SELECTOR + '.' + SitemapServlet.SITEMAP_EXTENSION));
         }
+
+        for (SitemapStorageInfo storageInfo : storage.getSitemaps(sitemapRoot, names)) {
+            String location = url + '.' + SitemapServlet.SITEMAP_SELECTOR + '.';
+            if (storageInfo.getSitemapSelector().equals(SitemapServlet.SITEMAP_SELECTOR)) {
+                location += SitemapServlet.SITEMAP_EXTENSION;
+            } else {
+                location += storageInfo.getSitemapSelector() + '.' + SitemapServlet.SITEMAP_EXTENSION;
+            }
+            infos.add(newSitemapInfo(location, storageInfo.getSize(), storageInfo.getEntries()));
+        }
+
+        return infos;
     }
 
     @Override
@@ -204,8 +201,12 @@ public class SitemapServiceImpl implements SitemapService {
         return infos;
     }
 
+    private SitemapInfo newSitemapIndexInfo(@NotNull String url) {
+        return new SitemapInfoImpl(url, -1, -1, true, true);
+    }
+
     private SitemapInfo newSitemapInfo(@NotNull String url, int size, int entries) {
-        return new SitemapInfoImpl(url, size, entries, size <= maxSize && entries <= maxEntries);
+        return new SitemapInfoImpl(url, size, entries, false, size <= maxSize && entries <= maxEntries);
     }
 
     private static class SitemapInfoImpl implements SitemapInfo {
@@ -213,12 +214,14 @@ public class SitemapServiceImpl implements SitemapService {
         private final String url;
         private final int size;
         private final int entries;
+        private final boolean isIndex;
         private final boolean withinLimits;
 
-        private SitemapInfoImpl(@NotNull String url, int size, int entries, boolean withinLimits) {
+        private SitemapInfoImpl(@NotNull String url, int size, int entries, boolean isIndex, boolean withinLimits) {
             this.url = url;
             this.size = size;
             this.entries = entries;
+            this.isIndex = isIndex;
             this.withinLimits = withinLimits;
         }
 
@@ -236,6 +239,11 @@ public class SitemapServiceImpl implements SitemapService {
         @Override
         public int getEntries() {
             return entries;
+        }
+
+        @Override
+        public boolean isIndex() {
+            return isIndex;
         }
 
         @Override

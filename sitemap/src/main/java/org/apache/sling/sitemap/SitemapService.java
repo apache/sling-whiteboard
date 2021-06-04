@@ -36,8 +36,8 @@ public interface SitemapService {
     /**
      * Returns the urls to the given {@link Resource}'s sitemaps, if any.
      * <p>
-     * The returned urls may point to a sitemap index when there are multiple sitemaps generated for the given sitemap
-     * root {@link Resource}. Or it may point to another sitemap root, if the sitemap is nested below a top level
+     * The returned urls may contain a sitemap index when there are multiple sitemaps generated for the given sitemap
+     * root {@link Resource}. Or it may contain urls to another sitemap root, if the sitemap is nested below a top level
      * sitemap root.
      * <p>
      * Numbers for size and entries can only be provided for sitemaps served from storage. For sitemap index or
