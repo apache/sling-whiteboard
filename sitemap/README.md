@@ -9,10 +9,8 @@ background to even sites that collect 3rd party data to include dynamically rend
 ## Highlights
 
 * A simple, builder-like API to create Sitemaps, that hides all the XML specifics from the implementation
-* Built with background sitemap generation in mind, supporting continuation after jobs have been aborted for example due
-  to container restarts in cloud environments
-* Configurable support for sitemaps served on-demand
-* Default support for nested sitemaps, that are automatically collected into a sitemap index
+* Supports on-demand and background generation w/ continuation after job interruption
+* Support for nested sitemaps, that are automatically collected into a sitemap indexes
 
 ## Open Topics
 
