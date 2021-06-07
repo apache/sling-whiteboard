@@ -230,9 +230,9 @@ public class SitemapServletTest {
         byte[] expectedOutcomeBytes = expectedOutcome.getBytes(StandardCharsets.UTF_8);
         context.registerInjectActivateService(sitemapService, "onDemandNames", "news");
         context.registerInjectActivateService(subject);
-        storage.writeSitemap(root, SitemapGenerator.DEFAULT_SITEMAP, new ByteArrayInputStream(expectedOutcomeBytes),
+        storage.writeSitemap(root, "foo", new ByteArrayInputStream(expectedOutcomeBytes),
                 expectedOutcomeBytes.length, 1);
-        MockSlingHttpServletRequest request = newSitemapReq("sitemap", root);
+        MockSlingHttpServletRequest request = newSitemapReq("foo-sitemap", root);
         MockSlingHttpServletResponse response = context.response();
 
         // when

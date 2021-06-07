@@ -88,8 +88,8 @@ public class SitemapGeneratorExecutorTest {
         context.registerService(ServiceUserMapped.class, serviceUser, "subServiceName", "sitemap-writer");
         context.registerService(SitemapGenerator.class, generator);
         context.registerService(JobManager.class, jobManager);
-        context.registerInjectActivateService(storage);
         context.registerInjectActivateService(generatorManager);
+        context.registerInjectActivateService(storage);
         context.registerInjectActivateService(extensionProviderManager);
         context.registerInjectActivateService(sitemapService);
 
