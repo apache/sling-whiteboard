@@ -26,10 +26,12 @@ import org.apache.sling.sitemap.SitemapService;
 import org.apache.sling.sitemap.common.SitemapLinkExternalizer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.osgi.framework.*;
 import org.osgi.service.component.annotations.*;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
+import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,15 +69,23 @@ public class SitemapServiceImpl implements SitemapService {
     @Reference
     private SitemapStorage storage;
 
+    private ServiceTracker<SitemapScheduler, SitemapScheduler> schedulers;
     private Set<String> onDemandNames;
     private int maxSize;
     private int maxEntries;
 
     @Activate
-    protected void activate(Configuration configuration) {
+    protected void activate(Configuration configuration, BundleContext bundleContext) {
         onDemandNames = Arrays.stream(configuration.onDemandNames()).collect(Collectors.toSet());
         maxSize = configuration.maxSize();
         maxEntries = configuration.maxEntries();
+        schedulers = new ServiceTracker<>(bundleContext, SitemapScheduler.class, null);
+        schedulers.open();
+    }
+
+    @Deactivate
+    protected void deactivate() {
+        schedulers.close();
     }
 
     public Set<String> getSitemapNamesServedOnDemand() {
@@ -84,6 +94,67 @@ public class SitemapServiceImpl implements SitemapService {
 
     public boolean isWithinLimits(int size, int entries) {
         return size <= maxSize && entries <= maxEntries;
+    }
+
+    @Override
+    public void scheduleGeneration() {
+        if (schedulers.getServiceReferences() == null) {
+            return;
+        }
+        for (ServiceReference<SitemapScheduler> scheduler : schedulers.getServiceReferences()) {
+            schedulers.getService(scheduler).run();
+        }
+    }
+
+    @Override
+    public void scheduleGeneration(String name) {
+        if (schedulers.getServiceReferences() == null) {
+            return;
+        }
+        try {
+            Filter filter = FrameworkUtil.createFilter("(names=" + name + ")");
+            for (ServiceReference<SitemapScheduler> scheduler : schedulers.getServiceReferences()) {
+                if (filter.match(scheduler)) {
+                    schedulers.getService(scheduler).run(name);
+                }
+            }
+        } catch (InvalidSyntaxException ex) {
+            LOG.warn("Failed to build filter for given argument: {}", name, ex);
+        }
+    }
+
+    @Override
+    public void scheduleGeneration(Resource sitemapRoot) {
+        if (schedulers.getServiceReferences() == null || !SitemapUtil.isSitemapRoot(sitemapRoot)) {
+            return;
+        }
+        for (ServiceReference<SitemapScheduler> scheduler : schedulers.getServiceReferences()) {
+            Object searchPath = scheduler.getProperty("searchPath");
+            if (searchPath instanceof String && sitemapRoot.getPath().startsWith(searchPath + "/")) {
+                schedulers.getService(scheduler).run(sitemapRoot);
+            }
+        }
+    }
+
+    @Override
+    public void scheduleGeneration(Resource sitemapRoot, String name) {
+        if (schedulers.getServiceReferences() == null || !SitemapUtil.isSitemapRoot(sitemapRoot)) {
+            return;
+        }
+        try {
+            Filter filter = FrameworkUtil.createFilter("(names=" + name + ")");
+            for (ServiceReference<SitemapScheduler> scheduler : schedulers.getServiceReferences()) {
+                if (!filter.match(scheduler)) {
+                    continue;
+                }
+                Object searchPath = scheduler.getProperty("searchPath");
+                if (searchPath instanceof String && sitemapRoot.getPath().startsWith(searchPath + "/")) {
+                    schedulers.getService(scheduler).run(sitemapRoot, Collections.singleton(name));
+                }
+            }
+        } catch (InvalidSyntaxException ex) {
+            LOG.warn("Failed to build filter for given argument: {}", name, ex);
+        }
     }
 
     @NotNull

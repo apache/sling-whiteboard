@@ -42,10 +42,10 @@ import java.util.*;
 import static org.apache.sling.sitemap.impl.SitemapUtil.findSitemapRoots;
 
 @Component(
-        service = Runnable.class,
+        service = {SitemapScheduler.class, Runnable.class},
         configurationPolicy = ConfigurationPolicy.REQUIRE,
         property = {
-                Scheduler.PROPERTY_SCHEDULER_CONCURRENT + "=false",
+                Scheduler.PROPERTY_SCHEDULER_CONCURRENT + ":Boolean=false",
                 Scheduler.PROPERTY_SCHEDULER_RUN_ON + "=" + Scheduler.VALUE_RUN_ON_SINGLE
         }
 )
@@ -94,25 +94,45 @@ public class SitemapScheduler implements Runnable {
 
     @Override
     public void run() {
+        run(Arrays.asList(names));
+    }
+
+    public void run(String name) {
+        run(Collections.singleton(name));
+    }
+
+    public void run(Resource sitemapRoot) {
+        run(sitemapRoot, Arrays.asList(names));
+    }
+
+    public void run(Resource sitemapRoot, Collection<String> names) {
+        Set<String> applicableNames = generatorManager.getApplicableNames(sitemapRoot, names);
+        for (String applicableName : applicableNames) {
+            Map<String, Object> jobProperties = new HashMap<>();
+            jobProperties.put(SitemapGeneratorExecutor.JOB_PROPERTY_SITEMAP_NAME, applicableName);
+            jobProperties.put(SitemapGeneratorExecutor.JOB_PROPERTY_SITEMAP_ROOT, sitemapRoot.getPath());
+            Job job = jobManager.addJob(SitemapGeneratorExecutor.JOB_TOPIC, jobProperties);
+            LOG.debug("Added job {}", job.getId());
+        }
+    }
+
+    void run(ResourceResolver resolver) {
+        run(resolver, Arrays.asList(names));
+    }
+
+    private void run(Collection<String> names) {
         try (ResourceResolver resolver = resourceResolverFactory.getServiceResourceResolver(AUTH)) {
-            run(resolver);
+            run(resolver, names);
         } catch (LoginException ex) {
             LOG.warn("Failed start sitemap jobs: {}", ex.getMessage(), ex);
         }
     }
 
-    public void run(ResourceResolver resolver) {
+    private void run(ResourceResolver resolver, Collection<String> names) {
         Iterator<Resource> sitemapRoots = findSitemapRoots(resolver, searchPath);
         while (sitemapRoots.hasNext()) {
-            Resource sitemapRoot = sitemapRoots.next();
-            Set<String> applicableNames = generatorManager.getApplicableNames(sitemapRoot, Arrays.asList(names));
-            for (String applicableName : applicableNames) {
-                Map<String, Object> jobProperties = new HashMap<>();
-                jobProperties.put(SitemapGeneratorExecutor.JOB_PROPERTY_SITEMAP_NAME, applicableName);
-                jobProperties.put(SitemapGeneratorExecutor.JOB_PROPERTY_SITEMAP_ROOT, sitemapRoot.getPath());
-                Job job = jobManager.addJob(SitemapGeneratorExecutor.JOB_TOPIC, jobProperties);
-                LOG.debug("Added job {}", job.getId());
-            }
+            run(sitemapRoots.next(), names);
         }
     }
+
 }

@@ -34,6 +34,35 @@ public interface SitemapService {
     String PROPERTY_SITEMAP_ROOT = "sitemapRoot";
 
     /**
+     * Calls all registered SitemapSchedulers to schedule (re)generation for all sitemap roots and names.
+     */
+    void scheduleGeneration();
+
+    /**
+     * Calls all registered SitemapSchedulers registered for the given name to schedule (re)generation.
+     *
+     * @param name
+     */
+    void scheduleGeneration(String name);
+
+    /**
+     * Calls all registered SitemapSchedulers with a search path containing the given resource to schedule
+     * (re)generation for all names.
+     *
+     * @param sitemapRoot
+     */
+    void scheduleGeneration(Resource sitemapRoot);
+
+    /**
+     * Calls all registered SitemapSchedulers with a search path containing the given resource and being registered for
+     * the given name to schedule (re)generation.
+     *
+     * @param sitemapRoot
+     * @param name
+     */
+    void scheduleGeneration(Resource sitemapRoot, String name);
+
+    /**
      * Returns the urls to the given {@link Resource}'s sitemaps, if any.
      * <p>
      * The returned urls may contain a sitemap index when there are multiple sitemaps generated for the given sitemap
