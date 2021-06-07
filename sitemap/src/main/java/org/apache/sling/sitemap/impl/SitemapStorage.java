@@ -51,7 +51,7 @@ import static org.apache.sling.sitemap.impl.SitemapUtil.*;
         service = {SitemapStorage.class, Runnable.class},
         property = {
                 Scheduler.PROPERTY_SCHEDULER_NAME + "=sitemap-storage-cleanup",
-                Scheduler.PROPERTY_SCHEDULER_CONCURRENT + "=false",
+                Scheduler.PROPERTY_SCHEDULER_CONCURRENT + ":Boolean=false",
                 Scheduler.PROPERTY_SCHEDULER_RUN_ON + "=" + Scheduler.VALUE_RUN_ON_SINGLE
         }
 )
@@ -125,7 +125,7 @@ public class SitemapStorage implements Runnable {
     }
 
     @NotNull
-    ValueMap getState(@NotNull Resource sitemapRoot, @NotNull String name) throws IOException {
+    public ValueMap getState(@NotNull Resource sitemapRoot, @NotNull String name) throws IOException {
         String statePath = getSitemapFilePath(sitemapRoot, name) + STATE_EXTENSION;
         try (ResourceResolver resolver = resourceResolverFactory.getServiceResourceResolver(AUTH)) {
             Resource state = resolver.getResource(statePath);
@@ -142,7 +142,7 @@ public class SitemapStorage implements Runnable {
         }
     }
 
-    void writeState(@NotNull Resource sitemapRoot, @NotNull String name, @NotNull Map<String, Object> state)
+    public void writeState(@NotNull Resource sitemapRoot, @NotNull String name, @NotNull Map<String, Object> state)
             throws IOException {
         String statePath = getSitemapFilePath(sitemapRoot, name) + STATE_EXTENSION;
         try (ResourceResolver resolver = resourceResolverFactory.getServiceResourceResolver(AUTH)) {
@@ -170,7 +170,7 @@ public class SitemapStorage implements Runnable {
         }
     }
 
-    void removeState(@NotNull Resource sitemapRoot, @NotNull String name) throws IOException {
+    public void removeState(@NotNull Resource sitemapRoot, @NotNull String name) throws IOException {
         String statePath = getSitemapFilePath(sitemapRoot, name) + STATE_EXTENSION;
         try (ResourceResolver resolver = resourceResolverFactory.getServiceResourceResolver(AUTH)) {
             Resource stateResource = resolver.getResource(statePath);
@@ -183,7 +183,7 @@ public class SitemapStorage implements Runnable {
         }
     }
 
-    String writeSitemap(@NotNull Resource sitemapRoot, @NotNull String name, @NotNull InputStream data, int size,
+    public String writeSitemap(@NotNull Resource sitemapRoot, @NotNull String name, @NotNull InputStream data, int size,
                         int entries) throws IOException {
         String sitemapFilePath = getSitemapFilePath(sitemapRoot, name);
         String statePath = sitemapFilePath + STATE_EXTENSION;
@@ -227,7 +227,7 @@ public class SitemapStorage implements Runnable {
         return sitemapFilePath;
     }
 
-    Set<SitemapStorageInfo> getSitemaps(Resource sitemapRoot) {
+    public Set<SitemapStorageInfo> getSitemaps(Resource sitemapRoot) {
         return getSitemaps(sitemapRoot, Collections.emptySet());
     }
 
@@ -242,7 +242,7 @@ public class SitemapStorage implements Runnable {
      * @param names
      * @return
      */
-    Set<SitemapStorageInfo> getSitemaps(Resource sitemapRoot, Collection<String> names) {
+    public Set<SitemapStorageInfo> getSitemaps(Resource sitemapRoot, Collection<String> names) {
         Resource topLevelSitemapRoot = getTopLevelSitemapRoot(sitemapRoot);
         Predicate<SitemapStorageInfo> filter;
 
@@ -279,7 +279,7 @@ public class SitemapStorage implements Runnable {
         }
     }
 
-    boolean copySitemap(Resource sitemapRoot, String sitemapSelector, OutputStream output) throws IOException {
+    public boolean copySitemap(Resource sitemapRoot, String sitemapSelector, OutputStream output) throws IOException {
         if (!isTopLevelSitemapRoot(sitemapRoot)) {
             return false;
         }

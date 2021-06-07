@@ -25,6 +25,7 @@ import org.apache.sling.sitemap.SitemapInfo;
 import org.apache.sling.sitemap.SitemapService;
 import org.apache.sling.sitemap.common.SitemapLinkExternalizer;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.osgi.service.component.annotations.*;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.Designate;
@@ -58,7 +59,7 @@ public class SitemapServiceImpl implements SitemapService {
     private static final Logger LOG = LoggerFactory.getLogger(SitemapServiceImpl.class);
 
     @Reference(cardinality = ReferenceCardinality.OPTIONAL, policyOption = ReferencePolicyOption.GREEDY)
-    private SitemapLinkExternalizer externalizer = SitemapLinkExternalizer.DEFAULT;
+    private SitemapLinkExternalizer externalizer;
     @Reference
     private JobManager jobManager;
     @Reference
@@ -99,7 +100,7 @@ public class SitemapServiceImpl implements SitemapService {
             return getSitemapUrlsForNestedSitemapRoot(sitemapRoot);
         }
 
-        String url = externalizer.externalize(sitemapRoot);
+        String url = externalize(sitemapRoot);
         Collection<String> names = generatorManager.getGenerators(sitemapRoot).keySet();
 
         if (url == null) {
@@ -121,7 +122,7 @@ public class SitemapServiceImpl implements SitemapService {
             } else {
                 location += storageInfo.getSitemapSelector() + '.' + SitemapServlet.SITEMAP_EXTENSION;
             }
-            infos.add(newSitemapInfo(location, storageInfo.getSize(), storageInfo.getEntries()));
+            infos.add(newSitemapInfo(storageInfo.getPath(), location, storageInfo.getSize(), storageInfo.getEntries()));
         }
 
         return infos;
@@ -172,7 +173,7 @@ public class SitemapServiceImpl implements SitemapService {
     private Collection<SitemapInfo> getSitemapUrlsForNestedSitemapRoot(Resource sitemapRoot) {
         Collection<String> names = generatorManager.getGenerators(sitemapRoot).keySet();
         Resource topLevelSitemapRoot = getTopLevelSitemapRoot(sitemapRoot);
-        String topLevelSitemapRootUrl = externalizer.externalize(topLevelSitemapRoot);
+        String topLevelSitemapRootUrl = externalize(topLevelSitemapRoot);
 
         if (topLevelSitemapRootUrl == null || names.isEmpty()) {
             LOG.debug("Could not create absolute urls for nested sitemaps at: {}", sitemapRoot.getPath());
@@ -187,7 +188,7 @@ public class SitemapServiceImpl implements SitemapService {
             String selector = getSitemapSelector(sitemapRoot, topLevelSitemapRoot, name);
             String location = topLevelSitemapRootUrl + selector + '.' + SitemapServlet.SITEMAP_EXTENSION;
             if (onDemandNames.contains(name)) {
-                infos.add(newSitemapInfo(location, -1, -1));
+                infos.add(newSitemapInfo(null, location, -1, -1));
             } else {
                 if (storageInfos == null) {
                     storageInfos = storage.getSitemaps(sitemapRoot, names);
@@ -197,7 +198,7 @@ public class SitemapServiceImpl implements SitemapService {
                         .findFirst();
                 if (storageInfoOpt.isPresent()) {
                     SitemapStorageInfo storageInfo = storageInfoOpt.get();
-                    infos.add(newSitemapInfo(location, storageInfo.getSize(), storageInfo.getEntries()));
+                    infos.add(newSitemapInfo(storageInfo.getPath(), location, storageInfo.getSize(), storageInfo.getEntries()));
                 }
             }
         }
@@ -205,30 +206,40 @@ public class SitemapServiceImpl implements SitemapService {
         return infos;
     }
 
-
-
-    private SitemapInfo newSitemapIndexInfo(@NotNull String url) {
-        return new SitemapInfoImpl(url, -1, -1, true, true);
+    private String externalize(Resource resource) {
+        return (externalizer == null ? SitemapLinkExternalizer.DEFAULT : externalizer).externalize(resource);
     }
 
-    private SitemapInfo newSitemapInfo(@NotNull String url, int size, int entries) {
-        return new SitemapInfoImpl(url, size, entries, false, isWithinLimits(size, entries));
+    private SitemapInfo newSitemapIndexInfo(@NotNull String url) {
+        return new SitemapInfoImpl(null, url, -1, -1, true, true);
+    }
+
+    private SitemapInfo newSitemapInfo(@Nullable String path, @NotNull String url, int size, int entries) {
+        return new SitemapInfoImpl(path, url, size, entries, false, isWithinLimits(size, entries));
     }
 
     private static class SitemapInfoImpl implements SitemapInfo {
 
         private final String url;
+        private final String path;
         private final int size;
         private final int entries;
         private final boolean isIndex;
         private final boolean withinLimits;
 
-        private SitemapInfoImpl(@NotNull String url, int size, int entries, boolean isIndex, boolean withinLimits) {
+        private SitemapInfoImpl(@Nullable String path, @NotNull String url, int size, int entries, boolean isIndex, boolean withinLimits) {
+            this.path = path;
             this.url = url;
             this.size = size;
             this.entries = entries;
             this.isIndex = isIndex;
             this.withinLimits = withinLimits;
+        }
+
+        @Nullable
+        @Override
+        public String getStoragePath() {
+            return path;
         }
 
         @NotNull

@@ -19,10 +19,11 @@
 package org.apache.sling.sitemap.impl;
 
 import org.apache.jackrabbit.JcrConstants;
+import org.apache.jackrabbit.util.ISO9075;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.sitemap.generator.SitemapGenerator;
 import org.apache.sling.sitemap.SitemapService;
+import org.apache.sling.sitemap.generator.SitemapGenerator;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,6 +31,8 @@ import javax.jcr.query.Query;
 import java.util.*;
 
 public class SitemapUtil {
+
+    private static final String JCR_SYSTEM_PATH = "/" + JcrConstants.JCR_SYSTEM + "/";
 
     private SitemapUtil() {
         super();
@@ -151,12 +154,16 @@ public class SitemapUtil {
      */
     @NotNull
     public static Iterator<Resource> findSitemapRoots(ResourceResolver resolver, String searchPath) {
-        return new Iterator<Resource>() {
+        String correctedSearchPath = searchPath == null ? "/" : searchPath;
+        StringBuilder query = new StringBuilder(correctedSearchPath.length() + 35);
+        query.append("/jcr:root").append(ISO9075.encodePath(correctedSearchPath));
+        if (!correctedSearchPath.endsWith("/")) {
+            query.append('/');
+        }
+        query.append("/*[@").append(SitemapService.PROPERTY_SITEMAP_ROOT).append('=').append(Boolean.TRUE).append(']');
 
-            private final Iterator<Resource> hits = resolver.findResources(
-                    "/jcr:root" + searchPath + "//*[@" + SitemapService.PROPERTY_SITEMAP_ROOT + "=true]",
-                    Query.XPATH
-            );
+        return new Iterator<Resource>() {
+            private final Iterator<Resource> hits = resolver.findResources(query.toString(), Query.XPATH);
             private Resource next = seek();
 
             private Resource seek() {
@@ -165,7 +172,9 @@ public class SitemapUtil {
                     // skip a hit on the given searchPath itself. This may be when a search is done for descendant
                     // sitemaps given the normalized sitemap root path and the sitemap root's jcr:content is in the
                     // result set.
-                    if (nextHit == null || nextHit.getPath().equals(searchPath)) {
+                    if (nextHit == null
+                            || nextHit.getPath().equals(correctedSearchPath)
+                            || nextHit.getPath().startsWith(JCR_SYSTEM_PATH)) {
                         continue;
                     }
                     return nextHit;

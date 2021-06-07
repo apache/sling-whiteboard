@@ -79,7 +79,7 @@ public class SitemapServlet extends SlingSafeMethodsServlet {
     };
 
     @Reference(cardinality = ReferenceCardinality.OPTIONAL, policyOption = ReferencePolicyOption.GREEDY)
-    private SitemapLinkExternalizer externalizer = SitemapLinkExternalizer.DEFAULT;
+    private SitemapLinkExternalizer externalizer;
     @Reference
     private SitemapGeneratorManager generatorManager;
     @Reference
@@ -134,8 +134,8 @@ public class SitemapServlet extends SlingSafeMethodsServlet {
         // add any sitemap from the storage
         for (SitemapStorageInfo storageInfo : storage.getSitemaps(topLevelSitemapRoot)) {
             if (!addedSitemapSelectors.contains(storageInfo.getSitemapSelector())) {
-                String location = externalizer.externalize(request, getSitemapLink(topLevelSitemapRoot,
-                        storageInfo.getSitemapSelector()));
+                String location = externalize(request,
+                        getSitemapLink(topLevelSitemapRoot, storageInfo.getSitemapSelector()));
                 Calendar lastModified = storageInfo.getLastModified();
                 if (location != null && lastModified != null) {
                     sitemapIndex.addSitemap(location, lastModified.toInstant());
@@ -209,7 +209,7 @@ public class SitemapServlet extends SlingSafeMethodsServlet {
             // applicable names we may serve directly, not applicable names, if any, we have to serve from storage
             for (String applicableName : applicableNames) {
                 String sitemapSelector = getSitemapSelector(sitemapRoot, sitemapRoot, applicableName);
-                String location = externalizer.externalize(request, getSitemapLink(sitemapRoot, sitemapSelector));
+                String location = externalize(request, getSitemapLink(sitemapRoot, sitemapSelector));
                 if (location != null) {
                     index.addSitemap(location);
                     addedSitemapSelectors.add(sitemapSelector);
@@ -220,6 +220,10 @@ public class SitemapServlet extends SlingSafeMethodsServlet {
         }
 
         return addedSitemapSelectors;
+    }
+
+    private String externalize(SlingHttpServletRequest request, String uri) {
+        return (externalizer == null ? SitemapLinkExternalizer.DEFAULT : externalizer).externalize(request, uri);
     }
 
     private static String getSitemapLink(Resource sitemapRoot, String sitemapSelector) {

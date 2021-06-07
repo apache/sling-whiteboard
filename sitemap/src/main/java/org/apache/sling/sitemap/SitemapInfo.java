@@ -19,6 +19,7 @@
 package org.apache.sling.sitemap;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
@@ -26,6 +27,15 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface SitemapInfo {
+
+    /**
+     * Returns a resource path to the node the sitemap is stored. May return null if the sitemap or sitemap-index is
+     * served on-demand.
+     *
+     * @return
+     */
+    @Nullable
+    String getStoragePath();
 
     /**
      * Returns the absolute, external url for the sitemap/sitemap-index.
