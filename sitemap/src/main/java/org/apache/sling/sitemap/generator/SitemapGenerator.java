@@ -48,7 +48,11 @@ public interface SitemapGenerator {
     /**
      * The background generation will send events with that topic right after a generated sitemap was persisted.
      */
-    String EVENT_TOPIC_SITEMAP_UPDATED = "org/apache/sling/sitemap/build/FINISHED";
+    String EVENT_TOPIC_SITEMAP_UPDATED = "org/apache/sling/sitemap/UPDATED";
+    /**
+     * The background cleanup will send events with that topic right after an obsolete sitemap file was purged.
+     */
+    String EVENT_TOPIC_SITEMAP_PURGED = "org/apache/sling/sitemap/PURGED";
     /**
      * The event property storing the generated sitemap's root path.
      */

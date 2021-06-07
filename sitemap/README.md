@@ -14,19 +14,22 @@ background to even sites that collect 3rd party data to include dynamically rend
 
 ## Open Topics
 
-* Housekeeping of SitemapStorage (used for background generation), esp. when sitemap roots change
-* More general approach for creating absolute urls.
 * Implement Google specific sitemap extensions (image/video/news)
 
 ## Getting Started
 
 To get started, at least one `SitemapGenerator` must be implemented. The abstract `ResourcceTreeSitemapGenator` may be a
-good starting point for any generator walking down the resource tree.
+good starting point for any generator walking down the resource tree. Next the `SitemapServlet` must be registered for
+the appropriate resource type(s) that match the content. Last but not least, either configure the `SitemapService`
+implementation to serve your sitemaps on-demand, or configure a `SitemapScheduler` to generate them in the background.
 
-Next the `SitemapServlet` must be registered for the appropriate resource type(s) that match the content.
+The default implementation requires two service user mappings to be configured. They are only relevant for background
+generation of sitemaps. On-demand generated sitemaps use the request session.
 
-Last but not least, either configure the `SitemapService` implementation to serve your sitemaps on-demand, or configure
-a `SitemapScheduler` to generate them in the background.
+| Service User Mapping | Usage | Recommended Settings |
+| ------------ | ----- | -------------------- | 
+| org.apache.sling.sitemap:sitemap-reader | Read access on the content to be contained in the generated sitemaps. Sessions with that service user will be passed to the `SitemapGenerators`.  | `jcr:read on /content` |
+| org.apache.sling.sitemap:sitemap-writer | Write access for background generation. Used by the sitemap storage abstraction when storing intermediate states and finished sitemaps in the storage path. It is also used for the cleanup task of the storage an so requires read access to the same paths the `sitempa-reader` has read access to. | `jcr:all on /var/sitemaps`<br/>`jcr:read on /content`|
 
 ## Implementation Details
 

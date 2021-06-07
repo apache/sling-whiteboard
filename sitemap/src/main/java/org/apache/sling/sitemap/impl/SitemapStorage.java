@@ -25,11 +25,15 @@ import org.apache.sling.api.resource.*;
 import org.apache.sling.api.wrappers.ValueMapDecorator;
 import org.apache.sling.commons.scheduler.Scheduler;
 import org.apache.sling.serviceusermapping.ServiceUserMapped;
+import org.apache.sling.sitemap.generator.SitemapGenerator;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.event.Event;
+import org.osgi.service.event.EventAdmin;
+import org.osgi.service.event.EventProperties;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
@@ -92,6 +96,8 @@ public class SitemapStorage implements Runnable {
     private ServiceUserMapped serviceUserMapped;
     @Reference
     private SitemapGeneratorManager generatorManager;
+    @Reference
+    private EventAdmin eventAdmin;
 
     private String rootPath = "/var/sitemaps";
     private int maxStateAge = Integer.MAX_VALUE;
@@ -116,6 +122,12 @@ public class SitemapStorage implements Runnable {
                 }
             }
             for (Resource resource : toDelete) {
+                Map<String, Object> properties = new HashMap<>();
+                properties.put(SitemapGenerator.EVENT_PROPERTY_SITEMAP_STORAGE_PATH, resource.getPath());
+                eventAdmin.postEvent(new Event(
+                        SitemapGenerator.EVENT_TOPIC_SITEMAP_PURGED,
+                        new EventProperties(properties)
+                ));
                 resolver.delete(resource);
             }
             resolver.commit();
@@ -184,7 +196,7 @@ public class SitemapStorage implements Runnable {
     }
 
     public String writeSitemap(@NotNull Resource sitemapRoot, @NotNull String name, @NotNull InputStream data, int size,
-                        int entries) throws IOException {
+                               int entries) throws IOException {
         String sitemapFilePath = getSitemapFilePath(sitemapRoot, name);
         String statePath = sitemapFilePath + STATE_EXTENSION;
         sitemapFilePath = sitemapFilePath + XML_EXTENSION;
