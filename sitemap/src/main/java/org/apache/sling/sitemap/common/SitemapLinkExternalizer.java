@@ -27,12 +27,12 @@ import org.osgi.annotation.versioning.ConsumerType;
  * Consumers may implement this interface to override the default externalisation behaviour.
  */
 @ConsumerType
-public interface Externalizer {
+public interface SitemapLinkExternalizer {
 
     /**
-     * A default implementation of the {@link Externalizer} which may be used as fallback.
+     * A default implementation of the {@link SitemapLinkExternalizer} which may be used as fallback.
      */
-    Externalizer DEFAULT = new Externalizer() {
+    SitemapLinkExternalizer DEFAULT = new SitemapLinkExternalizer() {
         @Override
         public @Nullable String externalize(SlingHttpServletRequest context, String uri) {
             return context.getResourceResolver().map(context, uri);

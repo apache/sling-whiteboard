@@ -23,7 +23,7 @@ import org.apache.sling.event.jobs.Job;
 import org.apache.sling.event.jobs.JobManager;
 import org.apache.sling.sitemap.SitemapInfo;
 import org.apache.sling.sitemap.SitemapService;
-import org.apache.sling.sitemap.common.Externalizer;
+import org.apache.sling.sitemap.common.SitemapLinkExternalizer;
 import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.*;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
@@ -58,7 +58,7 @@ public class SitemapServiceImpl implements SitemapService {
     private static final Logger LOG = LoggerFactory.getLogger(SitemapServiceImpl.class);
 
     @Reference(cardinality = ReferenceCardinality.OPTIONAL, policyOption = ReferencePolicyOption.GREEDY)
-    private Externalizer externalizer = Externalizer.DEFAULT;
+    private SitemapLinkExternalizer externalizer = SitemapLinkExternalizer.DEFAULT;
     @Reference
     private JobManager jobManager;
     @Reference

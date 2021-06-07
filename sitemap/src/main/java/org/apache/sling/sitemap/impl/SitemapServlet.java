@@ -23,7 +23,7 @@ import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.servlets.ServletResolverConstants;
 import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
-import org.apache.sling.sitemap.common.Externalizer;
+import org.apache.sling.sitemap.common.SitemapLinkExternalizer;
 import org.apache.sling.sitemap.SitemapException;
 import org.apache.sling.sitemap.generator.SitemapGenerator;
 import org.apache.sling.sitemap.impl.builder.extensions.ExtensionProviderManager;
@@ -79,7 +79,7 @@ public class SitemapServlet extends SlingSafeMethodsServlet {
     };
 
     @Reference(cardinality = ReferenceCardinality.OPTIONAL, policyOption = ReferencePolicyOption.GREEDY)
-    private Externalizer externalizer = Externalizer.DEFAULT;
+    private SitemapLinkExternalizer externalizer = SitemapLinkExternalizer.DEFAULT;
     @Reference
     private SitemapGeneratorManager generatorManager;
     @Reference

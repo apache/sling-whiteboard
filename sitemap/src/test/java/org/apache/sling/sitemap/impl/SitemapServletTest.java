@@ -23,7 +23,6 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.event.jobs.JobManager;
 import org.apache.sling.serviceusermapping.ServiceUserMapped;
 import org.apache.sling.sitemap.TestResourceTreeSitemapGenerator;
-import org.apache.sling.sitemap.common.Externalizer;
 import org.apache.sling.sitemap.generator.SitemapGenerator;
 import org.apache.sling.sitemap.impl.builder.SitemapImplTest;
 import org.apache.sling.sitemap.impl.builder.extensions.ExtensionProviderManager;

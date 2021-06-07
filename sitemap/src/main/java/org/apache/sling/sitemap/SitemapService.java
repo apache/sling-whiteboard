@@ -19,7 +19,7 @@
 package org.apache.sling.sitemap;
 
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.sitemap.common.Externalizer;
+import org.apache.sling.sitemap.common.SitemapLinkExternalizer;
 import org.jetbrains.annotations.NotNull;
 import org.osgi.annotation.versioning.ProviderType;
 
@@ -43,7 +43,7 @@ public interface SitemapService {
      * Numbers for size and entries can only be provided for sitemaps served from storage. For sitemap index or
      * on-demand sitemaps {@code -1} will be returned.
      * <p>
-     * The default implementation uses {@link Externalizer#externalize(Resource)} to create absolute urls.
+     * The default implementation uses {@link SitemapLinkExternalizer#externalize(Resource)} to create absolute urls.
      *
      * @param sitemapRoot a {@link Resource} having {@link SitemapService#PROPERTY_SITEMAP_ROOT} set to true
      * @return the url, or null
