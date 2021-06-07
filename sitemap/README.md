@@ -16,6 +16,7 @@ background to even sites that collect 3rd party data to include dynamically rend
 
 * Housekeeping of SitemapStorage (used for background generation), esp. when sitemap roots change
 * More general approach for creating absolute urls.
+* Implement Google specific sitemap extensions (image/video/news)
 
 ## Getting Started
 

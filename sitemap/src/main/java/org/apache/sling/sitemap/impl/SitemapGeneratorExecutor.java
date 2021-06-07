@@ -93,6 +93,8 @@ public class SitemapGeneratorExecutor implements JobExecutor {
     private ServiceUserMapped serviceUserMapped;
     @Reference
     private EventAdmin eventAdmin;
+    @Reference
+    private SitemapServiceImpl sitemapService;
 
     private int chunkSize = 10;
 
@@ -173,6 +175,9 @@ public class SitemapGeneratorExecutor implements JobExecutor {
             eventProperties.put(SitemapGenerator.EVENT_PROPERTY_SITEMAP_URLS, sitemap.getUrlCount());
             eventProperties.put(SitemapGenerator.EVENT_PROPERTY_SITEMAP_STORAGE_PATH, storagePath);
             eventProperties.put(SitemapGenerator.EVENT_PROPERTY_SITEMAP_STORAGE_SIZE, buffer.size());
+            eventProperties.put(SitemapGenerator.EVENT_PROPERTY_SITEMAP_EXCEEDS_LIMITS,
+                    !sitemapService.isWithinLimits(buffer.size(), sitemap.getUrlCount()));
+            
             eventAdmin.sendEvent(new Event(SitemapGenerator.EVENT_TOPIC_SITEMAP_UPDATED, new EventProperties(eventProperties)));
         } catch (JobStoppedException ex) {
             LOG.debug("Job stopped, removing state", ex);

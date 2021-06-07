@@ -81,6 +81,10 @@ public class SitemapServiceImpl implements SitemapService {
         return Collections.unmodifiableSet(onDemandNames);
     }
 
+    public boolean isWithinLimits(int size, int entries) {
+        return size <= maxSize && entries <= maxEntries;
+    }
+
     @NotNull
     @Override
     public Collection<SitemapInfo> getSitemapInfo(@NotNull Resource resource) {
@@ -201,12 +205,14 @@ public class SitemapServiceImpl implements SitemapService {
         return infos;
     }
 
+
+
     private SitemapInfo newSitemapIndexInfo(@NotNull String url) {
         return new SitemapInfoImpl(url, -1, -1, true, true);
     }
 
     private SitemapInfo newSitemapInfo(@NotNull String url, int size, int entries) {
-        return new SitemapInfoImpl(url, size, entries, false, size <= maxSize && entries <= maxEntries);
+        return new SitemapInfoImpl(url, size, entries, false, isWithinLimits(size, entries));
     }
 
     private static class SitemapInfoImpl implements SitemapInfo {

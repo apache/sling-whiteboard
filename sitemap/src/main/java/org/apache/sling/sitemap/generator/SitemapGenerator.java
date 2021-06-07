@@ -62,6 +62,10 @@ public interface SitemapGenerator {
      */
     String EVENT_PROPERTY_SITEMAP_URLS = "sitemap.urls";
     /**
+     * The event property storing a flag whether the generated sitemap exceeds the configured limits.
+     */
+    String EVENT_PROPERTY_SITEMAP_EXCEEDS_LIMITS = "sitemap.exceedsLimits";
+    /**
      * The event property storing the generated sitemap's storage path.
      */
     String EVENT_PROPERTY_SITEMAP_STORAGE_PATH = "sitemap.storagePath";
