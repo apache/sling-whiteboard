@@ -19,28 +19,41 @@
 package org.apache.sling.apiplanes.it;
 
 import org.apache.sling.servlethelpers.internalrequests.SlingInternalRequest;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ops4j.pax.exam.junit.PaxExam;
 import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
 import org.ops4j.pax.exam.spi.reactors.PerClass;
+import org.osgi.framework.BundleContext;
 
-import static org.junit.Assert.assertTrue;
+import javax.inject.Inject;
 
 @RunWith(PaxExam.class)
 @ExamReactorStrategy(PerClass.class)
 public class ApiPlanesIT extends ApiPlanesTestSupport {
 
+    @Inject
+    private BundleContext bundleContext;
+    
+    private static TestServlet fooServlet;
+
+    private static final String TEST_EXTENSION = "defaultTestServlet";
+
+    @Before
+    public void setup() {
+        if(fooServlet == null) {
+            fooServlet = new TestServlet()
+                .with(TestServlet.P_RESOURCE_TYPES, TestServlet.RT_DEFAULT)
+                .with(TestServlet.P_EXTENSIONS, TEST_EXTENSION)
+                .register(bundleContext);
+        }
+    }
+
     @Test
-    public void testPlaneN() throws Exception {
-        final String path ="/";
-        final String response = new SlingInternalRequest(resourceResolver, requestProcessor, path)
-            .withResourceType("resourceType")
-            .withResourceSuperType("resourceSuperType")
-            //TODO .withSelectors("N")
-            .withExtension("json")
-            .execute()
-            .getResponseAsString();
-        assertTrue(response.contains("rep:root"));
+    public void defaultPlane() throws Exception {
+        fooServlet.assertSelected(new SlingInternalRequest(resourceResolver, requestProcessor, "/")
+            .withExtension(TEST_EXTENSION)
+        );
     }
 }

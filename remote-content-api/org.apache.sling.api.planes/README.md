@@ -11,6 +11,23 @@ which are useful at the development stage.
 Several GraphQL schemas are available in a number of independent "API planes", providing 
 multiple ways to look at the Sling Resources in a modular way.
 
+## Status
+
+This module might not be useful.
+
+A first approach using a Sling Filter to change the request's extension (for example) to address
+plane-specific servlets does not work. Those filters are executed _after_ a Servlet is resolved to
+process the incoming request.
+
+It looks like we'll need to implement API planes in the Sling Servlet Resolver module if we want them.
+
+The simplest thing might to wrap the incoming Request in that resolver, change its extension to something
+like `api-plane-N` so that Servlets can be mounted for that extension. And keeping the original request's
+extension as a selector. Not as clean as a fully native API planes handling but would only require minor
+changes to the critical Servlet Resolver code, which is good.
+
+For now, for prototyping, mounting servlets on the specific API planes selectors should work.
+
 ## How to run this
 
 To start this, build the sibling modules with mvn clean install in the parent folder of this one and then, in this folder, run
