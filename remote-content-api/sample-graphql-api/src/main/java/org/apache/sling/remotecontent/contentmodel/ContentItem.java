@@ -17,20 +17,27 @@
  * under the License.
  */
 
-package org.apache.sling.remotecontent.samples.graphql;
+package org.apache.sling.remotecontent.contentmodel;
 
-import org.apache.sling.graphql.api.SlingDataFetcher;
-import org.apache.sling.graphql.api.SlingDataFetcherEnvironment;
-import org.apache.sling.remotecontent.contentmodel.Document;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.osgi.service.component.annotations.Component;
+import org.apache.sling.api.resource.Resource;
 
-@Component(service = SlingDataFetcher.class, property = {"name=samples/document"})
-public class DocumentDataFetcher implements SlingDataFetcher<Document> {
+/** Base class for folders and documents */
+public class ContentItem {
+    protected final Resource resource;
+    protected ContentItemHeader header;
 
-    @Override
-    public @Nullable Document get(@NotNull SlingDataFetcherEnvironment e) throws Exception {
-        return new Document(new FetcherContext(e, false).currentResource);
-    }   
+    ContentItem(Resource r) {
+        resource = r;
+    }
+
+    public String getPath() {
+        return resource.getPath();
+    }
+
+    public ContentItemHeader getHeader() {
+        if(header == null) {
+            header = new ContentItemHeader(resource);
+        }
+        return header;
+    }
 }

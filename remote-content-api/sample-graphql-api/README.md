@@ -32,32 +32,90 @@ we don't really care about the details of these node types besides their names.
 
 ## Example GraphQL queries
 
-    { 
-      document(path:"/content/articles/music/eloy-hahn-on-the-system-of-1080p-et-corrupti-aka-xml", selectors: "not, used, sofar") {
-      	path
-        selectors
-        body
+    {
+      folders(limit: 55, after: "L2NvbnRlbnQvYXJ0aWNsZXMvbXVzaWM=") {
+        pageInfo {
+          endCursor
+        }
+        edges {
+          node {
+            path
+            header {
+              resourceType
+              title
+            }
+          }
+        }
       }
     }
-    
+
     {
-      document(path:"/content/wknd/us/en/adventures/riverside-camping-australia", selectors: "not,used,yet") {
-      	path
-        selectors
+      folder {
+        path
+        header {
+          parent
+          resourceType
+          resourceSuperType
+          links {
+            rel
+            href
+          }
+        }
+      }
+      document {
+        path
+        header {
+          parent
+        }
+      }
+    }
+
+    {
+      folder(path: "/apps") {
+        path
+        header {
+          parent
+        }
+      }
+    }
+
+    {
+      document {
+        path
+          header {
+          parent
+          resourceType
+          resourceSuperType
+          title
+          summary
+          description
+          links {
+            href
+            rel
+          }
+          etc
+        }
+        backstage {
+          authoring
+          publishing
+          etc
+        }
         body
       }
     }
 
     {
-      documents(query:"//content/*/*") {
-        path
-        body
-      }
-    }
-
-    {
-      documents(query:"//content//*[jcr:contains(.,'wknd')]") {
-        path
+      documents(query: "//content/*/*") {
+        edges {
+          node {
+            path
+            header {
+              parent
+              resourceType 
+              resourceSuperType 
+            }
+          }
+        }
       }
     }
 
@@ -77,12 +135,6 @@ we don't really care about the details of these node types besides their names.
       success
       output
     }
-    }
-
-    {
-      document(path:"/open-for-all") {
-        body
-      }
     }
 
     {

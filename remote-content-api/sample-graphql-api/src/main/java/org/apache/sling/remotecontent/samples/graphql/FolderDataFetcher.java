@@ -19,13 +19,9 @@
 
 package org.apache.sling.remotecontent.samples.graphql;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.sling.api.resource.Resource;
-import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.graphql.api.SlingDataFetcher;
 import org.apache.sling.graphql.api.SlingDataFetcherEnvironment;
+import org.apache.sling.remotecontent.contentmodel.Folder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.service.component.annotations.Component;
@@ -33,37 +29,8 @@ import org.osgi.service.component.annotations.Component;
 @Component(service = SlingDataFetcher.class, property = {"name=samples/folder"})
 public class FolderDataFetcher implements SlingDataFetcher<Object> {
 
-    // TODO move to document converter + make body optional
-    static Map<String, Object> toDocument(Resource r) {
-        final Map<String, Object> data = new HashMap<>();
-        data.put("path", r.getPath());
-        data.put("header", toDocumentHeader(r));
-        data.put("properties", r.adaptTo(ValueMap.class));
-        return data;
-    }
-
-    // TODO move to document converter + make body optional
-    static Map<String, Object> toDocumentHeader(Resource r) {
-        final Map<String, Object> header = new HashMap<>();
-        if(r.getParent() != null) {
-            header.put("parent", r.getParent().getPath());
-        }
-        header.put("resourceType", r.getResourceType());
-        header.put("resourceSuperType", r.getResourceSuperType());
-        return header;
-    }
-
-    static Resource getTargetResource(SlingDataFetcherEnvironment e) {
-        Resource result = e.getCurrentResource();
-        String path = e.getArgument("path");
-        if(path != null && !path.isEmpty()) {
-            result = result.getResourceResolver().getResource(path);
-        }
-        return result;
-    }
-
     @Override
     public @Nullable Object get(@NotNull SlingDataFetcherEnvironment e) throws Exception {
-        return toDocument(getTargetResource(e));
+        return new Folder(new FetcherContext(e, false).currentResource);
     }   
 }

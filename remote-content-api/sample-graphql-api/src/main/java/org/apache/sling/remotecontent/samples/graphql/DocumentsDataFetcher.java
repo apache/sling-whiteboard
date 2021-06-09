@@ -20,25 +20,23 @@
 package org.apache.sling.remotecontent.samples.graphql;
 
 import java.util.Iterator;
-import java.util.Map;
-import java.util.function.Function;
 
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.graphql.api.SlingDataFetcher;
 import org.apache.sling.graphql.api.SlingDataFetcherEnvironment;
-import org.apache.sling.graphql.api.pagination.Cursor;
+import org.apache.sling.graphql.api.pagination.Connection;
 import org.apache.sling.graphql.helpers.GenericConnection;
+import org.apache.sling.remotecontent.contentmodel.Document;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.service.component.annotations.Component;
 
 @Component(service = SlingDataFetcher.class, property = {"name=samples/documents"})
-public class DocumentsDataFetcher extends DocumentDataFetcher {
+public class DocumentsDataFetcher implements SlingDataFetcher<Connection<Document>> {
 
     @Override
-    public @Nullable Object get(@NotNull SlingDataFetcherEnvironment e) throws Exception {
-        final int limit = e.getArgument("limit", 5);
-        final String after = e.getArgument("after", null);
+    public @Nullable Connection<Document> get(@NotNull SlingDataFetcherEnvironment e) throws Exception {
+        final FetcherContext ctx = new FetcherContext(e, false);
 
         // Use a suffix as we might not keep these built-in language in the long term
         final String langSuffix = "2020";
@@ -50,14 +48,11 @@ public class DocumentsDataFetcher extends DocumentDataFetcher {
         lang = lang.replaceAll(langSuffix + "$", "");
         final String query = e.getArgument("query");
 
-        final Iterator<Resource> resultIterator = e.getCurrentResource().getResourceResolver().findResources(query, lang);
-        final Function<Map<String, Object>, String> cursorStringProvider = data -> (String)data.get("path");
-        final Function<Resource, Map<String, Object>> converter = this::toDocument;
-        final Iterator<Map<String, Object>> it = new ConvertingIterator<>(resultIterator, converter);
-        return new GenericConnection.Builder<>(it, cursorStringProvider)
-            .withStartAfter(Cursor.fromEncodedString(after))
-            .withLimit(limit)
+        final Iterator<Resource> resultIterator = ctx.currentResource.getResourceResolver().findResources(query, lang);
+        final Iterator<Document> it = new ConvertingIterator<>(resultIterator, Document::new);
+        return new GenericConnection.Builder<>(it, Document::getPath)
+            .withStartAfter(ctx.afterCursor)
+            .withLimit(ctx.limit)
             .build();
-    }
-    
+    }    
 }

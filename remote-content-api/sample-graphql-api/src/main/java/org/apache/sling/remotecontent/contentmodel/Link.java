@@ -17,20 +17,23 @@
  * under the License.
  */
 
-package org.apache.sling.remotecontent.samples.graphql;
+package org.apache.sling.remotecontent.contentmodel;
 
-import org.apache.sling.graphql.api.SlingDataFetcher;
-import org.apache.sling.graphql.api.SlingDataFetcherEnvironment;
-import org.apache.sling.remotecontent.contentmodel.Document;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.osgi.service.component.annotations.Component;
+/** Link, with a relation and href */
+public class Link {
+    private final String relation;
+    private final String href;
 
-@Component(service = SlingDataFetcher.class, property = {"name=samples/document"})
-public class DocumentDataFetcher implements SlingDataFetcher<Document> {
+    public Link(String relation, String href) {
+        this.relation = relation;
+        this.href = href;
+    }
 
-    @Override
-    public @Nullable Document get(@NotNull SlingDataFetcherEnvironment e) throws Exception {
-        return new Document(new FetcherContext(e, false).currentResource);
-    }   
+    public String getRel() {
+        return relation;
+    }
+
+    public String getHref() {
+        return href;
+    }
 }

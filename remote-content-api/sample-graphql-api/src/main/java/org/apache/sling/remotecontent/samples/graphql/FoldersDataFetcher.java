@@ -20,38 +20,33 @@
 package org.apache.sling.remotecontent.samples.graphql;
 
 import java.util.Iterator;
-import java.util.Map;
-import java.util.function.Function;
 
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.graphql.api.SlingDataFetcher;
 import org.apache.sling.graphql.api.SlingDataFetcherEnvironment;
-import org.apache.sling.graphql.api.pagination.Cursor;
+import org.apache.sling.graphql.api.pagination.Connection;
 import org.apache.sling.graphql.helpers.GenericConnection;
+import org.apache.sling.remotecontent.contentmodel.Folder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.service.component.annotations.Component;
 
 @Component(service = SlingDataFetcher.class, property = {"name=samples/folders"})
-public class FoldersDataFetcher implements SlingDataFetcher<Object> {
+public class FoldersDataFetcher implements SlingDataFetcher<Connection<Folder>> {
 
     @Override
-    public @Nullable Object get(@NotNull SlingDataFetcherEnvironment e) throws Exception {
-        final int limit = e.getArgument("limit", 5);
-        final String after = e.getArgument("after", null);
+    public @Nullable Connection<Folder> get(@NotNull SlingDataFetcherEnvironment e) throws Exception {
+        final FetcherContext ctx = new FetcherContext(e, false);
 
-        final Resource context = FolderDataFetcher.getTargetResource(e);
         final String xpathQuery = String.format(
             "/jcr:root%s//element(*, nt:folder) order by jcr:path ascending option(traversal fail)", 
-            context.getPath());
+            ctx.currentResource.getPath());
 
-        final Iterator<Resource> resultIterator = context.getResourceResolver().findResources(xpathQuery, "xpath");
-        final Function<Map<String, Object>, String> cursorStringProvider = data -> (String)data.get("path");
-        final Function<Resource, Map<String, Object>> converter = FolderDataFetcher::toDocument;
-        final Iterator<Map<String, Object>> it = new ConvertingIterator<>(resultIterator, converter);
-        return new GenericConnection.Builder<>(it, cursorStringProvider)
-            .withStartAfter(Cursor.fromEncodedString(after))
-            .withLimit(limit)
+        final Iterator<Resource> resultIterator = ctx.currentResource.getResourceResolver().findResources(xpathQuery, "xpath");
+        final Iterator<Folder> it = new ConvertingIterator<>(resultIterator, Folder::new);
+        return new GenericConnection.Builder<>(it, Folder::getPath)
+            .withStartAfter(ctx.afterCursor)
+            .withLimit(ctx.limit)
             .build();
     }
 }
