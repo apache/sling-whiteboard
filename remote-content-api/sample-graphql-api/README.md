@@ -13,16 +13,18 @@ of this one and then, in this folder, run
 Then open http://localhost:8080 - which might require logging in
 at http://localhost:8080/system/console first.
 
-This should redirect you to the main GraphQL endpoint, currently 
-http://localhost:8080/graphql.json - which is meant to be used by a GraphQL client.
+This should redirect you to a test GraphQL endpoint, currently 
+http://localhost:8080/content.N.json - which is meant to be used by a GraphQL client.
+
+Note that with that _N_ selector, _every resource is a GraphQL endpoint_. This helps contextualize
+requests, querying a `Folder` or `Document` without a _path_ parameter for example addresses
+the current Resource. I'm thinking of implementing selector-driven prepared GraphQL requests
+so that a GET request to _/content.N.folders.json_ for example would execute the prepared
+_folders_ query against that Resource.
 
 The standard `MAVEN_OPTS` environment variable can be used to setup
 debugging, as the above does not fork and starts the application with
 the Maven JVM.
-
-At this point, this module does not use snapshots from the sibling modules
-in the Sling whiteboard - this bundle is the only snapshot declared in the
-feature model file that thats this. 
 
 ## Test Content
 
@@ -31,6 +33,8 @@ licensed. Minimal "fake" JCR nodetype definitions are used to allow this content
 we don't really care about the details of these node types besides their names.
 
 ## Example GraphQL queries
+
+See the [Schema for the API plane N](src/main/resources/schemas/default/N.GQLschema.jsp) for possible Queries and Mutations.
 
     {
       folders(limit: 55, after: "L2NvbnRlbnQvYXJ0aWNsZXMvbXVzaWM=") {
@@ -62,11 +66,13 @@ we don't really care about the details of these node types besides their names.
           }
         }
       }
-      document {
+      document(path:"/content/wknd") {
         path
         header {
           parent
+          resourceType
         }
+        body
       }
     }
 
@@ -127,25 +133,35 @@ we don't really care about the details of these node types besides their names.
       lang:"repoinit",
       script:"""
         # comments work here
-        set properties on /open-for-all
-          set title to "Look, I changed the title again!"
-        end
+        create path /open-for-all/ok
       """)
     {
       success
       output
+      help
     }
     }
 
     {
-      documents(
-        lang:"sql2020",
-        query:"""
-          select * from nt:unstructured as R
-          where [sling:resourceType] = 'wknd/components/carousel'
-          and isdescendantnode(R, '/content/wknd/us/en')
-        """) 
-       {
-        path
+      documents(query: "//open-for-all/*") {
+        edges {
+          node {
+            path
+          }
+        }
+      }
+    }
+
+    {
+      documents(lang: "sql2020", query: """
+        select * from nt:unstructured as R
+        where [sling:resourceType] = 'wknd/components/carousel'
+        and isdescendantnode(R, '/content/wknd/us/en')
+      """) {
+        edges {
+          node {
+            path
+          }
+        }
       }
     }

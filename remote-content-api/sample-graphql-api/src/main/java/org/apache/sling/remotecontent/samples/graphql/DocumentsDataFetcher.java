@@ -36,7 +36,7 @@ public class DocumentsDataFetcher implements SlingDataFetcher<Connection<Documen
 
     @Override
     public @Nullable Connection<Document> get(@NotNull SlingDataFetcherEnvironment e) throws Exception {
-        final FetcherContext ctx = new FetcherContext(e, false);
+        final FetcherContext ctx = new FetcherContext(e, true);
 
         // Use a suffix as we might not keep these built-in language in the long term
         final String langSuffix = "2020";

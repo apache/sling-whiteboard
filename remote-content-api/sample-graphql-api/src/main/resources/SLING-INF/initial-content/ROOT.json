@@ -1,4 +1,4 @@
 {
     "sling:resourceType" : "sling:redirect",
-    "sling:target" : "/graphql.json"
+    "sling:target" : "/content.N.json"
 }

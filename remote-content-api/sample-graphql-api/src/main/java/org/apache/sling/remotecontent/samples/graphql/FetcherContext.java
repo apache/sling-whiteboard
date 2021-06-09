@@ -40,12 +40,8 @@ class FetcherContext {
             r = r.getResourceResolver().getResource(path);
         }
         currentResource = r;
-        if(includePagination) {
-            afterCursor = Cursor.fromEncodedString(e.getArgument(AFTER_ARG));
-            limit = e.getArgument(LIMIT_ARG, DEFAULT_LIMIT);
-        } else {
-            afterCursor = null;
-            limit = -1;
-        }
+        limit = e.getArgument(LIMIT_ARG, DEFAULT_LIMIT);
+        final String after = e.getArgument(AFTER_ARG, null);
+        afterCursor = includePagination ? Cursor.fromEncodedString(after) : null;
     }
 }

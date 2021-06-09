@@ -36,7 +36,7 @@ public class FoldersDataFetcher implements SlingDataFetcher<Connection<Folder>> 
 
     @Override
     public @Nullable Connection<Folder> get(@NotNull SlingDataFetcherEnvironment e) throws Exception {
-        final FetcherContext ctx = new FetcherContext(e, false);
+        final FetcherContext ctx = new FetcherContext(e, true);
 
         final String xpathQuery = String.format(
             "/jcr:root%s//element(*, nt:folder) order by jcr:path ascending option(traversal fail)", 
