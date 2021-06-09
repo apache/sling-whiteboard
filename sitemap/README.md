@@ -36,7 +36,7 @@ generation of sitemaps. On-demand generated sitemaps use the request session.
 ### Content Model
 
 In order to serve a sitemap, a resource must be marked as sitemap root resource. This is done by adding
-a `sitemapRoot = true` property either to the resource, or it's `jcr:content` child.
+a `sling:sitemapRoot = true` property either to the resource, or it's `jcr:content` child.
 
 When multiple resources in a resource tree are marked as as sitemap roots, the on closest to the repository root is
 considered to top level sitemap root and serves a sitemap-index additionally to the sitemap.

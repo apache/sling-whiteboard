@@ -24,6 +24,7 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.event.jobs.Job;
 import org.apache.sling.event.jobs.JobManager;
 import org.apache.sling.serviceusermapping.ServiceUserMapped;
+import org.apache.sling.sitemap.SitemapService;
 import org.apache.sling.sitemap.generator.SitemapGenerator;
 import org.apache.sling.testing.mock.jcr.MockJcr;
 import org.apache.sling.testing.mock.sling.ResourceResolverType;
@@ -71,10 +72,10 @@ public class SitemapSchedulerTest {
     @BeforeEach
     public void setup() {
         rootDe = context.create().resource("/content/site/de", Collections.singletonMap(
-                "sitemapRoot", Boolean.TRUE));
+                SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE));
         rootEn = context.create().resource("/content/site/en");
         rootEnContent = context.create().resource("/content/site/en/jcr:content", Collections.singletonMap(
-                "sitemapRoot", Boolean.TRUE));
+                SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE));
 
         context.registerService(ServiceUserMapped.class, serviceUser, "subServiceName", "sitemap-reader");
         context.registerService(JobManager.class, jobManager);
@@ -98,7 +99,7 @@ public class SitemapSchedulerTest {
         // given
         MockJcr.setQueryResult(
                 context.resourceResolver().adaptTo(Session.class),
-                "/jcr:root/content//*[@sitemapRoot=true]",
+                "/jcr:root/content//*[@" + SitemapService.PROPERTY_SITEMAP_ROOT + "=true]",
                 Query.XPATH,
                 ImmutableList.of(
                         rootDe.adaptTo(Node.class),
@@ -127,7 +128,7 @@ public class SitemapSchedulerTest {
         // given
         MockJcr.setQueryResult(
                 context.resourceResolver().adaptTo(Session.class),
-                "/jcr:root/content//*[@sitemapRoot=true]",
+                "/jcr:root/content//*[@" + SitemapService.PROPERTY_SITEMAP_ROOT + "=true]",
                 Query.XPATH,
                 Collections.singletonList(rootDe.adaptTo(Node.class))
         );

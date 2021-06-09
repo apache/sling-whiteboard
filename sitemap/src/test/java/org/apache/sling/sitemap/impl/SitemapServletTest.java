@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableSet;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.event.jobs.JobManager;
 import org.apache.sling.serviceusermapping.ServiceUserMapped;
+import org.apache.sling.sitemap.SitemapService;
 import org.apache.sling.sitemap.TestResourceTreeSitemapGenerator;
 import org.apache.sling.sitemap.generator.SitemapGenerator;
 import org.apache.sling.sitemap.impl.builder.SitemapImplTest;
@@ -92,7 +93,8 @@ public class SitemapServletTest {
     @BeforeEach
     public void setup() {
         root = context.create().resource("/content/site/de");
-        context.create().resource("/content/site/de/jcr:content", Collections.singletonMap("sitemapRoot", Boolean.TRUE));
+        context.create().resource("/content/site/de/jcr:content", Collections.singletonMap(
+                SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE));
 
         context.registerService(ServiceUserMapped.class, serviceUser, "subServiceName", "sitemap-writer");
         context.registerService(SitemapGenerator.class, generator);

@@ -24,6 +24,7 @@ import org.apache.sling.api.resource.ModifiableValueMap;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.serviceusermapping.ServiceUserMapped;
+import org.apache.sling.sitemap.SitemapService;
 import org.apache.sling.sitemap.generator.SitemapGenerator;
 import org.apache.sling.testing.mock.sling.junit5.SlingContext;
 import org.apache.sling.testing.mock.sling.junit5.SlingContextExtension;
@@ -79,7 +80,7 @@ public class SitemapStorageTest {
     public void testConsecutiveWriteOfStateUpdatesContent() throws IOException {
         // given
         Resource root = context.create().resource("/content/site/de", ImmutableMap.of(
-                "sitemapRoot", Boolean.TRUE
+                SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE
         ));
 
         // when
@@ -113,7 +114,7 @@ public class SitemapStorageTest {
     public void testStateExpires() throws InterruptedException, IOException {
         // given
         Resource root = context.create().resource("/content/site/de", ImmutableMap.of(
-                "sitemapRoot", Boolean.TRUE
+                SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE
         ));
 
         // when
@@ -129,7 +130,7 @@ public class SitemapStorageTest {
     public void testListSitemapsReturnsOnlySitemaps() throws IOException {
         // given
         Resource root = context.create().resource("/content/site/de", ImmutableMap.of(
-                "sitemapRoot", Boolean.TRUE
+                SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE
         ));
 
         // when
@@ -148,7 +149,7 @@ public class SitemapStorageTest {
     public void testCleanupExpiredStates() throws Exception {
         // given
         Resource root = context.create().resource("/content/site/de", ImmutableMap.of(
-                "sitemapRoot", Boolean.TRUE
+                SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE
         ));
 
         // when
@@ -170,7 +171,7 @@ public class SitemapStorageTest {
         // given
         Resource newRoot = context.create().resource("/content/site/ch");
         Resource initialRoot = context.create().resource("/content/site/ch/de-ch", ImmutableMap.of(
-                "sitemapRoot", Boolean.TRUE
+                SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE
         ));
 
         // when
@@ -180,7 +181,7 @@ public class SitemapStorageTest {
         assertNotNull(context.resourceResolver().getResource("/var/sitemaps/content/site/ch/de-ch/sitemap.xml"));
 
         // and when
-        newRoot.adaptTo(ModifiableValueMap.class).put("sitemapRoot", Boolean.TRUE);
+        newRoot.adaptTo(ModifiableValueMap.class).put(SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE);
         context.resourceResolver().commit();
         subject.run();
 
@@ -192,10 +193,10 @@ public class SitemapStorageTest {
     public void testCleanupObsoleteSitemapsAfterNestedSitemapRootChanged() throws Exception {
         // given
         Resource root = context.create().resource("/content/site/de", ImmutableMap.of(
-                "sitemapRoot", Boolean.TRUE
+                SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE
         ));
         Resource news = context.create().resource("/content/site/de/news", ImmutableMap.of(
-                "sitemapRoot", Boolean.TRUE
+                SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE
         ));
 
         // when
@@ -207,7 +208,7 @@ public class SitemapStorageTest {
         assertNotNull(context.resourceResolver().getResource("/var/sitemaps/content/site/de/news-sitemap.xml"));
 
         // and when
-        news.adaptTo(ModifiableValueMap.class).put("sitemapRoot", Boolean.FALSE);
+        news.adaptTo(ModifiableValueMap.class).put(SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.FALSE);
         context.resourceResolver().commit();
         subject.run();
 

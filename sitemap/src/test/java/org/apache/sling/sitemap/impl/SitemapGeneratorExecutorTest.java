@@ -24,6 +24,7 @@ import org.apache.sling.event.jobs.JobManager;
 import org.apache.sling.event.jobs.consumer.JobExecutionContext;
 import org.apache.sling.serviceusermapping.ServiceUserMapped;
 import org.apache.sling.sitemap.SitemapException;
+import org.apache.sling.sitemap.SitemapService;
 import org.apache.sling.sitemap.generator.SitemapGenerator;
 import org.apache.sling.sitemap.builder.Sitemap;
 import org.apache.sling.sitemap.impl.builder.extensions.ExtensionProviderManager;
@@ -80,7 +81,7 @@ public class SitemapGeneratorExecutorTest {
     @BeforeEach
     public void setup() {
         rootResource = context.create().resource("/content/site/de", Collections.singletonMap(
-                "sitemapRoot", Boolean.TRUE
+                SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE
         ));
         storageRoot = context.create().resource("/var/sitemaps");
 

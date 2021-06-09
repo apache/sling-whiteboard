@@ -21,6 +21,7 @@ package org.apache.sling.sitemap.impl;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.event.jobs.JobManager;
 import org.apache.sling.serviceusermapping.ServiceUserMapped;
+import org.apache.sling.sitemap.SitemapService;
 import org.apache.sling.sitemap.generator.SitemapGenerator;
 import org.apache.sling.testing.mock.sling.junit5.SlingContext;
 import org.apache.sling.testing.mock.sling.junit5.SlingContextExtension;
@@ -58,10 +59,10 @@ public class SitemapServiceImplSchedulingTest {
     @BeforeEach
     public void setup() {
         root1 = context.create().resource("/content/site/de", Collections.singletonMap(
-                "sitemapRoot", Boolean.TRUE
+                SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE
         ));
         root2 = context.create().resource("/content/microsite/de", Collections.singletonMap(
-                "sitemapRoot", Boolean.TRUE
+                SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE
         ));
 
         context.registerService(ServiceUserMapped.class, serviceUser, "subServiceName", "sitemap-writer");

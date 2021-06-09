@@ -2,7 +2,7 @@
   "jcr:primaryType": "nt:unstructured",
   "jcr:content": {
     "jcr:primaryType": "nt:unstructured",
-    "sitemapRoot": true
+    "sling:sitemapRoot": true
   },
   "child1": {
     "jcr:primaryType": "nt:unstructured",

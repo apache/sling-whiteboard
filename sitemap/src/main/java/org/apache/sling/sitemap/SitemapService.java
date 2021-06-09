@@ -31,7 +31,7 @@ import java.util.Collection;
 @ProviderType
 public interface SitemapService {
 
-    String PROPERTY_SITEMAP_ROOT = "sitemapRoot";
+    String PROPERTY_SITEMAP_ROOT = "sling:sitemapRoot";
 
     /**
      * Calls all registered SitemapSchedulers to schedule (re)generation for all sitemap roots and names.

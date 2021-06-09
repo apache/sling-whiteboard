@@ -24,6 +24,7 @@ import org.apache.sling.event.jobs.Job;
 import org.apache.sling.event.jobs.JobManager;
 import org.apache.sling.serviceusermapping.ServiceUserMapped;
 import org.apache.sling.sitemap.SitemapInfo;
+import org.apache.sling.sitemap.SitemapService;
 import org.apache.sling.sitemap.generator.SitemapGenerator;
 import org.apache.sling.testing.mock.jcr.MockJcr;
 import org.apache.sling.testing.mock.sling.ResourceResolverType;
@@ -84,19 +85,19 @@ public class SitemapServiceImplTest {
     @BeforeEach
     public void setup() {
         deRoot = context.create().resource("/content/site/de", Collections.singletonMap(
-                "sitemapRoot", Boolean.TRUE
+                SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE
         ));
         enRoot = context.create().resource("/content/site/en", Collections.singletonMap(
-                "sitemapRoot", Boolean.TRUE
+                SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE
         ));
         enFaqs = context.create().resource("/content/site/en/fags", Collections.singletonMap(
-                "sitemapRoot", Boolean.TRUE
+                SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE
         ));
         enNews = context.create().resource("/content/site/en/news", Collections.singletonMap(
-                "sitemapRoot", Boolean.TRUE
+                SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE
         ));
         frRoot = context.create().resource("/content/site/fr", Collections.singletonMap(
-                "sitemapRoot", Boolean.TRUE
+                SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE
         ));
         noRoot = context.create().resource("/content/site/nothing");
 
@@ -147,7 +148,7 @@ public class SitemapServiceImplTest {
 
         MockJcr.setQueryResult(
                 context.resourceResolver().adaptTo(Session.class),
-                "/jcr:root/content/site/en//*[@sitemapRoot=true]",
+                "/jcr:root/content/site/en//*[@" + SitemapService.PROPERTY_SITEMAP_ROOT + "=true]",
                 Query.XPATH,
                 Arrays.asList(enRoot.adaptTo(Node.class), enFaqs.adaptTo(Node.class))
         );
@@ -173,7 +174,7 @@ public class SitemapServiceImplTest {
 
         MockJcr.setQueryResult(
                 context.resourceResolver().adaptTo(Session.class),
-                "/jcr:root/content/site/en//*[@sitemapRoot=true]",
+                "/jcr:root/content/site/en//*[@" + SitemapService.PROPERTY_SITEMAP_ROOT + "=true]",
                 Query.XPATH,
                 Arrays.asList(enRoot.adaptTo(Node.class), enFaqs.adaptTo(Node.class))
         );
@@ -221,7 +222,7 @@ public class SitemapServiceImplTest {
 
         MockJcr.setQueryResult(
                 context.resourceResolver().adaptTo(Session.class),
-                "/jcr:root/content/site/en//*[@sitemapRoot=true]",
+                "/jcr:root/content/site/en//*[@" + SitemapService.PROPERTY_SITEMAP_ROOT + "=true]",
                 Query.XPATH,
                 Arrays.asList(enRoot.adaptTo(Node.class), enNews.adaptTo(Node.class))
         );

@@ -20,6 +20,7 @@ package org.apache.sling.sitemap.impl;
 
 import com.google.common.collect.ImmutableMap;
 import org.apache.sling.api.resource.Resource;
+import org.apache.sling.sitemap.SitemapService;
 import org.apache.sling.sitemap.generator.SitemapGenerator;
 import org.apache.sling.testing.mock.sling.junit5.SlingContext;
 import org.apache.sling.testing.mock.sling.junit5.SlingContextExtension;
@@ -46,7 +47,7 @@ public class SitemapUtilTest {
     public void testSingleRootSitemapName() {
         // given
         Resource root = context.create().resource("/content/site/de", Collections.singletonMap(
-                "sitemapRoot", Boolean.TRUE
+                SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE
         ));
 
         // when
@@ -62,13 +63,13 @@ public class SitemapUtilTest {
     public void testMultiRootSitemapName() {
         // given
         context.create().resource("/content/site/de", ImmutableMap.of(
-                "sitemapRoot", Boolean.TRUE
+                SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE
         ));
         Resource secondLevelRoot = context.create().resource("/content/site/de/faqs", ImmutableMap.of(
-                "sitemapRoot", Boolean.TRUE
+                SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE
         ));
         Resource thirdLevelRoot = context.create().resource("/content/site/de/faqs/many", ImmutableMap.of(
-                "sitemapRoot", Boolean.TRUE
+                SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE
         ));
 
         // when
@@ -89,17 +90,17 @@ public class SitemapUtilTest {
     public void testSitemapResolutionFromFileName() {
         // given
         Resource root = context.create().resource("/content/site/de", Collections.singletonMap(
-                "sitemapRoot", Boolean.TRUE
+                SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE
         ));
         Resource news = context.create().resource("/content/site/de/news", Collections.singletonMap(
-                "sitemapRoot", Boolean.TRUE
+                SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE
         ));
-        Resource products = context.create().resource("/content/site/de/products");
+        context.create().resource("/content/site/de/products");
         Resource productPage = context.create().resource("/content/site/de/products/product-page", Collections.singletonMap(
-                "sitemapRoot", Boolean.TRUE
+                SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE
         ));
         Resource product = context.create().resource("/content/site/de/products/product", Collections.singletonMap(
-                "sitemapRoot", Boolean.TRUE
+                SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE
         ));
 
         // when
