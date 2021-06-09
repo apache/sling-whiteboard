@@ -26,7 +26,7 @@ import org.apache.sling.commons.scheduler.Scheduler;
 import org.apache.sling.event.jobs.Job;
 import org.apache.sling.event.jobs.JobManager;
 import org.apache.sling.serviceusermapping.ServiceUserMapped;
-import org.apache.sling.sitemap.generator.SitemapGenerator;
+import org.jetbrains.annotations.Nullable;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
@@ -38,6 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.apache.sling.sitemap.impl.SitemapUtil.findSitemapRoots;
 
@@ -62,8 +63,10 @@ public class SitemapScheduler implements Runnable {
                 "sitemap generation jobs will be scheduled.")
         String scheduler_expression();
 
-        @AttributeDefinition(name = "Names", description = "A list of names for which this schedule should be used.")
-        String[] names() default {SitemapGenerator.DEFAULT_SITEMAP};
+        @AttributeDefinition(name = "Generators", description = "A list of full qualified class names of " +
+                "SitemapGenerator implementations. If set only the listed SitemapGenerators will be called. If left " +
+                "empty all will be called.")
+        String[] generators() default {};
 
         @AttributeDefinition(name = "Search Path", description = "The path under which sitemap roots should be " +
                 "searched for")
@@ -83,56 +86,75 @@ public class SitemapScheduler implements Runnable {
     @Reference(target = "(subServiceName=sitemap-reader)")
     private ServiceUserMapped serviceUserMapped;
 
-    private String[] names;
+    private Set<String> generators;
     private String searchPath;
 
     @Activate
     protected void activate(Configuration configuration) {
-        names = configuration.names();
+        String[] configuredGenerators = configuration.generators();
+        if (configuredGenerators != null && configuredGenerators.length > 0) {
+            generators = new HashSet<>(Arrays.asList(configuredGenerators));
+        } else {
+            generators = null;
+        }
         searchPath = configuration.searchPath();
     }
 
     @Override
     public void run() {
-        run(Arrays.asList(names));
+        schedule(null);
     }
 
-    public void run(String name) {
-        run(Collections.singleton(name));
-    }
-
-    public void run(Resource sitemapRoot) {
-        run(sitemapRoot, Arrays.asList(names));
-    }
-
-    public void run(Resource sitemapRoot, Collection<String> names) {
-        Set<String> applicableNames = generatorManager.getApplicableNames(sitemapRoot, names);
-        for (String applicableName : applicableNames) {
-            Map<String, Object> jobProperties = new HashMap<>();
-            jobProperties.put(SitemapGeneratorExecutor.JOB_PROPERTY_SITEMAP_NAME, applicableName);
-            jobProperties.put(SitemapGeneratorExecutor.JOB_PROPERTY_SITEMAP_ROOT, sitemapRoot.getPath());
-            Job job = jobManager.addJob(SitemapGeneratorExecutor.JOB_TOPIC, jobProperties);
-            LOG.debug("Added job {}", job.getId());
-        }
-    }
-
-    void run(ResourceResolver resolver) {
-        run(resolver, Arrays.asList(names));
-    }
-
-    private void run(Collection<String> names) {
+    public void schedule(@Nullable Collection<String> names) {
         try (ResourceResolver resolver = resourceResolverFactory.getServiceResourceResolver(AUTH)) {
-            run(resolver, names);
+            Iterator<Resource> sitemapRoots = findSitemapRoots(resolver, searchPath);
+            while (sitemapRoots.hasNext()) {
+                schedule(sitemapRoots.next(), names);
+            }
         } catch (LoginException ex) {
             LOG.warn("Failed start sitemap jobs: {}", ex.getMessage(), ex);
         }
     }
 
-    private void run(ResourceResolver resolver, Collection<String> names) {
-        Iterator<Resource> sitemapRoots = findSitemapRoots(resolver, searchPath);
-        while (sitemapRoots.hasNext()) {
-            run(sitemapRoots.next(), names);
+    public void schedule(Resource sitemapRoot, @Nullable Collection<String> names) {
+        Set<String> configuredNames = getNames(sitemapRoot);
+
+        if (names != null) {
+            configuredNames = new HashSet<>(configuredNames);
+            configuredNames.retainAll(names);
+        }
+
+        for (String applicableName : configuredNames) {
+            addJob(sitemapRoot.getPath(), applicableName);
         }
     }
 
+    protected void addJob(String sitemapRoot, String applicableName) {
+        Map<String, Object> jobProperties = new HashMap<>();
+        jobProperties.put(SitemapGeneratorExecutor.JOB_PROPERTY_SITEMAP_NAME, applicableName);
+        jobProperties.put(SitemapGeneratorExecutor.JOB_PROPERTY_SITEMAP_ROOT, sitemapRoot);
+        Job job = jobManager.addJob(SitemapGeneratorExecutor.JOB_TOPIC, jobProperties);
+        LOG.debug("Added job {}", job.getId());
+    }
+
+    /**
+     * Returns the names for the given sitemap root. This depends on the configured generators. If no generators were
+     * configured the names of all are returned. If some where configured the names provided only by those where the
+     * class name matches are returned.
+     *
+     * @param sitemapRoot
+     * @return
+     */
+    private Set<String> getNames(Resource sitemapRoot) {
+        if (generators == null || generators.isEmpty()) {
+            // all names
+            return generatorManager.getGenerators(sitemapRoot).keySet();
+        } else {
+            // only those of the contained geneators
+            return generatorManager.getGenerators(sitemapRoot).entrySet().stream()
+                    .filter(entry -> generators.contains(entry.getValue().getClass().getName()))
+                    .map(Map.Entry::getKey)
+                    .collect(Collectors.toSet());
+        }
+    }
 }

@@ -18,27 +18,41 @@
  */
 package org.apache.sling.sitemap.impl;
 
+import com.google.common.collect.ImmutableSet;
+import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.Resource;
+import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.event.jobs.JobManager;
 import org.apache.sling.serviceusermapping.ServiceUserMapped;
+import org.apache.sling.sitemap.SitemapException;
 import org.apache.sling.sitemap.SitemapService;
+import org.apache.sling.sitemap.builder.Sitemap;
 import org.apache.sling.sitemap.generator.SitemapGenerator;
+import org.apache.sling.testing.mock.jcr.MockJcr;
+import org.apache.sling.testing.mock.sling.ResourceResolverType;
 import org.apache.sling.testing.mock.sling.junit5.SlingContext;
 import org.apache.sling.testing.mock.sling.junit5.SlingContextExtension;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import javax.jcr.Node;
+import javax.jcr.Session;
+import javax.jcr.query.Query;
 import java.util.Collections;
+import java.util.Set;
 
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.*;
 
 @ExtendWith({SlingContextExtension.class, MockitoExtension.class})
 public class SitemapServiceImplSchedulingTest {
 
-    public final SlingContext context = new SlingContext();
+    public final SlingContext context = new SlingContext(ResourceResolverType.JCR_MOCK);
 
     private final SitemapServiceImpl subject = new SitemapServiceImpl();
     private final SitemapStorage storage = new SitemapStorage();
@@ -46,40 +60,77 @@ public class SitemapServiceImplSchedulingTest {
 
     @Mock
     private ServiceUserMapped serviceUser;
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private JobManager jobManager;
-    @Mock
-    private SitemapGenerator generator;
+    private SitemapGenerator generator1 = new SitemapGenerator() {
+        @Override
+        public @NotNull Set<String> getNames(@NotNull Resource sitemapRoot) {
+            return Collections.singleton(DEFAULT_SITEMAP);
+        }
 
-    private Resource root1;
-    private Resource root2;
-    private SitemapScheduler scheduler1;
-    private SitemapScheduler scheduler2;
+        @Override
+        public void generate(@NotNull Resource sitemapRoot, @NotNull String name, @NotNull Sitemap sitemap, @NotNull GenerationContext context) throws SitemapException {
+            fail();
+        }
+    };
+    private SitemapGenerator generator2 = new SitemapGenerator() {
+        @Override
+        public @NotNull Set<String> getNames(@NotNull Resource sitemapRoot) {
+            return ImmutableSet.of("foo");
+        }
+
+        @Override
+        public void generate(@NotNull Resource sitemapRoot, @NotNull String name, @NotNull Sitemap sitemap, @NotNull GenerationContext context) throws SitemapException {
+            fail();
+        }
+    };
+
+    private Resource siteRoot;
+    private Resource micrositeRoot;
+    private SitemapScheduler schedulerWithGenerator1OnSite;
+    private SitemapScheduler schedulerWithGenerator2OnMicrosite;
 
     @BeforeEach
-    public void setup() {
-        root1 = context.create().resource("/content/site/de", Collections.singletonMap(
+    public void setup() throws LoginException {
+        siteRoot = context.create().resource("/content/site/de", Collections.singletonMap(
                 SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE
         ));
-        root2 = context.create().resource("/content/microsite/de", Collections.singletonMap(
+        micrositeRoot = context.create().resource("/content/microsite/de", Collections.singletonMap(
                 SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE
         ));
 
         context.registerService(ServiceUserMapped.class, serviceUser, "subServiceName", "sitemap-writer");
         context.registerService(ServiceUserMapped.class, serviceUser, "subServiceName", "sitemap-reader");
-        context.registerService(SitemapGenerator.class, generator);
+        context.registerService(SitemapGenerator.class, generator1);
+        context.registerService(SitemapGenerator.class, generator2);
         context.registerService(JobManager.class, jobManager);
         context.registerInjectActivateService(generatorManager);
         context.registerInjectActivateService(storage);
         context.registerInjectActivateService(subject);
 
-        scheduler1 = context.registerInjectActivateService(spy(new SitemapScheduler()),
-                "names", "<default>",
+        schedulerWithGenerator1OnSite = context.registerInjectActivateService(spy(new SitemapScheduler()),
                 "searchPath", "/content/site"
         );
-        scheduler2 = context.registerInjectActivateService(spy(new SitemapScheduler()),
-                "names", new String[]{"<default>", "foo"},
+        schedulerWithGenerator2OnMicrosite = context.registerInjectActivateService(spy(new SitemapScheduler()),
                 "searchPath", "/content/microsite"
+        );
+
+        SitemapSchedulerTest.initResourceResolver(context, schedulerWithGenerator1OnSite, this::setupResourceResolver);
+        SitemapSchedulerTest.initResourceResolver(context, schedulerWithGenerator2OnMicrosite, this::setupResourceResolver);
+    }
+
+    private void setupResourceResolver(ResourceResolver resolver) {
+        MockJcr.setQueryResult(
+                resolver.adaptTo(Session.class),
+                "/jcr:root/content/site//*[@sling:sitemapRoot=true]",
+                Query.XPATH,
+                Collections.singletonList(siteRoot.adaptTo(Node.class))
+        );
+        MockJcr.setQueryResult(
+                resolver.adaptTo(Session.class),
+                "/jcr:root/content/microsite//*[@sling:sitemapRoot=true]",
+                Query.XPATH,
+                Collections.singletonList(micrositeRoot.adaptTo(Node.class))
         );
     }
 
@@ -89,48 +140,38 @@ public class SitemapServiceImplSchedulingTest {
         subject.scheduleGeneration();
 
         // then
-        verify(scheduler1, times(1)).run();
-        verify(scheduler2, times(1)).run();
-    }
-
-    @Test
-    public void testAllSchedulersCalledForName() {
-        // when
-        subject.scheduleGeneration("<default>");
-
-        // then
-        verify(scheduler1, times(1)).run("<default>");
-        verify(scheduler2, times(1)).run("<default>");
+        verify(schedulerWithGenerator1OnSite, atLeastOnce()).addJob(any(), any());
+        verify(schedulerWithGenerator2OnMicrosite, atLeastOnce()).addJob(any(), any());
     }
 
     @Test
     public void testSchedulersCalledForName() {
         // when
-        subject.scheduleGeneration("foo");
+        subject.scheduleGeneration("<default>");
 
         // then
-        verify(scheduler1, never()).run();
-        verify(scheduler2, times(1)).run("foo");
+        verify(schedulerWithGenerator1OnSite, atLeastOnce()).addJob(any(), eq("<default>"));
+        verify(schedulerWithGenerator2OnMicrosite, atLeastOnce()).addJob(any(), eq("<default>"));
     }
 
     @Test
     public void testSchedulersCalledForPath() {
         // when
-        subject.scheduleGeneration(root1);
+        subject.scheduleGeneration(siteRoot);
 
         // then
-        verify(scheduler1, times(1)).run(root1);
-        verify(scheduler2, never()).run();
+        verify(schedulerWithGenerator1OnSite, atLeastOnce()).addJob(eq(siteRoot.getPath()), any());
+        verify(schedulerWithGenerator2OnMicrosite, never()).addJob(any(), any());
     }
 
     @Test
     public void testSchedulersCalledForPathAndName() {
         // when
-        subject.scheduleGeneration(root1, "foo");
-        subject.scheduleGeneration(root2, "foo");
+        subject.scheduleGeneration(siteRoot, "foo");
+        subject.scheduleGeneration(micrositeRoot, "foo");
 
         // then
-        verify(scheduler1, never()).run(eq(root1), argThat(collection -> collection.contains("foo")));
-        verify(scheduler2, times(1)).run(eq(root2), argThat(collection -> collection.contains("foo")));
+        verify(schedulerWithGenerator1OnSite, times(1)).addJob(eq(siteRoot.getPath()), eq("foo"));
+        verify(schedulerWithGenerator2OnMicrosite, times(1)).addJob(eq(micrositeRoot.getPath()), eq("foo"));
     }
 }

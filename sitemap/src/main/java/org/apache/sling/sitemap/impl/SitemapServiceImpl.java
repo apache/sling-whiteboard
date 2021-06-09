@@ -26,7 +26,8 @@ import org.apache.sling.sitemap.SitemapService;
 import org.apache.sling.sitemap.common.SitemapLinkExternalizer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.osgi.framework.*;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.annotations.*;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.Designate;
@@ -98,28 +99,19 @@ public class SitemapServiceImpl implements SitemapService {
 
     @Override
     public void scheduleGeneration() {
-        if (schedulers.getServiceReferences() == null) {
-            return;
-        }
-        for (ServiceReference<SitemapScheduler> scheduler : schedulers.getServiceReferences()) {
-            schedulers.getService(scheduler).run();
+        if (schedulers.getServiceReferences() != null) {
+            for (ServiceReference<SitemapScheduler> scheduler : schedulers.getServiceReferences()) {
+                schedulers.getService(scheduler).run();
+            }
         }
     }
 
     @Override
     public void scheduleGeneration(String name) {
-        if (schedulers.getServiceReferences() == null) {
-            return;
-        }
-        try {
-            Filter filter = FrameworkUtil.createFilter("(names=" + name + ")");
+        if (schedulers.getServiceReferences() != null) {
             for (ServiceReference<SitemapScheduler> scheduler : schedulers.getServiceReferences()) {
-                if (filter.match(scheduler)) {
-                    schedulers.getService(scheduler).run(name);
-                }
+                schedulers.getService(scheduler).schedule(Collections.singleton(name));
             }
-        } catch (InvalidSyntaxException ex) {
-            LOG.warn("Failed to build filter for given argument: {}", name, ex);
         }
     }
 
@@ -131,7 +123,7 @@ public class SitemapServiceImpl implements SitemapService {
         for (ServiceReference<SitemapScheduler> scheduler : schedulers.getServiceReferences()) {
             Object searchPath = scheduler.getProperty("searchPath");
             if (searchPath instanceof String && sitemapRoot.getPath().startsWith(searchPath + "/")) {
-                schedulers.getService(scheduler).run(sitemapRoot);
+                schedulers.getService(scheduler).schedule(sitemapRoot, null);
             }
         }
     }
@@ -141,19 +133,12 @@ public class SitemapServiceImpl implements SitemapService {
         if (schedulers.getServiceReferences() == null || !SitemapUtil.isSitemapRoot(sitemapRoot)) {
             return;
         }
-        try {
-            Filter filter = FrameworkUtil.createFilter("(names=" + name + ")");
-            for (ServiceReference<SitemapScheduler> scheduler : schedulers.getServiceReferences()) {
-                if (!filter.match(scheduler)) {
-                    continue;
-                }
-                Object searchPath = scheduler.getProperty("searchPath");
-                if (searchPath instanceof String && sitemapRoot.getPath().startsWith(searchPath + "/")) {
-                    schedulers.getService(scheduler).run(sitemapRoot, Collections.singleton(name));
-                }
+
+        for (ServiceReference<SitemapScheduler> scheduler : schedulers.getServiceReferences()) {
+            Object searchPath = scheduler.getProperty("searchPath");
+            if (searchPath instanceof String && sitemapRoot.getPath().startsWith(searchPath + "/")) {
+                schedulers.getService(scheduler).schedule(sitemapRoot, Collections.singleton(name));
             }
-        } catch (InvalidSyntaxException ex) {
-            LOG.warn("Failed to build filter for given argument: {}", name, ex);
         }
     }
 
