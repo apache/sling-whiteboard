@@ -1,2 +1,3 @@
 Sling-Initial-Content: SLING-INF/initial-content
 Sling-Nodetypes: SLING-INF/nodetypes/test-content-nodetypes.cnd
+Sling-Bundle-Resources: /libs/sling/servlet/default/N.GQLschema.jsp;path:=/schemas/default/N.GQLschema.jsp

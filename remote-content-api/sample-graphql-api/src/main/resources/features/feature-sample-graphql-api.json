@@ -9,7 +9,7 @@
     "org.apache.sling:org.apache.sling.experimental.remotecontent.sample.graphql.api:0.0.1-SNAPSHOT",
     "org.apache.sling:org.apache.sling.document.aggregator:0.0.1-SNAPSHOT",
     "org.apache.sling:org.apache.sling.servlet-helpers:1.4.2",
-    "org.apache.sling:org.apache.sling.graphql.core:0.0.8",
+    "org.apache.sling:org.apache.sling.graphql.core:0.0.10",
     "com.graphql-java:graphql-java:jar:15.0",
     "org.apache.johnzon:johnzon-mapper:1.2.8",
     "org.antlr:antlr4-runtime:jar:4.7.2",
@@ -26,13 +26,11 @@
       ],
       "whitelist.name":"installer-packages"
     },
-    "org.apache.sling.graphql.core.GraphQLServlet~default" : {
-      "sling.servlet.resourceTypes" : "samples/graphql",
+    "org.apache.sling.graphql.core.GraphQLServlet~Nplane" : {
+      "sling.servlet.resourceTypes" : "sling/servlet/default",
+      "sling.servlet.selectors": [ "N", "D" ],
       "sling.servlet.extensions": "json",
       "sling.servlet.methods": [ "GET", "POST" ]
-    },
-    "org.apache.sling.servlets.get.DefaultGetServlet" : {
-      "aliases" : [ "json:rawjson" ]
     },
     "org.apache.sling.commons.log.LogManager.factory.config~info.log" : {
       "org.apache.sling.commons.log.file": "logs/debug.log",

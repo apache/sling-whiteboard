@@ -19,7 +19,6 @@
 
 package org.apache.sling.remotecontent.samples.graphql;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.sling.api.resource.Resource;
@@ -41,23 +40,23 @@ public class DocumentDataFetcher implements SlingDataFetcher<Object> {
     @Reference
     private DocumentAggregator documentAggregator;
 
-    @Override
-    public @Nullable Object get(@NotNull SlingDataFetcherEnvironment e) throws Exception {
-        final String path = e.getArgument("path");
-
-        final Map<String, Object> data = new HashMap<>();
-        data.put("path", path);
-        data.put("selectors", e.getArgument("selectors"));
-        final DocumentAggregator.Options opt = new DocumentAggregator.Options(e.getArgument("debug", false), new UrlBuilderStub());
-
-        // Get the target Resource
-        final Resource target = e.getCurrentResource().getResourceResolver().getResource(path);
+    protected Map<String, Object> toDocument(Resource r) {
+        final Map<String, Object> data = FolderDataFetcher.toDocument(r);
+        //final DocumentAggregator.Options opt = new DocumentAggregator.Options(e.getArgument("debug", false), new UrlBuilderStub());
 
         // Use the aggregator to build the body
-        final DocumentTree.DocumentNode body = mappingTarget.newDocumentNode();
-        documentAggregator.aggregate(target, body, opt);
-        body.close();
-        data.put("body", body.adaptTo(Map.class));
+        if(mappingTarget != null) {
+            final DocumentTree.DocumentNode body = mappingTarget.newDocumentNode();
+            final DocumentAggregator.Options opt = new DocumentAggregator.Options(false, new UrlBuilderStub());
+            documentAggregator.aggregate(r, body, opt);
+            body.close();
+            data.put("body", body.adaptTo(Map.class));
+        }
         return data;
+    }
+
+    @Override
+    public @Nullable Object get(@NotNull SlingDataFetcherEnvironment e) throws Exception {
+        return toDocument(FolderDataFetcher.getTargetResource(e));
     }   
 }

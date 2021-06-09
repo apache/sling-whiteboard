@@ -117,7 +117,7 @@
     <dependency>
       <groupId>org.apache.sling</groupId>
       <artifactId>org.apache.sling.graphql.core</artifactId>
-      <version>0.0.8</version>
+      <version>0.0.10</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

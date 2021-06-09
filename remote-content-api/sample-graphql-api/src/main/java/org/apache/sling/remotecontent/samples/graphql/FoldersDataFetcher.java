@@ -32,32 +32,26 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.service.component.annotations.Component;
 
-@Component(service = SlingDataFetcher.class, property = {"name=samples/documents"})
-public class DocumentsDataFetcher extends DocumentDataFetcher {
+@Component(service = SlingDataFetcher.class, property = {"name=samples/folders"})
+public class FoldersDataFetcher implements SlingDataFetcher<Object> {
 
     @Override
     public @Nullable Object get(@NotNull SlingDataFetcherEnvironment e) throws Exception {
         final int limit = e.getArgument("limit", 5);
         final String after = e.getArgument("after", null);
 
-        // Use a suffix as we might not keep these built-in language in the long term
-        final String langSuffix = "2020";
+        final Resource context = FolderDataFetcher.getTargetResource(e);
+        final String xpathQuery = String.format(
+            "/jcr:root%s//element(*, nt:folder) order by jcr:path ascending option(traversal fail)", 
+            context.getPath());
 
-        String lang = e.getArgument("lang", "xpath" + langSuffix);
-        if(!lang.endsWith(langSuffix)) {
-            throw new RuntimeException("Query langage must end with suffix " + langSuffix);
-        }
-        lang = lang.replaceAll(langSuffix + "$", "");
-        final String query = e.getArgument("query");
-
-        final Iterator<Resource> resultIterator = e.getCurrentResource().getResourceResolver().findResources(query, lang);
+        final Iterator<Resource> resultIterator = context.getResourceResolver().findResources(xpathQuery, "xpath");
         final Function<Map<String, Object>, String> cursorStringProvider = data -> (String)data.get("path");
-        final Function<Resource, Map<String, Object>> converter = this::toDocument;
+        final Function<Resource, Map<String, Object>> converter = FolderDataFetcher::toDocument;
         final Iterator<Map<String, Object>> it = new ConvertingIterator<>(resultIterator, converter);
         return new GenericConnection.Builder<>(it, cursorStringProvider)
             .withStartAfter(Cursor.fromEncodedString(after))
             .withLimit(limit)
             .build();
     }
-    
 }

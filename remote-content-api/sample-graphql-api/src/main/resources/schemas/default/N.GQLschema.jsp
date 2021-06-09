@@ -17,17 +17,36 @@
 * under the License.
 --%>
 
-<%@include file="../common/directives.jsp" %>
-
+<%-- N plane schema: Navigation --%>
 scalar Object
 
 type Query {
+  folder(path: String) : Folder @fetcher(name:"samples/folder")
+  folders(path: String, limit: Int, after: String) : FolderConnection @connection(for: "Folder") @fetcher(name:"samples/folders")
   document(path : String, selectors : [String], debug : Boolean) : Document @fetcher(name:"samples/document")
-  documents(lang: String, query : String, selectors : [String], debug : Boolean) : [Document] @fetcher(name:"samples/documents")
+  documents(lang: String, query : String, debug: Boolean, limit: Int, after: String) : DocumentConnection @connection(for: "Document") @fetcher(name:"samples/documents")
 }
 
 type Mutation {
   command(lang: String, script: String) : CommandResult @fetcher(name:"samples/command")
+}
+
+type Folder {
+  path : String
+  header : DocumentHeader
+}
+
+type DocumentHeader {
+  parent : String
+  resourceType : String
+  resourceSuperType : String
+}
+
+type Document {
+  path : String
+  header : DocumentHeader
+  properties : Object
+  body : Object
 }
 
 type CommandResult {
@@ -35,13 +54,6 @@ type CommandResult {
   output: String
   help: String
   links: [Link]
-}
-
-type Document {
-    path : String
-    selectors : String
-    body : Object
-    summary : Object
 }
 
 type Link {
