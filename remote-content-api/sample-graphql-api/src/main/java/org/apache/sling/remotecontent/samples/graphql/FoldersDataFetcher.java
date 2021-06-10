@@ -26,13 +26,18 @@ import org.apache.sling.graphql.api.SlingDataFetcher;
 import org.apache.sling.graphql.api.SlingDataFetcherEnvironment;
 import org.apache.sling.graphql.api.pagination.Connection;
 import org.apache.sling.graphql.helpers.GenericConnection;
+import org.apache.sling.remotecontent.contentmodel.ContentGenerator;
 import org.apache.sling.remotecontent.contentmodel.Folder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 @Component(service = SlingDataFetcher.class, property = {"name=samples/folders"})
 public class FoldersDataFetcher implements SlingDataFetcher<Connection<Folder>> {
+
+    @Reference
+    private ContentGenerator contentGenerator;
 
     @Override
     public @Nullable Connection<Folder> get(@NotNull SlingDataFetcherEnvironment e) throws Exception {
@@ -43,7 +48,7 @@ public class FoldersDataFetcher implements SlingDataFetcher<Connection<Folder>> 
             ctx.currentResource.getPath());
 
         final Iterator<Resource> resultIterator = ctx.currentResource.getResourceResolver().findResources(xpathQuery, "xpath");
-        final Iterator<Folder> it = new ConvertingIterator<>(resultIterator, r -> new Folder(r, new DummyContentGeneratorSupplier()));
+        final Iterator<Folder> it = new ConvertingIterator<>(resultIterator, r -> new Folder(r, () -> contentGenerator));
         return new GenericConnection.Builder<>(it, Folder::getPath)
             .withStartAfter(ctx.afterCursor)
             .withLimit(ctx.limit)

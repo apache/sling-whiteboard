@@ -30,26 +30,10 @@ public class Document extends ContentItem {
 
     public Document(Resource r, Supplier<ContentGenerator> contentGeneratorSupplier) {
         super(r, contentGeneratorSupplier);
-        body = new UnstructuredContent(resource, "body", "No source yet", contentGeneratorSupplier);
+        body = new UnstructuredContent(resource, "body", contentGeneratorSupplier);
     }
 
     public UnstructuredContent getBody() {
-        /*
-        @Reference(target="(" + DocumentTree.TARGET_TYPE + "=map)")
-        private DocumentTree mappingTarget;
-
-        @Reference
-        private DocumentAggregator documentAggregator;
-        
-        // Use the aggregator to build the body
-        if(mappingTarget != null) {
-            final DocumentTree.DocumentNode body = mappingTarget.newDocumentNode();
-            final DocumentAggregator.Options opt = new DocumentAggregator.Options(false, new UrlBuilderStub());
-            documentAggregator.aggregate(r, body, opt);
-            body.close();
-            data.put("body", body.adaptTo(Map.class));
-        }
-        */
         return body;
     }
 

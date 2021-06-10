@@ -37,6 +37,7 @@ we don't really care about the details of these node types besides their names.
 This prototype is evolving, some of these examples might be out of date. See the
 [Schema for the API plane N](src/main/resources/schemas/default/N.GQLschema.jsp) for possible Queries and Mutations.
 
+    # This one works at http://localhost:8080/content.N.json
     {
       folders(limit: 55, after: "L2NvbnRlbnQvYXJ0aWNsZXMvbXVzaWM=") {
         pageInfo {
@@ -54,6 +55,7 @@ This prototype is evolving, some of these examples might be out of date. See the
       }
     }
 
+    # Works well at http://localhost:8080/content.N.json
     {
       folder {
         path
@@ -100,7 +102,6 @@ This prototype is evolving, some of these examples might be out of date. See the
             href
             rel
           }
-          etc
         }
         backstage {
           authoring
@@ -118,8 +119,18 @@ This prototype is evolving, some of these examples might be out of date. See the
             path
             header {
               parent
-              resourceType 
-              resourceSuperType 
+              resourceType
+              resourceSuperType
+            }
+            body {
+              source
+              content
+            }
+            backstage {
+              authoring {
+                source
+                content
+              }
             }
           }
         }
@@ -159,9 +170,15 @@ This prototype is evolving, some of these examples might be out of date. See the
         where [sling:resourceType] = 'wknd/components/carousel'
         and isdescendantnode(R, '/content/wknd/us/en')
       """) {
+        pageInfo {
+          endCursor
+        }
         edges {
           node {
             path
+            body {
+              content
+            }
           }
         }
       }

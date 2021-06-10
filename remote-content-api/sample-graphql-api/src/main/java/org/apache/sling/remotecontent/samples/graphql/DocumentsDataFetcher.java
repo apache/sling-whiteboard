@@ -26,13 +26,18 @@ import org.apache.sling.graphql.api.SlingDataFetcher;
 import org.apache.sling.graphql.api.SlingDataFetcherEnvironment;
 import org.apache.sling.graphql.api.pagination.Connection;
 import org.apache.sling.graphql.helpers.GenericConnection;
+import org.apache.sling.remotecontent.contentmodel.ContentGenerator;
 import org.apache.sling.remotecontent.contentmodel.Document;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 @Component(service = SlingDataFetcher.class, property = {"name=samples/documents"})
 public class DocumentsDataFetcher implements SlingDataFetcher<Connection<Document>> {
+
+    @Reference
+    private ContentGenerator contentGenerator;
 
     @Override
     public @Nullable Connection<Document> get(@NotNull SlingDataFetcherEnvironment e) throws Exception {
@@ -49,7 +54,7 @@ public class DocumentsDataFetcher implements SlingDataFetcher<Connection<Documen
         final String query = e.getArgument("query");
 
         final Iterator<Resource> resultIterator = ctx.currentResource.getResourceResolver().findResources(query, lang);
-        final Iterator<Document> it = new ConvertingIterator<>(resultIterator, r -> new Document(r, new DummyContentGeneratorSupplier()));
+        final Iterator<Document> it = new ConvertingIterator<>(resultIterator, r -> new Document(r, () -> contentGenerator));
         return new GenericConnection.Builder<>(it, Document::getPath)
             .withStartAfter(ctx.afterCursor)
             .withLimit(ctx.limit)

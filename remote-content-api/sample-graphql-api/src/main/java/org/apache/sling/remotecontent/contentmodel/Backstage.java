@@ -32,10 +32,9 @@ public class Backstage {
     private final UnstructuredContent etc;
 
     public Backstage(Resource resource, Supplier<ContentGenerator> contentGeneratorSupplier) {
-        final String source = "TODO indicate source";
-        authoring = new UnstructuredContent(resource, "authoring", source, contentGeneratorSupplier);
-        publishing = new UnstructuredContent(resource, "publishing", source, contentGeneratorSupplier);
-        etc = new UnstructuredContent(resource, "etc", source, contentGeneratorSupplier);
+        authoring = new UnstructuredContent(resource, "authoring", contentGeneratorSupplier);
+        publishing = new UnstructuredContent(resource, "publishing", contentGeneratorSupplier);
+        etc = new UnstructuredContent(resource, "etc", contentGeneratorSupplier);
     }
 
     public UnstructuredContent getAuthoring() {

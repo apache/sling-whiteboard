@@ -22,5 +22,6 @@ package org.apache.sling.remotecontent.contentmodel;
 import org.apache.sling.api.resource.Resource;
 
 public interface ContentGenerator {
+    String getSourceInfo(Resource r, String name);
     Object getContent(Resource r, String name);
 }

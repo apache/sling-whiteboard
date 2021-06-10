@@ -21,16 +21,21 @@ package org.apache.sling.remotecontent.samples.graphql;
 
 import org.apache.sling.graphql.api.SlingDataFetcher;
 import org.apache.sling.graphql.api.SlingDataFetcherEnvironment;
+import org.apache.sling.remotecontent.contentmodel.ContentGenerator;
 import org.apache.sling.remotecontent.contentmodel.Folder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 @Component(service = SlingDataFetcher.class, property = {"name=samples/folder"})
 public class FolderDataFetcher implements SlingDataFetcher<Object> {
 
+    @Reference
+    private ContentGenerator contentGenerator;
+
     @Override
     public @Nullable Object get(@NotNull SlingDataFetcherEnvironment e) throws Exception {
-        return new Folder(new FetcherContext(e, false).currentResource, new DummyContentGeneratorSupplier());
+        return new Folder(new FetcherContext(e, false).currentResource, () -> contentGenerator);
     }   
 }

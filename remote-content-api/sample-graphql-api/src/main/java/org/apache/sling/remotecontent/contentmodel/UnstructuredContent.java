@@ -29,14 +29,13 @@ import org.apache.sling.api.resource.Resource;
 public class UnstructuredContent {
     private final Resource resource;
     private final String name;
-    private final String source;
+    private String source;
     private Object content;
     private final Supplier<ContentGenerator> contentGeneratorSupplier;
 
-    public UnstructuredContent(Resource resource, String name, String source, Supplier<ContentGenerator> contentGeneratorSupplier) {
+    public UnstructuredContent(Resource resource, String name, Supplier<ContentGenerator> contentGeneratorSupplier) {
         this.resource = resource;
         this.name = name;
-        this.source = source;
         this.contentGeneratorSupplier = contentGeneratorSupplier;
     }
 
@@ -45,6 +44,9 @@ public class UnstructuredContent {
     }
 
     public String getSource() {
+        if(source == null) {
+            source = contentGeneratorSupplier.get().getSourceInfo(resource, name);
+        }
         return source;
     }
 
