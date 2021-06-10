@@ -34,7 +34,8 @@ we don't really care about the details of these node types besides their names.
 
 ## Example GraphQL queries
 
-See the [Schema for the API plane N](src/main/resources/schemas/default/N.GQLschema.jsp) for possible Queries and Mutations.
+This prototype is evolving, some of these examples might be out of date. See the
+[Schema for the API plane N](src/main/resources/schemas/default/N.GQLschema.jsp) for possible Queries and Mutations.
 
     {
       folders(limit: 55, after: "L2NvbnRlbnQvYXJ0aWNsZXMvbXVzaWM=") {
