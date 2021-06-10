@@ -19,11 +19,13 @@
 
 package org.apache.sling.remotecontent.contentmodel;
 
+import java.util.function.Supplier;
+
 import org.apache.sling.api.resource.Resource;
 
 /** Base class for folders and documents */
 public class Folder extends ContentItem {
-    public Folder(Resource r) {
-        super(r);
+    public Folder(Resource r, Supplier<ContentGenerator> contentGeneratorSupplier) {
+        super(r, contentGeneratorSupplier);
     }
 }

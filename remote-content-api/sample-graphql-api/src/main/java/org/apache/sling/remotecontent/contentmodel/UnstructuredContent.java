@@ -19,10 +19,39 @@
 
 package org.apache.sling.remotecontent.contentmodel;
 
-import java.util.HashMap;
+import java.util.function.Supplier;
+
+import org.apache.sling.api.resource.Resource;
 
 /** Backstage information is meant to provide hints and rules
  *  to authoring user interfaces and publishing services.
  */
-public class Etc extends HashMap<String, Object> {
+public class UnstructuredContent {
+    private final Resource resource;
+    private final String name;
+    private final String source;
+    private Object content;
+    private final Supplier<ContentGenerator> contentGeneratorSupplier;
+
+    public UnstructuredContent(Resource resource, String name, String source, Supplier<ContentGenerator> contentGeneratorSupplier) {
+        this.resource = resource;
+        this.name = name;
+        this.source = source;
+        this.contentGeneratorSupplier = contentGeneratorSupplier;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public Object getContent() {
+        if(content == null) {
+            content = contentGeneratorSupplier.get().getContent(resource, name);
+        }
+        return content;
+    }
 }

@@ -19,17 +19,21 @@
 
 package org.apache.sling.remotecontent.contentmodel;
 
+import java.util.function.Supplier;
+
 import org.apache.sling.api.resource.Resource;
 
 /** Base class for folders and documents */
 public class Document extends ContentItem {
     private Backstage backstage;
+    private final UnstructuredContent body;
 
-    public Document(Resource r) {
-        super(r);
+    public Document(Resource r, Supplier<ContentGenerator> contentGeneratorSupplier) {
+        super(r, contentGeneratorSupplier);
+        body = new UnstructuredContent(resource, "body", "No source yet", contentGeneratorSupplier);
     }
 
-    public Object getBody() {
+    public UnstructuredContent getBody() {
         /*
         @Reference(target="(" + DocumentTree.TARGET_TYPE + "=map)")
         private DocumentTree mappingTarget;
@@ -46,12 +50,12 @@ public class Document extends ContentItem {
             data.put("body", body.adaptTo(Map.class));
         }
         */
-        return "This will be the document body, created using the document aggregator or document-speficic services";
+        return body;
     }
 
     public Backstage getBackstage() {
         if(backstage == null) {
-            backstage = new Backstage();
+            backstage = new Backstage(resource, contentGeneratorSupplier);
         }
         return backstage;
     }

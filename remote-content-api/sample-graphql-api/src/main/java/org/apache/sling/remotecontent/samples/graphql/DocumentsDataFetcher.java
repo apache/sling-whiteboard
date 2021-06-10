@@ -49,7 +49,7 @@ public class DocumentsDataFetcher implements SlingDataFetcher<Connection<Documen
         final String query = e.getArgument("query");
 
         final Iterator<Resource> resultIterator = ctx.currentResource.getResourceResolver().findResources(query, lang);
-        final Iterator<Document> it = new ConvertingIterator<>(resultIterator, Document::new);
+        final Iterator<Document> it = new ConvertingIterator<>(resultIterator, r -> new Document(r, new DummyContentGeneratorSupplier()));
         return new GenericConnection.Builder<>(it, Document::getPath)
             .withStartAfter(ctx.afterCursor)
             .withLimit(ctx.limit)

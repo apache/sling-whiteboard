@@ -19,15 +19,19 @@
 
 package org.apache.sling.remotecontent.contentmodel;
 
+import java.util.function.Supplier;
+
 import org.apache.sling.api.resource.Resource;
 
 /** Base class for folders and documents */
 public class ContentItem {
     protected final Resource resource;
     protected ContentItemHeader header;
+    protected final Supplier<ContentGenerator> contentGeneratorSupplier;
 
-    ContentItem(Resource r) {
-        resource = r;
+    ContentItem(Resource r, Supplier<ContentGenerator> contentGeneratorSupplier) {
+        this.resource = r;
+        this.contentGeneratorSupplier = contentGeneratorSupplier;
     }
 
     public String getPath() {

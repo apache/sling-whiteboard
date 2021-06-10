@@ -43,7 +43,7 @@ public class FoldersDataFetcher implements SlingDataFetcher<Connection<Folder>> 
             ctx.currentResource.getPath());
 
         final Iterator<Resource> resultIterator = ctx.currentResource.getResourceResolver().findResources(xpathQuery, "xpath");
-        final Iterator<Folder> it = new ConvertingIterator<>(resultIterator, Folder::new);
+        final Iterator<Folder> it = new ConvertingIterator<>(resultIterator, r -> new Folder(r, new DummyContentGeneratorSupplier()));
         return new GenericConnection.Builder<>(it, Folder::getPath)
             .withStartAfter(ctx.afterCursor)
             .withLimit(ctx.limit)

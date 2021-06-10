@@ -19,24 +19,34 @@
 
 package org.apache.sling.remotecontent.contentmodel;
 
-import java.util.HashMap;
+import java.util.function.Supplier;
+
+import org.apache.sling.api.resource.Resource;
 
 /** Backstage information is meant to provide hints and rules
  *  to authoring user interfaces and publishing services.
  */
-public class Backstage extends HashMap<String, Object> {
-    private Etc etc;
-    
-    public Backstage() {
-        put("authoring", "authoring/editor information can come here, free-form");
-        put("publishing", "publishing hints can come here, free-form");
+public class Backstage {
+    private final UnstructuredContent authoring;
+    private final UnstructuredContent publishing;
+    private final UnstructuredContent etc;
+
+    public Backstage(Resource resource, Supplier<ContentGenerator> contentGeneratorSupplier) {
+        final String source = "TODO indicate source";
+        authoring = new UnstructuredContent(resource, "authoring", source, contentGeneratorSupplier);
+        publishing = new UnstructuredContent(resource, "publishing", source, contentGeneratorSupplier);
+        etc = new UnstructuredContent(resource, "etc", source, contentGeneratorSupplier);
     }
 
-    public Object getEtc() {
-        if(etc == null) {
-            etc = new Etc();
-            etc.put("info", "...additional information for this Document");
-        }
+    public UnstructuredContent getAuthoring() {
+        return authoring;
+    }
+
+    public UnstructuredContent getPublishing() {
+        return publishing;
+    }
+
+    public UnstructuredContent getEtc() {
         return etc;
     }
 }

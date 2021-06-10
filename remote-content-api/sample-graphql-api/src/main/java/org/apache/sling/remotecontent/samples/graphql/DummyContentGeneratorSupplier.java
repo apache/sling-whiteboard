@@ -19,18 +19,23 @@
 
 package org.apache.sling.remotecontent.samples.graphql;
 
-import org.apache.sling.graphql.api.SlingDataFetcher;
-import org.apache.sling.graphql.api.SlingDataFetcherEnvironment;
-import org.apache.sling.remotecontent.contentmodel.Document;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.osgi.service.component.annotations.Component;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Supplier;
 
-@Component(service = SlingDataFetcher.class, property = {"name=samples/document"})
-public class DocumentDataFetcher implements SlingDataFetcher<Document> {
+import org.apache.sling.api.resource.Resource;
+import org.apache.sling.remotecontent.contentmodel.ContentGenerator;
+
+public class DummyContentGeneratorSupplier implements Supplier<ContentGenerator> {
 
     @Override
-    public @Nullable Document get(@NotNull SlingDataFetcherEnvironment e) throws Exception {
-        return new Document(new FetcherContext(e, false).currentResource, new DummyContentGeneratorSupplier());
-    }   
+    public ContentGenerator get() {
+        return (Resource r, String name) -> {
+            final Map<String, Object> result = new HashMap<>();
+            result.put(
+                "dummy-content", 
+                String.format("This is the %s dummy content for resource %s", name, r.getPath()));
+            return result;
+        };
+    }
 }

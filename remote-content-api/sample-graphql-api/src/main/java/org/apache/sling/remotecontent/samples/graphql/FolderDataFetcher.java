@@ -31,6 +31,6 @@ public class FolderDataFetcher implements SlingDataFetcher<Object> {
 
     @Override
     public @Nullable Object get(@NotNull SlingDataFetcherEnvironment e) throws Exception {
-        return new Folder(new FetcherContext(e, false).currentResource);
+        return new Folder(new FetcherContext(e, false).currentResource, new DummyContentGeneratorSupplier());
     }   
 }
