@@ -26,18 +26,26 @@ import java.util.Calendar;
 class SitemapStorageInfo {
 
     private final String sitemapSelector;
+    private final String name;
     private final String path;
     private final Calendar lastModified;
     private final int size;
     private final int entries;
 
-    SitemapStorageInfo(@NotNull String path, @NotNull String sitemapSelector, @Nullable Calendar lastModified, int size,
+    SitemapStorageInfo(@NotNull String path, @NotNull String sitemapSelector, @NotNull String name,
+                       @Nullable Calendar lastModified, int size,
                        int entries) {
-        this.sitemapSelector = sitemapSelector;
         this.path = path;
+        this.sitemapSelector = sitemapSelector;
+        this.name = name;
         this.lastModified = lastModified;
         this.size = size;
         this.entries = entries;
+    }
+
+    @NotNull
+    public String getPath() {
+        return path;
     }
 
     @NotNull
@@ -46,8 +54,8 @@ class SitemapStorageInfo {
     }
 
     @NotNull
-    public String getPath() {
-        return path;
+    public String getName() {
+        return name;
     }
 
     @Nullable

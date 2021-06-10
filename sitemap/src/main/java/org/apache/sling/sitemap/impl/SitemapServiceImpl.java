@@ -178,7 +178,8 @@ public class SitemapServiceImpl implements SitemapService {
             } else {
                 location += storageInfo.getSitemapSelector() + '.' + SitemapServlet.SITEMAP_EXTENSION;
             }
-            infos.add(newSitemapInfo(storageInfo.getPath(), location, storageInfo.getSize(), storageInfo.getEntries()));
+            infos.add(newSitemapInfo(storageInfo.getPath(), location, storageInfo.getName(), storageInfo.getSize(),
+                    storageInfo.getEntries()));
         }
 
         return infos;
@@ -244,7 +245,7 @@ public class SitemapServiceImpl implements SitemapService {
             String selector = getSitemapSelector(sitemapRoot, topLevelSitemapRoot, name);
             String location = topLevelSitemapRootUrl + selector + '.' + SitemapServlet.SITEMAP_EXTENSION;
             if (onDemandNames.contains(name)) {
-                infos.add(newSitemapInfo(null, location, -1, -1));
+                infos.add(newSitemapInfo(null, location, name, -1, -1));
             } else {
                 if (storageInfos == null) {
                     storageInfos = storage.getSitemaps(sitemapRoot, names);
@@ -254,7 +255,7 @@ public class SitemapServiceImpl implements SitemapService {
                         .findFirst();
                 if (storageInfoOpt.isPresent()) {
                     SitemapStorageInfo storageInfo = storageInfoOpt.get();
-                    infos.add(newSitemapInfo(storageInfo.getPath(), location, storageInfo.getSize(), storageInfo.getEntries()));
+                    infos.add(newSitemapInfo(storageInfo.getPath(), location, name, storageInfo.getSize(), storageInfo.getEntries()));
                 }
             }
         }
@@ -267,25 +268,29 @@ public class SitemapServiceImpl implements SitemapService {
     }
 
     private SitemapInfo newSitemapIndexInfo(@NotNull String url) {
-        return new SitemapInfoImpl(null, url, -1, -1, true, true);
+        return new SitemapInfoImpl(null, url, null, -1, -1, true, true);
     }
 
-    private SitemapInfo newSitemapInfo(@Nullable String path, @NotNull String url, int size, int entries) {
-        return new SitemapInfoImpl(path, url, size, entries, false, isWithinLimits(size, entries));
+    private SitemapInfo newSitemapInfo(@Nullable String path, @NotNull String url, @Nullable String name, int size,
+                                       int entries) {
+        return new SitemapInfoImpl(path, url, name, size, entries, false, isWithinLimits(size, entries));
     }
 
     private static class SitemapInfoImpl implements SitemapInfo {
 
         private final String url;
         private final String path;
+        private final String name;
         private final int size;
         private final int entries;
         private final boolean isIndex;
         private final boolean withinLimits;
 
-        private SitemapInfoImpl(@Nullable String path, @NotNull String url, int size, int entries, boolean isIndex, boolean withinLimits) {
+        private SitemapInfoImpl(@Nullable String path, @NotNull String url, @Nullable String name, int size,
+                                int entries, boolean isIndex, boolean withinLimits) {
             this.path = path;
             this.url = url;
+            this.name = name;
             this.size = size;
             this.entries = entries;
             this.isIndex = isIndex;
@@ -302,6 +307,12 @@ public class SitemapServiceImpl implements SitemapService {
         @Override
         public String getUrl() {
             return url;
+        }
+
+        @Override
+        @Nullable
+        public String getName() {
+            return name;
         }
 
         @Override

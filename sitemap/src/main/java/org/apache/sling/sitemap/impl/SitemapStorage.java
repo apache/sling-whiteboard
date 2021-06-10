@@ -80,6 +80,7 @@ public class SitemapStorage implements Runnable {
 
     static final String PN_SITEMAP_ENTRIES = "entries";
     static final String PN_SITEMAP_SIZE = "size";
+    static final String PN_SITEMAP_NAME = "name";
 
     private static final Logger LOG = LoggerFactory.getLogger(SitemapStorage.class);
     private static final Map<String, Object> AUTH = Collections.singletonMap(ResourceResolverFactory.SUBSERVICE,
@@ -211,6 +212,7 @@ public class SitemapStorage implements Runnable {
                 properties.put(JcrConstants.JCR_PRIMARYTYPE, JcrConstants.NT_UNSTRUCTURED);
                 properties.put(JcrConstants.JCR_LASTMODIFIED, Calendar.getInstance());
                 properties.put(JcrConstants.JCR_DATA, data);
+                properties.put(PN_SITEMAP_NAME, name);
                 properties.put(PN_SITEMAP_ENTRIES, entries);
                 properties.put(PN_SITEMAP_SIZE, size);
                 properties.put(PN_RESOURCE_TYPE, RT_SITEMAP_FILE);
@@ -280,6 +282,7 @@ public class SitemapStorage implements Runnable {
                     .map(child -> new SitemapStorageInfo(
                             child.getPath(),
                             child.getName().substring(0, child.getName().lastIndexOf('.')),
+                            child.getValueMap().get(PN_SITEMAP_NAME, String.class),
                             child.getValueMap().get(JcrConstants.JCR_LASTMODIFIED, Calendar.class),
                             child.getValueMap().get(PN_SITEMAP_SIZE, 0),
                             child.getValueMap().get(PN_SITEMAP_ENTRIES, 0)))

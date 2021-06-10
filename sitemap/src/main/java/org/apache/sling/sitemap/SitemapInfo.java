@@ -28,6 +28,8 @@ import org.osgi.annotation.versioning.ProviderType;
 @ProviderType
 public interface SitemapInfo {
 
+    String SITEMAP_INDEX_NAME = "<sitemap-index>";
+
     /**
      * Returns a resource path to the node the sitemap is stored. May return null if the sitemap or sitemap-index is
      * served on-demand.
@@ -44,6 +46,15 @@ public interface SitemapInfo {
      */
     @NotNull
     String getUrl();
+
+    /**
+     * Returns the name of the sitemap. This returns null when the sitemap has the default name or it is a sitemap
+     * index.
+     *
+     * @return
+     */
+    @Nullable
+    String getName();
 
     /**
      * Returns the size of the sitemap in bytes. -1 for sitemap-index or sitemaps served on-demand.
