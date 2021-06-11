@@ -3,8 +3,6 @@
 This sample provides a GraphQL query and command API that uses the sibling `document-aggregator` module
 to output complete documents that aim to provide everything that's required to render a given Sling resource.
 
-As I write this it doesn't use the SLING-10309 GraphQL pagination features yet, but it should.
-
 To start this, build the sibling modules with `mvn clean install` in the parent folder
 of this one and then, in this folder, run
 
@@ -113,7 +111,7 @@ This prototype is evolving, some of these examples might be out of date. See the
     }
 
     {
-      documents(query: "//content/*/*") {
+      documents(query: "//content/wknd/us/*/*") {
         edges {
           node {
             path
@@ -172,7 +170,7 @@ This prototype is evolving, some of these examples might be out of date. See the
     }
 
     mutation {
-      command(lang: "echo", input: "Just a string") {
+      command(lang: "echo", input: "Just a string, could also be an Integer, Float, Boolean, Array etc.") {
         success
         output
         help
@@ -203,6 +201,49 @@ This prototype is evolving, some of these examples might be out of date. See the
             path
             body {
               content
+            }
+          }
+        }
+      }
+    }
+
+    {
+      document(path: "/content/articles") {
+        path
+        backstage {
+          authoring {
+            content
+          }
+        }
+      }
+      folder {
+        path
+      }
+      folders(path: "/content/wknd/") {
+        edges {
+          node {
+            path
+          }
+        }
+      }
+      documents(query: "//content/wknd/us/*/*") {
+        edges {
+          node {
+            path
+            header {
+              parent
+              resourceType
+              resourceSuperType
+            }
+            body {
+              source
+              content
+            }
+            backstage {
+              authoring {
+                source
+                content
+              }
             }
           }
         }

@@ -25,8 +25,9 @@ create a "text passthrough" script engine for such things.
 
 """
 Some fields use this Scalar to provide unstructured or semi-structured data
+TODO we might need a specific type for JSON input and output
 """
-scalar JSON
+scalar Object
 
 type Query {
   """ 
@@ -108,7 +109,7 @@ such as Resource Type values help make such structures self-descriptive.
 type UnstructuredContent {
   name : String!
   source : String!
-  content : JSON
+  content : Object
 }
 
 """
@@ -146,7 +147,7 @@ type Mutation {
   'lang' is the command language - TODO provide a query that lists languages with their help text
   'script' is the script to execute, in the language indicated by 'lang'
   """  
-  command(lang: String, input: JSON) : CommandResult @fetcher(name:"samples/command")
+  command(lang: String, input: Object) : CommandResult @fetcher(name:"samples/command")
 }
 
 """
@@ -156,7 +157,9 @@ type CommandResult {
   """ true if the command was successful (TODO use status/error codes?) """
   success: Boolean!
 
-  """ The command output, as text """
+  """ The command output, Object or String """
+  # TODO should be of type Object, but the ObjectScalar doesn't
+  # properly convert JSON input yet
   output: String
 
   """ Optional help text for this command """
