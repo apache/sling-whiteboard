@@ -62,7 +62,7 @@ public class SitemapGeneratorExecutorTest {
     private final SitemapGeneratorManagerImpl generatorManager = new SitemapGeneratorManagerImpl();
     private final ExtensionProviderManager extensionProviderManager = new ExtensionProviderManager();
     private final SitemapStorage storage = spy(new SitemapStorage());
-    private final SitemapServiceImpl sitemapService = new SitemapServiceImpl();
+    private final SitemapServiceConfiguration sitemapServiceConfiguration = new SitemapServiceConfiguration();
 
     @Mock
     private JobManager jobManager;
@@ -89,10 +89,10 @@ public class SitemapGeneratorExecutorTest {
         context.registerService(ServiceUserMapped.class, serviceUser, "subServiceName", "sitemap-writer");
         context.registerService(SitemapGenerator.class, generator);
         context.registerService(JobManager.class, jobManager);
+        context.registerInjectActivateService(sitemapServiceConfiguration);
         context.registerInjectActivateService(generatorManager);
         context.registerInjectActivateService(storage);
         context.registerInjectActivateService(extensionProviderManager);
-        context.registerInjectActivateService(sitemapService);
 
         when(job.getProperty(SitemapGeneratorExecutor.JOB_PROPERTY_SITEMAP_NAME, SitemapGenerator.DEFAULT_SITEMAP))
                 .thenReturn(SitemapGenerator.DEFAULT_SITEMAP);

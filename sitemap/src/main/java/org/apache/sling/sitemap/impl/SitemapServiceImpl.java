@@ -25,41 +25,23 @@ import org.apache.sling.sitemap.SitemapInfo;
 import org.apache.sling.sitemap.SitemapService;
 import org.apache.sling.sitemap.common.SitemapLinkExternalizer;
 import org.apache.sling.sitemap.common.SitemapUtil;
+import org.apache.sling.sitemap.generator.SitemapGenerator;
 import org.apache.sling.sitemap.generator.SitemapGeneratorManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.annotations.*;
-import org.osgi.service.metatype.annotations.AttributeDefinition;
-import org.osgi.service.metatype.annotations.Designate;
-import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.apache.sling.sitemap.common.SitemapUtil.*;
 
-@Component(service = {SitemapServiceImpl.class, SitemapService.class})
-@Designate(ocd = SitemapServiceImpl.Configuration.class)
+@Component(service = SitemapService.class)
 public class SitemapServiceImpl implements SitemapService {
-
-    @ObjectClassDefinition(name = "Apache Sling Sitemap - Sitemap Service")
-    @interface Configuration {
-        @AttributeDefinition(name = "Serve on-demand", description = "A list of sitemap names to serve on-demand.")
-        String[] onDemandNames() default {};
-
-        @AttributeDefinition(name = "Max Size", description = "The maximum size of a sitemap in bytes. Files that " +
-                "exceed the size will be flagged with a warning.")
-        int maxSize() default 10 * 1024 * 1024;
-
-        @AttributeDefinition(name = "Max Entries", description = "The maximum number of urls of a sitemap. Files " +
-                "that exceed this number will be flagged with a warning.")
-        int maxEntries() default 50000;
-    }
 
     private static final Logger LOG = LoggerFactory.getLogger(SitemapServiceImpl.class);
 
@@ -71,17 +53,13 @@ public class SitemapServiceImpl implements SitemapService {
     private SitemapGeneratorManager generatorManager;
     @Reference
     private SitemapStorage storage;
+    @Reference
+    private SitemapServiceConfiguration sitemapServiceConfiguration;
 
     private ServiceTracker<SitemapScheduler, SitemapScheduler> schedulers;
-    private Set<String> onDemandNames;
-    private int maxSize;
-    private int maxEntries;
 
     @Activate
-    protected void activate(Configuration configuration, BundleContext bundleContext) {
-        onDemandNames = Arrays.stream(configuration.onDemandNames()).collect(Collectors.toSet());
-        maxSize = configuration.maxSize();
-        maxEntries = configuration.maxEntries();
+    protected void activate(BundleContext bundleContext) {
         schedulers = new ServiceTracker<>(bundleContext, SitemapScheduler.class, null);
         schedulers.open();
     }
@@ -89,14 +67,6 @@ public class SitemapServiceImpl implements SitemapService {
     @Deactivate
     protected void deactivate() {
         schedulers.close();
-    }
-
-    public Set<String> getSitemapNamesServedOnDemand() {
-        return Collections.unmodifiableSet(onDemandNames);
-    }
-
-    public boolean isWithinLimits(int size, int entries) {
-        return size <= maxSize && entries <= maxEntries;
     }
 
     @Override
@@ -159,7 +129,8 @@ public class SitemapServiceImpl implements SitemapService {
         }
 
         String url = externalize(sitemapRoot);
-        Collection<String> names = generatorManager.getGenerators(sitemapRoot).keySet();
+        Collection<String> names = new HashSet<>(generatorManager.getGenerators(sitemapRoot).keySet());
+        Set<String> onDemandNames = generatorManager.getOnDemandNames(sitemapRoot);
 
         if (url == null) {
             LOG.debug("Could not get absolute url to sitemap: {}", resource.getPath());
@@ -173,15 +144,31 @@ public class SitemapServiceImpl implements SitemapService {
                     url + '.' + SitemapServlet.SITEMAP_INDEX_SELECTOR + '.' + SitemapServlet.SITEMAP_EXTENSION));
         }
 
-        for (SitemapStorageInfo storageInfo : storage.getSitemaps(sitemapRoot, names)) {
-            String location = url + '.' + SitemapServlet.SITEMAP_SELECTOR + '.';
-            if (storageInfo.getSitemapSelector().equals(SitemapServlet.SITEMAP_SELECTOR)) {
-                location += SitemapServlet.SITEMAP_EXTENSION;
-            } else {
-                location += storageInfo.getSitemapSelector() + '.' + SitemapServlet.SITEMAP_EXTENSION;
+        for (String name : names) {
+            if (onDemandNames.contains(name)) {
+                String location = url + '.' + SitemapServlet.SITEMAP_SELECTOR + '.';
+                if (name.equals(SitemapGenerator.DEFAULT_SITEMAP)) {
+                    location += SitemapServlet.SITEMAP_EXTENSION;
+                } else {
+                    location += SitemapUtil.getSitemapSelector(sitemapRoot, sitemapRoot, name) + '.' + SitemapServlet.SITEMAP_EXTENSION;
+                }
+                infos.add(newSitemapInfo(null, location, name, -1, -1));
             }
-            infos.add(newSitemapInfo(storageInfo.getPath(), location, storageInfo.getName(), storageInfo.getSize(),
-                    storageInfo.getEntries()));
+        }
+
+        names.removeAll(onDemandNames);
+
+        if (names.size() > 0) {
+            for (SitemapStorageInfo storageInfo : storage.getSitemaps(sitemapRoot, names)) {
+                String location = url + '.' + SitemapServlet.SITEMAP_SELECTOR + '.';
+                if (storageInfo.getSitemapSelector().equals(SitemapServlet.SITEMAP_SELECTOR)) {
+                    location += SitemapServlet.SITEMAP_EXTENSION;
+                } else {
+                    location += storageInfo.getSitemapSelector() + '.' + SitemapServlet.SITEMAP_EXTENSION;
+                }
+                infos.add(newSitemapInfo(storageInfo.getPath(), location, storageInfo.getName(), storageInfo.getSize(),
+                        storageInfo.getEntries()));
+            }
         }
 
         return infos;
@@ -190,6 +177,13 @@ public class SitemapServiceImpl implements SitemapService {
     @Override
     public boolean isSitemapGenerationPending(@NotNull Resource sitemapRoot) {
         sitemapRoot = normalizeSitemapRoot(sitemapRoot);
+
+        if (sitemapRoot == null) {
+            return false;
+        }
+
+        Set<String> onDemandNames = generatorManager.getOnDemandNames(sitemapRoot);
+
         // not a sitemap root, always more then one sitemap, all sitemaps on-demand
         if (!isSitemapRoot(sitemapRoot)
                 || requiresSitemapIndex(sitemapRoot)
@@ -240,6 +234,7 @@ public class SitemapServiceImpl implements SitemapService {
         }
 
         topLevelSitemapRootUrl += '.' + SitemapServlet.SITEMAP_SELECTOR + '.';
+        Set<String> onDemandNames = generatorManager.getOnDemandNames(sitemapRoot);
         Collection<SitemapInfo> infos = new ArrayList<>(names.size());
         Set<SitemapStorageInfo> storageInfos = null;
 
@@ -275,7 +270,8 @@ public class SitemapServiceImpl implements SitemapService {
 
     private SitemapInfo newSitemapInfo(@Nullable String path, @NotNull String url, @Nullable String name, int size,
                                        int entries) {
-        return new SitemapInfoImpl(path, url, name, size, entries, false, isWithinLimits(size, entries));
+        return new SitemapInfoImpl(path, url, name, size, entries, false,
+                sitemapServiceConfiguration.isWithinLimits(size, entries));
     }
 
     private static class SitemapInfoImpl implements SitemapInfo {

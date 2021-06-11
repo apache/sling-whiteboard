@@ -19,24 +19,44 @@
 package org.apache.sling.sitemap;
 
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.sitemap.SitemapException;
 import org.apache.sling.sitemap.builder.Sitemap;
-import org.apache.sling.sitemap.generator.ResourceTreeSitemapGenerator;
 import org.apache.sling.sitemap.generator.SitemapGenerator;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
-import java.util.Set;
+import java.util.*;
 
-public class TestResourceTreeSitemapGenerator extends ResourceTreeSitemapGenerator {
+import static org.junit.jupiter.api.Assertions.fail;
 
-    @Override
-    public @NotNull Set<String> getNames(@NotNull Resource sitemapRoot) {
-        return Collections.singleton(SitemapGenerator.DEFAULT_SITEMAP);
+public abstract class TestGenerator implements SitemapGenerator {
+
+    private Map<String, List<String>> names = new HashMap<>();
+
+    public TestGenerator() {
+        this.names.put(null, Collections.emptyList());
+    }
+
+    public TestGenerator(String... names) {
+        this.names.put(null, Arrays.asList(names));
+    }
+
+    public void setNames(String... names) {
+        this.names.put(null, Arrays.asList(names));
+    }
+
+    public void setNames(Resource resource, String... names) {
+        this.names.put(resource.getPath(), Arrays.asList(names));
     }
 
     @Override
-    protected void addResource(String name, Sitemap sitemap, Resource resource) throws SitemapException {
-        sitemap.addUrl(resource.getPath());
+    @NotNull
+    public Set<String> getNames(@NotNull Resource sitemapRoot) {
+        return new HashSet<>(names.containsKey(sitemapRoot.getPath())
+                ? names.get(sitemapRoot.getPath())
+                : names.get(null));
+    }
+
+    @Override
+    public void generate(@NotNull Resource sitemapRoot, @NotNull String name, @NotNull Sitemap sitemap, @NotNull GenerationContext context) throws SitemapException {
+        fail();
     }
 }

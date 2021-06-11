@@ -97,6 +97,7 @@ public class SitemapScheduler implements Runnable {
             generators = Arrays.stream(configuredGenerators)
                     .filter(configuredGenerator -> !"".equals(configuredGenerator.trim()))
                     .collect(Collectors.toSet());
+
             if (generators.isEmpty()) {
                 generators = null;
             }
@@ -111,23 +112,22 @@ public class SitemapScheduler implements Runnable {
         schedule(null);
     }
 
-    public void schedule(@Nullable Collection<String> names) {
+    public void schedule(@Nullable Collection<String> includeNames) {
         try (ResourceResolver resolver = resourceResolverFactory.getServiceResourceResolver(AUTH)) {
             Iterator<Resource> sitemapRoots = findSitemapRoots(resolver, searchPath);
             while (sitemapRoots.hasNext()) {
-                schedule(sitemapRoots.next(), names);
+                schedule(sitemapRoots.next(), includeNames);
             }
         } catch (LoginException ex) {
             LOG.warn("Failed start sitemap jobs: {}", ex.getMessage(), ex);
         }
     }
 
-    public void schedule(Resource sitemapRoot, @Nullable Collection<String> names) {
-        Set<String> configuredNames = getNames(sitemapRoot);
+    public void schedule(Resource sitemapRoot, @Nullable Collection<String> includeNames) {
+        Set<String> configuredNames = new HashSet<>(getNames(sitemapRoot));
 
-        if (names != null) {
-            configuredNames = new HashSet<>(configuredNames);
-            configuredNames.retainAll(names);
+        if (includeNames != null) {
+            configuredNames.retainAll(includeNames);
         }
 
         for (String applicableName : configuredNames) {
@@ -152,13 +152,17 @@ public class SitemapScheduler implements Runnable {
      * @return
      */
     private Set<String> getNames(Resource sitemapRoot) {
+        Set<String> onDemandNames = generatorManager.getOnDemandNames(sitemapRoot);
         if (generators == null || generators.isEmpty()) {
             // all names
-            return generatorManager.getGenerators(sitemapRoot).keySet();
+            Set<String> names = new HashSet<>(generatorManager.getNames(sitemapRoot));
+            names.removeAll(onDemandNames);
+            return names;
         } else {
-            // only those of the contained geneators
+            // only those of the contained generators
             return generatorManager.getGenerators(sitemapRoot).entrySet().stream()
                     .filter(entry -> generators.contains(entry.getValue().getClass().getName()))
+                    .filter(entry -> !onDemandNames.contains(entry.getKey()))
                     .map(Map.Entry::getKey)
                     .collect(Collectors.toSet());
         }

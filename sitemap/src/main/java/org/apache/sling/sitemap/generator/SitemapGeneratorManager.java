@@ -72,5 +72,37 @@ public interface SitemapGeneratorManager {
      * @return
      */
     @NotNull
-    Map<String, SitemapGenerator> getGenerators(@Nullable Resource sitemapRoot);
+    Map<String, SitemapGenerator> getGenerators(@NotNull Resource sitemapRoot);
+
+    /**
+     * Returns all names produced by all {@link SitemapGenerator}s for the given sitemap root, limited to those
+     * {@link SitemapGenerator}s that are configured to be served on demand.
+     *
+     * @param sitemapRoot
+     * @return
+     */
+    @NotNull
+    Set<String> getOnDemandNames(@NotNull Resource sitemapRoot);
+
+    /**
+     * Returns the names of all {@link SitemapGenerator}s for the given resource but only retains those in the given
+     * {@link Collection} of names. The result {@link Set} will be less or equal in size then the given
+     * {@link Collection}.
+     *
+     * @param sitemapRoot
+     * @param retainOnly
+     * @return
+     */
+    @NotNull
+    Set<String> getOnDemandNames(@NotNull Resource sitemapRoot, @NotNull Collection<String> retainOnly);
+
+    /**
+     * Returns a {@link Map} of {@link SitemapGenerator}s for each name returned by
+     * {@link SitemapGeneratorManager#getOnDemandNames(Resource)}.
+     *
+     * @param sitemapRoot
+     * @return
+     */
+    @NotNull
+    Map<String, SitemapGenerator> getOnDemandGenerators(@Nullable Resource sitemapRoot);
 }

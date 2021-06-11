@@ -25,6 +25,7 @@ import org.apache.sling.event.jobs.JobManager;
 import org.apache.sling.serviceusermapping.ServiceUserMapped;
 import org.apache.sling.sitemap.SitemapInfo;
 import org.apache.sling.sitemap.SitemapService;
+import org.apache.sling.sitemap.TestGenerator;
 import org.apache.sling.sitemap.generator.SitemapGenerator;
 import org.apache.sling.testing.mock.jcr.MockJcr;
 import org.apache.sling.testing.mock.sling.ResourceResolverType;
@@ -67,13 +68,15 @@ public class SitemapServiceImplTest {
     private final SitemapServiceImpl subject = new SitemapServiceImpl();
     private final SitemapStorage storage = new SitemapStorage();
     private final SitemapGeneratorManagerImpl generatorManager = new SitemapGeneratorManagerImpl();
+    private final SitemapServiceConfiguration sitemapServiceConfiguration = new SitemapServiceConfiguration();
+
+    private TestGenerator generator = new TestGenerator() {};
+    private TestGenerator newsGenerator = new TestGenerator() {};
 
     @Mock
     private ServiceUserMapped serviceUser;
     @Mock
     private JobManager jobManager;
-    @Mock
-    private SitemapGenerator generator;
 
     private Resource deRoot;
     private Resource enRoot;
@@ -103,10 +106,14 @@ public class SitemapServiceImplTest {
 
         context.registerService(ServiceUserMapped.class, serviceUser, "subServiceName", "sitemap-writer");
         context.registerService(SitemapGenerator.class, generator);
+        context.registerService(SitemapGenerator.class, newsGenerator);
         context.registerService(JobManager.class, jobManager);
+        context.registerInjectActivateService(sitemapServiceConfiguration,
+                "onDemandGenerators", newsGenerator.getClass().getName()
+        );
         context.registerInjectActivateService(generatorManager);
         context.registerInjectActivateService(storage);
-        context.registerInjectActivateService(subject, "onDemandNames", "news");
+        context.registerInjectActivateService(subject);
     }
 
     @Test
@@ -114,7 +121,8 @@ public class SitemapServiceImplTest {
         // given
         storage.writeSitemap(deRoot, SitemapGenerator.DEFAULT_SITEMAP, new ByteArrayInputStream(new byte[0]), 0, 0);
 
-        when(generator.getNames(any())).thenReturn(Collections.singleton(SitemapGenerator.DEFAULT_SITEMAP));
+        generator.setNames(SitemapGenerator.DEFAULT_SITEMAP);
+
         when(jobManager.findJobs(
                 eq(JobManager.QueryType.ALL),
                 eq(SitemapGeneratorExecutor.JOB_TOPIC),
@@ -134,9 +142,10 @@ public class SitemapServiceImplTest {
         // given
         storage.writeSitemap(deRoot, SitemapGenerator.DEFAULT_SITEMAP, new ByteArrayInputStream(new byte[0]), 0, 0);
 
-        when(generator.getNames(any())).thenReturn(ImmutableSet.of(SitemapGenerator.DEFAULT_SITEMAP));
-        when(generator.getNames(frRoot)).thenReturn(ImmutableSet.of("a", "b"));
-        when(generator.getNames(enNews)).thenReturn(ImmutableSet.of("news"));
+        generator.setNames(SitemapGenerator.DEFAULT_SITEMAP);
+        generator.setNames(frRoot, "a", "b");
+        newsGenerator.setNames(enNews, "news");
+
         when(jobManager.findJobs(
                 eq(JobManager.QueryType.ALL),
                 eq(SitemapGeneratorExecutor.JOB_TOPIC),
@@ -170,8 +179,8 @@ public class SitemapServiceImplTest {
     @Test
     public void testSitemapIndexUrlReturned() {
         // given
-        when(generator.getNames(any())).thenReturn(Collections.singleton(SitemapGenerator.DEFAULT_SITEMAP));
-        when(generator.getNames(frRoot)).thenReturn(ImmutableSet.of("a", "b"));
+        generator.setNames(SitemapGenerator.DEFAULT_SITEMAP);
+        generator.setNames(frRoot, "a", "b");
 
         MockJcr.setQueryResult(
                 context.resourceResolver().adaptTo(Session.class),
@@ -217,10 +226,11 @@ public class SitemapServiceImplTest {
         storage.writeSitemap(enNews, "foo", new ByteArrayInputStream(new byte[0]), 100, 1);
         storage.writeSitemap(enNews, "bar", new ByteArrayInputStream(new byte[0]), 100, 1);
 
-        when(generator.getNames(deRoot)).thenReturn(ImmutableSet.of(SitemapGenerator.DEFAULT_SITEMAP));
-        when(generator.getNames(frRoot)).thenReturn(ImmutableSet.of("foobar"));
-        when(generator.getNames(enNews)).thenReturn(ImmutableSet.of("foo", "bar", "news"));
-        when(generator.getNames(enRoot)).thenReturn(ImmutableSet.of(SitemapGenerator.DEFAULT_SITEMAP));
+        generator.setNames(deRoot, SitemapGenerator.DEFAULT_SITEMAP);
+        generator.setNames(frRoot, "foobar");
+        generator.setNames(enNews, "foo", "bar");
+        generator.setNames(enRoot, SitemapGenerator.DEFAULT_SITEMAP);
+        newsGenerator.setNames(enNews, "news");
 
         MockJcr.setQueryResult(
                 context.resourceResolver().adaptTo(Session.class),

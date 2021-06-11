@@ -58,6 +58,7 @@ public class SitemapStorageTest {
 
     private final SitemapStorage subject = new SitemapStorage();
     private final SitemapGeneratorManagerImpl generatorManager = new SitemapGeneratorManagerImpl();
+    private final SitemapServiceConfiguration configuration = new SitemapServiceConfiguration();
 
     @Mock(lenient = true)
     private SitemapGenerator generator;
@@ -68,6 +69,7 @@ public class SitemapStorageTest {
     public void setup() {
         context.registerService(SitemapGenerator.class, generator);
         context.registerService(ServiceUserMapped.class, serviceUser, "subServiceName", "sitemap-writer");
+        context.registerInjectActivateService(configuration);
         context.registerInjectActivateService(generatorManager);
         context.registerInjectActivateService(subject,
                 "stateMaxAge", 100

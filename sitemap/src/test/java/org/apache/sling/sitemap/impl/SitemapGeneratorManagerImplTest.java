@@ -44,6 +44,7 @@ public class SitemapGeneratorManagerImplTest {
     public final SlingContext context = new SlingContext();
 
     private final SitemapGeneratorManagerImpl subject = new SitemapGeneratorManagerImpl();
+    private final SitemapServiceConfiguration sitemapServiceConfiguration = new SitemapServiceConfiguration();
 
     @Mock
     private SitemapGenerator generator1;
@@ -58,6 +59,7 @@ public class SitemapGeneratorManagerImplTest {
         context.registerService(SitemapGenerator.class, generator2, "service.ranking", 2);
         context.registerService(SitemapGenerator.class, generator3, "service.ranking", 3);
 
+        context.registerInjectActivateService(new SitemapServiceConfiguration());
         context.registerInjectActivateService(subject);
     }
 

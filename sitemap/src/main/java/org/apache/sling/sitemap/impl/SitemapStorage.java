@@ -350,8 +350,12 @@ public class SitemapStorage implements Runnable {
         Map<Resource, String> candidates = SitemapUtil.resolveSitemapRoots(sitemapRoot, name.substring(0, lastDot));
         // check if for any of the candidate resource roots a generator with the name exists
         return candidates.entrySet().stream()
-                .map(entry -> generatorManager.getNames(entry.getKey(), Collections.singleton(entry.getValue())))
-                .anyMatch(names -> names.size() > 0);
+                .anyMatch(entry -> {
+                    Resource resource = entry.getKey();
+                    Set<String> candidateName = Collections.singleton(entry.getValue());
+                    return generatorManager.getNames(resource, candidateName).size() > 0
+                            && generatorManager.getOnDemandNames(resource, candidateName).isEmpty();
+                });
     }
 
     /**

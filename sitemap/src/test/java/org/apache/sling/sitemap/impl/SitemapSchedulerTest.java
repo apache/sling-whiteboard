@@ -26,15 +26,13 @@ import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.event.jobs.Job;
 import org.apache.sling.event.jobs.JobManager;
 import org.apache.sling.serviceusermapping.ServiceUserMapped;
-import org.apache.sling.sitemap.SitemapException;
 import org.apache.sling.sitemap.SitemapService;
-import org.apache.sling.sitemap.builder.Sitemap;
+import org.apache.sling.sitemap.TestGenerator;
 import org.apache.sling.sitemap.generator.SitemapGenerator;
 import org.apache.sling.testing.mock.jcr.MockJcr;
 import org.apache.sling.testing.mock.sling.ResourceResolverType;
 import org.apache.sling.testing.mock.sling.junit5.SlingContext;
 import org.apache.sling.testing.mock.sling.junit5.SlingContextExtension;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -62,6 +60,7 @@ public class SitemapSchedulerTest {
 
     private final SitemapScheduler subject = new SitemapScheduler();
     private final SitemapGeneratorManagerImpl generatorManager = new SitemapGeneratorManagerImpl();
+    private final SitemapServiceConfiguration sitemapServiceConfiguration = new SitemapServiceConfiguration();
 
     private final TestGenerator generator1 = new TestGenerator() {};
     private final TestGenerator generator2 = new TestGenerator() {};
@@ -87,6 +86,7 @@ public class SitemapSchedulerTest {
         context.registerService(JobManager.class, jobManager);
         context.registerService(SitemapGenerator.class, generator1, "service.ranking", 1);
         context.registerService(SitemapGenerator.class, generator2, "service.ranking", 2);
+        context.registerInjectActivateService(sitemapServiceConfiguration);
         context.registerInjectActivateService(generatorManager);
 
         AtomicInteger jobCount = new AtomicInteger(0);
@@ -220,26 +220,4 @@ public class SitemapSchedulerTest {
         return map -> map.get("sitemap.root").equals(path) && map.get("sitemap.name").equals(name);
     }
 
-    private static class TestGenerator implements SitemapGenerator {
-
-        private Set<String> names;
-
-        TestGenerator(String... names) {
-            this.names = new HashSet<>(Arrays.asList(names));
-        }
-
-        public void setNames(String... names) {
-            this.names = new HashSet<>(Arrays.asList(names));
-        }
-
-        @Override
-        public @NotNull Set<String> getNames(@NotNull Resource sitemapRoot) {
-            return names;
-        }
-
-        @Override
-        public void generate(@NotNull Resource sitemapRoot, @NotNull String name, @NotNull Sitemap sitemap, @NotNull GenerationContext context) throws SitemapException {
-            fail();
-        }
-    }
 }

@@ -57,6 +57,7 @@ public class SitemapServiceImplSchedulingTest {
     private final SitemapServiceImpl subject = new SitemapServiceImpl();
     private final SitemapStorage storage = new SitemapStorage();
     private final SitemapGeneratorManagerImpl generatorManager = new SitemapGeneratorManagerImpl();
+    private final SitemapServiceConfiguration sitemapServiceConfiguration = new SitemapServiceConfiguration();
 
     @Mock
     private ServiceUserMapped serviceUser;
@@ -104,6 +105,7 @@ public class SitemapServiceImplSchedulingTest {
         context.registerService(SitemapGenerator.class, generator1);
         context.registerService(SitemapGenerator.class, generator2);
         context.registerService(JobManager.class, jobManager);
+        context.registerInjectActivateService(sitemapServiceConfiguration);
         context.registerInjectActivateService(generatorManager);
         context.registerInjectActivateService(storage);
         context.registerInjectActivateService(subject);
