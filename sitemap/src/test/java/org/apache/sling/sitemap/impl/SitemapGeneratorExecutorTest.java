@@ -238,7 +238,8 @@ public class SitemapGeneratorExecutorTest {
         }
 
         @Override
-        public void generate(@NotNull Resource sitemapRoot, @NotNull String name, @NotNull Sitemap sitemap, @NotNull GenerationContext context) throws SitemapException {
+        public void generate(@NotNull Resource sitemapRoot, @NotNull String name, @NotNull Sitemap sitemap,
+                             @NotNull GenerationContext context) throws SitemapException {
             int i = context.getProperty("i", 0);
             for (; i < locations.length; i++) {
                 context.setProperty("i", i);
@@ -248,7 +249,7 @@ public class SitemapGeneratorExecutorTest {
                         // force the state to be written, if configured
                         ((SitemapImpl) sitemap).flush();
                         failed = true;
-                        throw new RuntimeException("done writing");
+                        throw new SitemapGeneratorExecutor.JobAbandonedException();
                     } catch (IOException ex) {
                         throw new SitemapException(ex);
                     }

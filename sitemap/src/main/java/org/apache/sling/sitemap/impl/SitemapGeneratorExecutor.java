@@ -129,14 +129,14 @@ public class SitemapGeneratorExecutor implements JobExecutor {
         } catch (LoginException ex) {
             LOG.warn("Failed to login service user for sitemap generation", ex);
             return result.message(ex.getMessage()).cancelled();
-        } catch (IOException ex) {
+        } catch (IOException | SitemapException ex) {
             LOG.error("Failed to write sitemap", ex);
             return result.message(ex.getMessage()).failed();
         }
     }
 
     private void generate(Resource sitemapRoot, String name, SitemapGenerator generator,
-                          JobExecutionContext executionContext) throws IOException {
+                          JobExecutionContext executionContext) throws SitemapException, IOException {
         try {
             CopyableByteArrayOutputStream buffer = new CopyableByteArrayOutputStream();
             GenerationContextImpl context = new GenerationContextImpl();
@@ -178,19 +178,23 @@ public class SitemapGeneratorExecutor implements JobExecutor {
             eventProperties.put(SitemapGenerator.EVENT_PROPERTY_SITEMAP_STORAGE_SIZE, buffer.size());
             eventProperties.put(SitemapGenerator.EVENT_PROPERTY_SITEMAP_EXCEEDS_LIMITS,
                     !sitemapServiceConfiguration.isWithinLimits(buffer.size(), sitemap.getUrlCount()));
-            
+
             eventAdmin.sendEvent(new Event(SitemapGenerator.EVENT_TOPIC_SITEMAP_UPDATED, new EventProperties(eventProperties)));
+        } catch (JobAbandonedException ex) {
+            throw ex;
         } catch (JobStoppedException ex) {
             LOG.debug("Job stopped, removing state", ex);
             storage.removeState(sitemapRoot, name);
-        } catch (SitemapException | IOException ex) {
+        } catch (RuntimeException | SitemapException | IOException ex) {
             storage.removeState(sitemapRoot, name);
-            if (ex instanceof SitemapException && ex.getCause() instanceof IOException) {
-                throw (IOException) ex.getCause();
-            } else if (ex instanceof IOException) {
+            if (ex instanceof IOException) {
                 throw (IOException) ex;
+            } else if (ex.getCause() instanceof IOException) {
+                throw (IOException) ex.getCause();
+            } else if (ex instanceof RuntimeException) {
+                throw new SitemapException(ex);
             } else {
-                throw new IOException(ex);
+                throw ex;
             }
         }
     }
@@ -230,6 +234,12 @@ public class SitemapGeneratorExecutor implements JobExecutor {
     private static class JobStoppedException extends RuntimeException {
         JobStoppedException() {
             super("Stopped at " + System.currentTimeMillis());
+        }
+    }
+
+    protected static class JobAbandonedException extends RuntimeException {
+        JobAbandonedException() {
+            super("Abandoned at " + System.currentTimeMillis());
         }
     }
 
