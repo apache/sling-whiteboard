@@ -24,6 +24,24 @@ The standard `MAVEN_OPTS` environment variable can be used to setup
 debugging, as the above does not fork and starts the application with
 the Maven JVM.
 
+## Next Steps
+Here are a few ideas in no specific order.
+
+Uppercase selectors in these notes refer to the _API planes_ concept, where the first uppercase selector addresses an "API plane" where
+specific functionality is available, usually with a specific GraphQL Schema. The term "plane" is similar to a geometric plane, it's not
+about flying metal tubes.
+
+* Fix https://issues.apache.org/jira/browse/SLING-10485 to better support **various input types in Mutations**.
+* Implement a small **content tree manipulation language** for the Command mutation. On a new API plane "C"? Can use a restricted variant of the repoinit language with just "create path" and "set ACL" along with delete and move operations. Provides similar functionality to the [Sling Post Servlet](https://sling.apache.org/documentation/bundles/manipulating-content-the-slingpostservlet-servlets-post.html) in a more discoverable and especially strictly controlled way.
+* Implement a **restrictive HTTP proxy to the Sling POST servlet** for updating content. On a new API plane "U"? For "updates". Might be restricted to the default "update content" operation and only if the target is either a Document or a Folder which can contain Documents. Other content manipulations are performed with the above content tree manipulation language, in order to restrict and better control them. POSTing content to that servlet can also happen with a GraphQL Mutation, we might support both variants but a direct POST is more efficient and might allow for streaming data which we don't have in the GraphQL core so far.
+* Provide **hyperlinks to the various API planes** and/or explanations of how they work as part of the "links" field of Folders and Documents.
+* Maybe rename the N plane to D as in "developement"?
+* Add support for **selector-driven stored queries** so that `/content.P.folders.json` for example executes the 'folders' query that's been developed and stored from that developers plane. The P plane is for publishing, where HTTP GET requests return cacheable content based on stored queries.
+* Add tests (using [Karate](https://github.com/intuit/karate)?) to this module to demonstrate the APIs if it looks like the module will graduate to a full-fledged Sling module. So far it's only tested interactively using the below example queries.
+
+The overall idea is that accessing `/content.N.json` with a GraphQL client should be sufficient for a developer
+to discover everything, via the commented GraphQL Schema provided there.
+
 ## Test Content
 
 The test content uses `com.adobe.aem.guides:aem-guides-wknd.ui.content.sample` which is MIT
