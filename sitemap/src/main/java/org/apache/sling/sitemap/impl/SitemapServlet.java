@@ -153,20 +153,22 @@ public class SitemapServlet extends SlingSafeMethodsServlet {
 
     protected void doGetSitemap(@NotNull SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response,
                                 Resource topLevelSitemapRoot, String sitemapSelector) throws SitemapException, IOException {
-        // resolve the actual sitemap root from the sitemapFileName
-        Map<Resource, String> candidates = resolveSitemapRoots(topLevelSitemapRoot, sitemapSelector);
+        if (sitemapServiceConfiguration.getOnDemandGenerators().size() > 0) {
+            // resolve the actual sitemap root from the sitemapFileName
+            Map<Resource, String> candidates = resolveSitemapRoots(topLevelSitemapRoot, sitemapSelector);
 
-        for (Map.Entry<Resource, String> entry : candidates.entrySet()) {
-            Resource sitemapRoot = entry.getKey();
-            String name = entry.getValue();
-            SitemapGenerator generator = generatorManager.getGenerator(sitemapRoot, name);
+            for (Map.Entry<Resource, String> entry : candidates.entrySet()) {
+                Resource sitemapRoot = entry.getKey();
+                String name = entry.getValue();
+                SitemapGenerator generator = generatorManager.getGenerator(sitemapRoot, name);
 
-            if (generator != null
-                    && sitemapServiceConfiguration.getOnDemandGenerators().contains(generator.getClass().getName())) {
-                SitemapImpl sitemap = new SitemapImpl(response.getWriter(), extensionProviderManager);
-                generator.generate(sitemapRoot, name, sitemap, NOOP_CONTEXT);
-                sitemap.close();
-                return;
+                if (generator != null
+                        && sitemapServiceConfiguration.getOnDemandGenerators().contains(generator.getClass().getName())) {
+                    SitemapImpl sitemap = new SitemapImpl(response.getWriter(), extensionProviderManager);
+                    generator.generate(sitemapRoot, name, sitemap, NOOP_CONTEXT);
+                    sitemap.close();
+                    return;
+                }
             }
         }
 
@@ -191,6 +193,7 @@ public class SitemapServlet extends SlingSafeMethodsServlet {
         if (onDemandSitemaps.isEmpty()) {
             return Collections.emptySet();
         }
+
         Set<String> addedSitemapSelectors = new HashSet<>();
         Iterator<Resource> sitemapRoots = findSitemapRoots(request.getResourceResolver(), parentSitemapRoot.getPath());
         if (!sitemapRoots.hasNext()) {

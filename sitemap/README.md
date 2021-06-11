@@ -108,16 +108,15 @@ particular cases.
 #### On-demand Generation
 
 For smaller sites, calculating sitemaps in the background may not be necessary and serving sitemaps when they get
-requested may even result in higher accuracy. On the other hand it highly depends on the amount of content and
-the `SitemapGeneator` implementation(s) used, if it is possible to serve a sitemap within the timeout of the different
-crawlers. Because of that, serving sitemaps on-demand must be explicitly enabled.
+requested may even result in higher accuracy. On the other hand serving a sitemap on-demand within the timeout of 
+different crawlers highly depends on the amount of content and the `SitemapGeneator` implementation(s) used. Because of 
+that, serving sitemaps on-demand must be explicitly enabled.
 
-To configure serving sitemaps on-demand, set the `onDemandNames` of the `SitemapServiceImpl`. When set, the
-`SitemapServlet` slightly changes its behaviour. The sitemap index is now served based on a query of all sitemap roots
-below the requested resource to check if any of them generates a sitemap for the on-demand names, instead of simply
-creating an index of all stored sitemaps at the requested sitemap root. For the sitemaps the sitemap selector will be
-resolved to sitemap-root-name pairs to check if any of them can be served on-demand, instead of serving a file from the
-storage. However in either of the cases the mechanism falls back to the sitemaps generated in the background.
+To configure serving sitemaps on-demand, set the `onDemandGenerators` of the `SitemapServiceConfiguration` PID. When 
+set, the `SitemapServlet` queries for all sitemap root resources and checks if any of them is served with a name of the
+on-demand generators. If so the sitemap root with the name will be added to the sitemap-index or the sitemap being 
+requested on-demand will be served respectively. In any case the mechanism always fallback serving sitemaps from 
+storage.   
 
 ### Sitemap Extensions
 
