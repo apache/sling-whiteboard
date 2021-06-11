@@ -24,9 +24,9 @@ import org.apache.sling.graphql.api.SlingScalarConverter;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.service.component.annotations.Component;
 
-/** Passthrough Scalar, used to output unpredictable JSON structures */
-@Component(service = SlingScalarConverter.class, property = { "name=Object" })
-public class ObjectScalar implements SlingScalarConverter<Object, Object> {
+/** Passthrough Scalar, used to handle unpredictable JSON structures */
+@Component(service = SlingScalarConverter.class, property = { "name=JSON" })
+public class JsonScalar implements SlingScalarConverter<Object, Object> {
 
     @Override
     public @Nullable Object parseValue(@Nullable Object input) throws ScalarConversionException {

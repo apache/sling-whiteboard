@@ -26,7 +26,7 @@ create a "text passthrough" script engine for such things.
 """
 Some fields use this Scalar to provide unstructured or semi-structured data
 """
-scalar Object
+scalar JSON
 
 type Query {
   """ 
@@ -108,7 +108,7 @@ such as Resource Type values help make such structures self-descriptive.
 type UnstructuredContent {
   name : String!
   source : String!
-  content : Object
+  content : JSON
 }
 
 """
@@ -146,7 +146,7 @@ type Mutation {
   'lang' is the command language - TODO provide a query that lists languages with their help text
   'script' is the script to execute, in the language indicated by 'lang'
   """  
-  command(lang: String, script: String) : CommandResult @fetcher(name:"samples/command")
+  command(lang: String, input: JSON) : CommandResult @fetcher(name:"samples/command")
 }
 
 """

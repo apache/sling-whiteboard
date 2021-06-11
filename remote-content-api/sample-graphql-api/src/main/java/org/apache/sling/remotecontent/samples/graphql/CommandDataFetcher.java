@@ -22,6 +22,8 @@ package org.apache.sling.remotecontent.samples.graphql;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.function.Function;
 
 import javax.jcr.Session;
 
@@ -37,38 +39,74 @@ import org.osgi.service.component.annotations.Reference;
 @Component(service = SlingDataFetcher.class, property = {"name=samples/command"})
 public class CommandDataFetcher implements SlingDataFetcher<Object> {
 
+    public static final String ARG_INPUT = "input";
+    public static final String ARG_LANG = "lang";
+
     @Reference
     private RepoInitParser parser;
 
     @Reference
     private JcrRepoInitOpsProcessor processor;
 
-    private static final String LANG_REPOINIT = "repoinit";
+    // TODO turn these into services and provide a GraphQL query to list them
+    abstract static  class CommandLanguage {
+        public final String name;
+        public final String help;
+
+        protected CommandLanguage(String name, String help) {
+            this.name = name;
+            this.help = help;
+        }
+
+        abstract CommandResult execute(@NotNull SlingDataFetcherEnvironment e);
+    }
+    private static final Map<String, CommandLanguage> languages = new HashMap<>();
+
+    private void addLanguage(CommandLanguage language) {
+        languages.put(language.name, language);
+    }
+
+    public CommandDataFetcher() {
+        addLanguage(new CommandLanguage(
+            "repoinit", 
+            "See https://sling.apache.org/documentation/bundles/repository-initialization.html for information about the repoinit language") {
+                public CommandResult execute(@NotNull SlingDataFetcherEnvironment e) {
+                    final Map<String, Object> result = new HashMap<>();
+                    final String script = e.getArgument(ARG_INPUT, "");
+                    String output;
+                    boolean success;
+                    try {
+                        final Session s = e.getCurrentResource().getResourceResolver().adaptTo(Session.class);
+                        processor.apply(s, parser.parse(new StringReader(script)));
+                        s.save();
+                        success = true;
+                        output = "repoinit script successfully executed";
+                    } catch(Exception ex) {
+                        success = false;
+                        output = ex.toString();
+                    }
+                    return new CommandResult(success, output, help);
+            
+                }
+            });
+            addLanguage(new CommandLanguage(
+                "echo", 
+                "Echoes its input") {
+                    public CommandResult execute(@NotNull SlingDataFetcherEnvironment e) {
+                        final Object input = e.getArgument(ARG_INPUT, "");
+                        return new CommandResult(input != null, input, help);
+                    }
+                });
+    }
 
     @Override
     public @Nullable Object get(@NotNull SlingDataFetcherEnvironment e) throws Exception {
-        final String lang = e.getArgument("lang", LANG_REPOINIT);
-        if(!LANG_REPOINIT.equals(lang)) {
-            throw new RuntimeException("For now, the only supported language is " + LANG_REPOINIT);
+        final String lang = e.getArgument(ARG_LANG, null);
+        final CommandLanguage language = languages.get(lang);
+        if(language == null) {
+            throw new RuntimeException(String.format("Unsupported language '%s' (provided by %s argument)", lang, ARG_LANG));
         }
-        final String script = e.getArgument("script");
-        final Map<String, Object> result = new HashMap<>();
-
-        try {
-            final Session s = e.getCurrentResource().getResourceResolver().adaptTo(Session.class);
-            processor.apply(s, parser.parse(new StringReader(script)));
-            s.save();
-            result.put("success", true);
-            result.put("output", "repoinit script successfully executed");
-        } catch(Exception ex) {
-            result.put("success", false);
-            result.put("output", ex.toString());
-        }
-
-        result.put("help", "See https://sling.apache.org/documentation/bundles/repository-initialization.html for information about the repoinit language");
-        
-        
-        return result;
+        return language.execute(e);
     }
     
 }

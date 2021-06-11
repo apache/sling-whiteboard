@@ -143,7 +143,7 @@ This prototype is evolving, some of these examples might be out of date. See the
     mutation {
     command(
       lang:"repoinit",
-      script:"""
+      input:"""
         # comments work here
         create path /open-for-all/ok
       """)
@@ -152,6 +152,31 @@ This prototype is evolving, some of these examples might be out of date. See the
       output
       help
     }
+    }
+
+    # commands support free-form JSON data as input
+    mutation {
+      command(lang: "echo", input: 
+        {structuredJSONdata: 
+          {
+            isSupported: true, 
+            for: "things like this", 
+            as: {json: "data"}
+          }
+        }
+      	) {
+        success
+        output
+        help
+      }
+    }
+
+    mutation {
+      command(lang: "echo", input: "Just a string") {
+        success
+        output
+        help
+      }
     }
 
     {
