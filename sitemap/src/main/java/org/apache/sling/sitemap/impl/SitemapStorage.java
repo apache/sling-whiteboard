@@ -23,6 +23,8 @@ import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.SlingConstants;
 import org.apache.sling.api.resource.*;
 import org.apache.sling.api.wrappers.ValueMapDecorator;
+import org.apache.sling.commons.metrics.Counter;
+import org.apache.sling.commons.metrics.MetricsService;
 import org.apache.sling.commons.scheduler.Scheduler;
 import org.apache.sling.serviceusermapping.ServiceUserMapped;
 import org.apache.sling.sitemap.common.SitemapUtil;
@@ -30,9 +32,7 @@ import org.apache.sling.sitemap.generator.SitemapGenerator;
 import org.apache.sling.sitemap.generator.SitemapGeneratorManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.*;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
 import org.osgi.service.event.EventProperties;
@@ -101,14 +101,31 @@ public class SitemapStorage implements Runnable {
     private SitemapGeneratorManager generatorManager;
     @Reference
     private EventAdmin eventAdmin;
+    @Reference(policyOption = ReferencePolicyOption.GREEDY, cardinality = ReferenceCardinality.OPTIONAL)
+    private MetricsService metricsService;
 
     private String rootPath = "/var/sitemaps";
     private int maxStateAge = Integer.MAX_VALUE;
+
+    private Counter checkpointReadsExpired;
+    private Counter checkpointReads;
+    private Counter checkpointMisses;
+    private Counter checkpointWrites;
 
     @Activate
     protected void activate(Configuration configuration) {
         rootPath = configuration.storagePath();
         maxStateAge = configuration.stateMaxAge();
+
+        if (metricsService == null) {
+            metricsService = MetricsService.NOOP;
+        }
+
+        // metrics to measure efficiency of checkpoint persistence
+        checkpointReadsExpired = metricsService.counter("SitemapStorage-checkpointReadsExpired");
+        checkpointMisses = metricsService.counter("SitemapStorage-checkpointMisses");
+        checkpointReads = metricsService.counter("SitemapStorage-checkpointReads");
+        checkpointWrites = metricsService.counter("SitemapStorage-checkpointWrites");
     }
 
     @Override
@@ -144,14 +161,20 @@ public class SitemapStorage implements Runnable {
         String statePath = getSitemapFilePath(sitemapRoot, name) + STATE_EXTENSION;
         try (ResourceResolver resolver = resourceResolverFactory.getServiceResourceResolver(AUTH)) {
             Resource state = resolver.getResource(statePath);
-            // make a copy to read properties fully
+
             if (state == null) {
+                checkpointMisses.increment();
                 return ValueMap.EMPTY;
             }
 
-            return !isExpired(state)
-                    ? new ValueMapDecorator(new HashMap<>(state.getValueMap()))
-                    : ValueMap.EMPTY;
+            if (isExpired(state)) {
+                checkpointReadsExpired.increment();
+                return ValueMap.EMPTY;
+            }
+
+            // make a copy to read properties fully
+            checkpointReads.increment();
+            return new ValueMapDecorator(new HashMap<>(state.getValueMap()));
         } catch (LoginException ex) {
             throw new IOException("Cannot read state at " + statePath, ex);
         }
@@ -164,6 +187,7 @@ public class SitemapStorage implements Runnable {
             Resource folder = getOrCreateFolder(resolver, ResourceUtil.getParent(statePath));
             String stateName = ResourceUtil.getName(statePath);
             Resource stateResource = folder.getChild(stateName);
+
             if (stateResource == null) {
                 Map<String, Object> properties = new HashMap<>(state.size() + 1);
                 properties.putAll(state);
@@ -179,6 +203,8 @@ public class SitemapStorage implements Runnable {
                 properties.putAll(state);
                 properties.put(JcrConstants.JCR_LASTMODIFIED, Calendar.getInstance());
             }
+
+            checkpointWrites.increment();
             resolver.commit();
         } catch (LoginException | PersistenceException ex) {
             throw new IOException("Cannot create state at " + statePath, ex);
