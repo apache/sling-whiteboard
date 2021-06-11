@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 class ConfigurationBuilderImpl implements FeatureConfigurationBuilder {
     private final String p;
@@ -78,13 +79,13 @@ class ConfigurationBuilderImpl implements FeatureConfigurationBuilder {
 
     private static class ConfigurationImpl implements FeatureConfiguration {
         private final String pid;
-        private final String factoryPid;
+        private final Optional<String> factoryPid;
         private final Map<String, Object> values;
 
         private ConfigurationImpl(String pid, String factoryPid,
                 Map<String, Object> values) {
             this.pid = pid;
-            this.factoryPid = factoryPid;
+            this.factoryPid = Optional.ofNullable(factoryPid);
             this.values = Collections.unmodifiableMap(values);
         }
 
@@ -92,7 +93,7 @@ class ConfigurationBuilderImpl implements FeatureConfigurationBuilder {
             return pid;
         }
 
-        public String getFactoryPid() {
+        public Optional<String> getFactoryPid() {
             return factoryPid;
         }
 

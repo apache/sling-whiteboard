@@ -16,13 +16,6 @@
  */
 package org.apache.sling.feature.osgi.impl;
 
-import org.osgi.service.feature.Feature;
-import org.osgi.service.feature.FeatureBuilder;
-import org.osgi.service.feature.FeatureBundle;
-import org.osgi.service.feature.FeatureConfiguration;
-import org.osgi.service.feature.FeatureExtension;
-import org.osgi.service.feature.ID;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,6 +23,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+
+import org.osgi.service.feature.Feature;
+import org.osgi.service.feature.FeatureBuilder;
+import org.osgi.service.feature.FeatureBundle;
+import org.osgi.service.feature.FeatureConfiguration;
+import org.osgi.service.feature.FeatureExtension;
+import org.osgi.service.feature.ID;
 
 class FeatureBuilderImpl implements FeatureBuilder {
     private final ID id;
@@ -109,8 +110,8 @@ class FeatureBuilderImpl implements FeatureBuilder {
 
     
     @Override
-	public FeatureBuilder addCategory(String category) {
-    	this.categories.add(category);
+	public FeatureBuilder addCategories(String ...categories) {
+    	this.categories.addAll(Arrays.asList(categories));
 		return this;
 	}
 
@@ -150,13 +151,13 @@ class FeatureBuilderImpl implements FeatureBuilder {
     }
 
     private static class FeatureImpl extends ArtifactImpl implements Feature {
-        private final String name;
-        private final String copyright;
-        private final String description;
-        private final String docURL;
-        private final String license;
-        private final String scm;
-        private final String vendor;
+        private final Optional<String> name;
+        private final Optional<String> copyright;
+        private final Optional<String> description;
+        private final Optional<String> docURL;
+        private final Optional<String> license;
+        private final Optional<String> scm;
+        private final Optional<String> vendor;
         private final boolean complete;
 
         private final List<FeatureBundle> bundles;
@@ -170,13 +171,13 @@ class FeatureBuilderImpl implements FeatureBuilder {
                 Map<String,FeatureExtension> es, Map<String,String> vars) {
             super(id);
 
-            name = aName;
-            copyright = cr;
-            description = desc;
-            docURL = docs;
-            license = lic;
-            scm = sc;
-            vendor = vnd;
+            name = Optional.ofNullable(aName);
+            copyright = Optional.ofNullable(cr);
+            description = Optional.ofNullable(desc);
+            docURL = Optional.ofNullable(docs);
+            license = Optional.ofNullable(lic);
+            scm = Optional.ofNullable(sc);
+            vendor = Optional.ofNullable(vnd);
             complete = comp;
 
             bundles = Collections.unmodifiableList(bs);
@@ -187,37 +188,37 @@ class FeatureBuilderImpl implements FeatureBuilder {
         }
 
         @Override
-        public String getName() {
+        public Optional<String> getName() {
             return name;
         }
 
         @Override
-        public String getDescription() {
+        public Optional<String> getDescription() {
             return description;
         }
 
         @Override
-        public String getVendor() {
+        public Optional<String> getVendor() {
             return vendor;
         }
 
         @Override
-        public String getLicense() {
+        public Optional<String> getLicense() {
             return license;
         }
 
         @Override
-        public String getCopyright() {
+        public Optional<String> getCopyright() {
             return copyright;
         }
 
         @Override
-        public String getDocURL() {
+        public Optional<String> getDocURL() {
             return docURL;
         }
 
         @Override
-        public String getSCM() {
+        public Optional<String> getSCM() {
             return scm;
         }
 

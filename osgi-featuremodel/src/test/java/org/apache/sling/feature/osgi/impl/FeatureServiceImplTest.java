@@ -50,8 +50,8 @@ public class FeatureServiceImplTest {
         try (Reader r = new InputStreamReader(res.openStream())) {
             Feature f = features.readFeature(r);
 
-            assertNull(f.getName());
-            assertEquals("The feature description", f.getDescription());
+            assertTrue(f.getName().isEmpty());
+            assertEquals("The feature description", f.getDescription().get());
 
             List<FeatureBundle> bundles = f.getBundles();
             assertEquals(3, bundles.size());

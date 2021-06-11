@@ -16,16 +16,16 @@
  */
 package org.apache.sling.feature.osgi.impl;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+
 import org.osgi.service.feature.FeatureExtension;
 import org.osgi.service.feature.FeatureExtension.Kind;
 import org.osgi.service.feature.FeatureExtension.Type;
 import org.osgi.service.feature.FeatureExtensionBuilder;
 import org.osgi.service.feature.ID;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
 
 class ExtensionBuilderImpl implements FeatureExtensionBuilder {
     private final String name;
@@ -60,8 +60,31 @@ class ExtensionBuilderImpl implements FeatureExtensionBuilder {
     }
 
     @Override
-    public FeatureExtensionBuilder addArtifact(ID aid) {
-        addArtifact(aid.getGroupId(), aid.getArtifactId(), aid.getVersion(), aid.getType(), aid.getClassifier());
+    public FeatureExtensionBuilder addArtifact(ID id) {
+        if (type != Type.ARTIFACTS)
+            throw new IllegalStateException("Cannot add artifacts to extension of type " + type);
+
+        StringBuilder aid = new StringBuilder();
+        aid.append(id.getGroupId());
+        aid.append(':');
+        aid.append(id.getArtifactId());
+        aid.append(':');
+        aid.append(id.getVersion());
+
+        id.getType().ifPresent(
+    		t -> {
+                aid.append(':');
+                aid.append(t);
+                
+                id.getClassifier().ifPresent(
+            		c -> {
+                        aid.append(':');
+                        aid.append(2);
+                		}
+            		);
+    		});
+        aid.append('\n');
+        content.add(aid.toString());
         return this;
     }
 
@@ -72,29 +95,9 @@ class ExtensionBuilderImpl implements FeatureExtensionBuilder {
 
     @Override
     public FeatureExtensionBuilder addArtifact(String groupId, String artifactId, String version, String at, String classifier) {
-        if (type != Type.ARTIFACTS)
-            throw new IllegalStateException("Cannot add artifacts to extension of type " + type);
-
-        StringBuilder aid = new StringBuilder();
-        aid.append(groupId);
-        aid.append(':');
-        aid.append(artifactId);
-        aid.append(':');
-        aid.append(version);
-
-        if (at != null) {
-            aid.append(':');
-            aid.append(at);
-            if (classifier != null) {
-                aid.append(':');
-                aid.append(classifier);
-            }
-        }
-        aid.append('\n');
-        content.add(aid.toString());
-        return this;
+    	return addArtifact(new ID(groupId, artifactId, version, at, classifier)); 
     }
-
+    
     @Override
     public FeatureExtension build() {
         return new ExtensionImpl(name, type, kind, content);

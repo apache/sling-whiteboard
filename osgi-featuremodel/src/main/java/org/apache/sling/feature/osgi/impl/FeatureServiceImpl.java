@@ -65,9 +65,7 @@ public class FeatureServiceImpl {
         builder.setComplete(json.getBoolean("complete", false));
 
         builder.addBundles(getBundles(json));
-        for (String cat : getCategories(json)) {
-            builder.addCategory(cat);        	
-        }
+        builder.addCategories(getCategories(json));
         builder.addConfigurations(getConfigurations(json));
         builder.addExtensions(getExtensions(json));
 
