@@ -26,6 +26,7 @@ import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
 import org.apache.sling.sitemap.common.SitemapLinkExternalizer;
 import org.apache.sling.sitemap.SitemapException;
 import org.apache.sling.sitemap.generator.SitemapGenerator;
+import org.apache.sling.sitemap.generator.SitemapGeneratorManager;
 import org.apache.sling.sitemap.impl.builder.extensions.ExtensionProviderManager;
 import org.apache.sling.sitemap.impl.builder.SitemapImpl;
 import org.apache.sling.sitemap.impl.builder.SitemapIndexImpl;
@@ -42,7 +43,7 @@ import java.io.IOException;
 import java.util.*;
 
 import static org.apache.sling.sitemap.impl.SitemapServlet.*;
-import static org.apache.sling.sitemap.impl.SitemapUtil.*;
+import static org.apache.sling.sitemap.common.SitemapUtil.*;
 
 @Component(
         service = Servlet.class,
@@ -205,7 +206,7 @@ public class SitemapServlet extends SlingSafeMethodsServlet {
         }
         while (sitemapRoots.hasNext()) {
             Resource sitemapRoot = sitemapRoots.next();
-            Set<String> applicableNames = generatorManager.getApplicableNames(sitemapRoot, onDemandSitemaps);
+            Set<String> applicableNames = generatorManager.getNames(sitemapRoot, onDemandSitemaps);
             // applicable names we may serve directly, not applicable names, if any, we have to serve from storage
             for (String applicableName : applicableNames) {
                 String sitemapSelector = getSitemapSelector(sitemapRoot, sitemapRoot, applicableName);

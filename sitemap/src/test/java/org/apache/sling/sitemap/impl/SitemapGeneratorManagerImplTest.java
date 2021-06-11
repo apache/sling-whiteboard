@@ -39,11 +39,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith({SlingContextExtension.class, MockitoExtension.class})
-public class SitemapGeneratorManagerTest {
+public class SitemapGeneratorManagerImplTest {
 
     public final SlingContext context = new SlingContext();
 
-    private final SitemapGeneratorManager subject = new SitemapGeneratorManager();
+    private final SitemapGeneratorManagerImpl subject = new SitemapGeneratorManagerImpl();
 
     @Mock
     private SitemapGenerator generator1;
@@ -96,7 +96,7 @@ public class SitemapGeneratorManagerTest {
         Map<String, SitemapGenerator> generators = subject.getGenerators(context.currentResource("/"));
         SitemapGenerator sitemap3Generator = subject.getGenerator(context.currentResource(), "sitemap3");
         SitemapGenerator defaultSitemapGenerator = subject.getGenerator(context.currentResource(), SitemapGenerator.DEFAULT_SITEMAP);
-        Set<String> applicableNames = subject.getApplicableNames(context.currentResource(), Arrays.asList(
+        Set<String> applicableNames = subject.getNames(context.currentResource(), Arrays.asList(
                 "sitemap1", "sitemap2", "sitemap3", SitemapGenerator.DEFAULT_SITEMAP
         ));
 

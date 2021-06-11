@@ -66,7 +66,7 @@ public class SitemapServiceImplTest {
 
     private final SitemapServiceImpl subject = new SitemapServiceImpl();
     private final SitemapStorage storage = new SitemapStorage();
-    private final SitemapGeneratorManager generatorManager = new SitemapGeneratorManager();
+    private final SitemapGeneratorManagerImpl generatorManager = new SitemapGeneratorManagerImpl();
 
     @Mock
     private ServiceUserMapped serviceUser;
@@ -148,7 +148,8 @@ public class SitemapServiceImplTest {
 
         MockJcr.setQueryResult(
                 context.resourceResolver().adaptTo(Session.class),
-                "/jcr:root/content/site/en//*[@" + SitemapService.PROPERTY_SITEMAP_ROOT + "=true]",
+                "/jcr:root/content/site/en//*[@" + SitemapService.PROPERTY_SITEMAP_ROOT + "=true]" +
+                        " option(index tag slingSitemaps)",
                 Query.XPATH,
                 Arrays.asList(enRoot.adaptTo(Node.class), enFaqs.adaptTo(Node.class))
         );
@@ -174,7 +175,8 @@ public class SitemapServiceImplTest {
 
         MockJcr.setQueryResult(
                 context.resourceResolver().adaptTo(Session.class),
-                "/jcr:root/content/site/en//*[@" + SitemapService.PROPERTY_SITEMAP_ROOT + "=true]",
+                "/jcr:root/content/site/en//*[@" + SitemapService.PROPERTY_SITEMAP_ROOT + "=true]" +
+                        " option(index tag slingSitemaps)",
                 Query.XPATH,
                 Arrays.asList(enRoot.adaptTo(Node.class), enFaqs.adaptTo(Node.class))
         );
@@ -222,7 +224,8 @@ public class SitemapServiceImplTest {
 
         MockJcr.setQueryResult(
                 context.resourceResolver().adaptTo(Session.class),
-                "/jcr:root/content/site/en//*[@" + SitemapService.PROPERTY_SITEMAP_ROOT + "=true]",
+                "/jcr:root/content/site/en//*[@" + SitemapService.PROPERTY_SITEMAP_ROOT + "=true]" +
+                        " option(index tag slingSitemaps)",
                 Query.XPATH,
                 Arrays.asList(enRoot.adaptTo(Node.class), enNews.adaptTo(Node.class))
         );

@@ -27,7 +27,7 @@ import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.commons.scheduler.Scheduler;
 import org.apache.sling.sitemap.SitemapInfo;
 import org.apache.sling.sitemap.SitemapService;
-import org.apache.sling.sitemap.impl.SitemapUtil;
+import org.apache.sling.sitemap.common.SitemapUtil;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.annotations.Activate;
@@ -37,7 +37,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.PrintWriter;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;

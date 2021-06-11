@@ -56,7 +56,7 @@ public class SitemapServiceImplSchedulingTest {
 
     private final SitemapServiceImpl subject = new SitemapServiceImpl();
     private final SitemapStorage storage = new SitemapStorage();
-    private final SitemapGeneratorManager generatorManager = new SitemapGeneratorManager();
+    private final SitemapGeneratorManagerImpl generatorManager = new SitemapGeneratorManagerImpl();
 
     @Mock
     private ServiceUserMapped serviceUser;
@@ -122,13 +122,15 @@ public class SitemapServiceImplSchedulingTest {
     private void setupResourceResolver(ResourceResolver resolver) {
         MockJcr.setQueryResult(
                 resolver.adaptTo(Session.class),
-                "/jcr:root/content/site//*[@sling:sitemapRoot=true]",
+                "/jcr:root/content/site//*[@sling:sitemapRoot=true]" +
+                        " option(index tag slingSitemaps)",
                 Query.XPATH,
                 Collections.singletonList(siteRoot.adaptTo(Node.class))
         );
         MockJcr.setQueryResult(
                 resolver.adaptTo(Session.class),
-                "/jcr:root/content/microsite//*[@sling:sitemapRoot=true]",
+                "/jcr:root/content/microsite//*[@sling:sitemapRoot=true]" +
+                        " option(index tag slingSitemaps)",
                 Query.XPATH,
                 Collections.singletonList(micrositeRoot.adaptTo(Node.class))
         );

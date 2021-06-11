@@ -19,6 +19,7 @@
 package org.apache.sling.sitemap;
 
 import org.apache.sling.api.resource.Resource;
+import org.apache.sling.sitemap.SitemapException;
 import org.apache.sling.sitemap.builder.Sitemap;
 import org.apache.sling.sitemap.generator.ResourceTreeSitemapGenerator;
 import org.apache.sling.sitemap.generator.SitemapGenerator;

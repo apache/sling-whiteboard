@@ -20,6 +20,7 @@ package org.apache.sling.sitemap.impl;
 
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.sitemap.generator.SitemapGenerator;
+import org.apache.sling.sitemap.generator.SitemapGeneratorManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.service.component.annotations.*;
@@ -29,9 +30,9 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 @Component(service = SitemapGeneratorManager.class)
-public class SitemapGeneratorManager {
+public class SitemapGeneratorManagerImpl implements SitemapGeneratorManager {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SitemapGeneratorManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SitemapGeneratorManagerImpl.class);
 
     @Reference(service = SitemapGenerator.class, cardinality = ReferenceCardinality.AT_LEAST_ONE,
             policyOption = ReferencePolicyOption.GREEDY)
@@ -43,8 +44,9 @@ public class SitemapGeneratorManager {
         Collections.reverse(generators);
     }
 
+    @Override
     @Nullable
-    public SitemapGenerator getGenerator(Resource sitemapRoot, String name) {
+    public SitemapGenerator getGenerator(@NotNull Resource sitemapRoot, @NotNull String name) {
         for (SitemapGenerator generator : this.generators) {
             Set<String> providedNames = generator.getNames(sitemapRoot);
 
@@ -56,23 +58,20 @@ public class SitemapGeneratorManager {
         return null;
     }
 
-    @NotNull
-    public Set<String> getApplicableNames(Resource sitemapRoot, Collection<String> candidates) {
-        Set<String> result = new HashSet<>(candidates.size());
-        for (SitemapGenerator generator : this.generators) {
-            for (String providedName : generator.getNames(sitemapRoot)) {
-                if (candidates.contains(providedName)) {
-                    result.add(providedName);
-                }
-                if (candidates.size() == result.size()) {
-                    // early exit
-                    return result;
-                }
-            }
-        }
-        return result;
+    @Override
+    public Set<String> getNames(@NotNull Resource sitemapRoot) {
+        return getGenerators(sitemapRoot).keySet();
     }
 
+    @Override
+    @NotNull
+    public Set<String> getNames(@NotNull Resource sitemapRoot, @NotNull Collection<String> retainOnly) {
+        Set<String> allNames = new HashSet<>(getNames(sitemapRoot));
+        allNames.retainAll(retainOnly);
+        return allNames;
+    }
+
+    @Override
     @NotNull
     public Map<String, SitemapGenerator> getGenerators(@Nullable Resource sitemapRoot) {
         Map<String, SitemapGenerator> consolidatedGenerators = new HashMap<>();

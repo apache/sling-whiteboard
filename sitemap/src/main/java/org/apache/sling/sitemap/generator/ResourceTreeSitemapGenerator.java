@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import static org.apache.sling.sitemap.impl.SitemapUtil.isSitemapRoot;
+import static org.apache.sling.sitemap.common.SitemapUtil.isSitemapRoot;
 
 /**
  * A default implementation of {@link SitemapGenerator} that traverses a resource tree.

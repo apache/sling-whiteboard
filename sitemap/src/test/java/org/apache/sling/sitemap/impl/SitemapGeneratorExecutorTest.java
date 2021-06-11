@@ -59,7 +59,7 @@ public class SitemapGeneratorExecutorTest {
     public final SlingContext context = new SlingContext(ResourceResolverType.JCR_MOCK);
 
     private final SitemapGeneratorExecutor subject = new SitemapGeneratorExecutor();
-    private final SitemapGeneratorManager generatorManager = new SitemapGeneratorManager();
+    private final SitemapGeneratorManagerImpl generatorManager = new SitemapGeneratorManagerImpl();
     private final ExtensionProviderManager extensionProviderManager = new ExtensionProviderManager();
     private final SitemapStorage storage = spy(new SitemapStorage());
     private final SitemapServiceImpl sitemapService = new SitemapServiceImpl();

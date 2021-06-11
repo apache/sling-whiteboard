@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.sling.sitemap.impl;
+package org.apache.sling.sitemap.common;
 
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.jackrabbit.util.ISO9075;
@@ -60,6 +60,13 @@ public class SitemapUtil {
         return topLevelSitemapRoot;
     }
 
+    /**
+     * Returns the parent of the given {@link Resource} when the {@link Resource}'s name is
+     * {@link JcrConstants#JCR_CONTENT}.
+     *
+     * @param resource
+     * @return
+     */
     @Nullable
     public static Resource normalizeSitemapRoot(@Nullable Resource resource) {
         if (!isSitemapRoot(resource)) {
@@ -72,6 +79,12 @@ public class SitemapUtil {
         }
     }
 
+    /**
+     * Returns true when the given {@link Resource} is a sitemap root.
+     *
+     * @param resource
+     * @return
+     */
     public static boolean isSitemapRoot(@Nullable Resource resource) {
         if (resource == null) {
             return false;
@@ -89,15 +102,36 @@ public class SitemapUtil {
         return sitemapRoot;
     }
 
+    /**
+     * Returns true when the given {@link Resource} is a top level sitemap root.
+     *
+     * @param resource
+     * @return
+     */
     public static boolean isTopLevelSitemapRoot(@Nullable Resource resource) {
         return isSitemapRoot(resource) && getTopLevelSitemapRoot(resource).getPath().equals(resource.getPath());
     }
 
+    /**
+     * Returns the selector for the given sitemap root {@link Resource} and the given name.
+     *
+     * @param sitemapRoot
+     * @param name
+     * @return
+     */
     @NotNull
     public static String getSitemapSelector(@NotNull Resource sitemapRoot, @NotNull String name) {
         return getSitemapSelector(sitemapRoot, getTopLevelSitemapRoot(sitemapRoot), name);
     }
 
+    /**
+     * Returns the selector for the given sitemap root {@link Resource} and the given name.
+     *
+     * @param sitemapRoot
+     * @param topLevelSitemapRoot
+     * @param name
+     * @return
+     */
     @NotNull
     public static String getSitemapSelector(@NotNull Resource sitemapRoot, @NotNull Resource topLevelSitemapRoot, @NotNull String name) {
         name = SitemapGenerator.DEFAULT_SITEMAP.equals(name) ? "sitemap" : name + "-sitemap";
@@ -110,6 +144,14 @@ public class SitemapUtil {
         return name;
     }
 
+    /**
+     * Resolves all sitemap root {@link Resource}s for the given selector within the given sitemap root
+     * {@link Resource}. The given sitemap root {@link Resource} should usually be a top level sitemap root.
+     *
+     * @param sitemapRoot
+     * @param sitemapSelector
+     * @return
+     */
     @NotNull
     public static Map<Resource, String> resolveSitemapRoots(@NotNull Resource sitemapRoot, @NotNull String sitemapSelector) {
         if (sitemapSelector.equals("sitemap")) {
@@ -146,7 +188,7 @@ public class SitemapUtil {
     }
 
     /**
-     * Returns
+     * Returns all sitemap root {@link Resource}s within the given search path.
      *
      * @param resolver
      * @param searchPath
@@ -161,6 +203,7 @@ public class SitemapUtil {
             query.append('/');
         }
         query.append("/*[@").append(SitemapService.PROPERTY_SITEMAP_ROOT).append('=').append(Boolean.TRUE).append(']');
+        query.append(" option(index tag slingSitemaps)");
 
         return new Iterator<Resource>() {
             private final Iterator<Resource> hits = resolver.findResources(query.toString(), Query.XPATH);

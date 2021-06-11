@@ -61,7 +61,7 @@ public class SitemapSchedulerTest {
     public final SlingContext context = new SlingContext(ResourceResolverType.JCR_MOCK);
 
     private final SitemapScheduler subject = new SitemapScheduler();
-    private final SitemapGeneratorManager generatorManager = new SitemapGeneratorManager();
+    private final SitemapGeneratorManagerImpl generatorManager = new SitemapGeneratorManagerImpl();
 
     private final TestGenerator generator1 = new TestGenerator() {};
     private final TestGenerator generator2 = new TestGenerator() {};
@@ -104,7 +104,8 @@ public class SitemapSchedulerTest {
         context.registerInjectActivateService(subject);
         initResourceResolver(subject, resolver -> MockJcr.setQueryResult(
                 resolver.adaptTo(Session.class),
-                "/jcr:root/content//*[@" + SitemapService.PROPERTY_SITEMAP_ROOT + "=true]",
+                "/jcr:root/content//*[@" + SitemapService.PROPERTY_SITEMAP_ROOT + "=true]" +
+                        " option(index tag slingSitemaps)",
                 Query.XPATH,
                 ImmutableList.of(
                         rootDe.adaptTo(Node.class),
@@ -134,7 +135,8 @@ public class SitemapSchedulerTest {
         context.registerInjectActivateService(subject);
         initResourceResolver(subject, resolver -> MockJcr.setQueryResult(
                 resolver.adaptTo(Session.class),
-                "/jcr:root/content//*[@" + SitemapService.PROPERTY_SITEMAP_ROOT + "=true]",
+                "/jcr:root/content//*[@" + SitemapService.PROPERTY_SITEMAP_ROOT + "=true]" +
+                        " option(index tag slingSitemaps)",
                 Query.XPATH,
                 Collections.singletonList(rootDe.adaptTo(Node.class))
         ));
@@ -167,7 +169,8 @@ public class SitemapSchedulerTest {
         });
         initResourceResolver(subject, resolver -> MockJcr.setQueryResult(
                 resolver.adaptTo(Session.class),
-                "/jcr:root/content//*[@" + SitemapService.PROPERTY_SITEMAP_ROOT + "=true]",
+                "/jcr:root/content//*[@" + SitemapService.PROPERTY_SITEMAP_ROOT + "=true]" +
+                        " option(index tag slingSitemaps)",
                 Query.XPATH,
                 Collections.singletonList(rootDe.adaptTo(Node.class))
         ));

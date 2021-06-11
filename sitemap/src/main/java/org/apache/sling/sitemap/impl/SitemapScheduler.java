@@ -26,6 +26,7 @@ import org.apache.sling.commons.scheduler.Scheduler;
 import org.apache.sling.event.jobs.Job;
 import org.apache.sling.event.jobs.JobManager;
 import org.apache.sling.serviceusermapping.ServiceUserMapped;
+import org.apache.sling.sitemap.generator.SitemapGeneratorManager;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -40,7 +41,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.apache.sling.sitemap.impl.SitemapUtil.findSitemapRoots;
+import static org.apache.sling.sitemap.common.SitemapUtil.findSitemapRoots;
 
 @Component(
         service = {SitemapScheduler.class, Runnable.class},
@@ -93,7 +94,12 @@ public class SitemapScheduler implements Runnable {
     protected void activate(Configuration configuration) {
         String[] configuredGenerators = configuration.generators();
         if (configuredGenerators != null && configuredGenerators.length > 0) {
-            generators = new HashSet<>(Arrays.asList(configuredGenerators));
+            generators = Arrays.stream(configuredGenerators)
+                    .filter(configuredGenerator -> !"".equals(configuredGenerator.trim()))
+                    .collect(Collectors.toSet());
+            if (generators.isEmpty()) {
+                generators = null;
+            }
         } else {
             generators = null;
         }

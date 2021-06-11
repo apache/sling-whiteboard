@@ -57,7 +57,7 @@ public class SitemapStorageTest {
     public final SlingContext context = new SlingContext();
 
     private final SitemapStorage subject = new SitemapStorage();
-    private final SitemapGeneratorManager generatorManager = new SitemapGeneratorManager();
+    private final SitemapGeneratorManagerImpl generatorManager = new SitemapGeneratorManagerImpl();
 
     @Mock(lenient = true)
     private SitemapGenerator generator;

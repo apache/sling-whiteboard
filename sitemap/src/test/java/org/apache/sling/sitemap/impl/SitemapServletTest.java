@@ -66,7 +66,7 @@ public class SitemapServletTest {
     private final SitemapServlet subject = new SitemapServlet();
     private final SitemapStorage storage = spy(new SitemapStorage());
     private final SitemapServiceImpl sitemapService = new SitemapServiceImpl();
-    private final SitemapGeneratorManager generatorManager = new SitemapGeneratorManager();
+    private final SitemapGeneratorManagerImpl generatorManager = new SitemapGeneratorManagerImpl();
     private final ExtensionProviderManager extensionProviderManager = new ExtensionProviderManager();
 
     private SitemapGenerator generator = new TestResourceTreeSitemapGenerator() {

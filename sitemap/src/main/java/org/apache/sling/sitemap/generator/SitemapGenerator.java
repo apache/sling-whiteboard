@@ -33,12 +33,10 @@ import java.util.Set;
  * their names using {@link SitemapGenerator#getNames(Resource)} (Resource)}.
  * <p>
  * {@link SitemapGenerator#generate(Resource, String, Sitemap, GenerationContext)} may be called for each name and
- * each sitemap root {@link Resource}, the {@link SitemapGenerator} returned an non-empty {@link Set} of names.
- * </p>
+ * each sitemap root {@link Resource}, the {@link SitemapGenerator} returned an non-empty {@link Set} of names for.
  * <p>
  * It is possible to register multiple {@link SitemapGenerator}s for a single name. In this case the one with the
- * highest ranking according to the OSGI specification is taken.
- * </p>
+ * highest ranking according to the OSGI specification is used.
  */
 @ConsumerType
 public interface SitemapGenerator {

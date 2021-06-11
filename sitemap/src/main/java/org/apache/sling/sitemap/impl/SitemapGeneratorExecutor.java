@@ -30,6 +30,7 @@ import org.apache.sling.serviceusermapping.ServiceUserMapped;
 import org.apache.sling.sitemap.SitemapException;
 import org.apache.sling.sitemap.builder.Url;
 import org.apache.sling.sitemap.generator.SitemapGenerator;
+import org.apache.sling.sitemap.generator.SitemapGeneratorManager;
 import org.apache.sling.sitemap.impl.builder.SitemapImpl;
 import org.apache.sling.sitemap.impl.builder.extensions.ExtensionProviderManager;
 import org.jetbrains.annotations.NotNull;
@@ -53,7 +54,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.sling.sitemap.impl.SitemapUtil.normalizeSitemapRoot;
+import static org.apache.sling.sitemap.common.SitemapUtil.normalizeSitemapRoot;
 
 @Component(
         service = JobExecutor.class,

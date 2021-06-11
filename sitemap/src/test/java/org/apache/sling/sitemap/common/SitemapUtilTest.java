@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.sling.sitemap.impl;
+package org.apache.sling.sitemap.common;
 
 import com.google.common.collect.ImmutableMap;
 import org.apache.sling.api.resource.Resource;

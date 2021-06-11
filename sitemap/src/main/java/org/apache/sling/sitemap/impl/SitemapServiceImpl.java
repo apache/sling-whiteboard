@@ -24,6 +24,8 @@ import org.apache.sling.event.jobs.JobManager;
 import org.apache.sling.sitemap.SitemapInfo;
 import org.apache.sling.sitemap.SitemapService;
 import org.apache.sling.sitemap.common.SitemapLinkExternalizer;
+import org.apache.sling.sitemap.common.SitemapUtil;
+import org.apache.sling.sitemap.generator.SitemapGeneratorManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.framework.BundleContext;
@@ -39,7 +41,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.apache.sling.sitemap.impl.SitemapUtil.*;
+import static org.apache.sling.sitemap.common.SitemapUtil.*;
 
 @Component(service = {SitemapServiceImpl.class, SitemapService.class})
 @Designate(ocd = SitemapServiceImpl.Configuration.class)

@@ -25,7 +25,9 @@ import org.apache.sling.api.resource.*;
 import org.apache.sling.api.wrappers.ValueMapDecorator;
 import org.apache.sling.commons.scheduler.Scheduler;
 import org.apache.sling.serviceusermapping.ServiceUserMapped;
+import org.apache.sling.sitemap.common.SitemapUtil;
 import org.apache.sling.sitemap.generator.SitemapGenerator;
+import org.apache.sling.sitemap.generator.SitemapGeneratorManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.service.component.annotations.Activate;
@@ -49,7 +51,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import static org.apache.sling.sitemap.impl.SitemapUtil.*;
+import static org.apache.sling.sitemap.common.SitemapUtil.*;
 
 @Component(
         service = {SitemapStorage.class, Runnable.class},
@@ -348,7 +350,7 @@ public class SitemapStorage implements Runnable {
         Map<Resource, String> candidates = SitemapUtil.resolveSitemapRoots(sitemapRoot, name.substring(0, lastDot));
         // check if for any of the candidate resource roots a generator with the name exists
         return candidates.entrySet().stream()
-                .map(entry -> generatorManager.getApplicableNames(entry.getKey(), Collections.singleton(entry.getValue())))
+                .map(entry -> generatorManager.getNames(entry.getKey(), Collections.singleton(entry.getValue())))
                 .anyMatch(names -> names.size() > 0);
     }
 
