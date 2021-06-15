@@ -31,6 +31,18 @@
         <sling.java.version>11</sling.java.version>
     </properties>
 
+	<repositories>
+		<repository>
+			<id>snapshots-repo</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
     <build>
         <plugins>
             <plugin>
@@ -42,11 +54,10 @@
                     </archive>
                 </configuration>
             </plugin>
-            <!-- 
             <plugin>
                 <groupId>biz.aQute.bnd</groupId>
                 <artifactId>bnd-maven-plugin</artifactId>
-                <version>4.3.1</version>
+                <version>5.3.0</version>
                 <executions>
                     <execution>
                         <goals>
@@ -56,12 +67,14 @@
                 </executions>
                 <configuration>
                     <bnd><![CDATA[
+                        Bundle-Activator: org.apache.sling.feature.osgi.impl.Activator
+                        Export-Package: org.osgi.service.feature
                         -exportcontents: ${packages;VERSIONED}
                         -removeheaders: Private-Package,Include-Resource
                     ]]></bnd>
                 </configuration>
             </plugin>
-            -->
+
             <plugin>
                 <groupId>org.apache.rat</groupId>
                 <artifactId>apache-rat-plugin</artifactId>
@@ -83,8 +96,14 @@
         </dependency>
         <dependency>
             <groupId>org.osgi</groupId>
-            <artifactId>osgi.core</artifactId>
-            <version>8.0.0</version>
+            <artifactId>org.osgi.framework</artifactId>
+            <version>1.8.0</version>
+            <scope>provided</scope>
+        </dependency> 
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.service.feature</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>     
         <dependency>

@@ -39,9 +39,10 @@ import org.osgi.service.feature.FeatureConfiguration;
 import org.osgi.service.feature.FeatureConfigurationBuilder;
 import org.osgi.service.feature.FeatureExtension;
 import org.osgi.service.feature.FeatureExtensionBuilder;
+import org.osgi.service.feature.FeatureService;
 import org.osgi.service.feature.ID;
 
-public class FeatureServiceImpl {
+public class FeatureServiceImpl implements FeatureService {
     private final BuilderFactoryImpl builderFactory = new BuilderFactoryImpl();
 
     public BuilderFactory getBuilderFactory() {
