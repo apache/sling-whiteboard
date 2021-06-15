@@ -34,6 +34,20 @@ public interface SitemapService {
     String PROPERTY_SITEMAP_ROOT = "sling:sitemapRoot";
 
     /**
+     * Returns the configured maximum size (bytes) a sitemap should not exceed.
+     *
+     * @return
+     */
+    int getMaxSize();
+
+    /**
+     * Returns the configured maximum number of urls a sitemap should not exceed.
+     *
+     * @return
+     */
+    int getMaxEntries();
+
+    /**
      * Calls all registered SitemapSchedulers to schedule (re)generation for all sitemap roots and names.
      */
     void scheduleGeneration();

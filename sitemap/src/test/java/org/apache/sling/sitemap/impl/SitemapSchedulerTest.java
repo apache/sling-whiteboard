@@ -193,6 +193,39 @@ public class SitemapSchedulerTest {
         );
     }
 
+    @Test
+    public void testNothingScheduledWhenNameDoesNotNamesFromConfiguration() {
+        // given
+        context.registerInjectActivateService(subject, "names", new String[]{
+                "foobar"
+        });
+        initResourceResolver(subject, resolver -> MockJcr.setQueryResult(
+                resolver.adaptTo(Session.class),
+                "/jcr:root/content//*[@" + SitemapService.PROPERTY_SITEMAP_ROOT + "=true]" +
+                        " option(index tag slingSitemaps)",
+                Query.XPATH,
+                Collections.singletonList(rootDe.adaptTo(Node.class))
+        ));
+        generator1.setNames("sitemap1");
+        generator2.setNames(SitemapGenerator.DEFAULT_SITEMAP, "sitemap2");
+
+        // when
+        subject.schedule(Collections.singleton(SitemapGenerator.DEFAULT_SITEMAP));
+
+        // then
+        verify(jobManager, never()).addJob(any(), any());
+
+        // and when
+        generator1.setNames("sitemap1", "foobar");
+        subject.schedule(Collections.singleton("foobar"));
+
+        // then
+        verify(jobManager, times(1)).addJob(
+                eq("org/apache/sling/sitemap/build"),
+                argThat(sitemapJobPropertiesMatch("foobar", "/content/site/de"))
+        );
+    }
+
     private void initResourceResolver(SitemapScheduler scheduler, Consumer<ResourceResolver> resolverConsumer) {
         initResourceResolver(context, scheduler, resolverConsumer);
     }

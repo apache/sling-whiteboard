@@ -70,6 +70,16 @@ public class SitemapServiceImpl implements SitemapService {
     }
 
     @Override
+    public int getMaxSize() {
+        return sitemapServiceConfiguration.getMaxSize();
+    }
+
+    @Override
+    public int getMaxEntries() {
+        return sitemapServiceConfiguration.getMaxEntries();
+    }
+
+    @Override
     public void scheduleGeneration() {
         if (schedulers.getServiceReferences() != null) {
             for (ServiceReference<SitemapScheduler> scheduler : schedulers.getServiceReferences()) {
@@ -109,7 +119,7 @@ public class SitemapServiceImpl implements SitemapService {
         for (ServiceReference<SitemapScheduler> scheduler : schedulers.getServiceReferences()) {
             Object searchPath = scheduler.getProperty("searchPath");
             if (searchPath instanceof String && sitemapRoot.getPath().startsWith(searchPath + "/")) {
-                schedulers.getService(scheduler).schedule(sitemapRoot, Collections.singleton(name));
+                schedulers.getService(scheduler).schedule(sitemapRoot, Collections.singleton (name));
             }
         }
     }

@@ -65,4 +65,12 @@ public class SitemapServiceConfiguration {
     public boolean isWithinLimits(int size, int entries) {
         return size <= maxSize && entries <= maxEntries;
     }
+
+    public int getMaxSize() {
+        return maxSize;
+    }
+
+    public int getMaxEntries() {
+        return maxEntries;
+    }
 }

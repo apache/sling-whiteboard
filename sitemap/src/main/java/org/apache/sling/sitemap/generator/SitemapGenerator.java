@@ -25,6 +25,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.annotation.versioning.ConsumerType;
 
+import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -81,11 +82,17 @@ public interface SitemapGenerator {
      * root {@link Resource}. If the implementation does not want to generate a sitemap for a particular root it must
      * return an empty {@link Set}, if it does but does not differentiate by name, it must return a {@link Set}
      * containing only the {@link SitemapGenerator#DEFAULT_SITEMAP}.
+     * <p>
+     * The character '@' (U+0040) is reserved. Names contain with int will be filtered out.
+     * <p>
+     * The default implementation returns a {@link Set} of only {@link SitemapGenerator#DEFAULT_SITEMAP}.
      *
      * @return a {@link Set} of names
      */
     @NotNull
-    Set<String> getNames(@NotNull Resource sitemapRoot);
+    default Set<String> getNames(@NotNull Resource sitemapRoot) {
+        return Collections.singleton(SitemapGenerator.DEFAULT_SITEMAP);
+    }
 
     /**
      * Generates a {@link Sitemap} with the given name at the given {@link Resource}.

@@ -51,7 +51,7 @@ public class SitemapGeneratorManagerImpl implements SitemapGeneratorManager {
     @Nullable
     public SitemapGenerator getGenerator(@NotNull Resource sitemapRoot, @NotNull String name) {
         for (SitemapGenerator generator : this.generators) {
-            Set<String> providedNames = generator.getNames(sitemapRoot);
+            Set<String> providedNames = getNamesForGenerator(generator, sitemapRoot);
 
             if (providedNames.contains(name)) {
                 return generator;
@@ -68,19 +68,11 @@ public class SitemapGeneratorManagerImpl implements SitemapGeneratorManager {
 
     @Override
     @NotNull
-    public Set<String> getNames(@NotNull Resource sitemapRoot, @NotNull Collection<String> retainOnly) {
-        Set<String> allNames = new HashSet<>(getGenerators(sitemapRoot).keySet());
-        allNames.retainAll(retainOnly);
-        return Collections.unmodifiableSet(allNames);
-    }
-
-    @Override
-    @NotNull
     public Map<String, SitemapGenerator> getGenerators(@NotNull Resource sitemapRoot) {
         Map<String, SitemapGenerator> consolidatedGenerators = new HashMap<>();
 
         for (SitemapGenerator generator : this.generators) {
-            Set<String> providedNames = generator.getNames(sitemapRoot);
+            Set<String> providedNames = getNamesForGenerator(generator, sitemapRoot);
             Set<String> names = new HashSet<>(providedNames);
 
             if (names.removeAll(consolidatedGenerators.keySet()) && LOG.isDebugEnabled()) {
@@ -106,24 +98,17 @@ public class SitemapGeneratorManagerImpl implements SitemapGeneratorManager {
 
     @Override
     @NotNull
-    public Map<String, SitemapGenerator> getOnDemandGenerators(@Nullable Resource sitemapRoot) {
-        Set<String> generators = sitemapServiceConfiguration.getOnDemandGenerators();
-        return getGenerators(sitemapRoot).entrySet().stream()
-                .filter(entry -> generators.contains(entry.getValue().getClass().getName()))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-    }
-
-    @Override
-    @NotNull
     public Set<String> getOnDemandNames(@NotNull Resource sitemapRoot) {
-        return Collections.unmodifiableSet(getOnDemandGenerators(sitemapRoot).keySet());
+        Set<String> generators = sitemapServiceConfiguration.getOnDemandGenerators();
+        return Collections.unmodifiableSet(getGenerators(sitemapRoot).entrySet().stream()
+                .filter(entry -> generators.contains(entry.getValue().getClass().getName()))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet()));
     }
 
-    @Override
-    @NotNull
-    public Set<String> getOnDemandNames(@NotNull Resource sitemapRoot, @NotNull Collection<String> retainOnly) {
-        Set<String> allNames = new HashSet<>(getOnDemandGenerators(sitemapRoot).keySet());
-        allNames.retainAll(retainOnly);
-        return Collections.unmodifiableSet(allNames);
+    private static Set<String> getNamesForGenerator(SitemapGenerator generator, Resource sitemapRoot) {
+        Set<String> providedNames = new HashSet<>(generator.getNames(sitemapRoot));
+        providedNames.removeIf(name -> name.indexOf('@') >= 0);
+        return providedNames;
     }
 }

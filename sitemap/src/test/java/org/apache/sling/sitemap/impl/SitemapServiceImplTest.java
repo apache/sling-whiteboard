@@ -18,7 +18,6 @@
  */
 package org.apache.sling.sitemap.impl;
 
-import com.google.common.collect.ImmutableSet;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.event.jobs.Job;
 import org.apache.sling.event.jobs.JobManager;

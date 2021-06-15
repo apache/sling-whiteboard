@@ -378,9 +378,9 @@ public class SitemapStorage implements Runnable {
         return candidates.entrySet().stream()
                 .anyMatch(entry -> {
                     Resource resource = entry.getKey();
-                    Set<String> candidateName = Collections.singleton(entry.getValue());
-                    return generatorManager.getNames(resource, candidateName).size() > 0
-                            && generatorManager.getOnDemandNames(resource, candidateName).isEmpty();
+                    Set<String> names = generatorManager.getNames(resource);
+                    Set<String> onDemandNames = generatorManager.getOnDemandNames(resource);
+                    return names.contains(entry.getValue()) && !onDemandNames.contains(entry.getValue());
                 });
     }
 

@@ -47,12 +47,13 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static org.apache.sling.sitemap.common.SitemapUtil.normalizeSitemapRoot;
 
@@ -139,8 +140,9 @@ public class SitemapGeneratorExecutor implements JobExecutor {
                           JobExecutionContext executionContext) throws SitemapException, IOException {
         try {
             CopyableByteArrayOutputStream buffer = new CopyableByteArrayOutputStream();
-            GenerationContextImpl context = new GenerationContextImpl();
-            // prefill the buffer with existing data
+            GenerationContextImpl generationContext = new GenerationContextImpl();
+
+            // prefill the buffer with existing data from storage
             ValueMap state = storage.getState(sitemapRoot, name);
             InputStream existingData = state.get(JcrConstants.JCR_DATA, InputStream.class);
             if (existingData != null) {
@@ -149,23 +151,12 @@ public class SitemapGeneratorExecutor implements JobExecutor {
             // prefill the state from storage
             for (String key : state.keySet()) {
                 if (key.indexOf(':') < 0) {
-                    context.state.put(key, state.get(key));
+                    generationContext.state.put(key, state.get(key));
                 }
             }
 
-            Writer writer = new OutputStreamWriter(buffer, StandardCharsets.UTF_8);
-            SitemapImpl sitemap = new ChunkedSitemap(writer, extensionProviderManager, existingData == null,
-                    sitemapRoot, name, buffer, context) {
-                @Override
-                public @NotNull Url addUrl(@NotNull String location) throws SitemapException {
-                    if (executionContext.isStopped()) {
-                        throw new JobStoppedException();
-                    }
-                    return super.addUrl(location);
-                }
-            };
-
-            generator.generate(sitemapRoot, name, sitemap, context);
+            StatefulSitemap sitemap = new StatefulSitemap(sitemapRoot, name, buffer, generationContext, executionContext);
+            generator.generate(sitemapRoot, name, sitemap, sitemap.generationContext);
             sitemap.close();
 
             String storagePath = storage.writeSitemap(sitemapRoot, name, buffer.copy(), buffer.size(), sitemap.getUrlCount());
@@ -243,23 +234,32 @@ public class SitemapGeneratorExecutor implements JobExecutor {
         }
     }
 
-    private class ChunkedSitemap extends SitemapImpl {
+    private class StatefulSitemap extends SitemapImpl {
 
         private final Resource sitemapRoot;
         private final String name;
-        private final GenerationContextImpl context;
         private final CopyableByteArrayOutputStream buffer;
+        private final JobExecutionContext jobContext;
+        private final GenerationContextImpl generationContext;
 
         private int writtenUrls = 0;
 
-        public ChunkedSitemap(Writer writer, ExtensionProviderManager extensionProviderManager, boolean writeHeader,
-                              Resource sitemapRoot, String name, CopyableByteArrayOutputStream buffer,
-                              GenerationContextImpl context) throws IOException {
-            super(writer, extensionProviderManager, writeHeader);
+        StatefulSitemap(Resource sitemapRoot, String name, CopyableByteArrayOutputStream buffer,
+                        GenerationContextImpl generationContext, JobExecutionContext jobContext) throws IOException {
+            super(new OutputStreamWriter(buffer, StandardCharsets.UTF_8), extensionProviderManager, buffer.size() == 0);
             this.sitemapRoot = sitemapRoot;
             this.name = name;
-            this.context = context;
             this.buffer = buffer;
+            this.jobContext = jobContext;
+            this.generationContext = generationContext;
+        }
+
+        @Override
+        public @NotNull Url addUrl(@NotNull String location) throws SitemapException {
+            if (jobContext.isStopped()) {
+                throw new JobStoppedException();
+            }
+            return super.addUrl(location);
         }
 
         @Override
@@ -270,8 +270,8 @@ public class SitemapGeneratorExecutor implements JobExecutor {
                     // make sure the buffer has all data from the writer
                     out.flush();
                     // copy the state and add the buffer's data
-                    Map<String, Object> copy = new HashMap<>(context.state.size() + 1);
-                    copy.putAll(context.state);
+                    Map<String, Object> copy = new HashMap<>(generationContext.state.size() + 1);
+                    copy.putAll(generationContext.state);
                     copy.put(JcrConstants.JCR_DATA, buffer.copy());
                     // write the state and reset the counter for the next iteration
                     storage.writeState(sitemapRoot, name, copy);

@@ -54,19 +54,7 @@ public class SitemapImpl implements Sitemap, Closeable {
         this.out = writer;
 
         if (writeHeader) {
-            out.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-            out.write("<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"");
-
-            for (Map.Entry<String, String> entry : extensionProviderManager.getNamespaces().entrySet()) {
-                out.write(' ');
-                out.write("xmlns:");
-                out.write(entry.getValue());
-                out.write("=\"");
-                out.write(entry.getKey());
-                out.write('"');
-            }
-
-            out.write('>');
+            writeHeader();
         }
     }
 
@@ -104,6 +92,22 @@ public class SitemapImpl implements Sitemap, Closeable {
         pendingUrl = new UrlImpl(location, out, xmlWriterFactory, extensionProviderManager);
         urlCount++;
         return pendingUrl;
+    }
+
+    protected void writeHeader() throws IOException {
+        out.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+        out.write("<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"");
+
+        for (Map.Entry<String, String> entry : extensionProviderManager.getNamespaces().entrySet()) {
+            out.write(' ');
+            out.write("xmlns:");
+            out.write(entry.getValue());
+            out.write("=\"");
+            out.write(entry.getKey());
+            out.write('"');
+        }
+
+        out.write('>');
     }
 
     protected boolean writePendingUrl() throws SitemapException {

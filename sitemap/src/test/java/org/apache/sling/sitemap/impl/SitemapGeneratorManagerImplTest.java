@@ -21,20 +21,19 @@ package org.apache.sling.sitemap.impl;
 import org.apache.sling.sitemap.generator.SitemapGenerator;
 import org.apache.sling.testing.mock.sling.junit5.SlingContext;
 import org.apache.sling.testing.mock.sling.junit5.SlingContextExtension;
+import org.hamcrest.CustomMatcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -98,7 +97,8 @@ public class SitemapGeneratorManagerImplTest {
         Map<String, SitemapGenerator> generators = subject.getGenerators(context.currentResource("/"));
         SitemapGenerator sitemap3Generator = subject.getGenerator(context.currentResource(), "sitemap3");
         SitemapGenerator defaultSitemapGenerator = subject.getGenerator(context.currentResource(), SitemapGenerator.DEFAULT_SITEMAP);
-        Set<String> applicableNames = subject.getNames(context.currentResource(), Arrays.asList(
+        Set<String> applicableNames = new HashSet<>(subject.getNames(context.currentResource()));
+        applicableNames.retainAll(Arrays.asList(
                 "sitemap1", "sitemap2", "sitemap3", SitemapGenerator.DEFAULT_SITEMAP
         ));
 
@@ -111,5 +111,26 @@ public class SitemapGeneratorManagerImplTest {
         assertThat(applicableNames, hasSize(2));
         assertThat(applicableNames, hasItem("sitemap3"));
         assertThat(applicableNames, hasItem(SitemapGenerator.DEFAULT_SITEMAP));
+    }
+
+    @Test
+    public void testNamesWithAtFilteredOut() {
+        // given
+        when(generator1.getNames(any())).thenReturn(Collections.singleton(SitemapGenerator.DEFAULT_SITEMAP));
+        when(generator2.getNames(any())).thenReturn(Collections.singleton(SitemapGenerator.DEFAULT_SITEMAP));
+        when(generator3.getNames(any())).thenReturn(Collections.singleton("foo@bar"));
+
+        // when
+        Map<String, SitemapGenerator> generators = subject.getGenerators(context.currentResource("/"));
+        SitemapGenerator sitemap3Generator = subject.getGenerator(context.currentResource(), "foo@bar");
+
+        // then
+        assertNull(sitemap3Generator);
+        assertThat(generators.keySet(), not(hasItem(new CustomMatcher<String>("that contains @") {
+            @Override
+            public boolean matches(Object o) {
+                return o instanceof String && ((String) o).indexOf('@') >= 0;
+            }
+        })));
     }
 }
