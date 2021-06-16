@@ -20,8 +20,8 @@ package org.apache.sling.sitemap.generator;
 
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.sitemap.SitemapException;
+import org.apache.sling.sitemap.SitemapService;
 import org.apache.sling.sitemap.TestResourceTreeSitemapGenerator;
-import org.apache.sling.sitemap.generator.SitemapGenerator;
 import org.apache.sling.sitemap.impl.builder.extensions.ExtensionProviderManager;
 import org.apache.sling.sitemap.impl.builder.SitemapImpl;
 import org.apache.sling.testing.mock.sling.junit5.SlingContext;
@@ -66,7 +66,7 @@ public class ResourceTreeSitemapGeneratorTest {
         SitemapImpl sitemap = new SitemapImpl(writer, extensionProviderManager);
 
         // when
-        subject.generate(sitemapRoot, SitemapGenerator.DEFAULT_SITEMAP, sitemap, generationContext);
+        subject.generate(sitemapRoot, SitemapService.DEFAULT_SITEMAP_NAME, sitemap, generationContext);
         sitemap.close();
 
         // then
@@ -89,7 +89,7 @@ public class ResourceTreeSitemapGeneratorTest {
         context.create().resource("/content/site/de/child3");
 
         // when
-        subject.generate(sitemapRoot, SitemapGenerator.DEFAULT_SITEMAP, sitemap, generationContext);
+        subject.generate(sitemapRoot, SitemapService.DEFAULT_SITEMAP_NAME, sitemap, generationContext);
         sitemap.close();
 
         // then
@@ -120,7 +120,7 @@ public class ResourceTreeSitemapGeneratorTest {
         context.create().resource("/content/site/de/child3/grandchild31/jcr:content");
 
         // when
-        subject.generate(sitemapRoot, SitemapGenerator.DEFAULT_SITEMAP, sitemap, generationContext);
+        subject.generate(sitemapRoot, SitemapService.DEFAULT_SITEMAP_NAME, sitemap, generationContext);
         sitemap.close();
 
         // then

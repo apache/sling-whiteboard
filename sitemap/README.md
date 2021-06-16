@@ -9,8 +9,9 @@ background to even sites that collect 3rd party data to include dynamically rend
 ## Highlights
 
 * A simple, builder-like API to create Sitemaps, that hides all the XML specifics from the implementation
-* Supports on-demand and background generation w/ continuation after job interruption
+* Support for on-demand and background generation w/ continuation after job interruption
 * Support for nested sitemaps, that are automatically collected into a sitemap indexes
+* Support for auto-balancing sitemaps into multiple files for background generation
 
 ## Open Topics
 
@@ -83,27 +84,26 @@ taken into account for the news sitemap.
 
 #### Background Generation
 
-Background generation is triggered by a configurable scheduler. Multiple schedules can be created for different sitemap
-names as described before. This enables the background generation to align on the cadence in which particular content
-may be updated, for example product catalogues that sync on a regular basis.
+A configurable scheduler can be configured to trigger background generation. Multiple schedules can be created for 
+different sitemap names or generators as described before. This enables the background generation to align on the 
+cadence in which particular content may be updated, for example product catalogues that sync on a regular basis.
 
-For each sitemap root in the repository and for each sitemap name returned for them a job will be queued. It is
-recommended to create an unordered queue for those jobs so that they can be distributed across multiple instances within
-a cluster.
-
-```
-sling/sitemap/build
- + sitemap.root = /content/site/ch/de-ch
- + sitemap.name = <default>
-```
+For each sitemap root in the repository and for each sitemap name returned for them, a job with the topic 
+`org/apache/sling/sitemap/build` will be queued. The `SitemapGeneratorExecutor` implementation consumes those jobs and
+calls the corresponding `SitemapGeneator`. It is recommended to create an unordered queue for those jobs so that they 
+can be distributed across multiple instances within a cluster. 
 
 The `SitemapGeneratorExecutor` provides an execution context to the `SitemapGenerator`, that it may use to keep track on
 the progress. The implementation on the other hand will persist this state along with the already written sitemap after
-a configurable amount of urls has been added. This helps to resume jobs after an instance gets restarted or discarded in
-a dynamic cluster, and the jobs gets reassigned to another instance. Per default the `SitemapGeneratorExecutor` is
-configured with a chunk size of `Integer.MAX_VALUE`, which effectively means that no checkpoints will be written. When
-using this feature make sure to find a good balance between write overhead and performance gain achieved for those
-particular cases.
+a configurable amount of urls has been added. This allows to resume jobs after an instance gets restarted or discarded 
+in a dynamic cluster. Per default the `SitemapGeneratorExecutor` is configured with a chunk size of `Integer.MAX_VALUE`, 
+which effectively means that no checkpoints will be written. When using this feature make sure to find a good balance 
+between write overhead and performance gain for those particular cases.
+
+Background generation supports auto-balancing according to configurable limits for size (in bytes), and the number 
+of urls in a single sitemap file. This is transparently handled by the `SitemapGeneatorExecutor`, providing a `Sitemap` 
+instance which pipes added urls to multiple files when needed. As a consequence returning sitemap files from storage for 
+a given name and sitemap root may result in multiple return values.
 
 #### On-demand Generation
 
@@ -112,11 +112,16 @@ requested may even result in higher accuracy. On the other hand serving a sitema
 different crawlers highly depends on the amount of content and the `SitemapGeneator` implementation(s) used. Because of 
 that, serving sitemaps on-demand must be explicitly enabled.
 
-To configure serving sitemaps on-demand, set the `onDemandGenerators` of the `SitemapServiceConfiguration` PID. When 
-set, the `SitemapServlet` queries for all sitemap root resources and checks if any of them is served with a name of the
-on-demand generators. If so the sitemap root with the name will be added to the sitemap-index or the sitemap being 
-requested on-demand will be served respectively. In any case the mechanism always fallback serving sitemaps from 
-storage.   
+To enable serving sitemaps on-demand, a `SitemapGenerator` must indicate that a particular sitemap name should be served
+on demand. Alternatively the `SitemapGeneatorManagerImpl` can be configured to force all sitemaps to be served 
+on-demand. In both cases, the `SitemapServlet` changes its behaviour slightly:
+- When serving a sitemap-index, it queries  for all sitemap roots and adds the sitemaps of those, that should be served 
+  on-demand. Additionally, all sitemaps form the top level sitemap root's storage location are added if not already 
+  present.
+- For serving sitemap files it first checks  if the sitemap should be served on-demand, if not it falls back to the 
+  sitemap file from the top level sitemap root's storage location.
+  
+**On-demand generation does NOT support auto-balancing. The configured limits will be ignored.**
 
 ### Sitemap Extensions
 

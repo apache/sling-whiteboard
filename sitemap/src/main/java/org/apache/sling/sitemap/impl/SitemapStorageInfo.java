@@ -28,16 +28,18 @@ class SitemapStorageInfo {
     private final String sitemapSelector;
     private final String name;
     private final String path;
+    private final int fileIndex;
     private final Calendar lastModified;
     private final int size;
     private final int entries;
 
-    SitemapStorageInfo(@NotNull String path, @NotNull String sitemapSelector, @NotNull String name,
+    SitemapStorageInfo(@NotNull String path, @NotNull String sitemapSelector, @NotNull String name, int fileIndex,
                        @Nullable Calendar lastModified, int size,
                        int entries) {
         this.path = path;
         this.sitemapSelector = sitemapSelector;
         this.name = name;
+        this.fileIndex = fileIndex;
         this.lastModified = lastModified;
         this.size = size;
         this.entries = entries;
@@ -56,6 +58,10 @@ class SitemapStorageInfo {
     @NotNull
     public String getName() {
         return name;
+    }
+
+    public int getFileIndex() {
+        return fileIndex;
     }
 
     @Nullable

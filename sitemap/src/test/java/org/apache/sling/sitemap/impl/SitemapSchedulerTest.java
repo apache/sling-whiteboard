@@ -112,8 +112,8 @@ public class SitemapSchedulerTest {
                         rootEnContent.adaptTo(Node.class)
                 )
         ));
-        generator1.setNames(SitemapGenerator.DEFAULT_SITEMAP);
-        generator2.setNames(SitemapGenerator.DEFAULT_SITEMAP);
+        generator1.setNames(SitemapService.DEFAULT_SITEMAP_NAME);
+        generator2.setNames(SitemapService.DEFAULT_SITEMAP_NAME);
 
         // when
         subject.run();
@@ -121,11 +121,11 @@ public class SitemapSchedulerTest {
         // then
         verify(jobManager, times(1)).addJob(
                 eq("org/apache/sling/sitemap/build"),
-                argThat(sitemapJobPropertiesMatch(SitemapGenerator.DEFAULT_SITEMAP, "/content/site/de"))
+                argThat(sitemapJobPropertiesMatch(SitemapService.DEFAULT_SITEMAP_NAME, "/content/site/de"))
         );
         verify(jobManager, times(1)).addJob(
                 eq("org/apache/sling/sitemap/build"),
-                argThat(sitemapJobPropertiesMatch(SitemapGenerator.DEFAULT_SITEMAP, "/content/site/en"))
+                argThat(sitemapJobPropertiesMatch(SitemapService.DEFAULT_SITEMAP_NAME, "/content/site/en"))
         );
     }
 
@@ -140,8 +140,8 @@ public class SitemapSchedulerTest {
                 Query.XPATH,
                 Collections.singletonList(rootDe.adaptTo(Node.class))
         ));
-        generator1.setNames(SitemapGenerator.DEFAULT_SITEMAP, "sitemap1");
-        generator2.setNames(SitemapGenerator.DEFAULT_SITEMAP, "sitemap2");
+        generator1.setNames(SitemapService.DEFAULT_SITEMAP_NAME, "sitemap1");
+        generator2.setNames(SitemapService.DEFAULT_SITEMAP_NAME, "sitemap2");
 
         // when
         subject.run();
@@ -149,7 +149,7 @@ public class SitemapSchedulerTest {
         // then
         verify(jobManager, times(1)).addJob(
                 eq("org/apache/sling/sitemap/build"),
-                argThat(sitemapJobPropertiesMatch(SitemapGenerator.DEFAULT_SITEMAP, "/content/site/de"))
+                argThat(sitemapJobPropertiesMatch(SitemapService.DEFAULT_SITEMAP_NAME, "/content/site/de"))
         );
         verify(jobManager, times(1)).addJob(
                 eq("org/apache/sling/sitemap/build"),
@@ -175,10 +175,10 @@ public class SitemapSchedulerTest {
                 Collections.singletonList(rootDe.adaptTo(Node.class))
         ));
         generator1.setNames("sitemap1");
-        generator2.setNames(SitemapGenerator.DEFAULT_SITEMAP, "sitemap2");
+        generator2.setNames(SitemapService.DEFAULT_SITEMAP_NAME, "sitemap2");
 
         // when
-        subject.schedule(Collections.singleton(SitemapGenerator.DEFAULT_SITEMAP));
+        subject.schedule(Collections.singleton(SitemapService.DEFAULT_SITEMAP_NAME));
 
         // then
         verify(jobManager, never()).addJob(any(), any());
@@ -207,10 +207,10 @@ public class SitemapSchedulerTest {
                 Collections.singletonList(rootDe.adaptTo(Node.class))
         ));
         generator1.setNames("sitemap1");
-        generator2.setNames(SitemapGenerator.DEFAULT_SITEMAP, "sitemap2");
+        generator2.setNames(SitemapService.DEFAULT_SITEMAP_NAME, "sitemap2");
 
         // when
-        subject.schedule(Collections.singleton(SitemapGenerator.DEFAULT_SITEMAP));
+        subject.schedule(Collections.singleton(SitemapService.DEFAULT_SITEMAP_NAME));
 
         // then
         verify(jobManager, never()).addJob(any(), any());

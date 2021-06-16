@@ -24,19 +24,12 @@ import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
-import java.util.Arrays;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 @Component(service = SitemapServiceConfiguration.class)
 @Designate(ocd = SitemapServiceConfiguration.Configuration.class)
 public class SitemapServiceConfiguration {
 
     @ObjectClassDefinition(name = "Apache Sling Sitemap - Sitemap Service")
     @interface Configuration {
-        @AttributeDefinition(name = "Serve on-demand", description = "A list of generator full qualified generator " +
-                "class names to serve on-demand.")
-        String[] onDemandGenerators() default {};
 
         @AttributeDefinition(name = "Max Size", description = "The maximum size of a sitemap in bytes. Files that " +
                 "exceed the size will be flagged with a warning.")
@@ -47,23 +40,13 @@ public class SitemapServiceConfiguration {
         int maxEntries() default 50000;
     }
 
-    private Set<String> onDemandGenerators;
     private int maxSize;
     private int maxEntries;
 
     @Activate
     protected void activate(Configuration configuration) {
-        onDemandGenerators = Arrays.stream(configuration.onDemandGenerators()).collect(Collectors.toSet());
         maxSize = configuration.maxSize();
         maxEntries = configuration.maxEntries();
-    }
-
-    public Set<String> getOnDemandGenerators() {
-        return onDemandGenerators;
-    }
-
-    public boolean isWithinLimits(int size, int entries) {
-        return size <= maxSize && entries <= maxEntries;
     }
 
     public int getMaxSize() {

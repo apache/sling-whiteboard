@@ -34,17 +34,6 @@ import java.util.Set;
 public interface SitemapGeneratorManager {
 
     /**
-     * Returns the {@link SitemapGenerator} for the given sitemap root {@link Resource} and name. This may be null
-     * when no {@link SitemapGenerator} service exists that can generate a sitemap with the name for the given root.
-     *
-     * @param sitemapRoot
-     * @param name
-     * @return
-     */
-    @Nullable
-    SitemapGenerator getGenerator(@NotNull Resource sitemapRoot, @NotNull String name);
-
-    /**
      * Returns all names produced by all {@link SitemapGenerator}s for the given sitemap root.
      *
      * @param sitemapRoot
@@ -61,6 +50,17 @@ public interface SitemapGeneratorManager {
      */
     @NotNull
     Set<String> getOnDemandNames(@NotNull Resource sitemapRoot);
+
+    /**
+     * Returns the {@link SitemapGenerator} for the given sitemap root {@link Resource} and name. This may be null
+     * when no {@link SitemapGenerator} service exists that can generate a sitemap with the name for the given root.
+     *
+     * @param sitemapRoot
+     * @param name
+     * @return
+     */
+    @Nullable
+    SitemapGenerator getGenerator(@NotNull Resource sitemapRoot, @NotNull String name);
 
     /**
      * Returns a {@link Map} of {@link SitemapGenerator}s for each name returned by

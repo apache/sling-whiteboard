@@ -30,6 +30,11 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Map;
 
+/**
+ * An {@link Sitemap} implementation based on a {@link Writer} that keeps the last {@link Url} object in memory until
+ * another location gets added to the {@link SitemapImpl}. Call {@link SitemapImpl#flush()} to write the pending
+ * {@link Url} to the underlying {@link Writer}.
+ */
 public class SitemapImpl implements Sitemap, Closeable {
 
     static final String SITEMAP_NAMESPACE = "http://www.sitemaps.org/schemas/sitemap/0.9";
@@ -40,8 +45,6 @@ public class SitemapImpl implements Sitemap, Closeable {
     private final XMLOutputFactory xmlWriterFactory;
     private boolean closed = false;
     private UrlImpl pendingUrl;
-
-    private int urlCount = 0;
 
     public SitemapImpl(Writer writer, ExtensionProviderManager extensionProviderManager) throws IOException {
         this(writer, extensionProviderManager, true);
@@ -54,12 +57,20 @@ public class SitemapImpl implements Sitemap, Closeable {
         this.out = writer;
 
         if (writeHeader) {
-            writeHeader();
-        }
-    }
+            out.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+            out.write("<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"");
 
-    public int getUrlCount() {
-        return urlCount;
+            for (Map.Entry<String, String> entry : extensionProviderManager.getNamespaces().entrySet()) {
+                out.write(' ');
+                out.write("xmlns:");
+                out.write(entry.getValue());
+                out.write("=\"");
+                out.write(entry.getKey());
+                out.write('"');
+            }
+
+            out.write('>');
+        }
     }
 
     @Override
@@ -90,24 +101,7 @@ public class SitemapImpl implements Sitemap, Closeable {
         ensureNotClosed();
         writePendingUrl();
         pendingUrl = new UrlImpl(location, out, xmlWriterFactory, extensionProviderManager);
-        urlCount++;
         return pendingUrl;
-    }
-
-    protected void writeHeader() throws IOException {
-        out.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-        out.write("<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"");
-
-        for (Map.Entry<String, String> entry : extensionProviderManager.getNamespaces().entrySet()) {
-            out.write(' ');
-            out.write("xmlns:");
-            out.write(entry.getValue());
-            out.write("=\"");
-            out.write(entry.getKey());
-            out.write('"');
-        }
-
-        out.write('>');
     }
 
     protected boolean writePendingUrl() throws SitemapException {

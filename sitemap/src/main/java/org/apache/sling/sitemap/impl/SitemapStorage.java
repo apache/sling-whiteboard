@@ -28,14 +28,12 @@ import org.apache.sling.commons.metrics.MetricsService;
 import org.apache.sling.commons.scheduler.Scheduler;
 import org.apache.sling.serviceusermapping.ServiceUserMapped;
 import org.apache.sling.sitemap.common.SitemapUtil;
-import org.apache.sling.sitemap.generator.SitemapGenerator;
 import org.apache.sling.sitemap.generator.SitemapGeneratorManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.service.component.annotations.*;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
-import org.osgi.service.event.EventProperties;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
@@ -52,6 +50,8 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import static org.apache.sling.sitemap.common.SitemapUtil.*;
+import static org.apache.sling.sitemap.impl.SitemapEventUtil.newPurgeEvent;
+import static org.apache.sling.sitemap.impl.SitemapEventUtil.newUpdateEvent;
 
 @Component(
         service = {SitemapStorage.class, Runnable.class},
@@ -80,9 +80,10 @@ public class SitemapStorage implements Runnable {
         String scheduler_expression() default "0 0 1 * * ?";
     }
 
-    static final String PN_SITEMAP_ENTRIES = "entries";
-    static final String PN_SITEMAP_SIZE = "size";
-    static final String PN_SITEMAP_NAME = "name";
+    static final String PN_SITEMAP_ENTRIES = "sling:sitemapEntries";
+    static final String PN_SITEMAP_SIZE = "sling:sitemapFileSize";
+    static final String PN_SITEMAP_NAME = "sling:sitemapName";
+    static final String PN_SITEMAP_FILE_INDEX = "sling:sitemapFileIndex";
 
     private static final Logger LOG = LoggerFactory.getLogger(SitemapStorage.class);
     private static final Map<String, Object> AUTH = Collections.singletonMap(ResourceResolverFactory.SUBSERVICE,
@@ -133,24 +134,22 @@ public class SitemapStorage implements Runnable {
         try (ResourceResolver resolver = resourceResolverFactory.getServiceResourceResolver(AUTH)) {
             Iterator<Resource> descendants = traverse(resolver.getResource(rootPath)).iterator();
             List<Resource> toDelete = new LinkedList<>();
+            List<Event> purgeEvents = new LinkedList<>();
             while (descendants.hasNext()) {
                 Resource descendant = descendants.next();
                 if (descendant.isResourceType(RT_SITEMAP_PART) && isExpired(descendant)) {
                     toDelete.add(descendant);
-                } else if (descendant.isResourceType(RT_SITEMAP_FILE) && !doesSitemapRootExist(descendant)) {
+                } else if (descendant.isResourceType(RT_SITEMAP_FILE)
+                        && (!doesSitemapRootExist(descendant) || !isValidSitemapFile(descendant))) {
                     toDelete.add(descendant);
+                    purgeEvents.add(newPurgeEvent(descendant.getPath()));
                 }
             }
             for (Resource resource : toDelete) {
-                Map<String, Object> properties = new HashMap<>();
-                properties.put(SitemapGenerator.EVENT_PROPERTY_SITEMAP_STORAGE_PATH, resource.getPath());
-                eventAdmin.postEvent(new Event(
-                        SitemapGenerator.EVENT_TOPIC_SITEMAP_PURGED,
-                        new EventProperties(properties)
-                ));
                 resolver.delete(resource);
             }
             resolver.commit();
+            purgeEvents.forEach(eventAdmin::postEvent);
         } catch (LoginException | PersistenceException ex) {
             LOG.warn("Failed to cleanup storage: {}", ex.getMessage(), ex);
         }
@@ -211,7 +210,7 @@ public class SitemapStorage implements Runnable {
         }
     }
 
-    public void removeState(@NotNull Resource sitemapRoot, @NotNull String name) throws IOException {
+    public void deleteState(@NotNull Resource sitemapRoot, @NotNull String name) throws IOException {
         String statePath = getSitemapFilePath(sitemapRoot, name) + STATE_EXTENSION;
         try (ResourceResolver resolver = resourceResolverFactory.getServiceResourceResolver(AUTH)) {
             Resource stateResource = resolver.getResource(statePath);
@@ -224,11 +223,15 @@ public class SitemapStorage implements Runnable {
         }
     }
 
-    public String writeSitemap(@NotNull Resource sitemapRoot, @NotNull String name, @NotNull InputStream data, int size,
-                               int entries) throws IOException {
+    public String writeSitemap(@NotNull Resource sitemapRoot, @NotNull String name, @NotNull InputStream data,
+            int index, int size, int entries) throws IOException {
+        if (index < 1) {
+            throw new IllegalArgumentException("only unsigned integer greater then zero permitted");
+        }
+
         String sitemapFilePath = getSitemapFilePath(sitemapRoot, name);
         String statePath = sitemapFilePath + STATE_EXTENSION;
-        sitemapFilePath = sitemapFilePath + XML_EXTENSION;
+        sitemapFilePath += index > 1 ? "-" + index + XML_EXTENSION : XML_EXTENSION;
         try (ResourceResolver resolver = resourceResolverFactory.getServiceResourceResolver(AUTH)) {
             String sitemapFileName = ResourceUtil.getName(sitemapFilePath);
             Resource folder = getOrCreateFolder(resolver, ResourceUtil.getParent(sitemapFilePath));
@@ -241,10 +244,11 @@ public class SitemapStorage implements Runnable {
                 properties.put(JcrConstants.JCR_LASTMODIFIED, Calendar.getInstance());
                 properties.put(JcrConstants.JCR_DATA, data);
                 properties.put(PN_SITEMAP_NAME, name);
+                properties.put(PN_SITEMAP_FILE_INDEX, index);
                 properties.put(PN_SITEMAP_ENTRIES, entries);
                 properties.put(PN_SITEMAP_SIZE, size);
                 properties.put(PN_RESOURCE_TYPE, RT_SITEMAP_FILE);
-                resolver.create(folder, sitemapFileName, properties);
+                sitemapResource = resolver.create(folder, sitemapFileName, properties);
             } else {
                 ModifiableValueMap properties = sitemapResource.adaptTo(ModifiableValueMap.class);
                 if (properties == null) {
@@ -262,6 +266,7 @@ public class SitemapStorage implements Runnable {
             }
 
             resolver.commit();
+            eventAdmin.postEvent(newUpdateEvent(newSitemapStorageInfo(sitemapResource), sitemapRoot));
         } catch (LoginException | PersistenceException ex) {
             throw new IOException("Cannot create sitemap at " + sitemapFilePath, ex);
         }
@@ -269,7 +274,38 @@ public class SitemapStorage implements Runnable {
         return sitemapFilePath;
     }
 
-    public Set<SitemapStorageInfo> getSitemaps(Resource sitemapRoot) {
+    public Collection<String> deleteSitemaps(@NotNull Resource sitemapRoot, @NotNull String name,
+            Predicate<SitemapStorageInfo> storageInfoPredicate) throws IOException {
+        Collection<SitemapStorageInfo> storageInfo = getSitemaps(sitemapRoot, Collections.singleton(name));
+        Iterator<SitemapStorageInfo> toDelete = storageInfo.stream().filter(storageInfoPredicate).iterator();
+
+        if (!toDelete.hasNext()) {
+            // nothing to delete according to the given predicate
+            return Collections.emptyList();
+        }
+
+        try (ResourceResolver resolver = resourceResolverFactory.getServiceResourceResolver(AUTH)) {
+            List<String> result = new ArrayList<>(storageInfo.size());
+            List<Event> events = new ArrayList<>(storageInfo.size());
+
+            while (toDelete.hasNext()) {
+                String path = toDelete.next().getPath();
+                Resource resource = resolver.getResource(path);
+                if (resource != null) {
+                    resolver.delete(resource);
+                    result.add(path);
+                    events.add(newPurgeEvent(path));
+                }
+            }
+            resolver.commit();
+            events.forEach(eventAdmin::postEvent);
+            return result;
+        } catch (LoginException | PersistenceException ex) {
+            throw new IOException("Failed to delete sitemaps: " + ex.getMessage(), ex);
+        }
+    }
+
+    public Collection<SitemapStorageInfo> getSitemaps(Resource sitemapRoot) {
         return getSitemaps(sitemapRoot, Collections.emptySet());
     }
 
@@ -284,38 +320,34 @@ public class SitemapStorage implements Runnable {
      * @param names
      * @return
      */
-    public Set<SitemapStorageInfo> getSitemaps(Resource sitemapRoot, Collection<String> names) {
-        Resource topLevelSitemapRoot = getTopLevelSitemapRoot(sitemapRoot);
-        Predicate<SitemapStorageInfo> filter;
-
-        if (!isTopLevelSitemapRoot(sitemapRoot) || names.size() > 0) {
-            // return only those that match at least on of the names requested
-            filter = info -> names.stream()
-                    .map(name -> getSitemapSelector(sitemapRoot, topLevelSitemapRoot, name))
-                    .anyMatch(selector -> info.getSitemapSelector().equals(selector));
-        } else {
-            filter = any -> true;
-        }
-
-        String storagePath = rootPath + topLevelSitemapRoot.getPath();
+    public Collection<SitemapStorageInfo> getSitemaps(Resource sitemapRoot, Collection<String> names) {
         try (ResourceResolver resolver = resourceResolverFactory.getServiceResourceResolver(AUTH)) {
+            Resource topLevelSitemapRoot = getTopLevelSitemapRoot(sitemapRoot);
+            Predicate<SitemapStorageInfo> filter;
+
+            if (!isTopLevelSitemapRoot(sitemapRoot) || names.size() > 0) {
+                // return only those that match at least on of the names requested
+                filter = info -> names.stream()
+                        .map(name -> SitemapUtil.getSitemapSelector(sitemapRoot, topLevelSitemapRoot, name))
+                        .anyMatch(selector -> info.getSitemapSelector().equals(selector)
+                                || info.getSitemapSelector().equals(selector + '-' + info.getFileIndex()));
+            } else {
+                filter = any -> true;
+            }
+
+            String storagePath = rootPath + topLevelSitemapRoot.getPath();
             Resource storageResource = resolver.getResource(storagePath);
+
             if (storageResource == null) {
                 LOG.debug("Resource at {} does not exist.", storagePath);
                 return Collections.emptySet();
             }
+
             return StreamSupport.stream(storageResource.getChildren().spliterator(), false)
-                    .filter(child -> child.getName().endsWith(XML_EXTENSION))
-                    .filter(child -> child.isResourceType(RT_SITEMAP_FILE))
-                    .map(child -> new SitemapStorageInfo(
-                            child.getPath(),
-                            child.getName().substring(0, child.getName().lastIndexOf('.')),
-                            child.getValueMap().get(PN_SITEMAP_NAME, String.class),
-                            child.getValueMap().get(JcrConstants.JCR_LASTMODIFIED, Calendar.class),
-                            child.getValueMap().get(PN_SITEMAP_SIZE, 0),
-                            child.getValueMap().get(PN_SITEMAP_ENTRIES, 0)))
+                    .filter(SitemapStorage::isValidSitemapFile)
+                    .map(SitemapStorage::newSitemapStorageInfo)
                     .filter(filter)
-                    .collect(Collectors.toCollection(LinkedHashSet::new));
+                    .collect(Collectors.toList());
         } catch (LoginException ex) {
             LOG.warn("Could not list sitemaps from storage: {}", ex.getMessage());
             return Collections.emptySet();
@@ -409,7 +441,8 @@ public class SitemapStorage implements Runnable {
     @NotNull
     private String getSitemapFilePath(@NotNull Resource sitemapRoot, @NotNull String name) {
         Resource topLevelSitemapRoot = getTopLevelSitemapRoot(sitemapRoot);
-        return rootPath + topLevelSitemapRoot.getPath() + '/' + getSitemapSelector(sitemapRoot, topLevelSitemapRoot, name);
+        return rootPath + topLevelSitemapRoot.getPath() + '/' + getSitemapSelector(sitemapRoot, topLevelSitemapRoot,
+                name);
     }
 
     /**
@@ -447,5 +480,49 @@ public class SitemapStorage implements Runnable {
                 Stream.of(resource),
                 StreamSupport.stream(resource.getChildren().spliterator(), false).flatMap(SitemapStorage::traverse)
         );
+    }
+
+    /**
+     * Returns true when the given resource is a vaild sitemap file. That means, it ends with the sitemap extension,
+     * is of the sitemap file resource type and has a name and file index property.
+     *
+     * @param child
+     * @return
+     */
+    private static boolean isValidSitemapFile(Resource child) {
+        ValueMap properties = child.getValueMap();
+        return child.getName().endsWith(XML_EXTENSION)
+                && child.isResourceType(RT_SITEMAP_FILE)
+                && properties.get(PN_SITEMAP_NAME, String.class) != null
+                && properties.get(PN_SITEMAP_FILE_INDEX, Integer.class) != null;
+    }
+
+    /**
+     * Returns a new {@link SitemapStorageInfo} instance for a given valid sitemap file {@link Resource}.
+     *
+     * @param child
+     * @return
+     */
+    private static SitemapStorageInfo newSitemapStorageInfo(Resource child) {
+        if (!isValidSitemapFile(child)) {
+            throw new IllegalArgumentException("valid sitemap file expected");
+        }
+        return new SitemapStorageInfo(
+                child.getPath(),
+                child.getName().substring(0, child.getName().lastIndexOf('.')),
+                child.getValueMap().get(PN_SITEMAP_NAME, String.class),
+                child.getValueMap().get(PN_SITEMAP_FILE_INDEX, Integer.class),
+                child.getValueMap().get(JcrConstants.JCR_LASTMODIFIED, Calendar.class),
+                child.getValueMap().get(PN_SITEMAP_SIZE, 0),
+                child.getValueMap().get(PN_SITEMAP_ENTRIES, 0));
+    }
+
+    private static boolean isInteger(String text) {
+        try {
+            Integer.parseUnsignedInt(text);
+            return true;
+        } catch (NumberFormatException ex) {
+            return false;
+        }
     }
 }

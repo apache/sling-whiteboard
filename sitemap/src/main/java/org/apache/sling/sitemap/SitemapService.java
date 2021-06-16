@@ -31,7 +31,21 @@ import java.util.Collection;
 @ProviderType
 public interface SitemapService {
 
+    /**
+     * The name of a boolean property marking a resource as sitemap root {@link Resource}. It may either be set to a
+     * {@link Resource} or to a {@link Resource}'s jcr:content child.
+     */
     String PROPERTY_SITEMAP_ROOT = "sling:sitemapRoot";
+
+    /**
+     * The default name used for (unnamed) sitemaps.
+     */
+    String DEFAULT_SITEMAP_NAME = "<default>";
+
+    /**
+     * The name used for sitemap indexes.
+     */
+    String SITEMAP_INDEX_NAME = "<sitemap-index>";
 
     /**
      * Returns the configured maximum size (bytes) a sitemap should not exceed.

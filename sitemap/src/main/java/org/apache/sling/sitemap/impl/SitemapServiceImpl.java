@@ -25,7 +25,6 @@ import org.apache.sling.sitemap.SitemapInfo;
 import org.apache.sling.sitemap.SitemapService;
 import org.apache.sling.sitemap.common.SitemapLinkExternalizer;
 import org.apache.sling.sitemap.common.SitemapUtil;
-import org.apache.sling.sitemap.generator.SitemapGenerator;
 import org.apache.sling.sitemap.generator.SitemapGeneratorManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -37,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 import static org.apache.sling.sitemap.common.SitemapUtil.*;
 
@@ -119,7 +119,7 @@ public class SitemapServiceImpl implements SitemapService {
         for (ServiceReference<SitemapScheduler> scheduler : schedulers.getServiceReferences()) {
             Object searchPath = scheduler.getProperty("searchPath");
             if (searchPath instanceof String && sitemapRoot.getPath().startsWith(searchPath + "/")) {
-                schedulers.getService(scheduler).schedule(sitemapRoot, Collections.singleton (name));
+                schedulers.getService(scheduler).schedule(sitemapRoot, Collections.singleton(name));
             }
         }
     }
@@ -134,51 +134,50 @@ public class SitemapServiceImpl implements SitemapService {
             return Collections.emptySet();
         }
 
-        if (!isTopLevelSitemapRoot(sitemapRoot)) {
-            return getSitemapUrlsForNestedSitemapRoot(sitemapRoot);
-        }
+        Resource topLevelSitemapRoot = isTopLevelSitemapRoot(sitemapRoot)
+                ? sitemapRoot
+                : getTopLevelSitemapRoot(sitemapRoot);
+        String baseUrl = externalize(topLevelSitemapRoot);
 
-        String url = externalize(sitemapRoot);
-        Collection<String> names = new HashSet<>(generatorManager.getGenerators(sitemapRoot).keySet());
-        Set<String> onDemandNames = generatorManager.getOnDemandNames(sitemapRoot);
-
-        if (url == null) {
+        if (baseUrl == null) {
             LOG.debug("Could not get absolute url to sitemap: {}", resource.getPath());
             return Collections.emptySet();
         }
 
+
+        Collection<String> names = new HashSet<>(generatorManager.getNames(sitemapRoot));
+        Set<String> onDemandNames = generatorManager.getOnDemandNames(sitemapRoot);
         Collection<SitemapInfo> infos = new ArrayList<>(names.size() + 1);
 
         if (requiresSitemapIndex(sitemapRoot)) {
-            infos.add(newSitemapIndexInfo(
-                    url + '.' + SitemapServlet.SITEMAP_INDEX_SELECTOR + '.' + SitemapServlet.SITEMAP_EXTENSION));
+            String location = baseUrl + '.' + SitemapServlet.SITEMAP_INDEX_SELECTOR + '.' +
+                    SitemapServlet.SITEMAP_EXTENSION;
+            infos.add(newSitemapIndexInfo(location));
         }
 
-        for (String name : names) {
-            if (onDemandNames.contains(name)) {
-                String location = url + '.' + SitemapServlet.SITEMAP_SELECTOR + '.';
-                if (name.equals(SitemapGenerator.DEFAULT_SITEMAP)) {
-                    location += SitemapServlet.SITEMAP_EXTENSION;
-                } else {
-                    location += SitemapUtil.getSitemapSelector(sitemapRoot, sitemapRoot, name) + '.' + SitemapServlet.SITEMAP_EXTENSION;
-                }
-                infos.add(newSitemapInfo(null, location, name, -1, -1));
+        // write on demand sitemaps
+        for (Iterator<String> it = names.iterator(); it.hasNext(); ) {
+            String name = it.next();
+
+            if (!onDemandNames.contains(name)) {
+                continue;
             }
+
+            it.remove();
+            String selector = getSitemapSelector(sitemapRoot, topLevelSitemapRoot, name);
+            String location = newSitemapUrl(baseUrl, selector);
+            infos.add(newSitemapInfo(null, location, name, -1, -1));
         }
 
-        names.removeAll(onDemandNames);
+        if (names.isEmpty()) {
+            // early exit when only sitemap-index / on-demand sitemaps are served for the given root
+            return infos;
+        }
 
-        if (names.size() > 0) {
-            for (SitemapStorageInfo storageInfo : storage.getSitemaps(sitemapRoot, names)) {
-                String location = url + '.' + SitemapServlet.SITEMAP_SELECTOR + '.';
-                if (storageInfo.getSitemapSelector().equals(SitemapServlet.SITEMAP_SELECTOR)) {
-                    location += SitemapServlet.SITEMAP_EXTENSION;
-                } else {
-                    location += storageInfo.getSitemapSelector() + '.' + SitemapServlet.SITEMAP_EXTENSION;
-                }
-                infos.add(newSitemapInfo(storageInfo.getPath(), location, storageInfo.getName(), storageInfo.getSize(),
-                        storageInfo.getEntries()));
-            }
+        for (SitemapStorageInfo storageInfo : storage.getSitemaps(sitemapRoot, names)) {
+            String location = newSitemapUrl(baseUrl, storageInfo.getSitemapSelector());
+            infos.add(newSitemapInfo(storageInfo.getPath(), location, storageInfo.getName(), storageInfo.getSize(),
+                    storageInfo.getEntries()));
         }
 
         return infos;
@@ -204,10 +203,11 @@ public class SitemapServiceImpl implements SitemapService {
         // check if for each name a sitemap is in the storage
         Collection<String> names = new HashSet<>(generatorManager.getGenerators(sitemapRoot).keySet());
         names.removeAll(onDemandNames);
+        storage.getSitemaps(sitemapRoot, names).stream().map(SitemapStorageInfo::getName).forEach(names::remove);
 
-        if (storage.getSitemaps(sitemapRoot, names).size() != names.size()) {
+        if (!names.isEmpty()) {
             // at least one sitemap is missing and so generation is pending (already queued, active or not yet
-            // scheduled)
+            // scheduled). This is not fully precise as multi-file sitemaps could more then once
             return true;
         }
 
@@ -222,52 +222,11 @@ public class SitemapServiceImpl implements SitemapService {
     }
 
     private boolean requiresSitemapIndex(@NotNull Resource sitemapRoot) {
-        return isSitemapRoot(sitemapRoot)
-                && (generatorManager.getGenerators(sitemapRoot).size() > 1
-                || findSitemapRoots(sitemapRoot.getResourceResolver(), sitemapRoot.getPath()).hasNext());
-    }
-
-    /**
-     * Returns a collection of sitemap infos with urls as they are listed in the top level sitemap root's index.
-     *
-     * @param sitemapRoot
-     * @return
-     */
-    private Collection<SitemapInfo> getSitemapUrlsForNestedSitemapRoot(Resource sitemapRoot) {
-        Collection<String> names = generatorManager.getGenerators(sitemapRoot).keySet();
-        Resource topLevelSitemapRoot = getTopLevelSitemapRoot(sitemapRoot);
-        String topLevelSitemapRootUrl = externalize(topLevelSitemapRoot);
-
-        if (topLevelSitemapRootUrl == null || names.isEmpty()) {
-            LOG.debug("Could not create absolute urls for nested sitemaps at: {}", sitemapRoot.getPath());
-            return Collections.emptySet();
-        }
-
-        topLevelSitemapRootUrl += '.' + SitemapServlet.SITEMAP_SELECTOR + '.';
-        Set<String> onDemandNames = generatorManager.getOnDemandNames(sitemapRoot);
-        Collection<SitemapInfo> infos = new ArrayList<>(names.size());
-        Set<SitemapStorageInfo> storageInfos = null;
-
-        for (String name : names) {
-            String selector = getSitemapSelector(sitemapRoot, topLevelSitemapRoot, name);
-            String location = topLevelSitemapRootUrl + selector + '.' + SitemapServlet.SITEMAP_EXTENSION;
-            if (onDemandNames.contains(name)) {
-                infos.add(newSitemapInfo(null, location, name, -1, -1));
-            } else {
-                if (storageInfos == null) {
-                    storageInfos = storage.getSitemaps(sitemapRoot, names);
-                }
-                Optional<SitemapStorageInfo> storageInfoOpt = storageInfos.stream()
-                        .filter(info -> info.getSitemapSelector().equals(selector))
-                        .findFirst();
-                if (storageInfoOpt.isPresent()) {
-                    SitemapStorageInfo storageInfo = storageInfoOpt.get();
-                    infos.add(newSitemapInfo(storageInfo.getPath(), location, name, storageInfo.getSize(), storageInfo.getEntries()));
-                }
-            }
-        }
-
-        return infos;
+        Set<String> names = generatorManager.getGenerators(sitemapRoot).keySet();
+        return isTopLevelSitemapRoot(sitemapRoot)
+                && (names.size() > 1
+                || findSitemapRoots(sitemapRoot.getResourceResolver(), sitemapRoot.getPath()).hasNext()
+                || storage.getSitemaps(sitemapRoot, names).size() > 1);
     }
 
     private String externalize(Resource resource) {
@@ -275,13 +234,31 @@ public class SitemapServiceImpl implements SitemapService {
     }
 
     private SitemapInfo newSitemapIndexInfo(@NotNull String url) {
-        return new SitemapInfoImpl(null, url, null, -1, -1, true, true);
+        return new SitemapInfoImpl(null, url, SITEMAP_INDEX_NAME, -1, -1);
     }
 
     private SitemapInfo newSitemapInfo(@Nullable String path, @NotNull String url, @Nullable String name, int size,
                                        int entries) {
-        return new SitemapInfoImpl(path, url, name, size, entries, false,
-                sitemapServiceConfiguration.isWithinLimits(size, entries));
+        return new SitemapInfoImpl(path, url, name, size, entries);
+    }
+
+    private static String newSitemapUrl(String baseUrl, String selector) {
+        // worst case: 1x baseUrl, 1x selector, 1x sitemap-selector, 1x extension, 3x <dot>
+        StringBuilder builder = new StringBuilder(baseUrl.length() + selector.length() +
+                SitemapServlet.SITEMAP_SELECTOR.length() + SitemapServlet.SITEMAP_EXTENSION.length() + 3);
+        builder.append(baseUrl);
+        builder.append('.');
+
+        if (!selector.equals(SitemapServlet.SITEMAP_SELECTOR)) {
+            builder.append(SitemapServlet.SITEMAP_SELECTOR);
+            builder.append('.');
+        }
+
+        builder.append(selector);
+        builder.append('.');
+        builder.append(SitemapServlet.SITEMAP_EXTENSION);
+
+        return builder.toString();
     }
 
     private static class SitemapInfoImpl implements SitemapInfo {
@@ -291,18 +268,14 @@ public class SitemapServiceImpl implements SitemapService {
         private final String name;
         private final int size;
         private final int entries;
-        private final boolean isIndex;
-        private final boolean withinLimits;
 
         private SitemapInfoImpl(@Nullable String path, @NotNull String url, @Nullable String name, int size,
-                                int entries, boolean isIndex, boolean withinLimits) {
+                                int entries) {
             this.path = path;
             this.url = url;
             this.name = name;
             this.size = size;
             this.entries = entries;
-            this.isIndex = isIndex;
-            this.withinLimits = withinLimits;
         }
 
         @Nullable
@@ -331,16 +304,6 @@ public class SitemapServiceImpl implements SitemapService {
         @Override
         public int getEntries() {
             return entries;
-        }
-
-        @Override
-        public boolean isIndex() {
-            return isIndex;
-        }
-
-        @Override
-        public boolean isWithinLimits() {
-            return withinLimits;
         }
 
         @Override

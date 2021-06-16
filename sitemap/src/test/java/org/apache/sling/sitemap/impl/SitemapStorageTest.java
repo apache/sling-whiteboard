@@ -33,16 +33,23 @@ import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.platform.commons.util.StringUtils;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.osgi.service.event.Event;
+import org.osgi.service.event.EventConstants;
+import org.osgi.service.event.EventHandler;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Set;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItems;
@@ -75,8 +82,10 @@ public class SitemapStorageTest {
                 "stateMaxAge", 100
         );
 
-        when(generator.getNames(any())).thenReturn(Collections.singleton(SitemapGenerator.DEFAULT_SITEMAP));
+        when(generator.getNames(any())).thenReturn(Collections.singleton(SitemapService.DEFAULT_SITEMAP_NAME));
     }
+
+    // Read/Write
 
     @Test
     public void testConsecutiveWriteOfStateUpdatesContent() throws IOException {
@@ -102,8 +111,8 @@ public class SitemapStorageTest {
         ));
 
         // when
-        subject.writeSitemap(root, "foo", new ByteArrayInputStream(new byte[]{0x01}), 1, 0);
-        subject.writeSitemap(root, "foo", new ByteArrayInputStream(new byte[]{0x01, 0x02}), 2, 0);
+        subject.writeSitemap(root, "foo", new ByteArrayInputStream(new byte[]{0x01}), 1, 1, 0);
+        subject.writeSitemap(root, "foo", new ByteArrayInputStream(new byte[]{0x01, 0x02}), 1, 2, 0);
 
         // then
         assertResourceDataEquals(
@@ -111,6 +120,27 @@ public class SitemapStorageTest {
                 context.resourceResolver().getResource("/var/sitemaps/content/site/de/foo-sitemap.xml")
         );
     }
+
+    @Test
+    public void testListSitemapsReturnsOnlySitemaps() throws IOException {
+        // given
+        Resource root = context.create().resource("/content/site/de", ImmutableMap.of(
+                SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE
+        ));
+
+        // when
+        subject.writeState(root, "foo", ImmutableMap.of("i", 1));
+        subject.writeState(root, "bar", ImmutableMap.of("i", 1));
+        subject.writeSitemap(root, "foobar", new ByteArrayInputStream(new byte[0]), 1, 0, 0);
+        subject.writeSitemap(root, SitemapService.DEFAULT_SITEMAP_NAME, new ByteArrayInputStream(new byte[0]), 1, 0, 0);
+
+        // then
+        Collection<SitemapStorageInfo> sitemapNames = subject.getSitemaps(root);
+        assertThat(sitemapNames, hasSize(2));
+        assertThat(sitemapNames, hasItems(storageInfo("foobar-sitemap"), storageInfo("sitemap")));
+    }
+
+    // Cleanup
 
     @Test
     public void testStateExpires() throws InterruptedException, IOException {
@@ -128,24 +158,6 @@ public class SitemapStorageTest {
         assertNull(properties.get("i", Integer.class));
     }
 
-    @Test
-    public void testListSitemapsReturnsOnlySitemaps() throws IOException {
-        // given
-        Resource root = context.create().resource("/content/site/de", ImmutableMap.of(
-                SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE
-        ));
-
-        // when
-        subject.writeState(root, "foo", ImmutableMap.of("i", 1));
-        subject.writeState(root, "bar", ImmutableMap.of("i", 1));
-        subject.writeSitemap(root, "foobar", new ByteArrayInputStream(new byte[0]), 0, 0);
-        subject.writeSitemap(root, SitemapGenerator.DEFAULT_SITEMAP, new ByteArrayInputStream(new byte[0]), 0, 0);
-
-        // then
-        Set<SitemapStorageInfo> sitemapNames = subject.getSitemaps(root);
-        assertThat(sitemapNames, hasSize(2));
-        assertThat(sitemapNames, hasItems(storageInfo("foobar-sitemap"), storageInfo("sitemap")));
-    }
 
     @Test
     public void testCleanupExpiredStates() throws Exception {
@@ -155,7 +167,7 @@ public class SitemapStorageTest {
         ));
 
         // when
-        subject.writeState(root, SitemapGenerator.DEFAULT_SITEMAP, ImmutableMap.of("i", 1));
+        subject.writeState(root, SitemapService.DEFAULT_SITEMAP_NAME, ImmutableMap.of("i", 1));
 
         // then
         assertNotNull(context.resourceResolver().getResource("/var/sitemaps/content/site/de/sitemap.part"));
@@ -177,10 +189,14 @@ public class SitemapStorageTest {
         ));
 
         // when
-        subject.writeSitemap(initialRoot, SitemapGenerator.DEFAULT_SITEMAP, new ByteArrayInputStream(new byte[0]), 0, 0);
+        subject.writeSitemap(initialRoot, SitemapService.DEFAULT_SITEMAP_NAME, new ByteArrayInputStream(new byte[0]), 1,
+                0, 0);
+        subject.writeSitemap(initialRoot, SitemapService.DEFAULT_SITEMAP_NAME, new ByteArrayInputStream(new byte[0]), 2,
+                0, 0);
 
         // then
         assertNotNull(context.resourceResolver().getResource("/var/sitemaps/content/site/ch/de-ch/sitemap.xml"));
+        assertNotNull(context.resourceResolver().getResource("/var/sitemaps/content/site/ch/de-ch/sitemap-2.xml"));
 
         // and when
         newRoot.adaptTo(ModifiableValueMap.class).put(SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE);
@@ -189,6 +205,7 @@ public class SitemapStorageTest {
 
         // then
         assertNull(context.resourceResolver().getResource("/var/sitemaps/content/site/ch/de-ch/sitemap.xml"));
+        assertNull(context.resourceResolver().getResource("/var/sitemaps/content/site/ch/de-ch/sitemap-2.xml"));
     }
 
     @Test
@@ -202,8 +219,8 @@ public class SitemapStorageTest {
         ));
 
         // when
-        subject.writeSitemap(root, SitemapGenerator.DEFAULT_SITEMAP, new ByteArrayInputStream(new byte[0]), 0, 0);
-        subject.writeSitemap(news, SitemapGenerator.DEFAULT_SITEMAP, new ByteArrayInputStream(new byte[0]), 0, 0);
+        subject.writeSitemap(root, SitemapService.DEFAULT_SITEMAP_NAME, new ByteArrayInputStream(new byte[0]), 1, 0, 0);
+        subject.writeSitemap(news, SitemapService.DEFAULT_SITEMAP_NAME, new ByteArrayInputStream(new byte[0]), 1, 0, 0);
 
         // then
         assertNotNull(context.resourceResolver().getResource("/var/sitemaps/content/site/de/sitemap.xml"));
@@ -217,6 +234,81 @@ public class SitemapStorageTest {
         // then
         assertNotNull(context.resourceResolver().getResource("/var/sitemaps/content/site/de/sitemap.xml"));
         assertNull(context.resourceResolver().getResource("/var/sitemaps/content/site/de/news-sitemap.xml"));
+    }
+
+    // Eventing
+
+    @Test
+    public void testNoPurgeEventSentOnStateCleanup() throws IOException, InterruptedException {
+        // given
+        List<Event> capturedEvents = new ArrayList<>();
+        Resource root = context.create().resource("/content/site/de", ImmutableMap.of(
+                SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE
+        ));
+        context.registerService(EventHandler.class, capturedEvents::add, EventConstants.EVENT_TOPIC, new String[]{
+                SitemapGenerator.EVENT_TOPIC_SITEMAP_UPDATED,
+                SitemapGenerator.EVENT_TOPIC_SITEMAP_PURGED
+        });
+
+        // when
+        subject.writeState(root, "foo", Collections.emptyMap());
+        Thread.sleep(100);
+        subject.run();
+
+        // then
+        assertThat(capturedEvents, hasSize(0));
+    }
+
+    @Test
+    public void testUpdatedAndPurgeEventSentOnSitemapWriteCleanup() throws IOException, InterruptedException {
+        // given
+        List<Event> capturedEvents = new ArrayList<>();
+        Resource root = context.create().resource("/content/site/de", ImmutableMap.of(
+                SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE
+        ));
+        context.registerService(EventHandler.class, capturedEvents::add, EventConstants.EVENT_TOPIC, new String[]{
+                SitemapGenerator.EVENT_TOPIC_SITEMAP_UPDATED,
+                SitemapGenerator.EVENT_TOPIC_SITEMAP_PURGED
+        });
+
+        // when
+        String storagePath = subject.writeSitemap(root, "foo", new ByteArrayInputStream(new byte[]{0x00}), 1, 0, 0);
+        context.resourceResolver().delete(root);
+        context.resourceResolver().commit();
+        Thread.sleep(100);
+        subject.run();
+
+        // then
+        System.out.println(capturedEvents.stream().map(Event::toString).collect(Collectors.joining(",")));
+        assertThat(capturedEvents, hasSize(2));
+        assertThat(capturedEvents, hasItems(
+                sitemapEvent(SitemapGenerator.EVENT_TOPIC_SITEMAP_UPDATED, storagePath),
+                sitemapEvent(SitemapGenerator.EVENT_TOPIC_SITEMAP_PURGED, storagePath)
+        ));
+    }
+
+    @Test
+    public void testUpdatedAndPurgeEventSentOnSitemapWriteDelete() throws IOException {
+        // given
+        List<Event> capturedEvents = new ArrayList<>();
+        Resource root = context.create().resource("/content/site/de", ImmutableMap.of(
+                SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE
+        ));
+        context.registerService(EventHandler.class, capturedEvents::add, EventConstants.EVENT_TOPIC, new String[]{
+                SitemapGenerator.EVENT_TOPIC_SITEMAP_UPDATED,
+                SitemapGenerator.EVENT_TOPIC_SITEMAP_PURGED
+        });
+
+        // when
+        String storagePath = subject.writeSitemap(root, "foo", new ByteArrayInputStream(new byte[]{0x00}), 1, 0, 0);
+        subject.deleteSitemaps(root, "foo", info -> true);
+
+        // then
+        assertThat(capturedEvents, hasSize(2));
+        assertThat(capturedEvents, hasItems(
+                sitemapEvent(SitemapGenerator.EVENT_TOPIC_SITEMAP_UPDATED, storagePath),
+                sitemapEvent(SitemapGenerator.EVENT_TOPIC_SITEMAP_PURGED, storagePath)
+        ));
     }
 
     static void assertResourceDataEquals(String expectedValue, Resource resource) throws IOException {
@@ -233,6 +325,17 @@ public class SitemapStorageTest {
         StringWriter sitemap = new StringWriter();
         IOUtils.copy(inputStream, sitemap, StandardCharsets.UTF_8);
         assertEquals(expectedValue, sitemap.toString());
+    }
+
+    private static Matcher<Event> sitemapEvent(String topic, String storagePath) {
+        return new CustomMatcher<Event>("Event with storagePath property set to " + storagePath) {
+            @Override
+            public boolean matches(Object o) {
+                return o instanceof Event
+                        && storagePath.equals(
+                        ((Event) o).getProperty(SitemapGenerator.EVENT_PROPERTY_SITEMAP_STORAGE_PATH));
+            }
+        };
     }
 
     private static Matcher<SitemapStorageInfo> storageInfo(String name) {

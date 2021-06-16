@@ -30,13 +30,11 @@ import static org.junit.jupiter.api.Assertions.fail;
 public abstract class TestGenerator implements SitemapGenerator {
 
     private Map<String, List<String>> names = new HashMap<>();
+    private Map<String, List<String>> onDemandNames = new HashMap<>();
 
     public TestGenerator() {
         this.names.put(null, Collections.emptyList());
-    }
-
-    public TestGenerator(String... names) {
-        this.names.put(null, Arrays.asList(names));
+        this.onDemandNames.put(null, Collections.emptyList());
     }
 
     public void setNames(String... names) {
@@ -47,12 +45,27 @@ public abstract class TestGenerator implements SitemapGenerator {
         this.names.put(resource.getPath(), Arrays.asList(names));
     }
 
+    public void setOnDemandNames(String... names) {
+        this.onDemandNames.put(null, Arrays.asList(names));
+    }
+
+    public void setOnDemandNames(Resource resource, String... names) {
+        this.onDemandNames.put(resource.getPath(), Arrays.asList(names));
+    }
+
     @Override
     @NotNull
     public Set<String> getNames(@NotNull Resource sitemapRoot) {
         return new HashSet<>(names.containsKey(sitemapRoot.getPath())
                 ? names.get(sitemapRoot.getPath())
                 : names.get(null));
+    }
+
+    @Override
+    public @NotNull Set<String> getOnDemandNames(@NotNull Resource sitemapRoot) {
+        return new HashSet<>(onDemandNames.containsKey(sitemapRoot.getPath())
+                ? onDemandNames.get(sitemapRoot.getPath())
+                : onDemandNames.get(null));
     }
 
     @Override

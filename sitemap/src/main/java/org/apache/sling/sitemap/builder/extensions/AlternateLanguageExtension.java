@@ -25,7 +25,7 @@ import org.osgi.annotation.versioning.ProviderType;
 import java.util.Locale;
 
 /**
- * An extension to add alternate language links to an url.
+ * An extension to add alternate language links to an {@link org.apache.sling.sitemap.builder.Url}.
  *
  * @see <a href="https://developers.google.com/search/docs/advanced/crawling/localized-versions#sitemap">Tell Google about localized versions of your page</a>
  */

@@ -49,10 +49,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -69,13 +66,13 @@ public class SitemapServletTest {
     private final SitemapGeneratorManagerImpl generatorManager = new SitemapGeneratorManagerImpl();
     private final ExtensionProviderManager extensionProviderManager = new ExtensionProviderManager();
 
-    private SitemapGenerator generator = new TestResourceTreeSitemapGenerator() {
+    private TestResourceTreeSitemapGenerator generator = new TestResourceTreeSitemapGenerator() {
         @Override
         public @NotNull Set<String> getNames(@NotNull Resource sitemapRoot) {
-            return ImmutableSet.of(SitemapGenerator.DEFAULT_SITEMAP);
+            return ImmutableSet.of(SitemapService.DEFAULT_SITEMAP_NAME);
         }
     };
-    private SitemapGenerator newsGenerator = new TestResourceTreeSitemapGenerator() {
+    private TestResourceTreeSitemapGenerator newsGenerator = new TestResourceTreeSitemapGenerator() {
         @Override
         public @NotNull Set<String> getNames(@NotNull Resource sitemapRoot) {
             return ImmutableSet.of("news");
@@ -107,9 +104,13 @@ public class SitemapServletTest {
         context.registerService(SitemapGenerator.class, newsGenerator);
         context.registerService(JobManager.class, jobManager);
         context.registerInjectActivateService(extensionProviderManager);
+        context.registerInjectActivateService(sitemapServiceConfiguration);
+        context.registerInjectActivateService(generatorManager);
+        context.registerInjectActivateService(storage);
+        context.registerInjectActivateService(subject);
 
         // overrule the getLastModified() of all SitemapStorageInfos to get predictable behaviour
-        doAnswer(inv -> ((Set<SitemapStorageInfo>) inv.callRealMethod()).stream()
+        doAnswer(inv -> ((Collection<SitemapStorageInfo>) inv.callRealMethod()).stream()
                 .map(info -> {
                     info = spy(info);
                     when(info.getLastModified()).thenReturn(pointInTime);
@@ -158,13 +159,8 @@ public class SitemapServletTest {
     @Test
     public void testSitemapIndexContainsOnlySitemapsFromStorage() throws IOException, ServletException {
         // given
-        context.registerInjectActivateService(sitemapServiceConfiguration);
-        context.registerInjectActivateService(generatorManager);
-        context.registerInjectActivateService(storage);
-        context.registerInjectActivateService(subject);
-
-        storage.writeSitemap(root, SitemapGenerator.DEFAULT_SITEMAP, new ByteArrayInputStream(new byte[0]), 0, 0);
-        storage.writeSitemap(root, "news", new ByteArrayInputStream(new byte[0]), 0, 0);
+        storage.writeSitemap(root, SitemapService.DEFAULT_SITEMAP_NAME, new ByteArrayInputStream(new byte[0]), 1, 0, 0);
+        storage.writeSitemap(root, "news", new ByteArrayInputStream(new byte[0]), 1, 0, 0);
 
         MockSlingHttpServletRequest request = newSitemapIndexReq(root);
         MockSlingHttpServletResponse response = context.response();
@@ -186,19 +182,40 @@ public class SitemapServletTest {
     }
 
     @Test
-    public void testSitemapIndexContainsOnDemandSitemapsAndSitemapsFromStorage() throws ServletException, IOException {
+    public void testSitemapIndexContainsMultiFileSitemaps() throws IOException, ServletException {
         // given
-        context.registerInjectActivateService(sitemapServiceConfiguration,
-                "onDemandGenerators", newsGenerator.getClass().getName()
-        );
-        context.registerInjectActivateService(generatorManager);
-        context.registerInjectActivateService(storage);
-        context.registerInjectActivateService(subject);
-
-        storage.writeSitemap(root, SitemapGenerator.DEFAULT_SITEMAP, new ByteArrayInputStream(new byte[0]), 0, 0);
+        storage.writeSitemap(root, SitemapService.DEFAULT_SITEMAP_NAME, new ByteArrayInputStream(new byte[0]), 1, 0, 0);
+        storage.writeSitemap(root, SitemapService.DEFAULT_SITEMAP_NAME, new ByteArrayInputStream(new byte[0]), 2, 0, 0);
+        storage.writeSitemap(root, SitemapService.DEFAULT_SITEMAP_NAME, new ByteArrayInputStream(new byte[0]), 3, 0, 0);
 
         MockSlingHttpServletRequest request = newSitemapIndexReq(root);
         MockSlingHttpServletResponse response = context.response();
+
+        // when
+        subject.doGet(request, response);
+
+        // then
+        assertEquals(200, response.getStatus());
+        assertEquals("application/xml;charset=utf-8", response.getContentType());
+        assertEquals("utf-8", response.getCharacterEncoding());
+        assertEquals(
+                SitemapImplTest.XML_HEADER + "<sitemapindex xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">"
+                        + "<sitemap><loc>/site/de.sitemap.xml</loc><lastmod>" + pointInTimeAtUtc + "</lastmod></sitemap>"
+                        + "<sitemap><loc>/site/de.sitemap.sitemap-2.xml</loc><lastmod>" + pointInTimeAtUtc + "</lastmod></sitemap>"
+                        + "<sitemap><loc>/site/de.sitemap.sitemap-3.xml</loc><lastmod>" + pointInTimeAtUtc + "</lastmod></sitemap>"
+                        + "</sitemapindex>",
+                response.getOutputAsString()
+        );
+    }
+
+    @Test
+    public void testSitemapIndexContainsOnDemandSitemapsAndSitemapsFromStorage() throws ServletException, IOException {
+        // given
+        storage.writeSitemap(root, SitemapService.DEFAULT_SITEMAP_NAME, new ByteArrayInputStream(new byte[0]), 1, 0, 0);
+
+        MockSlingHttpServletRequest request = newSitemapIndexReq(root);
+        MockSlingHttpServletResponse response = context.response();
+        newsGenerator.setServeOnDemand(true);
 
         // when
         subject.doGet(request, response);
@@ -219,15 +236,9 @@ public class SitemapServletTest {
     @Test
     public void testSitemapServedOnDemand() throws ServletException, IOException {
         // given
-        context.registerInjectActivateService(sitemapServiceConfiguration,
-                "onDemandGenerators", newsGenerator.getClass().getName()
-        );
-        context.registerInjectActivateService(generatorManager);
-        context.registerInjectActivateService(storage);
-        context.registerInjectActivateService(subject);
-
         MockSlingHttpServletRequest request = newSitemapReq("news-sitemap", root);
         MockSlingHttpServletResponse response = context.response();
+        newsGenerator.setServeOnDemand(true);
 
         // when
         subject.doGet(request, response);
@@ -252,14 +263,7 @@ public class SitemapServletTest {
                 + "</urlset>";
         byte[] expectedOutcomeBytes = expectedOutcome.getBytes(StandardCharsets.UTF_8);
 
-        context.registerInjectActivateService(sitemapServiceConfiguration,
-                "onDemandGenerators", newsGenerator.getClass().getName()
-        );
-        context.registerInjectActivateService(generatorManager);
-        context.registerInjectActivateService(storage);
-        context.registerInjectActivateService(subject);
-
-        storage.writeSitemap(root, "foo", new ByteArrayInputStream(expectedOutcomeBytes),
+        storage.writeSitemap(root, "foo", new ByteArrayInputStream(expectedOutcomeBytes), 1,
                 expectedOutcomeBytes.length, 1);
 
         MockSlingHttpServletRequest request = newSitemapReq("foo-sitemap", root);
@@ -279,15 +283,35 @@ public class SitemapServletTest {
     }
 
     @Test
+    public void testMultiFileSitemapServedFromStorage() throws ServletException, IOException {
+        // given
+        String expectedOutcome = SitemapImplTest.XML_HEADER + "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">"
+                + "<url><loc>/content/site/en</loc></url>"
+                + "</urlset>";
+        byte[] expectedOutcomeBytes = expectedOutcome.getBytes(StandardCharsets.UTF_8);
+
+        storage.writeSitemap(root, "foo", new ByteArrayInputStream(expectedOutcomeBytes), 2,
+                expectedOutcomeBytes.length, 1);
+
+        MockSlingHttpServletRequest request = newSitemapReq("foo-sitemap-2", root);
+        MockSlingHttpServletResponse response = context.response();
+
+        // when
+        subject.doGet(request, response);
+
+        // then
+        assertEquals(200, response.getStatus());
+        assertEquals("application/xml;charset=utf-8", response.getContentType());
+        assertEquals("utf-8", response.getCharacterEncoding());
+        assertEquals(
+                expectedOutcome,
+                response.getOutputAsString()
+        );
+    }
+
+    @Test
     public void testSitemapNotServed() throws ServletException, IOException {
         // given
-        context.registerInjectActivateService(sitemapServiceConfiguration,
-                "onDemandGenerators", newsGenerator.getClass().getName()
-        );
-        context.registerInjectActivateService(generatorManager);
-        context.registerInjectActivateService(storage);
-        context.registerInjectActivateService(subject);
-
         MockSlingHttpServletRequest request = newSitemapReq("sitemap", root);
         MockSlingHttpServletResponse response = context.response();
 

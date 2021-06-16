@@ -23,12 +23,12 @@ import org.apache.jackrabbit.util.ISO9075;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.sitemap.SitemapService;
-import org.apache.sling.sitemap.generator.SitemapGenerator;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.jcr.query.Query;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class SitemapUtil {
 
@@ -116,25 +116,13 @@ public class SitemapUtil {
      * Returns the selector for the given sitemap root {@link Resource} and the given name.
      *
      * @param sitemapRoot
-     * @param name
-     * @return
-     */
-    @NotNull
-    public static String getSitemapSelector(@NotNull Resource sitemapRoot, @NotNull String name) {
-        return getSitemapSelector(sitemapRoot, getTopLevelSitemapRoot(sitemapRoot), name);
-    }
-
-    /**
-     * Returns the selector for the given sitemap root {@link Resource} and the given name.
-     *
-     * @param sitemapRoot
      * @param topLevelSitemapRoot
      * @param name
      * @return
      */
     @NotNull
     public static String getSitemapSelector(@NotNull Resource sitemapRoot, @NotNull Resource topLevelSitemapRoot, @NotNull String name) {
-        name = SitemapGenerator.DEFAULT_SITEMAP.equals(name) ? "sitemap" : name + "-sitemap";
+        name = SitemapService.DEFAULT_SITEMAP_NAME.equals(name) ? "sitemap" : name + "-sitemap";
 
         if (!sitemapRoot.getPath().equals(topLevelSitemapRoot.getPath())) {
             String sitemapRootSubpath = sitemapRoot.getPath().substring(topLevelSitemapRoot.getPath().length() + 1);
@@ -145,26 +133,52 @@ public class SitemapUtil {
     }
 
     /**
-     * Resolves all sitemap root {@link Resource}s for the given selector within the given sitemap root
-     * {@link Resource}. The given sitemap root {@link Resource} should usually be a top level sitemap root.
+     * Resolves all sitemap root {@link Resource}s for the given selector within the given top level sitemap root
+     * {@link Resource}. This is the inversion of {@link SitemapUtil#getSitemapSelector(Resource, Resource, String)} with
+     * sitemap root being a top level sitemap root.
+     * <p>
+     * The returned {@link Map} only contains {@link Resource}s, that are sitemap roots according to
+     * {@link SitemapUtil#isSitemapRoot(Resource)}. Each returned {@link Resource} is mapped to the name which when
+     * passed to {@link SitemapUtil#getSitemapSelector(Resource, Resource, String)} would return the same selector,
+     * omitting the optional multi-file index part.
+     * <p>
+     * As this resolution may be ambiguous, the returned {@link Map} is sorted with the sitemap root/name combinations
+     * closest to the top level sitemap root taking precedence.
      *
-     * @param sitemapRoot
+     * @param topLevelSitemapRoot
      * @param sitemapSelector
-     * @return
+     * @return a sorted {@link Map}
      */
     @NotNull
-    public static Map<Resource, String> resolveSitemapRoots(@NotNull Resource sitemapRoot, @NotNull String sitemapSelector) {
-        if (sitemapSelector.equals("sitemap")) {
-            return Collections.singletonMap(sitemapRoot, SitemapGenerator.DEFAULT_SITEMAP);
-        } else if (!sitemapSelector.endsWith("-sitemap")) {
+    public static Map<Resource, String> resolveSitemapRoots(@NotNull Resource topLevelSitemapRoot, @NotNull String sitemapSelector) {
+        if (!isTopLevelSitemapRoot(topLevelSitemapRoot)) {
+            // selectors are always relative to a top level sitemap root
             return Collections.emptyMap();
-        } else {
-            List<String> parts = Arrays.asList(sitemapSelector.split("-"));
-            List<String> relevantParts = parts.subList(0, parts.size() - 1);
-            Map<Resource, String> roots = new LinkedHashMap<>();
-            resolveSitemapRoots(sitemapRoot, relevantParts, roots);
-            return roots;
         }
+        if (sitemapSelector.equals("sitemap")) {
+            return Collections.singletonMap(topLevelSitemapRoot, SitemapService.DEFAULT_SITEMAP_NAME);
+        }
+
+        List<String> parts = Arrays.asList(sitemapSelector.split("-"));
+        List<String> relevantParts;
+
+        if (parts.size() == 2 && parts.get(0).equals("sitemap") && isInteger(parts.get(1))) {
+            // default name with file index
+            return Collections.singletonMap(topLevelSitemapRoot, SitemapService.DEFAULT_SITEMAP_NAME);
+        } else if (parts.size() > 1 && parts.get(parts.size() - 1).equals("sitemap")) {
+            // no file index part
+            relevantParts = parts.subList(0, parts.size() - 1);
+        } else if (parts.size() > 2 && parts.get(parts.size() - 2).equals("sitemap")
+                && isInteger(parts.get(parts.size() - 1))) {
+            // with file index part
+            relevantParts = parts.subList(0, parts.size() - 2);
+        } else {
+            return Collections.emptyMap();
+        }
+
+        Map<Resource, String> roots = new LinkedHashMap<>();
+        resolveSitemapRoots(topLevelSitemapRoot, relevantParts, roots);
+        return roots;
     }
 
     private static void resolveSitemapRoots(@NotNull Resource sitemapRoot, @NotNull List<String> parts,
@@ -179,11 +193,20 @@ public class SitemapUtil {
             Resource namedChild = sitemapRoot.getChild(childName);
             if (namedChild != null) {
                 if (j == parts.size() && isSitemapRoot(namedChild)) {
-                    result.put(namedChild, SitemapGenerator.DEFAULT_SITEMAP);
+                    result.put(namedChild, SitemapService.DEFAULT_SITEMAP_NAME);
                 } else if (parts.size() > j) {
                     resolveSitemapRoots(namedChild, parts.subList(j, parts.size()), result);
                 }
             }
+        }
+    }
+
+    private static boolean isInteger(String text) {
+        try {
+            Integer.parseUnsignedInt(text);
+            return true;
+        } catch (NumberFormatException ex) {
+            return false;
         }
     }
 
@@ -238,4 +261,6 @@ public class SitemapUtil {
             }
         };
     }
+
+
 }

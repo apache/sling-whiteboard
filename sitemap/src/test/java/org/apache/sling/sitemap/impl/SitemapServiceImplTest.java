@@ -32,6 +32,7 @@ import org.apache.sling.testing.mock.sling.junit5.SlingContext;
 import org.apache.sling.testing.mock.sling.junit5.SlingContextExtension;
 import org.hamcrest.CustomMatcher;
 import org.hamcrest.Matcher;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,17 +45,13 @@ import javax.jcr.Session;
 import javax.jcr.query.Query;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -69,8 +66,14 @@ public class SitemapServiceImplTest {
     private final SitemapGeneratorManagerImpl generatorManager = new SitemapGeneratorManagerImpl();
     private final SitemapServiceConfiguration sitemapServiceConfiguration = new SitemapServiceConfiguration();
 
-    private TestGenerator generator = new TestGenerator() {};
-    private TestGenerator newsGenerator = new TestGenerator() {};
+    private TestGenerator generator = new TestGenerator() {
+    };
+    private TestGenerator newsGenerator = new TestGenerator() {
+        @Override
+        public @NotNull Set<String> getOnDemandNames(@NotNull Resource sitemapRoot) {
+            return getNames(sitemapRoot);
+        }
+    };
 
     @Mock
     private ServiceUserMapped serviceUser;
@@ -82,6 +85,7 @@ public class SitemapServiceImplTest {
     private Resource enFaqs;
     private Resource enNews;
     private Resource frRoot;
+    private Resource itRoot;
     private Resource noRoot;
 
     @BeforeEach
@@ -101,15 +105,16 @@ public class SitemapServiceImplTest {
         frRoot = context.create().resource("/content/site/fr", Collections.singletonMap(
                 SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE
         ));
+        itRoot = context.create().resource("/content/site/it", Collections.singletonMap(
+                SitemapService.PROPERTY_SITEMAP_ROOT, Boolean.TRUE
+        ));
         noRoot = context.create().resource("/content/site/nothing");
 
         context.registerService(ServiceUserMapped.class, serviceUser, "subServiceName", "sitemap-writer");
-        context.registerService(SitemapGenerator.class, generator);
-        context.registerService(SitemapGenerator.class, newsGenerator);
+        context.registerService(SitemapGenerator.class, generator, "service.ranking", 1);
+        context.registerService(SitemapGenerator.class, newsGenerator, "service.ranking", 2);
         context.registerService(JobManager.class, jobManager);
-        context.registerInjectActivateService(sitemapServiceConfiguration,
-                "onDemandGenerators", newsGenerator.getClass().getName()
-        );
+        context.registerInjectActivateService(sitemapServiceConfiguration);
         context.registerInjectActivateService(generatorManager);
         context.registerInjectActivateService(storage);
         context.registerInjectActivateService(subject);
@@ -118,9 +123,9 @@ public class SitemapServiceImplTest {
     @Test
     public void testIsPendingReturnsTrue() throws IOException {
         // given
-        storage.writeSitemap(deRoot, SitemapGenerator.DEFAULT_SITEMAP, new ByteArrayInputStream(new byte[0]), 0, 0);
+        storage.writeSitemap(deRoot, SitemapService.DEFAULT_SITEMAP_NAME, new ByteArrayInputStream(new byte[0]), 1, 0, 0);
 
-        generator.setNames(SitemapGenerator.DEFAULT_SITEMAP);
+        generator.setNames(SitemapService.DEFAULT_SITEMAP_NAME);
 
         when(jobManager.findJobs(
                 eq(JobManager.QueryType.ALL),
@@ -139,11 +144,11 @@ public class SitemapServiceImplTest {
     @Test
     public void testIsPendingReturnsFalse() throws IOException {
         // given
-        storage.writeSitemap(deRoot, SitemapGenerator.DEFAULT_SITEMAP, new ByteArrayInputStream(new byte[0]), 0, 0);
+        storage.writeSitemap(deRoot, SitemapService.DEFAULT_SITEMAP_NAME, new ByteArrayInputStream(new byte[0]), 1, 0, 0);
 
-        generator.setNames(SitemapGenerator.DEFAULT_SITEMAP);
+        generator.setNames(SitemapService.DEFAULT_SITEMAP_NAME);
         generator.setNames(frRoot, "a", "b");
-        newsGenerator.setNames(enNews, "news");
+        newsGenerator.setNames(enNews, SitemapService.DEFAULT_SITEMAP_NAME, "news");
 
         when(jobManager.findJobs(
                 eq(JobManager.QueryType.ALL),
@@ -178,7 +183,7 @@ public class SitemapServiceImplTest {
     @Test
     public void testSitemapIndexUrlReturned() {
         // given
-        generator.setNames(SitemapGenerator.DEFAULT_SITEMAP);
+        generator.setNames(SitemapService.DEFAULT_SITEMAP_NAME);
         generator.setNames(frRoot, "a", "b");
 
         MockJcr.setQueryResult(
@@ -219,16 +224,19 @@ public class SitemapServiceImplTest {
     @Test
     public void testSitemapUrlReturnsProperSelectors() throws IOException {
         // given
-        storage.writeSitemap(deRoot, SitemapGenerator.DEFAULT_SITEMAP, new ByteArrayInputStream(new byte[0]), 100, 1);
-        storage.writeSitemap(frRoot, "foobar", new ByteArrayInputStream(new byte[0]), 100, 1);
-        storage.writeSitemap(enRoot, SitemapGenerator.DEFAULT_SITEMAP, new ByteArrayInputStream(new byte[0]), 100, 1);
-        storage.writeSitemap(enNews, "foo", new ByteArrayInputStream(new byte[0]), 100, 1);
-        storage.writeSitemap(enNews, "bar", new ByteArrayInputStream(new byte[0]), 100, 1);
+        storage.writeSitemap(deRoot, SitemapService.DEFAULT_SITEMAP_NAME, new ByteArrayInputStream(new byte[0]), 1, 100, 1);
+        storage.writeSitemap(frRoot, "foobar", new ByteArrayInputStream(new byte[0]), 1, 100, 1);
+        storage.writeSitemap(enRoot, SitemapService.DEFAULT_SITEMAP_NAME, new ByteArrayInputStream(new byte[0]), 1, 100, 1);
+        storage.writeSitemap(enNews, "foo", new ByteArrayInputStream(new byte[0]), 1, 100, 1);
+        storage.writeSitemap(enNews, "bar", new ByteArrayInputStream(new byte[0]), 1, 100, 1);
+        storage.writeSitemap(itRoot, SitemapService.DEFAULT_SITEMAP_NAME, new ByteArrayInputStream(new byte[0]), 1, 100, 1);
+        storage.writeSitemap(itRoot, SitemapService.DEFAULT_SITEMAP_NAME, new ByteArrayInputStream(new byte[0]), 2, 100, 1);
 
-        generator.setNames(deRoot, SitemapGenerator.DEFAULT_SITEMAP);
+        generator.setNames(deRoot, SitemapService.DEFAULT_SITEMAP_NAME);
         generator.setNames(frRoot, "foobar");
         generator.setNames(enNews, "foo", "bar");
-        generator.setNames(enRoot, SitemapGenerator.DEFAULT_SITEMAP);
+        generator.setNames(enRoot, SitemapService.DEFAULT_SITEMAP_NAME);
+        generator.setNames(itRoot, SitemapService.DEFAULT_SITEMAP_NAME);
         newsGenerator.setNames(enNews, "news");
 
         MockJcr.setQueryResult(
@@ -241,6 +249,7 @@ public class SitemapServiceImplTest {
 
         // when
         Collection<SitemapInfo> deInfos = subject.getSitemapInfo(deRoot);
+        Collection<SitemapInfo> itInfos = subject.getSitemapInfo(itRoot);
         Collection<SitemapInfo> frInfos = subject.getSitemapInfo(frRoot);
         Collection<SitemapInfo> enInfos = subject.getSitemapInfo(enRoot);
         Collection<SitemapInfo> enNestedInfos = subject.getSitemapInfo(enNews);
@@ -248,6 +257,13 @@ public class SitemapServiceImplTest {
         // no name
         assertThat(deInfos, hasSize(1));
         assertThat(deInfos, hasItems(eqSitemapInfo("/site/de.sitemap.xml", 100, 1)));
+        // no name, multi file
+        assertThat(itInfos, hasSize(3));
+        assertThat(itInfos, hasItems(
+                eqSitemapInfo("/site/it.sitemap-index.xml", -1, -1),
+                eqSitemapInfo("/site/it.sitemap.xml", 100, 1),
+                eqSitemapInfo("/site/it.sitemap.sitemap-2.xml", 100, 1)
+        ));
         // with single name
         assertThat(frInfos, hasSize(1));
         assertThat(frInfos, hasItems(eqSitemapInfo("/site/fr.sitemap.foobar-sitemap.xml", 100, 1)));

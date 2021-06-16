@@ -125,8 +125,9 @@ public class SitemapServlet extends SlingSafeMethodsServlet {
         }
     }
 
-    protected void doGetSitemapIndex(@NotNull SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response,
-                                     Resource topLevelSitemapRoot) throws IOException, SitemapException {
+    protected void doGetSitemapIndex(@NotNull SlingHttpServletRequest request,
+            @NotNull SlingHttpServletResponse response,
+            Resource topLevelSitemapRoot) throws IOException, SitemapException {
         // when sitemaps may be served on demand, we have to query for the sitemap roots of the current resource,
         // otherwise we can simply get the top level's storage path and serve all sitemaps in there
         SitemapIndexImpl sitemapIndex = new SitemapIndexImpl(response.getWriter());
@@ -143,7 +144,8 @@ public class SitemapServlet extends SlingSafeMethodsServlet {
                 } else if (location != null) {
                     sitemapIndex.addSitemap(location);
                 } else {
-                    LOG.debug("Could not get absolute url for sitemap served from {}", storageInfo.getSitemapSelector());
+                    LOG.debug("Could not get absolute url for sitemap served from {}",
+                            storageInfo.getSitemapSelector());
                 }
             }
         }
@@ -152,9 +154,10 @@ public class SitemapServlet extends SlingSafeMethodsServlet {
     }
 
     protected void doGetSitemap(@NotNull SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response,
-                                Resource topLevelSitemapRoot, String sitemapSelector) throws SitemapException, IOException {
-        if (sitemapServiceConfiguration.getOnDemandGenerators().size() > 0) {
-            // resolve the actual sitemap root from the sitemapFileName
+            Resource topLevelSitemapRoot, String sitemapSelector) throws SitemapException, IOException {
+        Set<String> onDemandNames = generatorManager.getOnDemandNames(topLevelSitemapRoot);
+        if (onDemandNames.size() > 0) {
+            // resolve the actual sitemap root from the sitemapSelector
             Map<Resource, String> candidates = resolveSitemapRoots(topLevelSitemapRoot, sitemapSelector);
 
             for (Map.Entry<Resource, String> entry : candidates.entrySet()) {
@@ -162,8 +165,7 @@ public class SitemapServlet extends SlingSafeMethodsServlet {
                 String name = entry.getValue();
                 SitemapGenerator generator = generatorManager.getGenerator(sitemapRoot, name);
 
-                if (generator != null
-                        && sitemapServiceConfiguration.getOnDemandGenerators().contains(generator.getClass().getName())) {
+                if (generator != null && onDemandNames.contains(name)) {
                     SitemapImpl sitemap = new SitemapImpl(response.getWriter(), extensionProviderManager);
                     generator.generate(sitemapRoot, name, sitemap, NOOP_CONTEXT);
                     sitemap.close();
@@ -187,13 +189,7 @@ public class SitemapServlet extends SlingSafeMethodsServlet {
      * @throws SitemapException
      */
     private Set<String> addOnDemandSitemapsToIndex(SlingHttpServletRequest request, Resource parentSitemapRoot,
-                                                   SitemapIndexImpl index) throws SitemapException {
-        Set<String> onDemandSitemaps = sitemapServiceConfiguration.getOnDemandGenerators();
-
-        if (onDemandSitemaps.isEmpty()) {
-            return Collections.emptySet();
-        }
-
+            SitemapIndexImpl index) throws SitemapException {
         Set<String> addedSitemapSelectors = new HashSet<>();
         Iterator<Resource> sitemapRoots = findSitemapRoots(request.getResourceResolver(), parentSitemapRoot.getPath());
         if (!sitemapRoots.hasNext()) {
@@ -205,7 +201,7 @@ public class SitemapServlet extends SlingSafeMethodsServlet {
             Set<String> applicableNames = generatorManager.getOnDemandNames(sitemapRoot);
             // applicable names we may serve directly, not applicable names, if any, we have to serve from storage
             for (String applicableName : applicableNames) {
-                String sitemapSelector = getSitemapSelector(sitemapRoot, sitemapRoot, applicableName);
+                String sitemapSelector = getSitemapSelector(sitemapRoot, parentSitemapRoot, applicableName);
                 String location = externalize(request, getSitemapLink(sitemapRoot, sitemapSelector));
                 if (location != null) {
                     index.addSitemap(location);

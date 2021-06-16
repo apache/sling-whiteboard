@@ -28,6 +28,8 @@ import org.apache.sling.event.jobs.consumer.JobExecutionResult;
 import org.apache.sling.event.jobs.consumer.JobExecutor;
 import org.apache.sling.serviceusermapping.ServiceUserMapped;
 import org.apache.sling.sitemap.SitemapException;
+import org.apache.sling.sitemap.SitemapService;
+import org.apache.sling.sitemap.builder.Sitemap;
 import org.apache.sling.sitemap.builder.Url;
 import org.apache.sling.sitemap.generator.SitemapGenerator;
 import org.apache.sling.sitemap.generator.SitemapGeneratorManager;
@@ -47,10 +49,7 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -94,9 +93,7 @@ public class SitemapGeneratorExecutor implements JobExecutor {
     @Reference(target = "(subServiceName=sitemap-reader)")
     private ServiceUserMapped serviceUserMapped;
     @Reference
-    private EventAdmin eventAdmin;
-    @Reference
-    private SitemapServiceConfiguration sitemapServiceConfiguration;
+    private SitemapServiceConfiguration configuration;
 
     private int chunkSize = 10;
 
@@ -108,7 +105,7 @@ public class SitemapGeneratorExecutor implements JobExecutor {
     @Override
     public JobExecutionResult process(Job job, JobExecutionContext context) {
         String sitemapRootPath = job.getProperty(JOB_PROPERTY_SITEMAP_ROOT, String.class);
-        String sitemapName = job.getProperty(JOB_PROPERTY_SITEMAP_NAME, SitemapGenerator.DEFAULT_SITEMAP);
+        String sitemapName = job.getProperty(JOB_PROPERTY_SITEMAP_NAME, SitemapService.DEFAULT_SITEMAP_NAME);
         JobExecutionContext.ResultBuilder result = context.result();
 
         try (ResourceResolver resourceResolver = resourceResolverFactory.getServiceResourceResolver(AUTH)) {
@@ -136,14 +133,14 @@ public class SitemapGeneratorExecutor implements JobExecutor {
         }
     }
 
-    private void generate(Resource sitemapRoot, String name, SitemapGenerator generator,
-                          JobExecutionContext executionContext) throws SitemapException, IOException {
+    private void generate(Resource res, String name, SitemapGenerator generator, JobExecutionContext jobCtxt)
+            throws SitemapException, IOException {
         try {
             CopyableByteArrayOutputStream buffer = new CopyableByteArrayOutputStream();
-            GenerationContextImpl generationContext = new GenerationContextImpl();
+            GenerationContextImpl genCtxt = new GenerationContextImpl();
 
             // prefill the buffer with existing data from storage
-            ValueMap state = storage.getState(sitemapRoot, name);
+            ValueMap state = storage.getState(res, name);
             InputStream existingData = state.get(JcrConstants.JCR_DATA, InputStream.class);
             if (existingData != null) {
                 IOUtils.copy(existingData, buffer);
@@ -151,33 +148,37 @@ public class SitemapGeneratorExecutor implements JobExecutor {
             // prefill the state from storage
             for (String key : state.keySet()) {
                 if (key.indexOf(':') < 0) {
-                    generationContext.state.put(key, state.get(key));
+                    genCtxt.data.put(key, state.get(key));
                 }
             }
+            // get the file index, if any
+            int fileIndex = state.get(SitemapStorage.PN_SITEMAP_FILE_INDEX, 1);
+            int urlCount = state.get(SitemapStorage.PN_SITEMAP_ENTRIES, 0);
 
-            StatefulSitemap sitemap = new StatefulSitemap(sitemapRoot, name, buffer, generationContext, executionContext);
-            generator.generate(sitemapRoot, name, sitemap, sitemap.generationContext);
+            MultiFileSitemap sitemap = new MultiFileSitemap(res, name, fileIndex, buffer, genCtxt, jobCtxt);
+            sitemap.currentSitemap.urlCount = urlCount;
+
+            generator.generate(res, name, sitemap, genCtxt);
+
             sitemap.close();
 
-            String storagePath = storage.writeSitemap(sitemapRoot, name, buffer.copy(), buffer.size(), sitemap.getUrlCount());
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Generated sitemaps: {}", String.join(", ", sitemap.files));
+            }
 
-            Map<String, Object> eventProperties = new HashMap<>(3);
-            eventProperties.put(SitemapGenerator.EVENT_PROPERTY_SITEMAP_NAME, name);
-            eventProperties.put(SitemapGenerator.EVENT_PROPERTY_SITEMAP_ROOT, sitemapRoot.getPath());
-            eventProperties.put(SitemapGenerator.EVENT_PROPERTY_SITEMAP_URLS, sitemap.getUrlCount());
-            eventProperties.put(SitemapGenerator.EVENT_PROPERTY_SITEMAP_STORAGE_PATH, storagePath);
-            eventProperties.put(SitemapGenerator.EVENT_PROPERTY_SITEMAP_STORAGE_SIZE, buffer.size());
-            eventProperties.put(SitemapGenerator.EVENT_PROPERTY_SITEMAP_EXCEEDS_LIMITS,
-                    !sitemapServiceConfiguration.isWithinLimits(buffer.size(), sitemap.getUrlCount()));
+            // when the max(fileIndex) is smaller then in previous iterations, cleanup old files.
+            Collection<String> purgedFiles = storage.deleteSitemaps(res, name, i -> i.getFileIndex() >= sitemap.fileIndex);
 
-            eventAdmin.sendEvent(new Event(SitemapGenerator.EVENT_TOPIC_SITEMAP_UPDATED, new EventProperties(eventProperties)));
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Purged obsolete sitemaps: {}", String.join(", ", purgedFiles));
+            }
         } catch (JobAbandonedException ex) {
             throw ex;
         } catch (JobStoppedException ex) {
             LOG.debug("Job stopped, removing state", ex);
-            storage.removeState(sitemapRoot, name);
+            storage.deleteState(res, name);
         } catch (RuntimeException | SitemapException | IOException ex) {
-            storage.removeState(sitemapRoot, name);
+            storage.deleteState(res, name);
             if (ex instanceof IOException) {
                 throw (IOException) ex;
             } else if (ex.getCause() instanceof IOException) {
@@ -217,20 +218,146 @@ public class SitemapGeneratorExecutor implements JobExecutor {
     }
 
     private static class CopyableByteArrayOutputStream extends ByteArrayOutputStream {
+
+        int checkpoint = -1;
+
+        void checkpoint() {
+            checkpoint = count;
+        }
+
+        void rollback() {
+            ensureCheckpoint();
+            count = checkpoint;
+        }
+
+        @Override
+        public synchronized void reset() {
+            super.reset();
+            checkpoint = -1;
+        }
+
+        private InputStream copyAfterCheckpoint() {
+            ensureCheckpoint();
+            return new ByteBufferInputStream(ByteBuffer.wrap(buf, checkpoint, size() - checkpoint));
+        }
+
         private InputStream copy() {
             return new ByteBufferInputStream(ByteBuffer.wrap(buf, 0, size()));
+        }
+
+        private void ensureCheckpoint() {
+            if (checkpoint < 0) {
+                throw new IllegalStateException("no checkpoint");
+            }
         }
     }
 
     private static class JobStoppedException extends RuntimeException {
         JobStoppedException() {
-            super("Stopped at " + System.currentTimeMillis());
+            super("Stopped");
         }
     }
 
     protected static class JobAbandonedException extends RuntimeException {
         JobAbandonedException() {
-            super("Abandoned at " + System.currentTimeMillis());
+            super("Abandoned");
+        }
+    }
+
+    private class MultiFileSitemap implements Sitemap, Closeable {
+
+        private final Resource sitemapRoot;
+        private final String name;
+        private final JobExecutionContext jobContext;
+        private final GenerationContextImpl generationContext;
+        private final List<String> files = new ArrayList<>(1);
+        private final CopyableByteArrayOutputStream buffer;
+        private final CopyableByteArrayOutputStream overflowBuffer = new CopyableByteArrayOutputStream();
+
+        private int fileIndex;
+        private StatefulSitemap currentSitemap;
+
+        MultiFileSitemap(Resource sitemapRoot, String name, int fileIndex, CopyableByteArrayOutputStream buffer,
+                GenerationContextImpl generationContext, JobExecutionContext jobContext) throws IOException {
+            this.sitemapRoot = sitemapRoot;
+            this.name = name;
+            this.fileIndex = fileIndex;
+            this.buffer = buffer;
+            this.jobContext = jobContext;
+            this.generationContext = generationContext;
+            this.currentSitemap = newSitemap();
+        }
+
+        @NotNull
+        @Override
+        public Url addUrl(@NotNull String location) throws SitemapException {
+            try {
+                rotateIfNecessary();
+            } catch (IOException ex) {
+                throw new SitemapException(ex);
+            }
+            return currentSitemap.addUrl(location);
+        }
+
+        @Override
+        public void close() throws IOException {
+            rotateIfNecessary();
+            // no add() will happen so the counter will miss the <url> form the overflow buffer
+            closeSitemap();
+        }
+
+        private StatefulSitemap newSitemap() throws IOException {
+            return new StatefulSitemap(sitemapRoot, name, buffer, jobContext, generationContext);
+        }
+
+        private void closeSitemap() throws IOException {
+            currentSitemap.close();
+            int urlCount = currentSitemap.urlCount;
+            if (urlCount == 0) {
+                // don't persist empty sitemaps
+                return;
+            }
+            String path = storage.writeSitemap(sitemapRoot, name, buffer.copy(), fileIndex, buffer.size(), urlCount);
+            // increment the file index for the next sitemap and store it in the context
+            generationContext.data.put(SitemapStorage.PN_SITEMAP_FILE_INDEX, ++fileIndex);
+            files.add(path);
+        }
+
+        private boolean rotateIfNecessary() throws IOException {
+            // create a checkpoint before flushing the pending url.
+            buffer.checkpoint();
+            // flush the sitemap to write the last url to the underlying buffer
+            currentSitemap.flush();
+            // if the buffer size exceeds the limit (-10 bytes for the closing tag)
+            if (buffer.size() + 10 > configuration.getMaxSize()) {
+                // retain bytes of the last written url in a temporary buffer
+                overflowBuffer.reset();
+                IOUtils.copy(buffer.copyAfterCheckpoint(), overflowBuffer);
+                // rollback the buffer to the checkpoint
+                buffer.rollback();
+                // decrease the url count as we effectively move one url
+                currentSitemap.urlCount --;
+                // close, write and rotate the sitemap
+                rotateSitemap();
+                // write the overflow
+                currentSitemap.flush();
+                IOUtils.copy(overflowBuffer.copy(), buffer);
+                currentSitemap.urlCount ++;
+                return true;
+            } else if (currentSitemap.urlCount + 1 > configuration.getMaxEntries()) {
+                rotateSitemap();
+                return true;
+            }
+
+            return false;
+        }
+
+        private void rotateSitemap() throws IOException {
+            closeSitemap();
+            // reset the buffer for the new sitemap
+            buffer.reset();
+            // create a new sitemap and if there is any initial data, write it to the buffer
+            currentSitemap = newSitemap();
         }
     }
 
@@ -242,10 +369,11 @@ public class SitemapGeneratorExecutor implements JobExecutor {
         private final JobExecutionContext jobContext;
         private final GenerationContextImpl generationContext;
 
+        private int urlCount = 0;
         private int writtenUrls = 0;
 
         StatefulSitemap(Resource sitemapRoot, String name, CopyableByteArrayOutputStream buffer,
-                        GenerationContextImpl generationContext, JobExecutionContext jobContext) throws IOException {
+                JobExecutionContext jobContext, GenerationContextImpl generationContext) throws IOException {
             super(new OutputStreamWriter(buffer, StandardCharsets.UTF_8), extensionProviderManager, buffer.size() == 0);
             this.sitemapRoot = sitemapRoot;
             this.name = name;
@@ -254,12 +382,15 @@ public class SitemapGeneratorExecutor implements JobExecutor {
             this.generationContext = generationContext;
         }
 
+        @NotNull
         @Override
-        public @NotNull Url addUrl(@NotNull String location) throws SitemapException {
+        public Url addUrl(@NotNull String location) throws SitemapException {
             if (jobContext.isStopped()) {
                 throw new JobStoppedException();
             }
-            return super.addUrl(location);
+            Url url = super.addUrl(location);
+            urlCount ++;
+            return url;
         }
 
         @Override
@@ -270,8 +401,9 @@ public class SitemapGeneratorExecutor implements JobExecutor {
                     // make sure the buffer has all data from the writer
                     out.flush();
                     // copy the state and add the buffer's data
-                    Map<String, Object> copy = new HashMap<>(generationContext.state.size() + 1);
-                    copy.putAll(generationContext.state);
+                    Map<String, Object> copy = new HashMap<>(generationContext.data.size() + 1);
+                    copy.putAll(generationContext.data);
+                    copy.put(SitemapStorage.PN_SITEMAP_ENTRIES, urlCount);
                     copy.put(JcrConstants.JCR_DATA, buffer.copy());
                     // write the state and reset the counter for the next iteration
                     storage.writeState(sitemapRoot, name, copy);
@@ -286,22 +418,26 @@ public class SitemapGeneratorExecutor implements JobExecutor {
 
     private class GenerationContextImpl implements SitemapGenerator.GenerationContext {
 
-        private final ValueMap state = new ValueMapDecorator(new HashMap<>());
+        private final ValueMap data = new ValueMapDecorator(new HashMap<>());
 
         @Nullable
         @Override
         public <T> T getProperty(@NotNull String name, @NotNull Class<T> cls) {
-            return state.get(name, cls);
+            return data.get(name, cls);
         }
 
         @Override
         public <T> @NotNull T getProperty(@NotNull String name, @NotNull T defaultValue) {
-            return state.get(name, defaultValue);
+            return data.get(name, defaultValue);
         }
 
         @Override
         public void setProperty(@NotNull String name, @Nullable Object data) {
-            state.put(name, data);
+            if (name.indexOf(':') > 0) {
+                // don't allow using properties from a namespace
+                return;
+            }
+            this.data.put(name, data);
         }
     }
 }

@@ -20,6 +20,7 @@ package org.apache.sling.sitemap.generator;
 
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.sitemap.SitemapException;
+import org.apache.sling.sitemap.SitemapService;
 import org.apache.sling.sitemap.builder.Sitemap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -29,9 +30,11 @@ import java.util.Collections;
 import java.util.Set;
 
 /**
- * Implementations are responsible to generate one or many sitemaps for a given sitemap root {@link Resource}.
- * When a {@link SitemapGenerator} generates multiple sitemaps for a given {@link Resource} it has to return
- * their names using {@link SitemapGenerator#getNames(Resource)} (Resource)}.
+ * {@link SitemapGenerator} implementations are responsible to generate one or many sitemaps for a given sitemap root
+ * {@link Resource}. When a {@link SitemapGenerator} generates multiple sitemaps for a given {@link Resource} it has to
+ * return their names using {@link SitemapGenerator#getNames(Resource)} (Resource)}. Also, the {@link SitemapGenerator}
+ * may decide if any of those names should be served on-demand by returning a subset of names for
+ * {@link SitemapGenerator#getOnDemandNames(Resource)}.
  * <p>
  * {@link SitemapGenerator#generate(Resource, String, Sitemap, GenerationContext)} may be called for each name and
  * each sitemap root {@link Resource}, the {@link SitemapGenerator} returned an non-empty {@link Set} of names for.
@@ -41,8 +44,6 @@ import java.util.Set;
  */
 @ConsumerType
 public interface SitemapGenerator {
-
-    String DEFAULT_SITEMAP = "<default>";
 
     /**
      * The background generation will send events with that topic right after a generated sitemap was persisted.
@@ -65,10 +66,6 @@ public interface SitemapGenerator {
      */
     String EVENT_PROPERTY_SITEMAP_URLS = "sitemap.urls";
     /**
-     * The event property storing a flag whether the generated sitemap exceeds the configured limits.
-     */
-    String EVENT_PROPERTY_SITEMAP_EXCEEDS_LIMITS = "sitemap.exceedsLimits";
-    /**
      * The event property storing the generated sitemap's storage path.
      */
     String EVENT_PROPERTY_SITEMAP_STORAGE_PATH = "sitemap.storagePath";
@@ -79,19 +76,31 @@ public interface SitemapGenerator {
 
     /**
      * Returns a {@link Set} of sitemap names this {@link SitemapGenerator} can generate for a particular sitemap
-     * root {@link Resource}. If the implementation does not want to generate a sitemap for a particular root it must
-     * return an empty {@link Set}, if it does but does not differentiate by name, it must return a {@link Set}
-     * containing only the {@link SitemapGenerator#DEFAULT_SITEMAP}.
+     * root {@link Resource}. If the implementation does not generate a sitemap for a particular root it must return an
+     * empty {@link Set}, if it does but does not differentiate by name, it must return a {@link Set} containing only
+     * the {@link SitemapService#DEFAULT_SITEMAP_NAME}.
      * <p>
-     * The character '@' (U+0040) is reserved. Names contain with int will be filtered out.
-     * <p>
-     * The default implementation returns a {@link Set} of only {@link SitemapGenerator#DEFAULT_SITEMAP}.
+     * The default implementation returns a {@link Set} of only {@link SitemapService#DEFAULT_SITEMAP_NAME}.
      *
      * @return a {@link Set} of names
      */
     @NotNull
     default Set<String> getNames(@NotNull Resource sitemapRoot) {
-        return Collections.singleton(SitemapGenerator.DEFAULT_SITEMAP);
+        return Collections.singleton(SitemapService.DEFAULT_SITEMAP_NAME);
+    }
+
+    /**
+     * Implementations may return a subset of the names returned by {@link SitemapGenerator#getNames(Resource)}
+     * that should be served on-demand.
+     * <p>
+     * The default implementation returns an empty {@link Set}, meaning none of the names should be served on-demand.
+     *
+     * @param sitemapRoot
+     * @return
+     */
+    @NotNull
+    default Set<String> getOnDemandNames(@NotNull Resource sitemapRoot) {
+        return Collections.emptySet();
     }
 
     /**

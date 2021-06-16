@@ -66,7 +66,7 @@ public class SitemapServiceImplSchedulingTest {
     private SitemapGenerator generator1 = new SitemapGenerator() {
         @Override
         public @NotNull Set<String> getNames(@NotNull Resource sitemapRoot) {
-            return Collections.singleton(DEFAULT_SITEMAP);
+            return Collections.singleton(SitemapService.DEFAULT_SITEMAP_NAME);
         }
 
         @Override

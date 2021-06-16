@@ -19,10 +19,8 @@
 package org.apache.sling.sitemap;
 
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.sitemap.SitemapException;
 import org.apache.sling.sitemap.builder.Sitemap;
 import org.apache.sling.sitemap.generator.ResourceTreeSitemapGenerator;
-import org.apache.sling.sitemap.generator.SitemapGenerator;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
@@ -30,9 +28,20 @@ import java.util.Set;
 
 public class TestResourceTreeSitemapGenerator extends ResourceTreeSitemapGenerator {
 
+    private boolean serveOnDemand;
+
+    public void setServeOnDemand(boolean b) {
+        serveOnDemand = b;
+    }
+
     @Override
     public @NotNull Set<String> getNames(@NotNull Resource sitemapRoot) {
-        return Collections.singleton(SitemapGenerator.DEFAULT_SITEMAP);
+        return Collections.singleton(SitemapService.DEFAULT_SITEMAP_NAME);
+    }
+
+    @Override
+    public @NotNull Set<String> getOnDemandNames(@NotNull Resource sitemapRoot) {
+        return serveOnDemand ? getNames(sitemapRoot) : super.getOnDemandNames(sitemapRoot);
     }
 
     @Override

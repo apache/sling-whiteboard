@@ -28,6 +28,7 @@ import org.apache.sling.commons.scheduler.Scheduler;
 import org.apache.sling.sitemap.SitemapInfo;
 import org.apache.sling.sitemap.SitemapService;
 import org.apache.sling.sitemap.common.SitemapUtil;
+import org.apache.sling.sitemap.impl.SitemapServiceConfiguration;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.annotations.Activate;
@@ -62,6 +63,8 @@ public class SitemapInventoryPlugin implements InventoryPrinter {
     private SitemapService sitemapService;
     @Reference
     private ResourceResolverFactory resourceResolverFactory;
+    @Reference
+    private SitemapServiceConfiguration configuration;
 
     private BundleContext bundleContext;
 
@@ -123,7 +126,7 @@ public class SitemapInventoryPlugin implements InventoryPrinter {
                         pw.print(",\"entries\":");
                         pw.print(info.getEntries());
                         pw.print(",\"inLimits\":");
-                        pw.print(info.isWithinLimits());
+                        pw.print(isWithinLimits(info));
                     }
                     pw.print('}');
                     if (infoIt.hasNext()) {
@@ -187,7 +190,7 @@ public class SitemapInventoryPlugin implements InventoryPrinter {
                         pw.print(info.getEntries());
                         pw.println();
                         pw.print("   Within Limits: ");
-                        pw.print(info.isWithinLimits() ? "yes": "no");
+                        pw.print(isWithinLimits(info) ? "yes": "no");
                         pw.println();
                     }
                 }
@@ -196,6 +199,10 @@ public class SitemapInventoryPlugin implements InventoryPrinter {
             pw.println("Failed to list sitemaps: " + ex.getMessage());
             LOG.warn("Failed to get inventory of sitemaps: {}", ex.getMessage(), ex);
         }
+    }
+
+    private boolean isWithinLimits(SitemapInfo info) {
+        return info.getSize() <= configuration.getMaxSize() && info.getEntries() <= configuration.getMaxEntries();
     }
 
     private static String escapeDoubleQuotes(String text) {
