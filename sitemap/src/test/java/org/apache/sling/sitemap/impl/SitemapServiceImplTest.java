@@ -19,7 +19,6 @@
 package org.apache.sling.sitemap.impl;
 
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.event.jobs.Job;
 import org.apache.sling.event.jobs.JobManager;
 import org.apache.sling.serviceusermapping.ServiceUserMapped;
 import org.apache.sling.sitemap.SitemapInfo;
@@ -36,7 +35,6 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -45,16 +43,14 @@ import javax.jcr.Session;
 import javax.jcr.query.Query;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @ExtendWith({SlingContextExtension.class, MockitoExtension.class})
 public class SitemapServiceImplTest {
@@ -121,66 +117,6 @@ public class SitemapServiceImplTest {
     }
 
     @Test
-    public void testIsPendingReturnsTrue() throws IOException {
-        // given
-        storage.writeSitemap(deRoot, SitemapService.DEFAULT_SITEMAP_NAME, new ByteArrayInputStream(new byte[0]), 1, 0, 0);
-
-        generator.setNames(SitemapService.DEFAULT_SITEMAP_NAME);
-
-        when(jobManager.findJobs(
-                eq(JobManager.QueryType.ALL),
-                eq(SitemapGeneratorExecutor.JOB_TOPIC),
-                eq(1L),
-                ArgumentMatchers.<Map<String, Object>>argThat(arg -> arg.size() == 1
-                        && arg.containsKey(SitemapGeneratorExecutor.JOB_PROPERTY_SITEMAP_ROOT)
-                        && arg.containsValue("/content/site/de"))))
-                .thenReturn(Collections.singleton(mock(Job.class)));
-
-        // when, then
-        // one in storage, one job
-        assertTrue(subject.isSitemapGenerationPending(deRoot));
-    }
-
-    @Test
-    public void testIsPendingReturnsFalse() throws IOException {
-        // given
-        storage.writeSitemap(deRoot, SitemapService.DEFAULT_SITEMAP_NAME, new ByteArrayInputStream(new byte[0]), 1, 0, 0);
-
-        generator.setNames(SitemapService.DEFAULT_SITEMAP_NAME);
-        generator.setNames(frRoot, "a", "b");
-        newsGenerator.setNames(enNews, SitemapService.DEFAULT_SITEMAP_NAME, "news");
-
-        when(jobManager.findJobs(
-                eq(JobManager.QueryType.ALL),
-                eq(SitemapGeneratorExecutor.JOB_TOPIC),
-                eq(1L),
-                ArgumentMatchers.<Map<String, Object>>argThat(arg -> arg.size() == 1
-                        && arg.containsKey(SitemapGeneratorExecutor.JOB_PROPERTY_SITEMAP_ROOT)
-                        && arg.containsValue("/content/site/de"))))
-                .thenReturn(Collections.emptyList());
-
-        MockJcr.setQueryResult(
-                context.resourceResolver().adaptTo(Session.class),
-                "/jcr:root/content/site/en//*[@" + SitemapService.PROPERTY_SITEMAP_ROOT + "=true]" +
-                        " option(index tag slingSitemaps)",
-                Query.XPATH,
-                Arrays.asList(enRoot.adaptTo(Node.class), enFaqs.adaptTo(Node.class))
-        );
-
-        // when, then
-        // one in storage, no job
-        assertFalse(subject.isSitemapGenerationPending(deRoot));
-        // not a root
-        assertFalse(subject.isSitemapGenerationPending(noRoot));
-        // has descendants => index on-demand
-        assertFalse(subject.isSitemapGenerationPending(enRoot));
-        // is on demand
-        assertFalse(subject.isSitemapGenerationPending(enNews));
-        // has multiple names => index on-demand
-        assertFalse(subject.isSitemapGenerationPending(frRoot));
-    }
-
-    @Test
     public void testSitemapIndexUrlReturned() {
         // given
         generator.setNames(SitemapService.DEFAULT_SITEMAP_NAME);
@@ -201,13 +137,16 @@ public class SitemapServiceImplTest {
         Collection<SitemapInfo> frInfo = subject.getSitemapInfo(frRoot);
 
         // then
-        assertThat(enInfo, hasSize(1));
+        assertThat(enInfo, hasSize(2));
         assertThat(enInfo, hasItems(
-                eqSitemapInfo("/site/en.sitemap-index.xml", -1, -1)
+                eqSitemapInfo("/site/en.sitemap-index.xml", -1, -1, SitemapInfo.Status.ON_DEMAND),
+                eqSitemapInfo("/site/en.sitemap.xml", -1, -1, SitemapInfo.Status.UNKNOWN)
         ));
-        assertThat(frInfo, hasSize(1));
+        assertThat(frInfo, hasSize(3));
         assertThat(frInfo, hasItems(
-                eqSitemapInfo("/site/fr.sitemap-index.xml", -1, -1)
+                eqSitemapInfo("/site/fr.sitemap-index.xml", -1, -1, SitemapInfo.Status.ON_DEMAND),
+                eqSitemapInfo("/site/fr.sitemap.a-sitemap.xml", -1, -1, SitemapInfo.Status.UNKNOWN),
+                eqSitemapInfo("/site/fr.sitemap.a-sitemap.xml", -1, -1, SitemapInfo.Status.UNKNOWN)
         ));
     }
 
@@ -284,13 +223,18 @@ public class SitemapServiceImplTest {
     }
 
     private static Matcher<SitemapInfo> eqSitemapInfo(String url, int size, int entries) {
+        return eqSitemapInfo(url, size, entries, null);
+    }
+
+    private static Matcher<SitemapInfo> eqSitemapInfo(String url, int size, int entries, SitemapInfo.Status status) {
         return new CustomMatcher<SitemapInfo>("with url " + url + ", with size " + size + ", with entries " + entries) {
             @Override
             public boolean matches(Object o) {
                 return o instanceof SitemapInfo &&
                         url.equals(((SitemapInfo) o).getUrl()) &&
                         size == ((SitemapInfo) o).getSize() &&
-                        entries == ((SitemapInfo) o).getEntries();
+                        entries == ((SitemapInfo) o).getEntries() &&
+                        (status == null || status.equals(((SitemapInfo) o).getStatus()));
             }
         };
     }

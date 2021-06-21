@@ -121,6 +121,8 @@ public class SitemapInventoryPlugin implements InventoryPrinter {
                     if (info.getStoragePath() != null) {
                         pw.print(",\"path\":\"");
                         pw.print(escapeDoubleQuotes(info.getStoragePath()));
+                        pw.print("\",\"status\":\"");
+                        pw.print(info.getStatus());
                         pw.print("\",\"size\":");
                         pw.print(info.getSize());
                         pw.print(",\"entries\":");
@@ -182,6 +184,9 @@ public class SitemapInventoryPlugin implements InventoryPrinter {
                     if (info.getStoragePath() != null) {
                         pw.print("   Path: ");
                         pw.print(info.getStoragePath());
+                        pw.println();
+                        pw.print("   Status: ");
+                        pw.print(info.getStatus());
                         pw.println();
                         pw.print("   Bytes: ");
                         pw.print(info.getSize());

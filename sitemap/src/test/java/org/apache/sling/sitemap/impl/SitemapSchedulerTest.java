@@ -164,7 +164,7 @@ public class SitemapSchedulerTest {
     @Test
     public void testNothingScheduledWhenNameDoesNotMatchGeneratorFromConfiguration() {
         // given
-        context.registerInjectActivateService(subject, "generators", new String[]{
+        context.registerInjectActivateService(subject, "includeGenerators", new String[]{
                 generator1.getClass().getName()
         });
         initResourceResolver(subject, resolver -> MockJcr.setQueryResult(

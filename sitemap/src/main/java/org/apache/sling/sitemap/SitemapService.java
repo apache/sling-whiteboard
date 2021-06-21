@@ -98,25 +98,14 @@ public interface SitemapService {
      * sitemap root.
      * <p>
      * Numbers for size and entries can only be provided for sitemaps served from storage. For sitemap index or
-     * on-demand sitemaps {@code -1} will be returned.
+     * any sitemap not served from storage {@code -1} will be returned.
      * <p>
      * The default implementation uses {@link SitemapLinkExternalizer#externalize(Resource)} to create absolute urls.
      *
      * @param sitemapRoot a {@link Resource} having {@link SitemapService#PROPERTY_SITEMAP_ROOT} set to true
-     * @return the url, or null
-     * @see SitemapService#isSitemapGenerationPending(Resource)
+     * @return a {@link Collection} of {@link SitemapInfo} objects
      */
     @NotNull
     Collection<SitemapInfo> getSitemapInfo(@NotNull Resource sitemapRoot);
-
-    /**
-     * Returns true when the background generator is still generating the any sitemap for the given {@link Resource}.
-     * This may return always false for {@link Resource} which sitemaps are all served on-demand or if the url to the
-     * {@link Resource}'s sitemap points to a sitemap index.
-     *
-     * @param sitemapRoot
-     * @return
-     */
-    boolean isSitemapGenerationPending(@NotNull Resource sitemapRoot);
 
 }

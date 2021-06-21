@@ -19,8 +19,6 @@
 package org.apache.sling.sitemap.impl;
 
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.event.jobs.Job;
-import org.apache.sling.event.jobs.JobManager;
 import org.apache.sling.sitemap.SitemapInfo;
 import org.apache.sling.sitemap.SitemapService;
 import org.apache.sling.sitemap.common.SitemapLinkExternalizer;
@@ -36,7 +34,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.regex.Pattern;
 
 import static org.apache.sling.sitemap.common.SitemapUtil.*;
 
@@ -47,8 +44,6 @@ public class SitemapServiceImpl implements SitemapService {
 
     @Reference(cardinality = ReferenceCardinality.OPTIONAL, policyOption = ReferencePolicyOption.GREEDY)
     private SitemapLinkExternalizer externalizer;
-    @Reference
-    private JobManager jobManager;
     @Reference
     private SitemapGeneratorManager generatorManager;
     @Reference
@@ -144,7 +139,6 @@ public class SitemapServiceImpl implements SitemapService {
             return Collections.emptySet();
         }
 
-
         Collection<String> names = new HashSet<>(generatorManager.getNames(sitemapRoot));
         Set<String> onDemandNames = generatorManager.getOnDemandNames(sitemapRoot);
         Collection<SitemapInfo> infos = new ArrayList<>(names.size() + 1);
@@ -166,7 +160,7 @@ public class SitemapServiceImpl implements SitemapService {
             it.remove();
             String selector = getSitemapSelector(sitemapRoot, topLevelSitemapRoot, name);
             String location = newSitemapUrl(baseUrl, selector);
-            infos.add(newSitemapInfo(null, location, name, -1, -1));
+            infos.add(newOnDemandSitemapInfo(location, name));
         }
 
         if (names.isEmpty()) {
@@ -176,49 +170,34 @@ public class SitemapServiceImpl implements SitemapService {
 
         for (SitemapStorageInfo storageInfo : storage.getSitemaps(sitemapRoot, names)) {
             String location = newSitemapUrl(baseUrl, storageInfo.getSitemapSelector());
-            infos.add(newSitemapInfo(storageInfo.getPath(), location, storageInfo.getName(), storageInfo.getSize(),
-                    storageInfo.getEntries()));
+            infos.add(
+                    newStoredSitemapInfo(storageInfo.getPath(), location, storageInfo.getName(), storageInfo.getSize(),
+                            storageInfo.getEntries()));
+            names.remove(storageInfo.getName());
         }
+
+        if (names.isEmpty()) {
+            // early exit when all sitemaps are either on-demand or stored
+            return infos;
+        }
+
+        // now names will contain only sitemaps that are either scheduled or not scheduled (generated on a different
+        // host)
+        ServiceReference<SitemapScheduler>[] schedulerRefs = schedulers.getServiceReferences();
+        for (String name : names) {
+            // check if a scheduler applicable for the name exists
+            boolean hasApplicableScheduler = schedulerRefs != null && Arrays.stream(schedulerRefs)
+                    .map(schedulers::getService)
+                    .map(scheduler -> scheduler.getApplicableNames(resource))
+                    .anyMatch(applicableNames -> applicableNames.contains(name));
+            String selector = getSitemapSelector(sitemapRoot, topLevelSitemapRoot, name);
+            String location = newSitemapUrl(baseUrl, selector);
+            infos.add(newOnDemandSitemapInfo(location, name,
+                    hasApplicableScheduler ? SitemapInfo.Status.SCHEDULED : SitemapInfo.Status.UNKNOWN));
+        }
+
 
         return infos;
-    }
-
-    @Override
-    public boolean isSitemapGenerationPending(@NotNull Resource sitemapRoot) {
-        sitemapRoot = normalizeSitemapRoot(sitemapRoot);
-
-        if (sitemapRoot == null) {
-            return false;
-        }
-
-        Set<String> onDemandNames = generatorManager.getOnDemandNames(sitemapRoot);
-
-        // not a sitemap root, always more then one sitemap, all sitemaps on-demand
-        if (!isSitemapRoot(sitemapRoot)
-                || requiresSitemapIndex(sitemapRoot)
-                || onDemandNames.containsAll(generatorManager.getGenerators(sitemapRoot).keySet())) {
-            return false;
-        }
-
-        // check if for each name a sitemap is in the storage
-        Collection<String> names = new HashSet<>(generatorManager.getGenerators(sitemapRoot).keySet());
-        names.removeAll(onDemandNames);
-        storage.getSitemaps(sitemapRoot, names).stream().map(SitemapStorageInfo::getName).forEach(names::remove);
-
-        if (!names.isEmpty()) {
-            // at least one sitemap is missing and so generation is pending (already queued, active or not yet
-            // scheduled). This is not fully precise as multi-file sitemaps could more then once
-            return true;
-        }
-
-        // last check if there is still a job running
-        Collection<Job> jobs = jobManager.findJobs(
-                JobManager.QueryType.ALL,
-                SitemapGeneratorExecutor.JOB_TOPIC,
-                1,
-                Collections.singletonMap(SitemapGeneratorExecutor.JOB_PROPERTY_SITEMAP_ROOT, sitemapRoot.getPath()));
-
-        return jobs.size() > 0;
     }
 
     private boolean requiresSitemapIndex(@NotNull Resource sitemapRoot) {
@@ -233,13 +212,22 @@ public class SitemapServiceImpl implements SitemapService {
         return (externalizer == null ? SitemapLinkExternalizer.DEFAULT : externalizer).externalize(resource);
     }
 
-    private SitemapInfo newSitemapIndexInfo(@NotNull String url) {
-        return new SitemapInfoImpl(null, url, SITEMAP_INDEX_NAME, -1, -1);
+    private static SitemapInfo newSitemapIndexInfo(@NotNull String url) {
+        return new SitemapInfoImpl(null, url, SITEMAP_INDEX_NAME, SitemapInfo.Status.ON_DEMAND, -1, -1);
     }
 
-    private SitemapInfo newSitemapInfo(@Nullable String path, @NotNull String url, @Nullable String name, int size,
-                                       int entries) {
-        return new SitemapInfoImpl(path, url, name, size, entries);
+    private static SitemapInfo newOnDemandSitemapInfo(@NotNull String url, @Nullable String name) {
+        return newOnDemandSitemapInfo(url, name, SitemapInfo.Status.ON_DEMAND);
+    }
+
+    private static SitemapInfo newOnDemandSitemapInfo(@NotNull String url, @Nullable String name, @NotNull
+            SitemapInfo.Status status) {
+        return new SitemapInfoImpl(null, url, name, status, -1, -1);
+    }
+
+    private static SitemapInfo newStoredSitemapInfo(@NotNull String path, @NotNull String url, @Nullable String name,
+            int size, int entries) {
+        return new SitemapInfoImpl(path, url, name, SitemapInfo.Status.STORAGE, size, entries);
     }
 
     private static String newSitemapUrl(String baseUrl, String selector) {
@@ -266,14 +254,16 @@ public class SitemapServiceImpl implements SitemapService {
         private final String url;
         private final String path;
         private final String name;
+        private final Status status;
         private final int size;
         private final int entries;
 
-        private SitemapInfoImpl(@Nullable String path, @NotNull String url, @Nullable String name, int size,
-                                int entries) {
+        private SitemapInfoImpl(@Nullable String path, @NotNull String url, @Nullable String name,
+                @NotNull Status status, int size, int entries) {
             this.path = path;
             this.url = url;
             this.name = name;
+            this.status = status;
             this.size = size;
             this.entries = entries;
         }
@@ -294,6 +284,12 @@ public class SitemapServiceImpl implements SitemapService {
         @Nullable
         public String getName() {
             return name;
+        }
+
+        @NotNull
+        @Override
+        public SitemapInfo.Status getStatus() {
+            return status;
         }
 
         @Override

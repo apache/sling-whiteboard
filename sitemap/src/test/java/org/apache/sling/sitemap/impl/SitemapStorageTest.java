@@ -288,7 +288,7 @@ public class SitemapStorageTest {
     }
 
     @Test
-    public void testUpdatedAndPurgeEventSentOnSitemapWriteDelete() throws IOException {
+    public void testUpdatedAndPurgeEventSentOnSitemapWriteDelete() throws IOException, InterruptedException {
         // given
         List<Event> capturedEvents = new ArrayList<>();
         Resource root = context.create().resource("/content/site/de", ImmutableMap.of(
@@ -300,8 +300,10 @@ public class SitemapStorageTest {
         });
 
         // when
+        Thread.sleep(100);
         String storagePath = subject.writeSitemap(root, "foo", new ByteArrayInputStream(new byte[]{0x00}), 1, 0, 0);
         subject.deleteSitemaps(root, "foo", info -> true);
+        Thread.sleep(100);
 
         // then
         assertThat(capturedEvents, hasSize(2));

@@ -28,6 +28,27 @@ import org.osgi.annotation.versioning.ProviderType;
 @ProviderType
 public interface SitemapInfo {
 
+    enum Status {
+        /**
+         * Sitemap is available but served on-demand.
+         */
+        ON_DEMAND,
+        /**
+         * Sitemap is available and served from storage.
+         */
+        STORAGE,
+        /**
+         * Sitemap is not yet available, generation is pending.
+         */
+        SCHEDULED,
+        /**
+         * Sitemap not served on-demand, not served from storage, no schedule registered.
+         * <p>
+         * That may mean the sitemap is generated on a different host.
+         */
+        UNKNOWN
+    }
+
     /**
      * Returns a resource path to the node the sitemap is stored. May return null if the sitemap or sitemap-index is
      * served on-demand.
@@ -53,6 +74,14 @@ public interface SitemapInfo {
      */
     @Nullable
     String getName();
+
+    /**
+     * Returns the status of the sitemap.
+     *
+     * @return
+     */
+    @NotNull
+    Status getStatus();
 
     /**
      * Returns the size of the sitemap in bytes. -1 for sitemap-index or sitemaps served on-demand.
