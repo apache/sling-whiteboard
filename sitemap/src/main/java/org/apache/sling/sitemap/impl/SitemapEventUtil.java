@@ -38,7 +38,7 @@ class SitemapEventUtil {
     }
 
     static Event newUpdateEvent(SitemapStorageInfo storageInfo, Resource sitemapRoot) {
-        Map<String, Object> props = new HashMap<>(6);
+        Map<String, Object> props = new HashMap<>(5);
         props.put(EVENT_PROPERTY_SITEMAP_NAME, storageInfo.getName());
         props.put(EVENT_PROPERTY_SITEMAP_ROOT, sitemapRoot.getPath());
         props.put(EVENT_PROPERTY_SITEMAP_URLS, storageInfo.getEntries());

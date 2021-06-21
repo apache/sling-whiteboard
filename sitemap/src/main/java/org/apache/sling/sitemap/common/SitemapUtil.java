@@ -28,8 +28,10 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.jcr.query.Query;
 import java.util.*;
-import java.util.regex.Pattern;
 
+/**
+ * A utility class to give access to common functionality used for sitemaps.
+ */
 public class SitemapUtil {
 
     private static final String JCR_SYSTEM_PATH = "/" + JcrConstants.JCR_SYSTEM + "/";
@@ -121,7 +123,8 @@ public class SitemapUtil {
      * @return
      */
     @NotNull
-    public static String getSitemapSelector(@NotNull Resource sitemapRoot, @NotNull Resource topLevelSitemapRoot, @NotNull String name) {
+    public static String getSitemapSelector(@NotNull Resource sitemapRoot, @NotNull Resource topLevelSitemapRoot,
+            @NotNull String name) {
         name = SitemapService.DEFAULT_SITEMAP_NAME.equals(name) ? "sitemap" : name + "-sitemap";
 
         if (!sitemapRoot.getPath().equals(topLevelSitemapRoot.getPath())) {
@@ -150,7 +153,8 @@ public class SitemapUtil {
      * @return a sorted {@link Map}
      */
     @NotNull
-    public static Map<Resource, String> resolveSitemapRoots(@NotNull Resource topLevelSitemapRoot, @NotNull String sitemapSelector) {
+    public static Map<Resource, String> resolveSitemapRoots(@NotNull Resource topLevelSitemapRoot,
+            @NotNull String sitemapSelector) {
         if (!isTopLevelSitemapRoot(topLevelSitemapRoot)) {
             // selectors are always relative to a top level sitemap root
             return Collections.emptyMap();
@@ -179,35 +183,6 @@ public class SitemapUtil {
         Map<Resource, String> roots = new LinkedHashMap<>();
         resolveSitemapRoots(topLevelSitemapRoot, relevantParts, roots);
         return roots;
-    }
-
-    private static void resolveSitemapRoots(@NotNull Resource sitemapRoot, @NotNull List<String> parts,
-                                            @NotNull Map<Resource, String> result) {
-        if (isSitemapRoot(sitemapRoot)) {
-            result.put(sitemapRoot, String.join("-", parts));
-        }
-        for (int i = 0, j; i < parts.size(); i++) {
-            // products product page tops
-            j = i + 1;
-            String childName = String.join("-", parts.subList(0, j));
-            Resource namedChild = sitemapRoot.getChild(childName);
-            if (namedChild != null) {
-                if (j == parts.size() && isSitemapRoot(namedChild)) {
-                    result.put(namedChild, SitemapService.DEFAULT_SITEMAP_NAME);
-                } else if (parts.size() > j) {
-                    resolveSitemapRoots(namedChild, parts.subList(j, parts.size()), result);
-                }
-            }
-        }
-    }
-
-    private static boolean isInteger(String text) {
-        try {
-            Integer.parseUnsignedInt(text);
-            return true;
-        } catch (NumberFormatException ex) {
-            return false;
-        }
     }
 
     /**
@@ -262,5 +237,32 @@ public class SitemapUtil {
         };
     }
 
+    private static boolean isInteger(String text) {
+        try {
+            Integer.parseUnsignedInt(text);
+            return true;
+        } catch (NumberFormatException ex) {
+            return false;
+        }
+    }
 
+    private static void resolveSitemapRoots(@NotNull Resource sitemapRoot, @NotNull List<String> parts,
+            @NotNull Map<Resource, String> result) {
+        if (isSitemapRoot(sitemapRoot)) {
+            result.put(sitemapRoot, String.join("-", parts));
+        }
+        for (int i = 0, j; i < parts.size(); i++) {
+            // products product page tops
+            j = i + 1;
+            String childName = String.join("-", parts.subList(0, j));
+            Resource namedChild = sitemapRoot.getChild(childName);
+            if (namedChild != null) {
+                if (j == parts.size() && isSitemapRoot(namedChild)) {
+                    result.put(namedChild, SitemapService.DEFAULT_SITEMAP_NAME);
+                } else if (parts.size() > j) {
+                    resolveSitemapRoots(namedChild, parts.subList(j, parts.size()), result);
+                }
+            }
+        }
+    }
 }
