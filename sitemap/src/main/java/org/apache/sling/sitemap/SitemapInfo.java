@@ -50,8 +50,8 @@ public interface SitemapInfo {
     }
 
     /**
-     * Returns a resource path to the node the sitemap is stored. May return null if the sitemap or sitemap-index is
-     * served on-demand.
+     * Returns the resource path to the resource the sitemap is stored at. May return null if the sitemap or
+     * sitemap-index is served on-demand.
      *
      * @return
      */
@@ -67,18 +67,21 @@ public interface SitemapInfo {
     String getUrl();
 
     /**
-     * Returns the name of the sitemap. This returns null when the sitemap has the default name or it is a sitemap
-     * index.
+     * Returns the name of the sitemap.
+     * <p>
+     * For sitemap-indexes this will be equal to {@link SitemapService#SITEMAP_INDEX_NAME} and for sitemaps generated
+     * for the default name this will be equal to {@link SitemapService#DEFAULT_SITEMAP_NAME}.
      *
      * @return
      */
-    @Nullable
+    @NotNull
     String getName();
 
     /**
      * Returns the status of the sitemap.
      *
      * @return
+     * @see SitemapInfo.Status
      */
     @NotNull
     Status getStatus();

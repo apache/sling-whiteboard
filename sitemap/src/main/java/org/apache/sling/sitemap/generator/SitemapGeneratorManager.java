@@ -28,13 +28,13 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * A service that manages all registered {@link SitemapGenerator}.
+ * A service that manages all registered {@link SitemapGenerator} services.
  */
 @ProviderType
 public interface SitemapGeneratorManager {
 
     /**
-     * Returns all names produced by all {@link SitemapGenerator}s for the given sitemap root.
+     * Returns all names of all {@link SitemapGenerator}s for the given sitemap root.
      *
      * @param sitemapRoot
      * @return
@@ -42,8 +42,8 @@ public interface SitemapGeneratorManager {
     Set<String> getNames(@NotNull Resource sitemapRoot);
 
     /**
-     * Returns all names produced by all {@link SitemapGenerator}s for the given sitemap root, limited to those
-     * {@link SitemapGenerator}s that are configured to be served on demand.
+     * Returns all names of all {@link SitemapGenerator}s for the given sitemap root, limited to those that are
+     * configured to be served on demand.
      *
      * @param sitemapRoot
      * @return
@@ -53,7 +53,7 @@ public interface SitemapGeneratorManager {
 
     /**
      * Returns the {@link SitemapGenerator} for the given sitemap root {@link Resource} and name. This may be null
-     * when no {@link SitemapGenerator} service exists that can generate a sitemap with the name for the given root.
+     * when no {@link SitemapGenerator} service exists that generates a sitemap with the name for the given root.
      *
      * @param sitemapRoot
      * @param name

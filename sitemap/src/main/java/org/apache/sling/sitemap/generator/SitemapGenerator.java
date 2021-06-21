@@ -32,12 +32,12 @@ import java.util.Set;
 /**
  * {@link SitemapGenerator} implementations are responsible to generate one or many sitemaps for a given sitemap root
  * {@link Resource}. When a {@link SitemapGenerator} generates multiple sitemaps for a given {@link Resource} it has to
- * return their names using {@link SitemapGenerator#getNames(Resource)} (Resource)}. Also, the {@link SitemapGenerator}
- * may decide if any of those names should be served on-demand by returning a subset of names for
+ * return their names using {@link SitemapGenerator#getNames(Resource)}. Also, the {@link SitemapGenerator} may decide
+ * that any of those names should be served on-demand by returning a subset of names for
  * {@link SitemapGenerator#getOnDemandNames(Resource)}.
  * <p>
  * {@link SitemapGenerator#generate(Resource, String, Sitemap, GenerationContext)} may be called for each name and
- * each sitemap root {@link Resource}, the {@link SitemapGenerator} returned an non-empty {@link Set} of names for.
+ * each sitemap root {@link Resource}, the implementation returned an non-empty {@link Set} of names for.
  * <p>
  * It is possible to register multiple {@link SitemapGenerator}s for a single name. In this case the one with the
  * highest ranking according to the OSGI specification is used.

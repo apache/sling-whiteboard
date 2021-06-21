@@ -48,33 +48,33 @@ public interface SitemapService {
     String SITEMAP_INDEX_NAME = "<sitemap-index>";
 
     /**
-     * Returns the configured maximum size (bytes) a sitemap should not exceed.
+     * Returns the configured maximum size (bytes) a sitemap must not exceed.
      *
      * @return
      */
     int getMaxSize();
 
     /**
-     * Returns the configured maximum number of urls a sitemap should not exceed.
+     * Returns the configured maximum number of urls a sitemap must not exceed.
      *
      * @return
      */
     int getMaxEntries();
 
     /**
-     * Calls all registered SitemapSchedulers to schedule (re)generation for all sitemap roots and names.
+     * Calls all registered sitemap schedulers to schedule (re)generation for all sitemap roots and names.
      */
     void scheduleGeneration();
 
     /**
-     * Calls all registered SitemapSchedulers registered for the given name to schedule (re)generation.
+     * Calls all registered sitemap schedulers registered for the given name to schedule (re)generation.
      *
      * @param name
      */
     void scheduleGeneration(String name);
 
     /**
-     * Calls all registered SitemapSchedulers with a search path containing the given resource to schedule
+     * Calls all registered sitemap schedulers with a search path containing the given resource to schedule
      * (re)generation for all names.
      *
      * @param sitemapRoot
@@ -82,7 +82,7 @@ public interface SitemapService {
     void scheduleGeneration(Resource sitemapRoot);
 
     /**
-     * Calls all registered SitemapSchedulers with a search path containing the given resource and being registered for
+     * Calls all registered sitemap schedulers with a search path containing the given resource and being registered for
      * the given name to schedule (re)generation.
      *
      * @param sitemapRoot

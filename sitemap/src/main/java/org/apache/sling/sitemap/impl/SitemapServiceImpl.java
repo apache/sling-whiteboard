@@ -216,16 +216,16 @@ public class SitemapServiceImpl implements SitemapService {
         return new SitemapInfoImpl(null, url, SITEMAP_INDEX_NAME, SitemapInfo.Status.ON_DEMAND, -1, -1);
     }
 
-    private static SitemapInfo newOnDemandSitemapInfo(@NotNull String url, @Nullable String name) {
+    private static SitemapInfo newOnDemandSitemapInfo(@NotNull String url, @NotNull String name) {
         return newOnDemandSitemapInfo(url, name, SitemapInfo.Status.ON_DEMAND);
     }
 
-    private static SitemapInfo newOnDemandSitemapInfo(@NotNull String url, @Nullable String name, @NotNull
+    private static SitemapInfo newOnDemandSitemapInfo(@NotNull String url, @NotNull String name, @NotNull
             SitemapInfo.Status status) {
         return new SitemapInfoImpl(null, url, name, status, -1, -1);
     }
 
-    private static SitemapInfo newStoredSitemapInfo(@NotNull String path, @NotNull String url, @Nullable String name,
+    private static SitemapInfo newStoredSitemapInfo(@NotNull String path, @NotNull String url, @NotNull String name,
             int size, int entries) {
         return new SitemapInfoImpl(path, url, name, SitemapInfo.Status.STORAGE, size, entries);
     }
@@ -258,7 +258,7 @@ public class SitemapServiceImpl implements SitemapService {
         private final int size;
         private final int entries;
 
-        private SitemapInfoImpl(@Nullable String path, @NotNull String url, @Nullable String name,
+        private SitemapInfoImpl(@Nullable String path, @NotNull String url, @NotNull String name,
                 @NotNull Status status, int size, int entries) {
             this.path = path;
             this.url = url;
@@ -281,7 +281,7 @@ public class SitemapServiceImpl implements SitemapService {
         }
 
         @Override
-        @Nullable
+        @NotNull
         public String getName() {
             return name;
         }
