@@ -73,8 +73,6 @@ public class SitemapServiceImplTest {
 
     @Mock
     private ServiceUserMapped serviceUser;
-    @Mock
-    private JobManager jobManager;
 
     private Resource deRoot;
     private Resource enRoot;
@@ -109,7 +107,6 @@ public class SitemapServiceImplTest {
         context.registerService(ServiceUserMapped.class, serviceUser, "subServiceName", "sitemap-writer");
         context.registerService(SitemapGenerator.class, generator, "service.ranking", 1);
         context.registerService(SitemapGenerator.class, newsGenerator, "service.ranking", 2);
-        context.registerService(JobManager.class, jobManager);
         context.registerInjectActivateService(sitemapServiceConfiguration);
         context.registerInjectActivateService(generatorManager);
         context.registerInjectActivateService(storage);
