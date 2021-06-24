@@ -504,9 +504,6 @@ public class SitemapStorage implements Runnable {
      * @return
      */
     private static SitemapStorageInfo newSitemapStorageInfo(Resource child) {
-        if (!isValidSitemapFile(child)) {
-            throw new IllegalArgumentException("valid sitemap file expected");
-        }
         return new SitemapStorageInfo(
                 child.getPath(),
                 child.getName().substring(0, child.getName().lastIndexOf('.')),
@@ -515,14 +512,5 @@ public class SitemapStorage implements Runnable {
                 child.getValueMap().get(JcrConstants.JCR_LASTMODIFIED, Calendar.class),
                 child.getValueMap().get(PN_SITEMAP_SIZE, 0),
                 child.getValueMap().get(PN_SITEMAP_ENTRIES, 0));
-    }
-
-    private static boolean isInteger(String text) {
-        try {
-            Integer.parseUnsignedInt(text);
-            return true;
-        } catch (NumberFormatException ex) {
-            return false;
-        }
     }
 }
