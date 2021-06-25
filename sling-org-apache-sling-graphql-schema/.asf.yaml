@@ -1,0 +1,7 @@
+github:
+  description: "Apache Sling GraphQL Schema"
+  homepage: "https://sling.apache.org/"
+  labels:
+    - sling
+    - java
+    - graphql
