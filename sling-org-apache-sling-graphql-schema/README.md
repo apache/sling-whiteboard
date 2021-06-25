@@ -3,8 +3,8 @@
 Apache Sling GraphQL Schema
 ----
 
-This module provides services to combine partial GraphQL schema ("partials") supplied by
-_provider bundles_.
+This module ([SLING-10551](https://issues.apache.org/jira/browse/SLING-10551)) provides services to combine partial GraphQL
+schema ("partials") supplied by _provider bundles_.
 
 The partials are text files that use the GraphQL SDL (Schema Definition  Language) syntax and are
 provided as OSGi bundle resources. We cannot name them "fragments" as that has a different meaning
@@ -75,7 +75,7 @@ TODO remove those once the module is implemented.
 
 We can use an [OSGi Extender Pattern](https://enroute.osgi.org/FAQ/400-patterns.html) to handle the
 provider bundles, similar to what we do for 
-[initial content loading|https://sling.apache.org/documentation/bundles/content-loading-jcr-contentloader.html]
+[initial content loading](https://sling.apache.org/documentation/bundles/content-loading-jcr-contentloader.html)
 .
 
 The assembler bundle can use a
