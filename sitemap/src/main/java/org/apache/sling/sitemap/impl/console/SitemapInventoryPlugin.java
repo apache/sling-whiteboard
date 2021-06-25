@@ -29,6 +29,7 @@ import org.apache.sling.sitemap.SitemapInfo;
 import org.apache.sling.sitemap.SitemapService;
 import org.apache.sling.sitemap.common.SitemapUtil;
 import org.apache.sling.sitemap.impl.SitemapServiceConfiguration;
+import org.jetbrains.annotations.Nullable;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.annotations.Activate;
@@ -115,17 +116,20 @@ public class SitemapInventoryPlugin implements InventoryPrinter {
                 while (infoIt.hasNext()) {
                     SitemapInfo info = infoIt.next();
                     pw.print('{');
-                    pw.print("\"url\":\"");
+                    pw.print("\"name\":\"");
+                    pw.print(escapeDoubleQuotes(info.getName()));
+                    pw.print('"');
+                    pw.print(",\"url\":\"");
                     pw.print(escapeDoubleQuotes(info.getUrl()));
+                    pw.print("\",\"status\":\"");
+                    pw.print(info.getStatus());
                     pw.print('"');
                     if (info.getStoragePath() != null) {
                         pw.print(",\"path\":\"");
                         pw.print(escapeDoubleQuotes(info.getStoragePath()));
-                        pw.print("\",\"status\":\"");
-                        pw.print(info.getStatus());
                         pw.print("\",\"size\":");
                         pw.print(info.getSize());
-                        pw.print(",\"entries\":");
+                        pw.print(",\"urls\":");
                         pw.print(info.getEntries());
                         pw.print(",\"inLimits\":");
                         pw.print(isWithinLimits(info));
@@ -149,8 +153,9 @@ public class SitemapInventoryPlugin implements InventoryPrinter {
     }
 
     private void printText(PrintWriter pw) {
-        pw.println("Apache Sling Sitemap Schedulers");
-        pw.println("-------------------------------");
+        pw.println("# Apache Sling Sitemap Schedulers");
+        pw.println("# -------------------------------");
+        pw.println("schedulers:");
 
         for (ServiceReference<?> ref : bundleContext.getBundle().getRegisteredServices()) {
             Object schedulerExp = ref.getProperty(Scheduler.PROPERTY_SCHEDULER_EXPRESSION);
@@ -167,35 +172,40 @@ public class SitemapInventoryPlugin implements InventoryPrinter {
 
         pw.println();
         pw.println();
-        pw.println("Apache Sling Sitemap Roots");
-        pw.println("--------------------------");
+        pw.println("# Apache Sling Sitemap Roots");
+        pw.println("# --------------------------");
+        pw.println("roots:");
 
         try (ResourceResolver resolver = resourceResolverFactory.getServiceResourceResolver(AUTH)) {
             Iterator<Resource> roots = SitemapUtil.findSitemapRoots(resolver, "/");
             while (roots.hasNext()) {
                 Resource root = roots.next();
+                pw.print("  ");
                 pw.print(root.getPath());
                 pw.print(':');
                 pw.println();
                 for (SitemapInfo info : sitemapService.getSitemapInfo(root)) {
-                    pw.print(" - Url: ");
+                    pw.print("   - Name: ");
+                    pw.print(info.getName());
+                    pw.println();
+                    pw.print("     Url: ");
                     pw.print(info.getUrl());
                     pw.println();
+                    pw.print("     Status: ");
+                    pw.print(info.getStatus());
+                    pw.println();
                     if (info.getStoragePath() != null) {
-                        pw.print("   Path: ");
+                        pw.print("     Path: ");
                         pw.print(info.getStoragePath());
                         pw.println();
-                        pw.print("   Status: ");
-                        pw.print(info.getStatus());
-                        pw.println();
-                        pw.print("   Bytes: ");
+                        pw.print("     Size: ");
                         pw.print(info.getSize());
                         pw.println();
-                        pw.print("   Urls: ");
+                        pw.print("     Urls: ");
                         pw.print(info.getEntries());
                         pw.println();
-                        pw.print("   Within Limits: ");
-                        pw.print(isWithinLimits(info) ? "yes": "no");
+                        pw.print("     Within Limits: ");
+                        pw.print(isWithinLimits(info) ? "yes" : "no");
                         pw.println();
                     }
                 }
@@ -210,7 +220,7 @@ public class SitemapInventoryPlugin implements InventoryPrinter {
         return info.getSize() <= configuration.getMaxSize() && info.getEntries() <= configuration.getMaxEntries();
     }
 
-    private static String escapeDoubleQuotes(String text) {
-        return text.replace("\"", "\\\"");
+    private static String escapeDoubleQuotes(@Nullable String text) {
+        return text == null ? "" : text.replace("\"", "\\\"");
     }
 }

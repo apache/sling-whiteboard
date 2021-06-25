@@ -60,6 +60,7 @@ public class SitemapServiceImplTest {
     private final SitemapServiceImpl subject = new SitemapServiceImpl();
     private final SitemapStorage storage = new SitemapStorage();
     private final SitemapGeneratorManagerImpl generatorManager = new SitemapGeneratorManagerImpl();
+    private final SitemapScheduler scheduler = new SitemapScheduler();
     private final SitemapServiceConfiguration sitemapServiceConfiguration = new SitemapServiceConfiguration();
 
     private TestGenerator generator = new TestGenerator() {
@@ -73,6 +74,8 @@ public class SitemapServiceImplTest {
 
     @Mock
     private ServiceUserMapped serviceUser;
+    @Mock
+    private JobManager jobManager;
 
     private Resource deRoot;
     private Resource enRoot;
@@ -105,11 +108,17 @@ public class SitemapServiceImplTest {
         noRoot = context.create().resource("/content/site/nothing");
 
         context.registerService(ServiceUserMapped.class, serviceUser, "subServiceName", "sitemap-writer");
+        context.registerService(ServiceUserMapped.class, serviceUser, "subServiceName", "sitemap-reader");
         context.registerService(SitemapGenerator.class, generator, "service.ranking", 1);
         context.registerService(SitemapGenerator.class, newsGenerator, "service.ranking", 2);
+        context.registerService(JobManager.class, jobManager);
         context.registerInjectActivateService(sitemapServiceConfiguration);
         context.registerInjectActivateService(generatorManager);
         context.registerInjectActivateService(storage);
+        context.registerInjectActivateService(scheduler,
+                "scheduler.name", "default",
+                "scheduler.expression", "never",
+                "names", new String[] { SitemapService.DEFAULT_SITEMAP_NAME });
         context.registerInjectActivateService(subject);
     }
 
@@ -137,7 +146,7 @@ public class SitemapServiceImplTest {
         assertThat(enInfo, hasSize(2));
         assertThat(enInfo, hasItems(
                 eqSitemapInfo("/site/en.sitemap-index.xml", -1, -1, SitemapInfo.Status.ON_DEMAND),
-                eqSitemapInfo("/site/en.sitemap.xml", -1, -1, SitemapInfo.Status.UNKNOWN)
+                eqSitemapInfo("/site/en.sitemap.xml", -1, -1, SitemapInfo.Status.SCHEDULED)
         ));
         assertThat(frInfo, hasSize(3));
         assertThat(frInfo, hasItems(
@@ -160,13 +169,17 @@ public class SitemapServiceImplTest {
     @Test
     public void testSitemapUrlReturnsProperSelectors() throws IOException {
         // given
-        storage.writeSitemap(deRoot, SitemapService.DEFAULT_SITEMAP_NAME, new ByteArrayInputStream(new byte[0]), 1, 100, 1);
+        storage.writeSitemap(deRoot, SitemapService.DEFAULT_SITEMAP_NAME, new ByteArrayInputStream(new byte[0]), 1, 100,
+                1);
         storage.writeSitemap(frRoot, "foobar", new ByteArrayInputStream(new byte[0]), 1, 100, 1);
-        storage.writeSitemap(enRoot, SitemapService.DEFAULT_SITEMAP_NAME, new ByteArrayInputStream(new byte[0]), 1, 100, 1);
+        storage.writeSitemap(enRoot, SitemapService.DEFAULT_SITEMAP_NAME, new ByteArrayInputStream(new byte[0]), 1, 100,
+                1);
         storage.writeSitemap(enNews, "foo", new ByteArrayInputStream(new byte[0]), 1, 100, 1);
         storage.writeSitemap(enNews, "bar", new ByteArrayInputStream(new byte[0]), 1, 100, 1);
-        storage.writeSitemap(itRoot, SitemapService.DEFAULT_SITEMAP_NAME, new ByteArrayInputStream(new byte[0]), 1, 100, 1);
-        storage.writeSitemap(itRoot, SitemapService.DEFAULT_SITEMAP_NAME, new ByteArrayInputStream(new byte[0]), 2, 100, 1);
+        storage.writeSitemap(itRoot, SitemapService.DEFAULT_SITEMAP_NAME, new ByteArrayInputStream(new byte[0]), 1, 100,
+                1);
+        storage.writeSitemap(itRoot, SitemapService.DEFAULT_SITEMAP_NAME, new ByteArrayInputStream(new byte[0]), 2, 100,
+                1);
 
         generator.setNames(deRoot, SitemapService.DEFAULT_SITEMAP_NAME);
         generator.setNames(frRoot, "foobar");
