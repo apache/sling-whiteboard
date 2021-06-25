@@ -28,7 +28,7 @@ specific set of queries, mutations and types.
 ## Provider bundles
 
 To provide partials, a bundle sets a `Sling-GraphQL-Schema` header in its OSGi manifest, with a value that
-points to one or several paths where partials are found.
+points to one or several paths where partials are found in the bundle resources.
 
 A partial is a text file with a `.graphql.partial.txt` extension that has the following structure:
 
@@ -63,7 +63,7 @@ A partial is a text file with a `.graphql.partial.txt` extension that has the fo
         command(lang: String, input: Object) : CommandResult @fetcher(name:"samples/command")
     }
 
-    # There are no constaints on the rest of the schema, which the assembler simply concatenates
+    # There are no constraints on the rest of the schema, which the assembler simply concatenates
     # after the Query and Mutation sections
     type Folder {
       path : ID!
