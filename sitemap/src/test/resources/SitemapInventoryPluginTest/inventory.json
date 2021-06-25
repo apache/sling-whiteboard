@@ -1,0 +1,41 @@
+{
+  "schedulers": [
+    {
+      "name": "sitemap-default",
+      "expression": "0 0 0 * * * ?"
+    },
+    {
+      "name": "sitemap-news",
+      "expression": "0 */30 * * * * ?"
+    }
+  ],
+  "roots": {
+    "/content/site/de": [
+      {
+        "name": "<default>",
+        "url": "/site/de.sitemap.xml",
+        "status": "STORAGE",
+        "path": "/var/sitemaps/content/site/de/sitemap.xml",
+        "size": 1000,
+        "urls": 10,
+        "inLimits": true
+      }
+    ],
+    "/content/site/en": [
+      {
+        "name": "<sitemap-index>",
+        "url": "/site/en.sitemap-index.xml",
+        "status": "ON_DEMAND"
+      },
+      {
+        "name": "<default>",
+        "url": "/site/en.sitemap.xml",
+        "status": "STORAGE",
+        "path": "/var/sitemaps/content/site/en/sitemap.xml",
+        "size": 10000,
+        "urls": 1000,
+        "inLimits": false
+      }
+    ]
+  }
+}
