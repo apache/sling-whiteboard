@@ -86,3 +86,6 @@ It can use logic similar to the jcr content loader module to load the partial sc
 
 * https://github.com/apache/sling-org-apache-sling-jcr-contentloader/blob/master/src/main/java/org/apache/sling/jcr/contentloader/PathEntry.java
 * Bundle.getEntryPaths to enumerate file resources in the bundle
+
+On our dev list, Radu suggests creating an OSGi a capability in o.a.s.graphql.schema that the bundles which provide schema extensions require, in order to create the wiring in between the bundles. This allows a limited number of bundles to trigger the BundleTracker, creating a weak contract.
+
