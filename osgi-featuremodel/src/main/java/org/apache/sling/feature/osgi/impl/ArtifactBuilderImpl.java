@@ -21,41 +21,41 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import org.osgi.service.feature.FeatureBundle;
-import org.osgi.service.feature.FeatureBundleBuilder;
+import org.osgi.service.feature.FeatureArtifact;
+import org.osgi.service.feature.FeatureArtifactBuilder;
 import org.osgi.service.feature.ID;
 
-class BundleBuilderImpl implements FeatureBundleBuilder {
+class ArtifactBuilderImpl implements FeatureArtifactBuilder {
     private final ID id;
 
     private final Map<String,Object> metadata = new HashMap<>();
 
-    BundleBuilderImpl(ID id) {
+    ArtifactBuilderImpl(ID id) {
         this.id = id;
     }
 
     @Override
-    public FeatureBundleBuilder addMetadata(String key, Object value) {
+    public FeatureArtifactBuilder addMetadata(String key, Object value) {
         this.metadata.put(key, value);
         return this;
     }
 
     @Override
-    public FeatureBundleBuilder addMetadata(Map<String,Object> md) {
+    public FeatureArtifactBuilder addMetadata(Map<String,Object> md) {
         this.metadata.putAll(md);
         return this;
     }
 
     @Override
-    public FeatureBundle build() {
-        return new BundleImpl(id, metadata);
+    public FeatureArtifact build() {
+        return new ArtifactImpl(id, metadata);
     }
 
-    private static class BundleImpl implements FeatureBundle {
+    private static class ArtifactImpl implements FeatureArtifact {
         private final ID id;
         private final Map<String, Object> metadata;
 
-        private BundleImpl(ID id, Map<String, Object> metadata) {
+        private ArtifactImpl(ID id, Map<String, Object> metadata) {
             this.id = id;
             this.metadata = Collections.unmodifiableMap(metadata);
         }
@@ -83,13 +83,13 @@ class BundleBuilderImpl implements FeatureBundleBuilder {
 				return false;
 			if (getClass() != obj.getClass())
 				return false;
-			BundleImpl other = (BundleImpl) obj;
+			ArtifactImpl other = (ArtifactImpl) obj;
 			return Objects.equals(id, other.id) && Objects.equals(metadata, other.metadata);
 		}
 
-        @Override
+		@Override
         public String toString() {
-            return "BundleImpl [getID()=" + getID() + "]";
+            return "ArtifactImpl [getID()=" + getID() + "]";
         }
     }
 }

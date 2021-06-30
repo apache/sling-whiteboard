@@ -17,6 +17,7 @@
 package org.apache.sling.feature.osgi.impl;
 
 import org.osgi.service.feature.BuilderFactory;
+import org.osgi.service.feature.FeatureArtifactBuilder;
 import org.osgi.service.feature.FeatureBuilder;
 import org.osgi.service.feature.FeatureBundleBuilder;
 import org.osgi.service.feature.FeatureConfigurationBuilder;
@@ -26,7 +27,12 @@ import org.osgi.service.feature.FeatureExtensionBuilder;
 import org.osgi.service.feature.ID;
 
 class BuilderFactoryImpl implements BuilderFactory {
-    @Override
+	@Override
+	public FeatureArtifactBuilder newArtifactBuilder(ID id) {
+		return new ArtifactBuilderImpl(id);
+	}
+
+	@Override
     public FeatureBundleBuilder newBundleBuilder(ID id) {
         return new BundleBuilderImpl(id);
     }

@@ -21,13 +21,17 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import org.osgi.service.feature.FeatureArtifact;
 import org.osgi.service.feature.FeatureExtension;
 import org.osgi.service.feature.FeatureExtension.Kind;
 import org.osgi.service.feature.FeatureExtension.Type;
 import org.osgi.service.feature.FeatureExtensionBuilder;
+import org.osgi.service.feature.FeatureService;
 import org.osgi.service.feature.ID;
 
 class ExtensionBuilderImpl implements FeatureExtensionBuilder {
+	private static FeatureService FEATURE_SERVICE = new FeatureServiceImpl();
+	
     private final String name;
     private final Type type;
     private final Kind kind;
@@ -95,7 +99,7 @@ class ExtensionBuilderImpl implements FeatureExtensionBuilder {
 
     @Override
     public FeatureExtensionBuilder addArtifact(String groupId, String artifactId, String version, String at, String classifier) {
-    	return addArtifact(new ID(groupId, artifactId, version, at, classifier)); 
+    	return addArtifact(FEATURE_SERVICE.getID(groupId, artifactId, version, at, classifier)); 
     }
     
     @Override
@@ -145,11 +149,12 @@ class ExtensionBuilderImpl implements FeatureExtensionBuilder {
             return content;
         }
 
-        public List<ID> getArtifacts() {
-            List<ID> res = new ArrayList<>();
+        public List<FeatureArtifact> getArtifacts() {
+            List<FeatureArtifact> res = new ArrayList<>();
 
             for (String s : content) {
-                res.add(ID.fromMavenID(s));
+            	res.add(FEATURE_SERVICE.getBuilderFactory().newArtifactBuilder(
+            			FEATURE_SERVICE.getIDfromMavenID(s)).build());
             }
 
             return res;

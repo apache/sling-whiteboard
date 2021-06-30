@@ -39,20 +39,41 @@ import org.osgi.service.feature.FeatureConfiguration;
 import org.osgi.service.feature.FeatureConfigurationBuilder;
 import org.osgi.service.feature.FeatureExtension;
 import org.osgi.service.feature.FeatureExtensionBuilder;
+import org.osgi.service.feature.FeatureService;
 import org.osgi.service.feature.ID;
 
-public class FeatureServiceImpl {
+public class FeatureServiceImpl implements FeatureService {
     private final BuilderFactoryImpl builderFactory = new BuilderFactoryImpl();
 
     public BuilderFactory getBuilderFactory() {
         return builderFactory;
     }
+    
+    @Override
+	public ID getIDfromMavenID(String mavenID) {
+    	return IDImpl.fromMavenID(mavenID);
+	}
 
-    public Feature readFeature(Reader jsonReader) throws IOException {
+	@Override
+	public ID getID(String groupId, String artifactId, String version) {
+		return new IDImpl(groupId, artifactId, version, null, null);
+	}
+
+	@Override
+	public ID getID(String groupId, String artifactId, String version, String type) {
+		return new IDImpl(groupId, artifactId, version, type, null);
+	}
+
+	@Override
+	public ID getID(String groupId, String artifactId, String version, String type, String classifier) {
+		return new IDImpl(groupId, artifactId, version, type, classifier);
+	}
+
+	public Feature readFeature(Reader jsonReader) throws IOException {
         JsonObject json = Json.createReader(jsonReader).readObject();
 
         String id = json.getString("id");
-        FeatureBuilder builder = builderFactory.newFeatureBuilder(ID.fromMavenID(id));
+        FeatureBuilder builder = builderFactory.newFeatureBuilder(getIDfromMavenID(id));
 
         builder.setName(json.getString("title", null));
         builder.setCopyright(json.getString("copyright", null));
@@ -83,7 +104,7 @@ public class FeatureServiceImpl {
             if (val.getValueType() == JsonValue.ValueType.OBJECT) {
                 JsonObject jo = val.asJsonObject();
                 String bid = jo.getString("id");
-                FeatureBundleBuilder builder = builderFactory.newBundleBuilder(ID.fromMavenID(bid));
+                FeatureBundleBuilder builder = builderFactory.newBundleBuilder(getIDfromMavenID(bid));
 
                 for (Map.Entry<String, JsonValue> entry : jo.entrySet()) {
                     if (entry.getKey().equals("id"))
@@ -208,7 +229,7 @@ public class FeatureServiceImpl {
                 for (JsonValue jv : ja2) {
                     if (jv.getValueType() == JsonValue.ValueType.STRING) {
                         String id = ((JsonString) jv).getString();
-                        builder.addArtifact(ID.fromMavenID(id));
+                        builder.addArtifact(getIDfromMavenID(id));
                     }
                 }
                 break;

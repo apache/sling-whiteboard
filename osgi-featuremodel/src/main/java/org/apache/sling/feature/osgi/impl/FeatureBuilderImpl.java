@@ -150,7 +150,8 @@ class FeatureBuilderImpl implements FeatureBuilder {
                 bundles, categories, configurations, extensions, variables);
     }
 
-    private static class FeatureImpl extends ArtifactImpl implements Feature {
+    private static class FeatureImpl implements Feature {
+        private final ID id;
         private final Optional<String> name;
         private final Optional<String> copyright;
         private final Optional<String> description;
@@ -169,8 +170,7 @@ class FeatureBuilderImpl implements FeatureBuilder {
         private FeatureImpl(ID id, String aName, String cr, String desc, String docs, String lic, String sc, String vnd,
                 boolean comp, List<FeatureBundle> bs, List<String> cats, Map<String,FeatureConfiguration> cs,
                 Map<String,FeatureExtension> es, Map<String,String> vars) {
-            super(id);
-
+            this.id = id;
             name = Optional.ofNullable(aName);
             copyright = Optional.ofNullable(cr);
             description = Optional.ofNullable(desc);
@@ -187,6 +187,11 @@ class FeatureBuilderImpl implements FeatureBuilder {
             variables = Collections.unmodifiableMap(vars);
         }
 
+        @Override
+        public ID getID() {
+            return id;
+        }
+        
         @Override
         public Optional<String> getName() {
             return name;
@@ -253,33 +258,30 @@ class FeatureBuilderImpl implements FeatureBuilder {
         }
 
         @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = super.hashCode();
-            result = prime * result + Objects.hash(bundles, categories, complete, configurations, copyright, description, docURL,
-                    extensions, license, name, scm, variables, vendor);
-            return result;
-        }
+		public int hashCode() {
+			return Objects.hash(bundles, categories, complete, configurations, copyright, description, docURL,
+					extensions, id, license, name, scm, variables, vendor);
+		}
 
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj)
-                return true;
-            if (!super.equals(obj))
-                return false;
-            if (getClass() != obj.getClass())
-                return false;
-            FeatureImpl other = (FeatureImpl) obj;
-            return Objects.equals(bundles, other.bundles) && Objects.equals(categories, other.categories)
-                    && complete == other.complete && Objects.equals(configurations, other.configurations)
-                    && Objects.equals(copyright, other.copyright) && Objects.equals(description, other.description)
-                    && Objects.equals(docURL, other.docURL) && Objects.equals(extensions, other.extensions)
-                    && Objects.equals(license, other.license) && Objects.equals(name, other.name)
-                    && Objects.equals(scm, other.scm) && Objects.equals(variables, other.variables)
-                    && Objects.equals(vendor, other.vendor);
-        }
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			FeatureImpl other = (FeatureImpl) obj;
+			return Objects.equals(bundles, other.bundles) && Objects.equals(categories, other.categories)
+					&& complete == other.complete && Objects.equals(configurations, other.configurations)
+					&& Objects.equals(copyright, other.copyright) && Objects.equals(description, other.description)
+					&& Objects.equals(docURL, other.docURL) && Objects.equals(extensions, other.extensions)
+					&& Objects.equals(id, other.id) && Objects.equals(license, other.license)
+					&& Objects.equals(name, other.name) && Objects.equals(scm, other.scm)
+					&& Objects.equals(variables, other.variables) && Objects.equals(vendor, other.vendor);
+		}
 
-        @Override
+		@Override
         public String toString() {
             return "FeatureImpl [getID()=" + getID() + "]";
         }
