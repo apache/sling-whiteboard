@@ -1,15 +1,16 @@
 {
-    "id" : "org.apache.sling:test-feature2:1.1",
+    /** This is a JSMin comment */
+    "id" : "org.apache.sling:test-feature2:osgifeature:cls_abc:1.1",
+    "name": "test-feature2",
     "description": "The feature description",
+    "categories": ["foo", "bar"],
+    "docURL": "http://foo.bar.com/abc",
+    "license": "Apache-2.0; link=\"http://opensource.org/licenses/apache2.0.php\"",
+    "scm": "url=https://github.com/apache/sling-aggregator, connection=scm:git:https://github.com/apache/sling-aggregator.git, developerConnection=scm:git:git@github.com:apache/sling-aggregator.git",
+    "vendor": "The Apache Software Foundation",
 
-    "bundles" :[
-            {
-              "id" : "org.slf4j:slf4j-api:1.7.30"
-            },
-            {
-              "id" : "org.slf4j:slf4j-nop:1.7.30"
-            }            
-    ],
+	// complex entities below here
+	
     "configurations" : {
         "my.pid" : {
            "bar" : "toast"

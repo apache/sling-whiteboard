@@ -16,8 +16,9 @@
  */
 package org.apache.sling.feature.osgi.impl;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -60,6 +61,10 @@ public class FeatureServiceImplTest {
 
             assertTrue(f.getName().isEmpty());
             assertEquals("The feature description", f.getDescription().get());
+            assertFalse(f.getDocURL().isPresent());
+            assertFalse(f.getLicense().isPresent());
+            assertFalse(f.getSCM().isPresent());
+            assertFalse(f.getVendor().isPresent());
 
             List<FeatureBundle> bundles = f.getBundles();
             assertEquals(3, bundles.size());
@@ -96,6 +101,24 @@ public class FeatureServiceImplTest {
             assertArrayEquals(new String[] {"yeah", "yeah", "yeah"}, (String[]) values2.get("a.value"));
         }
     }
+    
+    @Test
+    public void testReadFeature2() throws Exception {
+        URL res = getClass().getResource("/features/test-feature2.json");
+        try (Reader r = new InputStreamReader(res.openStream())) {
+            Feature f = features.readFeature(r);
+
+            assertEquals("org.apache.sling:test-feature2:osgifeature:cls_abc:1.1", f.getID().toString());
+            assertEquals("test-feature2", f.getName().get());
+            assertEquals("The feature description", f.getDescription().get());
+            assertEquals(List.of("foo", "bar"), f.getCategories());
+            assertEquals("http://foo.bar.com/abc", f.getDocURL().get());
+            assertEquals("Apache-2.0; link=\"http://opensource.org/licenses/apache2.0.php\"", f.getLicense().get());
+            assertEquals("url=https://github.com/apache/sling-aggregator, connection=scm:git:https://github.com/apache/sling-aggregator.git, developerConnection=scm:git:git@github.com:apache/sling-aggregator.git", 
+            		f.getSCM().get());
+            assertEquals("The Apache Software Foundation", f.getVendor().get());
+        }    	
+    }
 
     @Test
     public void testWriteFeature() throws Exception {
@@ -110,7 +133,6 @@ public class FeatureServiceImplTest {
         Feature f = builder.build();
         StringWriter sw = new StringWriter();
         features.writeFeature(f, sw);
-        System.out.println("***" + sw.toString());
         
         // Now check the generated JSON
         JsonReader jr = Json.createReader(new StringReader(sw.toString()));

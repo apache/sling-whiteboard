@@ -38,6 +38,7 @@ import javax.json.JsonWriterFactory;
 import javax.json.stream.JsonGenerator;
 import javax.json.stream.JsonGeneratorFactory;
 
+import org.apache.felix.cm.json.impl.JsonSupport;
 import org.apache.felix.cm.json.impl.TypeConverter;
 import org.osgi.service.feature.BuilderFactory;
 import org.osgi.service.feature.Feature;
@@ -79,7 +80,8 @@ public class FeatureServiceImpl implements FeatureService {
 	}
 
 	public Feature readFeature(Reader jsonReader) throws IOException {
-        JsonObject json = Json.createReader(jsonReader).readObject();
+        JsonObject json = Json.createReader(
+        		JsonSupport.createCommentRemovingReader(jsonReader)).readObject();
 
         String id = json.getString("id");
         FeatureBuilder builder = builderFactory.newFeatureBuilder(getIDfromMavenCoordinates(id));
@@ -184,6 +186,7 @@ public class FeatureServiceImpl implements FeatureService {
             	}
             	
                 JsonValue val = value.getValue();
+                // TODO ensure that binary support works as well
                 Object v = TypeConverter.convertObjectToType(val, typeInfo);                
                 builder.addValue(key, v);
             }
