@@ -38,6 +38,7 @@ import javax.json.JsonWriterFactory;
 import javax.json.stream.JsonGenerator;
 import javax.json.stream.JsonGeneratorFactory;
 
+import org.apache.felix.cm.json.impl.TypeConverter;
 import org.osgi.service.feature.BuilderFactory;
 import org.osgi.service.feature.Feature;
 import org.osgi.service.feature.FeatureBuilder;
@@ -58,7 +59,7 @@ public class FeatureServiceImpl implements FeatureService {
     }
     
     @Override
-	public ID getIDfromMavenID(String mavenID) {
+	public ID getIDfromMavenCoordinates(String mavenID) {
     	return IDImpl.fromMavenID(mavenID);
 	}
 
@@ -81,10 +82,9 @@ public class FeatureServiceImpl implements FeatureService {
         JsonObject json = Json.createReader(jsonReader).readObject();
 
         String id = json.getString("id");
-        FeatureBuilder builder = builderFactory.newFeatureBuilder(getIDfromMavenID(id));
+        FeatureBuilder builder = builderFactory.newFeatureBuilder(getIDfromMavenCoordinates(id));
 
         builder.setName(json.getString("name", null));
-//        builder.setCopyright(json.getString("copyright", null));
         builder.setDescription(json.getString("description", null));
         builder.setDocURL(json.getString("docURL", null));
         builder.setLicense(json.getString("license", null));
@@ -112,7 +112,7 @@ public class FeatureServiceImpl implements FeatureService {
             if (val.getValueType() == JsonValue.ValueType.OBJECT) {
                 JsonObject jo = val.asJsonObject();
                 String bid = jo.getString("id");
-                FeatureBundleBuilder builder = builderFactory.newBundleBuilder(getIDfromMavenID(bid));
+                FeatureBundleBuilder builder = builderFactory.newBundleBuilder(getIDfromMavenCoordinates(bid));
 
                 for (Map.Entry<String, JsonValue> entry : jo.entrySet()) {
                     if (entry.getKey().equals("id"))
@@ -175,28 +175,17 @@ public class FeatureServiceImpl implements FeatureService {
 
             JsonObject values = entry.getValue().asJsonObject();
             for (Map.Entry<String, JsonValue> value : values.entrySet()) {
+            	String key = value.getKey();
+            	String typeInfo = null;
+            	int cidx = key.indexOf(':');
+            	if (cidx > 0) {
+            		typeInfo = key.substring(cidx + 1);
+            		key = key.substring(0, cidx);
+            	}
+            	
                 JsonValue val = value.getValue();
-
-                Object v;
-                switch (val.getValueType()) {
-                case TRUE:
-                    v = true;
-                    break;
-                case FALSE:
-                    v = false;
-                    break;
-                case NUMBER:
-                    v = ((JsonNumber) val).longValueExact();
-                    break;
-                case STRING:
-                    v = ((JsonString) val).getString();
-                    break;
-                default:
-                    v = val.toString();
-
-                    // TODO object types, arrays, and requested type conversions
-                }
-                builder.addValue(value.getKey(), v);
+                Object v = TypeConverter.convertObjectToType(val, typeInfo);                
+                builder.addValue(key, v);
             }
             configs.add(builder.build());
         }
@@ -237,7 +226,7 @@ public class FeatureServiceImpl implements FeatureService {
                 for (JsonValue jv : ja2) {
                     if (jv.getValueType() == JsonValue.ValueType.STRING) {
                         String id = ((JsonString) jv).getString();
-                        builder.addArtifact(getIDfromMavenID(id));
+                        builder.addArtifact(getIDfromMavenCoordinates(id));
                     }
                 }
                 break;

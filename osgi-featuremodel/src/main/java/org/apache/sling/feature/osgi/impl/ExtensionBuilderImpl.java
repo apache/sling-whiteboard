@@ -154,7 +154,7 @@ class ExtensionBuilderImpl implements FeatureExtensionBuilder {
 
             for (String s : content) {
             	res.add(FEATURE_SERVICE.getBuilderFactory().newArtifactBuilder(
-            			FEATURE_SERVICE.getIDfromMavenID(s)).build());
+            			FEATURE_SERVICE.getIDfromMavenCoordinates(s)).build());
             }
 
             return res;

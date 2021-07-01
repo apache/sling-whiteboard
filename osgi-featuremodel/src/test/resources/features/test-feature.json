@@ -22,7 +22,7 @@
            "number:Integer" : 7
         },
         "my.factory.pid~name" : {
-           "a.value" : "yeah"
+           "a.value" : ["yeah", "yeah", "yeah"]
         }
     }
 }

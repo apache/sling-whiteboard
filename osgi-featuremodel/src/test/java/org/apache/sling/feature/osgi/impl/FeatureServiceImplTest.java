@@ -17,7 +17,7 @@
 package org.apache.sling.feature.osgi.impl;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -26,7 +26,9 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -38,6 +40,7 @@ import org.osgi.service.feature.BuilderFactory;
 import org.osgi.service.feature.Feature;
 import org.osgi.service.feature.FeatureBuilder;
 import org.osgi.service.feature.FeatureBundle;
+import org.osgi.service.feature.FeatureConfiguration;
 
 public class FeatureServiceImplTest {
 	FeatureServiceImpl features;
@@ -72,6 +75,25 @@ public class FeatureServiceImplTest {
             assertTrue(bundles.contains(bundle));
             assertTrue(bundles.contains(bf.newBundleBuilder(features.getID("org.slf4j", "slf4j-api", "1.7.29")).build()));
             assertTrue(bundles.contains(bf.newBundleBuilder(features.getID("org.slf4j", "slf4j-simple", "1.7.29")).build()));
+            
+            Map<String, FeatureConfiguration> configs = f.getConfigurations();
+            assertEquals(2, configs.size());
+            
+            FeatureConfiguration cfg1 = configs.get("my.pid");
+            assertEquals("my.pid", cfg1.getPid());
+            assertFalse(cfg1.getFactoryPid().isPresent());
+            Map<String, Object> values1 = cfg1.getValues();
+            assertEquals(3, values1.size());
+            assertEquals(Long.valueOf(5), values1.get("foo"));
+            assertEquals("test", values1.get("bar"));
+            assertEquals(Integer.valueOf(7), values1.get("number"));
+            
+            FeatureConfiguration cfg2 = configs.get("my.factory.pid~name");
+            assertEquals("my.factory.pid~name", cfg2.getPid());
+            assertEquals("my.factory.pid", cfg2.getFactoryPid().get());
+            Map<String, Object> values2 = cfg2.getValues();
+            assertEquals(1, values2.size());
+            assertArrayEquals(new String[] {"yeah", "yeah", "yeah"}, (String[]) values2.get("a.value"));
         }
     }
 
@@ -97,6 +119,9 @@ public class FeatureServiceImplTest {
         assertEquals("The ACME app", fo.getString("name"));
         assertEquals(desc, fo.getString("description"));
         assertFalse(fo.containsKey("docURL"));
+        assertFalse(fo.containsKey("license"));
+        assertFalse(fo.containsKey("scm"));
+        assertFalse(fo.containsKey("vendor"));
     }
 
     @Test
@@ -110,20 +135,20 @@ public class FeatureServiceImplTest {
         builder.setComplete(true);
 
         FeatureBundle b1 = factory.newBundleBuilder(
-                features.getIDfromMavenID("org.osgi:org.osgi.util.function:1.1.0"))
+                features.getIDfromMavenCoordinates("org.osgi:org.osgi.util.function:1.1.0"))
                 .build();
         FeatureBundle b2 = factory.newBundleBuilder(
-        		features.getIDfromMavenID("org.osgi:org.osgi.util.promise:1.1.1"))
+        		features.getIDfromMavenCoordinates("org.osgi:org.osgi.util.promise:1.1.1"))
                 .build();
 
         FeatureBundle b3 = factory.newBundleBuilder(
-        		features.getIDfromMavenID("org.apache.commons:commons-email:1.1.5"))
+        		features.getIDfromMavenCoordinates("org.apache.commons:commons-email:1.1.5"))
                 .addMetadata("org.acme.javadoc.link",
                         "https://commons.apache.org/proper/commons-email/javadocs/api-1.5")
                 .build();
 
         FeatureBundle b4 = factory.newBundleBuilder(
-        		features.getIDfromMavenID("com.acme:acmelib:1.7.2"))
+        		features.getIDfromMavenCoordinates("com.acme:acmelib:1.7.2"))
                 .build();
 
         builder.addBundles(b1, b2, b3, b4);
