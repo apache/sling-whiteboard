@@ -17,13 +17,20 @@
 package org.apache.sling.feature.osgi.impl;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.net.URL;
 import java.util.List;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -69,16 +76,27 @@ public class FeatureServiceImplTest {
     }
 
     @Test
-    public void testCreateFeature() {
+    public void testWriteFeature() throws Exception {
         BuilderFactory factory = features.getBuilderFactory();
+
+        String desc = "This is the main ACME app, from where all functionality can be reached.";
 
         FeatureBuilder builder = factory.newFeatureBuilder(features.getID("org.acme", "acmeapp", "1.0.0"));
         builder.setName("The ACME app");
-        builder.setDescription("This is the main ACME app, "
-                + "from where all functionality can be reached.");
+		builder.setDescription(desc);
 
         Feature f = builder.build();
-        System.out.println("***" + f);
+        StringWriter sw = new StringWriter();
+        features.writeFeature(f, sw);
+        System.out.println("***" + sw.toString());
+        
+        // Now check the generated JSON
+        JsonReader jr = Json.createReader(new StringReader(sw.toString()));
+        JsonObject fo = jr.readObject();
+        assertEquals("org.acme:acmeapp:1.0.0", fo.getString("id"));
+        assertEquals("The ACME app", fo.getString("name"));
+        assertEquals(desc, fo.getString("description"));
+        assertFalse(fo.containsKey("docURL"));
     }
 
     @Test

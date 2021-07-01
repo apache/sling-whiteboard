@@ -20,6 +20,9 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -27,8 +30,13 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonNumber;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.json.JsonString;
 import javax.json.JsonValue;
+import javax.json.JsonWriter;
+import javax.json.JsonWriterFactory;
+import javax.json.stream.JsonGenerator;
+import javax.json.stream.JsonGeneratorFactory;
 
 import org.osgi.service.feature.BuilderFactory;
 import org.osgi.service.feature.Feature;
@@ -75,8 +83,8 @@ public class FeatureServiceImpl implements FeatureService {
         String id = json.getString("id");
         FeatureBuilder builder = builderFactory.newFeatureBuilder(getIDfromMavenID(id));
 
-        builder.setName(json.getString("title", null));
-        builder.setCopyright(json.getString("copyright", null));
+        builder.setName(json.getString("name", null));
+//        builder.setCopyright(json.getString("copyright", null));
         builder.setDescription(json.getString("description", null));
         builder.setDocURL(json.getString("docURL", null));
         builder.setLicense(json.getString("license", null));
@@ -244,7 +252,23 @@ public class FeatureServiceImpl implements FeatureService {
     }
 
     public void writeFeature(Feature feature, Writer jsonWriter) throws IOException {
-        // TODO Auto-generated method stub
-
+    	// LinkedHashMap to give it some order, we'd like 'id' and 'name' first.
+    	Map<String,Object> attrs = new LinkedHashMap<>();
+    	
+    	attrs.put("id", feature.getID().toString());
+    	feature.getName().ifPresent(n -> attrs.put("name", n));
+    	feature.getDescription().ifPresent(d -> attrs.put("description", d));
+    	feature.getDocURL().ifPresent(d -> attrs.put("docURL", d));
+    	feature.getLicense().ifPresent(l -> attrs.put("license", l));
+    	feature.getSCM().ifPresent(s -> attrs.put("scm", s));
+    	feature.getVendor().ifPresent(v -> attrs.put("vendor", v));
+    	
+		JsonObjectBuilder json = Json.createObjectBuilder(attrs);
+		JsonObject fo = json.build();
+		
+		JsonGeneratorFactory gf = Json.createGeneratorFactory(Collections.singletonMap(JsonGenerator.PRETTY_PRINTING, true));
+		try (JsonGenerator gr = gf.createGenerator(jsonWriter)) {
+			gr.write(fo);
+		}
     }
 }
