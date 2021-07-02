@@ -1,0 +1,20 @@
+{
+  "bundles": [
+    {
+      "id": "org.apache.commons:commons-compress:1.20",
+      "start-order": "15"
+    },
+    {
+      "id": "org.apache.commons:commons-math3:3.6.1",
+      "start-order": "15"
+    },
+    {
+      "id": "org.apache.servicemix.bundles:org.apache.servicemix.bundles.poi:4.1.2_2",
+      "start-order": "15"
+    },
+    {
+      "id": "org.apache.servicemix.bundles:org.apache.servicemix.bundles.xmlbeans:3.1.0_2",
+      "start-order": "15"
+    }
+  ]
+}
