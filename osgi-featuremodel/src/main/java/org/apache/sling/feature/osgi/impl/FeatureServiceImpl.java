@@ -33,8 +33,6 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonString;
 import javax.json.JsonValue;
-import javax.json.JsonWriter;
-import javax.json.JsonWriterFactory;
 import javax.json.stream.JsonGenerator;
 import javax.json.stream.JsonGeneratorFactory;
 
@@ -42,6 +40,7 @@ import org.apache.felix.cm.json.impl.JsonSupport;
 import org.apache.felix.cm.json.impl.TypeConverter;
 import org.osgi.service.feature.BuilderFactory;
 import org.osgi.service.feature.Feature;
+import org.osgi.service.feature.FeatureArtifactBuilder;
 import org.osgi.service.feature.FeatureBuilder;
 import org.osgi.service.feature.FeatureBundle;
 import org.osgi.service.feature.FeatureBundleBuilder;
@@ -222,17 +221,55 @@ public class FeatureServiceImpl implements FeatureService {
 
             switch (type) {
             case TEXT:
-                builder.addText(exData.getString("text"));
+                exData.getJsonArray("text")
+                	.stream()
+                	.filter(jv -> jv.getValueType() == JsonValue.ValueType.STRING)
+                	.map(jv -> ((JsonString) jv).getString())
+                	.forEach(builder::addText);
+                
                 break;
             case ARTIFACTS:
-                JsonArray ja2 = exData.getJsonArray("artifacts");
-                for (JsonValue jv : ja2) {
-                    if (jv.getValueType() == JsonValue.ValueType.STRING) {
-                        String id = ((JsonString) jv).getString();
-                        builder.addArtifact(getIDfromMavenCoordinates(id));
-                    }
-                }
-                break;
+            	exData.getJsonArray("artifacts")
+            		.stream()
+            		.filter(jv -> jv.getValueType() == JsonValue.ValueType.OBJECT)
+            		.map(jv -> (JsonObject) jv)
+            		.forEach(md -> {
+            			Map<String, JsonValue> v = new HashMap<>(md);
+            			JsonString idVal = (JsonString) v.remove("id");
+            			
+            			ID id = getIDfromMavenCoordinates(idVal.getString());
+            			FeatureArtifactBuilder fab = builderFactory.newArtifactBuilder(id);
+            			
+            			for (Map.Entry<String,JsonValue> mde : v.entrySet()) {
+            				JsonValue val = mde.getValue();
+            				switch (val.getValueType()) {
+            				case STRING:
+            					fab.addMetadata(mde.getKey(), ((JsonString) val).getString());
+            					break;
+            				case FALSE:
+            					fab.addMetadata(mde.getKey(), false);
+            					break;
+            				case TRUE:
+            					fab.addMetadata(mde.getKey(), true);
+            					break;
+            				case NUMBER:
+            					JsonNumber num = (JsonNumber) val;
+            					if (num.toString().contains(".")) {
+                					fab.addMetadata(mde.getKey(), num.doubleValue());            						
+            					} else {
+            						fab.addMetadata(mde.getKey(), num.longValue());
+            					}
+            					break;
+            				default:
+            					// do nothing
+            					break;
+            				}
+            			}
+            			
+            			builder.addArtifact(fab.build());
+            		});
+
+            	break;
             case JSON:
                 builder.setJSON(exData.getJsonObject("json").toString());
                 break;

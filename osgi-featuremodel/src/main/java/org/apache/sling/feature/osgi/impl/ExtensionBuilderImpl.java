@@ -37,6 +37,7 @@ class ExtensionBuilderImpl implements FeatureExtensionBuilder {
     private final Kind kind;
 
     private final List<String> content = new ArrayList<>();
+    private final List<FeatureArtifact> artifacts = new ArrayList<>();
 
     ExtensionBuilderImpl(String name, Type type, Kind kind) {
         this.name = name;
@@ -64,47 +65,17 @@ class ExtensionBuilderImpl implements FeatureExtensionBuilder {
     }
 
     @Override
-    public FeatureExtensionBuilder addArtifact(ID id) {
+    public FeatureExtensionBuilder addArtifact(FeatureArtifact art) {
         if (type != Type.ARTIFACTS)
             throw new IllegalStateException("Cannot add artifacts to extension of type " + type);
 
-        StringBuilder aid = new StringBuilder();
-        aid.append(id.getGroupId());
-        aid.append(':');
-        aid.append(id.getArtifactId());
-        aid.append(':');
-        aid.append(id.getVersion());
-
-        id.getType().ifPresent(
-    		t -> {
-                aid.append(':');
-                aid.append(t);
-                
-                id.getClassifier().ifPresent(
-            		c -> {
-                        aid.append(':');
-                        aid.append(2);
-                		}
-            		);
-    		});
-        aid.append('\n');
-        content.add(aid.toString());
+        artifacts.add(art);
         return this;
-    }
-
-    @Override
-    public FeatureExtensionBuilder addArtifact(String groupId, String artifactId, String version) {
-        return addArtifact(groupId, artifactId, version, null, null);
-    }
-
-    @Override
-    public FeatureExtensionBuilder addArtifact(String groupId, String artifactId, String version, String at, String classifier) {
-    	return addArtifact(FEATURE_SERVICE.getID(groupId, artifactId, version, at, classifier)); 
     }
     
     @Override
     public FeatureExtension build() {
-        return new ExtensionImpl(name, type, kind, content);
+        return new ExtensionImpl(name, type, kind, content, artifacts);
     }
 
     private static class ExtensionImpl implements FeatureExtension {
@@ -112,12 +83,14 @@ class ExtensionBuilderImpl implements FeatureExtensionBuilder {
         private final Type type;
         private final Kind kind;
         private final List<String> content;
+        private final List<FeatureArtifact> artifacts;
 
-        private ExtensionImpl(String name, Type type, Kind kind, List<String> content) {
+        private ExtensionImpl(String name, Type type, Kind kind, List<String> content, List<FeatureArtifact> artifacts) {
             this.name = name;
             this.type = type;
             this.kind = kind;
             this.content = Collections.unmodifiableList(content);
+            this.artifacts = Collections.unmodifiableList(artifacts);
         }
 
         public String getName() {
@@ -150,32 +123,31 @@ class ExtensionBuilderImpl implements FeatureExtensionBuilder {
         }
 
         public List<FeatureArtifact> getArtifacts() {
-            List<FeatureArtifact> res = new ArrayList<>();
+            if (type != Type.ARTIFACTS)
+                throw new IllegalStateException("Extension is not of type Text " + type);
 
-            for (String s : content) {
-            	res.add(FEATURE_SERVICE.getBuilderFactory().newArtifactBuilder(
-            			FEATURE_SERVICE.getIDfromMavenCoordinates(s)).build());
-            }
-
-            return res;
+            return artifacts;
         }
 
         @Override
-        public int hashCode() {
-            return Objects.hash(content, name, type);
-        }
+		public int hashCode() {
+			return Objects.hash(artifacts, content, kind, name, type);
+		}
 
         @Override
-        public boolean equals(Object obj) {
-            if (this == obj)
-                return true;
-            if (!(obj instanceof ExtensionImpl))
-                return false;
-            ExtensionImpl other = (ExtensionImpl) obj;
-            return Objects.equals(content, other.content) && Objects.equals(name, other.name) && type == other.type;
-        }
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			ExtensionImpl other = (ExtensionImpl) obj;
+			return Objects.equals(artifacts, other.artifacts) && Objects.equals(content, other.content)
+					&& kind == other.kind && Objects.equals(name, other.name) && type == other.type;
+		}
 
-        @Override
+		@Override
         public String toString() {
             return "ExtensionImpl [name=" + name + ", type=" + type + "]";
         }

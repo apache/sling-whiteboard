@@ -39,9 +39,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.osgi.service.feature.BuilderFactory;
 import org.osgi.service.feature.Feature;
+import org.osgi.service.feature.FeatureArtifact;
 import org.osgi.service.feature.FeatureBuilder;
 import org.osgi.service.feature.FeatureBundle;
 import org.osgi.service.feature.FeatureConfiguration;
+import org.osgi.service.feature.FeatureExtension;
 
 public class FeatureServiceImplTest {
 	FeatureServiceImpl features;
@@ -146,6 +148,42 @@ public class FeatureServiceImplTest {
         assertFalse(fo.containsKey("vendor"));
     }
 
+    @Test
+    public void testFeatureWithExtension() throws Exception {
+        URL res = getClass().getResource("/features/test-exfeat1.json");
+        try (Reader r = new InputStreamReader(res.openStream())) {
+            Feature f = features.readFeature(r);
+            
+            Map<String, FeatureExtension> extensions = f.getExtensions();
+            assertEquals(3, extensions.size());
+            
+            FeatureExtension textEx = extensions.get("my-text-ex");
+            assertEquals(FeatureExtension.Kind.OPTIONAL, textEx.getKind());
+            assertEquals(FeatureExtension.Type.TEXT, textEx.getType());
+            assertEquals(List.of("ABC", "DEF"), textEx.getText());
+            
+            FeatureExtension artEx = extensions.get("my-art-ex");
+            assertEquals(FeatureExtension.Kind.MANDATORY, artEx.getKind());
+            assertEquals(FeatureExtension.Type.ARTIFACTS, artEx.getType());
+            List<FeatureArtifact> arts = artEx.getArtifacts();
+            assertEquals(2, arts.size());
+            
+            FeatureArtifact art1 = arts.get(0);
+            assertEquals("g:a:1", art1.getID().toString());
+            assertEquals(1, art1.getMetadata().size());
+            assertEquals(12345L, art1.getMetadata().get("my-md"));
+            
+            FeatureArtifact art2 = arts.get(1);
+            assertEquals("g:a:zip:foobar:2", art2.getID().toString());
+            assertEquals(0, art2.getMetadata().size());
+            
+            FeatureExtension jsonEx = extensions.get("my-json-ex");
+            assertEquals(FeatureExtension.Kind.TRANSIENT, jsonEx.getKind());
+            assertEquals(FeatureExtension.Type.JSON, jsonEx.getType());
+            assertEquals("{\"foo\":[1,2,3]}", jsonEx.getJSON());
+        }    	
+    }
+    
     @Test
     public void testCreateFeatureBundle() {
         BuilderFactory factory = features.getBuilderFactory();
