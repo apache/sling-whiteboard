@@ -58,8 +58,10 @@ public class FeatureServiceImplTest {
         BuilderFactory bf = features.getBuilderFactory();
 
         URL res = getClass().getResource("/features/test-feature.json");
+        
+        Feature f;
         try (Reader r = new InputStreamReader(res.openStream())) {
-            Feature f = features.readFeature(r);
+            f = features.readFeature(r);
 
             assertTrue(f.getName().isEmpty());
             assertEquals("The feature description", f.getDescription().get());
@@ -102,6 +104,8 @@ public class FeatureServiceImplTest {
             assertEquals(1, values2.size());
             assertArrayEquals(new String[] {"yeah", "yeah", "yeah"}, (String[]) values2.get("a.value"));
         }
+
+        testWriteFeature(f, res);
     }
     
     @Test
@@ -184,13 +188,17 @@ public class FeatureServiceImplTest {
             assertEquals("{\"foo\":[1,2,3]}", jsonEx.getJSON());
         }    	
         
-        StringWriter sw = new StringWriter();
-        features.writeFeature(f, sw);
+        testWriteFeature(f, res);
+    }
+
+	private void testWriteFeature(Feature feature, URL expectedURL) throws IOException {
+		StringWriter sw = new StringWriter();
+        features.writeFeature(feature, sw);
         
-        String expected = new String(res.openStream().readAllBytes()).replaceAll("\\s","");
+        String expected = new String(expectedURL.openStream().readAllBytes()).replaceAll("\\s","");
         String actual = sw.toString().replaceAll("\\s","");
         assertEquals(expected, actual);
-    }
+	}
     
     @Test
     public void testCreateFeatureBundle() {

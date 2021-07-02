@@ -17,7 +17,7 @@
 package org.apache.sling.feature.osgi.impl;
 
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -28,7 +28,7 @@ import org.osgi.service.feature.ID;
 class BundleBuilderImpl implements FeatureBundleBuilder {
     private final ID id;
 
-    private final Map<String,Object> metadata = new HashMap<>();
+    private final Map<String,Object> metadata = new LinkedHashMap<>();
 
     BundleBuilderImpl(ID id) {
         this.id = id;

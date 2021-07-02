@@ -16,20 +16,20 @@
  */
 package org.apache.sling.feature.osgi.impl;
 
-import org.osgi.service.feature.FeatureConfiguration;
-import org.osgi.service.feature.FeatureConfigurationBuilder;
-
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+
+import org.osgi.service.feature.FeatureConfiguration;
+import org.osgi.service.feature.FeatureConfigurationBuilder;
 
 class ConfigurationBuilderImpl implements FeatureConfigurationBuilder {
     private final String p;
     private final String name;
 
-    private final Map<String,Object> values = new HashMap<>();
+    private final Map<String,Object> values = new LinkedHashMap<>();
 
     ConfigurationBuilderImpl(String pid) {
         this.p = pid;

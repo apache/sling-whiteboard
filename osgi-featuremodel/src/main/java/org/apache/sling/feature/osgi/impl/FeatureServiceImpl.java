@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -297,13 +298,21 @@ public class FeatureServiceImpl implements FeatureService {
     	
 		JsonObjectBuilder json = Json.createObjectBuilder(attrs);
 
+		JsonArray bundles = getBundles(feature);
+		if (bundles != null) {
+			json.add("bundles", bundles);
+		}
+		
+		JsonObject configs = getConfigurations(feature);
+		if (configs != null) {
+			json.add("configurations", configs);
+		}
+		
 		JsonObject extensions = getExtensions(feature);
 		if (extensions != null) {
 			json.add("extensions", extensions);
 		}
 		
-		// TODO add bundles
-		// TODO add configs
 		// TODO add variables
 		// TODO add frameworkproperties
 		
@@ -314,6 +323,43 @@ public class FeatureServiceImpl implements FeatureService {
 			gr.write(fo);
 		}
     }
+
+	private JsonArray getBundles(Feature feature) {
+		List<FeatureBundle> bundles = feature.getBundles();
+		if (bundles == null || bundles.size() == 0)
+			return null;
+		
+		JsonArrayBuilder ab = Json.createArrayBuilder();
+		
+		for (FeatureBundle bundle : bundles) {
+			Map<String, Object> attrs = new LinkedHashMap<>();
+			attrs.put("id", bundle.getID().toString());
+			attrs.putAll(bundle.getMetadata());
+			ab.add(Json.createObjectBuilder(attrs));
+		}
+		
+		return ab.build();
+	}
+
+	private JsonObject getConfigurations(Feature feature) {
+		Map<String, FeatureConfiguration> configs = feature.getConfigurations();
+		if (configs == null || configs.size() == 0)
+			return null;
+		
+		JsonObjectBuilder ob = Json.createObjectBuilder();
+		
+		for (Map.Entry<String,FeatureConfiguration> cfg : configs.entrySet()) {
+			JsonObjectBuilder cb = Json.createObjectBuilder();
+			
+			for (Map.Entry<String,Object> prop : cfg.getValue().getValues().entrySet()) {
+				Map.Entry<String, JsonValue> je = TypeConverter.convertObjectToTypedJsonValue(prop.getValue());
+				String tk = je.getKey();
+				cb.add(TypeConverter.NO_TYPE_INFO.equals(tk) ? prop.getKey() : prop.getKey() + ":" + tk, je.getValue());
+			}
+			ob.add(cfg.getKey(), cb.build());
+		}
+		return ob.build();
+	}
 
 	private JsonObject getExtensions(Feature feature) {
 		Map<String, FeatureExtension> extensions = feature.getExtensions();
