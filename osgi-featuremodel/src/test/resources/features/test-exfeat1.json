@@ -8,6 +8,7 @@
         	] 
         },
         "my-art-ex": {
+            "kind": "mandatory", 
             "artifacts": [
             	{
 					"id": "g:a:1",
@@ -15,8 +16,7 @@
 				}, {
 					"id": "g:a:zip:foobar:2"
 				}
-			],
-            "kind": "mandatory" 
+			]
         },
         "my-json-ex": {
            "kind": "transient", 

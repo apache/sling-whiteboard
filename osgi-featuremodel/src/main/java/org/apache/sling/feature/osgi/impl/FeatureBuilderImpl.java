@@ -19,7 +19,7 @@ package org.apache.sling.feature.osgi.impl;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -46,9 +46,9 @@ class FeatureBuilderImpl implements FeatureBuilder {
 
     private final List<FeatureBundle> bundles = new ArrayList<>();
     private final List<String> categories = new ArrayList<>();
-    private final Map<String,FeatureConfiguration> configurations = new HashMap<>();
-    private final Map<String,FeatureExtension> extensions = new HashMap<>();
-    private final Map<String,String> variables = new HashMap<>();
+    private final Map<String,FeatureConfiguration> configurations = new LinkedHashMap<>();
+    private final Map<String,FeatureExtension> extensions = new LinkedHashMap<>();
+    private final Map<String,String> variables = new LinkedHashMap<>();
 
     FeatureBuilderImpl(ID id) {
         this.id = id;

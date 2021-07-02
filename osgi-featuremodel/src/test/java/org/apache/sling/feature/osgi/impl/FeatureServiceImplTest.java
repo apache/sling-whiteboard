@@ -151,8 +151,9 @@ public class FeatureServiceImplTest {
     @Test
     public void testFeatureWithExtension() throws Exception {
         URL res = getClass().getResource("/features/test-exfeat1.json");
+        Feature f;
         try (Reader r = new InputStreamReader(res.openStream())) {
-            Feature f = features.readFeature(r);
+            f = features.readFeature(r);
             
             Map<String, FeatureExtension> extensions = f.getExtensions();
             assertEquals(3, extensions.size());
@@ -182,6 +183,13 @@ public class FeatureServiceImplTest {
             assertEquals(FeatureExtension.Type.JSON, jsonEx.getType());
             assertEquals("{\"foo\":[1,2,3]}", jsonEx.getJSON());
         }    	
+        
+        StringWriter sw = new StringWriter();
+        features.writeFeature(f, sw);
+        
+        String expected = new String(res.openStream().readAllBytes()).replaceAll("\\s","");
+        String actual = sw.toString().replaceAll("\\s","");
+        assertEquals(expected, actual);
     }
     
     @Test

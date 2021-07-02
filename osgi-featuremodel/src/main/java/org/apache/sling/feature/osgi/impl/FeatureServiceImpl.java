@@ -18,6 +18,7 @@ package org.apache.sling.feature.osgi.impl;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringReader;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,6 +29,7 @@ import java.util.Map;
 
 import javax.json.Json;
 import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -40,6 +42,7 @@ import org.apache.felix.cm.json.impl.JsonSupport;
 import org.apache.felix.cm.json.impl.TypeConverter;
 import org.osgi.service.feature.BuilderFactory;
 import org.osgi.service.feature.Feature;
+import org.osgi.service.feature.FeatureArtifact;
 import org.osgi.service.feature.FeatureArtifactBuilder;
 import org.osgi.service.feature.FeatureBuilder;
 import org.osgi.service.feature.FeatureBundle;
@@ -293,6 +296,17 @@ public class FeatureServiceImpl implements FeatureService {
     	feature.getVendor().ifPresent(v -> attrs.put("vendor", v));
     	
 		JsonObjectBuilder json = Json.createObjectBuilder(attrs);
+
+		JsonObject extensions = getExtensions(feature);
+		if (extensions != null) {
+			json.add("extensions", extensions);
+		}
+		
+		// TODO add bundles
+		// TODO add configs
+		// TODO add variables
+		// TODO add frameworkproperties
+		
 		JsonObject fo = json.build();
 		
 		JsonGeneratorFactory gf = Json.createGeneratorFactory(Collections.singletonMap(JsonGenerator.PRETTY_PRINTING, true));
@@ -300,4 +314,41 @@ public class FeatureServiceImpl implements FeatureService {
 			gr.write(fo);
 		}
     }
+
+	private JsonObject getExtensions(Feature feature) {
+		Map<String, FeatureExtension> extensions = feature.getExtensions();
+		if (extensions == null || extensions.size() == 0)
+			return null;
+		
+		JsonObjectBuilder ob = Json.createObjectBuilder();
+		
+		for (Map.Entry<String,FeatureExtension> entry : extensions.entrySet()) {
+			FeatureExtension extVal = entry.getValue();
+
+			JsonObjectBuilder vb = Json.createObjectBuilder();
+			vb.add("kind", extVal.getKind().toString().toLowerCase());
+			
+			switch (extVal.getType()) {
+			case TEXT:
+				vb.add("text", Json.createArrayBuilder(extVal.getText()).build());
+				break;
+			case ARTIFACTS:
+				JsonArrayBuilder arr = Json.createArrayBuilder();
+				for (FeatureArtifact art : extVal.getArtifacts()) {
+					Map<String,Object> attrs = new LinkedHashMap<>();
+					attrs.put("id", art.getID().toString());
+					attrs.putAll(art.getMetadata());
+					arr.add(Json.createObjectBuilder(attrs)).build();
+				}
+				
+				vb.add("artifacts", arr.build());
+				break;
+			case JSON:
+				vb.add("json", Json.createReader(new StringReader(extVal.getJSON())).readValue());
+				break;
+			}
+			ob.add(entry.getKey(), vb.build());
+		}
+		return ob.build();
+	}
 }
