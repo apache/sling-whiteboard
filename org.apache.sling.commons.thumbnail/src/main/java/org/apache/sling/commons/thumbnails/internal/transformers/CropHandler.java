@@ -22,8 +22,8 @@ import java.io.OutputStream;
 
 import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.commons.thumbnails.BadRequestException;
-import org.apache.sling.commons.thumbnails.TransformationHandler;
 import org.apache.sling.commons.thumbnails.TransformationHandlerConfig;
+import org.apache.sling.commons.thumbnails.extension.TransformationHandler;
 import org.osgi.service.component.annotations.Component;
 
 import net.coobird.thumbnailator.Thumbnails;
@@ -54,10 +54,11 @@ public class CropHandler implements TransformationHandler {
         try {
             Positions pos = Positions.valueOf(positionStr);
             builder.crop(pos);
+            builder.toOutputStream(outputStream);
         } catch (IllegalArgumentException e) {
-            throw new BadRequestException("Unable to crop due to invalid crop position: " + positionStr, e);
+            throw new BadRequestException("Unable to crop due to invalid configuration: \n%s", config.getProperties(),
+                    e);
         }
-        builder.toOutputStream(outputStream);
     }
 
     private static void resize(Builder<? extends InputStream> builder, ValueMap properties) {

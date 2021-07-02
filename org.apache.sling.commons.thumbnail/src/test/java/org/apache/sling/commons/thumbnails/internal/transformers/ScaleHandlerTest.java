@@ -82,4 +82,23 @@ public class ScaleHandlerTest {
         scaler.handle(inputStream, outputStream, config);
     }
 
+    @Test(expected = BadRequestException.class)
+    public void testInvalidScaleWidth() throws IOException {
+
+        Map<String, Object> properties = new HashMap<>();
+        properties.put(ResizeHandler.PN_HEIGHT, 2);
+
+        TransformationHandlerConfig config = new TransformationHandlerConfigImpl("/conf", properties);
+        scaler.handle(inputStream, outputStream, config);
+    }
+
+    @Test(expected = BadRequestException.class)
+    public void testInvalidHugeScale() throws IOException {
+
+        Map<String, Object> properties = new HashMap<>();
+        properties.put(ScaleHandler.PN_BOTH, Integer.MAX_VALUE);
+
+        TransformationHandlerConfig config = new TransformationHandlerConfigImpl("/conf", properties);
+        scaler.handle(inputStream, outputStream, config);
+    }
 }

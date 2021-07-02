@@ -16,12 +16,10 @@
  */
 package org.apache.sling.commons.thumbnails.internal.transformers;
 
-import java.awt.Color;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.commons.thumbnails.BadRequestException;
 import org.apache.sling.commons.thumbnails.TransformationHandlerConfig;
 import org.apache.sling.commons.thumbnails.extension.TransformationHandler;
@@ -29,19 +27,18 @@ import org.osgi.service.component.annotations.Component;
 
 import net.coobird.thumbnailator.Thumbnails;
 import net.coobird.thumbnailator.Thumbnails.Builder;
-import net.coobird.thumbnailator.filters.Colorize;
+import net.coobird.thumbnailator.filters.Flip;
+import net.coobird.thumbnailator.filters.ImageFilter;
 
 /**
- * A transformer for resizing an image
+ * Fips the image
  */
 @Component(service = TransformationHandler.class, immediate = true)
-public class ColorizeHandler implements TransformationHandler {
+public class FlipHandler implements TransformationHandler {
 
-    public static final String RESOURCE_TYPE = "sling/commons/thumbnails/transformers/colorize";
-    public static final String PN_RED = "red";
-    public static final String PN_GREEN = "green";
-    public static final String PN_BLUE = "blue";
-    public static final String PN_ALPHA = "alpha";
+    public static final String RESOURCE_TYPE = "sling/commons/thumbnails/transformers/flip";
+
+    public static final String PN_DIRECTION = "direction";
 
     @Override
     public String getResourceType() {
@@ -51,29 +48,22 @@ public class ColorizeHandler implements TransformationHandler {
     @Override
     public void handle(InputStream inputStream, OutputStream outputStream, TransformationHandlerConfig config)
             throws IOException {
-        Builder<? extends InputStream> builder = Thumbnails.of(inputStream);
-        ValueMap properties = config.getProperties();
-        int red = getColor(properties, PN_RED);
-        int green = getColor(properties, PN_GREEN);
-        int blue = getColor(properties, PN_BLUE);
-        float alpha = (float) config.getProperties().get(PN_ALPHA, 0.0).doubleValue();
 
-        if (alpha < 0 || alpha > 1.0) {
-            throw new BadRequestException("Unable to colorize, bad alpha value " + alpha);
+        String direction = config.getProperties().get(PN_DIRECTION, "").toUpperCase();
+
+        ImageFilter flipper = null;
+        if ("HORIZONTAL".equals(direction)) {
+            flipper = Flip.HORIZONTAL;
+        } else if ("VERTICAL".equals(direction)) {
+            flipper = Flip.VERTICAL;
+        } else {
+            throw new BadRequestException("Could not flip image with configuration: \n%s", config.getProperties());
         }
 
-        builder.addFilter(new Colorize(new Color(red, green, blue), alpha));
+        Builder<? extends InputStream> builder = Thumbnails.of(inputStream);
+        builder.addFilter(flipper);
         builder.scale(1.0);
         builder.toOutputStream(outputStream);
     }
-
-    protected int getColor(ValueMap properties, String name) {
-        int color = properties.get(name, 0);
-        if (color < 0 || color > 255) {
-            throw new BadRequestException("Unable to colorize, bad " + name + " value " + color);
-        }
-        return color;
-    }
-
 
 }

@@ -30,10 +30,10 @@ import com.google.common.collect.Lists;
 
 import org.apache.felix.webconsole.AbstractWebConsolePlugin;
 import org.apache.felix.webconsole.WebConsoleConstants;
-import org.apache.sling.commons.thumbnails.ThumbnailProvider;
 import org.apache.sling.commons.thumbnails.ThumbnailSupport;
-import org.apache.sling.commons.thumbnails.TransformationHandler;
 import org.apache.sling.commons.thumbnails.Transformer;
+import org.apache.sling.commons.thumbnails.extension.ThumbnailProvider;
+import org.apache.sling.commons.thumbnails.extension.TransformationHandler;
 import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;

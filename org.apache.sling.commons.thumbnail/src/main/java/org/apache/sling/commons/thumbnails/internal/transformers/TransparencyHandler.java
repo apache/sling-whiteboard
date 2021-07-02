@@ -22,8 +22,8 @@ import java.io.OutputStream;
 
 import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.commons.thumbnails.BadRequestException;
-import org.apache.sling.commons.thumbnails.TransformationHandler;
 import org.apache.sling.commons.thumbnails.TransformationHandlerConfig;
+import org.apache.sling.commons.thumbnails.extension.TransformationHandler;
 import org.osgi.service.component.annotations.Component;
 
 import net.coobird.thumbnailator.Thumbnails;

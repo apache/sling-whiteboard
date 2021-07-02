@@ -80,7 +80,19 @@ public class CropHandlerTest {
 
     @Test(expected = BadRequestException.class)
     public void testMissingWidthHeight() throws IOException {
-        TransformationHandlerConfig config = new TransformationHandlerConfigImpl("/conf", Collections.singletonMap(CropHandler.PN_POSITION, "center"));
+        TransformationHandlerConfig config = new TransformationHandlerConfigImpl("/conf",
+                Collections.singletonMap(CropHandler.PN_POSITION, "center"));
+        cropper.handle(inputStream, outputStream, config);
+    }
+
+    @Test(expected = BadRequestException.class)
+    public void testInvalidHuge() throws IOException {
+
+        Map<String, Object> properties = new HashMap<>();
+        properties.put(ResizeHandler.PN_WIDTH, Integer.MAX_VALUE);
+        properties.put(ResizeHandler.PN_HEIGHT, Integer.MAX_VALUE);
+
+        TransformationHandlerConfig config = new TransformationHandlerConfigImpl("/conf", properties);
         cropper.handle(inputStream, outputStream, config);
     }
 

@@ -22,8 +22,8 @@ import java.io.OutputStream;
 
 import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.commons.thumbnails.BadRequestException;
-import org.apache.sling.commons.thumbnails.TransformationHandler;
 import org.apache.sling.commons.thumbnails.TransformationHandlerConfig;
+import org.apache.sling.commons.thumbnails.extension.TransformationHandler;
 import org.osgi.service.component.annotations.Component;
 
 import net.coobird.thumbnailator.Thumbnails;
@@ -46,20 +46,25 @@ public class ScaleHandler implements TransformationHandler {
     @Override
     public void handle(InputStream inputStream, OutputStream outputStream, TransformationHandlerConfig config)
             throws IOException {
-        Builder<? extends InputStream> builder = Thumbnails.of(inputStream);
         ValueMap properties = config.getProperties();
         double both = properties.get(PN_BOTH, -1.0);
         double width = properties.get(ResizeHandler.PN_WIDTH, -1.0);
         double height = properties.get(ResizeHandler.PN_HEIGHT, -1.0);
-        if (both >= 0) {
-            builder.scale(both);
-        } else if (width >= 0 && height >= 0) {
-            builder.scale(width, height);
-        } else {
-            throw new BadRequestException("Could not scale thumbnail, invalid paramters: \n%s", properties);
-        }
+        try {
+            Builder<? extends InputStream> builder = Thumbnails.of(inputStream);
+            if (both >= 0) {
+                builder.scale(both);
+            } else if (width >= 0 && height >= 0) {
+                builder.scale(width, height);
+            } else {
+                throw new BadRequestException("Could not scale thumbnail, invalid paramters: \n%s", properties);
+            }
 
-        builder.toOutputStream(outputStream);
+            builder.toOutputStream(outputStream);
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("Unable to resize due to invalid configuration: \n%s", config.getProperties(),
+                    e);
+        }
     }
 
 }

@@ -14,12 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.commons.thumbnails;
+package org.apache.sling.commons.thumbnails.extension;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.apache.sling.commons.thumbnails.TransformationHandlerConfig;
 import org.osgi.annotation.versioning.ConsumerType;
 
 /*

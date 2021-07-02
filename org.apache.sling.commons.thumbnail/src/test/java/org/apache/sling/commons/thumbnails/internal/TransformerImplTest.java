@@ -30,11 +30,11 @@ import java.util.Map;
 
 import org.apache.sling.commons.thumbnails.BadRequestException;
 import org.apache.sling.commons.thumbnails.OutputFileFormat;
-import org.apache.sling.commons.thumbnails.ThumbnailProvider;
 import org.apache.sling.commons.thumbnails.ThumbnailSupport;
-import org.apache.sling.commons.thumbnails.TransformationHandler;
 import org.apache.sling.commons.thumbnails.TransformationHandlerConfig;
 import org.apache.sling.commons.thumbnails.Transformer;
+import org.apache.sling.commons.thumbnails.extension.ThumbnailProvider;
+import org.apache.sling.commons.thumbnails.extension.TransformationHandler;
 import org.apache.sling.commons.thumbnails.internal.models.TransformationHandlerConfigImpl;
 import org.apache.sling.commons.thumbnails.internal.models.TransformationImpl;
 import org.apache.sling.commons.thumbnails.internal.providers.ImageThumbnailProvider;

@@ -17,7 +17,6 @@
 package org.apache.sling.commons.thumbnails.internal.transformers;
 
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -31,64 +30,43 @@ import org.apache.sling.commons.thumbnails.internal.models.TransformationHandler
 import org.junit.Before;
 import org.junit.Test;
 
-public class ResizeHandlerTest {
+public class FlipHandlerTest {
 
     private InputStream inputStream;
     private ByteArrayOutputStream outputStream;
-    private ResizeHandler sizer;
+    private FlipHandler flop;
 
     @Before
     public void init() {
         inputStream = getClass().getClassLoader().getResourceAsStream("apache.png");
         outputStream = new ByteArrayOutputStream();
-        sizer = new ResizeHandler();
+        flop = new FlipHandler();
     }
 
     @Test
-    public void testResize() throws IOException {
-
+    public void testFlipHorizontal() throws IOException {
         Map<String, Object> properties = new HashMap<>();
-        properties.put(ResizeHandler.PN_WIDTH, 200);
-        properties.put(ResizeHandler.PN_HEIGHT, 200);
-
+        properties.put(FlipHandler.PN_DIRECTION, "horizontal");
         TransformationHandlerConfig config = new TransformationHandlerConfigImpl("/conf", properties);
-        sizer.handle(inputStream, outputStream, config);
+        flop.handle(inputStream, outputStream, config);
         assertNotEquals(0, outputStream.toByteArray().length);
     }
 
     @Test
-    public void testInvalidWidth() throws IOException {
+    public void testFlipVertical() throws IOException {
         Map<String, Object> properties = new HashMap<>();
-        properties.put(ResizeHandler.PN_WIDTH, "K");
-        properties.put(ResizeHandler.PN_HEIGHT, 200);
-
+        properties.put(FlipHandler.PN_DIRECTION, "VERTICAL");
         TransformationHandlerConfig config = new TransformationHandlerConfigImpl("/conf", properties);
-        sizer.handle(inputStream, outputStream, config);
-        assertNotNull(outputStream.toByteArray());
-
-    }
-
-    @Test
-    public void testInvalidHeight() throws IOException {
-
-        Map<String, Object> properties = new HashMap<>();
-        properties.put(ResizeHandler.PN_WIDTH, 200);
-        properties.put(ResizeHandler.PN_HEIGHT, "h");
-        TransformationHandlerConfig config = new TransformationHandlerConfigImpl("/conf", properties);
-        sizer.handle(inputStream, outputStream, config);
-
-        assertNotNull(outputStream.toByteArray());
+        flop.handle(inputStream, outputStream, config);
+        assertNotEquals(0, outputStream.toByteArray().length);
     }
 
     @Test(expected = BadRequestException.class)
-    public void testInvalidHuge() throws IOException {
-
+    public void testInvalidDirection() throws IOException {
         Map<String, Object> properties = new HashMap<>();
-        properties.put(ResizeHandler.PN_WIDTH, Integer.MAX_VALUE);
-        properties.put(ResizeHandler.PN_HEIGHT, Integer.MAX_VALUE);
-
+        properties.put(FlipHandler.PN_DIRECTION, "asdf");
         TransformationHandlerConfig config = new TransformationHandlerConfigImpl("/conf", properties);
-        sizer.handle(inputStream, outputStream, config);
+        flop.handle(inputStream, outputStream, config);
     }
 
 }

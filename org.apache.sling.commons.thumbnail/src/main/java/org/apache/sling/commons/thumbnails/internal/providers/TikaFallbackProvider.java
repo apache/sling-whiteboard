@@ -28,7 +28,7 @@ import javax.swing.JEditorPane;
 
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.commons.thumbnails.OutputFileFormat;
-import org.apache.sling.commons.thumbnails.ThumbnailProvider;
+import org.apache.sling.commons.thumbnails.extension.ThumbnailProvider;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;

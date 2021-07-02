@@ -30,7 +30,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.commons.thumbnails.ThumbnailProvider;
+import org.apache.sling.commons.thumbnails.extension.ThumbnailProvider;
 import org.osgi.service.component.annotations.Component;
 
 /**

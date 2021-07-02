@@ -26,8 +26,8 @@ import java.io.IOException;
 import java.util.Collections;
 
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.commons.thumbnails.ThumbnailProvider;
 import org.apache.sling.commons.thumbnails.ThumbnailSupport;
+import org.apache.sling.commons.thumbnails.extension.ThumbnailProvider;
 import org.apache.sling.commons.thumbnails.internal.ContextHelper;
 import org.apache.sling.testing.mock.sling.junit.SlingContext;
 import org.junit.Before;

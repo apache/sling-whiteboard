@@ -29,9 +29,9 @@ import java.util.List;
 import javax.servlet.ServletException;
 
 import org.apache.sling.api.resource.LoginException;
-import org.apache.sling.commons.thumbnails.ThumbnailProvider;
 import org.apache.sling.commons.thumbnails.ThumbnailSupport;
-import org.apache.sling.commons.thumbnails.TransformationHandler;
+import org.apache.sling.commons.thumbnails.extension.ThumbnailProvider;
+import org.apache.sling.commons.thumbnails.extension.TransformationHandler;
 import org.apache.sling.commons.thumbnails.internal.providers.ImageThumbnailProvider;
 import org.apache.sling.commons.thumbnails.internal.providers.PdfThumbnailProvider;
 import org.apache.sling.commons.thumbnails.internal.transformers.CropHandler;

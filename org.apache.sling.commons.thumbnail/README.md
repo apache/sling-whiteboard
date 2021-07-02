@@ -241,9 +241,9 @@ N/A
 
 Resizes an image to the size specified. If only one dimension is specified the image will be sized to the other
 
-_Implementation_: `org.apache.sling.commons.thumbnails.internal.transformers.ColorizeHandler`
+_Implementation_: `org.apache.sling.commons.thumbnails.internal.transformers.ResizeHandler`
 
-_Handler Type_: `sling/commons/thumbnails/transformers/colorize`
+_Handler Type_: `sling/commons/thumbnails/transformers/resize`
 
 _Parameters_
 
@@ -275,9 +275,9 @@ _Handler Type_: `sling/commons/thumbnails/transformers/scale`
 
 _Parameters_
 
-- both - scale the thumbnail by the same factor for width and height (0 - 1.0+)
-- width - scale the thumbnail width (0 - 1.0+)
-- height - scale the thumbnail height (0 - 1.0+)
+- both - scale the thumbnail by the same factor for width and height (0+ - 1.0+)
+- width - scale the thumbnail width (0+ - 1.0+)
+- height - scale the thumbnail height (0+ - 1.0+)
 
 ### Transparency Handler
 

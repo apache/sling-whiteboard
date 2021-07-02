@@ -22,8 +22,8 @@ import java.io.OutputStream;
 
 import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.commons.thumbnails.BadRequestException;
-import org.apache.sling.commons.thumbnails.TransformationHandler;
 import org.apache.sling.commons.thumbnails.TransformationHandlerConfig;
+import org.apache.sling.commons.thumbnails.extension.TransformationHandler;
 import org.osgi.service.component.annotations.Component;
 
 import net.coobird.thumbnailator.Thumbnails;
@@ -50,12 +50,17 @@ public class ResizeHandler implements TransformationHandler {
             throws IOException {
         Builder<? extends InputStream> builder = Thumbnails.of(inputStream);
 
-        resize(builder, config.getProperties());
+        try {
+            resize(builder, config.getProperties());
 
-        boolean keepAspectRatio = config.getProperties().get(PN_KEEP_ASPECT_RATIO, true);
-        builder.keepAspectRatio(keepAspectRatio);
+            boolean keepAspectRatio = config.getProperties().get(PN_KEEP_ASPECT_RATIO, true);
+            builder.keepAspectRatio(keepAspectRatio);
 
-        builder.toOutputStream(outputStream);
+            builder.toOutputStream(outputStream);
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("Unable to resize due to invalid configuration: \n%s", config.getProperties(),
+                    e);
+        }
     }
 
     private static void resize(Builder<? extends InputStream> builder, ValueMap properties) {

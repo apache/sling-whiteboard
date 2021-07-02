@@ -21,7 +21,7 @@ import java.io.InputStream;
 import com.google.common.net.MediaType;
 
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.commons.thumbnails.ThumbnailProvider;
+import org.apache.sling.commons.thumbnails.extension.ThumbnailProvider;
 import org.osgi.service.component.annotations.Component;
 
 /**

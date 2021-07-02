@@ -39,4 +39,9 @@ public class BadRequestException extends RuntimeException {
         super(String.format(message, properties.entrySet().stream().map(en -> en.getKey() + "=" + en.getValue())
                 .collect(Collectors.joining("\n"))));
     }
+
+    public BadRequestException(String message, ValueMap properties, Exception cause) {
+        super(String.format(message, properties.entrySet().stream().map(en -> en.getKey() + "=" + en.getValue())
+                .collect(Collectors.joining("\n"))), cause);
+    }
 }
