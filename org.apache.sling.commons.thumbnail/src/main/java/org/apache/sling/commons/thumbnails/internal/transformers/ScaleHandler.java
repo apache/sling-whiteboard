@@ -57,7 +57,7 @@ public class ScaleHandler implements TransformationHandler {
             } else if (width >= 0 && height >= 0) {
                 builder.scale(width, height);
             } else {
-                throw new BadRequestException("Could not scale thumbnail, invalid paramters: \n%s", properties);
+                throw new BadRequestException("Could not scale thumbnail, invalid parameters: \n%s", properties);
             }
 
             builder.toOutputStream(outputStream);
