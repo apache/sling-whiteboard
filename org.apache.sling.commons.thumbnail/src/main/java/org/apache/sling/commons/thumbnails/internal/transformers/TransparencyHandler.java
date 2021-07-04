@@ -37,7 +37,6 @@ import net.coobird.thumbnailator.filters.Transparency;
 public class TransparencyHandler implements TransformationHandler {
 
     public static final String RESOURCE_TYPE = "sling/commons/thumbnails/transformers/transparency";
-    public static final String PN_BOTH = "both";
 
     @Override
     public String getResourceType() {
