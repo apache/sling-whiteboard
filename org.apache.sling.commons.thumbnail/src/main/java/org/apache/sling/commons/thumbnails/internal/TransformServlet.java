@@ -152,7 +152,7 @@ public class TransformServlet extends SlingAllMethodsServlet {
                 log.debug("Using existing rendition {}", name);
                 IOUtils.copy(rendition.adaptTo(InputStream.class), response.getOutputStream());
             } else {
-                ByteArrayOutputStream baos = transform(request, response, format, transformation);
+                ByteArrayOutputStream baos = transform(request, response, transformation);
                 Resource file = ResourceUtil.getOrCreateResource(serviceResolver,
                         request.getResource().getPath() + "/" + expectedPath,
                         Collections.singletonMap(JcrConstants.JCR_PRIMARYTYPE, JcrConstants.NT_FILE),
@@ -165,16 +165,15 @@ public class TransformServlet extends SlingAllMethodsServlet {
             }
         } else {
             log.debug("Sending transformation to response....");
-            transform(request, response, format, transformation);
+            transform(request, response, transformation);
         }
 
     }
 
     private ByteArrayOutputStream transform(SlingHttpServletRequest request, SlingHttpServletResponse response,
-            String format, Transformation transformation) throws IOException {
+            Transformation transformation) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        transformer.transform(request.getResource(), transformation, OutputFileFormat.valueOf(format.toUpperCase()),
-                baos);
+        transformer.transform(request.getResource(), transformation, OutputFileFormat.forRequest(request), baos);
         IOUtils.copy(new ByteArrayInputStream(baos.toByteArray()), response.getOutputStream());
         return baos;
     }

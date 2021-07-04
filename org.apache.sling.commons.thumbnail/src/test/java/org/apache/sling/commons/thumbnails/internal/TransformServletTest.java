@@ -18,7 +18,10 @@ package org.apache.sling.commons.thumbnails.internal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -28,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 
 import org.apache.sling.api.resource.LoginException;
@@ -44,23 +48,24 @@ import org.apache.sling.commons.thumbnails.internal.providers.ImageThumbnailProv
 import org.apache.sling.commons.thumbnails.internal.providers.PdfThumbnailProvider;
 import org.apache.sling.commons.thumbnails.internal.transformers.CropHandler;
 import org.apache.sling.commons.thumbnails.internal.transformers.ResizeHandler;
+import org.apache.sling.servlethelpers.MockRequestDispatcherFactory;
 import org.apache.sling.testing.mock.sling.junit.SlingContext;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.osgi.framework.BundleContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class TransformServletTest {
-
-    private static final Logger log = LoggerFactory.getLogger(TransformServletTest.class);
 
     private TransformServlet ts;
 
     @Rule
     public final SlingContext context = new SlingContext();
+
+    private Resource resource;
+
+    private RequestDispatcher dispatcher;
 
     @Before
     public void init() throws IllegalAccessException, LoginException {
@@ -83,7 +88,7 @@ public class TransformServletTest {
 
         TransformationImpl transformation = new TransformationImpl(handlers, "test");
 
-        Resource resource = Mockito.mock(Resource.class);
+        resource = Mockito.mock(Resource.class);
         Mockito.when(resource.getPath()).thenReturn("/conf");
         Mockito.when(resource.adaptTo(Mockito.any())).thenReturn(transformation);
         Mockito.when(resolver.findResources(Mockito.anyString(), Mockito.anyString())).thenAnswer((ans) -> {
@@ -110,17 +115,21 @@ public class TransformServletTest {
         when(thumbnailSupport.getPersistableTypes()).thenReturn(Collections.emptySet());
         when(thumbnailSupport.getSupportedTypes()).thenReturn(Collections.singleton("nt:file"));
         when(thumbnailSupport.getMetaTypePropertyPath("nt:file")).thenReturn("jcr:content/jcr:mimeType");
+        when(thumbnailSupport.getServletErrorResourcePath()).thenReturn("/content/error");
 
         TransformerImpl transformer = new TransformerImpl(providers, thumbnailSupport, th);
         ts = new TransformServlet(thumbnailSupport, transformer, tsu, new TransformationCache(tsu),
                 mock(BundleContext.class));
 
+        MockRequestDispatcherFactory dispatcherFactory = mock(MockRequestDispatcherFactory.class);
+        dispatcher = mock(RequestDispatcher.class);
+        when(dispatcherFactory.getRequestDispatcher(anyString(), any())).thenReturn(dispatcher);
+        context.request().setRequestDispatcherFactory(dispatcherFactory);
+
     }
 
     @Test
     public void testValid() throws IOException, ServletException {
-        log.info("testContentTypes");
-
         context.currentResource("/content/apache/sling-apache-org/index/apache.png");
         context.requestPathInfo().setSuffix("/test.png");
         context.requestPathInfo().setExtension("transform");
@@ -131,8 +140,58 @@ public class TransformServletTest {
     }
 
     @Test
+    public void testUnsupportedOutput() throws IOException, ServletException {
+
+        context.currentResource("/content/apache/sling-apache-org/index/apache.png");
+        context.requestPathInfo().setSuffix("/test.webp");
+        context.requestPathInfo().setExtension("transform");
+
+        ts.doGet(context.request(), context.response());
+
+        assertEquals(400, context.response().getStatus());
+    }
+
+    @Test
+    public void testUnexpectedException() throws IOException, ServletException {
+
+        Resource throwy = mock(Resource.class);
+        when(throwy.getResourceType()).thenThrow(new RuntimeException());
+        context.currentResource(throwy);
+        context.requestPathInfo().setSuffix("/test.jpg");
+        context.requestPathInfo().setExtension("transform");
+
+        ts.doGet(context.request(), context.response());
+
+        assertEquals(500, context.response().getStatus());
+        assertEquals("image/jpeg", context.response().getContentType());
+
+        verify(dispatcher).forward(any(), any());
+    }
+
+    @Test
+    public void testInvalidConfig() throws ServletException, IOException {
+        List<TransformationHandlerConfig> handlers = new ArrayList<>();
+        Map<String, Object> crop = new HashMap<>();
+        crop.put(CropHandler.PN_POSITION, "center");
+        crop.put(ResizeHandler.PN_WIDTH, -1);
+        crop.put(ResizeHandler.PN_HEIGHT, 200);
+        handlers.add(new TransformationHandlerConfigImpl(CropHandler.RESOURCE_TYPE, crop));
+
+        TransformationImpl transformation = new TransformationImpl(handlers, "test");
+
+        Mockito.when(resource.adaptTo(Mockito.any())).thenReturn(transformation);
+
+        context.currentResource("/content/apache/sling-apache-org/index/apache.png");
+        context.requestPathInfo().setSuffix("/test.png");
+        context.requestPathInfo().setExtension("transform");
+
+        ts.doGet(context.request(), context.response());
+
+        assertEquals(400, context.response().getStatus());
+    }
+
+    @Test
     public void testInvalid() throws IOException, ServletException {
-        log.info("testContentTypes");
 
         context.currentResource("/content/apache/sling-apache-org/index/apache.png");
         context.requestPathInfo().setSuffix("/te.png");

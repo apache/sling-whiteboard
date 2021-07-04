@@ -20,6 +20,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
@@ -67,13 +68,16 @@ public class DynamicTransformServlet extends SlingAllMethodsServlet {
             throws ServletException, IOException {
         log.trace("doPost");
 
-        Resource resource = request.getResourceResolver().getResource(request.getParameter("resource"));
-
-        OutputFileFormat format = OutputFileFormat.forValue(request.getParameter("format"));
-        response.setHeader("Content-Disposition", "filename=" + resource.getName());
-        response.setContentType(format.getMimeType());
-
         try {
+
+            Resource resource = request.getResourceResolver()
+                    .getResource(Optional.ofNullable(request.getParameter("resource"))
+                            .orElseThrow(() -> new BadRequestException("Parameter resource must be supplied")));
+
+            OutputFileFormat format = OutputFileFormat
+                    .forValue(Optional.ofNullable(request.getParameter("format")).orElse("jpeg"));
+            response.setHeader("Content-Disposition", "filename=" + resource.getName());
+            response.setContentType(format.getMimeType());
             ObjectMapper objectMapper = new ObjectMapper();
 
             List<TransformationHandlerConfigImpl> transformations = parsePostBody(request, objectMapper);

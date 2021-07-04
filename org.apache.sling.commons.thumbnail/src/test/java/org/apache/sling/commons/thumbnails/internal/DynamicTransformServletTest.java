@@ -88,6 +88,18 @@ public class DynamicTransformServletTest {
     }
 
     @Test
+    public void testNoResource() throws IOException, ServletException {
+
+        context.request().addRequestParameter("format", "png");
+        context.request().setContent(
+                "[{\"handlerType\":\"sling/commons/thumbnails/transformers/crop\",\"properties\":{\"position\":\"CENTER\",\"width\":1000,\"height\":1000}}]"
+                        .getBytes());
+        dts.doPost(context.request(), context.response());
+
+        assertEquals(400, context.response().getStatus());
+    }
+
+    @Test
     public void testNoFormat() throws IOException, ServletException {
 
         context.request().addRequestParameter("resource", "/content/apache/sling-apache-org/index/apache.png");

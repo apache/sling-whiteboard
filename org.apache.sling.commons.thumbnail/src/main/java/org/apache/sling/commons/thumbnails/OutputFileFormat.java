@@ -16,14 +16,12 @@
  */
 package org.apache.sling.commons.thumbnails;
 
+import com.google.common.net.MediaType;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
+import org.jetbrains.annotations.NotNull;
 import org.osgi.annotation.versioning.ProviderType;
-
-import java.util.Optional;
-
-import com.google.common.base.Enums;
-import com.google.common.net.MediaType;
 
 /**
  * Enumeration of the valid output formats for the thumbnail generator.
@@ -39,9 +37,8 @@ public enum OutputFileFormat {
      * @return the format for the suffix
      */
     public static OutputFileFormat forRequest(SlingHttpServletRequest request) {
-        String suffixExtension = StringUtils.substringAfterLast(request.getRequestPathInfo().getSuffix(), ".")
-                .toUpperCase();
-        return Enums.getIfPresent(OutputFileFormat.class, suffixExtension).or(OutputFileFormat.JPEG);
+        return forValue(StringUtils.substringAfterLast(request.getRequestPathInfo().getSuffix(), "."));
+
     }
 
     /**
@@ -50,9 +47,16 @@ public enum OutputFileFormat {
      * @param request the requested format
      * @return the format requested
      */
-    public static OutputFileFormat forValue(String format) {
-        return Enums.getIfPresent(OutputFileFormat.class,
-                Optional.ofNullable(format).map(String::toUpperCase).orElse("JPEG")).or(OutputFileFormat.JPEG);
+    public static OutputFileFormat forValue(@NotNull String format) {
+        format = format.toUpperCase();
+        if ("JPG".equals(format)) {
+            format = "JPEG";
+        }
+        try {
+            return Enum.valueOf(OutputFileFormat.class, format);
+        } catch (IllegalArgumentException | NullPointerException e) {
+            throw new BadRequestException("Could not get valid extension from: " + format);
+        }
     }
 
     private String mimeType;
