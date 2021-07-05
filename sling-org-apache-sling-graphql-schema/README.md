@@ -8,7 +8,7 @@ schema ("partials") supplied by _provider bundles_.
 
 The partials are text files that use the GraphQL SDL (Schema Definition  Language) syntax and are
 provided as OSGi bundle resources. We cannot name them "fragments" as that has a different meaning
-in a GraphQL schema.
+in a GraphQL schema. They might include "front matter" a la Markdown for metadata.
 
 A GraphQL schema must contain one `Query` statement and can contain a most one `Mutation` statement,
 so partials cannot be assembled by just concatenating them. The schema assembler defines some simple 
