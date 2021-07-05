@@ -1,6 +1,6 @@
 [![Apache Sling](https://sling.apache.org/res/logos/sling.png)](https://sling.apache.org)
 
-Apache Sling GraphQL Schema
+Apache Sling GraphQL Schema Aggregator
 ----
 
 This module ([SLING-10551](https://issues.apache.org/jira/browse/SLING-10551)) provides services to combine partial GraphQL
