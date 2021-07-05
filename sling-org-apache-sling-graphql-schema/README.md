@@ -18,7 +18,8 @@ This module also provides a `GraphQLSchemaServlet` that generates schemas by agg
 The result can be used directly by the Sling GraphQL Core module, which makes an internal Sling request
 to get the schema. Multiple instances of that servlet can be configured, each with specific servlet
 selection properties (selectors, extension etc.) along with a set of tags used to select which partials
-are included in a specific schema.
+are included in a specific schema. Or maybe one instance with a mapping of request selectors to schema
+aggregation parameters.
 
 With this mechanism, an OSGi bundle can provide both a partial schema and the Sling data fetching and
 processing services that go with it. This allows a GraphQL "API plane" (usually defined by a specific
@@ -32,14 +33,13 @@ points to one or several paths where partials are found in the bundle resources.
 
 A partial is a text file with a `.graphql.partial.txt` extension that has the following structure:
 
-    # The "org.apache.sling.*" comments in the partial are used by the schema assembler, which might
-    # impose constraints on their presence and values.
-    #
-    # org.apache.sling.partial.name: Folders and commands
-    # org.apache.sling.tags: folder, command, development, authoring
-    #
-    # The aggregated schema will include additional org.apache.sling.* comments to provide information
-    # on the aggregation process and help troubleshoot it.
+    # Front matter, similar to Markdown, ends with four dashes on a line within the first 50 lines.
+    partial.name: Folders and commands
+    tags: folder, command, development, authoring
+    ----
+    
+    # The aggregated schema will include org.apache.sling.* values in comments, to provide
+    # information on the aggregation process and help troubleshoot it.
 
     # If a partial contains a Query and/or Mutation statement, the schema assembler uses their
     # indentation to parse them without having to consider the full SDL syntax.
