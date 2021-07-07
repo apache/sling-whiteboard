@@ -24,8 +24,10 @@ import org.ops4j.pax.exam.junit.PaxExam;
 import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
 import org.ops4j.pax.exam.spi.reactors.PerClass;
 
+import static org.junit.Assert.fail;
 import static org.ops4j.pax.exam.cm.ConfigurationAdminOptions.factoryConfiguration;
 
+import org.apache.sling.graphql.schema.aggregator.U;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -40,21 +42,28 @@ public class SchemaAggregatorServletIT extends SchemaAggregatorTestSupport {
         return new Option[]{
             baseConfiguration(),
 
+            U.providerBundleOption("firstProvider", "firstA", "firstB","secondN"),
+            U.providerBundleOption("secondProvider", "secondA", "secondB","secondOther"),
+
             // The aggregator servlet is disabled by default
             factoryConfiguration(AGGREGATOR_SERVLET_CONFIG_PID)
                 .put("sling.servlet.resourceTypes", "sling/servlet/default")
                 .put("sling.servlet.extensions", GQL_SCHEMA_EXT)
-                .put("sling.servlet.selectors", new String[] { "X", "Y" })
+                .put("sling.servlet.selectors", new String[] { "X", "Y", "nomappings" })
                 .put("sling.servlet.methods", new String[] { "GET" })
+                .put("selectors.to.partials.mapping", new String[] { "X:firstA,secondB", "Y:secondA,firstB,/second.*/" })
                 .asOption(),
         };
     }
 
     @Test
-    public void servletIsActive() throws Exception {
-        // TODO this doesn't actually test the servlet so far
-        //assertEquals("Not a schema yet, for providers [X]", getContent("/." + GQL_SCHEMA_EXT));
-        getContent("/.json");
+    public void basicAggregation() throws Exception {
+        U.assertPartialsFoundInSchema(getContent("/.X." + GQL_SCHEMA_EXT), "firstA", "secondB");
+        U.assertPartialsFoundInSchema(getContent("/.Y." + GQL_SCHEMA_EXT), "secondA", "firstB", "secondB","secondOther","secondN");
     }
 
+    @Test
+    public void unmappedSelector() throws Exception {
+        executeRequest("GET", "/.nomappings." + GQL_SCHEMA_EXT, null, null, null, 400);
+    }
 }

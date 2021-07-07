@@ -23,7 +23,6 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.net.URL;
 
-import org.apache.sling.graphql.schema.aggregator.api.PartialSchemaProvider;
 import org.jetbrains.annotations.NotNull;
 import org.osgi.framework.Bundle;
 import org.slf4j.Logger;
@@ -32,33 +31,41 @@ import org.slf4j.LoggerFactory;
 /** {@PartialSchemaProvider} build out of a Bundle entry, which must be a valid
  *  partial schema file.
  */
-class BundleEntrySchemaProvider implements PartialSchemaProvider {
-    private static final Logger log = LoggerFactory.getLogger(BundleEntrySchemaProvider.class.getName());
-    private final URL url;
+class BundleEntryPartialProvider implements PartialSchemaProvider {
+    private static final Logger log = LoggerFactory.getLogger(BundleEntryPartialProvider.class.getName());
     private final String key;
     private final long bundleId;
+    private final String name;
 
-    private BundleEntrySchemaProvider(Bundle b, URL bundleEntry) {
-        this.url = bundleEntry;
+    private BundleEntryPartialProvider(Bundle b, URL bundleEntry) {
         this.bundleId = b.getBundleId();
         this.key = String.format("%s(%d):%s", b.getSymbolicName(), b.getBundleId(), bundleEntry.toString());
+        this.name = getPartialName(bundleEntry);
     }
 
-    static BundleEntrySchemaProvider forBundle(Bundle b, String entryPath) {
+    /** The partial's name is whatever follows the last slash, excluding the file extension */
+    static String getPartialName(URL url) {
+        final String [] parts = url.toString().split("/");
+        String result = parts[parts.length - 1];
+        final int lastDot = result.lastIndexOf(".");
+        return lastDot > 0 ? result.substring(0, lastDot) : result;
+    }
+
+    static BundleEntryPartialProvider forBundle(Bundle b, String entryPath) {
         final URL entry = b.getEntry(entryPath);
         if(entry == null) {
             log.info("Entry {} not found for bundle {}", entryPath, b.getSymbolicName());
             return null;
         } else {
             // TODO validate entry?
-            return new BundleEntrySchemaProvider(b, entry);
+            return new BundleEntryPartialProvider(b, entry);
         }
     }
 
     @Override
     public boolean equals(Object other) {
-        if(other instanceof BundleEntrySchemaProvider) {
-            return ((BundleEntrySchemaProvider)other).key.equals(key);
+        if(other instanceof BundleEntryPartialProvider) {
+            return ((BundleEntryPartialProvider)other).key.equals(key);
         }
         return false;
     }
@@ -73,7 +80,7 @@ class BundleEntrySchemaProvider implements PartialSchemaProvider {
     }
 
     public String getName() {
-        return url.toString();
+        return name;
     }
 
     public long getBundleId() {

@@ -24,7 +24,6 @@ import java.util.Enumeration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.sling.graphql.schema.aggregator.api.PartialSchemaProvider;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
@@ -40,7 +39,7 @@ public class ProviderBundleTracker extends BundleTracker<Object> {
     public static final String SCHEMA_PATH_HEADER = "Sling-GraphQL-Schema";
 
     private final Logger log = LoggerFactory.getLogger(getClass().getName());
-    private final Map<String, BundleEntrySchemaProvider> schemaProviders;
+    private final Map<String, BundleEntryPartialProvider> schemaProviders;
     
     public ProviderBundleTracker(BundleContext context) {
         super(context, Bundle.ACTIVE, null);
@@ -53,18 +52,26 @@ public class ProviderBundleTracker extends BundleTracker<Object> {
         if(providersPath == null) {
             log.debug("Bundle {} has no {} header, ignored", bundle.getSymbolicName(), SCHEMA_PATH_HEADER);
         } else {
+            // For now we only support file entries which are directly under providersPath
             final Enumeration<String> paths = bundle.getEntryPaths(providersPath);
             if(paths != null) {
                 while(paths.hasMoreElements()) {
-                    final BundleEntrySchemaProvider a = BundleEntrySchemaProvider.forBundle(bundle, paths.nextElement());
-                    if(a != null) {
-                        log.info("Registering {}", a);
-                        schemaProviders.put(a.getName(), a);
-                    }
+                    addIfNotPresent(BundleEntryPartialProvider.forBundle(bundle, paths.nextElement()));
                 }
             }
         }
         return super.addingBundle(bundle, event);
+    }
+
+    private void addIfNotPresent(BundleEntryPartialProvider a) {
+        if(a != null) {
+            if(schemaProviders.containsKey(a.getName())) {
+                log.warn("Partial provider with name {} already present, new one will be ignored", a.getName());
+            } else {
+                log.info("Registering {}", a);
+                schemaProviders.put(a.getName(), a);
+            }
+        }
     }
 
     @Override

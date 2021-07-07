@@ -17,7 +17,7 @@
  ~ under the License.
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-package org.apache.sling.graphql.schema.aggregator.api;
+package org.apache.sling.graphql.schema.aggregator.impl;
 
 import java.io.Reader;
 
@@ -27,7 +27,7 @@ import org.osgi.annotation.versioning.ProviderType;
 /** A provider of partial OSGI schemas */
 @ProviderType
 public interface PartialSchemaProvider {
-    /** A unique name for this provider */
+    /** A unique name for this partial */
     @NotNull String getName();
 
     /** Return a Reader that provides the contents of the specific schema section, like "query" or "mutation" */

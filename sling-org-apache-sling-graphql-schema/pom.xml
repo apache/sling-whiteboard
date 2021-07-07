@@ -96,7 +96,7 @@
         <artifactId>apache-rat-plugin</artifactId>
         <configuration>
           <excludes>                        
-            <exclude>src/test/resources/two-providers-output.txt</exclude>
+            <exclude>src/test/resources/several-providers-output.txt</exclude>
           </excludes>
         </configuration>
       </plugin>

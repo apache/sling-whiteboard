@@ -1,0 +1,35 @@
+# Schema aggregated by DefaultSchemaAggregator
+
+query {
+
+# DefaultSchemaAggregator.source=B1
+Fake section query for B(2):B/path/2/resource/B1
+
+# DefaultSchemaAggregator.source=B2
+Fake section query for B(2):B/path/2/resource/B2.txt
+
+# DefaultSchemaAggregator.source=2.z
+Fake section query for A(1):A/path/1/resource/2.z.txt
+
+}
+
+mutation {
+
+# DefaultSchemaAggregator.source=B1
+Fake section mutation for B(2):B/path/2/resource/B1
+
+# DefaultSchemaAggregator.source=B2
+Fake section mutation for B(2):B/path/2/resource/B2.txt
+
+# DefaultSchemaAggregator.source=2.z
+Fake section mutation for A(1):A/path/1/resource/2.z.txt
+
+}
+
+# DefaultSchemaAggregator.source=B1
+Fake body for B(2):B/path/2/resource/B1
+# DefaultSchemaAggregator.source=B2
+Fake body for B(2):B/path/2/resource/B2.txt
+# DefaultSchemaAggregator.source=2.z
+Fake body for A(1):A/path/1/resource/2.z.txt
+# End of Schema aggregated by DefaultSchemaAggregator

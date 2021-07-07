@@ -20,6 +20,9 @@
 package org.apache.sling.graphql.schema.aggregator.servlet;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.Servlet;
 import javax.servlet.http.HttpServletResponse;
@@ -28,12 +31,16 @@ import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
 import org.apache.sling.graphql.schema.aggregator.api.SchemaAggregator;
+import org.osgi.framework.BundleContext;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component(
     service = Servlet.class,
@@ -47,6 +54,8 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 @Designate(ocd = SchemaAggregatorServlet.Config.class, factory=true)
 
 public class SchemaAggregatorServlet extends SlingSafeMethodsServlet {
+
+    private final Logger log = LoggerFactory.getLogger(getClass().getName());
 
     @ObjectClassDefinition(
         name = "Apache Sling GraphQL Schema Aggregator Servlet",
@@ -71,10 +80,38 @@ public class SchemaAggregatorServlet extends SlingSafeMethodsServlet {
             name = "Extensions",
             description="Standard Sling servlet property")
         String[] sling_servlet_extensions() default "GQLschema";
+
+        @AttributeDefinition(
+            name = "Selectors to partials mapping",
+            description="Each entry is in the format S:P1,P2,... where S is a selector and P* the names of the corresponding schema partials")
+        String[] selectors_to_partials_mapping() default {};
+
     }
     
     @Reference
     private transient SchemaAggregator aggregator;
+
+    private Map<String, String[]> selectorsToPartialNames = new HashMap<>();
+
+    @Activate
+    public void activate(BundleContext ctx, Config cfg) {
+        for(String str : cfg.selectors_to_partials_mapping()) {
+            final String [] parts = str.split("[:,]");
+            if(parts.length < 2) {
+                log.warn("Invalid selectors_to_partials_mapping configuration string [{}]", str);
+                continue;
+            }
+            final String selector = parts[0].trim();
+            final String [] names = new String[parts.length - 1];
+            for(int i=1; i < parts.length; i++) {
+                names[i-1] = parts[i].trim();
+            }
+            if(log.isInfoEnabled()) {
+                log.info("Registering selector mapping: {} -> {}", selector, Arrays.asList(names));
+            }
+            selectorsToPartialNames.put(selector, names);
+        }
+    }
 
     @Override
     public void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
@@ -86,6 +123,16 @@ public class SchemaAggregatorServlet extends SlingSafeMethodsServlet {
 
         response.setContentType("text/plain");
         response.setCharacterEncoding("UTF-8");
-        aggregator.aggregate(response.getWriter(), selectors);
+
+        final String key = selectors[0];
+        final String[] partialNames = selectorsToPartialNames.get(key);
+        if(partialNames == null) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No partial names defined for selector " + key);
+            return;
+        }
+        if(log.isDebugEnabled()) {
+            log.debug("Selector {} maps to partial names {}", key, Arrays.asList(partialNames));
+        }
+        aggregator.aggregate(response.getWriter(), partialNames);
     }
 }

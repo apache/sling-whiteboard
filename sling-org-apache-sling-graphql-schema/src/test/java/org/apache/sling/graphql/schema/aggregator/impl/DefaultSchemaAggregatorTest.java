@@ -29,6 +29,7 @@ import java.io.StringWriter;
 import java.lang.reflect.Field;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.sling.graphql.schema.aggregator.U;
 import org.junit.Before;
 import org.junit.Test;
 import org.osgi.framework.BundleContext;
@@ -64,17 +65,27 @@ public class DefaultSchemaAggregatorTest {
     }
 
     @Test
-    public void twoProviders() throws Exception{
+    public void severalProviders() throws Exception{
         final StringWriter target = new StringWriter();
-        tracker.addingBundle(U.testBundle("A", 1, 4), null);
-        tracker.addingBundle(U.testBundle("B", 2, 2), null);
-        dsa.aggregate(target, "B/path/2/resource/1", "A/path/1/resource/3");
+        tracker.addingBundle(U.mockProviderBundle("A", 1, "1.txt", "2.z.txt", "3", "4"), null);
+        tracker.addingBundle(U.mockProviderBundle("B", 2, "B1", "B2.txt"), null);
+        dsa.aggregate(target, "B1", "B2", "2.z");
         assertContainsIgnoreCase("schema aggregated by DefaultSchemaAggregator", target.toString());
 
-        try(InputStream is = getClass().getResourceAsStream("/two-providers-output.txt")) {
+        try(InputStream is = getClass().getResourceAsStream("/several-providers-output.txt")) {
             assertNotNull("Expecting test resource to be present", is);
             final String expected = IOUtils.toString(is, "UTF-8");
             assertEquals(expected, target.toString().trim());
         }
+    }
+
+    @Test
+    public void regexpSelection() throws Exception {
+        final StringWriter target = new StringWriter();
+        tracker.addingBundle(U.mockProviderBundle("A", 1, "a.authoring.1.txt", "a.authoring.2.txt", "3", "4"), null);
+        tracker.addingBundle(U.mockProviderBundle("B", 2, "B1", "B.authoring.txt"), null);
+        dsa.aggregate(target, "B1", "/.*\\.authoring.*/");
+        assertContainsIgnoreCase("schema aggregated by DefaultSchemaAggregator", target.toString());
+        U.assertPartialsFoundInSchema(target.toString(), "a.authoring.1", "a.authoring.2", "B.authoring", "B1");
     }
 }

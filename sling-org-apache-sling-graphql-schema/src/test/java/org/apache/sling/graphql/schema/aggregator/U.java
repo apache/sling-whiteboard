@@ -16,12 +16,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.sling.graphql.schema.aggregator.impl;
+package org.apache.sling.graphql.schema.aggregator;
 
 import org.osgi.framework.Bundle;
+
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.ops4j.pax.tinybundles.core.TinyBundles.bundle;
 
+import org.apache.sling.graphql.schema.aggregator.impl.ProviderBundleTracker;
+import org.ops4j.pax.exam.Option;
+import org.ops4j.pax.tinybundles.core.TinyBundle;
+import org.osgi.framework.Constants;
+
+import static org.ops4j.pax.exam.CoreOptions.streamBundle;
+
+import java.io.ByteArrayInputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,8 +40,9 @@ import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
 
-class U {
-    static Bundle testBundle(String symbolicName, long id, int nEntries) {
+/** Test Utilities */
+public class U {
+    public static Bundle mockProviderBundle(String symbolicName, long id, String ... schemaNames) {
         final Bundle b = mock(Bundle.class);
         when(b.getSymbolicName()).thenReturn(symbolicName);
         when(b.getBundleId()).thenReturn(id);
@@ -41,8 +53,8 @@ class U {
         when(b.getHeaders()).thenReturn(headers);
 
         final List<String> resources = new ArrayList<>();
-        for(int i=1 ; i <= nEntries; i++) {
-            String fakeResource = fakePath + "/resource/" + i;
+        for(String name : schemaNames) {
+            String fakeResource = fakePath + "/resource/" + name;
             resources.add(fakeResource);
             final URL url = mock(URL.class);
             when(url.toString()).thenReturn(fakeResource);
@@ -50,5 +62,30 @@ class U {
         }
         when(b.getEntryPaths(fakePath)).thenReturn(Collections.enumeration(resources));
         return b;
+    }
+
+    public static Option providerBundleOption(String symbolicName, String ... schemaNames) {
+        final String schemaPath = symbolicName + "/schemas";
+        final TinyBundle b = bundle()
+            .set(ProviderBundleTracker.SCHEMA_PATH_HEADER, schemaPath)
+            .set(Constants.BUNDLE_SYMBOLICNAME, symbolicName);
+        ;
+
+        for(String name : schemaNames) {
+            final String resourcePath = schemaPath + "/" + name + ".txt";
+            final String content = "Fake schema at " + resourcePath;
+            b.add(resourcePath, new ByteArrayInputStream(content.getBytes()));
+        }
+
+        return streamBundle(b.build());
+    }
+
+    public static void assertPartialsFoundInSchema(String output, String ... partialName) {
+        for(String name : partialName) {
+            final String expected = "DefaultSchemaAggregator.source=" + name;
+            if(!output.contains(expected)) {
+                fail(String.format("Expecting output to contain %s: %s", expected, output));
+            }
+        }
     }
 }
