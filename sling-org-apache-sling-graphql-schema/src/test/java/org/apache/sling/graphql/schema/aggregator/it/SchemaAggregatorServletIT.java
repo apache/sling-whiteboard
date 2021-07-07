@@ -42,8 +42,8 @@ public class SchemaAggregatorServletIT extends SchemaAggregatorTestSupport {
         return new Option[]{
             baseConfiguration(),
 
-            U.providerBundleOption("firstProvider", "firstA", "firstB","secondN"),
-            U.providerBundleOption("secondProvider", "secondA", "secondB","secondOther"),
+            U.tinyProviderBundle("firstProvider", "firstA", "firstB","secondN"),
+            U.tinyProviderBundle("secondProvider", "secondA", "secondB","secondOther"),
 
             // The aggregator servlet is disabled by default
             factoryConfiguration(AGGREGATOR_SERVLET_CONFIG_PID)

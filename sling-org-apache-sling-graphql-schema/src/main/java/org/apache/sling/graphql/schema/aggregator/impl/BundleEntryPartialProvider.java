@@ -51,6 +51,9 @@ class BundleEntryPartialProvider implements PartialSchemaProvider {
         return lastDot > 0 ? result.substring(0, lastDot) : result;
     }
 
+    /** @return a BundleEntryPartialProvider for the entryPath in
+     *  the supplied Bundle, or null if none can be built.
+      */
     static BundleEntryPartialProvider forBundle(Bundle b, String entryPath) {
         final URL entry = b.getEntry(entryPath);
         if(entry == null) {

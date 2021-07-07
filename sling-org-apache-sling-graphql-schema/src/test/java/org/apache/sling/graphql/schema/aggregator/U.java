@@ -64,14 +64,15 @@ public class U {
         return b;
     }
 
-    public static Option providerBundleOption(String symbolicName, String ... schemaNames) {
+    public static Option tinyProviderBundle(String symbolicName, String ... partialsNames) {
         final String schemaPath = symbolicName + "/schemas";
         final TinyBundle b = bundle()
             .set(ProviderBundleTracker.SCHEMA_PATH_HEADER, schemaPath)
-            .set(Constants.BUNDLE_SYMBOLICNAME, symbolicName);
+            .set(Constants.BUNDLE_SYMBOLICNAME, symbolicName)
+            .set(Constants.REQUIRE_CAPABILITY, "org.apache.sling.graphql.schema.aggregator;filter:=\"(syntax>=0.1)\"")
         ;
 
-        for(String name : schemaNames) {
+        for(String name : partialsNames) {
             final String resourcePath = schemaPath + "/" + name + ".txt";
             final String content = "Fake schema at " + resourcePath;
             b.add(resourcePath, new ByteArrayInputStream(content.getBytes()));

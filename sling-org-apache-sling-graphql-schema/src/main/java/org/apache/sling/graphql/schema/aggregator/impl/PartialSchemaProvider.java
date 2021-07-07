@@ -24,10 +24,10 @@ import java.io.Reader;
 import org.jetbrains.annotations.NotNull;
 import org.osgi.annotation.versioning.ProviderType;
 
-/** A provider of partial OSGI schemas */
+/** A provider of partial GraphQL schemas */
 @ProviderType
 public interface PartialSchemaProvider {
-    /** A unique name for this partial */
+    /** A unique name for this partial, partials duplicate names are ignored with a WARN log message  */
     @NotNull String getName();
 
     /** Return a Reader that provides the contents of the specific schema section, like "query" or "mutation" */

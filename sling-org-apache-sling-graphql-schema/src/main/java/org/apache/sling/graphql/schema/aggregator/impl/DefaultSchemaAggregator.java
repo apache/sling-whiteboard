@@ -21,8 +21,6 @@ package org.apache.sling.graphql.schema.aggregator.impl;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -76,13 +74,7 @@ public class DefaultSchemaAggregator implements SchemaAggregator {
         target.write(String.format("%n# %s.source=%s%n", getClass().getSimpleName(), psp.getName()));
     }
 
-    /** Aggregate the schemas supplied by providers which match the exact names or patterns supplied
-     *  @param target where to write the output
-     *  @param providerNamesOrRegexp a value that starts and ends with a slash is used a a regular
-     *      expression to match provider names (after removing the starting and ending slash), other
-     *      values are used as exact provider names.
-     *  @throws IOException if an exact provider name is not found
-     */
+    @Override
     public void aggregate(Writer target, String ...providerNamesOrRegexp) throws IOException {
         final String info = String.format("Schema aggregated by %s%n", getClass().getSimpleName());
         target.write(String.format("# %s", info));

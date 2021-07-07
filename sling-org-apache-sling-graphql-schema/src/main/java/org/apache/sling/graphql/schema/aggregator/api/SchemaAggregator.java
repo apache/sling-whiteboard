@@ -26,6 +26,16 @@ import org.osgi.annotation.versioning.ConsumerType;
 
 @ConsumerType
 public interface SchemaAggregator {
-    /** Writes an aggregated Schema to the supplied Writer */
-    void aggregate(Writer target, String ... providerNames) throws IOException;
+    /** Aggregate the schemas supplied by partial schame providers which match the exact names
+     *  or patterns supplied.
+     *
+     *  @param target where to write the output
+     *
+     *  @param providerNamesOrRegexp a value that starts and ends with a slash is used a a regular
+     *      expression to match provider names (after removing the starting and ending slash), other
+     *      values are used as exact provider names, which are then required.
+     *
+     *  @throws IOException if an exact provider name is not found
+     */
+    void aggregate(Writer target, String ... providerNamesOrRegexp) throws IOException;
 }

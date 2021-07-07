@@ -1,1 +1,2 @@
-# nothing so far
+# Define the syntax that we support for schema partials
+Provide-Capability: org.apache.sling.graphql.schema.aggregator;syntax:Version="0.1"

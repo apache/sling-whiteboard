@@ -31,8 +31,8 @@ import org.osgi.util.tracker.BundleTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Tracks bundles which provide partial schemas, and registers
- *  a {@PartialSchemaProvider} service for each partial schema
+/** Tracks bundles which provide partial schemas, and collects
+ *  the corresponding set of {@PartialSchemaProvider}
  */
 public class ProviderBundleTracker extends BundleTracker<Object> {
 
