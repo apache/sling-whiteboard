@@ -107,7 +107,10 @@ public class SchemaAggregatorServlet extends SlingSafeMethodsServlet {
 
         @AttributeDefinition(
             name = "Selectors to partials mapping",
-            description="Each entry is in the format S:P1,P2,... where S is a selector and P* the names of the corresponding schema partials")
+            description=
+                "Each entry is in the format S:P1,P2,... where S is the first selector of the incoming request "
+                + "and P* lists the names of the corresponding schema partials to use, "
+                + "and/or regular expressions such as /.*authoring.*/ to select all partials that match")
         String[] selectors_to_partials_mapping() default {};
 
     }
