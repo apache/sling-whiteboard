@@ -19,11 +19,9 @@
 
 package org.apache.sling.graphql.schema.aggregator.impl;
 
-import java.io.Reader;
-import java.io.StringReader;
+import java.io.IOException;
 import java.net.URL;
 
-import org.jetbrains.annotations.NotNull;
 import org.osgi.framework.Bundle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,16 +29,15 @@ import org.slf4j.LoggerFactory;
 /** {@PartialSchemaProvider} build out of a Bundle entry, which must be a valid
  *  partial schema file.
  */
-class BundleEntryPartialProvider implements PartialSchemaProvider {
+class BundleEntryPartialProvider extends PartialReader implements Comparable<BundleEntryPartialProvider> {
     private static final Logger log = LoggerFactory.getLogger(BundleEntryPartialProvider.class.getName());
     private final String key;
     private final long bundleId;
-    private final String name;
 
-    private BundleEntryPartialProvider(Bundle b, URL bundleEntry) {
+    private BundleEntryPartialProvider(Bundle b, URL bundleEntry) throws IOException {
+        super(getPartialName(bundleEntry), new URLReaderSupplier(bundleEntry));
         this.bundleId = b.getBundleId();
         this.key = String.format("%s(%d):%s", b.getSymbolicName(), b.getBundleId(), bundleEntry.toString());
-        this.name = getPartialName(bundleEntry);
     }
 
     /** The partial's name is whatever follows the last slash, excluding the file extension */
@@ -54,13 +51,12 @@ class BundleEntryPartialProvider implements PartialSchemaProvider {
     /** @return a BundleEntryPartialProvider for the entryPath in
      *  the supplied Bundle, or null if none can be built.
       */
-    static BundleEntryPartialProvider forBundle(Bundle b, String entryPath) {
+    static BundleEntryPartialProvider forBundle(Bundle b, String entryPath) throws IOException {
         final URL entry = b.getEntry(entryPath);
         if(entry == null) {
             log.info("Entry {} not found for bundle {}", entryPath, b.getSymbolicName());
             return null;
         } else {
-            // TODO validate entry?
             return new BundleEntryPartialProvider(b, entry);
         }
     }
@@ -82,21 +78,12 @@ class BundleEntryPartialProvider implements PartialSchemaProvider {
         return String.format("%s: %s", getClass().getSimpleName(), key);
     }
 
-    public String getName() {
-        return name;
-    }
-
     public long getBundleId() {
         return bundleId;
     }
 
     @Override
-    public @NotNull Reader getSectionContent(String sectionName) {
-        return new StringReader(String.format("Fake section %s for %s", sectionName, key));
-    }
-
-    @Override
-    public @NotNull Reader getBodyContent() {
-        return new StringReader(String.format("Fake body for %s", key));
+    public int compareTo(BundleEntryPartialProvider o) {
+        return getName().compareTo(o.getName());
     }
 }

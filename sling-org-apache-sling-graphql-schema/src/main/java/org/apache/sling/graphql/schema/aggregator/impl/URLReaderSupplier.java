@@ -19,20 +19,29 @@
 
 package org.apache.sling.graphql.schema.aggregator.impl;
 
+import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.function.Supplier;
 
-import org.jetbrains.annotations.NotNull;
-import org.osgi.annotation.versioning.ProviderType;
+class URLReaderSupplier implements Supplier<Reader> {
+    /** Partials must use this character set */
+    private static final Charset PARTIAL_CHARSET = StandardCharsets.UTF_8;
 
-/** A provider of partial GraphQL schemas */
-@ProviderType
-public interface PartialSchemaProvider {
-    /** A unique name for this partial, partials duplicate names are ignored with a WARN log message  */
-    @NotNull String getName();
+    private final URL url;
 
-    /** Return a Reader that provides the contents of the specific schema section, like "query" or "mutation" */
-     @NotNull Reader getSectionContent(String sectionName);
+    URLReaderSupplier(URL url) {
+        this.url = url;
+    }
 
-    /** Return a Reader that provides the contents of the rest of the schema, what's not in specific sections */
-    @NotNull Reader getBodyContent();
+    @Override
+    public Reader get() {
+        try {
+            return new InputStreamReader(url.openConnection().getInputStream(), PARTIAL_CHARSET);
+        } catch(Exception e) {
+            throw new RuntimeException("Error creating Reader for URL " + url, e);
+        }
+    }
 }

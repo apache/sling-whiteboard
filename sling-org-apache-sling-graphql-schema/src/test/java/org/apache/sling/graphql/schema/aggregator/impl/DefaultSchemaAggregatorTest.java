@@ -67,9 +67,9 @@ public class DefaultSchemaAggregatorTest {
     @Test
     public void severalProviders() throws Exception{
         final StringWriter target = new StringWriter();
-        tracker.addingBundle(U.mockProviderBundle("A", 1, "1.txt", "2.z.txt", "3", "4"), null);
-        tracker.addingBundle(U.mockProviderBundle("B", 2, "B1", "B2.txt"), null);
-        dsa.aggregate(target, "B1", "B2", "2.z");
+        tracker.addingBundle(U.mockProviderBundle("A", 1, "1.txt", "2.z.w", "3abc", "4abc"), null);
+        tracker.addingBundle(U.mockProviderBundle("B", 2, "B1a.txt", "B2.xy"), null);
+        dsa.aggregate(target, "B1a", "B2", "2.z");
         assertContainsIgnoreCase("schema aggregated by DefaultSchemaAggregator", target.toString());
 
         try(InputStream is = getClass().getResourceAsStream("/several-providers-output.txt")) {
@@ -82,8 +82,8 @@ public class DefaultSchemaAggregatorTest {
     @Test
     public void regexpSelection() throws Exception {
         final StringWriter target = new StringWriter();
-        tracker.addingBundle(U.mockProviderBundle("A", 1, "a.authoring.1.txt", "a.authoring.2.txt", "3", "4"), null);
-        tracker.addingBundle(U.mockProviderBundle("B", 2, "B1", "B.authoring.txt"), null);
+        tracker.addingBundle(U.mockProviderBundle("A", 1, "a.authoring.1.txt", "a.authoring.2.txt", "3.txt", "4.txt"), null);
+        tracker.addingBundle(U.mockProviderBundle("B", 2, "B1.txt", "B.authoring.txt"), null);
         dsa.aggregate(target, "B1", "/.*\\.authoring.*/");
         assertContainsIgnoreCase("schema aggregated by DefaultSchemaAggregator", target.toString());
         U.assertPartialsFoundInSchema(target.toString(), "a.authoring.1", "a.authoring.2", "B.authoring", "B1");

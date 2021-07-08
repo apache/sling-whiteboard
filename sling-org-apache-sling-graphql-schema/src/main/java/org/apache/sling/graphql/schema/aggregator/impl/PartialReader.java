@@ -20,6 +20,7 @@ package org.apache.sling.graphql.schema.aggregator.impl;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -35,9 +36,11 @@ import org.apache.commons.io.input.BoundedReader;
  *  the format.
   */
 class PartialReader implements Partial {
-    private final Map<String, Section> sections = new HashMap<>();
     private static final Pattern SECTION_LINE = Pattern.compile("([A-Z]+) *:(.*)");
     private static final int EOL = '\n';
+
+    private final Map<String, Section> sections = new HashMap<>();
+    private final String name;
 
     /** The PARTIAL section is the only required one */
     public static final String PARTIAL_SECTION = "PARTIAL";
@@ -81,7 +84,8 @@ class PartialReader implements Partial {
         }
     }
     
-    PartialReader(Supplier<Reader> source) throws IOException {
+    PartialReader(String name, Supplier<Reader> source) throws IOException {
+        this.name = name;
         parse(source);
     }
 
@@ -137,5 +141,10 @@ class PartialReader implements Partial {
     public Optional<Section> getSection(String name) {
         final Section s = sections.get(name);
         return s == null ? Optional.empty() : Optional.of(s);
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 }

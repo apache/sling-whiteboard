@@ -33,6 +33,10 @@ import org.osgi.framework.Constants;
 import static org.ops4j.pax.exam.CoreOptions.streamBundle;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,7 +46,8 @@ import java.util.List;
 
 /** Test Utilities */
 public class U {
-    public static Bundle mockProviderBundle(String symbolicName, long id, String ... schemaNames) {
+    
+    public static Bundle mockProviderBundle(String symbolicName, long id, String ... schemaNames) throws IOException {
         final Bundle b = mock(Bundle.class);
         when(b.getSymbolicName()).thenReturn(symbolicName);
         when(b.getBundleId()).thenReturn(id);
@@ -56,12 +61,26 @@ public class U {
         for(String name : schemaNames) {
             String fakeResource = fakePath + "/resource/" + name;
             resources.add(fakeResource);
-            final URL url = mock(URL.class);
-            when(url.toString()).thenReturn(fakeResource);
-            when(b.getEntry(fakeResource)).thenReturn(url);
+            when(b.getEntry(fakeResource)).thenReturn(fakePartialURL(name));
         }
         when(b.getEntryPaths(fakePath)).thenReturn(Collections.enumeration(resources));
         return b;
+    }
+
+    /** Simple way to get a URL: create a temp file */
+    public static URL fakePartialURL(String name) throws IOException {
+        final File f = File.createTempFile(name, "txt");
+        f.deleteOnExit();
+        final PrintWriter w = new PrintWriter(new FileWriter(f));
+        w.print(fakePartialSchema(name));
+        w.flush();
+        w.close();
+        // Safe in our case, we're using acceptable characters in the path
+        return f.toURL();
+    }
+
+    public static String fakePartialSchema(String name) {
+        return String.format("PARTIAL:%s\nQUERY:%s\nFake query for %s\n", name, name, name);
     }
 
     public static Option tinyProviderBundle(String symbolicName, String ... partialsNames) {
@@ -74,8 +93,7 @@ public class U {
 
         for(String name : partialsNames) {
             final String resourcePath = schemaPath + "/" + name + ".txt";
-            final String content = "Fake schema at " + resourcePath;
-            b.add(resourcePath, new ByteArrayInputStream(content.getBytes()));
+            b.add(resourcePath, new ByteArrayInputStream(fakePartialSchema(name).getBytes()));
         }
 
         return streamBundle(b.build());

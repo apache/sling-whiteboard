@@ -22,7 +22,10 @@ package org.apache.sling.graphql.schema.aggregator.impl;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -37,6 +40,8 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.util.tracker.BundleTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.apache.sling.graphql.schema.aggregator.impl.PartialConstants.*;
 
 @Component(service = SchemaAggregator.class)
 public class DefaultSchemaAggregator implements SchemaAggregator {
@@ -60,18 +65,21 @@ public class DefaultSchemaAggregator implements SchemaAggregator {
         }
     }
 
-    private void copySection(Set<PartialSchemaProvider> selected, String sectionName, Writer target) throws IOException {
+    private void copySection(Set<Partial> selected, String sectionName, Writer target) throws IOException {
         target.write(String.format("%n%s {%n", sectionName));
-        for(PartialSchemaProvider p : selected) {
+        for(Partial p : selected) {
             writeSourceInfo(target, p);
-            IOUtils.copy(p.getSectionContent(sectionName), target);
-            target.write(String.format("%n"));
+            final Optional<Partial.Section> section = p.getSection(sectionName);
+            if(section.isPresent()) {
+                IOUtils.copy(section.get().getContent(), target);
+                target.write(String.format("%n"));
+            }
         }
         target.write(String.format("%n}%n"));
     }
 
-    private void writeSourceInfo(Writer target, PartialSchemaProvider psp) throws IOException {
-        target.write(String.format("%n# %s.source=%s%n", getClass().getSimpleName(), psp.getName()));
+    private void writeSourceInfo(Writer target, Partial p) throws IOException {
+        target.write(String.format("%n# %s.source=%s%n", getClass().getSimpleName(), p.getName()));
     }
 
     @Override
@@ -80,12 +88,12 @@ public class DefaultSchemaAggregator implements SchemaAggregator {
         target.write(String.format("# %s", info));
 
         // build list of selected providers
-        final Map<String, PartialSchemaProvider> providers = tracker.getSchemaProviders();
+        final Map<String, Partial> providers = tracker.getSchemaProviders();
         if(log.isDebugEnabled()) {
             log.debug("Aggregating schemas, request={}, providers={}", Arrays.asList(providerNamesOrRegexp), providers.keySet());
         }
         final Set<String> missing = new HashSet<>();
-        final Set<PartialSchemaProvider> selected = selectProviders(providers, missing, providerNamesOrRegexp);
+        final SortedSet<Partial> selected = selectProviders(providers, missing, providerNamesOrRegexp);
 
         if(!missing.isEmpty()) {
             log.debug("Requested providers {} not found in {}", missing, providers.keySet());
@@ -93,17 +101,20 @@ public class DefaultSchemaAggregator implements SchemaAggregator {
         }
 
         // copy sections
-        copySection(selected, "query", target);
-        copySection(selected, "mutation", target);
-        for(PartialSchemaProvider p : selected) {
-            writeSourceInfo(target, p);
-            IOUtils.copy(p.getBodyContent(), target);
+        final String [] sections = {
+            S_PROLOGUE,
+            S_QUERY,
+            S_MUTATION,
+            S_TYPES
+        };
+        for(String s : sections) {
+            copySection(selected, s, target);
         }
         target.write(String.format("%n# End of %s", info));
     }
 
-    static Set<PartialSchemaProvider> selectProviders(Map<String, PartialSchemaProvider> providers, Set<String> missing, String ... providerNamesOrRegexp) {
-        final Set<PartialSchemaProvider> result= new HashSet<>();
+    static SortedSet<Partial> selectProviders(Map<String, Partial> providers, Set<String> missing, String ... providerNamesOrRegexp) {
+        final SortedSet<Partial> result= new TreeSet<>();
         for(String str : providerNamesOrRegexp) {
             final Pattern p = toRegexp(str);
             if(p != null) {
@@ -113,7 +124,7 @@ public class DefaultSchemaAggregator implements SchemaAggregator {
                     .forEach(e -> result.add(e.getValue()));
             } else {
                 log.debug("Selecting provider with key={}", str);
-                final PartialSchemaProvider psp = providers.get(str);
+                final Partial psp = providers.get(str);
                 if(psp == null) {
                     missing.add(str);
                     continue;

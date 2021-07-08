@@ -18,26 +18,10 @@
  */
 package org.apache.sling.graphql.schema.aggregator.impl;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.util.Optional;
-
-/** Wrapper for the partials format, that parses a partial file and
- *  provides access to its sections.
- *  See the example.partial.txt and the tests for a description of
- *  the format.
-  */
-interface Partial {
-    /** A section in the partial */
-    interface Section {
-        String getName();
-        String getDescription();
-        Reader getContent() throws IOException;
-    }
-
-    /** The name of this partial */
-    String getName();
-
-    /** Return a specific section of the partial, by name */
-    Optional<Section> getSection(String name);
+class PartialConstants {
+    public static final String S_PARTIAL = "PARTIAL";
+    public static final String S_PROLOGUE = "PROLOGUE";
+    public static final String S_TYPES = "TYPES";
+    public static final String S_MUTATION = "MUTATION";
+    public static final String S_QUERY = "QUERY";
 }

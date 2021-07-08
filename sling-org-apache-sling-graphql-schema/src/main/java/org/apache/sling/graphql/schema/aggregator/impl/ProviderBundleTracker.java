@@ -19,6 +19,7 @@
 
 package org.apache.sling.graphql.schema.aggregator.impl;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Map;
@@ -56,7 +57,13 @@ public class ProviderBundleTracker extends BundleTracker<Object> {
             final Enumeration<String> paths = bundle.getEntryPaths(providersPath);
             if(paths != null) {
                 while(paths.hasMoreElements()) {
-                    addIfNotPresent(BundleEntryPartialProvider.forBundle(bundle, paths.nextElement()));
+                    final String path = paths.nextElement();
+                    try {
+                        addIfNotPresent(BundleEntryPartialProvider.forBundle(bundle, path));
+                    } catch(IOException ioe) {
+                        // TODO save errors and refuse to work if any happended?
+                        log.error("Error reading partial " + path, ioe);
+                    }
                 }
             }
         }
@@ -85,7 +92,7 @@ public class ProviderBundleTracker extends BundleTracker<Object> {
         });
     }
 
-    Map<String, PartialSchemaProvider> getSchemaProviders() {
+    Map<String, Partial> getSchemaProviders() {
         return Collections.unmodifiableMap(schemaProviders);
     }
 }

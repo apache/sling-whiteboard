@@ -33,6 +33,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
+import java.util.Optional;
 
 public class ProviderBundleTrackerTest {
     private ProviderBundleTracker tracker;
@@ -46,18 +47,18 @@ public class ProviderBundleTrackerTest {
     }
 
     @Test
-    public void addBundle() {
-        final Bundle a = U.mockProviderBundle("A", ++bundleId, "1");
+    public void addBundle() throws Exception {
+        final Bundle a = U.mockProviderBundle("A", ++bundleId, "1.txt");
         tracker.addingBundle(a, null);
         assertEquals(1, tracker.getSchemaProviders().size());
 
-        final PartialSchemaProvider sp = tracker.getSchemaProviders().values().iterator().next();
-        assertTrue(sp.toString().contains(a.getSymbolicName()));
-        assertTrue(sp.toString().contains("resource/1"));
+        final Partial s = tracker.getSchemaProviders().values().iterator().next();
+        assertTrue(s.toString().contains(a.getSymbolicName()));
+        assertTrue(s.toString().contains("1.txt"));
     }
 
     @Test
-    public void addAndRemoveBundles() {
+    public void addAndRemoveBundles() throws Exception {
         final Bundle a = U.mockProviderBundle("A", ++bundleId, "1.graphql.txt");
         final Bundle b = U.mockProviderBundle("B", ++bundleId, "2.txt", "1.txt");
         tracker.addingBundle(a, null);
@@ -72,22 +73,27 @@ public class ProviderBundleTrackerTest {
     }
 
     @Test
-    public void duplicatePartialName() {
+    public void duplicatePartialName() throws Exception {
         final LogCapture capture = new LogCapture(ProviderBundleTracker.class.getName(), true);
-        final Bundle a = U.mockProviderBundle("A", ++bundleId, "TT");
-        final Bundle b = U.mockProviderBundle("B", ++bundleId, "TT.txt", "another");
+        final Bundle a = U.mockProviderBundle("A", ++bundleId, "TT.txt");
+        final Bundle b = U.mockProviderBundle("B", ++bundleId, "TT.txt", "another.x");
         tracker.addingBundle(a, null);
         tracker.addingBundle(b, null);
         capture.assertContains(Level.WARN, "Partial provider with name TT already present");
         assertEquals(2, tracker.getSchemaProviders().size());
     }
 
+    private void assertSectionContent(Partial p, String name, String expected) throws IOException {
+        final Optional<Partial.Section> os = p.getSection(name);
+        assertTrue("Expecting section " + name, os.isPresent());
+        assertEquals(expected, IOUtils.toString(os.get().getContent()).trim());
+    }
+ 
     @Test
     public void getSectionsContent() throws IOException {
-        final Bundle a = U.mockProviderBundle("A", ++bundleId, "1");
+        final Bundle a = U.mockProviderBundle("A", ++bundleId, "1.txt");
         tracker.addingBundle(a, null);
-        final PartialSchemaProvider psp = tracker.getSchemaProviders().values().iterator().next();
-        assertEquals("Fake section S1 for A(1):A/path/1/resource/1", IOUtils.toString(psp.getSectionContent("S1")));
-        assertEquals("Fake body for A(1):A/path/1/resource/1", IOUtils.toString(psp.getBodyContent()));
+        final Partial p = tracker.getSchemaProviders().values().iterator().next();
+        assertSectionContent(p, PartialConstants.S_QUERY, "Fake query for 1.txt");
     }
 }

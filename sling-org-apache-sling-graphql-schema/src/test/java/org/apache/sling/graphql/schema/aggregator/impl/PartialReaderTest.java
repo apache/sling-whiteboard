@@ -22,11 +22,14 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,10 +38,12 @@ import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.sling.graphql.schema.aggregator.U;
 import org.junit.Test;
 
 public class PartialReaderTest {
     public static final String CHARSET = "UTF-8";
+    private static final String NONAME = "<NO NAME>";
 
     private void assertSection(Partial p, String name, String description, String contentRegexp) throws IOException {
         final Optional<Partial.Section> os = p.getSection(name);
@@ -77,7 +82,7 @@ public class PartialReaderTest {
 
     @Test
     public void parseExample() throws Exception {
-        final PartialReader p = new PartialReader(getResourceReaderSupplier("/partials/example.partial.txt"));
+        final PartialReader p = new PartialReader(NONAME, getResourceReaderSupplier("/partials/example.partial.txt"));
         assertSection(p, "PARTIAL", "Example GraphQL schema partial", "The contents.*PARTIAL.*PARTIAL.*PARTIAL.*equired section\\.");
         assertSection(p, "REQUIRE", "base.scalars, base.schema", null);
         assertSection(p, "PROLOGUE", "", "The prologue content.*the aggregated schema.*other sections\\.");
@@ -88,7 +93,7 @@ public class PartialReaderTest {
 
     @Test
     public void accentedCharacters() throws Exception {
-        final PartialReader p = new PartialReader(getResourceReaderSupplier("/partials/utf8.partial.txt"));
+        final PartialReader p = new PartialReader(NONAME, getResourceReaderSupplier("/partials/utf8.partial.txt"));
         assertSection(p, "PARTIAL", 
             "Example GraphQL schema partial with caract\u00E8res accentu\u00E9s",
             "L'\u00E9t\u00E9 nous \u00E9vitons l'\u00E2tre et pr\u00E9f\u00E9rons Chateaun\u00F6f et les \u00E4kr\u00E0s."
@@ -99,7 +104,7 @@ public class PartialReaderTest {
     public void missingPartialSection() throws Exception {
         final Exception e = assertThrows(
             PartialReader.SyntaxException.class, 
-            () -> new PartialReader(getStringReaderSupplier(""))
+            () -> new PartialReader(NONAME, getStringReaderSupplier(""))
         );
         final String expected = "Missing required PARTIAL section";
         assertTrue(String.format("Expected %s in %s", expected, e.getMessage()), e.getMessage().contains(expected));
@@ -109,7 +114,7 @@ public class PartialReaderTest {
     public void duplicateSection() throws Exception {
         final Exception e = assertThrows(
             PartialReader.SyntaxException.class, 
-            () -> new PartialReader(getResourceReaderSupplier("/partials/duplicate.section.partial.txt"))
+            () -> new PartialReader(NONAME, getResourceReaderSupplier("/partials/duplicate.section.partial.txt"))
         );
         final String expected = "Duplicate section DUPLICATE";
         assertTrue(String.format("Expected %s in %s", expected, e.getMessage()), e.getMessage().contains(expected));
