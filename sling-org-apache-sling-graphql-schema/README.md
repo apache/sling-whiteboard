@@ -33,6 +33,8 @@ points to one or several paths where partials are found in the bundle resources.
 
 A partial is a text file with a `.graphql.partial.txt` extension that has the following structure:
 
+**TODO this is out of date, see tests!**
+
     # Front matter, similar to Markdown, ends with four dashes on a line within the first 50 lines.
     partial.name: Folders and commands
     tags: folder, command, development, authoring

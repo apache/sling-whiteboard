@@ -97,6 +97,7 @@
         <configuration>
           <excludes>                        
             <exclude>src/test/resources/several-providers-output.txt</exclude>
+            <exclude>src/test/resources/partials/**</exclude>
           </excludes>
         </configuration>
       </plugin>

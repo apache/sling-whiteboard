@@ -1,0 +1,6 @@
+PARTIAL: some description
+
+DUPLICATE: will be provided twice
+
+DUPLICATE: here's the second one
+And the last line, required for correct parsing
