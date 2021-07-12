@@ -138,18 +138,17 @@ public class DefaultSchemaAggregatorTest {
         }));
    }
 
-   @Test
-   public void cycleInRequirements() throws Exception {
-    final StringWriter target = new StringWriter();
-    tracker.addingBundle(U.mockProviderBundle("SDL", 1, "circularA.txt", "circularB.txt"), null);
-    final RuntimeException rex = assertThrows(RuntimeException.class, () -> dsa.aggregate(target, "circularA"));
+    @Test
+    public void cycleInRequirements() throws Exception {
+        final StringWriter target = new StringWriter();
+        tracker.addingBundle(U.mockProviderBundle("SDL", 1, "circularA.txt", "circularB.txt"), null);
+        final RuntimeException rex = assertThrows(RuntimeException.class, () -> dsa.aggregate(target, "circularA"));
 
-    Stream.of(
-        "requirements cycle",
-        "circularA"
-    ).forEach((s -> {
-        assertTrue(String.format("Expecting message to contain %s: %s",  s, rex.getMessage()), rex.getMessage().contains(s));
-    }));
-   }
-
+        Stream.of(
+            "requirements cycle",
+            "circularA"
+        ).forEach((s -> {
+            assertTrue(String.format("Expecting message to contain %s: %s",  s, rex.getMessage()), rex.getMessage().contains(s));
+        }));
+    }
 }
