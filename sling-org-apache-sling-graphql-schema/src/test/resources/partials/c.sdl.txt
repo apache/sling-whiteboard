@@ -1,0 +1,10 @@
+PARTIAL: Test C, SDL
+
+REQUIRES: a.sdl, b.sdl
+
+QUERY:
+oneSchemaResource : SlingResource @fetcher(name:"test/pipe" source:"$")
+oneSchemaQuery : SlingResourceConnection @connection(for: "SlingResource") @fetcher(name:"test/query")
+
+MUTATION:
+someMutation : SlingResource

@@ -20,14 +20,18 @@ package org.apache.sling.graphql.schema.aggregator.impl;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.io.StringReader;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BoundedReader;
 
 /** Reader for the partials format, which parses a partial file and
@@ -41,6 +45,7 @@ class PartialReader implements Partial {
 
     private final Map<String, Section> sections = new HashMap<>();
     private final String name;
+    private final Set<String> requiredPartialNames;
 
     /** The PARTIAL section is the only required one */
     public static final String PARTIAL_SECTION = "PARTIAL";
@@ -87,6 +92,19 @@ class PartialReader implements Partial {
     PartialReader(String name, Supplier<Reader> source) throws IOException {
         this.name = name;
         parse(source);
+        final Partial.Section requirements = sections.get(PartialConstants.S_REQUIRES);
+        if(requirements == null) {
+            requiredPartialNames = Collections.emptySet();
+        } else {
+            requiredPartialNames = new HashSet<>();
+            Stream.of(
+                requirements.getDescription().split(",")
+            )
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .forEach(requiredPartialNames::add)
+            ;
+        }
     }
 
     /* Detect lines that start with a <SECTION>: name
@@ -146,5 +164,10 @@ class PartialReader implements Partial {
     @Override
     public String getName() {
         return name;
+    }
+
+    @Override
+    public Set<String> getRequiredPartialNames() {
+        return requiredPartialNames;
     }
 }

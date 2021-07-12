@@ -1,0 +1,10 @@
+PARTIAL: Test B, SDL
+
+TYPES:
+type SlingResourceConnection {
+    pageInfo : PageInfo
+}
+
+type typeFromB {
+    path : String
+}

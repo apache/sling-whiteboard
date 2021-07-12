@@ -49,6 +49,8 @@ public class DefaultSchemaAggregator implements SchemaAggregator {
     private ProviderBundleTracker tracker;
     private ServiceRegistration<?> trackerRegistration;
 
+    public static final int MAX_REQUIREMENTS_RECURSION_LEVEL = 5;
+
     @Activate
     public void activate(BundleContext ctx) {
         tracker = new ProviderBundleTracker(ctx);
@@ -65,8 +67,10 @@ public class DefaultSchemaAggregator implements SchemaAggregator {
         }
     }
 
-    private void copySection(Set<Partial> selected, String sectionName, Writer target) throws IOException {
-        target.write(String.format("%n%s {%n", sectionName));
+    private void copySection(Set<Partial> selected, String sectionName, boolean inBlock, Writer target) throws IOException {
+        if(inBlock) {
+            target.write(String.format("%ntype %s {%n", sectionName));
+        }
         for(Partial p : selected) {
             writeSourceInfo(target, p);
             final Optional<Partial.Section> section = p.getSection(sectionName);
@@ -75,7 +79,9 @@ public class DefaultSchemaAggregator implements SchemaAggregator {
                 target.write(String.format("%n"));
             }
         }
-        target.write(String.format("%n}%n"));
+        if(inBlock) {
+            target.write(String.format("%n}%n"));
+        }
     }
 
     private void writeSourceInfo(Writer target, Partial p) throws IOException {
@@ -100,20 +106,16 @@ public class DefaultSchemaAggregator implements SchemaAggregator {
             throw new IOException(String.format("Missing providers: %s", missing));
         }
 
-        // copy sections
-        final String [] sections = {
-            S_PROLOGUE,
-            S_QUERY,
-            S_MUTATION,
-            S_TYPES
-        };
-        for(String s : sections) {
-            copySection(selected, s, target);
-        }
-        target.write(String.format("%n# End of %s", info));
+        // copy sections that belong in the output SDL
+        copySection(selected, S_PROLOGUE, false, target);
+        copySection(selected, S_QUERY, true, target);
+        copySection(selected, S_MUTATION, true, target);
+        copySection(selected, S_TYPES, false, target);
+
+        target.write(String.format("%n# End of Schema aggregated by %s", getClass().getSimpleName()));
     }
 
-    static SortedSet<Partial> selectProviders(Map<String, Partial> providers, Set<String> missing, String ... providerNamesOrRegexp) {
+    SortedSet<Partial> selectProviders(Map<String, Partial> providers, Set<String> missing, String ... providerNamesOrRegexp) {
         final SortedSet<Partial> result= new TreeSet<>();
         for(String str : providerNamesOrRegexp) {
             final Pattern p = toRegexp(str);
@@ -121,7 +123,8 @@ public class DefaultSchemaAggregator implements SchemaAggregator {
                 log.debug("Selecting providers matching {}", p);
                 providers.entrySet().stream()
                     .filter(e -> p.matcher(e.getKey()).matches())
-                    .forEach(e -> result.add(e.getValue()));
+                    .forEach(e -> addWithRequirements(providers, result, missing, e.getValue(), 0))
+                ;
             } else {
                 log.debug("Selecting provider with key={}", str);
                 final Partial psp = providers.get(str);
@@ -129,10 +132,32 @@ public class DefaultSchemaAggregator implements SchemaAggregator {
                     missing.add(str);
                     continue;
                 }
-                result.add(psp);
+                addWithRequirements(providers, result, missing, psp, 0);
             }
         }
         return result;
+    }
+
+    private void addWithRequirements(Map<String, Partial> providers, SortedSet<Partial> addTo, Set<String> missing, Partial p, int recursionLevel) {
+
+        // simplistic cycle detection
+        if(recursionLevel > MAX_REQUIREMENTS_RECURSION_LEVEL) {
+            throw new RuntimeException(String.format(
+                "Requirements depth over %d, requirements cycle suspected at partial %s", 
+                MAX_REQUIREMENTS_RECURSION_LEVEL,
+                p.getName()
+            ));
+        }
+
+        addTo.add(p);
+        for(String req : p.getRequiredPartialNames()) {
+            final Partial preq = providers.get(req);
+            if(preq == null) {
+                missing.add(req);
+            } else {
+                addWithRequirements(providers, addTo, missing, preq, recursionLevel + 1);
+            }
+        }
     }
 
     static Pattern toRegexp(String input) {

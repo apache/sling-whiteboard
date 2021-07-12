@@ -20,6 +20,7 @@ package org.apache.sling.graphql.schema.aggregator.impl;
 
 class PartialConstants {
     public static final String S_PARTIAL = "PARTIAL";
+    public static final String S_REQUIRES = "REQUIRES";
     public static final String S_PROLOGUE = "PROLOGUE";
     public static final String S_TYPES = "TYPES";
     public static final String S_MUTATION = "MUTATION";

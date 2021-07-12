@@ -27,6 +27,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.lang.reflect.Field;
+import java.util.Optional;
+import java.util.stream.Stream;
+
+import graphql.language.TypeDefinition;
+import graphql.schema.idl.SchemaParser;
+import graphql.schema.idl.TypeDefinitionRegistry;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.sling.graphql.schema.aggregator.U;
@@ -88,4 +94,62 @@ public class DefaultSchemaAggregatorTest {
         assertContainsIgnoreCase("schema aggregated by DefaultSchemaAggregator", target.toString());
         U.assertPartialsFoundInSchema(target.toString(), "a.authoring.1", "a.authoring.2", "B.authoring", "B1");
     }
+
+    @Test
+    public void parseResult() throws Exception {
+        final StringWriter target = new StringWriter();
+        tracker.addingBundle(U.mockProviderBundle("SDL", 1, "a.sdl.txt", "b.sdl.txt", "c.sdl.txt"), null);
+
+        dsa.aggregate(target, "/.*/");
+
+        // Parse the output with a real SDL parser
+        final String sdl = target.toString();
+        final TypeDefinitionRegistry reg = new SchemaParser().parse(sdl);
+
+        // And make sure it contains what we expect
+        assertTrue(reg.getDirectiveDefinition("fetcher").isPresent());
+        assertTrue(reg.getType("SlingResourceConnection").isPresent());
+        assertTrue(reg.getType("PageInfo").isPresent());
+        
+        final Optional<TypeDefinition> query = reg.getType("QUERY");
+        assertTrue("Expecting QUERY", query.isPresent());
+        assertTrue(query.get().getChildren().toString().contains("oneSchemaResource"));
+        assertTrue(query.get().getChildren().toString().contains("oneSchemaQuery"));
+
+        final Optional<TypeDefinition> mutation = reg.getType("MUTATION");
+        assertTrue("Expecting MUTATION", mutation.isPresent());
+        assertTrue(mutation.get().getChildren().toString().contains("someMutation"));
+    }
+
+    @Test
+    public void requires() throws Exception {
+        final StringWriter target = new StringWriter();
+        tracker.addingBundle(U.mockProviderBundle("SDL", 1, "a.sdl.txt", "b.sdl.txt", "c.sdl.txt"), null);
+        dsa.aggregate(target, "c.sdl");
+        final String sdl = target.toString();
+
+        // Verify that required partials are included
+        Stream.of(
+            "someMutation",
+            "typeFromB",
+            "typeFromA"
+        ).forEach((s -> {
+            assertTrue("Expecting aggregate to contain " + s, sdl.contains(s));
+        }));
+   }
+
+   @Test
+   public void cycleInRequirements() throws Exception {
+    final StringWriter target = new StringWriter();
+    tracker.addingBundle(U.mockProviderBundle("SDL", 1, "circularA.txt", "circularB.txt"), null);
+    final RuntimeException rex = assertThrows(RuntimeException.class, () -> dsa.aggregate(target, "circularA"));
+
+    Stream.of(
+        "requirements cycle",
+        "circularA"
+    ).forEach((s -> {
+        assertTrue(String.format("Expecting message to contain %s: %s",  s, rex.getMessage()), rex.getMessage().contains(s));
+    }));
+   }
+
 }

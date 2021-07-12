@@ -59,9 +59,13 @@ public class U {
 
         final List<String> resources = new ArrayList<>();
         for(String name : schemaNames) {
+            URL partial = testFileURL(name);
+            if(partial == null) {
+                partial = fakePartialURL(name);
+            }
             String fakeResource = fakePath + "/resource/" + name;
             resources.add(fakeResource);
-            when(b.getEntry(fakeResource)).thenReturn(fakePartialURL(name));
+            when(b.getEntry(fakeResource)).thenReturn(partial);
         }
         when(b.getEntryPaths(fakePath)).thenReturn(Collections.enumeration(resources));
         return b;
@@ -77,6 +81,10 @@ public class U {
         w.close();
         // Safe in our case, we're using acceptable characters in the path
         return f.toURL();
+    }
+
+    public static URL testFileURL(String name) {
+        return U.class.getResource(String.format("/partials/%s", name));
     }
 
     public static String fakePartialSchema(String name) {

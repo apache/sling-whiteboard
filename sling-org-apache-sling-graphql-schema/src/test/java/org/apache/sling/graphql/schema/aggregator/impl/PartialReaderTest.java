@@ -119,4 +119,11 @@ public class PartialReaderTest {
         final String expected = "Duplicate section DUPLICATE";
         assertTrue(String.format("Expected %s in %s", expected, e.getMessage()), e.getMessage().contains(expected));
     }
+
+    @Test
+    public void requires() throws Exception {
+        final PartialReader p = new PartialReader(NONAME, getResourceReaderSupplier("/partials/c.sdl.txt"));
+        assertTrue("Expecting requires section", p.getSection(PartialConstants.S_REQUIRES).isPresent());
+        assertEquals("[a.sdl, b.sdl]", p.getRequiredPartialNames().toString());
+    }
 }

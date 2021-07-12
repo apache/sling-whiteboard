@@ -21,6 +21,7 @@ package org.apache.sling.graphql.schema.aggregator.impl;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.Optional;
+import java.util.Set;
 
 /** Wrapper for the partials format, that parses a partial file and
  *  provides access to its sections.
@@ -40,4 +41,7 @@ interface Partial {
 
     /** Return a specific section of the partial, by name */
     Optional<Section> getSection(String name);
+
+    /** Names of the Partials on which this one depends */
+    Set<String> getRequiredPartialNames();
 }
