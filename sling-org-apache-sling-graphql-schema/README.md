@@ -94,7 +94,7 @@ Here's a configuration example from the test code.
 
         // This mapping defines which partials to use to build the schema for each selector
         // The lists can use either the exact names of partials, or (Java flavored) regular expressions on
-        // their names, identified by a starting an ending slash.
+        // their names, identified by a starting and ending slash.
         .put("selectors.to.partials.mapping", new String[] { "X:firstA,secondB", "Y:secondA,firstB,/second.*/" })
 
 ## TODO / wishlist
@@ -104,5 +104,9 @@ missing requirements at system assembly time or using the
 
 We'll probably need a utility to aggregate schemas for automated tests, to allow test code
 to include required schema partials.
+
+Errors like invalid or missing partials are currently only logged, it would be useful to
+have them cause louder errors, like schema aggregation failing with error messages when
+things went wrong, and/or this module providing a Health Check service to detect problems.
 
 Caching is probably not needed in this module, as the GraphQL Core caches compiled schemas.
