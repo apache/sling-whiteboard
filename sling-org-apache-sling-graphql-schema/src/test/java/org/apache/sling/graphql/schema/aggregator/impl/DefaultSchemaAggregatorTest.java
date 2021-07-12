@@ -151,4 +151,17 @@ public class DefaultSchemaAggregatorTest {
             assertTrue(String.format("Expecting message to contain %s: %s",  s, rex.getMessage()), rex.getMessage().contains(s));
         }));
     }
+
+    @Test
+    public void providersOrdering() throws Exception {
+        final StringWriter target = new StringWriter();
+        tracker.addingBundle(U.mockProviderBundle("ordering", 1, "Aprov.txt", "Cprov.txt", "Z_test.txt", "A_test.txt", "Zprov.txt", "Z_test.txt", "Bprov.txt", "C_test.txt"), null);
+        dsa.aggregate(target, "Aprov", "Zprov", "/[A-Z]_test/", "A_test", "Cprov");
+        final String sdl = target.toString();
+
+        // The order of named partials is kept, regexp selected ones are ordered by name
+        // And A_test has already been used so it's not used again when called explicitly after regexp
+        final String expected = "End of Schema aggregated from [Aprov,Zprov,A_test,C_test,Z_test,Cprov] by DefaultSchemaAggregator";
+        assertTrue(String.format("Expecting schema to contain [%s]: %s", expected, sdl), sdl.contains(expected));
+   }
 }

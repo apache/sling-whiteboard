@@ -1,16 +1,12 @@
 # Schema aggregated by DefaultSchemaAggregator
 
-# DefaultSchemaAggregator.source=2.z
-
 # DefaultSchemaAggregator.source=B1a
 
 # DefaultSchemaAggregator.source=B2
 
-type QUERY {
-
 # DefaultSchemaAggregator.source=2.z
-Fake query for 2.z.w
 
+type QUERY {
 
 # DefaultSchemaAggregator.source=B1a
 Fake query for B1a.txt
@@ -20,22 +16,26 @@ Fake query for B1a.txt
 Fake query for B2.xy
 
 
+# DefaultSchemaAggregator.source=2.z
+Fake query for 2.z.w
+
+
 }
 
 type MUTATION {
 
-# DefaultSchemaAggregator.source=2.z
-
 # DefaultSchemaAggregator.source=B1a
 
 # DefaultSchemaAggregator.source=B2
+
+# DefaultSchemaAggregator.source=2.z
 
 }
 
-# DefaultSchemaAggregator.source=2.z
-
 # DefaultSchemaAggregator.source=B1a
 
 # DefaultSchemaAggregator.source=B2
 
-# End of Schema aggregated by DefaultSchemaAggregator
+# DefaultSchemaAggregator.source=2.z
+
+# End of Schema aggregated from [B1a,B2,2.z] by DefaultSchemaAggregator

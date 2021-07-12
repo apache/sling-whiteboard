@@ -24,11 +24,10 @@ import java.io.Writer;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.sling.graphql.schema.aggregator.api.SchemaAggregator;
@@ -99,7 +98,7 @@ public class DefaultSchemaAggregator implements SchemaAggregator {
             log.debug("Aggregating schemas, request={}, providers={}", Arrays.asList(providerNamesOrRegexp), providers.keySet());
         }
         final Set<String> missing = new HashSet<>();
-        final SortedSet<Partial> selected = selectProviders(providers, missing, providerNamesOrRegexp);
+        final Set<Partial> selected = selectProviders(providers, missing, providerNamesOrRegexp);
 
         if(!missing.isEmpty()) {
             log.debug("Requested providers {} not found in {}", missing, providers.keySet());
@@ -112,17 +111,25 @@ public class DefaultSchemaAggregator implements SchemaAggregator {
         copySection(selected, S_MUTATION, true, target);
         copySection(selected, S_TYPES, false, target);
 
-        target.write(String.format("%n# End of Schema aggregated by %s", getClass().getSimpleName()));
+        final StringBuilder partialNames = new StringBuilder();
+        selected.forEach(p -> {
+            if(partialNames.length() > 0) {
+                partialNames.append(",");
+            }
+            partialNames.append(p.getName());
+        });
+        target.write(String.format("%n# End of Schema aggregated from [%s] by %s", partialNames, getClass().getSimpleName()));
     }
 
-    SortedSet<Partial> selectProviders(Map<String, Partial> providers, Set<String> missing, String ... providerNamesOrRegexp) {
-        final SortedSet<Partial> result= new TreeSet<>();
+    Set<Partial> selectProviders(Map<String, Partial> providers, Set<String> missing, String ... providerNamesOrRegexp) {
+        final Set<Partial> result= new LinkedHashSet<>();
         for(String str : providerNamesOrRegexp) {
             final Pattern p = toRegexp(str);
             if(p != null) {
                 log.debug("Selecting providers matching {}", p);
                 providers.entrySet().stream()
                     .filter(e -> p.matcher(e.getKey()).matches())
+                    .sorted((e, other) -> e.getValue().getName().compareTo(other.getValue().getName()))
                     .forEach(e -> addWithRequirements(providers, result, missing, e.getValue(), 0))
                 ;
             } else {
@@ -138,7 +145,7 @@ public class DefaultSchemaAggregator implements SchemaAggregator {
         return result;
     }
 
-    private void addWithRequirements(Map<String, Partial> providers, SortedSet<Partial> addTo, Set<String> missing, Partial p, int recursionLevel) {
+    private void addWithRequirements(Map<String, Partial> providers, Set<Partial> addTo, Set<String> missing, Partial p, int recursionLevel) {
 
         // simplistic cycle detection
         if(recursionLevel > MAX_REQUIREMENTS_RECURSION_LEVEL) {
