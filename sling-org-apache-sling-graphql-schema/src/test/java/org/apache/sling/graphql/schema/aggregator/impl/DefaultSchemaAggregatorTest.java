@@ -76,12 +76,13 @@ public class DefaultSchemaAggregatorTest {
         tracker.addingBundle(U.mockProviderBundle("A", 1, "1.txt", "2.z.w", "3abc", "4abc"), null);
         tracker.addingBundle(U.mockProviderBundle("B", 2, "B1a.txt", "B2.xy"), null);
         dsa.aggregate(target, "B1a", "B2", "2.z");
-        assertContainsIgnoreCase("schema aggregated by DefaultSchemaAggregator", target.toString());
+        final String sdl = target.toString().trim();
+        assertContainsIgnoreCase("schema aggregated by DefaultSchemaAggregator", sdl);
 
         try(InputStream is = getClass().getResourceAsStream("/several-providers-output.txt")) {
             assertNotNull("Expecting test resource to be present", is);
             final String expected = IOUtils.toString(is, "UTF-8");
-            assertEquals(expected, target.toString().trim());
+            assertEquals(expected, sdl);
         }
     }
 
@@ -161,7 +162,7 @@ public class DefaultSchemaAggregatorTest {
 
         // The order of named partials is kept, regexp selected ones are ordered by name
         // And A_test has already been used so it's not used again when called explicitly after regexp
-        final String expected = "End of Schema aggregated from [Aprov,Zprov,A_test,C_test,Z_test,Cprov] by DefaultSchemaAggregator";
+        final String expected = "End of Schema aggregated from {Aprov,Zprov,A_test,C_test,Z_test,Cprov} by DefaultSchemaAggregator";
         assertTrue(String.format("Expecting schema to contain [%s]: %s", expected, sdl), sdl.contains(expected));
    }
 }

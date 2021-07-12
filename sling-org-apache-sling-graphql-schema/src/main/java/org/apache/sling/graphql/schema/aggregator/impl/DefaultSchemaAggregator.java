@@ -67,18 +67,21 @@ public class DefaultSchemaAggregator implements SchemaAggregator {
     }
 
     private void copySection(Set<Partial> selected, String sectionName, boolean inBlock, Writer target) throws IOException {
-        if(inBlock) {
-            target.write(String.format("%ntype %s {%n", sectionName));
-        }
+        String prefixToWrite = inBlock ? String.format("%ntype %s {%n", sectionName) : null;
+        boolean anyOutput = false;
         for(Partial p : selected) {
-            writeSourceInfo(target, p);
             final Optional<Partial.Section> section = p.getSection(sectionName);
             if(section.isPresent()) {
+                anyOutput = true;
+                if(prefixToWrite != null) {
+                    target.write(prefixToWrite);
+                    prefixToWrite = null;
+                }
+                writeSourceInfo(target, p);
                 IOUtils.copy(section.get().getContent(), target);
-                target.write(String.format("%n"));
             }
         }
-        if(inBlock) {
+        if(anyOutput && inBlock) {
             target.write(String.format("%n}%n"));
         }
     }
@@ -118,7 +121,7 @@ public class DefaultSchemaAggregator implements SchemaAggregator {
             }
             partialNames.append(p.getName());
         });
-        target.write(String.format("%n# End of Schema aggregated from [%s] by %s", partialNames, getClass().getSimpleName()));
+        target.write(String.format("%n# End of Schema aggregated from {%s} by %s", partialNames, getClass().getSimpleName()));
     }
 
     Set<Partial> selectProviders(Map<String, Partial> providers, Set<String> missing, String ... providerNamesOrRegexp) {

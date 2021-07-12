@@ -24,7 +24,6 @@ import org.ops4j.pax.exam.junit.PaxExam;
 import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
 import org.ops4j.pax.exam.spi.reactors.PerClass;
 
-import static org.junit.Assert.fail;
 import static org.ops4j.pax.exam.cm.ConfigurationAdminOptions.factoryConfiguration;
 
 import org.apache.sling.graphql.schema.aggregator.U;
