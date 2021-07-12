@@ -44,12 +44,18 @@ public class SchemaAggregatorServletIT extends SchemaAggregatorTestSupport {
             U.tinyProviderBundle("firstProvider", "firstA", "firstB","secondN"),
             U.tinyProviderBundle("secondProvider", "secondA", "secondB","secondOther"),
 
-            // The aggregator servlet is disabled by default
+            // Configure the org.apache.sling.graphql.schema.aggregator.SchemaAggregatorServlet
             factoryConfiguration(AGGREGATOR_SERVLET_CONFIG_PID)
                 .put("sling.servlet.resourceTypes", "sling/servlet/default")
+                // The extension must be the one used by the GraphQLServlet to retrieve schemas
                 .put("sling.servlet.extensions", GQL_SCHEMA_EXT)
-                .put("sling.servlet.selectors", new String[] { "X", "Y", "nomappings" })
+                // The GraphQLServlet uses an internal GET request for the schema
                 .put("sling.servlet.methods", new String[] { "GET" })
+                // Several selectors can be configured to setup API planes, each with their own GraphQL schema
+                .put("sling.servlet.selectors", new String[] { "X", "Y", "nomappings" })
+                // This mapping defines which partials to use to build the schema for each selector
+                // The lists can use either the exact names of partials, or (Java flavored) regular expressions on
+                // their names, identified by a starting an ending slash.
                 .put("selectors.to.partials.mapping", new String[] { "X:firstA,secondB", "Y:secondA,firstB,/second.*/" })
                 .asOption(),
         };

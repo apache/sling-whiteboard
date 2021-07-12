@@ -6,20 +6,17 @@ Apache Sling GraphQL Schema Aggregator
 This module ([SLING-10551](https://issues.apache.org/jira/browse/SLING-10551)) provides services to combine partial GraphQL
 schema ("partials") supplied by _provider bundles_.
 
-The partials are text files that use the GraphQL SDL (Schema Definition  Language) syntax and are
-provided as OSGi bundle resources. We cannot name them "fragments" as that has a different meaning
-in a GraphQL schema. They might include "front matter" a la Markdown for metadata.
+The partials are structured text files, supplied as OSGi bundle resources, that provide sections (like query,
+mutation, types sections) that are aggregated to build a GraphQL Schema using the SDL (Schema 
+Definition  Language) syntax.
 
 A GraphQL schema must contain one `Query` statement and can contain a most one `Mutation` statement,
-so partials cannot be assembled by just concatenating them. The schema assembler defines some simple 
-rules for how to write the partials so that they can be aggregated efficiently.
+so partials cannot be assembled by just concatenating them. The schema assembler defines a simple
+section-based syntax for the partials, so that they can be aggregated efficiently.
 
-This module also provides a `GraphQLSchemaServlet` that generates schemas by aggregating partials.
-The result can be used directly by the Sling GraphQL Core module, which makes an internal Sling request
-to get the schema. Multiple instances of that servlet can be configured, each with specific servlet
-selection properties (selectors, extension etc.) along with a set of tags used to select which partials
-are included in a specific schema. Or maybe one instance with a mapping of request selectors to schema
-aggregation parameters.
+This module also provides a `SchemaAggregatorServlet` that generates schemas by aggregating partials, by
+mapping request selectors to lists of partial names. The result can be used directly by the Sling GraphQL
+Core module, which makes an internal Sling request to get the schema.
 
 With this mechanism, an OSGi bundle can provide both a partial schema and the Sling data fetching and
 processing services that go with it. This allows a GraphQL "API plane" (usually defined by a specific
@@ -29,65 +26,83 @@ specific set of queries, mutations and types.
 ## Provider bundles
 
 To provide partials, a bundle sets a `Sling-GraphQL-Schema` header in its OSGi manifest, with a value that
-points to one or several paths where partials are found in the bundle resources.
+points to a path under which partials are found in the bundle resources.
 
-A partial is a text file with a `.graphql.partial.txt` extension that has the following structure:
+A partial is a text file with the structure described below. As usual, The Truth Is In The Tests, see
+the [example partial in the test sources](./src/test/resources/partials/example.partial.txt) for a
+reference that's guaranteed to be valid.
 
-**TODO this is out of date, see tests!**
+    # Example GraphQL partial schema
+    # Any text before the first section is ignored.
 
-    # Front matter, similar to Markdown, ends with four dashes on a line within the first 50 lines.
-    partial.name: Folders and commands
-    tags: folder, command, development, authoring
-    ----
-    
-    # The aggregated schema will include org.apache.sling.* values in comments, to provide
-    # information on the aggregation process and help troubleshoot it.
+    PARTIAL: Example GraphQL schema partial
+    The contents of the PARTIAL section are ignored, only its
+    description (the text follows the PARTIAL section name
+    above) is used.
 
-    # If a partial contains a Query and/or Mutation statement, the schema assembler uses their
-    # indentation to parse them without having to consider the full SDL syntax.
-    #
-    # These Query and Mutation keywords, along with their closing bracket, MUST NOT be indented,
-    # and everything inside them MUST be indented by at least one whitespace character.
+    PARTIAL is the only required section.
 
-    type Query {
-        """ 
-        Query a single Folder.
-        If not specified, the path defaults to the Resource which receives the query request.
-        """
-        folder(path: String) : Folder @fetcher(name:"samples/folder")
-    }
+    REQUIRE: base.scalars, base.schema
+    The description of the optional REQUIRE section is a
+    comma-separated list of partials which are required for this
+    one to be valid. The content of this section is ignored, only
+    its description is used to build that list.
 
-    type Mutation {
-        """ 
-        'lang' is the command language
-        'script' is the script to execute, in the language indicated by 'lang'
-        """  
-        command(lang: String, input: Object) : CommandResult @fetcher(name:"samples/command")
-    }
+    PROLOGUE:
+    The content of the optional PROLOGUE section is concatenated
+    in the aggregated schema, before all the other sections.
 
-    # There are no constraints on the rest of the schema, which the assembler simply concatenates
-    # after the Query and Mutation sections
-    type Folder {
-      path : ID!
-    }
+    QUERY:
+    The content of the optional QUERY sections of all partials
+    is aggregated in a `type QUERY {...}` section in the output.
 
-## Implementation notes
+    MUTATION:
+    Like for the QUERY section, the content of the optional
+    MUTATION sections of all partials is aggregated in
+    a `type MUTATION {...}` section in the output.
 
-TODO remove those once the module is implemented.
+    TYPES:
+    The content of the TYPES sections of all partials is
+    aggregated in the output, after all the other sections.
 
-We can use an [OSGi Extender Pattern](https://enroute.osgi.org/FAQ/400-patterns.html) to handle the
-provider bundles, similar to what we do for 
-[initial content loading](https://sling.apache.org/documentation/bundles/content-loading-jcr-contentloader.html)
-.
+## Partial names
 
-The assembler bundle can use a
-[BundleTracker](https://docs.osgi.org/javadoc/r4v42/org/osgi/util/tracker/BundleTracker.html)
-to detect the provider bundles based on their manifest header.
+The name of a partial, used in the selector mappings of the
+`SchemaAggregatorServlet`, is defined by its filename in the
+bundle resources, omitting the file extension. A partial
+found under `/path-set-by-the-bundle-header/this.is.txt` in its bundle is named
+`this.is` . Partial names must be unique system-wide, so it's
+good to use some form of namespacing or agreed upon naming
+convention for them.
 
-It can use logic similar to the jcr content loader module to load the partial schema text files:
+## SchemaAggregatorServlet configuration
+Here's a configuration example from the test code.
 
-* https://github.com/apache/sling-org-apache-sling-jcr-contentloader/blob/master/src/main/java/org/apache/sling/jcr/contentloader/PathEntry.java
-* Bundle.getEntryPaths to enumerate file resources in the bundle
+    // Configure the org.apache.sling.graphql.schema.aggregator.SchemaAggregatorServlet
+    factoryConfiguration(AGGREGATOR_SERVLET_CONFIG_PID)
+        .put("sling.servlet.resourceTypes", "sling/servlet/default")
 
-On our dev list, Radu suggests creating an OSGi a capability in o.a.s.graphql.schema that the bundles which provide schema extensions require, in order to create the wiring in between the bundles. This allows a limited number of bundles to trigger the BundleTracker, creating a weak contract.
+        // The extension must be the one used by the GraphQLServlet to retrieve schemas
+        // which by default is 'GQLschema'
+        .put("sling.servlet.extensions", GQL_SCHEMA_EXT)
 
+        // The GraphQLServlet uses an internal GET request for the schema
+        .put("sling.servlet.methods", new String[] { "GET" })
+
+        // Several selectors can be configured to setup API planes, each with their own GraphQL schema
+        .put("sling.servlet.selectors", new String[] { "X", "Y" })
+
+        // This mapping defines which partials to use to build the schema for each selector
+        // The lists can use either the exact names of partials, or (Java flavored) regular expressions on
+        // their names, identified by a starting an ending slash.
+        .put("selectors.to.partials.mapping", new String[] { "X:firstA,secondB", "Y:secondA,firstB,/second.*/" })
+
+## TODO / wishlist
+The REQUIRES section of partial should be translated to OSGi capabilities, to be able to detect
+missing requirements at system assembly time or using the
+[Feature Model Analyser](https://github.com/apache/sling-org-apache-sling-feature-analyser).
+
+We'll probably need a utility to aggregate schemas for automated tests, to allow test code
+to include required schema partials.
+
+Caching is probably not needed in this module, as the GraphQL Core caches compiled schemas.
