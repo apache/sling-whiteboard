@@ -112,13 +112,13 @@ public class DefaultSchemaAggregatorTest {
         assertTrue(reg.getType("SlingResourceConnection").isPresent());
         assertTrue(reg.getType("PageInfo").isPresent());
         
-        final Optional<TypeDefinition> query = reg.getType("QUERY");
-        assertTrue("Expecting QUERY", query.isPresent());
+        final Optional<TypeDefinition> query = reg.getType("Query");
+        assertTrue("Expecting Query", query.isPresent());
         assertTrue(query.get().getChildren().toString().contains("oneSchemaResource"));
         assertTrue(query.get().getChildren().toString().contains("oneSchemaQuery"));
 
-        final Optional<TypeDefinition> mutation = reg.getType("MUTATION");
-        assertTrue("Expecting MUTATION", mutation.isPresent());
+        final Optional<TypeDefinition> mutation = reg.getType("Mutation");
+        assertTrue("Expecting Mutation", mutation.isPresent());
         assertTrue(mutation.get().getChildren().toString().contains("someMutation"));
     }
 

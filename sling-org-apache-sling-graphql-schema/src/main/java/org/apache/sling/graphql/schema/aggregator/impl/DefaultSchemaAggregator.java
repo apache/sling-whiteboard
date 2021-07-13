@@ -66,8 +66,18 @@ public class DefaultSchemaAggregator implements SchemaAggregator {
         }
     }
 
+    static String capitalize(String s) {
+        if(s == null) {
+            return null;
+        } else if(s.length() >  1) {
+            return String.format("%s%s", s.substring(0, 1).toUpperCase(), s.substring(1, s.length()).toLowerCase());
+        } else {
+            return s.toUpperCase();
+        }
+    }
+
     private void copySection(Set<Partial> selected, String sectionName, boolean inBlock, Writer target) throws IOException {
-        String prefixToWrite = inBlock ? String.format("%ntype %s {%n", sectionName) : null;
+        String prefixToWrite = inBlock ? String.format("%ntype %s {%n", capitalize(sectionName)) : null;
         boolean anyOutput = false;
         for(Partial p : selected) {
             final Optional<Partial.Section> section = p.getSection(sectionName);
