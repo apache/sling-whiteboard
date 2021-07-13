@@ -1,0 +1,24 @@
+<pre>
+Supported Resource Types
+========================
+[Resource Type] => [MetaType Property Path]
+nt:file => jcr:content/jcr:mimeType
+</pre><br/>
+<pre>
+Persistable Resource Types
+========================
+[Resource Type] => [Rendition Path]
+</pre><br/>
+<pre>
+Registered Thumbnail Providers
+========================
+org.apache.sling.thumbnails.internal.providers.PdfThumbnailProvider
+org.apache.sling.thumbnails.internal.providers.ImageThumbnailProvider
+</pre><br/>
+<pre>
+Registered Transformation Providers
+========================
+sling/thumbnails/transformers/crop=org.apache.sling.thumbnails.internal.transformers.CropHandler
+sling/thumbnails/transformers/resize=org.apache.sling.thumbnails.internal.transformers.ResizeHandler
+</pre>
+</div>

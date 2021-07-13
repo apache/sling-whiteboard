@@ -1,3 +1,0 @@
-Sling-Model-Packages: org.apache.sling.commons.thumbnails
-
--includeresource: lib/thumbnailator.jar=thumbnailator-[[0-9\.]]*.jar;lib:=true
