@@ -1,6 +1,6 @@
 # Schema aggregated by DefaultSchemaAggregator
 
-type QUERY {
+type Query {
 
 # DefaultSchemaAggregator.source=B1a
 Fake query for B1a.txt
