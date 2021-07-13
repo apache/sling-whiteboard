@@ -18,6 +18,9 @@ This module also provides a `SchemaAggregatorServlet` that generates schemas by 
 mapping request selectors to lists of partial names. The result can be used directly by the Sling GraphQL
 Core module, which makes an internal Sling request to get the schema.
 
+Partials can also depend on others by declaring the required dependencies by name, to make sure the
+aggregated schemas are valid.
+
 With this mechanism, an OSGi bundle can provide both a partial schema and the Sling data fetching and
 processing services that go with it. This allows a GraphQL "API plane" (usually defined by a specific
 instance of the Sling `GraphQLServlet`) to be built out of several OSGi bundles which each focus on a
