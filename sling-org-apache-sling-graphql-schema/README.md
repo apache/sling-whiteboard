@@ -101,6 +101,8 @@ Here's a configuration example from the test code.
         .put("selectors.to.partials.mapping", new String[] { "X:firstA,secondB", "Y:secondA,firstB,/second.*/" })
 
 ## TODO / wishlist
+Invalid section names in partials should cause parsing errors.
+
 The REQUIRES section of partial should be translated to OSGi capabilities, to be able to detect
 missing requirements at system assembly time or using the
 [Feature Model Analyser](https://github.com/apache/sling-org-apache-sling-feature-analyser).
