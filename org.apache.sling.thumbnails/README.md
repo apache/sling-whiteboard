@@ -68,10 +68,10 @@ The servlet would:
 
 #### CA Config Structure
 
-The structure for the transformations under the CA Config root should include files/transformations, as such:
+The structure for the transformations under the CA Config root (e.g. /conf/global/) should include files/transformations, as such:
 
 ```
-{
+/conf/global: {
   "jcr:primaryType": "sling:Folder",
   "files": {
     "jcr:primaryType": "sling:Folder",
@@ -111,10 +111,12 @@ This library can be installed on Sling 11+ but does require the following librar
 - org.apache.servicemix.bundles:org.apache.servicemix.bundles.poi:4.1.2_2
 - org.apache.servicemix.bundles:org.apache.servicemix.bundles.xmlbeans:3.1.0_2
 
-And a service user `sling-thumbnails` with the following permissions:
+Add a service user `sling-thumbnails` with the following permissions:
 
 - jcr:write,jcr:nodeTypeManagement,jcr:versionManagement on /content
 - jcr:read on /
+
+Add a service user mapping: `org.apache.sling.thumbnails:sling-commons-thumbnails=sling-thumbnails`
 
 Note that this library generates [Sling Feature Models](https://sling.apache.org/documentation/development/feature-model.html) which can be used to install it easily with the Sling Feature Launcher:
 
@@ -133,6 +135,13 @@ PID = org.apache.sling.thumbnails.internal.ThumbnailSupportImpl
   persistedTypes = []
   supportedTypes = [nt:file=jcr:content/jcr:mimeType]
 ```
+
+The the values should be set as follows:
+
+ - `errorResourcePath` - the path to a resource to transform if an error occurs instead of returning the default error page
+ - `errorSuffix` - the transformation to call on the error resource if an error occurs instead of returning the default error page
+ - `persistedTypes` - The types which support persistence of renditions in the format _resourceType=rendition-path_
+ - `supportedTypes` - The types which support thumbnail generation and transformation in the format _resourceType=metdata-path_
 
 Generally, this configuration should be provided by the application including this functionality. See [ThumbnailSupportConfig](src/main/java/org/apache/sling/thumbnails/internal/ThumbnailSupportConfig.java) for more on the configuration values.
 
