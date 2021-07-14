@@ -38,22 +38,27 @@ import org.apache.commons.io.IOUtils;
 import org.apache.sling.graphql.schema.aggregator.U;
 import org.junit.Before;
 import org.junit.Test;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class DefaultSchemaAggregatorTest {
     private DefaultSchemaAggregator dsa;
     private ProviderBundleTracker tracker;
+    private BundleContext bundleContext;
 
     @Before
     public void setup() throws Exception {
         dsa = new DefaultSchemaAggregator();
-        final BundleContext ctx = mock(BundleContext.class);
-        dsa.activate(ctx);
         final Field f = dsa.getClass().getDeclaredField("tracker");
         f.setAccessible(true);
-        tracker = (ProviderBundleTracker)f.get(dsa);
+        bundleContext = mock(BundleContext.class);
+        when(bundleContext.getBundle()).thenReturn(mock(Bundle.class));
+        tracker = new ProviderBundleTracker();
+        tracker.activate(bundleContext);
+        f.set(dsa, tracker);
     }
 
     private void assertContainsIgnoreCase(String substring, String source) {
@@ -73,8 +78,8 @@ public class DefaultSchemaAggregatorTest {
     @Test
     public void severalProviders() throws Exception{
         final StringWriter target = new StringWriter();
-        tracker.addingBundle(U.mockProviderBundle("A", 1, "1.txt", "2.z.w", "3abc", "4abc"), null);
-        tracker.addingBundle(U.mockProviderBundle("B", 2, "B1a.txt", "B2.xy"), null);
+        tracker.addingBundle(U.mockProviderBundle(bundleContext, "A", 1, "1.txt", "2.z.w", "3abc", "4abc"), null);
+        tracker.addingBundle(U.mockProviderBundle(bundleContext, "B", 2, "B1a.txt", "B2.xy"), null);
         dsa.aggregate(target, "B1a", "B2", "2.z");
         final String sdl = target.toString().trim();
         assertContainsIgnoreCase("schema aggregated by DefaultSchemaAggregator", sdl);
@@ -89,8 +94,8 @@ public class DefaultSchemaAggregatorTest {
     @Test
     public void regexpSelection() throws Exception {
         final StringWriter target = new StringWriter();
-        tracker.addingBundle(U.mockProviderBundle("A", 1, "a.authoring.1.txt", "a.authoring.2.txt", "3.txt", "4.txt"), null);
-        tracker.addingBundle(U.mockProviderBundle("B", 2, "B1.txt", "B.authoring.txt"), null);
+        tracker.addingBundle(U.mockProviderBundle(bundleContext, "A", 1, "a.authoring.1.txt", "a.authoring.2.txt", "3.txt", "4.txt"), null);
+        tracker.addingBundle(U.mockProviderBundle(bundleContext, "B", 2, "B1.txt", "B.authoring.txt"), null);
         dsa.aggregate(target, "B1", "/.*\\.authoring.*/");
         assertContainsIgnoreCase("schema aggregated by DefaultSchemaAggregator", target.toString());
         U.assertPartialsFoundInSchema(target.toString(), "a.authoring.1", "a.authoring.2", "B.authoring", "B1");
@@ -99,7 +104,7 @@ public class DefaultSchemaAggregatorTest {
     @Test
     public void parseResult() throws Exception {
         final StringWriter target = new StringWriter();
-        tracker.addingBundle(U.mockProviderBundle("SDL", 1, "a.sdl.txt", "b.sdl.txt", "c.sdl.txt"), null);
+        tracker.addingBundle(U.mockProviderBundle(bundleContext, "SDL", 1, "a.sdl.txt", "b.sdl.txt", "c.sdl.txt"), null);
 
         dsa.aggregate(target, "/.*/");
 
@@ -125,7 +130,7 @@ public class DefaultSchemaAggregatorTest {
     @Test
     public void requires() throws Exception {
         final StringWriter target = new StringWriter();
-        tracker.addingBundle(U.mockProviderBundle("SDL", 1, "a.sdl.txt", "b.sdl.txt", "c.sdl.txt"), null);
+        tracker.addingBundle(U.mockProviderBundle(bundleContext, "SDL", 1, "a.sdl.txt", "b.sdl.txt", "c.sdl.txt"), null);
         dsa.aggregate(target, "c.sdl");
         final String sdl = target.toString();
 
@@ -142,7 +147,7 @@ public class DefaultSchemaAggregatorTest {
     @Test
     public void cycleInRequirements() throws Exception {
         final StringWriter target = new StringWriter();
-        tracker.addingBundle(U.mockProviderBundle("SDL", 1, "circularA.txt", "circularB.txt"), null);
+        tracker.addingBundle(U.mockProviderBundle(bundleContext, "SDL", 1, "circularA.txt", "circularB.txt"), null);
         final RuntimeException rex = assertThrows(RuntimeException.class, () -> dsa.aggregate(target, "circularA"));
 
         Stream.of(
@@ -156,7 +161,9 @@ public class DefaultSchemaAggregatorTest {
     @Test
     public void providersOrdering() throws Exception {
         final StringWriter target = new StringWriter();
-        tracker.addingBundle(U.mockProviderBundle("ordering", 1, "Aprov.txt", "Cprov.txt", "Z_test.txt", "A_test.txt", "Zprov.txt", "Z_test.txt", "Bprov.txt", "C_test.txt"), null);
+        tracker.addingBundle(U.mockProviderBundle(bundleContext, "ordering", 1, "Aprov.txt", "Cprov.txt", "Z_test.txt", "A_test.txt",
+                "Zprov.txt",
+                "Z_test.txt", "Bprov.txt", "C_test.txt"), null);
         dsa.aggregate(target, "Aprov", "Zprov", "/[A-Z]_test/", "A_test", "Cprov");
         final String sdl = target.toString();
 

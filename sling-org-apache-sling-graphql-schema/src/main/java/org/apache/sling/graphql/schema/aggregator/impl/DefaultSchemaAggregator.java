@@ -21,56 +21,40 @@ package org.apache.sling.graphql.schema.aggregator.impl;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.sling.graphql.schema.aggregator.api.SchemaAggregator;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceRegistration;
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
-import org.osgi.util.tracker.BundleTracker;
+import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.sling.graphql.schema.aggregator.impl.PartialConstants.*;
+import static org.apache.sling.graphql.schema.aggregator.impl.PartialConstants.S_MUTATION;
+import static org.apache.sling.graphql.schema.aggregator.impl.PartialConstants.S_PROLOGUE;
+import static org.apache.sling.graphql.schema.aggregator.impl.PartialConstants.S_QUERY;
+import static org.apache.sling.graphql.schema.aggregator.impl.PartialConstants.S_TYPES;
 
 @Component(service = SchemaAggregator.class)
 public class DefaultSchemaAggregator implements SchemaAggregator {
     private static final Logger log = LoggerFactory.getLogger(DefaultSchemaAggregator.class.getName());
-    private ProviderBundleTracker tracker;
-    private ServiceRegistration<?> trackerRegistration;
-
     public static final int MAX_REQUIREMENTS_RECURSION_LEVEL = 5;
 
-    @Activate
-    public void activate(BundleContext ctx) {
-        tracker = new ProviderBundleTracker(ctx);
-        trackerRegistration = ctx.registerService(BundleTracker.class, tracker, null);
-        tracker.open();
-    }
-
-    @Deactivate
-    public void deactivate(BundleContext ctx) {
-        if(trackerRegistration != null) {
-            tracker.close();
-            trackerRegistration.unregister();
-            trackerRegistration = null;
-        }
-    }
+    @Reference
+    private ProviderBundleTracker tracker;
 
     static String capitalize(String s) {
         if(s == null) {
             return null;
         } else if(s.length() >  1) {
-            return String.format("%s%s", s.substring(0, 1).toUpperCase(), s.substring(1, s.length()).toLowerCase());
+            return String.format("%s%s", s.substring(0, 1).toUpperCase(), s.substring(1).toLowerCase());
         } else {
             return s.toUpperCase();
         }
@@ -142,7 +126,7 @@ public class DefaultSchemaAggregator implements SchemaAggregator {
                 log.debug("Selecting providers matching {}", p);
                 providers.entrySet().stream()
                     .filter(e -> p.matcher(e.getKey()).matches())
-                    .sorted((e, other) -> e.getValue().getName().compareTo(other.getValue().getName()))
+                    .sorted(Comparator.comparing(e -> e.getValue().getName()))
                     .forEach(e -> addWithRequirements(providers, result, missing, e.getValue(), 0))
                 ;
             } else {

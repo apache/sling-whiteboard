@@ -16,27 +16,7 @@
  ~ specific language governing permissions and limitations
  ~ under the License.
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
+@Version("0.0.1")
 package org.apache.sling.graphql.schema.aggregator.api;
 
-import java.io.IOException;
-import java.io.Writer;
-
-import org.jetbrains.annotations.NotNull;
-import org.osgi.annotation.versioning.ProviderType;
-
-@ProviderType
-public interface SchemaAggregator {
-    /** Aggregate the schemas supplied by partial schema providers which match the exact names
-     *  or patterns supplied.
-     *
-     *  @param target where to write the output
-     *
-     *  @param providerNamesOrRegexp a value that starts and ends with a slash is used a a regular
-     *      expression to match provider names (after removing the starting and ending slash), other
-     *      values are used as exact provider names, which are then required.
-     *
-     *  @throws IOException if an exact provider name is not found
-     */
-    void aggregate(@NotNull Writer target, @NotNull String ... providerNamesOrRegexp) throws IOException;
-}
+import org.osgi.annotation.versioning.Version;

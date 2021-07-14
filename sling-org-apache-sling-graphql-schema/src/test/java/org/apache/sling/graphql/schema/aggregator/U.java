@@ -28,7 +28,12 @@ import static org.ops4j.pax.tinybundles.core.TinyBundles.bundle;
 import org.apache.sling.graphql.schema.aggregator.impl.ProviderBundleTracker;
 import org.ops4j.pax.exam.Option;
 import org.ops4j.pax.tinybundles.core.TinyBundle;
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
+import org.osgi.framework.wiring.BundleRevision;
+import org.osgi.framework.wiring.BundleWire;
+import org.osgi.framework.wiring.BundleWiring;
+import org.osgi.namespace.extender.ExtenderNamespace;
 
 import static org.ops4j.pax.exam.CoreOptions.streamBundle;
 
@@ -39,6 +44,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Dictionary;
 import java.util.Hashtable;
@@ -47,10 +53,17 @@ import java.util.List;
 /** Test Utilities */
 public class U {
     
-    public static Bundle mockProviderBundle(String symbolicName, long id, String ... schemaNames) throws IOException {
+    public static Bundle mockProviderBundle(BundleContext bc, String symbolicName, long id, String ... schemaNames) throws IOException {
         final Bundle b = mock(Bundle.class);
+        final BundleWiring wiring = mock(BundleWiring.class);
         when(b.getSymbolicName()).thenReturn(symbolicName);
         when(b.getBundleId()).thenReturn(id);
+        when(b.adapt(BundleWiring.class)).thenReturn(wiring);
+        final BundleWire wire = mock(BundleWire.class);
+        when(wiring.getRequiredWires(ExtenderNamespace.EXTENDER_NAMESPACE)).thenReturn(Collections.singletonList(wire));
+        final BundleRevision revision = mock(BundleRevision.class);
+        when(wire.getProvider()).thenReturn(revision);
+        when(revision.getBundle()).thenAnswer(invocationOnMock -> bc.getBundle());
 
         final Dictionary<String, String> headers = new Hashtable<>();
         String fakePath = symbolicName + "/path/" + id;
@@ -96,7 +109,10 @@ public class U {
         final TinyBundle b = bundle()
             .set(ProviderBundleTracker.SCHEMA_PATH_HEADER, schemaPath)
             .set(Constants.BUNDLE_SYMBOLICNAME, symbolicName)
-            .set(Constants.REQUIRE_CAPABILITY, "org.apache.sling.graphql.schema.aggregator;filter:=\"(syntax>=0.1)\"")
+            .set(
+                    Constants.REQUIRE_CAPABILITY,
+                    "osgi.extender;filter:=\"(&(osgi.extender=sling.graphql-schema-aggregator)(version>=0.1)(!(version>=1.0)))\""
+            )
         ;
 
         for(String name : partialsNames) {

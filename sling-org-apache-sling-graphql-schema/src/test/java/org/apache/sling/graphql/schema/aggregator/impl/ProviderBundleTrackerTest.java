@@ -18,6 +18,9 @@
  */
 package org.apache.sling.graphql.schema.aggregator.impl;
 
+import java.io.IOException;
+import java.util.Optional;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.sling.graphql.schema.aggregator.LogCapture;
 import org.apache.sling.graphql.schema.aggregator.U;
@@ -31,24 +34,25 @@ import ch.qos.logback.classic.Level;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
-
-import java.io.IOException;
-import java.util.Optional;
+import static org.mockito.Mockito.when;
 
 public class ProviderBundleTrackerTest {
     private ProviderBundleTracker tracker;
     private static long bundleId;
+    private BundleContext bundleContext;
 
     @Before
     public void setup() {
         bundleId = 0;
-        final BundleContext ctx = mock(BundleContext.class);
-        tracker = new ProviderBundleTracker(ctx);
+        bundleContext = mock(BundleContext.class);
+        when(bundleContext.getBundle()).thenReturn(mock(Bundle.class));
+        tracker = new ProviderBundleTracker();
+        tracker.activate(bundleContext);
     }
 
     @Test
     public void addBundle() throws Exception {
-        final Bundle a = U.mockProviderBundle("A", ++bundleId, "1.txt");
+        final Bundle a = U.mockProviderBundle(bundleContext, "A", ++bundleId, "1.txt");
         tracker.addingBundle(a, null);
         assertEquals(1, tracker.getSchemaProviders().size());
 
@@ -59,8 +63,8 @@ public class ProviderBundleTrackerTest {
 
     @Test
     public void addAndRemoveBundles() throws Exception {
-        final Bundle a = U.mockProviderBundle("A", ++bundleId, "1.graphql.txt");
-        final Bundle b = U.mockProviderBundle("B", ++bundleId, "2.txt", "1.txt");
+        final Bundle a = U.mockProviderBundle(bundleContext, "A", ++bundleId, "1.graphql.txt");
+        final Bundle b = U.mockProviderBundle(bundleContext, "B", ++bundleId, "2.txt", "1.txt");
         tracker.addingBundle(a, null);
         tracker.addingBundle(b, null);
         assertEquals(3, tracker.getSchemaProviders().size());
@@ -75,8 +79,8 @@ public class ProviderBundleTrackerTest {
     @Test
     public void duplicatePartialName() throws Exception {
         final LogCapture capture = new LogCapture(ProviderBundleTracker.class.getName(), true);
-        final Bundle a = U.mockProviderBundle("A", ++bundleId, "TT.txt");
-        final Bundle b = U.mockProviderBundle("B", ++bundleId, "TT.txt", "another.x");
+        final Bundle a = U.mockProviderBundle(bundleContext, "A", ++bundleId, "TT.txt");
+        final Bundle b = U.mockProviderBundle(bundleContext, "B", ++bundleId, "TT.txt", "another.x");
         tracker.addingBundle(a, null);
         tracker.addingBundle(b, null);
         capture.assertContains(Level.WARN, "Partial provider with name TT already present");
@@ -91,7 +95,7 @@ public class ProviderBundleTrackerTest {
  
     @Test
     public void getSectionsContent() throws IOException {
-        final Bundle a = U.mockProviderBundle("A", ++bundleId, "1.txt");
+        final Bundle a = U.mockProviderBundle(bundleContext, "A", ++bundleId, "1.txt");
         tracker.addingBundle(a, null);
         final Partial p = tracker.getSchemaProviders().values().iterator().next();
         assertSectionContent(p, PartialConstants.S_QUERY, "Fake query for 1.txt");
