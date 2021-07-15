@@ -1,2 +1,0 @@
-PARTIAL: Example GraphQL schema partial with caractères accentués
-L'été nous évitons l'âtre et préférons Chateaunöf et les äkràs.

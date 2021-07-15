@@ -1,6 +1,0 @@
-PARTIAL: Test circular requirements
-
-REQUIRES: circularA
-
-TYPES:
-type typeFromCircularB { name: String }
