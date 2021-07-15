@@ -138,7 +138,7 @@ describe("import content", () => {
       expect.stringContaining('name=\\":contentType\\"\\r\\n\\r\\n","json"')
     );
     expect(body).toEqual(
-      expect.stringContaining('name=\\\":name\\\"\\r\\n\\r\\n\",\"contentname\"')
+      expect.stringContaining('name=\\":name\\"\\r\\n\\r\\n","contentname"')
     );
   });
 
@@ -150,7 +150,14 @@ describe("import content", () => {
       body = JSON.stringify(req.body);
       return Promise.resolve("Success");
     });
-    await sp.importContent("MY_CONTENT", "/import", "name", "xml", false, false);
+    await sp.importContent(
+      "MY_CONTENT",
+      "/import",
+      "name",
+      "xml",
+      false,
+      false
+    );
 
     expect(fetch).toBeCalled();
     expect(fetch.mock.calls[0][0]).toEqual("http://localhost:8080/import");
@@ -164,13 +171,15 @@ describe("import content", () => {
       expect.stringContaining('name=\\":contentType\\"\\r\\n\\r\\n","xml"')
     );
     expect(body).toEqual(
-      expect.not.stringContaining('name=\\\":replace\\\"\\r\\n\\r\\n\",\"true\"')
+      expect.not.stringContaining('name=\\":replace\\"\\r\\n\\r\\n","true"')
     );
     expect(body).toEqual(
-      expect.not.stringContaining('name=\\\":replaceProperties\\\"\\r\\n\\r\\n\",\"true\"')
+      expect.not.stringContaining(
+        'name=\\":replaceProperties\\"\\r\\n\\r\\n","true"'
+      )
     );
     expect(body).toEqual(
-      expect.stringContaining('name=\\\":name\\\"\\r\\n\\r\\n\",\"name\"')
+      expect.stringContaining('name=\\":name\\"\\r\\n\\r\\n","name"')
     );
   });
 });
@@ -219,7 +228,14 @@ describe("import file", () => {
       body = JSON.stringify(req.body);
       return Promise.resolve("Success");
     });
-    await sp.importFile("./test/test.json", "/import", "test2", "xml", false, false);
+    await sp.importFile(
+      "./test/test.json",
+      "/import",
+      "test2",
+      "xml",
+      false,
+      false
+    );
 
     expect(fetch).toBeCalled();
     expect(fetch.mock.calls[0][0]).toEqual("http://localhost:8080/import");
@@ -235,13 +251,15 @@ describe("import file", () => {
       expect.stringContaining('name=\\":contentType\\"\\r\\n\\r\\n","xml"')
     );
     expect(body).toEqual(
-      expect.not.stringContaining('name=\\\":replace\\\"\\r\\n\\r\\n\",\"true\"')
+      expect.not.stringContaining('name=\\":replace\\"\\r\\n\\r\\n","true"')
     );
     expect(body).toEqual(
-      expect.not.stringContaining('name=\\\":replaceProperties\\\"\\r\\n\\r\\n\",\"true\"')
+      expect.not.stringContaining(
+        'name=\\":replaceProperties\\"\\r\\n\\r\\n","true"'
+      )
     );
     expect(body).toEqual(
-      expect.stringContaining('name=\\\":name\\\"\\r\\n\\r\\n\",\"test2\"')
+      expect.stringContaining('name=\\":name\\"\\r\\n\\r\\n","test2"')
     );
   });
 });
@@ -255,7 +273,12 @@ describe("move", () => {
       body = JSON.stringify(req.body);
       return Promise.resolve("Success");
     });
-    await sp.move("/src", "/ed");
+    const resp = await sp.move("/src", "/ed");
+
+    expect(resp.ok).toEqual(true);
+    expect(resp.status).toEqual(200);
+    expect(resp.statusText).toEqual("OK");
+    expect(resp.body).toEqual("Success");
 
     expect(fetch).toBeCalled();
     expect(fetch.mock.calls[0][0]).toEqual("http://localhost:8080/src");
@@ -277,9 +300,14 @@ describe("post", () => {
       body = JSON.stringify(req.body);
       return Promise.resolve("Success");
     });
-    await sp.post("/test", {
+    const resp = await sp.post("/test", {
       param1: "value1",
     });
+
+    expect(resp.ok).toEqual(true);
+    expect(resp.status).toEqual(200);
+    expect(resp.statusText).toEqual("OK");
+    expect(resp.body).toEqual("Success");
 
     expect(fetch).toBeCalled();
     expect(fetch.mock.calls[0][0]).toEqual("http://localhost:8080/test");
@@ -310,7 +338,8 @@ describe("post", () => {
         param1: "value1",
       });
     } catch (e) {
-      expect(e).toEqual(
+      expect(e instanceof Error).toEqual(true);
+      expect(e.message).toEqual(
         "Failed with invalid status: 500 - Internal Server Error"
       );
     }
@@ -402,7 +431,8 @@ describe("uploadFile", () => {
         param1: "value1",
       });
     } catch (e) {
-      expect(e).toEqual(
+      expect(e instanceof Error).toEqual(true);
+      expect(e.message).toEqual(
         "Failed with invalid status: 500 - Internal Server Error"
       );
     }

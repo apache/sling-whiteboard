@@ -12,11 +12,11 @@ Node JS Client for the [Sling POST Servlet](https://sling.apache.org/documentati
 
 Install with:
 
-    npm install @apachesling/slingpackager
+    npm install @apachesling/slingpost
 
 and then import into your script:
 
-    const SlingPost = require("@apachesling/slingpackager");
+    const SlingPost = require("@apachesling/slingpost");
 
 ## Use
 

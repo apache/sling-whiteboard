@@ -100,10 +100,12 @@ class SlingPost {
    *
    * @param {string} fromPath the absolute path to the item to move
    * @param {string} toPath the absolute or relative path to which the resource is copied. If the path is relative it is assumed to be below the same parent as the request resource. If it is terminated with a / character the request resource is copied to an item of the same name under the destination path.
+   *
+   * @returns {Promise<Object>} the response from Sling with the status, statusText and body
    */
   async copy(fromPath, toPath) {
     this.log.info(`Copying: ${fromPath} to ${toPath}`);
-    await this.post(fromPath, {
+    return this.post(fromPath, {
       ":operation": "copy",
       ":dest": toPath,
     });
@@ -115,10 +117,11 @@ class SlingPost {
    * @see https://sling.apache.org/documentation/bundles/manipulating-content-the-slingpostservlet-servlets-post.html#content-removal-1
    *
    * @param {string} path The absolute path of the item to delete
+   * @returns {Promise<Object>} the response from Sling with the status, statusText and body
    */
   async delete(path) {
     this.log.info(`Deleting: ${path}`);
-    await this.post(path, {
+    return this.post(path, {
       ":operation": "delete",
     });
   }
@@ -134,6 +137,7 @@ class SlingPost {
    * @param {string} [contentType] Specifies the type of content being imported. Possible values are: xml, jcr.xml, json, jar, zip
    * @param {boolean} [replace] Specifies whether the import should replace any existing nodes at the same path. Note: When true, the existing nodes will be deleted and a new node is created in the same place.
    * @param {boolean} [replaceProperties] Specifies whether the import should replace properties if they already exist.
+   * @returns {Promise<Object>} the response from Sling with the status, statusText and body
    */
   async importContent(
     content,
@@ -144,7 +148,7 @@ class SlingPost {
     replaceProperties = true
   ) {
     this.log.info(`Importing content to: ${path}`);
-    await this.post(path, {
+    return this.post(path, {
       ":operation": "import",
       ":content": content,
       ":contentType": contentType,
@@ -155,7 +159,7 @@ class SlingPost {
   }
 
   /**
-   * Import content into the Sling repository from a file.
+   * Import content into the Sling repository from a file or multiple files (based on glob)
    *
    * @see https://sling.apache.org/documentation/bundles/manipulating-content-the-slingpostservlet-servlets-post.html#importing-content-structures-1
    *
@@ -201,10 +205,12 @@ class SlingPost {
    *
    * @param {string} fromPath the absolute path to the item to move
    * @param {string} toPath the absolute or relative path to which the resource is moved. If the path is relative it is assumed to be below the same parent as the request resource. If it is terminated with a / character the request resource is moved to an item of the same name under the destination path.
+   *
+   * @returns {Promise<Object>} the response from Sling with the status, statusText and body
    */
   async move(fromPath, toPath) {
     this.log.info(`Moving: ${fromPath} to ${toPath}`);
-    await this.post(fromPath, {
+    return this.post(fromPath, {
       ":operation": "move",
       ":dest": toPath,
     });
@@ -214,7 +220,9 @@ class SlingPost {
    * Sends a POST request to the Apache Sling Post Servlet
    *
    * @param {string} path the path to execute the command
-   * @param {Object} params the paramters to send to the Apache Sling Post API
+   * @param {Object} params the parameters to send to the Apache Sling Post API
+   *
+   * @returns {Promise<Object>} the response from Sling with the status, statusText and body
    */
   async post(path, params) {
     this.log.debug(`Posting to: ${path}`);
@@ -235,13 +243,21 @@ class SlingPost {
       body: formData,
     });
     if (!response.ok) {
-      throw `Failed with invalid status: ${response.status} - ${response.statusText}`;
+      throw new Error(
+        `Failed with invalid status: ${response.status} - ${response.statusText}`
+      );
     } else {
       this.log.debug(
         `Post successful: ${response.status} - ${response.statusText}`
       );
       const body = await response.text();
       this.log.silly(`Retrieved response: ${body}`);
+      return {
+        ok: response.ok,
+        status: response.status,
+        statusText: response.statusText,
+        body,
+      };
     }
   }
 
@@ -280,7 +296,9 @@ class SlingPost {
         body: formData,
       });
       if (!response.ok) {
-        throw `Failed with invalid status: ${response.status} - ${response.statusText}`;
+        throw new Error(
+          `Failed with invalid status: ${response.status} - ${response.statusText}`
+        );
       } else {
         this.log.debug(
           `Post successful: ${response.status} - ${response.statusText}`
