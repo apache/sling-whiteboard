@@ -98,9 +98,9 @@ The structure for the transformations under the CA Config root (e.g. /conf/globa
 
 #### Persistence
 
-The Transform Servlet supports persisting renditions. To persist renditions, you must configure the `persistableTypes` in the [Thumbnail Support Configuration](#Configuration)
+The Transform Servlet supports persisting renditions and using the persisted renditions instead of rendering the image on the fly. To persist renditions, you must configure the `persistableTypes` in the [Thumbnail Support Configuration](#Configuration)
 
-When rendering a thumbnail, if persistence is supported for the Resource Type, the servlet will check to see if a thumbnail exists and if so, use the pre-existing thumbnail.
+The `persistableTypes` node type must also be in the `supportedTypes` list. The rendition will be persisted at the provided path as an `nt:file` node with the name provided when requesting the rendition.
 
 ## Installation
 
@@ -142,6 +142,8 @@ The the values should be set as follows:
  - `errorSuffix` - the transformation to call on the error resource if an error occurs instead of returning the default error page
  - `persistedTypes` - The types which support persistence of renditions in the format _resourceType=rendition-path_
  - `supportedTypes` - The types which support thumbnail generation and transformation in the format _resourceType=metdata-path_
+
+**Note:** the _supportedTypes_ (and by extension _persistedTypes_) must be adaptable to from a Resource to an java.io.InputStream.
 
 Generally, this configuration should be provided by the application including this functionality. See [ThumbnailSupportConfig](src/main/java/org/apache/sling/thumbnails/internal/ThumbnailSupportConfig.java) for more on the configuration values.
 
