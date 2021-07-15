@@ -31,6 +31,15 @@ specific set of queries, mutations and types.
 To provide partials, a bundle sets a `Sling-GraphQL-Schema` header in its OSGi manifest, with a value that
 points to a path under which partials are found in the bundle resources.
 
+A provider bundle also needs to declare the following requirement, to allow the schema aggregator to receive
+its bundle start event:
+
+    Require-Capability: 
+      osgi.extender; 
+      filter:="(&(osgi.extender=sling.graphql-schema-aggregator)(version>=0.1)(!(version>=1.0)))"
+    
+The version number range must be consistent with this module's version.    
+
 A partial is a text file with the structure described below. As usual, The Truth Is In The Tests, see
 the [example partial in the test sources](./src/test/resources/partials/example.partial.txt) for a
 reference that's guaranteed to be valid.
