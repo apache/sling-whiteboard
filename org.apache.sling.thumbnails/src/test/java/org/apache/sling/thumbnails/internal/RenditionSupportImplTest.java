@@ -16,6 +16,7 @@
  */
 package org.apache.sling.thumbnails.internal;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -130,6 +131,18 @@ public class RenditionSupportImplTest {
                 new ByteArrayInputStream(new byte[] { 0, 1 }));
         assertTrue(renditionSupport.renditionExists(slingFileResource, "myrendition.png"));
         assertNotNull(renditionSupport.getRenditionContent(slingFileResource, "myrendition.png"));
+    }
+
+    @Test
+    public void testListRenditions() throws PersistenceException {
+        renditionSupport.setRendition(slingFileResource, "myrendition.png",
+                new ByteArrayInputStream(new byte[] { 0, 1 }));
+        renditionSupport.setRendition(slingFileResource, "myrendition.jpeg",
+                new ByteArrayInputStream(new byte[] { 0, 1 }));
+        context.create().resource(slingFileResource.getPath() + "/jcr:content/renditions/jcr:content");
+        assertNotNull(renditionSupport.listRenditions(slingFileResource));
+        assertEquals(2, renditionSupport.listRenditions(slingFileResource).size());
+        assertNotNull(renditionSupport.listRenditions(ntFileresource));
     }
 
     @Test(expected = PersistenceException.class)
