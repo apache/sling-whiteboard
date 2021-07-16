@@ -118,7 +118,10 @@ public class TransformServletTest {
         when(thumbnailSupport.getServletErrorResourcePath()).thenReturn("/content/error");
 
         TransformerImpl transformer = new TransformerImpl(providers, thumbnailSupport, th);
-        ts = new TransformServlet(thumbnailSupport, transformer, tsu, new TransformationCache(tsu),
+
+        RenditionSupportImpl renditionSupport = new RenditionSupportImpl(thumbnailSupport, tsu);
+
+        ts = new TransformServlet(thumbnailSupport, transformer, tsu, new TransformationCache(tsu), renditionSupport,
                 mock(BundleContext.class));
 
         MockRequestDispatcherFactory dispatcherFactory = mock(MockRequestDispatcherFactory.class);
@@ -163,7 +166,6 @@ public class TransformServletTest {
         ts.doGet(context.request(), context.response());
 
         assertEquals(500, context.response().getStatus());
-        assertEquals("image/jpeg", context.response().getContentType());
 
         verify(dispatcher).forward(any(), any());
     }

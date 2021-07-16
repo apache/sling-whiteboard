@@ -29,14 +29,14 @@ import java.util.List;
 import javax.servlet.ServletException;
 
 import org.apache.sling.api.resource.LoginException;
+import org.apache.sling.testing.mock.sling.junit.SlingContext;
+import org.apache.sling.thumbnails.ThumbnailSupport;
 import org.apache.sling.thumbnails.extension.ThumbnailProvider;
 import org.apache.sling.thumbnails.extension.TransformationHandler;
 import org.apache.sling.thumbnails.internal.providers.ImageThumbnailProvider;
 import org.apache.sling.thumbnails.internal.providers.PdfThumbnailProvider;
 import org.apache.sling.thumbnails.internal.transformers.CropHandler;
 import org.apache.sling.thumbnails.internal.transformers.ResizeHandler;
-import org.apache.sling.testing.mock.sling.junit.SlingContext;
-import org.apache.sling.thumbnails.ThumbnailSupport;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -66,8 +66,12 @@ public class DynamicTransformServletTest {
         when(thumbnailSupport.getSupportedTypes()).thenReturn(Collections.singleton("nt:file"));
         when(thumbnailSupport.getMetaTypePropertyPath("nt:file")).thenReturn("jcr:content/jcr:mimeType");
 
+        TransformationServiceUser tsu = mock(TransformationServiceUser.class);
+        when(tsu.getTransformationServiceUser()).thenReturn(context.resourceResolver());
+
+        RenditionSupportImpl renditionSupport = new RenditionSupportImpl(thumbnailSupport, tsu);
         TransformerImpl transformer = new TransformerImpl(providers, thumbnailSupport, th);
-        dts = new DynamicTransformServlet(transformer);
+        dts = new DynamicTransformServlet(transformer, renditionSupport);
 
     }
 
@@ -99,11 +103,11 @@ public class DynamicTransformServletTest {
         assertEquals(400, context.response().getStatus());
     }
 
-
     @Test
     public void testMissingResource() throws IOException, ServletException {
 
-        context.request().addRequestParameter("resource", "/content/apache/sling-apache-org/index/wow-look-at-this-file.png");
+        context.request().addRequestParameter("resource",
+                "/content/apache/sling-apache-org/index/wow-look-at-this-file.png");
         context.request().addRequestParameter("format", "png");
         context.request().setContent(
                 "[{\"handlerType\":\"sling/thumbnails/transformers/crop\",\"properties\":{\"position\":\"CENTER\",\"width\":1000,\"height\":1000}}]"

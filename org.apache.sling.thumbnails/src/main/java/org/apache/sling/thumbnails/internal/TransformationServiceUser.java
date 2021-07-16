@@ -33,7 +33,7 @@ import org.osgi.service.component.annotations.Reference;
 @Component(service = TransformationServiceUser.class)
 public class TransformationServiceUser {
 
-    public static final String SERVICE_USER = "sling-commons-thumbnails";
+    public static final String SERVICE_USER = "sling-thumbnails";
 
     private final ResourceResolverFactory resolverFactory;
 

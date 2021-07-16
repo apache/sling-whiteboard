@@ -19,30 +19,26 @@ package org.apache.sling.thumbnails.internal;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collections;
 import java.util.Dictionary;
-import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.jackrabbit.JcrConstants;
 import org.apache.poi.util.IOUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.request.RequestDispatcherOptions;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.api.resource.ResourceUtil;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.thumbnails.BadRequestException;
 import org.apache.sling.thumbnails.OutputFileFormat;
+import org.apache.sling.thumbnails.RenditionSupport;
 import org.apache.sling.thumbnails.ThumbnailSupport;
 import org.apache.sling.thumbnails.Transformation;
 import org.apache.sling.thumbnails.Transformer;
@@ -68,7 +64,9 @@ public class TransformServlet extends SlingAllMethodsServlet {
 
     private static final long serialVersionUID = -1513067546618762171L;
 
-    public static final String SERVICE_USER = "sling-thumbnails";
+    private final transient RenditionSupport renditionSupport;
+
+    private final transient ServiceRegistration<Servlet> servletRegistration;
 
     private final transient TransformationServiceUser transformationServiceUser;
 
@@ -78,12 +76,12 @@ public class TransformServlet extends SlingAllMethodsServlet {
 
     private final transient TransformationCache transformationCache;
 
-    private final transient ServiceRegistration<Servlet> servletRegistration;
-
     @Activate
     public TransformServlet(@Reference ThumbnailSupport thumbnailSupport, @Reference Transformer transformer,
             @Reference TransformationServiceUser transformationServiceUser,
-            @Reference TransformationCache transformationCache, BundleContext context) {
+            @Reference TransformationCache transformationCache, @Reference RenditionSupport renditionSupport,
+            BundleContext context) {
+        this.renditionSupport = renditionSupport;
         this.thumbnailSupport = thumbnailSupport;
         this.transformer = transformer;
         this.transformationServiceUser = transformationServiceUser;
@@ -112,19 +110,22 @@ public class TransformServlet extends SlingAllMethodsServlet {
             throws ServletException, IOException {
         log.trace("doGet");
 
-        String name = StringUtils.substringBeforeLast(request.getRequestPathInfo().getSuffix(), ".");
-        response.setHeader("Content-Disposition", "filename=" + request.getResource().getName());
+        String transformationName = StringUtils.substringBeforeLast(request.getRequestPathInfo().getSuffix(), ".");
+        String renditionName = request.getRequestPathInfo().getSuffix();
         String format = StringUtils.substringAfterLast(request.getRequestPathInfo().getSuffix(), ".");
-        log.debug("Transforming resource: {} with transformation: {} to {}", request.getResource(), name, format);
-        String original = response.getContentType();
-        try (ResourceResolver serviceResolver = transformationServiceUser.getTransformationServiceUser()) {
-            Optional<Transformation> transformation = transformationCache.getTransformation(serviceResolver, name);
-            if (transformation.isPresent()) {
-                performTransformation(request, response, name, format, serviceResolver, transformation.get());
+        response.setHeader("Content-Disposition", "filename=" + request.getResource().getName());
+
+        log.debug("Transforming resource: {} with transformation: {} to {}", request.getResource(), transformationName,
+                format);
+        try {
+            Resource file = request.getResource();
+            if (renditionSupport.renditionExists(file, renditionName)) {
+                response.setContentType(OutputFileFormat.forRequest(request).getMimeType());
+                IOUtils.copy(renditionSupport.getRenditionContent(file, renditionName), response.getOutputStream());
             } else {
-                log.error("Unable to find transformation: {}", name);
-                response.setContentType(original);
-                response.sendError(404, "Could not find transformation: " + name);
+                try (ResourceResolver servicResolver = transformationServiceUser.getTransformationServiceUser()) {
+                    performTransformation(request, response, transformationName, renditionName, servicResolver);
+                }
             }
         } catch (BadRequestException e) {
             log.error("Could not render thumbnail due to bad request", e);
@@ -140,34 +141,27 @@ public class TransformServlet extends SlingAllMethodsServlet {
         }
     }
 
-    private void performTransformation(SlingHttpServletRequest request, SlingHttpServletResponse response, String name,
-            String format, ResourceResolver serviceResolver, Transformation transformation) throws IOException {
+    private void performTransformation(SlingHttpServletRequest request, SlingHttpServletResponse response,
+            String transformationName, String renditionName, ResourceResolver serviceResolver)
+            throws IOException, ExecutionException {
+        Resource file = request.getResource();
+        String originalContentType = response.getContentType();
         response.setContentType(OutputFileFormat.forRequest(request).getMimeType());
-
-        String resourceType = request.getResource().getResourceType();
-        if (thumbnailSupport.getPersistableTypes().contains(resourceType)) {
-            String expectedPath = thumbnailSupport.getRenditionPath(resourceType) + "/" + name + "." + format;
-            Resource rendition = request.getResource().getChild(expectedPath);
-            if (rendition != null) {
-                log.debug("Using existing rendition {}", name);
-                IOUtils.copy(rendition.adaptTo(InputStream.class), response.getOutputStream());
-            } else {
-                ByteArrayOutputStream baos = transform(request, response, transformation);
-                Resource file = ResourceUtil.getOrCreateResource(serviceResolver,
-                        request.getResource().getPath() + "/" + expectedPath,
-                        Collections.singletonMap(JcrConstants.JCR_PRIMARYTYPE, JcrConstants.NT_FILE),
-                        JcrConstants.NT_UNSTRUCTURED, false);
-                Map<String, Object> properties = new HashMap<>();
-                properties.put(JcrConstants.JCR_PRIMARYTYPE, JcrConstants.NT_UNSTRUCTURED);
-                properties.put(JcrConstants.JCR_DATA, new ByteArrayInputStream(baos.toByteArray()));
-                ResourceUtil.getOrCreateResource(serviceResolver, file.getPath() + "/" + JcrConstants.JCR_CONTENT,
-                        properties, JcrConstants.NT_UNSTRUCTURED, true);
-            }
+        Optional<Transformation> transformationOp = transformationCache.getTransformation(serviceResolver,
+                transformationName);
+        if (!transformationOp.isPresent()) {
+            log.error("Unable to find transformation: {}", transformationName);
+            response.setContentType(originalContentType);
+            response.sendError(404, "Unable to find transformation: " + transformationName);
         } else {
-            log.debug("Sending transformation to response....");
-            transform(request, response, transformation);
+            Transformation transformation = transformationOp.get();
+            log.debug("Transforming file...");
+            ByteArrayOutputStream baos = transform(request, response, transformation);
+            if (renditionSupport.supportsRenditions(file)) {
+                log.debug("Saving rendition...");
+                renditionSupport.setRendition(file, renditionName, new ByteArrayInputStream(baos.toByteArray()));
+            }
         }
-
     }
 
     private ByteArrayOutputStream transform(SlingHttpServletRequest request, SlingHttpServletResponse response,

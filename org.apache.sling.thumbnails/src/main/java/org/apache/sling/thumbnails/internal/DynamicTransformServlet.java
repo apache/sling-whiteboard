@@ -29,17 +29,19 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.util.IOUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
-import org.apache.sling.thumbnails.internal.models.TransformationHandlerConfigImpl;
-import org.apache.sling.thumbnails.internal.models.TransformationImpl;
 import org.apache.sling.thumbnails.BadRequestException;
 import org.apache.sling.thumbnails.OutputFileFormat;
+import org.apache.sling.thumbnails.RenditionSupport;
 import org.apache.sling.thumbnails.Transformation;
 import org.apache.sling.thumbnails.Transformer;
+import org.apache.sling.thumbnails.internal.models.TransformationHandlerConfigImpl;
+import org.apache.sling.thumbnails.internal.models.TransformationImpl;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -58,8 +60,11 @@ public class DynamicTransformServlet extends SlingAllMethodsServlet {
 
     private final transient Transformer transformer;
 
+    private final transient RenditionSupport renditionSupport;
+
     @Activate
-    public DynamicTransformServlet(@Reference Transformer transformer) {
+    public DynamicTransformServlet(@Reference Transformer transformer, @Reference RenditionSupport renditionSupport) {
+        this.renditionSupport = renditionSupport;
         this.transformer = transformer;
     }
 
@@ -88,8 +93,20 @@ public class DynamicTransformServlet extends SlingAllMethodsServlet {
             List<TransformationHandlerConfigImpl> transformations = parsePostBody(request, objectMapper);
 
             log.debug("Transforming resource: {} with transformation: {} to {}", resource, transformations, format);
-            transform(resource, response, format.toString(), new TransformationImpl(transformations));
+            ByteArrayOutputStream baos = transform(resource, response, format.toString(),
+                    new TransformationImpl(transformations));
 
+            String renditionName = request.getParameter("renditionName");
+            if (StringUtils.isNotBlank(renditionName)) {
+                log.debug("Setting rendition: {}", renditionName);
+                if (renditionSupport.supportsRenditions(resource)) {
+                    renditionSupport.setRendition(resource, renditionName,
+                            new ByteArrayInputStream(baos.toByteArray()));
+                } else {
+                    throw new BadRequestException(
+                            "Type " + resource.getResourceType() + " does not support persisting renditions");
+                }
+            }
         } catch (BadRequestException e) {
             log.error("Could not render thumbnail due to bad request", e);
             response.sendError(400, "Could not render thumbnail due to bad request: " + e.getMessage());
