@@ -17,6 +17,7 @@
 package org.apache.sling.thumbnails;
 
 import java.io.InputStream;
+import java.util.List;
 
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
@@ -50,6 +51,15 @@ public interface RenditionSupport {
      */
     @Nullable
     InputStream getRenditionContent(@NotNull Resource file, @NotNull String renditionName);
+
+    /**
+     * Retrieves all of the renditions for the specified file.
+     * 
+     * @param file the file from which to retrieve the renditions
+     * @return the renditions
+     */
+    @NotNull
+    List<Resource> listRenditions(@NotNull Resource file);
 
     /**
      * Returns true if the requested rendition exists for the specified file.

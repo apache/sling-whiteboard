@@ -17,10 +17,13 @@
 package org.apache.sling.thumbnails.internal;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.StreamSupport;
 
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.LoginException;
@@ -62,6 +65,19 @@ public class RenditionSupportImpl implements RenditionSupport {
     public @Nullable InputStream getRenditionContent(@NotNull Resource file, @NotNull String renditionName) {
         return Optional.ofNullable(getRendition(file, renditionName)).map(r -> r.adaptTo(InputStream.class))
                 .orElse(null);
+    }
+
+    @Override
+    public @NotNull List<Resource> listRenditions(@NotNull Resource file) {
+        List<Resource> renditions = new ArrayList<>();
+        if (this.supportsRenditions(file)) {
+            Optional.ofNullable(file.getChild(thumbnailSupport.getRenditionPath(file.getResourceType())))
+                    .ifPresent(renditionFolder -> {
+                        StreamSupport.stream(renditionFolder.getChildren().spliterator(), false)
+                                .filter(c -> JcrConstants.NT_FILE.equals(c.getResourceType())).forEach(renditions::add);
+                    });
+        }
+        return renditions;
     }
 
     @Override
