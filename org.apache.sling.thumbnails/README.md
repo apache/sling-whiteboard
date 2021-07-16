@@ -48,6 +48,14 @@ Will result in the following thumbnail:
 
 ![docs/rendered.jpeg](docs/rendered.jpeg)
 
+#### Saving Thumbnails
+
+The Dynamic Transform Servlet can save the generated thumbnail for any Persistable resource type. To do so add the URL parameter `renditionName`, e.g.:
+
+http://localhost:8080/bin/sling/thumbnails/transform?resource=/content/image/test.png&format=jpeg&renditionName=myrendition.jpeg
+
+Once saved, the rendition can be access directly using the configured Rendition Path for the Resource Type or using the Transform Servlet. Note that the rendition will only be available on the resource the servlet is executed on.
+
 ### Transform Servlet
 
 The second servlet uses [Sling Context Aware Configurations](https://sling.apache.org/documentation/bundles/context-aware-configuration/context-aware-configuration.html) to generate thumbnails based on pre-defined transformation pipelines. Note that the [TransformationManager](src/main/java/org/apache/sling/thumbnails/TransformationManager.java) is useful for retrieving the available transformation pipelines for a particular resource.
