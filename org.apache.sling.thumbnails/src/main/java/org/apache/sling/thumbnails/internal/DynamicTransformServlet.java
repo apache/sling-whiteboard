@@ -88,13 +88,11 @@ public class DynamicTransformServlet extends SlingAllMethodsServlet {
                     .forValue(Optional.ofNullable(request.getParameter("format")).orElse("jpeg"));
             response.setHeader("Content-Disposition", "filename=" + resource.getName());
             response.setContentType(format.getMimeType());
-            ObjectMapper objectMapper = new ObjectMapper();
 
-            List<TransformationHandlerConfigImpl> transformations = parsePostBody(request, objectMapper);
+            Transformation transformation = getTransformation(request);
 
-            log.debug("Transforming resource: {} with transformation: {} to {}", resource, transformations, format);
-            ByteArrayOutputStream baos = transform(resource, response, format.toString(),
-                    new TransformationImpl(transformations));
+            log.debug("Transforming resource: {} with transformation: {} to {}", resource, transformation, format);
+            ByteArrayOutputStream baos = transform(resource, response, format.toString(), transformation);
 
             String renditionName = request.getParameter("renditionName");
             if (StringUtils.isNotBlank(renditionName)) {
@@ -116,8 +114,20 @@ public class DynamicTransformServlet extends SlingAllMethodsServlet {
         }
     }
 
-    private List<TransformationHandlerConfigImpl> parsePostBody(SlingHttpServletRequest request,
-            ObjectMapper objectMapper) throws IOException {
+    private Transformation getTransformation(SlingHttpServletRequest request) throws IOException {
+        String transformationPath = request.getParameter("transformationResource");
+        if (StringUtils.isNotBlank(request.getParameter("transformationResource"))) {
+            return Optional.ofNullable(request.getResourceResolver().getResource(transformationPath))
+                    .map(r -> r.adaptTo(Transformation.class)).orElseThrow(
+                            () -> new BadRequestException("Requested invalid transformation: " + transformationPath));
+
+        } else {
+            return new TransformationImpl(parsePostBody(request));
+        }
+    }
+
+    private List<TransformationHandlerConfigImpl> parsePostBody(SlingHttpServletRequest request) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
         try {
             return objectMapper.readValue(request.getReader(),
                     new TypeReference<List<TransformationHandlerConfigImpl>>() {

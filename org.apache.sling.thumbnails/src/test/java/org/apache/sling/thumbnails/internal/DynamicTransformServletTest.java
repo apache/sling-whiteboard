@@ -24,15 +24,22 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 
 import org.apache.sling.api.resource.LoginException;
+import org.apache.sling.api.resource.Resource;
 import org.apache.sling.testing.mock.sling.junit.SlingContext;
 import org.apache.sling.thumbnails.ThumbnailSupport;
+import org.apache.sling.thumbnails.Transformation;
+import org.apache.sling.thumbnails.TransformationHandlerConfig;
 import org.apache.sling.thumbnails.extension.ThumbnailProvider;
 import org.apache.sling.thumbnails.extension.TransformationHandler;
+import org.apache.sling.thumbnails.internal.models.TransformationHandlerConfigImpl;
+import org.apache.sling.thumbnails.internal.models.TransformationImpl;
 import org.apache.sling.thumbnails.internal.providers.ImageThumbnailProvider;
 import org.apache.sling.thumbnails.internal.providers.PdfThumbnailProvider;
 import org.apache.sling.thumbnails.internal.transformers.CropHandler;
@@ -115,6 +122,71 @@ public class DynamicTransformServletTest {
         dts.doPost(context.request(), context.response());
 
         assertEquals(404, context.response().getStatus());
+    }
+
+    @Test
+    public void testRequestWithResource() throws IOException, ServletException {
+
+        context.create().resource("/home/users/test/transformation");
+
+        List<TransformationHandlerConfig> handlers = new ArrayList<>();
+
+        Map<String, Object> size = new HashMap<>();
+        size.put(ResizeHandler.PN_WIDTH, 200);
+        size.put(ResizeHandler.PN_HEIGHT, 200);
+        handlers.add(new TransformationHandlerConfigImpl(ResizeHandler.RESOURCE_TYPE, size));
+
+        Map<String, Object> crop = new HashMap<>();
+        crop.put(CropHandler.PN_POSITION, "center");
+        crop.put(ResizeHandler.PN_WIDTH, 200);
+        crop.put(ResizeHandler.PN_HEIGHT, 200);
+        handlers.add(new TransformationHandlerConfigImpl(CropHandler.RESOURCE_TYPE, crop));
+
+        Transformation transformation = new TransformationImpl(handlers, "test");
+
+        context.registerAdapter(Resource.class, Transformation.class, transformation);
+
+        context.request().addRequestParameter("resource", "/content/apache/sling-apache-org/index/apache.png");
+        context.request().addRequestParameter("format", "png");
+        context.request().addRequestParameter("transformationResource", "/home/users/test/transformation");
+        context.request().setContent(
+                "[{\"handlerType\":\"sling/thumbnails/transformers/crop\",\"properties\":{\"position\":\"CENTER\",\"width\":1000,\"height\":1000}}]"
+                        .getBytes());
+        dts.doPost(context.request(), context.response());
+
+        assertEquals(200, context.response().getStatus());
+        assertEquals("image/png", context.response().getContentType());
+
+        assertNotEquals(0, context.response().getOutput().length);
+    }
+
+    @Test
+    public void testRequestWithInvalidResource() throws IOException, ServletException {
+
+        context.request().addRequestParameter("resource", "/content/apache/sling-apache-org/index/apache.png");
+        context.request().addRequestParameter("format", "png");
+        context.request().addRequestParameter("transformationResource", "/home/users/test/transformation");
+        context.request().setContent(
+                "[{\"handlerType\":\"sling/thumbnails/transformers/crop\",\"properties\":{\"position\":\"CENTER\",\"width\":1000,\"height\":1000}}]"
+                        .getBytes());
+        dts.doPost(context.request(), context.response());
+
+        assertEquals(400, context.response().getStatus());
+    }
+
+    @Test
+    public void testRequestWithFailedAdaption() throws IOException, ServletException {
+
+        context.create().resource("/home/users/test/transformation");
+        context.request().addRequestParameter("resource", "/content/apache/sling-apache-org/index/apache.png");
+        context.request().addRequestParameter("format", "png");
+        context.request().addRequestParameter("transformationResource", "/home/users/test/transformation");
+        context.request().setContent(
+                "[{\"handlerType\":\"sling/thumbnails/transformers/crop\",\"properties\":{\"position\":\"CENTER\",\"width\":1000,\"height\":1000}}]"
+                        .getBytes());
+        dts.doPost(context.request(), context.response());
+
+        assertEquals(400, context.response().getStatus());
     }
 
     @Test

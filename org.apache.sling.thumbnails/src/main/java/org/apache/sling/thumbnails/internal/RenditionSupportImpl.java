@@ -93,12 +93,13 @@ public class RenditionSupportImpl implements RenditionSupport {
     @Override
     public void setRendition(@NotNull Resource file, @NotNull String renditionName, @NotNull InputStream contents)
             throws PersistenceException {
-
+        if (renditionName.indexOf("/") != 0) {
+            renditionName = "/" + renditionName;
+        }
         try (ResourceResolver serviceResolver = transformationServiceUser.getTransformationServiceUser()) {
 
             Resource renditionFile = ResourceUtil.getOrCreateResource(serviceResolver,
-                    file.getPath() + "/" + thumbnailSupport.getRenditionPath(file.getResourceType()) + "/"
-                            + renditionName,
+                    file.getPath() + "/" + thumbnailSupport.getRenditionPath(file.getResourceType()) + renditionName,
                     Collections.singletonMap(JcrConstants.JCR_PRIMARYTYPE, JcrConstants.NT_FILE),
                     JcrConstants.NT_UNSTRUCTURED, false);
             Map<String, Object> properties = new HashMap<>();

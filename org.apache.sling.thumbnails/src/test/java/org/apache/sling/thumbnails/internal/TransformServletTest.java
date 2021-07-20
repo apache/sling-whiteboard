@@ -28,16 +28,24 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 
+import org.apache.jackrabbit.JcrConstants;
+import org.apache.pdfbox.io.IOUtils;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
+import org.apache.sling.servlethelpers.MockRequestDispatcherFactory;
+import org.apache.sling.testing.mock.sling.junit.SlingContext;
+import org.apache.sling.thumbnails.ThumbnailSupport;
+import org.apache.sling.thumbnails.TransformationHandlerConfig;
 import org.apache.sling.thumbnails.extension.ThumbnailProvider;
 import org.apache.sling.thumbnails.extension.TransformationHandler;
 import org.apache.sling.thumbnails.internal.models.TransformationHandlerConfigImpl;
@@ -46,10 +54,6 @@ import org.apache.sling.thumbnails.internal.providers.ImageThumbnailProvider;
 import org.apache.sling.thumbnails.internal.providers.PdfThumbnailProvider;
 import org.apache.sling.thumbnails.internal.transformers.CropHandler;
 import org.apache.sling.thumbnails.internal.transformers.ResizeHandler;
-import org.apache.sling.servlethelpers.MockRequestDispatcherFactory;
-import org.apache.sling.testing.mock.sling.junit.SlingContext;
-import org.apache.sling.thumbnails.ThumbnailSupport;
-import org.apache.sling.thumbnails.TransformationHandlerConfig;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -112,14 +116,21 @@ public class TransformServletTest {
         providers.add(new PdfThumbnailProvider());
 
         ThumbnailSupport thumbnailSupport = mock(ThumbnailSupport.class);
-        when(thumbnailSupport.getPersistableTypes()).thenReturn(Collections.emptySet());
-        when(thumbnailSupport.getSupportedTypes()).thenReturn(Collections.singleton("nt:file"));
-        when(thumbnailSupport.getMetaTypePropertyPath("nt:file")).thenReturn("jcr:content/jcr:mimeType");
-        when(thumbnailSupport.getServletErrorResourcePath()).thenReturn("/content/error");
+        when(thumbnailSupport.getPersistableTypes()).thenReturn(Collections.singleton("sling:File"));
+        when(thumbnailSupport.getRenditionPath("sling:File")).thenReturn("jcr:content/renditions");
+        Set<String> supportedTypes = new HashSet<>();
+        supportedTypes.add("sling:File");
+        supportedTypes.add("nt:file");
+        when(thumbnailSupport.getSupportedTypes()).thenReturn(supportedTypes);
+        when(thumbnailSupport.getMetaTypePropertyPath(anyString())).thenReturn("jcr:content/jcr:mimeType");
+        when(thumbnailSupport.getServletErrorResourcePath()).thenReturn("/content");
 
         TransformerImpl transformer = new TransformerImpl(providers, thumbnailSupport, th);
 
-        RenditionSupportImpl renditionSupport = new RenditionSupportImpl(thumbnailSupport, tsu);
+        ResourceResolverFactory contextFactory = Mockito.mock(ResourceResolverFactory.class);
+        Mockito.when(contextFactory.getServiceResourceResolver(Mockito.any())).thenReturn(context.resourceResolver());
+        TransformationServiceUser contextTsu = new TransformationServiceUser(contextFactory);
+        RenditionSupportImpl renditionSupport = new RenditionSupportImpl(thumbnailSupport, contextTsu);
 
         ts = new TransformServlet(thumbnailSupport, transformer, tsu, new TransformationCache(tsu), renditionSupport,
                 mock(BundleContext.class));
@@ -140,6 +151,29 @@ public class TransformServletTest {
         ts.doGet(context.request(), context.response());
 
         assertNotNull(context.response().getOutput());
+    }
+
+    @Test
+    public void testPersistence() throws IOException, ServletException {
+
+        context.create().resource("/content/slingfile.jpg",
+                Collections.singletonMap(JcrConstants.JCR_PRIMARYTYPE, "sling:File"));
+        Map<String, Object> slingFileProperties = new HashMap<>();
+        slingFileProperties.put(JcrConstants.JCR_PRIMARYTYPE, JcrConstants.NT_UNSTRUCTURED);
+        slingFileProperties.put(JcrConstants.JCR_DATA,
+                IOUtils.toByteArray(this.getClass().getClassLoader().getResourceAsStream("apache.png")));
+        slingFileProperties.put("jcr:mimeType", "image/jpeg");
+        context.create().resource("/content/slingfile.jpg/jcr:content", slingFileProperties);
+
+        context.currentResource("/content/slingfile.jpg");
+        context.requestPathInfo().setSuffix("/test.png");
+        context.requestPathInfo().setExtension("transform");
+
+        ts.doGet(context.request(), context.response());
+
+        assertNotNull(context.response().getOutput());
+
+        assertNotNull(context.resourceResolver().getResource("/content/slingfile.jpg/jcr:content/renditions/test.png"));
     }
 
     @Test
