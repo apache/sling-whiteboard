@@ -95,7 +95,10 @@ public class DynamicTransformServlet extends SlingAllMethodsServlet {
             ByteArrayOutputStream baos = transform(resource, response, format.toString(), transformation);
 
             String renditionName = request.getParameter("renditionName");
-            if (StringUtils.isNotBlank(renditionName)) {
+            if (renditionName != null) {
+                if (StringUtils.isBlank(renditionName) && transformation.getName() != null) {
+                    renditionName = transformation.getName() + "." + format.toString().toLowerCase();
+                }
                 log.debug("Setting rendition: {}", renditionName);
                 if (renditionSupport.supportsRenditions(resource)) {
                     renditionSupport.setRendition(resource, renditionName,

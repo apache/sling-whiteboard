@@ -27,6 +27,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.models.annotations.Model;
 import org.apache.sling.models.annotations.injectorspecific.ChildResource;
+import org.apache.sling.models.annotations.injectorspecific.Self;
 import org.apache.sling.models.annotations.injectorspecific.ValueMapValue;
 import org.apache.sling.thumbnails.Transformation;
 import org.apache.sling.thumbnails.TransformationHandlerConfig;
@@ -35,21 +36,37 @@ import org.apache.sling.thumbnails.TransformationHandlerConfig;
 public class TransformationImpl implements Transformation {
 
     private final List<?> handlers;
+    private final String name;
+    private final String path;
 
     @JsonCreator
-    public TransformationImpl(@JsonProperty("handlers") List<TransformationHandlerConfigImpl> handlers) {
+    public TransformationImpl(@JsonProperty("handlers") List<?> handlers) {
         this.handlers = (List<?>) handlers;
+        this.name = null;
+        this.path = null;
     }
 
     @Inject
     public TransformationImpl(@ChildResource @Named("handlers") List<TransformationHandlerConfig> handlers,
-            @ValueMapValue @Named("name") String name) {
+            @ValueMapValue @Named("name") String name, @Self Resource resource) {
         this.handlers = handlers;
+        this.name = name;
+        this.path = resource.getPath();
     }
 
     @Override
     public List<TransformationHandlerConfig> getHandlers() {
         return (List<TransformationHandlerConfig>) handlers;
+    }
+
+    @Override
+    public String getName() {
+        return this.name;
+    }
+
+    @Override
+    public String getPath() {
+        return this.path;
     }
 
 }

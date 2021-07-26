@@ -90,7 +90,7 @@ public class TransformServletTest {
         crop.put(ResizeHandler.PN_HEIGHT, 200);
         handlers.add(new TransformationHandlerConfigImpl(CropHandler.RESOURCE_TYPE, crop));
 
-        TransformationImpl transformation = new TransformationImpl(handlers, "test");
+        TransformationImpl transformation = new TransformationImpl(handlers);
 
         resource = Mockito.mock(Resource.class);
         Mockito.when(resource.getPath()).thenReturn("/conf");
@@ -213,7 +213,7 @@ public class TransformServletTest {
         crop.put(ResizeHandler.PN_HEIGHT, 200);
         handlers.add(new TransformationHandlerConfigImpl(CropHandler.RESOURCE_TYPE, crop));
 
-        TransformationImpl transformation = new TransformationImpl(handlers, "test");
+        TransformationImpl transformation = new TransformationImpl(handlers);
 
         Mockito.when(resource.adaptTo(Mockito.any())).thenReturn(transformation);
 

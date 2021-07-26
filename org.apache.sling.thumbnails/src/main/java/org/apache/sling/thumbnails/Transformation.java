@@ -28,4 +28,8 @@ public interface Transformation {
 
     List<TransformationHandlerConfig> getHandlers();
 
+    String getName();
+    
+    String getPath();
+
 }

@@ -18,18 +18,24 @@ package org.apache.sling.thumbnails.internal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.ServletException;
 
+import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.testing.mock.sling.junit.SlingContext;
@@ -69,9 +75,13 @@ public class DynamicTransformServletTest {
         providers.add(new PdfThumbnailProvider());
 
         ThumbnailSupport thumbnailSupport = mock(ThumbnailSupport.class);
-        when(thumbnailSupport.getPersistableTypes()).thenReturn(Collections.emptySet());
-        when(thumbnailSupport.getSupportedTypes()).thenReturn(Collections.singleton("nt:file"));
-        when(thumbnailSupport.getMetaTypePropertyPath("nt:file")).thenReturn("jcr:content/jcr:mimeType");
+        when(thumbnailSupport.getPersistableTypes()).thenReturn(Collections.singleton("sling:File"));
+        when(thumbnailSupport.getRenditionPath("sling:File")).thenReturn("jcr:content/renditions");
+        Set<String> supportedTypes = new HashSet<>();
+        supportedTypes.add("nt:file");
+        supportedTypes.add("sling:File");
+        when(thumbnailSupport.getSupportedTypes()).thenReturn(supportedTypes);
+        when(thumbnailSupport.getMetaTypePropertyPath(anyString())).thenReturn("jcr:content/jcr:mimeType");
 
         TransformationServiceUser tsu = mock(TransformationServiceUser.class);
         when(tsu.getTransformationServiceUser()).thenReturn(context.resourceResolver());
@@ -96,6 +106,46 @@ public class DynamicTransformServletTest {
         assertEquals("image/png", context.response().getContentType());
 
         assertNotEquals(0, context.response().getOutput().length);
+    }
+
+    @Test
+    public void testInvalidPersist() throws IOException, ServletException {
+
+        context.request().addRequestParameter("resource", "/content/apache/sling-apache-org/index/apache.png");
+        context.request().addRequestParameter("renditionName", "/my-rendition.png");
+        context.request().addRequestParameter("format", "png");
+        context.request().setContent(
+                "[{\"handlerType\":\"sling/thumbnails/transformers/crop\",\"properties\":{\"position\":\"CENTER\",\"width\":1000,\"height\":1000}}]"
+                        .getBytes());
+        dts.doPost(context.request(), context.response());
+
+        assertEquals(400, context.response().getStatus());
+    }
+
+    @Test
+    public void testPersist() throws IOException, ServletException {
+
+        context.create().resource("/content/slingfile.jpg",
+                Collections.singletonMap(JcrConstants.JCR_PRIMARYTYPE, "sling:File"));
+        Map<String, Object> slingFileProperties = new HashMap<>();
+        slingFileProperties.put(JcrConstants.JCR_PRIMARYTYPE, JcrConstants.NT_UNSTRUCTURED);
+        slingFileProperties.put(JcrConstants.JCR_DATA, context.resourceResolver()
+                .getResource("/content/apache/sling-apache-org/index/apache.png").adaptTo(InputStream.class));
+        slingFileProperties.put("jcr:mimeType", "image/jpeg");
+        context.create().resource("/content/slingfile.jpg/jcr:content", slingFileProperties);
+
+        context.request().addRequestParameter("resource", "/content/slingfile.jpg");
+        context.request().addRequestParameter("renditionName", "my-rendition.png");
+        context.request().addRequestParameter("format", "png");
+        context.request().setContent(
+                "[{\"handlerType\":\"sling/thumbnails/transformers/crop\",\"properties\":{\"position\":\"CENTER\",\"width\":1000,\"height\":1000}}]"
+                        .getBytes());
+        dts.doPost(context.request(), context.response());
+
+        assertEquals(200, context.response().getStatus());
+
+        assertNotNull(context.resourceResolver()
+                .getResource("/content/slingfile.jpg/jcr:content/renditions/my-rendition.png"));
     }
 
     @Test
@@ -142,7 +192,7 @@ public class DynamicTransformServletTest {
         crop.put(ResizeHandler.PN_HEIGHT, 200);
         handlers.add(new TransformationHandlerConfigImpl(CropHandler.RESOURCE_TYPE, crop));
 
-        Transformation transformation = new TransformationImpl(handlers, "test");
+        Transformation transformation = new TransformationImpl(handlers);
 
         context.registerAdapter(Resource.class, Transformation.class, transformation);
 

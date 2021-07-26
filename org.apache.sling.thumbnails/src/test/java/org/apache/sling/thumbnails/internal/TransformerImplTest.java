@@ -28,6 +28,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.sling.api.resource.Resource;
+import org.apache.sling.testing.mock.sling.junit.SlingContext;
+import org.apache.sling.thumbnails.BadRequestException;
+import org.apache.sling.thumbnails.OutputFileFormat;
+import org.apache.sling.thumbnails.ThumbnailSupport;
+import org.apache.sling.thumbnails.TransformationHandlerConfig;
+import org.apache.sling.thumbnails.Transformer;
 import org.apache.sling.thumbnails.extension.ThumbnailProvider;
 import org.apache.sling.thumbnails.extension.TransformationHandler;
 import org.apache.sling.thumbnails.internal.models.TransformationHandlerConfigImpl;
@@ -36,12 +43,6 @@ import org.apache.sling.thumbnails.internal.providers.ImageThumbnailProvider;
 import org.apache.sling.thumbnails.internal.providers.PdfThumbnailProvider;
 import org.apache.sling.thumbnails.internal.transformers.CropHandler;
 import org.apache.sling.thumbnails.internal.transformers.ResizeHandler;
-import org.apache.sling.testing.mock.sling.junit.SlingContext;
-import org.apache.sling.thumbnails.BadRequestException;
-import org.apache.sling.thumbnails.OutputFileFormat;
-import org.apache.sling.thumbnails.ThumbnailSupport;
-import org.apache.sling.thumbnails.TransformationHandlerConfig;
-import org.apache.sling.thumbnails.Transformer;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -91,7 +92,7 @@ public class TransformerImplTest {
         crop.put(ResizeHandler.PN_HEIGHT, 200);
         handlers.add(new TransformationHandlerConfigImpl(CropHandler.RESOURCE_TYPE, crop));
 
-        TransformationImpl transformation = new TransformationImpl(handlers, "test");
+        TransformationImpl transformation = new TransformationImpl(handlers, "test", mock(Resource.class));
         transformer.transform(context.currentResource(), transformation, OutputFileFormat.PNG, baos);
         assertNotNull(baos);
     }

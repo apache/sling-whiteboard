@@ -27,6 +27,7 @@ public class ContextHelper {
     public static final void initContext(SlingContext context) {
 
         context.load().json("/content.json", "/content");
+        context.load().json("/conf.json", "/conf");
         context.load().binaryResource("/apache.png", "/content/apache/sling-apache-org/index/apache.png/jcr:content");
         context.load().binaryResource("/sling.pdf", "/content/apache/sling-apache-org/index/sling.pdf/jcr:content");
         context.load().binaryResource("/Sling.docx", "/content/apache/sling-apache-org/index/Sling.docx/jcr:content");
