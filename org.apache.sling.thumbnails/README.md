@@ -58,7 +58,7 @@ Once saved, the rendition can be access directly using the configured Rendition 
 
 ### Transform Servlet
 
-The second servlet uses [Sling Context Aware Configurations](https://sling.apache.org/documentation/bundles/context-aware-configuration/context-aware-configuration.html) to generate thumbnails based on pre-defined transformation pipelines. Note that the [TransformationManager](src/main/java/org/apache/sling/thumbnails/TransformationManager.java) is useful for retrieving the available transformation pipelines for a particular resource.
+The second servlet uses [Sling Context Aware Configurations](https://sling.apache.org/documentation/bundles/context-aware-configuration/context-aware-configuration.html) to generate thumbnails based on pre-defined transformation pipelines. Note that the [RenderedResource](src/main/java/org/apache/sling/thumbnails/RenderedResource.java) model is useful for retrieving the available transformation pipelines and existing renditions for a particular resource.
 
 Each available transformation can then be accessed in the form:
 
