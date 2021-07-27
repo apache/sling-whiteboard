@@ -1,0 +1,1 @@
+Import-Package: org.apache.sling.repoinit.parser;version="[1.0,2.0)",org.apache.sling.jcr.repoinit;version="[1.0,2.0)",*
