@@ -49,11 +49,11 @@ import org.osgi.service.component.annotations.Reference;
         WebConsoleConstants.PLUGIN_LABEL + "=" + RepoInitWebConsole.CONSOLE_LABEL,
         WebConsoleConstants.PLUGIN_TITLE + "=" + RepoInitWebConsole.CONSOLE_TITLE,
         WebConsoleConstants.CONFIG_PRINTER_MODES + "=always",
-        WebConsoleConstants.PLUGIN_CATEGORY + "=Status" }, service = { Servlet.class })
+        WebConsoleConstants.PLUGIN_CATEGORY + "=Sling" }, service = { Servlet.class })
 public class RepoInitWebConsole extends AbstractWebConsolePlugin {
 
     public static final String CONSOLE_LABEL = "repoinit";
-    public static final String CONSOLE_TITLE = "Sling RepoInit";
+    public static final String CONSOLE_TITLE = "RepoInit";
     private final RepoInitParser parser;
     private final SlingRepository slingRepository;
     private final JcrRepoInitOpsProcessor processor;
