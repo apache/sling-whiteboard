@@ -17,9 +17,13 @@
 package org.apache.sling.repoinit.webconsole;
 
 import java.io.IOException;
+import java.io.Reader;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import javax.jcr.Session;
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -35,11 +39,10 @@ import org.apache.commons.io.IOUtils;
 import org.apache.felix.webconsole.AbstractWebConsolePlugin;
 import org.apache.felix.webconsole.WebConsoleConstants;
 import org.apache.sling.jcr.api.SlingRepository;
-import org.apache.sling.jcr.repoinit.JcrRepoInitOpsProcessor;
-import org.apache.sling.repoinit.parser.RepoInitParser;
-import org.apache.sling.repoinit.parser.RepoInitParsingException;
-import org.apache.sling.repoinit.parser.operations.Operation;
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
+import org.osgi.framework.ServiceReference;
+import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -53,18 +56,41 @@ import org.osgi.service.component.annotations.Reference;
 public class RepoInitWebConsole extends AbstractWebConsolePlugin {
 
     public static final String CONSOLE_LABEL = "repoinit";
-    public static final String CONSOLE_TITLE = "RepoInit";
-    private final RepoInitParser parser;
+    public static final String CONSOLE_TITLE = "Repository Initialization";
     private final SlingRepository slingRepository;
-    private final JcrRepoInitOpsProcessor processor;
+    private final BundleContext context;
     static final String RES_LOC = CONSOLE_LABEL + "/res/ui";
 
     @Activate
-    public RepoInitWebConsole(@Reference RepoInitParser parser, @Reference SlingRepository slingRepository,
-            @Reference JcrRepoInitOpsProcessor processor) throws IOException {
-        this.parser = parser;
-        this.processor = processor;
+    public RepoInitWebConsole(ComponentContext context, @Reference SlingRepository slingRepository) throws IOException {
+        this.context = context.getBundleContext();
         this.slingRepository = slingRepository;
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<?> parse(Reader reader) throws NoSuchMethodException, SecurityException, IllegalAccessException,
+            IllegalArgumentException, InvocationTargetException {
+        ServiceReference<?> reference = context.getServiceReference("org.apache.sling.repoinit.parser.RepoInitParser");
+        try {
+            Object parser = context.getService(reference);
+            Method method = parser.getClass().getDeclaredMethod("parse", Reader.class);
+            return (List<Object>) method.invoke(parser, reader);
+        } finally {
+            context.ungetService(reference);
+        }
+    }
+
+    private void process(Session session, List<?> operations) throws IllegalAccessException, IllegalArgumentException,
+            InvocationTargetException, NoSuchMethodException, SecurityException {
+        ServiceReference<?> reference = context
+                .getServiceReference("org.apache.sling.jcr.repoinit.JcrRepoInitOpsProcessor");
+        try {
+            Object processor = context.getService(reference);
+            Method method = processor.getClass().getDeclaredMethod("apply", Session.class, List.class);
+            method.invoke(processor, session, operations);
+        } finally {
+            context.ungetService(reference);
+        }
     }
 
     @Override
@@ -97,13 +123,17 @@ public class RepoInitWebConsole extends AbstractWebConsolePlugin {
         }
     }
 
+    @SuppressWarnings("deprecated")
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        List<Operation> operations;
+        List<?> operations;
         try {
-            operations = parser.parse(request.getReader());
-        } catch (RepoInitParsingException e) {
+            operations = parse(request.getReader());
+        } catch (InvocationTargetException e) {
+            handleException(response, "Failed to parse RepoInit Statement: ", (Exception) e.getCause());
+            return;
+        } catch (Exception e) {
             handleException(response, "Failed to parse RepoInit Statement: ", e);
             return;
         }
@@ -111,12 +141,17 @@ public class RepoInitWebConsole extends AbstractWebConsolePlugin {
 
         if ("true".equals(request.getParameter("execute"))) {
             try {
-                processor.apply(slingRepository.loginAdministrative(null), operations);
+
+                process(slingRepository.loginAdministrative(null), operations);
+            } catch (InvocationTargetException e) {
+                response.setStatus(400);
+                apiResponse.setErrorMessage("Failed to apply statements", (Exception) e.getCause());
             } catch (Exception e) {
                 response.setStatus(400);
                 apiResponse.setErrorMessage("Failed to apply statements", e);
             }
         }
+
         writeResponse(response, apiResponse);
     }
 
@@ -145,11 +180,11 @@ public class RepoInitWebConsole extends AbstractWebConsolePlugin {
         protected boolean succeeded;
 
         @JsonTypeInfo(include = JsonTypeInfo.As.WRAPPER_OBJECT, use = JsonTypeInfo.Id.NAME)
-        protected final List<Operation> operations;
+        protected final List<?> operations;
 
         protected String errorMessage;
 
-        public ApiResponse(List<Operation> operations) {
+        public ApiResponse(List<?> operations) {
             this.succeeded = true;
             this.operations = operations;
             errorMessage = null;
@@ -168,11 +203,11 @@ public class RepoInitWebConsole extends AbstractWebConsolePlugin {
             return errorMessage;
         }
 
-        public List<Operation> getOperations() {
+        public List<?> getOperations() {
             return operations;
         }
 
-        public void setErrorMessage(String message, Exception e){
+        public void setErrorMessage(String message, Exception e) {
             this.succeeded = false;
             this.errorMessage = message + " [" + e.getClass().getSimpleName() + "]: " + e.getMessage();
         }

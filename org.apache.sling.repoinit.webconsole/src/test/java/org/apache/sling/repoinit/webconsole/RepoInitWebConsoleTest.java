@@ -50,19 +50,24 @@ public class RepoInitWebConsoleTest {
     private RepoInitParser parser;
     private SlingRepository slingRepository;
     private JcrRepoInitOpsProcessor processor;
+    private RepoInitWebConsole webConsole;
 
     @Before
-    public void setup() throws RepoInitParsingException, LoginException, RepositoryException {
+    public void setup() throws RepoInitParsingException, LoginException, RepositoryException, IOException {
         context.request().setServletPath("/system/console/");
         this.parser = mock(RepoInitParser.class);
+        context.registerService(RepoInitParser.class, parser);
         this.slingRepository = mock(SlingRepository.class);
         when(slingRepository.loginAdministrative(null)).thenReturn(mock(Session.class));
         this.processor = mock(JcrRepoInitOpsProcessor.class);
         when(parser.parse(any())).thenReturn(Collections.emptyList());
+        context.registerService(JcrRepoInitOpsProcessor.class, processor);
+
+        webConsole = new RepoInitWebConsole(context.componentContext(), slingRepository);
+        
     }
 
     public void testDoGetRequest(String resource, String type) throws ServletException, IOException {
-        RepoInitWebConsole webConsole = new RepoInitWebConsole(parser, slingRepository, processor);
         context.request().setPathInfo("repoinit/" + resource);
         webConsole.doGet(context.request(), context.response());
         assertEquals(200, context.response().getStatus());
@@ -88,7 +93,6 @@ public class RepoInitWebConsoleTest {
 
     @Test
     public void testGetHtml() throws ServletException, IOException {
-        RepoInitWebConsole webConsole = new RepoInitWebConsole(parser, slingRepository, processor);
         context.request().setPathInfo("repoinit");
         webConsole.doGet(context.request(), context.response());
         assertEquals(200, context.response().getStatus());
@@ -99,14 +103,12 @@ public class RepoInitWebConsoleTest {
 
     @Test
     public void testConsoleInfo() throws IOException {
-        RepoInitWebConsole webConsole = new RepoInitWebConsole(parser, slingRepository, processor);
         assertEquals(RepoInitWebConsole.CONSOLE_LABEL, webConsole.getLabel());
         assertEquals(RepoInitWebConsole.CONSOLE_TITLE, webConsole.getTitle());
     }
 
     @Test
     public void testPostValid() throws ServletException, IOException {
-        RepoInitWebConsole webConsole = new RepoInitWebConsole(parser, slingRepository, processor);
 
         context.request().setContent("create user".getBytes());
         webConsole.doPost(context.request(), context.response());
@@ -119,7 +121,6 @@ public class RepoInitWebConsoleTest {
     @Test
     public void testPostFailure() throws ServletException, IOException, RepoInitParsingException {
         when(parser.parse(any())).thenThrow(new RepoInitParsingException("Failed because bad", null));
-        RepoInitWebConsole webConsole = new RepoInitWebConsole(parser, slingRepository, processor);
 
         context.request().setContent("create user".getBytes());
         webConsole.doPost(context.request(), context.response());
@@ -133,7 +134,6 @@ public class RepoInitWebConsoleTest {
 
     @Test
     public void testPostExecute() throws ServletException, IOException, RepoInitParsingException {
-        RepoInitWebConsole webConsole = new RepoInitWebConsole(parser, slingRepository, processor);
 
         context.request().setContent("create user".getBytes());
         context.request().addRequestParameter("execute", "true");
@@ -148,7 +148,6 @@ public class RepoInitWebConsoleTest {
     @Test
     public void testPostExecuteFailure() throws ServletException, IOException, RepoInitParsingException {
         doThrow(new RuntimeException("ERROR")).when(processor).apply(any(), any());
-        RepoInitWebConsole webConsole = new RepoInitWebConsole(parser, slingRepository, processor);
 
         context.request().setContent("create user".getBytes());
         context.request().addRequestParameter("execute", "true");

@@ -17,7 +17,7 @@
     <version>1.0.0-SNAPSHOT</version>
 
     <properties>
-        <sling.java.version>11</sling.java.version>
+        <sling.java.version>8</sling.java.version>
     </properties>
 
     <build>
@@ -153,29 +153,10 @@
             <artifactId>slf4j-api</artifactId>
         </dependency>
 
-        <!-- Repoinit Deps -->
-        <dependency>
-            <groupId>org.apache.sling</groupId>
-            <artifactId>org.apache.sling.repoinit.parser</artifactId>
-            <version>1.1.0</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.sling</groupId>
-            <artifactId>org.apache.sling.jcr.repoinit</artifactId>
-            <version>1.1.0</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.sling</groupId>
-            <artifactId>org.apache.sling.testing.sling-mock.junit4</artifactId>
-            <version>3.0.2</version>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.9.0</version>
+            <version>2.8.4</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -217,6 +198,24 @@
             <artifactId>commons-fileupload</artifactId>
             <version>1.4</version>
             <groupId>commons-fileupload</groupId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.sling</groupId>
+            <artifactId>org.apache.sling.repoinit.parser</artifactId>
+            <version>1.2.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.sling</groupId>
+            <artifactId>org.apache.sling.jcr.repoinit</artifactId>
+            <version>1.1.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.sling</groupId>
+            <artifactId>org.apache.sling.testing.sling-mock.junit4</artifactId>
+            <version>3.0.2</version>
             <scope>test</scope>
         </dependency>
 
