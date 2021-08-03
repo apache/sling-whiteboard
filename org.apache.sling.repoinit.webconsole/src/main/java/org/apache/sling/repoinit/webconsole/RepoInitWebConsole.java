@@ -22,7 +22,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.jcr.Session;
 import javax.servlet.Servlet;
@@ -57,7 +60,15 @@ public class RepoInitWebConsole extends AbstractWebConsolePlugin {
 
     public static final String CONSOLE_LABEL = "repoinit";
     public static final String CONSOLE_TITLE = "RepoInit";
-    static final String RES_LOC = CONSOLE_LABEL + "/res/ui";
+    private static final String RES_LOC = CONSOLE_LABEL + "/res/ui/";
+
+    private static final Map<String, String> RESOURCES = new HashMap<>();
+    static {
+        RESOURCES.put("repoinit.css", "text/css");
+        RESOURCES.put("tln.min.css", "text/css");
+        RESOURCES.put("tln.min.js", "application/javascript");
+        RESOURCES.put("repoinit.js", "application/javascript");
+    }
 
     @Reference
     protected SlingRepository slingRepository;
@@ -108,21 +119,15 @@ public class RepoInitWebConsole extends AbstractWebConsolePlugin {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        if (request.getRequestURI().endsWith(RES_LOC + "/tln.min.css")) {
-            response.setContentType("text/css");
-            IOUtils.copy(getClass().getClassLoader().getResourceAsStream("res/ui/tln.min.css"),
-                    response.getOutputStream());
-        } else if (request.getRequestURI().endsWith(RES_LOC + "/tln.min.js")) {
-            response.setContentType("application/javascript");
-            IOUtils.copy(getClass().getClassLoader().getResourceAsStream("res/ui/tln.min.js"),
-                    response.getOutputStream());
-        } else if (request.getRequestURI().endsWith(RES_LOC + "/repoinit.js")) {
-            response.setContentType("application/javascript");
-            IOUtils.copy(getClass().getClassLoader().getResourceAsStream("res/ui/repoinit.js"),
-                    response.getOutputStream());
-        } else {
-            super.doGet(request, response);
+        for (Entry<String, String> res : RESOURCES.entrySet()) {
+            if (request.getRequestURI().endsWith(RES_LOC + res.getKey())) {
+                response.setContentType(res.getValue());
+                IOUtils.copy(getClass().getClassLoader().getResourceAsStream("res/ui/" + res.getKey()),
+                        response.getOutputStream());
+                return;
+            }
         }
+        super.doGet(request, response);
     }
 
     @SuppressWarnings("deprecated")

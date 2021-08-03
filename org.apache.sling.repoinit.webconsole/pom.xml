@@ -53,10 +53,8 @@
                         <exclude>velocity.log</exclude>
                         <!-- don't check anything in target -->
                         <exclude>target/*</exclude>
-                        <!-- for some reason Rat doesn't seem to pick up that PPTs are binary -->
-                        <exclude>src/test/resources/*.ppt</exclude>
-                        <!-- exclude verify text -->
-                        <exclude>src/test/resources/*.txt</exclude>
+                        <!-- exclude TLN files (which did not have the license header) -->
+                        <exclude>src/main/resources/res/ui/tln.min.*</exclude>
                     </excludes>
                 </configuration>
                 <executions>

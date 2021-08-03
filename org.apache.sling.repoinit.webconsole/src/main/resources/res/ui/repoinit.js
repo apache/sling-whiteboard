@@ -18,6 +18,7 @@ TLN.append_line_numbers("source");
 
 const sourceEl = document.getElementById("source");
 const resultsContainer = document.getElementById("results-container");
+const parsedContainerEl = document.getElementById("parsed-container");
 const parsedEl = document.getElementById("parsed");
 const featureEl = document.getElementById("feature");
 const featureContainerEl = document.getElementById("feature-container");
@@ -26,25 +27,29 @@ const executeCbx = document.getElementById("execute");
 const messagesEl = document.getElementById("messages");
 
 goButton.addEventListener("click", async function () {
-  goButton.disabled = true;
-  sourceEl.disabled = true;
+  // clear everything out
+  goButton.disabled = sourceEl.disabled = true;
   resultsContainer.classList.add("d-none");
-  featureContainerEl.classList.add("d-none");
+  featureEl.innerText = parsedEl.innerText = messagesEl.innerHTML = "";
+
+  // get the response
   const res = await fetch(`repoinit?execute=${executeCbx.checked}`, {
     method: "post",
     body: sourceEl.value,
   });
   const json = await res.json();
 
-  messagesEl.innerHTML = "";
+  // add the messages
   json.messages.forEach((m) => {
     const par = document.createElement("p");
     par.innerText = m;
     messagesEl.appendChild(par);
   });
 
-  if (json.succeeded) {
+  // if there are operations diplay the statements and feature
+  if (json.operations) {
     parsedEl.innerText = JSON.stringify(json.operations, null, 2);
+    parsedContainerEl.classList.remove("d-none");
     featureEl.innerText = JSON.stringify(
       {
         "repoinit:TEXT|true": sourceEl.value.split("\n"),
@@ -53,11 +58,9 @@ goButton.addEventListener("click", async function () {
       2
     );
     featureContainerEl.classList.remove("d-none");
-  } else {
-    parsedEl.innerText = "";
-    featureEl.innerText = "";
   }
+
+  // show the results
   resultsContainer.classList.remove("d-none");
-  goButton.disabled = false;
-  sourceEl.disabled = false;
+  goButton.disabled = sourceEl.disabled = false;
 });

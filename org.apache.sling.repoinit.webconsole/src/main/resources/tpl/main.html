@@ -4,22 +4,7 @@
     in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See
     the License for the specific language governing permissions and limitations under the License. -->
 <link rel="stylesheet" type="text/css" href="repoinit/res/ui/tln.min.css" />
-<style type="text/css">
-  pre {
-    border: 1px solid silver;
-  }
-  .d-none {
-    display: none;
-  }
-  .wrapper,
-  pre {
-    position: relative;
-    height: 300px;
-    width: 100%;
-    margin: 15px auto;
-    overflow: auto;
-  }
-</style>
+<link rel="stylesheet" type="text/css" href="repoinit/res/ui/repoinit.css" />
 <p class="statline ui-state-highlight">Source</p>
 <p>Test and verify Repository Initialization (repoint) scripts</p>
 <div class="wrapper">
@@ -30,7 +15,7 @@
 <label for="execute">Execute</label>
 <div class="d-none" id="results-container">
   <div class="statline ui-state-highlight" id="messages"></div>
-  <div id="parsed-container">
+  <div class="d-none" id="parsed-container">
     <p class="statline ui-state-highlight">Parsed Statements</p>
     <pre id="parsed"></pre>
   </div>
