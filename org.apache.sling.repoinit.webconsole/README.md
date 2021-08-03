@@ -18,6 +18,8 @@ Either download the latest version of this bundle from the [Sling Downloads page
 
 Note installing from source requires Java 11 or later and Maven 3.x or later.
 
+This project has been tested to work with Sling 11+.
+
 ## Configuration
 
 To enable execute functionality of the web console, you must add a Apache Sling Login Admin Whitelist entry. Open the OSGi console to [/system/console/configMgr](http://localhost:8080/system/console/configMgr) and add an entry for `org.apache.sling.repoinit.webconsole` either to an existing configuration fragment or a new one.

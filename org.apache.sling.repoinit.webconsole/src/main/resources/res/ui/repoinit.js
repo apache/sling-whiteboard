@@ -17,23 +17,32 @@
 TLN.append_line_numbers("source");
 
 const sourceEl = document.getElementById("source");
-const parsedContainerEl = document.getElementById("parsed-container");
+const resultsContainer = document.getElementById("results-container");
 const parsedEl = document.getElementById("parsed");
 const featureEl = document.getElementById("feature");
 const featureContainerEl = document.getElementById("feature-container");
 const goButton = document.getElementById("evaluate-repoinit");
 const executeCbx = document.getElementById("execute");
+const messagesEl = document.getElementById("messages");
 
 goButton.addEventListener("click", async function () {
   goButton.disabled = true;
   sourceEl.disabled = true;
-  parsedContainerEl.classList.add("d-none");
+  resultsContainer.classList.add("d-none");
   featureContainerEl.classList.add("d-none");
   const res = await fetch(`repoinit?execute=${executeCbx.checked}`, {
     method: "post",
     body: sourceEl.value,
   });
   const json = await res.json();
+
+  messagesEl.innerHTML = "";
+  json.messages.forEach((m) => {
+    const par = document.createElement("p");
+    par.innerText = m;
+    messagesEl.appendChild(par);
+  });
+
   if (json.succeeded) {
     parsedEl.innerText = JSON.stringify(json.operations, null, 2);
     featureEl.innerText = JSON.stringify(
@@ -45,10 +54,10 @@ goButton.addEventListener("click", async function () {
     );
     featureContainerEl.classList.remove("d-none");
   } else {
-    parsedEl.innerText = json.errorMessage;
+    parsedEl.innerText = "";
     featureEl.innerText = "";
   }
-  parsedContainerEl.classList.remove("d-none");
+  resultsContainer.classList.remove("d-none");
   goButton.disabled = false;
   sourceEl.disabled = false;
 });

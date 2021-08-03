@@ -21,6 +21,7 @@ import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.jcr.Session;
@@ -51,20 +52,21 @@ import org.osgi.service.component.annotations.Reference;
         Constants.SERVICE_VENDOR + "=The Apache Software Foundation",
         WebConsoleConstants.PLUGIN_LABEL + "=" + RepoInitWebConsole.CONSOLE_LABEL,
         WebConsoleConstants.PLUGIN_TITLE + "=" + RepoInitWebConsole.CONSOLE_TITLE,
-        WebConsoleConstants.CONFIG_PRINTER_MODES + "=always",
         WebConsoleConstants.PLUGIN_CATEGORY + "=Sling" }, service = { Servlet.class })
 public class RepoInitWebConsole extends AbstractWebConsolePlugin {
 
     public static final String CONSOLE_LABEL = "repoinit";
-    public static final String CONSOLE_TITLE = "Repository Initialization";
-    private final SlingRepository slingRepository;
-    private final BundleContext context;
+    public static final String CONSOLE_TITLE = "RepoInit";
     static final String RES_LOC = CONSOLE_LABEL + "/res/ui";
 
+    @Reference
+    protected SlingRepository slingRepository;
+
+    private BundleContext context;
+
     @Activate
-    public RepoInitWebConsole(ComponentContext context, @Reference SlingRepository slingRepository) throws IOException {
+    public void activate(ComponentContext context) {
         this.context = context.getBundleContext();
-        this.slingRepository = slingRepository;
     }
 
     @SuppressWarnings("unchecked")
@@ -131,18 +133,19 @@ public class RepoInitWebConsole extends AbstractWebConsolePlugin {
         try {
             operations = parse(request.getReader());
         } catch (InvocationTargetException e) {
-            handleException(response, "Failed to parse RepoInit Statement: ", (Exception) e.getCause());
+            handleException(response, "Failed to parse RepoInit script: ", (Exception) e.getCause());
             return;
         } catch (Exception e) {
-            handleException(response, "Failed to parse RepoInit Statement: ", e);
+            handleException(response, "Failed to parse RepoInit script: ", e);
             return;
         }
-        ApiResponse apiResponse = new ApiResponse(operations);
+        ApiResponse apiResponse = new ApiResponse("Parsed Repoinit script successfully!", operations);
 
         if ("true".equals(request.getParameter("execute"))) {
             try {
 
                 process(slingRepository.loginAdministrative(null), operations);
+                apiResponse.addMessage("Executed statements successfully!");
             } catch (InvocationTargetException e) {
                 response.setStatus(400);
                 apiResponse.setErrorMessage("Failed to apply statements", (Exception) e.getCause());
@@ -182,12 +185,12 @@ public class RepoInitWebConsole extends AbstractWebConsolePlugin {
         @JsonTypeInfo(include = JsonTypeInfo.As.WRAPPER_OBJECT, use = JsonTypeInfo.Id.NAME)
         protected final List<?> operations;
 
-        protected String errorMessage;
+        protected List<String> messages = new ArrayList<>();
 
-        public ApiResponse(List<?> operations) {
+        public ApiResponse(String message, List<?> operations) {
             this.succeeded = true;
             this.operations = operations;
-            errorMessage = null;
+            messages.add(message);
         }
 
         public ApiResponse(String message, Exception e) {
@@ -195,12 +198,16 @@ public class RepoInitWebConsole extends AbstractWebConsolePlugin {
             setErrorMessage(message, e);
         }
 
+        public void addMessage(String message) {
+            this.messages.add(message);
+        }
+
         public boolean isSucceeded() {
             return succeeded;
         }
 
-        public String getErrorMessage() {
-            return errorMessage;
+        public List<String> getMessages() {
+            return messages;
         }
 
         public List<?> getOperations() {
@@ -209,7 +216,7 @@ public class RepoInitWebConsole extends AbstractWebConsolePlugin {
 
         public void setErrorMessage(String message, Exception e) {
             this.succeeded = false;
-            this.errorMessage = message + " [" + e.getClass().getSimpleName() + "]: " + e.getMessage();
+            this.messages.add(message + " [" + e.getClass().getSimpleName() + "]: " + e.getMessage());
         }
     }
 }

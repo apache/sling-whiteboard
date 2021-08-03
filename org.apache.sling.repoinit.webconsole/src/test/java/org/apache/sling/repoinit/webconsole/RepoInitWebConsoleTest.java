@@ -63,8 +63,11 @@ public class RepoInitWebConsoleTest {
         when(parser.parse(any())).thenReturn(Collections.emptyList());
         context.registerService(JcrRepoInitOpsProcessor.class, processor);
 
-        webConsole = new RepoInitWebConsole(context.componentContext(), slingRepository);
-        
+        webConsole = new RepoInitWebConsole();
+
+        webConsole.slingRepository = slingRepository;
+        webConsole.activate(context.componentContext());
+
     }
 
     public void testDoGetRequest(String resource, String type) throws ServletException, IOException {
@@ -115,7 +118,7 @@ public class RepoInitWebConsoleTest {
 
         assertEquals(200, context.response().getStatus());
         assertEquals("application/json", context.response().getContentType());
-        assertEquals("{\"succeeded\":true,\"operations\":[]}", context.response().getOutputAsString());
+        assertEquals("{\"succeeded\":true,\"operations\":[],\"messages\":[\"Parsed Repoinit script successfully!\"]}", context.response().getOutputAsString());
     }
 
     @Test
@@ -128,7 +131,7 @@ public class RepoInitWebConsoleTest {
         assertEquals(400, context.response().getStatus());
         assertEquals("application/json", context.response().getContentType());
         assertEquals(
-                "{\"succeeded\":false,\"errorMessage\":\"Failed to parse RepoInit Statement:  [RepoInitParsingException]: Failed because bad\"}",
+                "{\"succeeded\":false,\"messages\":[\"Failed to parse RepoInit script:  [RepoInitParsingException]: Failed because bad\"]}",
                 context.response().getOutputAsString());
     }
 
@@ -141,7 +144,9 @@ public class RepoInitWebConsoleTest {
 
         assertEquals(200, context.response().getStatus());
         assertEquals("application/json", context.response().getContentType());
-        assertEquals("{\"succeeded\":true,\"operations\":[]}", context.response().getOutputAsString());
+        assertEquals(
+                "{\"succeeded\":true,\"operations\":[],\"messages\":[\"Parsed Repoinit script successfully!\",\"Executed statements successfully!\"]}",
+                context.response().getOutputAsString());
         verify(processor).apply(any(), any());
     }
 
@@ -155,7 +160,9 @@ public class RepoInitWebConsoleTest {
 
         assertEquals(400, context.response().getStatus());
         assertEquals("application/json", context.response().getContentType());
-        assertEquals("{\"succeeded\":false,\"operations\":[],\"errorMessage\":\"Failed to apply statements [RuntimeException]: ERROR\"}", context.response().getOutputAsString());
+        assertEquals(
+                "{\"succeeded\":false,\"operations\":[],\"messages\":[\"Parsed Repoinit script successfully!\",\"Failed to apply statements [RuntimeException]: ERROR\"]}",
+                context.response().getOutputAsString());
 
     }
 }

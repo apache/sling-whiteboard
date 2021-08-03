@@ -28,13 +28,16 @@
 <button id="evaluate-repoinit">Evaluate</button>
 <input type="checkbox" id="execute" name="execute" />
 <label for="execute">Execute</label>
-<div class="d-none" id="parsed-container">
-  <p class="statline ui-state-highlight">Parsed Statements</p>
-  <pre id="parsed"></pre>
-</div>
-<div class="d-none" id="feature-container">
-  <p class="statline ui-state-highlight">Feature Model JSON</p>
-  <pre id="feature"></pre>
+<div class="d-none" id="results-container">
+  <div class="statline ui-state-highlight" id="messages"></div>
+  <div id="parsed-container">
+    <p class="statline ui-state-highlight">Parsed Statements</p>
+    <pre id="parsed"></pre>
+  </div>
+  <div class="d-none" id="feature-container">
+    <p class="statline ui-state-highlight">Feature Model JSON</p>
+    <pre id="feature"></pre>
+  </div>
 </div>
 <script src="repoinit/res/ui/tln.min.js"></script>
 <script src="repoinit/res/ui/repoinit.js"></script>
