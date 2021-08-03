@@ -34,7 +34,7 @@ Assuming the script is valid a JSON representation will be displayed in the `Par
 
 ![Evaluating a RepoInit Statement](docs/Evaluate.png)
 
-If your script is not valid, an error message will be displayed in the `Parsed Statements` section. 
+If your script is not valid, an error message will be displayed in the `Messages` section. 
 
 ![Example Error Message](docs/Error.png)
 

@@ -14,13 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+h2 {
+  font-size: large;
+  margin: 1em 0;
+}
 pre {
   border: 1px solid silver;
 }
 .d-none {
   display: none;
 }
-.wrapper, pre {
+.wrapper,
+pre {
   position: relative;
   height: 300px;
   width: 100%;

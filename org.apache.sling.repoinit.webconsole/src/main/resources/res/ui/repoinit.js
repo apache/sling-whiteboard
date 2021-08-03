@@ -47,7 +47,7 @@ goButton.addEventListener("click", async function () {
   });
 
   // if there are operations diplay the statements and feature
-  if (json.operations) {
+  if (json.hasOwnProperty('operations') && json.operations) {
     parsedEl.innerText = JSON.stringify(json.operations, null, 2);
     parsedContainerEl.classList.remove("d-none");
     featureEl.innerText = JSON.stringify(
@@ -58,6 +58,9 @@ goButton.addEventListener("click", async function () {
       2
     );
     featureContainerEl.classList.remove("d-none");
+  } else {
+    parsedContainerEl.classList.add("d-none");
+    featureContainerEl.classList.add("d-none");
   }
 
   // show the results
