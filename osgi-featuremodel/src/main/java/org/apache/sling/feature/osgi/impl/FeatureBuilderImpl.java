@@ -36,7 +36,6 @@ class FeatureBuilderImpl implements FeatureBuilder {
     private final ID id;
 
     private String name;
-    private String copyright;
     private String description;
     private String docURL;
     private String license;
@@ -57,12 +56,6 @@ class FeatureBuilderImpl implements FeatureBuilder {
     @Override
     public FeatureBuilder setName(String name) {
         this.name = name;
-        return this;
-    }
-
-    @Override
-    public FeatureBuilder setCopyright(String c) {
-        this.copyright = c;
         return this;
     }
 
@@ -145,7 +138,7 @@ class FeatureBuilderImpl implements FeatureBuilder {
 
     @Override
     public Feature build() {
-        return new FeatureImpl(id, name, copyright, description, docURL,
+        return new FeatureImpl(id, name, description, docURL,
                 license, scm, vendor, complete,
                 bundles, categories, configurations, extensions, variables);
     }
@@ -153,7 +146,6 @@ class FeatureBuilderImpl implements FeatureBuilder {
     private static class FeatureImpl implements Feature {
         private final ID id;
         private final Optional<String> name;
-        private final Optional<String> copyright;
         private final Optional<String> description;
         private final Optional<String> docURL;
         private final Optional<String> license;
@@ -167,12 +159,11 @@ class FeatureBuilderImpl implements FeatureBuilder {
         private final Map<String,FeatureExtension> extensions;
         private final Map<String,String> variables;
 
-        private FeatureImpl(ID id, String aName, String cr, String desc, String docs, String lic, String sc, String vnd,
+        private FeatureImpl(ID id, String aName, String desc, String docs, String lic, String sc, String vnd,
                 boolean comp, List<FeatureBundle> bs, List<String> cats, Map<String,FeatureConfiguration> cs,
                 Map<String,FeatureExtension> es, Map<String,String> vars) {
             this.id = id;
             name = Optional.ofNullable(aName);
-            copyright = Optional.ofNullable(cr);
             description = Optional.ofNullable(desc);
             docURL = Optional.ofNullable(docs);
             license = Optional.ofNullable(lic);
@@ -210,11 +201,6 @@ class FeatureBuilderImpl implements FeatureBuilder {
         @Override
         public Optional<String> getLicense() {
             return license;
-        }
-
-        @Override
-        public Optional<String> getCopyright() {
-            return copyright;
         }
 
         @Override
@@ -259,7 +245,7 @@ class FeatureBuilderImpl implements FeatureBuilder {
 
         @Override
 		public int hashCode() {
-			return Objects.hash(bundles, categories, complete, configurations, copyright, description, docURL,
+			return Objects.hash(bundles, categories, complete, configurations, description, docURL,
 					extensions, id, license, name, scm, variables, vendor);
 		}
 
@@ -274,7 +260,7 @@ class FeatureBuilderImpl implements FeatureBuilder {
 			FeatureImpl other = (FeatureImpl) obj;
 			return Objects.equals(bundles, other.bundles) && Objects.equals(categories, other.categories)
 					&& complete == other.complete && Objects.equals(configurations, other.configurations)
-					&& Objects.equals(copyright, other.copyright) && Objects.equals(description, other.description)
+					&& Objects.equals(description, other.description)
 					&& Objects.equals(docURL, other.docURL) && Objects.equals(extensions, other.extensions)
 					&& Objects.equals(id, other.id) && Objects.equals(license, other.license)
 					&& Objects.equals(name, other.name) && Objects.equals(scm, other.scm)
