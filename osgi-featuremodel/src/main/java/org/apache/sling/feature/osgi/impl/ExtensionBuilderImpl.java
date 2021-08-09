@@ -26,12 +26,8 @@ import org.osgi.service.feature.FeatureExtension;
 import org.osgi.service.feature.FeatureExtension.Kind;
 import org.osgi.service.feature.FeatureExtension.Type;
 import org.osgi.service.feature.FeatureExtensionBuilder;
-import org.osgi.service.feature.FeatureService;
-import org.osgi.service.feature.ID;
 
 class ExtensionBuilderImpl implements FeatureExtensionBuilder {
-	private static FeatureService FEATURE_SERVICE = new FeatureServiceImpl();
-	
     private final String name;
     private final Type type;
     private final Kind kind;
