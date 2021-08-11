@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import javax.jcr.Session;
 import javax.servlet.Servlet;
@@ -42,14 +43,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.felix.webconsole.AbstractWebConsolePlugin;
 import org.apache.felix.webconsole.WebConsoleConstants;
-import org.apache.sling.jcr.api.SlingRepository;
+import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.auth.core.AuthenticationSupport;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 @Component(property = { Constants.SERVICE_DESCRIPTION + "=RepoInit Web Console Plugin",
         Constants.SERVICE_VENDOR + "=The Apache Software Foundation",
@@ -69,9 +70,6 @@ public class RepoInitWebConsole extends AbstractWebConsolePlugin {
         RESOURCES.put("tln.min.js", "application/javascript");
         RESOURCES.put("repoinit.js", "application/javascript");
     }
-
-    @Reference
-    protected SlingRepository slingRepository;
 
     private BundleContext context;
 
@@ -149,8 +147,11 @@ public class RepoInitWebConsole extends AbstractWebConsolePlugin {
         if ("true".equals(request.getParameter("execute"))) {
             try {
 
-                process(slingRepository.loginAdministrative(null), operations);
+                Session session = getSession(request);
+
+                process(session, operations);
                 apiResponse.addMessage("Executed statements successfully!");
+
             } catch (InvocationTargetException e) {
                 response.setStatus(400);
                 apiResponse.setErrorMessage("Failed to apply statements", (Exception) e.getCause());
@@ -161,6 +162,15 @@ public class RepoInitWebConsole extends AbstractWebConsolePlugin {
         }
 
         writeResponse(response, apiResponse);
+    }
+
+    private Session getSession(HttpServletRequest request) {
+        Object resolver = request.getAttribute(AuthenticationSupport.REQUEST_ATTRIBUTE_RESOLVER);
+        if (resolver instanceof ResourceResolver) {
+            return Optional.ofNullable(((ResourceResolver) resolver).adaptTo(Session.class))
+                    .orElseThrow(() -> new IllegalStateException("No session available"));
+        }
+        throw new IllegalStateException("No resource resolver available");
     }
 
     @Override

@@ -34,7 +34,8 @@ import javax.jcr.Session;
 import javax.servlet.ServletException;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.sling.jcr.api.SlingRepository;
+import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.auth.core.AuthenticationSupport;
 import org.apache.sling.jcr.repoinit.JcrRepoInitOpsProcessor;
 import org.apache.sling.repoinit.parser.RepoInitParser;
 import org.apache.sling.repoinit.parser.RepoInitParsingException;
@@ -48,7 +49,6 @@ public class RepoInitWebConsoleTest {
     @Rule
     public SlingContext context = new SlingContext();
     private RepoInitParser parser;
-    private SlingRepository slingRepository;
     private JcrRepoInitOpsProcessor processor;
     private RepoInitWebConsole webConsole;
 
@@ -57,15 +57,17 @@ public class RepoInitWebConsoleTest {
         context.request().setServletPath("/system/console/");
         this.parser = mock(RepoInitParser.class);
         context.registerService(RepoInitParser.class, parser);
-        this.slingRepository = mock(SlingRepository.class);
-        when(slingRepository.loginAdministrative(null)).thenReturn(mock(Session.class));
         this.processor = mock(JcrRepoInitOpsProcessor.class);
         when(parser.parse(any())).thenReturn(Collections.emptyList());
         context.registerService(JcrRepoInitOpsProcessor.class, processor);
 
+        ResourceResolver resolver = mock(ResourceResolver.class);
+        when(resolver.adaptTo(Session.class)).thenReturn(mock(Session.class));
+
+        context.request().setAttribute(AuthenticationSupport.REQUEST_ATTRIBUTE_RESOLVER, resolver);
+
         webConsole = new RepoInitWebConsole();
 
-        webConsole.slingRepository = slingRepository;
         webConsole.activate(context.componentContext());
 
     }
@@ -118,7 +120,8 @@ public class RepoInitWebConsoleTest {
 
         assertEquals(200, context.response().getStatus());
         assertEquals("application/json", context.response().getContentType());
-        assertEquals("{\"succeeded\":true,\"operations\":[],\"messages\":[\"Parsed Repoinit script successfully!\"]}", context.response().getOutputAsString());
+        assertEquals("{\"succeeded\":true,\"operations\":[],\"messages\":[\"Parsed Repoinit script successfully!\"]}",
+                context.response().getOutputAsString());
     }
 
     @Test
@@ -162,6 +165,40 @@ public class RepoInitWebConsoleTest {
         assertEquals("application/json", context.response().getContentType());
         assertEquals(
                 "{\"succeeded\":false,\"operations\":[],\"messages\":[\"Parsed Repoinit script successfully!\",\"Failed to apply statements [RuntimeException]: ERROR\"]}",
+                context.response().getOutputAsString());
+
+    }
+
+    @Test
+    public void testNoResourceResolver() throws ServletException, IOException, RepoInitParsingException {
+
+        context.request().setAttribute(AuthenticationSupport.REQUEST_ATTRIBUTE_RESOLVER, null);
+
+        context.request().setContent("create user".getBytes());
+        context.request().addRequestParameter("execute", "true");
+        webConsole.doPost(context.request(), context.response());
+
+        assertEquals(400, context.response().getStatus());
+        assertEquals("application/json", context.response().getContentType());
+        assertEquals(
+                "{\"succeeded\":false,\"operations\":[],\"messages\":[\"Parsed Repoinit script successfully!\",\"Failed to apply statements [IllegalStateException]: No resource resolver available\"]}",
+                context.response().getOutputAsString());
+
+    }
+
+    @Test
+    public void testNoSession() throws ServletException, IOException, RepoInitParsingException {
+
+        context.request().setAttribute(AuthenticationSupport.REQUEST_ATTRIBUTE_RESOLVER, mock(ResourceResolver.class));
+
+        context.request().setContent("create user".getBytes());
+        context.request().addRequestParameter("execute", "true");
+        webConsole.doPost(context.request(), context.response());
+
+        assertEquals(400, context.response().getStatus());
+        assertEquals("application/json", context.response().getContentType());
+        assertEquals(
+                "{\"succeeded\":false,\"operations\":[],\"messages\":[\"Parsed Repoinit script successfully!\",\"Failed to apply statements [IllegalStateException]: No session available\"]}",
                 context.response().getOutputAsString());
 
     }
