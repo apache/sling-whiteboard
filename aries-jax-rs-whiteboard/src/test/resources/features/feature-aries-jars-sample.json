@@ -6,6 +6,7 @@
   "license":"Apache License, Version 2.0",
   "variables":{},
   "bundles":[
+    "org.apache.sling:org.apache.sling.experimental.aries.jaxrs.whiteboard:0.0.1-SNAPSHOT",
     "org.osgi:org.osgi.service.jaxrs:1.0.0",
     "org.apache.aries.spec:org.apache.aries.javax.jax.rs-api:1.0.4",
     "org.apache.aries.jax.rs:org.apache.aries.jax.rs.whiteboard:2.0.1",
@@ -51,7 +52,7 @@
       "org.apache.sling.commons.log.level": "DEBUG",
       "org.apache.sling.commons.log.names":
         [
-          "org.apache.sling.servlet"
+          "org.apache.aries"
         ],
       "org.apache.sling.commons.log.pattern": "%-5level [%-50logger{50}] %message ## %mdc{sling.InternalRequest} %n"
     }
