@@ -107,7 +107,7 @@
               <goal>openapi.json</goal>
             </goals>
             <configuration>
-              <application>org.apache.aries.jax.rs.whiteboard.internal.DefaultApplication</application>
+              <application>org.apache.sling.jaxrs.FakeApp</application>
               <endpointClasses>
                 <endpointClass>org.apache.sling.jaxrs.TestService</endpointClass>
               </endpointClasses>

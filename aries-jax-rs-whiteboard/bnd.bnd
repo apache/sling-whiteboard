@@ -1,1 +1,3 @@
-Sling-Bundle-Resources: /api/openapi/openapi.json;path:=/META-INF/resources/openapi.json
+Sling-Bundle-Resources: \
+    /api/openapi/openapi.json;path:=/META-INF/resources/openapi.json , \
+    /api/openapi/openapi-browser.html;path:=/openapi/openapi-browser.html

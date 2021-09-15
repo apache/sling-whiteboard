@@ -18,6 +18,7 @@ http://localhost:8080/api/jaxrs/test/testing.this (for example) should
 then address the JAX-RS [`TestService`](./src/main/java/org/apache/sling/jaxrs/TestService.java) resource.
 
 The corresponding OpenAPI JSON document is available at http://localhost:8080/api/openapi/openapi.json
+with an API browser at http://localhost:8080/api/openapi/openapi-browser.html
 
 All other URLs outside of `/api/jaxrs` and `/api/openapi`, like http://localhost:8080/api/sling.json 
 are served by Sling as usual.
