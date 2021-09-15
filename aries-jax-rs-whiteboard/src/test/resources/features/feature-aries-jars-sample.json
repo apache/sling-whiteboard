@@ -29,8 +29,12 @@
     "com.adobe.aem.guides:aem-guides-wknd.ui.content.sample:zip:0.0.4"
   ],
   "configurations":{
+    "org.apache.sling.engine.impl.auth.SlingAuthenticator":{
+      "auth.annonymous":"false"
+    },
     "org.apache.aries.jax.rs.whiteboard.default":{
-      "default.application.base":"/api/jaxrs"
+      "default.application.base":"/api/jaxrs",
+      "osgi.http.whiteboard.context.select":"(osgi.http.whiteboard.context.name=org.apache.sling)"
     },
     "org.apache.sling.jcr.base.internal.LoginAdminWhitelist.fragment~installer-packages":{
       "whitelist.bundles":[

@@ -11,6 +11,8 @@ To start this, run
 
     mvn clean install exec:java
 
+Adding the required MAVEN_OPTS for debugging if desired.
+
 Then open http://localhost:8080 - which might require logging in
 at http://localhost:8080/system/console first.
 
