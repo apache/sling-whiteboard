@@ -24,5 +24,6 @@ A POST can increment the test counter, such as:
 
 ## TODO
 
-The JAX-RS servlet should use Sling authentication, mounting it on
-a resource type might be interesting.
+* The JAX-RS servlet should use Sling authentication, mounting it on
+a resource type might be interesting. The servlet that serves JAX-RS requests is currently registered by the [Aries Whiteboard class](https://github.com/apache/aries-jax-rs-whiteboard/blob/f6a23cd19e567c959ac71893f4f6013715680299/jax-rs.whiteboard/src/main/java/org/apache/aries/jax/rs/whiteboard/internal/Whiteboard.java#L1303)
+* Provide an [OpenAPI](https://www.openapis.org/) document describing the API.
