@@ -15,8 +15,12 @@ Then open http://localhost:8080 - which might require logging in
 at http://localhost:8080/system/console first.
 
 http://localhost:8080/api/jaxrs/test/testing.this (for example) should
-then address the JAX-RS [`TestService`](./src/main/java/org/apache/sling/jaxrs/TestService.java) resource, while
-http://localhost:8080/api/sling.json is served by Sling as usual.
+then address the JAX-RS [`TestService`](./src/main/java/org/apache/sling/jaxrs/TestService.java) resource.
+
+The corresponding OpenAPI JSON document is available at http://localhost:8080/api/openapi/openapi.json
+
+All other URLs outside of `/api/jaxrs` and `/api/openapi`, like http://localhost:8080/api/sling.json 
+are served by Sling as usual.
 
 A POST can increment the test counter, such as:
 

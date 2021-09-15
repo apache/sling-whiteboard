@@ -32,6 +32,7 @@
   <version>0.0.1-SNAPSHOT</version>
 
   <name>Apache Sling Aries JAX-RS Whiteboard Experiments</name>
+  <description>Minimal Sling application using OSGi components as JAX-RS resources</description>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -93,6 +94,26 @@
           <!-- TODO remove this once we have a release of this module -->
           <failOnMissing>false</failOnMissing>
         </configuration>
+      </plugin>
+      <plugin>
+        <!-- docs at http://geronimo.apache.org/microprofile/openapi.html -->
+        <groupId>org.apache.geronimo</groupId>
+        <artifactId>geronimo-openapi-maven-plugin</artifactId>
+        <version>1.0.14</version>
+        <executions>
+          <execution>
+            <id>generate-openapi.json</id>
+            <goals>
+              <goal>openapi.json</goal>
+            </goals>
+            <configuration>
+              <application>org.apache.aries.jax.rs.whiteboard.internal.DefaultApplication</application>
+              <endpointClasses>
+                <endpointClass>org.apache.sling.jaxrs.TestService</endpointClass>
+              </endpointClasses>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
