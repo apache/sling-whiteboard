@@ -495,7 +495,7 @@
     },
     {
       "id":"org.apache.sling:org.apache.sling.engine:2.7.2",
-      "start-order":"99",
+      "start-order":"20",
       "feature-origins":"org.apache.sling:org.apache.sling.kickstart.conversion:slingfeature:sling:0.0.1-SNAPSHOT"
     },
     {

@@ -29,6 +29,9 @@
     "com.adobe.aem.guides:aem-guides-wknd.ui.content.sample:zip:0.0.4"
   ],
   "configurations":{
+    "org.apache.aries.jax.rs.whiteboard.default":{
+      "default.application.base":"/api/jaxrs"
+    },
     "org.apache.sling.jcr.base.internal.LoginAdminWhitelist.fragment~installer-packages":{
       "whitelist.bundles":[
         "org.apache.sling.installer.factory.packages"
@@ -56,5 +59,14 @@
         ],
       "org.apache.sling.commons.log.pattern": "%-5level [%-50logger{50}] %message ## %mdc{sling.InternalRequest} %n"
     }
-  }
+  },
+  "repoinit:TEXT|true":[
+    "create path /api/sling",
+    "set ACL on /api",
+    "allow jcr:read for everyone",
+    "end",
+    "set properties on /api/sling",
+    "set info to \"This resource is served by Sling\"",
+    "end"
+  ]
 }

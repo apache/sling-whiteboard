@@ -19,6 +19,7 @@
 package org.apache.sling.jaxrs;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -27,22 +28,36 @@ import javax.ws.rs.core.MediaType;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.jaxrs.whiteboard.propertytypes.JaxrsResource;
 
-@Path("/jaxrs")
+@Path("/test")
 @Produces(MediaType.TEXT_PLAIN)
 @Component(service=TestService.class)
 @JaxrsResource
 public class TestService {
+
+	static int counter;
 	 
 	@GET
 	@Path("/{one}")
 	public String getOne(@PathParam("one") String one) {
-		return String.format("The single input was %s (%d characters)", one, one.length());
+		return String.format(
+			"The single input was %s (%d characters) and the counter is %d", 
+			one, one.length(), counter);
 	}
 
 	@GET
 	@Path("/{one}/{two}")
 	public String getTwo(@PathParam("one") String one, @PathParam("two") String two) {
-		return String.format("The dual input was %s and %s", one, two);
+		return String.format(
+			"The dual input was %s and %s and the counter is %d",
+			one, two, counter);
 	}
 
+	@POST
+	@Path("/increment/{howMuch}")
+	public static String incrementCounter(@PathParam("howMuch") int howMuch) {
+		counter += howMuch;
+		return String.format(
+			"The counter has been incremented by %d and is now %d",
+			howMuch, counter);
+	}
 }
