@@ -65,12 +65,17 @@
     }
   },
   "repoinit:TEXT|true":[
+    "create user jaxrs with password jaxrs",
     "create path /api/sling",
     "set ACL on /api",
     "allow jcr:read for everyone",
     "end",
     "set properties on /api/sling",
     "set info to \"This resource is served by Sling\"",
+    "set sling:resourceType to api/sling/test",
+    "end",
+    "set ACL on /api/sling",
+    "deny jcr:read for jaxrs",
     "end"
   ]
 }

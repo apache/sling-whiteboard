@@ -18,13 +18,18 @@
  */
 package org.apache.sling.jaxrs;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.sling.api.resource.Resource;
+import org.apache.sling.api.resource.ResourceResolver;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.jaxrs.whiteboard.propertytypes.JaxrsResource;
 
@@ -37,10 +42,26 @@ public class TestService {
 	static int counter;
 	 
 	@GET
+	@Path("/sling/resource")
+	public String getResource(@Context HttpServletRequest request, @QueryParam("path") String path) throws Exception {
+		final Object obj = request.getAttribute("org.apache.sling.auth.core.ResourceResolver");
+		try (ResourceResolver rr = obj instanceof ResourceResolver ? (ResourceResolver)obj : null) {
+			if(rr == null) {
+				throw new Exception("ResourceResolver not available");
+			}
+			final Resource r = rr.getResource(path);
+			if(r == null) {
+				throw new Exception(String.format("Resource %s not found", path));
+			}
+			return String.format("Got Resource %s of type %s%n", r.getPath(), r.getResourceType());
+		}
+	}
+
+	@GET
 	@Path("/{one}")
 	public String getOne(@PathParam("one") String one) {
 		return String.format(
-			"The single input was %s (%d characters) and the counter is %d", 
+			"The single input was %s (%d characters) and the counter is %d%n", 
 			one, one.length(), counter);
 	}
 
@@ -48,7 +69,7 @@ public class TestService {
 	@Path("/{one}/{two}")
 	public String getTwo(@PathParam("one") String one, @PathParam("two") String two) {
 		return String.format(
-			"The dual input was %s and %s and the counter is %d",
+			"The dual input was %s and %s and the counter is %d%n",
 			one, two, counter);
 	}
 
@@ -57,7 +78,7 @@ public class TestService {
 	public static String incrementCounter(@PathParam("howMuch") int howMuch) {
 		counter += howMuch;
 		return String.format(
-			"The counter has been incremented by %d and is now %d",
+			"The counter has been incremented by %d and is now %d%n",
 			howMuch, counter);
 	}
 }
