@@ -18,6 +18,7 @@
  */
 package org.apache.sling.jaxrs;
 
+import javax.jcr.Session;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -41,19 +42,36 @@ public class TestService {
 
 	static int counter;
 	 
+	static ResourceResolver getResourceResolver(HttpServletRequest request) {
+		final Object obj = request.getAttribute("org.apache.sling.auth.core.ResourceResolver");
+		if(obj instanceof ResourceResolver) {
+			return (ResourceResolver)obj;
+		}
+		throw new IllegalStateException("Request does not provide a ResourceResolver");
+
+	}
+
 	@GET
 	@Path("/sling/resource")
 	public String getResource(@Context HttpServletRequest request, @QueryParam("path") String path) throws Exception {
-		final Object obj = request.getAttribute("org.apache.sling.auth.core.ResourceResolver");
-		try (ResourceResolver rr = obj instanceof ResourceResolver ? (ResourceResolver)obj : null) {
-			if(rr == null) {
-				throw new Exception("ResourceResolver not available");
-			}
+		try (ResourceResolver rr = getResourceResolver(request)) {
 			final Resource r = rr.getResource(path);
 			if(r == null) {
 				throw new Exception(String.format("Resource %s not found", path));
 			}
 			return String.format("Got Resource %s of type %s%n", r.getPath(), r.getResourceType());
+		}
+	}
+
+	@GET
+	@Path("/userinfo")
+	public String getUserInfo(@Context HttpServletRequest request) throws Exception {
+		try (ResourceResolver rr = getResourceResolver(request)) {
+			final Session s = rr.adaptTo(Session.class);
+			if(s == null) {
+				throw new Exception("ResourceResolver does not adapt to Session");
+			}
+			return String.format("userID='%s'%n", s.getUserID());
 		}
 	}
 
