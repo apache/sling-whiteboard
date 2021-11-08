@@ -19,10 +19,17 @@
 
  package org.apache.sling.jsonstore.api;
 
+import java.io.IOException;
+
+import com.fasterxml.jackson.databind.JsonNode;
+
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 
 public interface JsonStore {
     /** Create a Site and return its root */
     Resource createSite(Resource parent, String relativeSitePath) throws PersistenceException;
+
+    /** Create or update a Schema */
+    Resource createOrUpdateSchema(Resource parent, String resourceType, JsonNode schema) throws PersistenceException, IOException;
 }

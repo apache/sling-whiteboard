@@ -17,41 +17,57 @@
  * under the License.
  */
 
- package org.apache.sling.jsonstore.impl;
+package org.apache.sling.jsonstore.impl;
+
+import static org.apache.sling.jsonstore.api.JsonStoreConstants.*;
 
 import java.io.IOException;
 
 import javax.servlet.Servlet;
 import javax.servlet.http.HttpServletResponse;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
+import org.apache.sling.api.request.RequestParameter;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.jsonstore.api.JsonStore;
-import org.apache.sling.jsonstore.api.JsonStoreConstants;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
-    resourceTypes=JsonStoreConstants.STORE_ROOT_RESOURCE_TYPE,
+    resourceTypes=SCHEMA_ROOT_RESOURCE_TYPE,
     methods= "POST"
 )
-public class SitesParentServlet extends SlingAllMethodsServlet {
+public class SchemaServlet extends SlingAllMethodsServlet {
     @Reference
     private JsonStore store;
 
     @Override
     public void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
-        final String relativeSitePath = request.getParameter(JsonStoreConstants.PARAM_PATH);
-        if(relativeSitePath == null) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, String.format("Missing required parameter '%s'"));
+        final String resourceType = request.getParameter(PARAM_RESOURCE_TYPE);
+        if(resourceType == null) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, String.format("Missing required parameter '%s'", PARAM_RESOURCE_TYPE));
+            return;
         }
-        final Resource result = store.createSite(request.getResource(), relativeSitePath);
+
+        final RequestParameter json = request.getRequestParameter(PARAM_JSON);
+        if(json == null) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, String.format("Missing required parameter '%s'", PARAM_JSON));
+            return;
+        }
+
+        // Parse incoming JSON and store as a schema
+        final ObjectMapper mapper = new ObjectMapper();
+        final JsonNode schema = mapper.readTree(json.getInputStream());
+        final Resource storedSchema = store.createOrUpdateSchema(request.getResource(), resourceType, schema);
 
         // TODO set Location header etc.
-        response.getWriter().write(String.format("Created site %s", result.getPath()));
+        response.getWriter().write(String.format("Stored schema for resource type %s: %s", resourceType, storedSchema.getPath()));
     }
 }

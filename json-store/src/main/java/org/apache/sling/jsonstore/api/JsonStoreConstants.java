@@ -23,6 +23,7 @@ public class JsonStoreConstants {
     public static final String STORE_ROOT_RESOURCE_TYPE = "sling/jsonstore/root";
     public static final String SITE_ROOT_RESOURCE_TYPE = "sling/jsonstore/site";
     public static final String SCHEMA_ROOT_RESOURCE_TYPE = "sling/jsonstore/schema/root";
+    public static final String SCHEMA_RESOURCE_TYPE = "sling/jsonstore/schema";
     public static final String ELEMENTS_ROOT_RESOURCE_TYPE = "sling/jsonstore/elements/root";
     public static final String CONTENT_ROOT_RESOURCE_TYPE = "sling/jsonstore/content/root";
 
@@ -30,6 +31,11 @@ public class JsonStoreConstants {
     public static final String ELEMENTS_ROOT_NAME = "elements";
     public static final String CONTENT_ROOT_NAME = "content";
 
+    public static final String JSON_BLOB_PROPERTY= "json";
+
     public static final String PARAM_PATH = "path";
+    public static final String PARAM_RESOURCE_TYPE = "resourceType";
+    public static final String PARAM_JSON = "json";
+
     private JsonStoreConstants() {}
 }
