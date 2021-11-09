@@ -21,21 +21,14 @@ Install the following bundles, which you can get by running
 
 Install this bundle and verify that it is active.
 
-Create a "JSON store root" node:
+Store a JSON blob:
 
-    curl -u admin:admin -F sling:resourceType=sling/jsonstore/root http://localhost:8080/content/sites
+    curl -u admin:admin \
+      -H "Content-Type: multipart/form-data" \
+      -d @example-data/example-schema.json \
+      http://localhost:8080/content/sites/example.com/schema/testing/onetwo
 
-POST to that resource to create a test site:
+And retrieve it:
 
-    curl -u admin:admin -F path=example.com http://localhost:8080/content/sites
-
-This creates the required structure under "sites/example.com" to store JSON schemas,
-elements and content.
-
-POST a schema as follows:
-
-    curl -u admin:admin -Fjson=@example-data/example-schema.json -FresourceType=example http://localhost:8080/content/sites/example.com/schema
-
-And retrieve it as follows:
-
-    curl -u admin:admin http://localhost:8080/content/sites/example.com/schema/example.tidy.5.json
+    curl http://localhost:8080/content/sites/example.com/schema/testing/onetwo
+    

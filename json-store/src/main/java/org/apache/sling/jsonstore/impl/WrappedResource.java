@@ -17,19 +17,25 @@
  * under the License.
  */
 
- package org.apache.sling.jsonstore.api;
+package org.apache.sling.jsonstore.impl;
 
-import java.io.IOException;
+import static org.apache.sling.jsonstore.api.JsonStoreConstants.*;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
-import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
+import org.apache.sling.api.resource.ResourceWrapper;
 
-public interface JsonStore {
-    /** Create a Site and return its root */
-    Resource createSite(Resource parent, String relativeSitePath) throws PersistenceException;
+class WrappedResource extends ResourceWrapper {
+    private final String resourceType;
 
-    /** Create or update a Schema */
-    Resource createOrUpdateSchema(Resource parent, String resourceType, JsonNode schema) throws PersistenceException, IOException;
+    WrappedResource(Resource original) {
+        super(original);
+
+        // TODO map resource types according to path (schema, element, content)
+        resourceType = JSON_BLOB_RESOURCE_TYPE;
+    }
+
+    @Override
+    public String getResourceType() {
+        return resourceType;
+    }
 }
