@@ -19,23 +19,30 @@
 
 package org.apache.sling.jsonstore.impl;
 
-import static org.apache.sling.jsonstore.api.JsonStoreConstants.JSON_BLOB_RESOURCE_TYPE;
+import static org.apache.sling.jsonstore.api.JsonStoreConstants.STORE_ROOT_PATH;
 
-import org.apache.sling.api.resource.Resource;
-import org.apache.sling.api.resource.ResourceWrapper;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-class WrappedResource extends ResourceWrapper {
-    private final String resourceType;
+class JsonStorePathInfo {
+    public final String site;
+    public final String dataType;
+    public final String dataPath;
 
-    WrappedResource(Resource original) {
-        super(original);
+    private final static Pattern PARSE_REGEXP = Pattern.compile(STORE_ROOT_PATH + "/([^/]+)/([^/]+)/(.*)");
 
-        // TODO map resource types according to path (schema, element, content)
-        resourceType = JSON_BLOB_RESOURCE_TYPE;
+    JsonStorePathInfo(String path) {
+        final Matcher m = PARSE_REGEXP.matcher(path);
+        if(!m.matches()) {
+            throw new IllegalArgumentException("Path does not match " + PARSE_REGEXP + ": " + path);
+        }
+        site = m.group(1);
+        dataType = m.group(2);
+        dataPath = m.group(3);
     }
 
     @Override
-    public String getResourceType() {
-        return resourceType;
+    public String toString() {
+        return String.format("%s: site=%s, dataType=%s, dataPath=%s", getClass().getSimpleName(), site, dataType, dataPath);
     }
 }

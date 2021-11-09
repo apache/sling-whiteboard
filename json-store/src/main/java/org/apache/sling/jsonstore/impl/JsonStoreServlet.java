@@ -19,9 +19,12 @@
 
 package org.apache.sling.jsonstore.impl;
 
-import static org.apache.sling.jsonstore.api.JsonStoreConstants.*;
+import static org.apache.sling.jsonstore.api.JsonStoreConstants.JSON_BLOB_RESOURCE_TYPE;
+import static org.apache.sling.jsonstore.api.JsonStoreConstants.JSON_FOLDER_RESOURCE_TYPE;
+import static org.apache.sling.jsonstore.api.JsonStoreConstants.JSON_PROP_NAME;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
@@ -32,7 +35,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
-import org.apache.sling.api.request.RequestParameter;
 import org.apache.sling.api.resource.ModifiableValueMap;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceUtil;
@@ -41,6 +43,10 @@ import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.component.annotations.ReferencePolicyOption;
+import org.apache.sling.jsonstore.api.JsonStoreValidator;
 
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
@@ -50,6 +56,13 @@ import org.osgi.service.component.annotations.Reference;
 public class JsonStoreServlet extends SlingAllMethodsServlet {
 
     private final ObjectMapper mapper = new ObjectMapper();
+
+    @Reference(
+        cardinality = ReferenceCardinality.MULTIPLE,
+        policy = ReferencePolicy.DYNAMIC,
+        policyOption = ReferencePolicyOption.GREEDY
+    )
+    private volatile List<JsonStoreValidator> jsonValidators;
 
     @Override
     public void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws ServletException, IOException {
@@ -74,7 +87,8 @@ public class JsonStoreServlet extends SlingAllMethodsServlet {
         try {
             json = mapper.readTree(request.getInputStream());
         } catch(Exception e) {
-            throw new ServletException("JSON parsing failed", e);
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "JSON parsing failed: " + e);
+            return;
         }
 
         // Create the target Resource if needed
@@ -89,6 +103,31 @@ public class JsonStoreServlet extends SlingAllMethodsServlet {
             );
         }
 
+        // Parse path
+        final JsonStorePathInfo pathInfo = new JsonStorePathInfo(resource.getPath());
+        request.getRequestProgressTracker().log(pathInfo.toString());
+        if(pathInfo.dataPath == null || pathInfo.dataPath.length() == 0) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "empty data path, cannot store JSON here");
+            return;
+        }
+
+        // Validate JSON
+        int appliedValidators = 0;
+        for(JsonStoreValidator v : jsonValidators) {
+            try {
+                if(v.validate(resource.getResourceResolver(), json, pathInfo.site, pathInfo.dataType)) {
+                    appliedValidators++;
+                }
+            } catch(Exception e) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Validation failed: " + e);
+                return;
+            }
+        }
+        if(appliedValidators == 0) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No validators found for this path or input");
+            return;
+        }
+
         // Store JSON
         final ModifiableValueMap vm = resource.adaptTo(ModifiableValueMap.class);
         if(vm == null) {
@@ -98,14 +137,7 @@ public class JsonStoreServlet extends SlingAllMethodsServlet {
 
         resource.getResourceResolver().commit();
 
-        /*
-        // TODO Validate the schema, or the JSON according to the desired schema
-        final JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V201909);
-        factory.getSchema(schema);
-        final String json = mapper.writeValueAsString(schema);
-        */
-        
         // TODO set Location header etc.
-        response.getWriter().write(String.format("Stored JSON at %s", resource.getPath()));
+        response.getWriter().write(String.format("Stored JSON at %s%n", resource.getPath()));
     }
 }

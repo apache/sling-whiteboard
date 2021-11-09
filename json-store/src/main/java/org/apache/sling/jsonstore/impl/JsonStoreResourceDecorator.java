@@ -21,7 +21,8 @@ package org.apache.sling.jsonstore.impl;
 
 import javax.servlet.http.HttpServletRequest;
 
-import static org.apache.sling.jsonstore.api.JsonStoreConstants.*;
+import static org.apache.sling.jsonstore.api.JsonStoreConstants.STORE_ROOT_PATH;
+import static org.apache.sling.jsonstore.api.JsonStoreConstants.JSON_BLOB_RESOURCE_TYPE;
 
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceDecorator;

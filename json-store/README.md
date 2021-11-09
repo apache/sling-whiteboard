@@ -21,14 +21,23 @@ Install the following bundles, which you can get by running
 
 Install this bundle and verify that it is active.
 
-Store a JSON blob:
+Cleanup any previous examples if desired:
 
-    curl -u admin:admin \
-      -H "Content-Type: multipart/form-data" \
-      -d @example-data/example-schema.json \
-      http://localhost:8080/content/sites/example.com/schema/testing/onetwo
+    curl -u admin:admin -X DELETE http://localhost:8080/content/sites
 
-And retrieve it:
+Try storing content, which fails due to no schema found:
 
-    curl http://localhost:8080/content/sites/example.com/schema/testing/onetwo
+    curl -u admin:admin -H "Content-Type: multipart/form-data" -d @example-data/good-product.json http://localhost:8080/content/sites/example.com/content/testing/good-product
+
+Add the missing schema:
+
+     curl -D - -u admin:admin -H "Content-Type: multipart/form-data" -d @example-data/example-schema.json http://localhost:8080/content/sites/example.com/schema/test/example
+
+Storing the content should now work:
+
+    curl -u admin:admin -H "Content-Type: multipart/form-data" -d @example-data/good-product.json http://localhost:8080/content/sites/example.com/content/testing/good-product
+
+And schema validation should reject an invalid document:
+
+    curl -u admin:admin -H "Content-Type: multipart/form-data" -d @example-data/bad-product.json http://localhost:8080/content/sites/example.com/content/testing/good-product
     
