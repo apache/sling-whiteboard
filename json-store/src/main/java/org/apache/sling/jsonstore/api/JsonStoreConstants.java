@@ -29,5 +29,7 @@ public class JsonStoreConstants {
     public static final String ELEMENTS_DATA_TYPE = "elements";
     public static final String CONTENT_DATA_TYPE = "content";
 
+    public static final String JSON_SCHEMA_FIELD = "$schema";
+    
     private JsonStoreConstants() {}
 }

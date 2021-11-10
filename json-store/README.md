@@ -31,7 +31,7 @@ Try storing content, which fails due to no schema found:
 
 Add the missing schema:
 
-     curl -D - -u admin:admin -H "Content-Type: multipart/form-data" -d @example-data/example-schema.json http://localhost:8080/content/sites/example.com/schema/test/example
+    curl -D - -u admin:admin -H "Content-Type: multipart/form-data" -d @example-data/example-schema.json http://localhost:8080/content/sites/example.com/schema/test/example-schema
 
 Storing the content should now work:
 
@@ -40,4 +40,7 @@ Storing the content should now work:
 And schema validation should reject an invalid document:
 
     curl -u admin:admin -H "Content-Type: multipart/form-data" -d @example-data/bad-product.json http://localhost:8080/content/sites/example.com/content/testing/good-product
-    
+
+And this also fails as the document is not a valid schema:
+
+    curl -u admin:admin -H "Content-Type: multipart/form-data" -d @example-data/good-product.json http://localhost:8080/content/sites/example.com/schema/testing/good-product

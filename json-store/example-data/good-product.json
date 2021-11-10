@@ -1,4 +1,5 @@
 {
+    "$schema":"test/example-schema",
     "productId": 1,
     "productName": "A green door",
     "price": 12.50,

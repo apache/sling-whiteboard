@@ -17,30 +17,21 @@
  * under the License.
  */
 
-package org.apache.sling.jsonstore.impl;
+package org.apache.sling.jsonstore.api;
 
-import static org.apache.sling.jsonstore.api.JsonStoreConstants.SCHEMA_DATA_TYPE;
+import java.io.IOException;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.networknt.schema.JsonSchema;
 
 import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.jsonstore.api.DataTypeValidator;
-import org.apache.sling.jsonstore.api.SchemaProvider;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.osgi.annotation.versioning.ProviderType;
 
-@Component(service = DataTypeValidator.class)
-public class SchemaValidator implements DataTypeValidator {
-
-    @Reference
-    private SchemaProvider schemaProvider;
-    
-    @Override
-    public boolean validate(ResourceResolver resolver, JsonNode json, String site, String dataType) throws DataTypeValidator.ValidatorException {
-        if(!SCHEMA_DATA_TYPE.equals(dataType)) {
-            return false;
-        }
-        schemaProvider.buildSchema(json);
-        return true;
-    }
+/** Provide schema retrieved from the store */
+@ProviderType
+public interface SchemaProvider {
+    @Nullable JsonSchema getSchema(@NotNull ResourceResolver resolver, @NotNull String site, @NotNull String schemaPath) throws IOException;
+    @NotNull JsonSchema buildSchema(@NotNull JsonNode json);
 }

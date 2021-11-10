@@ -59,6 +59,12 @@
   <dependencies>
     <dependency>
       <groupId>org.osgi</groupId>
+      <artifactId>osgi.annotation</artifactId>
+      <scope>provided</scope>
+      <version>7.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.osgi</groupId>
       <artifactId>org.osgi.service.component.annotations</artifactId>
       <scope>provided</scope>
     </dependency>

@@ -5,6 +5,10 @@
     "description": "A product from Acme's catalog, example from http://json-schema.org/learn/getting-started-step-by-step.html",
     "type": "object",
     "properties": {
+      "$schema": {
+        "description": "The schema reference",
+        "type": "string"
+      },
       "productId": {
         "description": "The unique identifier for a product",
         "type": "integer"

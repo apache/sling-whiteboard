@@ -24,8 +24,14 @@ import java.io.IOException;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import org.apache.sling.api.resource.ResourceResolver;
+import org.osgi.annotation.versioning.ConsumerType;
 
-public interface JsonStoreValidator {
+/** Interface to validate our various data types: schema, elements, content, ...
+ *  Several such services are meant to be provided, at least one
+ *  for each data type.
+ */
+@ConsumerType
+public interface DataTypeValidator {
     public static class ValidatorException extends IOException {
         public ValidatorException(String reason) {
             super(reason);
@@ -35,7 +41,9 @@ public interface JsonStoreValidator {
         }
     }
 
-    /** @return true if this validator applies to the arguments. True does not mean the input is valid.
+    /** Validate a specific data type
+     *  @return true if this validator applies to the arguments. True does not mean the input
+     *      is valid, only that that validator applies to it.
      *  @throws ValidatorException if there's a validation error
      */
     boolean validate(ResourceResolver resolver, JsonNode json, String site, String dataType) throws ValidatorException;

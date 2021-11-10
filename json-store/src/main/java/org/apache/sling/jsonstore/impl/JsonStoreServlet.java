@@ -46,7 +46,7 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.service.component.annotations.ReferencePolicyOption;
-import org.apache.sling.jsonstore.api.JsonStoreValidator;
+import org.apache.sling.jsonstore.api.DataTypeValidator;
 
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
@@ -62,7 +62,7 @@ public class JsonStoreServlet extends SlingAllMethodsServlet {
         policy = ReferencePolicy.DYNAMIC,
         policyOption = ReferencePolicyOption.GREEDY
     )
-    private volatile List<JsonStoreValidator> jsonValidators;
+    private volatile List<DataTypeValidator> jsonValidators;
 
     @Override
     public void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws ServletException, IOException {
@@ -113,7 +113,7 @@ public class JsonStoreServlet extends SlingAllMethodsServlet {
 
         // Validate JSON
         int appliedValidators = 0;
-        for(JsonStoreValidator v : jsonValidators) {
+        for(DataTypeValidator v : jsonValidators) {
             try {
                 if(v.validate(resource.getResourceResolver(), json, pathInfo.site, pathInfo.dataType)) {
                     appliedValidators++;

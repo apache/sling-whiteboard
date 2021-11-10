@@ -21,51 +21,48 @@ package org.apache.sling.jsonstore.impl;
 
 import static org.apache.sling.jsonstore.api.JsonStoreConstants.CONTENT_DATA_TYPE;
 import static org.apache.sling.jsonstore.api.JsonStoreConstants.ELEMENTS_DATA_TYPE;
-import static org.apache.sling.jsonstore.api.JsonStoreConstants.SCHEMA_DATA_TYPE;
-import static org.apache.sling.jsonstore.api.JsonStoreConstants.STORE_ROOT_PATH;
+import static org.apache.sling.jsonstore.api.JsonStoreConstants.JSON_SCHEMA_FIELD;
 
+import java.io.IOException;
 import java.util.Set;
-
-import static org.apache.sling.jsonstore.api.JsonStoreConstants.JSON_PROP_NAME;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.networknt.schema.JsonSchema;
-import com.networknt.schema.JsonSchemaFactory;
-import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
 
-import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.api.resource.ValueMap;
-import org.apache.sling.jsonstore.api.JsonStoreValidator;
+import org.apache.sling.jsonstore.api.DataTypeValidator;
+import org.apache.sling.jsonstore.api.SchemaProvider;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
-@Component(service = JsonStoreValidator.class)
-public class ContentValidator implements JsonStoreValidator {
+@Component(service = DataTypeValidator.class)
+public class ContentValidator implements DataTypeValidator {
 
-    private final JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V201909);
+    @Reference
+    private SchemaProvider schemaProvider;
 
     @Override
-    public boolean validate(ResourceResolver resolver, JsonNode json, String site, String dataType) throws JsonStoreValidator.ValidatorException {
+    public boolean validate(ResourceResolver resolver, JsonNode json, String site, String dataType) throws DataTypeValidator.ValidatorException {
         if(!CONTENT_DATA_TYPE.equals(dataType) && !ELEMENTS_DATA_TYPE.equals(dataType)) {
             return false;
         }
 
-        // TODO fixed schema for now
-        final String schemaRef = "test/example";
-        final String schemaPath = String.format("%s/%s/%s/%s", STORE_ROOT_PATH, site, SCHEMA_DATA_TYPE, schemaRef);
-        final Resource schemaResource = resolver.getResource(schemaPath);
-        if(schemaResource == null) {
-            throw new ValidatorException("Schema Resource not found: " + schemaPath); 
+        // TODO fixed schema for now -> extract from incoming document, $schema ?
+        final JsonNode schemaField = json.get(JSON_SCHEMA_FIELD);
+        if(schemaField == null) {
+            throw new ValidatorException("Schema field missing in incoming document:" + JSON_SCHEMA_FIELD);
         }
-
-        final ValueMap vm = schemaResource.adaptTo(ValueMap.class);
-        final String schemaStr = vm.get(JSON_PROP_NAME, String.class);
-        if(schemaStr == null) {
-            throw new ValidatorException("Missing " + JSON_PROP_NAME + "  property on schema resource " + schemaResource.getPath());
+        final String schemaRef = schemaField.asText();
+        JsonSchema schema = null;
+        try {
+            schema = schemaProvider.getSchema(resolver, site, schemaRef);
+            if(schema == null) {
+                throw new ValidatorException("Schema not found: " + schemaRef);
+            }
+        } catch(IOException ioe) {
+            throw new ValidatorException("Error retrieving schema " + schemaRef, ioe);
         }
-
-        final JsonSchema schema = factory.getSchema(schemaStr);
         final Set<ValidationMessage> msgs = schema.validate(json);
         if(!msgs.isEmpty()) {
             final StringBuilder sb = new StringBuilder();
