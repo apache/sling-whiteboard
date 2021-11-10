@@ -17,7 +17,12 @@
         "description": "The price of the product",
         "type": "number",
         "exclusiveMinimum": 0
+      },
+      "tags": {
+        "description": "Tags that categorize the product",
+        "type": "array"
       }
     },
+    "additionalProperties":false,
     "required": [ "productId", "productName", "price" ]
   }

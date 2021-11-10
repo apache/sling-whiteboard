@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
+import com.networknt.schema.SpecVersionDetector;
 
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.jsonstore.api.JsonStoreValidator;
@@ -33,16 +34,16 @@ import org.osgi.service.component.annotations.Component;
 @Component(service = JsonStoreValidator.class)
 public class SchemaValidator implements JsonStoreValidator {
 
-    private final JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V201909);
-
     @Override
     public boolean validate(ResourceResolver resolver, JsonNode json, String site, String dataType) throws JsonStoreValidator.ValidatorException {
         if(!SCHEMA_DATA_TYPE.equals(dataType)) {
             return false;
         }
+
         // TODO how to verify that we have a valid schema?
         // https://github.com/networknt/json-schema-validator
-        final JsonSchema schema = factory.getSchema(json);
+        final SpecVersion.VersionFlag v = SpecVersionDetector.detect(json);
+        final JsonSchema schema = JsonSchemaFactory.getInstance(v).getSchema(json);
         schema.initializeValidators();
         return true;
     }
