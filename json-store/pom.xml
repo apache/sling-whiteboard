@@ -38,9 +38,19 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <project.build.outputTimestamp>1</project.build.outputTimestamp>
     <org.ops4j.pax.exam.version>4.13.3</org.ops4j.pax.exam.version>
+    <karate.version>1.1.0</karate.version>
   </properties>
 
   <build>
+    <testResources>
+      <testResource>
+        <!-- include Karate feature + other files as test resources -->
+        <directory>src/test/java</directory>
+        <excludes>
+          <exclude>**/*.java</exclude>
+        </excludes>
+      </testResource>
+    </testResources>
     <plugins>
       <plugin>
         <groupId>biz.aQute.bnd</groupId>
@@ -219,6 +229,12 @@
       <version>2.3.0</version>
       <scope>test</scope>
     </dependency>
-  </dependencies>
+    <dependency>
+      <groupId>com.intuit.karate</groupId>
+      <artifactId>karate-junit4</artifactId>
+      <version>${karate.version}</version>
+      <scope>test</scope>
+  </dependency>
+</dependencies>
 
 </project>

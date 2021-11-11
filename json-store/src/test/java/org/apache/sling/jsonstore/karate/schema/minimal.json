@@ -1,0 +1,19 @@
+{
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "$id": "https://example.com/minimal",
+    "title": "Minimal",
+    "description": "A minimal(ish) valid schema",
+    "type": "object",
+    "properties": {
+      "$schema": {
+        "description": "The schema reference",
+        "type": "string"
+      },
+      "tags": {
+        "description": "Tags that categorize the product",
+        "type": "array"
+      }
+    },
+    "additionalProperties":false,
+    "required": [ "$schema", "tags" ]
+  }

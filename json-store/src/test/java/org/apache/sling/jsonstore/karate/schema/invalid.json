@@ -1,0 +1,4 @@
+{
+    "$schema": "https://some.invalid.schema.ref",
+    "$id": "https://example.com/invalid"
+}

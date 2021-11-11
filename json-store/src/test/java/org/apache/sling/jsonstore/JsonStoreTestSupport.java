@@ -27,6 +27,7 @@ import java.util.Base64;
 import org.apache.sling.testing.clients.osgi.OsgiConsoleClient;
 import org.apache.sling.testing.paxexam.TestSupport;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.ops4j.pax.exam.Configuration;
 import org.ops4j.pax.exam.Option;
@@ -43,7 +44,7 @@ import static org.apache.sling.testing.paxexam.SlingOptions.webconsole;
 import static org.apache.sling.testing.paxexam.SlingOptions.slingQuickstartOakTar;
 
 public class JsonStoreTestSupport extends TestSupport {
-    private static final int httpPort = findFreePort();
+    protected static final int httpPort = findFreePort();
     private static final String CREDENTIALS = new String(Base64.getEncoder().encode("admin:admin".getBytes()));
 
     @ClassRule
