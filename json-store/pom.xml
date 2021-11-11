@@ -79,7 +79,16 @@
         <groupId>org.apache.servicemix.tooling</groupId>
         <artifactId>depends-maven-plugin</artifactId>
       </plugin>
-    </plugins>
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>sling/**</exclude>
+          </excludes>
+        </configuration>
+    </plugin>
+</plugins>
   </build>
 
   <dependencies>
