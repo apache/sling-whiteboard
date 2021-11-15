@@ -17,7 +17,7 @@
  * under the License.
  */
 
- package org.apache.sling.jsonstore.api;
+ package org.apache.sling.jsonstore.internal.api;
 
 import java.io.IOException;
 

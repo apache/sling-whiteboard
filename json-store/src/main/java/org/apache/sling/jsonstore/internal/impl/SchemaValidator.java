@@ -17,15 +17,15 @@
  * under the License.
  */
 
-package org.apache.sling.jsonstore.impl;
+package org.apache.sling.jsonstore.internal.impl;
 
-import static org.apache.sling.jsonstore.api.JsonStoreConstants.SCHEMA_DATA_TYPE;
+import static org.apache.sling.jsonstore.internal.api.JsonStoreConstants.SCHEMA_DATA_TYPE;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
 import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.jsonstore.api.DataTypeValidator;
-import org.apache.sling.jsonstore.api.SchemaProvider;
+import org.apache.sling.jsonstore.internal.api.DataTypeValidator;
+import org.apache.sling.jsonstore.internal.api.SchemaProvider;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 

@@ -17,11 +17,11 @@
  * under the License.
  */
 
-package org.apache.sling.jsonstore.impl;
+package org.apache.sling.jsonstore.internal.impl;
 
-import static org.apache.sling.jsonstore.api.JsonStoreConstants.JSON_BLOB_RESOURCE_TYPE;
-import static org.apache.sling.jsonstore.api.JsonStoreConstants.JSON_FOLDER_RESOURCE_TYPE;
-import static org.apache.sling.jsonstore.api.JsonStoreConstants.JSON_PROP_NAME;
+import static org.apache.sling.jsonstore.internal.api.JsonStoreConstants.JSON_BLOB_RESOURCE_TYPE;
+import static org.apache.sling.jsonstore.internal.api.JsonStoreConstants.JSON_FOLDER_RESOURCE_TYPE;
+import static org.apache.sling.jsonstore.internal.api.JsonStoreConstants.JSON_PROP_NAME;
 
 import java.io.IOException;
 import java.util.List;
@@ -40,13 +40,13 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceUtil;
 import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
+import org.apache.sling.jsonstore.internal.api.DataTypeValidator;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.service.component.annotations.ReferencePolicyOption;
-import org.apache.sling.jsonstore.api.DataTypeValidator;
 
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
@@ -82,7 +82,6 @@ public class JsonStoreServlet extends SlingAllMethodsServlet {
     public void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws ServletException, IOException {
 
         // Parse incoming JSON
-        // TODO validate, depending on subpath
         JsonNode json = null;
         try {
             json = mapper.readTree(request.getInputStream());

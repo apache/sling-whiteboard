@@ -17,9 +17,9 @@
  * under the License.
  */
 
-package org.apache.sling.jsonstore.impl;
+package org.apache.sling.jsonstore.internal.impl;
 
-import static org.apache.sling.jsonstore.api.JsonStoreConstants.STORE_ROOT_PATH;
+import static org.apache.sling.jsonstore.internal.api.JsonStoreConstants.STORE_ROOT_PATH;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

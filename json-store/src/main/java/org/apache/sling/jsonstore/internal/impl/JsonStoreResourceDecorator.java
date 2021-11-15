@@ -17,12 +17,12 @@
  * under the License.
  */
 
-package org.apache.sling.jsonstore.impl;
+package org.apache.sling.jsonstore.internal.impl;
+
+import static org.apache.sling.jsonstore.internal.api.JsonStoreConstants.JSON_BLOB_RESOURCE_TYPE;
+import static org.apache.sling.jsonstore.internal.api.JsonStoreConstants.STORE_ROOT_PATH;
 
 import javax.servlet.http.HttpServletRequest;
-
-import static org.apache.sling.jsonstore.api.JsonStoreConstants.STORE_ROOT_PATH;
-import static org.apache.sling.jsonstore.api.JsonStoreConstants.JSON_BLOB_RESOURCE_TYPE;
 
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceDecorator;

@@ -17,11 +17,11 @@
  * under the License.
  */
 
-package org.apache.sling.jsonstore.impl;
+package org.apache.sling.jsonstore.internal.impl;
 
-import static org.apache.sling.jsonstore.api.JsonStoreConstants.CONTENT_DATA_TYPE;
-import static org.apache.sling.jsonstore.api.JsonStoreConstants.ELEMENTS_DATA_TYPE;
-import static org.apache.sling.jsonstore.api.JsonStoreConstants.JSON_SCHEMA_FIELD;
+import static org.apache.sling.jsonstore.internal.api.JsonStoreConstants.CONTENT_DATA_TYPE;
+import static org.apache.sling.jsonstore.internal.api.JsonStoreConstants.ELEMENTS_DATA_TYPE;
+import static org.apache.sling.jsonstore.internal.api.JsonStoreConstants.JSON_SCHEMA_FIELD;
 
 import java.io.IOException;
 import java.util.Set;
@@ -31,8 +31,8 @@ import com.networknt.schema.JsonSchema;
 import com.networknt.schema.ValidationMessage;
 
 import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.jsonstore.api.DataTypeValidator;
-import org.apache.sling.jsonstore.api.SchemaProvider;
+import org.apache.sling.jsonstore.internal.api.DataTypeValidator;
+import org.apache.sling.jsonstore.internal.api.SchemaProvider;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 

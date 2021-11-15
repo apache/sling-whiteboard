@@ -17,14 +17,13 @@
  * under the License.
  */
 
-package org.apache.sling.jsonstore.impl;
+package org.apache.sling.jsonstore.internal.impl;
 
-import static org.apache.sling.jsonstore.api.JsonStoreConstants.SCHEMA_DATA_TYPE;
-import static org.apache.sling.jsonstore.api.JsonStoreConstants.STORE_ROOT_PATH;
+import static org.apache.sling.jsonstore.internal.api.JsonStoreConstants.JSON_PROP_NAME;
+import static org.apache.sling.jsonstore.internal.api.JsonStoreConstants.SCHEMA_DATA_TYPE;
+import static org.apache.sling.jsonstore.internal.api.JsonStoreConstants.STORE_ROOT_PATH;
 
 import java.io.IOException;
-
-import static org.apache.sling.jsonstore.api.JsonStoreConstants.JSON_PROP_NAME;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -38,7 +37,7 @@ import com.networknt.schema.SpecVersionDetector;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ValueMap;
-import org.apache.sling.jsonstore.api.SchemaProvider;
+import org.apache.sling.jsonstore.internal.api.SchemaProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.service.component.annotations.Component;

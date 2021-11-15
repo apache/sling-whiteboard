@@ -17,19 +17,21 @@
  * under the License.
  */
 
- package org.apache.sling.jsonstore.api;
+package org.apache.sling.jsonstore.internal.api;
 
-public class JsonStoreConstants {
-    public static final String STORE_ROOT_PATH = "/content/sites";
-    public static final String JSON_BLOB_RESOURCE_TYPE = "sling/jsonstore/json";
-    public static final String JSON_FOLDER_RESOURCE_TYPE = "sling/jsonstore/folder";
-    public static final String JSON_PROP_NAME = "json";
+import java.io.IOException;
 
-    public static final String SCHEMA_DATA_TYPE = "schema";
-    public static final String ELEMENTS_DATA_TYPE = "elements";
-    public static final String CONTENT_DATA_TYPE = "content";
+import com.fasterxml.jackson.databind.JsonNode;
+import com.networknt.schema.JsonSchema;
 
-    public static final String JSON_SCHEMA_FIELD = "$schema";
-    
-    private JsonStoreConstants() {}
+import org.apache.sling.api.resource.ResourceResolver;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.osgi.annotation.versioning.ProviderType;
+
+/** Provide schema retrieved from the store */
+@ProviderType
+public interface SchemaProvider {
+    @Nullable JsonSchema getSchema(@NotNull ResourceResolver resolver, @NotNull String site, @NotNull String schemaPath) throws IOException;
+    @NotNull JsonSchema buildSchema(@NotNull JsonNode json);
 }
