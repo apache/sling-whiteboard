@@ -31,9 +31,6 @@ Background:
 # Use admin credentials for all requests
 * configure headers = call read('classpath:util/basic-auth-header.js')
 
-# Sling instance ready?
-* eval karate.call('classpath:util/sling-ready.feature')
-
 # ------------------------------------------------------------------------
 Scenario: Cleanup previous test content
 # ------------------------------------------------------------------------
@@ -45,7 +42,7 @@ When method DELETE
 Scenario: Attempt to store content before having a schema
 # ------------------------------------------------------------------------
 Given request read('/content/minimal-content.json')
-And path 'content/sites/example.com/content/somepath/minimal'
+And path 'content/sites/example.com/content/somepath/minimal-before-schema'
 When method POST
 Then status 400
 * match response contains "Error retrieving schema"

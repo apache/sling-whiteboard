@@ -77,10 +77,12 @@
           </execution>
         </executions>
         <configuration>
+          <runOrder>alphabetical</runOrder>
           <systemPropertyVariables>
             <bundle.filename>${basedir}/target/${project.build.finalName}.jar</bundle.filename>
             <pax.vm.options>${pax.vm.options}</pax.vm.options>
             <external.test.server.port>${external.test.server.port}</external.test.server.port>
+            <sling.workdir>${project.build.directory}/sling-pax-exam</sling.workdir>
           </systemPropertyVariables>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <!-- pax exam bug, often times out at exit -->

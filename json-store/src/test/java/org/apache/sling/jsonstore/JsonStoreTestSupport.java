@@ -74,7 +74,7 @@ public class JsonStoreTestSupport extends TestSupport {
             http(),
             webconsole(),
             paxLoggingLogback(),
-            slingQuickstartOakTar(),
+            slingQuickstartOakTar(System.getProperty("sling.workdir"), httpPort),
             testBundle("bundle.filename"),
             storeSupportBundles()
         );

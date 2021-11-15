@@ -31,15 +31,20 @@ Background:
 # Use admin credentials for all requests
 * configure headers = call read('classpath:util/basic-auth-header.js')
 
-# Sling instance ready?
-* eval karate.call('classpath:util/sling-ready.feature')
-
 # ------------------------------------------------------------------------
 Scenario: Cleanup previous test content
 # ------------------------------------------------------------------------
 Given path 'content/sites'
 When method DELETE
 * match [204,404,405] contains responseStatus
+
+# ------------------------------------------------------------------------
+Scenario: Attempt to store an invalid schema
+# ------------------------------------------------------------------------
+Given request read('/schema/invalid.json')
+And path 'content/sites/example.com/schema/invalid'
+When method POST
+Then status 400
 
 # ------------------------------------------------------------------------
 Scenario: Store a valid schema
@@ -56,11 +61,3 @@ Given path 'content/sites/example.com/schema/minimal'
 When method GET
 Then status 200
 And match response == read('/schema/minimal.json')
-
-# ------------------------------------------------------------------------
-Scenario: Attempt to store an invalid schema
-# ------------------------------------------------------------------------
-Given request read('/schema/invalid.json')
-And path 'content/sites/example.com/schema/invalid'
-When method POST
-Then status 400
