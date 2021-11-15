@@ -19,28 +19,30 @@
 
 package org.apache.sling.jsonstore.internal.impl;
 
-import static org.apache.sling.jsonstore.internal.api.JsonStoreConstants.SCHEMA_DATA_TYPE;
+import java.io.IOException;
+
+import javax.servlet.Servlet;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.jsonstore.internal.api.DataTypeValidator;
+import org.apache.sling.api.resource.Resource;
+import org.apache.sling.jsonstore.internal.api.JsonStoreConstants;
 import org.apache.sling.jsonstore.internal.api.SchemaProvider;
+import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
-@Component(service = DataTypeValidator.class)
-public class SchemaValidator implements DataTypeValidator {
-
+@Component(service = Servlet.class)
+@SlingServletResourceTypes(
+    resourceTypes=JsonStoreConstants.SCHEMA_RESOURCE_TYPE,
+    methods= "POST"
+)
+public class SchemaPostServlet extends AbstractJsonPostServlet {
     @Reference
     private SchemaProvider schemaProvider;
-    
+
     @Override
-    public boolean validate(ResourceResolver resolver, JsonNode json, String site, String dataType) throws DataTypeValidator.ValidatorException {
-        if(!SCHEMA_DATA_TYPE.equals(dataType)) {
-            return false;
-        }
+    protected void validateJson(Resource resource, JsonNode json) throws IOException {
         schemaProvider.buildSchema(json);
-        return true;
     }
 }

@@ -42,10 +42,10 @@ When method DELETE
 Scenario: Attempt to store content before having a schema
 # ------------------------------------------------------------------------
 Given request read('/content/minimal-content.json')
-And path 'content/sites/example.com/content/somepath/minimal-before-schema'
+And path 'content/sites/example.com/branches/authoring/content/somepath/minimal-before-schema'
 When method POST
 Then status 400
-* match response contains "Error retrieving schema"
+* match response contains "Schema not found"
 
 # ------------------------------------------------------------------------
 Scenario: Store minimal schema
@@ -59,14 +59,14 @@ Then status 200
 Scenario: Store content that uses minimal schema
 # ------------------------------------------------------------------------
 Given request read('/content/minimal-content.json')
-And path 'content/sites/example.com/content/somepath/minimal'
+And path 'content/sites/example.com/branches/authoring/content/somepath/minimal'
 When method POST
 Then status 200
 
 # ------------------------------------------------------------------------
 Scenario: Verify content
 # ------------------------------------------------------------------------
-Given path 'content/sites/example.com/content/somepath/minimal'
+Given path 'content/sites/example.com/branches/authoring/content/somepath/minimal'
 When method GET
 Then status 200
 And match response == read('/content/minimal-content.json')
@@ -75,7 +75,7 @@ And match response == read('/content/minimal-content.json')
 Scenario: Attempt to store content that the schema does not validate
 # ------------------------------------------------------------------------
 Given request read('/content/invalid-minimal-content.json')
-And path 'content/sites/example.com/content/somepath/willfail'
+And path 'content/sites/example.com/branches/authoring/content/somepath/willfail'
 When method POST
 Then status 400
-* match response contains "DataTypeValidator$ValidatorException"
+* match response contains "$.extra: is not defined in the schema"

@@ -30,6 +30,6 @@ public class HttpAccessIT extends JsonStoreTestSupport {
 
     @Test
     public void testStoreServletPresent() throws IOException {
-        assertEquals(500, get("/content/sites/example.com/x.json").getResponseCode());
+        assertEquals(500, get("/content/sites/example.com/branches/authoring/x.json").getResponseCode());
     }
 }

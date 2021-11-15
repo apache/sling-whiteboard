@@ -19,49 +19,45 @@
 
 package org.apache.sling.jsonstore.internal.impl;
 
-import static org.apache.sling.jsonstore.internal.api.JsonStoreConstants.CONTENT_DATA_TYPE;
-import static org.apache.sling.jsonstore.internal.api.JsonStoreConstants.ELEMENTS_DATA_TYPE;
-import static org.apache.sling.jsonstore.internal.api.JsonStoreConstants.JSON_SCHEMA_FIELD;
-
 import java.io.IOException;
 import java.util.Set;
+
+import javax.servlet.Servlet;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.ValidationMessage;
 
-import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.jsonstore.internal.api.DataTypeValidator;
+import org.apache.sling.api.resource.Resource;
+import org.apache.sling.jsonstore.internal.api.JsonStoreConstants;
 import org.apache.sling.jsonstore.internal.api.SchemaProvider;
+import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
-@Component(service = DataTypeValidator.class)
-public class ContentValidator implements DataTypeValidator {
-
+@Component(service = Servlet.class)
+@SlingServletResourceTypes(
+    resourceTypes={
+        JsonStoreConstants.CONTENT_RESOURCE_TYPE,
+        JsonStoreConstants.ELEMENTS_RESOURCE_TYPE
+    },
+    methods= "POST"
+)
+public class ContentPostServlet extends AbstractJsonPostServlet {
     @Reference
     private SchemaProvider schemaProvider;
-
+    
     @Override
-    public boolean validate(ResourceResolver resolver, JsonNode json, String site, String dataType) throws DataTypeValidator.ValidatorException {
-        if(!CONTENT_DATA_TYPE.equals(dataType) && !ELEMENTS_DATA_TYPE.equals(dataType)) {
-            return false;
-        }
-
-        // TODO fixed schema for now -> extract from incoming document, $schema ?
-        final JsonNode schemaField = json.get(JSON_SCHEMA_FIELD);
+    protected void validateJson(Resource resource, JsonNode json) throws IOException {
+        final JsonNode schemaField = json.get(JsonStoreConstants.JSON_SCHEMA_FIELD);
         if(schemaField == null) {
-            throw new ValidatorException("Schema field missing in incoming document:" + JSON_SCHEMA_FIELD);
+            throw new IOException("Schema field missing in incoming document:" + JsonStoreConstants.JSON_SCHEMA_FIELD);
         }
         final String schemaRef = schemaField.asText();
         JsonSchema schema = null;
-        try {
-            schema = schemaProvider.getSchema(resolver, site, schemaRef);
-            if(schema == null) {
-                throw new ValidatorException("Schema not found: " + schemaRef);
-            }
-        } catch(IOException ioe) {
-            throw new ValidatorException("Error retrieving schema " + schemaRef, ioe);
+        schema = schemaProvider.getSchema(resource.getResourceResolver(), resource.getPath(), schemaRef);
+        if(schema == null) {
+            throw new IOException("Schema not found: " + schemaRef);
         }
         final Set<ValidationMessage> msgs = schema.validate(json);
         if(!msgs.isEmpty()) {
@@ -70,8 +66,8 @@ public class ContentValidator implements DataTypeValidator {
                 sb.append(msg.toString());
                 sb.append("\n");
             }
-            throw new ValidatorException(sb.toString());
+            throw new IOException(sb.toString());
         }
-        return true;
     }
+
 }

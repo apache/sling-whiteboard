@@ -19,17 +19,17 @@
 
 package org.apache.sling.jsonstore.internal.impl;
 
-import static org.apache.sling.jsonstore.internal.api.JsonStoreConstants.JSON_BLOB_RESOURCE_TYPE;
-import static org.apache.sling.jsonstore.internal.api.JsonStoreConstants.STORE_ROOT_PATH;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceDecorator;
 import org.apache.sling.api.resource.ResourceUtil;
+import org.apache.sling.jsonstore.internal.api.ResourceBehaviorProvider;
+import org.apache.sling.jsonstore.internal.api.ResourceBehaviorProvider.ResourceBehavior;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,19 +41,19 @@ public class JsonStoreResourceDecorator implements ResourceDecorator {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
+    @Reference
+    private ResourceBehaviorProvider rbp;
+
     @Override
     public @Nullable Resource decorate(@NotNull Resource resource) {
-        if(ResourceUtil.isNonExistingResource(resource) && resource.getPath().startsWith(STORE_ROOT_PATH)) {
-            final String wrappedResourceType = getWrappedResourceType(resource);
-            log.debug("Wrapping resource {} with resource type {}", resource.getPath(), wrappedResourceType);
-            return new WrappedResource(resource);
-        } else {
-            return resource;
+        if(ResourceUtil.isNonExistingResource(resource)) {
+            final ResourceBehavior b = rbp.getBehavior(resource);
+            if(b != null) {
+                log.debug("Wrapping resource {} with resource type {}", resource.getPath(), b.getNonExistentResourceType());
+                return new WrappedResource(resource, b.getNonExistentResourceType());
+            }
         }
-    }
-
-    String getWrappedResourceType(Resource r) {
-        return JSON_BLOB_RESOURCE_TYPE;
+        return resource;
     }
 
     @Override

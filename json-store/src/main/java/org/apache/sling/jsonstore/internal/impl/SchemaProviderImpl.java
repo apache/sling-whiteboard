@@ -20,16 +20,15 @@
 package org.apache.sling.jsonstore.internal.impl;
 
 import static org.apache.sling.jsonstore.internal.api.JsonStoreConstants.JSON_PROP_NAME;
-import static org.apache.sling.jsonstore.internal.api.JsonStoreConstants.SCHEMA_DATA_TYPE;
-import static org.apache.sling.jsonstore.internal.api.JsonStoreConstants.STORE_ROOT_PATH;
 
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.JsonSchema;
+import com.networknt.schema.JsonSchemaException;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.SpecVersionDetector;
@@ -50,9 +49,12 @@ public class SchemaProviderImpl implements SchemaProvider {
     private final Logger log = LoggerFactory.getLogger(getClass());
     private final ObjectMapper mapper = new ObjectMapper();
     
+    // TODO all path patterns should be configurable in a central place
+    private final static Pattern EXTRACT_SITE_PATTERN = Pattern.compile("/content/sites/([^/]+)/(.*)");
+
     @Override
-    public @Nullable JsonSchema getSchema(@NotNull ResourceResolver resolver, @NotNull String site, @NotNull String schemaPath) throws IOException {
-        final String schemaResourcePath = String.format("%s/%s/%s/%s", STORE_ROOT_PATH, site, SCHEMA_DATA_TYPE, schemaPath);
+    public @Nullable JsonSchema getSchema(@NotNull ResourceResolver resolver, @NotNull String resourcePath, @NotNull String schemaRef) throws IOException {
+        final String schemaResourcePath = getSchemaPath(resourcePath, schemaRef);
         final Resource schemaResource = resolver.getResource(schemaResourcePath);
         if(schemaResource == null) {
             return null;
@@ -69,8 +71,28 @@ public class SchemaProviderImpl implements SchemaProvider {
     }
 
     @Override
-    public @NotNull JsonSchema buildSchema(@NotNull JsonNode json) {
-        final SpecVersion.VersionFlag v = SpecVersionDetector.detect(json);
-        return JsonSchemaFactory.getInstance(v).getSchema(json);
+    public @NotNull JsonSchema buildSchema(@NotNull JsonNode json) throws IOException {
+        try {
+            final SpecVersion.VersionFlag v = SpecVersionDetector.detect(json);
+            return JsonSchemaFactory.getInstance(v).getSchema(json);
+        } catch(JsonSchemaException jse) {
+            throw new IOException("buildSchema failed", jse);
+        }
+    }
+
+    @Override
+    public @NotNull String getSchemaPath(String resourcePath, String schemaRef) throws IOException {
+        if(resourcePath == null || resourcePath.length() == 0) {
+            throw new IOException("Missing resourcePath");
+        }
+        if(schemaRef == null || schemaRef.length() == 0) {
+            throw new IOException("Missing schemaRef");
+        }
+        final Matcher m = EXTRACT_SITE_PATTERN.matcher(resourcePath);
+        if(m.matches()) {
+            return String.format("/content/sites/%s/schema/%s", m.group(1), schemaRef);
+        } else {
+            throw new IOException(String.format("Resource path %s does not match %s", resourcePath, EXTRACT_SITE_PATTERN));
+        }
     }
 }

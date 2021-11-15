@@ -21,13 +21,12 @@
 
 public class JsonStoreConstants {
     public static final String STORE_ROOT_PATH = "/content/sites";
-    public static final String JSON_BLOB_RESOURCE_TYPE = "sling/jsonstore/json";
-    public static final String JSON_FOLDER_RESOURCE_TYPE = "sling/jsonstore/folder";
     public static final String JSON_PROP_NAME = "json";
 
-    public static final String SCHEMA_DATA_TYPE = "schema";
-    public static final String ELEMENTS_DATA_TYPE = "elements";
-    public static final String CONTENT_DATA_TYPE = "content";
+    public static final String FOLDER_RESOURCE_TYPE = "sling/jsonstore/folder";
+    public static final String SCHEMA_RESOURCE_TYPE = "sling/jsonstore/schema";
+    public static final String ELEMENTS_RESOURCE_TYPE = "sling/jsonstore/element";
+    public static final String CONTENT_RESOURCE_TYPE = "sling/jsonstore/content";
 
     public static final String JSON_SCHEMA_FIELD = "$schema";
     

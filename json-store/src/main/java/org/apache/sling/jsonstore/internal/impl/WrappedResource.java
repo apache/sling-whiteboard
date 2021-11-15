@@ -19,19 +19,15 @@
 
 package org.apache.sling.jsonstore.internal.impl;
 
-import static org.apache.sling.jsonstore.internal.api.JsonStoreConstants.JSON_BLOB_RESOURCE_TYPE;
-
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceWrapper;
 
 class WrappedResource extends ResourceWrapper {
     private final String resourceType;
 
-    WrappedResource(Resource original) {
+    WrappedResource(Resource original, String wrappedResourceType) {
         super(original);
-
-        // TODO map resource types according to path (schema, element, content)
-        resourceType = JSON_BLOB_RESOURCE_TYPE;
+        resourceType = wrappedResourceType;
     }
 
     @Override

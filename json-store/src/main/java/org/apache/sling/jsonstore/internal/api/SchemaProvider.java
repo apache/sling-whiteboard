@@ -32,6 +32,7 @@ import org.osgi.annotation.versioning.ProviderType;
 /** Provide schema retrieved from the store */
 @ProviderType
 public interface SchemaProvider {
-    @Nullable JsonSchema getSchema(@NotNull ResourceResolver resolver, @NotNull String site, @NotNull String schemaPath) throws IOException;
-    @NotNull JsonSchema buildSchema(@NotNull JsonNode json);
+    @Nullable JsonSchema getSchema(@NotNull ResourceResolver resolver, @NotNull String resourcePath, @NotNull String schemaPath) throws IOException;
+    @NotNull JsonSchema buildSchema(@NotNull JsonNode json) throws IOException;
+    @NotNull String getSchemaPath(String resourcePath, String schemaRef) throws IOException;
 }
