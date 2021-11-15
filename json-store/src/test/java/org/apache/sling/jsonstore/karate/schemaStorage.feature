@@ -39,7 +39,7 @@ Scenario: Cleanup previous test content
 # ------------------------------------------------------------------------
 Given path 'content/sites'
 When method DELETE
-* match [204,404] contains responseStatus
+* match [204,404,405] contains responseStatus
 
 # ------------------------------------------------------------------------
 Scenario: Store a valid schema
