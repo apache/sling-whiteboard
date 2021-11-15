@@ -1,0 +1,5 @@
+{
+  "$schema":"test/minimal",
+  "extra":"property that's not in the schema",
+  "tags": [ "home", "green" ]
+}

@@ -1,0 +1,4 @@
+{
+  "$schema":"test/minimal",
+  "tags": [ "home", "green" ]
+}
