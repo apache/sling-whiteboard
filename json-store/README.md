@@ -21,6 +21,21 @@ Install the following bundles, which you can get by running
 
 Install this bundle and verify that it is active.
 
+## Running tests against an existing Sling instance
+
+The integration tests start their own Sling instance, but you can
+also run them against an existing one if desired, as follows:
+
+    mvn verify -Dexternal.test.server.port=8080
+
+or, to run just the Karate tests:
+
+    mvn test -Dtest=KarateIT  -Dexternal.test.server.port=8080
+
+## Testing with curl
+
+**TODO remove this once we have all the equivalent Karate tests**
+
 Cleanup any previous examples if desired:
 
     curl -u admin:admin -X DELETE http://localhost:8080/content/sites

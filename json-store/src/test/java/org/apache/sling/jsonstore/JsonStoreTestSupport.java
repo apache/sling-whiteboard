@@ -44,11 +44,27 @@ import static org.apache.sling.testing.paxexam.SlingOptions.webconsole;
 import static org.apache.sling.testing.paxexam.SlingOptions.slingQuickstartOakTar;
 
 public class JsonStoreTestSupport extends TestSupport {
-    protected static final int httpPort = findFreePort();
+    protected static final int httpPort = getHttpPort();
     private static final String CREDENTIALS = new String(Base64.getEncoder().encode("admin:admin".getBytes()));
 
+    public static final String EXTERNAL_TEST_SERVER_PORT = "external.test.server.port";
+
+    static int getHttpPort() {
+        final String extPort = System.getProperty(EXTERNAL_TEST_SERVER_PORT);
+        if(extPort != null && extPort.length() > 0) {
+            return Integer.valueOf(extPort);
+        }
+        return findFreePort();
+    }
+
     @ClassRule
-    public static PaxExamServer serverRule = new PaxExamServer();
+    public static PaxExamServer serverRule = new ConditionalPaxServer() {
+        @Override
+        protected boolean isActive() {
+            final String extPort = System.getProperty(EXTERNAL_TEST_SERVER_PORT);
+            return extPort == null || extPort.length() == 0;
+        }
+    };
 
     @Configuration
     public Option[] configuration() {

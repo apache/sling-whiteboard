@@ -39,6 +39,7 @@
     <project.build.outputTimestamp>1</project.build.outputTimestamp>
     <org.ops4j.pax.exam.version>4.13.3</org.ops4j.pax.exam.version>
     <karate.version>1.1.0</karate.version>
+    <external.test.server.port></external.test.server.port>
   </properties>
 
   <build>
@@ -79,6 +80,7 @@
           <systemPropertyVariables>
             <bundle.filename>${basedir}/target/${project.build.finalName}.jar</bundle.filename>
             <pax.vm.options>${pax.vm.options}</pax.vm.options>
+            <external.test.server.port>${external.test.server.port}</external.test.server.port>
           </systemPropertyVariables>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <!-- pax exam bug, often times out at exit -->

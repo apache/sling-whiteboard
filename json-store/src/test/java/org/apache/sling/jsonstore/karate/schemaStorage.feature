@@ -35,6 +35,13 @@ Background:
 * eval karate.call('classpath:util/sling-ready.feature')
 
 # ------------------------------------------------------------------------
+Scenario: Cleanup previous test content
+# ------------------------------------------------------------------------
+Given path 'content/sites'
+When method DELETE
+* match [204,404] contains responseStatus
+
+# ------------------------------------------------------------------------
 Scenario: Store a valid schema
 # ------------------------------------------------------------------------
 Given request read('/schema/minimal.json')
