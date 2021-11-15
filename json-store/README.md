@@ -9,7 +9,13 @@ This module stores content as JSON blobs validated by JSON schemas.
   * The _elements_ subtree stores validated reusable elements of content
   * The _content_ subtree stores the actual validated content: pages etc.
 
-## How to test this
+## Integration tests
+
+The [integration tests](./src/test/java/org/apache/sling/jsonstore/karate/)
+(`*.feature` files) use [Karate](https://github.com/karatelabs/karate) and
+demonstrate how to use the API.
+
+## How to test this in a Sling instance
 
 Install the following bundles, which you can get by running
 ` mvn dependency:copy-dependencies` in this folder:
@@ -21,7 +27,7 @@ Install the following bundles, which you can get by running
 
 Install this bundle and verify that it is active.
 
-## Running tests against an existing Sling instance
+## How to run the tests against an existing Sling instance
 
 The integration tests start their own Sling instance, but you can
 also run them against an existing one if desired, as follows:
@@ -31,31 +37,3 @@ also run them against an existing one if desired, as follows:
 or, to run just the Karate tests:
 
     mvn test -Dtest=KarateIT  -Dexternal.test.server.port=8080
-
-## Testing with curl
-
-**TODO remove this once we have all the equivalent Karate tests**
-
-Cleanup any previous examples if desired:
-
-    curl -u admin:admin -X DELETE http://localhost:8080/content/sites
-
-Try storing content, which fails due to no schema found:
-
-    curl -u admin:admin -H "Content-Type: application/json" -d @example-data/good-product.json http://localhost:8080/content/sites/example.com/content/testing/good-product
-
-Add the missing schema:
-
-    curl -D - -u admin:admin -H "Content-Type: application/json" -d @example-data/example-schema.json http://localhost:8080/content/sites/example.com/schema/test/example-schema
-
-Storing the content should now work:
-
-    curl -u admin:admin -H "Content-Type: application/json" -d @example-data/good-product.json http://localhost:8080/content/sites/example.com/content/testing/good-product
-
-And schema validation should reject an invalid document:
-
-    curl -u admin:admin -H "Content-Type: application/json" -d @example-data/bad-product.json http://localhost:8080/content/sites/example.com/content/testing/good-product
-
-And this also fails as the document is not a valid schema:
-
-    curl -u admin:admin -H "Content-Type: application/json" -d @example-data/good-product.json http://localhost:8080/content/sites/example.com/schema/testing/good-product

@@ -42,6 +42,15 @@ When method DELETE
 * match [204,404,405] contains responseStatus
 
 # ------------------------------------------------------------------------
+Scenario: Attempt to store content before having a schema
+# ------------------------------------------------------------------------
+Given request read('/content/minimal-content.json')
+And path 'content/sites/example.com/content/somepath/minimal'
+When method POST
+Then status 400
+* match response contains "Error retrieving schema"
+
+# ------------------------------------------------------------------------
 Scenario: Store minimal schema
 # ------------------------------------------------------------------------
 Given request read('/schema/minimal.json')
@@ -50,7 +59,7 @@ When method POST
 Then status 200
 
 # ------------------------------------------------------------------------
-Scenario: Store content
+Scenario: Store content that uses minimal schema
 # ------------------------------------------------------------------------
 Given request read('/content/minimal-content.json')
 And path 'content/sites/example.com/content/somepath/minimal'
@@ -66,7 +75,7 @@ Then status 200
 And match response == read('/content/minimal-content.json')
 
 # ------------------------------------------------------------------------
-Scenario: Invalid content
+Scenario: Attempt to store content that the schema does not validate
 # ------------------------------------------------------------------------
 Given request read('/content/invalid-minimal-content.json')
 And path 'content/sites/example.com/content/somepath/willfail'

@@ -58,7 +58,7 @@ Then status 200
 And match response == read('/schema/minimal.json')
 
 # ------------------------------------------------------------------------
-Scenario: Error trying to store an invalid schema
+Scenario: Attempt to store an invalid schema
 # ------------------------------------------------------------------------
 Given request read('/schema/invalid.json')
 And path 'content/sites/example.com/schema/invalid'
