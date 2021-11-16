@@ -17,6 +17,66 @@ components:
 security:
   - BasicAuth : []
 paths:
+  /content/sites/{site}/schema/{name}:
+    parameters: 
+        - in: path
+          name: site
+          schema: 
+            type: string
+          required: true
+          description: Site name
+          example: "example.com"
+        - in: path
+          name: name
+          schema: 
+            type: string
+          required: true
+          description: Schema name
+          example: "test/minimal"
+    post:
+      operationId: postSchema
+      summary: Store or update a JSON schema
+      requestBody:
+        description: "Schema content"
+        required: true
+        content:
+          application/json:
+            example: {
+              "$schema": "https://json-schema.org/draft/2019-09/schema",
+              "$id": "https://example.com/minimal",
+              "title": "Minimal",
+              "description": "A minimal(ish) valid schema",
+              "type": "object",
+              "properties": {
+                "$schema": {
+                  "description": "The schema reference",
+                  "type": "string"
+                },
+                "tags": {
+                  "description": "Tags that categorize the product",
+                  "type": "array"
+                }
+              },
+              "additionalProperties":false,
+              "required": [ "$schema", "tags" ]
+            }
+            schema:
+              $ref: '#/components/schemas/anyJSON'
+      responses:
+        '200':
+          description: |-
+            200 response
+          content:
+            application/json: {}
+    get:
+      operationId: getSchema
+      summary: Get a JSON schema
+      responses:
+        '200':
+          description: |-
+            200 response
+          content:
+            application/json: {}
   /content/sites/{site}/branches/authoring/{contentType}/{path}:
     parameters: 
         - in: path
@@ -57,6 +117,10 @@ paths:
         required: true
         content:
           application/json:
+            example: {
+              "$schema":"test/minimal",
+              "tags": [ "home", "green" ]
+            }
             schema:
               $ref: '#/components/schemas/anyJSON'
       parameters: 
@@ -81,86 +145,6 @@ paths:
           required: true
           description: The document path
           example: "minimal"
-      responses:
-        '200':
-          description: |-
-            200 response
-          content:
-            application/json: {}
-  /content/sites/{site}/schema/{name}:
-    parameters: 
-        - in: path
-          name: site
-          schema: 
-            type: string
-          required: true
-          description: Site name
-          example: "example.com"
-        - in: path
-          name: name
-          schema: 
-            type: string
-          required: true
-          description: Schema name
-          example: "minimal"
-    get:
-      operationId: getSchema
-      summary: Get a JSON schema
-      responses:
-        '200':
-          description: |-
-            200 response
-          content:
-            application/json: {}
-    post:
-      operationId: postSchema
-      summary: Store or update a JSON schema
-      requestBody:
-        description: "Schema content"
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/anyJSON'
-      responses:
-        '200':
-          description: |-
-            200 response
-          content:
-            application/json: {}
-  /content/sites/{site}/branches/{branch}/{contentType}/{path}:
-    parameters: 
-        - in: path
-          name: site
-          schema: 
-            type: string
-          required: true
-          description: Site name
-          example: "example.com"
-        - in: path
-          name: branch
-          schema: 
-            type: string
-          required: true
-          description: The branch name
-          example: "testing"
-        - in: path
-          name: contentType
-          schema: 
-            type: string
-          required: true
-          description: The type of content to store or retrieve
-          example: "content"
-        - in: path
-          name: path
-          schema: 
-            type: string
-          required: true
-          description: The document path
-          example: "minimal"
-    get:
-      operationId: getBranchDocument
-      summary: Get a JSON document from a readonly branch
       responses:
         '200':
           description: |-
@@ -208,14 +192,14 @@ paths:
             type: string
           required: true
           description: Command namespace
-          example: cmd
+          example: branch
         - in: path
           name: command
           schema: 
             type: string
           required: true
           description: Command name
-          example: ping
+          example: push
     post:
       operationId: executeCommand
       summary: Execute a command
@@ -224,6 +208,10 @@ paths:
         required: true
         content:
           application/json:
+            example: {
+                "branch":"testing",
+                "path":"/content/sites/example.com/branches/authoring/content/minimal"
+            }
             schema:
               $ref: '#/components/schemas/anyJSON'
       responses:
@@ -232,4 +220,42 @@ paths:
             200 response
           content:
             application/json: {}
-                        
+  /content/sites/{site}/branches/{branch}/{contentType}/{path}:
+    parameters: 
+        - in: path
+          name: site
+          schema: 
+            type: string
+          required: true
+          description: Site name
+          example: "example.com"
+        - in: path
+          name: branch
+          schema: 
+            type: string
+          required: true
+          description: The branch name
+          example: "testing"
+        - in: path
+          name: contentType
+          schema: 
+            type: string
+          required: true
+          description: The type of content to store or retrieve
+          example: "content"
+        - in: path
+          name: path
+          schema: 
+            type: string
+          required: true
+          description: The document path
+          example: "minimal"
+    get:
+      operationId: getBranchDocument
+      summary: Get a JSON document from a readonly branch
+      responses:
+        '200':
+          description: |-
+            200 response
+          content:
+            application/json: {}
