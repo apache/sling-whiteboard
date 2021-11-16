@@ -28,9 +28,10 @@ Install the following bundles, which you can get by running
 Install this bundle and verify that it is active.
 
 http://localhost:8080/system/sling/openapi/openapi-browser.html provides
-an OpenAPI browser. That UI provides examples that should help explore
-the API use cases: store a schema, store a document, push the document
-to a readonly branch and retrieve all those things.
+an OpenAPI browser. Make sure to set the admin:admin credentials on that
+page for the requests to work correctly. That UI provides examples that
+should help explore the API use cases: store a schema, store a document,
+push the document to a readonly branch and retrieve all those things.
 
 ## How to run the tests against an existing Sling instance
 
