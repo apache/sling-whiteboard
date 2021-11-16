@@ -1,0 +1,4 @@
+{
+    "command":"org.apache.sling.jsonstore.internal.impl.commands.PingCommand",
+    "description":"returns its input, used to 'ping' the service"
+}

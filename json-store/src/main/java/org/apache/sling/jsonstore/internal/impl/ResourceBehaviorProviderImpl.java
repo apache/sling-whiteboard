@@ -32,6 +32,7 @@ public class ResourceBehaviorProviderImpl implements ResourceBehaviorProvider {
     // TODO all path patterns should be configurable in a central place
     private final static Pattern AUTHORING_CONTENT_PATTERN = Pattern.compile("/content/sites/([^/]+)/branches/authoring/content/(.*)");
     private final static Pattern AUTHORING_ELEMENTS_PATTERN = Pattern.compile("/content/sites/([^/]+)/branches/authoring/elements/(.*)");
+    private final static Pattern COMMANDS_PATTERN = Pattern.compile("/content/sites/([^/]+)/commands/(.*)");
     private final static Pattern SCHEMA_PATTERN = Pattern.compile("/content/sites/([^/]+)/schema/(.*)");
     private final static Pattern BRANCHES_PATTERN = Pattern.compile("/content/sites/([^/]+)/branches/(.*)");
 
@@ -46,6 +47,8 @@ public class ResourceBehaviorProviderImpl implements ResourceBehaviorProvider {
             return new ResourceBehavior(JsonStoreConstants.SCHEMA_RESOURCE_TYPE, "GET", "POST");
         } else if(BRANCHES_PATTERN.matcher(path).matches()) {
             return new ResourceBehavior(null, "GET");
+        } else if(COMMANDS_PATTERN.matcher(path).matches()) {
+            return new ResourceBehavior(JsonStoreConstants.COMMAND_RESOURCE_TYPE, "GET", "POST");
         }
         return null;
     }

@@ -1,0 +1,6 @@
+{
+  "command":"org.apache.sling.jsonstore.internal.impl.commands.PingCommand",
+  "input":{
+    "info":"Test input for the ping command","tags":["ping","command"]
+  }
+}

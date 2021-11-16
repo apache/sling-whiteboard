@@ -17,19 +17,26 @@
  * under the License.
  */
 
- package org.apache.sling.jsonstore.internal.api;
+package org.apache.sling.jsonstore.internal.api;
 
-public class JsonStoreConstants {
-    public static final String STORE_ROOT_PATH = "/content/sites";
-    public static final String JSON_PROP_NAME = "json";
+import java.io.IOException;
 
-    public static final String FOLDER_RESOURCE_TYPE = "sling/jsonstore/folder";
-    public static final String SCHEMA_RESOURCE_TYPE = "sling/jsonstore/schema";
-    public static final String ELEMENTS_RESOURCE_TYPE = "sling/jsonstore/element";
-    public static final String CONTENT_RESOURCE_TYPE = "sling/jsonstore/content";
-    public static final String COMMAND_RESOURCE_TYPE = "sling/jsonstore/command";
+import com.fasterxml.jackson.databind.JsonNode;
 
-    public static final String JSON_SCHEMA_FIELD = "$schema";
-    
-    private JsonStoreConstants() {}
+import org.jetbrains.annotations.NotNull;
+import org.osgi.annotation.versioning.ConsumerType;
+
+/** A Command that can be run against our store */
+@ConsumerType
+public interface Command {
+    /** Service property to define the command namespace */
+    public static final String SERVICE_PROP_NAMESPACE = "cmd.namespace";
+    /** Service property to define the command name */
+    public static final String SERVICE_PROP_NAME = "cmd.name";
+
+    /** Get info on the command */
+    @NotNull JsonNode getInfo();
+
+    /** Execute the command */
+    @NotNull JsonNode execute(JsonNode input) throws IOException;
 }
