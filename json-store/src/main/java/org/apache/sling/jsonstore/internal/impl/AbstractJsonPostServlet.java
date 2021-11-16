@@ -43,6 +43,9 @@ abstract class AbstractJsonPostServlet extends SlingAllMethodsServlet {
     @Override
     public final void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws ServletException, IOException {
         // Parse incoming JSON
+        if(!ContentType.checkJson(request, response)) {
+            return;
+        }
         JsonNode json = null;
         try {
             json = objectMapper.readTree(request.getInputStream());

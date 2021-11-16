@@ -18,8 +18,8 @@
 #  */
 
 # ------------------------------------------------------------------------
-@content
-Feature: Test content storage
+@commands
+Feature: Test the branch push command
 # ------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------
@@ -38,46 +38,50 @@ Given path 'content/sites'
 When method DELETE
 * match [204,404,405] contains responseStatus
 
-# TODO this test fails with mvn clean install although it
-# works with -Dexternal.test.server.port, not sure why
-# # ------------------------------------------------------------------------
-# Scenario: Attempt to store content before having a schema
-# # ------------------------------------------------------------------------
-# Given request read('/content/minimal-content.json')
-# And path 'content/sites/example.com/branches/authoring/content/somepath/minimal-before-schema'
-# When method POST
-# Then status 400
-# * match response contains "Schema not found"
-
 # ------------------------------------------------------------------------
-Scenario: Store minimal schema
+Scenario: Prepare test content
 # ------------------------------------------------------------------------
 Given request read('/schema/minimal.json')
 And path 'content/sites/example.com/schema/test/minimal'
 When method POST
 Then status 200
 
-# ------------------------------------------------------------------------
-Scenario: Store content that uses minimal schema
-# ------------------------------------------------------------------------
 Given request read('/content/minimal-content.json')
-And path 'content/sites/example.com/branches/authoring/content/somepath/minimal'
+And path 'content/sites/example.com/branches/authoring/content/minimal'
 When method POST
 Then status 200
 
 # ------------------------------------------------------------------------
-Scenario: Verify content
+Scenario: Execute branch push command
 # ------------------------------------------------------------------------
-Given path 'content/sites/example.com/branches/authoring/content/somepath/minimal'
+Given request read('/commands/branch-push-input.json')
+And path 'content/sites/example.com/commands/branch/push'
+When method POST
+Then status 200
+# TODO And match response == read('/commands/ping-output.json')
+
+# ------------------------------------------------------------------------
+Scenario: Verify pushed content
+# ------------------------------------------------------------------------
+Given path '/content/sites/example.com/branches/testing/content/minimal'
 When method GET
 Then status 200
 And match response == read('/content/minimal-content.json')
 
 # ------------------------------------------------------------------------
-Scenario: Attempt to store content that the schema does not validate
+Scenario: Modify content in authoring branch and verify that testing branch is unchanged
 # ------------------------------------------------------------------------
-Given request read('/content/invalid-minimal-content.json')
-And path 'content/sites/example.com/branches/authoring/content/somepath/willfail'
+Given request read('/content/minimal-content-2.json')
+And path 'content/sites/example.com/branches/authoring/content/minimal'
 When method POST
-Then status 400
-* match response contains "$.extra: is not defined in the schema"
+Then status 200
+
+Given path '/content/sites/example.com/branches/authoring/content/minimal'
+When method GET
+Then status 200
+And match response == read('/content/minimal-content-2.json')
+
+Given path '/content/sites/example.com/branches/testing/content/minimal'
+When method GET
+Then status 200
+And match response == read('/content/minimal-content.json')

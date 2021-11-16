@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.jsonstore.internal.api.Command;
 import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Component;
@@ -47,7 +48,7 @@ public class PingCommand implements Command {
     }
 
     @Override
-    public @NotNull JsonNode execute(JsonNode input) throws IOException {
+    public @NotNull JsonNode execute(ResourceResolver resolver, JsonNode input) throws IOException {
         final ObjectNode result = JsonNodeFactory.instance.objectNode();
         result.put("command", getClass().getName());
         result.replace("input", input);

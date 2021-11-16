@@ -23,6 +23,7 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import org.apache.sling.api.resource.ResourceResolver;
 import org.jetbrains.annotations.NotNull;
 import org.osgi.annotation.versioning.ConsumerType;
 
@@ -38,5 +39,5 @@ public interface Command {
     @NotNull JsonNode getInfo();
 
     /** Execute the command */
-    @NotNull JsonNode execute(JsonNode input) throws IOException;
+    @NotNull JsonNode execute(ResourceResolver resolver, JsonNode input) throws IOException;
 }

@@ -37,6 +37,7 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.jsonstore.internal.api.Command;
 import org.apache.sling.jsonstore.internal.api.JsonStoreConstants;
+import org.apache.sling.jsonstore.internal.impl.ContentType;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.InvalidSyntaxException;
@@ -90,8 +91,11 @@ public class CommandServlet extends SlingAllMethodsServlet {
     }
 
     @Override
-    public void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws ServletException, IOException {
+    public void doPost(final SlingHttpServletRequest request, SlingHttpServletResponse response) throws ServletException, IOException {
         // Parse incoming JSON
+        if(!ContentType.checkJson(request, response)) {
+            return;
+        }
         JsonNode tmp = null;
         try {
             tmp = objectMapper.readTree(request.getInputStream());
@@ -106,7 +110,7 @@ public class CommandServlet extends SlingAllMethodsServlet {
             response, 
             (Command c) -> { 
                 try {
-                    return c.execute(json); 
+                    return c.execute(request.getResourceResolver(), json); 
                 } catch(IOException ioe) {
                     try {
                         response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Command failed:" + ioe);
