@@ -1,0 +1,1 @@
+Sling-Bundle-Resources: /system/sling/openapi/openapi.yaml;path:=/openapi/openapi.yaml, /system/sling/openapi/openapi-browser.html;path:=/openapi/openapi-browser.html

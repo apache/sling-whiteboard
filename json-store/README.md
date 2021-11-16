@@ -27,6 +27,9 @@ Install the following bundles, which you can get by running
 
 Install this bundle and verify that it is active.
 
+http://localhost:8080/system/sling/openapi/openapi-browser.html provides
+an OpenAPI browser.
+
 ## How to run the tests against an existing Sling instance
 
 The integration tests start their own Sling instance, but you can
