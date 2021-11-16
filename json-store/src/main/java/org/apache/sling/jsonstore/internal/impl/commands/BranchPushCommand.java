@@ -43,10 +43,12 @@ import org.osgi.service.component.annotations.Component;
     property = {
         Command.SERVICE_PROP_NAMESPACE + "=branch",
         Command.SERVICE_PROP_NAME + "=push",
+        Command.SERVICE_PROP_DESCRIPTION + "=" + BranchPushCommand.DESCRIPTION
     }
 )
 public class BranchPushCommand implements Command {
 
+    public static final String DESCRIPTION = "pushes the current version of a document to a branch, using the input parameters shown here";
     public static final String F_BRANCH = "branch";
     public static final String F_PATH = "path";
 
@@ -61,7 +63,7 @@ public class BranchPushCommand implements Command {
 
         final ObjectNode result = JsonNodeFactory.instance.objectNode();
         result.put("command", getClass().getName());
-        result.put("description", "pushes the current version of a document to a branch, using the input parameters shown here");
+        result.put("description", DESCRIPTION);
         result.replace("input", example);
         return result;
     }

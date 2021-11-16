@@ -34,6 +34,8 @@ public interface Command {
     public static final String SERVICE_PROP_NAMESPACE = "cmd.namespace";
     /** Service property to define the command name */
     public static final String SERVICE_PROP_NAME = "cmd.name";
+    /** Service property to define the command description */
+    public static final String SERVICE_PROP_DESCRIPTION = "cmd.description";
 
     /** Get info on the command */
     @NotNull JsonNode getInfo();

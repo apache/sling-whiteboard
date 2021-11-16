@@ -1,0 +1,19 @@
+{
+    "commands": [
+      {
+        "cmd.namespace": "cmd",
+        "cmd.name": "list",
+        "cmd.description": "returns a list of available commands"
+      },
+      {
+        "cmd.namespace": "cmd",
+        "cmd.name": "ping",
+        "cmd.description": "returns its input, used to 'ping' the service"
+      },
+      {
+        "cmd.namespace": "branch",
+        "cmd.name": "push",
+        "cmd.description": "pushes the current version of a document to a branch, using the input parameters shown here"
+      }
+    ]
+  }
