@@ -11,6 +11,7 @@ maven-eclipse.xml
 *.ipr
 *.iws
 *.bak
+.vscode
 .vlt
 .DS_Store
 jcr.log
