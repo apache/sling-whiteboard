@@ -1,0 +1,13 @@
+{
+  "catalogs": {},
+  "aliases": {
+    "start": {
+      "script-ref": "start.java",
+      "description": "Start Apache Sling"
+    },
+    "repoinitValidator": {
+      "script-ref": "jbang/RepoinitValidator.java",
+      "description": "Validate a Repoinit script"
+    }
+  }
+}
