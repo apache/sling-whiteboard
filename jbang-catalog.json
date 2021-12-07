@@ -8,6 +8,10 @@
     "repoinitValidator": {
       "script-ref": "jbang/RepoinitValidator.java",
       "description": "Validate a Repoinit script"
+    },
+    "jvmVersion": {
+      "script-ref": "jbang/jvmVersion.java",
+      "description": "Run with a specific JVM version"
     }
   }
 }
