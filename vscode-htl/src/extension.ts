@@ -31,9 +31,7 @@ export function activate(context: vscode.ExtensionContext) {
 	vscode.languages.registerCompletionItemProvider('html', {
 		provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {
 			
-			let line = document.lineAt(position);
 			let lineUntilPosition = document.getText(new vscode.Range(position.with(undefined, 0), position));
-			let lineAfterPosition = document.getText(new vscode.Range(position, position.with(undefined, line.text.length)));
 			if ( lineUntilPosition.indexOf('${') === -1 ) {
 				return null;
 			}
