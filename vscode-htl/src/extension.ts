@@ -2,6 +2,11 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 
+// HTML parser module used to provide context-sensitive completion
+import { parse } from 'node-html-parser';
+
+const slyUseRegexp = /data-sly-use\.([a-zA-Z0-9]+)=/g;
+
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
@@ -22,6 +27,55 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	context.subscriptions.push(helloWorld, now);
+
+	vscode.languages.registerCompletionItemProvider('html', {
+		provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {
+			
+			let line = document.lineAt(position);
+			let lineUntilPosition = document.getText(new vscode.Range(position.with(undefined, 0), position));
+			let lineAfterPosition = document.getText(new vscode.Range(position, position.with(undefined, line.text.length)));
+			if ( lineUntilPosition.indexOf('${') === -1 ) {
+				return null;
+			}
+			// request-specific branch
+			if ( lineUntilPosition.endsWith('request.') ) {
+				return [
+					new vscode.CompletionItem('resource'),
+					new vscode.CompletionItem('resourceResolver'),
+					new vscode.CompletionItem('requestPathInfo'),
+					new vscode.CompletionItem('contextPath')
+				];
+			} else {
+
+				let generalCompletions = [];
+
+				let props = new vscode.CompletionItem('properties');
+				props.documentation = new vscode.MarkdownString('List of properties of the current Resource. Backed by _org.apache.sling.api.resource.ValueMap_');
+				generalCompletions.push(props);
+	
+				let req = new vscode.CompletionItem('request');
+				req.documentation = new vscode.MarkdownString('The current request. Backed by _org.apache.sling.api.SlingHttpServletRequest_');
+				generalCompletions.push(req);
+
+				// TODO - provide completion for data-sly-use.* objects
+				// if unable to inteligently define context, just parse the whole document and accumulate
+
+				let htmlDoc = parse(document.getText());
+				let elements = htmlDoc.getElementsByTagName("*");
+				elements
+					.filter( e => e.rawAttrs.indexOf('data-sly-') >= 0 )
+					.forEach(e => {
+						// element.attributes parses data-sly-use.foo="bar" incorrectly into {data-sly-use="", foo="bar"}
+						let attrs = e.rawAttrs;
+						for ( const match of attrs.matchAll(slyUseRegexp) ) {
+							generalCompletions.push(new vscode.CompletionItem(match[1]));
+						}
+					});
+
+				return generalCompletions;
+			}
+		}
+	});
 }
 
 // this method is called when your extension is deactivated
