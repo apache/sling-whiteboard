@@ -49,27 +49,32 @@ export function activate(context: vscode.ExtensionContext) {
 
 				let generalCompletions = [];
 
+				// TODO - provide completions for all global bindings
 				let props = new vscode.CompletionItem('properties');
 				props.documentation = new vscode.MarkdownString('List of properties of the current Resource. Backed by _org.apache.sling.api.resource.ValueMap_');
 				generalCompletions.push(props);
 	
+				// TODO - deep auto-completion for resource and request
 				let req = new vscode.CompletionItem('request');
 				req.documentation = new vscode.MarkdownString('The current request. Backed by _org.apache.sling.api.SlingHttpServletRequest_');
 				generalCompletions.push(req);
 
-				// TODO - provide completion for data-sly-use.* objects
-				// if unable to inteligently define context, just parse the whole document and accumulate
-
 				let htmlDoc = parse(document.getText());
 				let elements = htmlDoc.getElementsByTagName("*");
+				// TODO - provide only relevant completions based on the position in the document
 				elements
 					.filter( e => e.rawAttrs.indexOf('data-sly-') >= 0 )
 					.forEach(e => {
 						// element.attributes parses data-sly-use.foo="bar" incorrectly into {data-sly-use="", foo="bar"}
-						let attrs = e.rawAttrs;
-						for ( const match of attrs.matchAll(slyUseRegexp) ) {
+						let rawAttrs = e.rawAttrs;
+						for ( const match of rawAttrs.matchAll(slyUseRegexp) ) {
 							generalCompletions.push(new vscode.CompletionItem(match[1]));
 						}
+						if ( rawAttrs.indexOf('data-sly-repeat=') >= 0 )  {
+							generalCompletions.push(new vscode.CompletionItem("item"));
+							generalCompletions.push(new vscode.CompletionItem("itemList")); // TODO - expand completions for itemList
+						}
+						// TODO - support named data-sly-repeat completions, e.g. data-sly-repeat.meh=...
 					});
 
 				return generalCompletions;
