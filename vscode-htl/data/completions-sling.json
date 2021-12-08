@@ -1,0 +1,132 @@
+{
+    "globalCompletions": [
+        {
+            "name": "properties",
+            "javaType": "org.apache.sling.api.resource.ValueMap",
+            "description": "List of properties of the current Resource. Backed by _org.apache.sling.api.resource.ValueMap_"
+        },        
+        {
+            "name": "request",
+            "javaType": "org.apache.sling.api.SlingHttpServletRequest",
+            "description": "The current request. Backed by _org.apache.sling.api.SlingHttpServletRequest_"
+        },
+        {
+            "name": "resolver",
+            "javaType": "org.apache.sling.api.resource.ResourceResolver"
+        },
+        {
+            "name": "resource",
+            "javaType": "org.apache.sling.api.resource.Resource"
+        },
+        {
+            "name": "response",
+            "javaType": "org.apache.sling.api.SlingHttpServletResponse"
+        }
+    ],
+    "completionProperties": [{
+        "javaType": "org.apache.sling.api.SlingHttpServletRequest",
+        "nestedCompletions": [
+            { 
+                "name": "resource",
+                "javaType": "org.apache.sling.api.Resource"
+            },
+            {
+                "name": "resourceResolver",
+                "javaType": "org.apache.sling.api.ResourceResolver"
+            },
+            {
+                "name": "requestPathInfo",
+                "javaType": "org.apache.sling.api.request.RequestPathInfo"
+            },
+            {
+                "name": "requestParameterMap",
+                "javaType": "org.apache.sling.api.request.RequestParameterMap"
+            },
+            {
+                "name": "requestParameterList",
+                "javaType": "java.util.List<String>"
+            },
+            {
+                "name": "responseContentType",
+                "javaType": "java.lang.String"
+            },
+            {
+                "name": "requestProgressTracker",
+                "javaType": "java.util.Enumeration<String>"
+            },
+            {
+                "name": "authType",
+                "javaType": "java.lang.String"
+            },
+            {
+                "name": "cookies",
+                "javaType": "javax.http.servlet.Cookie[]"
+            },
+            {
+                "name": "headerNames",
+                "javaType": "java.util.Enumeration<String>"
+            },
+            {
+                "name": "method",
+                "javaType": "java.lang.String"
+            },
+            {
+                "name": "pathInfo",
+                "javaType": "java.lang.String"
+            },
+            {
+                "name": "pathTranslated",
+                "javaType": "java.lang.String"
+            },
+            {
+                "name": "contextPath",
+                "javaType": "java.lang.String"
+            },
+            {
+                "name": "queryString",
+                "javaType": "java.lang.String"
+            },
+            {
+                "name": "remoteUser",
+                "javaType": "java.lang.String"
+            },
+            {
+                "name": "userPrincipal",
+                "javaType": "java.security.Principal"
+            },
+            {
+                "name": "requestedSessionId",
+                "javaType": "java.lang.String"
+            },
+            {
+                "name": "requestURI",
+                "javaType": "java.lang.String"
+            },
+            {
+                "name": "requestURL",
+                "javaType": "java.lang.StringBuffer"
+            },
+            {
+                "name": "servletPath",
+                "javaType": "java.lang.String"
+            },
+            {
+                "name": "session",
+                "javaType": "javax.servlet.http.HttpSession"
+            },
+            {
+                "name": "requestedSessionIdValid",
+                "javaType": "boolean"
+            },
+            {
+                "name": "requestedSessionIdFromCookie",
+                "javaType": "boolean"
+            },
+            {
+                "name": "requestedSessionIdFromURL",
+                "javaType": "boolean"
+            }
+
+        ]
+    }]
+}
