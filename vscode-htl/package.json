@@ -1,7 +1,7 @@
 {
-  "name": "vscode-hello",
-  "displayName": "vscode-hello",
-  "description": "",
+  "name": "vscode-htl",
+  "displayName": "HTL extension for Visual Studio Code",
+  "description": "Extension that provides auto-completion for HTL template files.",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.62.0"
@@ -10,22 +10,10 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:vscode-hello.helloWorld",
-    "onCommand:vscode-hello.now",
     "onLanguage:html"
   ],
   "main": "./out/extension.js",
   "contributes": {
-    "commands": [
-      {
-        "command": "vscode-hello.helloWorld",
-        "title": "Hello, world"
-      },
-      {
-        "command": "vscode-hello.now",
-        "title": "Current time"
-      }
-    ],
     "html": {
       "customData": [
         "./data/htl.json"
