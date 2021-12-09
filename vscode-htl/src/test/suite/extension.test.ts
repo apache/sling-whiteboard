@@ -79,7 +79,7 @@ suite('Extension Test Suite',  () => {
 		assert.deepStrictEqual(completionVariables?.sort(), ["children", "name", "parent", "path", "resourceType"]);
 	});
 
-	test('nested completion test for', () => {
+	test('nested completion test', () => {
 		let document = `
 			<html>
 				<body>
