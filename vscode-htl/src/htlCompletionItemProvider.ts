@@ -16,7 +16,6 @@ export class HtlCompletionItemProvider implements vscode.CompletionItemProvider 
 
     constructor(completionsPath: vscode.Uri) {
         const slingCompletions = vscode.Uri.joinPath(completionsPath, "completions-sling.json");
-        console.log("Reading completions from {}", slingCompletions.fsPath);
         this.completionData = new CompletionDataAccess(JSON.parse(readFileSync(slingCompletions.fsPath, 'utf-8')));
         
     }
