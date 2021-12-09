@@ -8,6 +8,7 @@ import {CompletionDataAccess, CompletionDefinition, LocalCompletionDefinition} f
 
 const slyUseRegexp = /data-sly-use\.([a-zA-Z0-9]+)=/g;
 const identifierAccess = /([a-zA-Z0-9]+)\./g;
+const slyListOrRepeat = /data-sly-(list|repeat)="\${([a-zA-Z0-9\.]+)}"/g;
 
 export class HtlCompletionItemProvider implements vscode.CompletionItemProvider {
 
@@ -44,32 +45,44 @@ export class HtlCompletionItemProvider implements vscode.CompletionItemProvider 
                 for ( const match of rawAttrs.matchAll(slyUseRegexp) ) {
                     documentCompletions.push(new LocalCompletionDefinition(match[1], "java.lang.Object", ""));
                 }
-                if ( rawAttrs.indexOf('data-sly-repeat=') >= 0 || rawAttrs.indexOf('data-sly-list') >= 0)  {
-                    // TODO - resolve item if possible
-                    documentCompletions.push(new LocalCompletionDefinition("item", "java.lang.Object", ""));
+                // assumption: we don't have both attributes in a single tag
+                for ( const match of rawAttrs.matchAll(slyListOrRepeat) ) {
+                    let javaType, ignored;
+                    [javaType, ignored] = this.resolveReference(match[2], this.completionData.getGlobalCompletions());
+                    documentCompletions.push(new LocalCompletionDefinition("item", javaType ?? "java.lang.Object", ""));
                     documentCompletions.push(new LocalCompletionDefinition("itemList", "$io.sightly.ItemList", ""));
+                    break;
                 }
                 // TODO - support named data-sly-repeat completions, e.g. data-sly-repeat.meh=...
             });
 
         let completionProperties = this.completionData.getGlobalCompletions().concat(documentCompletions);
-
-        let completionCandidate = "";
+        let javaType;
 
         // 2. recursively resolve any nested properties
+        [javaType, completionProperties] = this.resolveReference(completionContext, completionProperties);
+
+        // provide completions based on properties ( top-level bindings or nested ones)
+        return completionProperties.map ( element =>  this.toCompletionItem(element) );
+    }
+
+    private resolveReference(completionContext: string, globalCompletionDefinitions: CompletionDefinition[]): [string | undefined, CompletionDefinition[] ] {
+        let completionProperties = globalCompletionDefinitions;
+        let javaType = undefined;
         for ( const match of completionContext.matchAll(identifierAccess)) {
-            completionCandidate = match[1];
+            let completionCandidate = match[1];
             let matchingDefinition = completionProperties.find( e => e.name === completionCandidate );
             if ( matchingDefinition ) {
-                completionProperties = this.completionData.findPropertyCompletions(matchingDefinition.javaType);
+                javaType = matchingDefinition.javaType;
+                completionProperties = this.completionData.findPropertyCompletions(javaType);
             } else {
+                javaType = undefined;
                 completionProperties = [];
                 break;
             }
         }
 
-        // provide completions based on properties ( top-level bindings or nested ones)
-        return completionProperties.map ( element =>  this.toCompletionItem(element) );
+        return [javaType, completionProperties];
     }
 
     private toCompletionItem(completionDefinition: CompletionDefinition) {
@@ -86,6 +99,5 @@ export class HtlCompletionItemProvider implements vscode.CompletionItemProvider 
         item.documentation = new vscode.MarkdownString(description);
         
         return item;
-        
     }
 }

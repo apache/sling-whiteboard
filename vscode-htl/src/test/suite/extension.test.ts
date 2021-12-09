@@ -68,6 +68,20 @@ suite('Extension Test Suite',  () => {
 		assert.deepStrictEqual(itemListVariables?.sort(), ["index", "count", "first", "middle", "last", "odd", "even"].sort());
 	});
 
+	test('completion test with data-sly-list and known item', () => {
+		let document = `
+			<html>
+				<body data-sly-list="\${resource.parent.children}">
+					<div>\${ item. }</div>
+				</body>
+			</html>
+		`;
+		let completions = completionProvider.provideCompletionItems0('<div>${ item.', document);
+		// test a subset, otherwise it's too cumbersome
+		let completionVariables = completions?.map ( c => c.label.toString()).slice(0,5);
+		assert.deepStrictEqual(completionVariables?.sort(), ["children", "name", "parent", "path", "resourceType"]);
+	});
+
 	test('completion test for request', () => {
 		let document = `
 			<html>
