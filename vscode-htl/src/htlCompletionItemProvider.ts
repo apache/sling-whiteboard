@@ -32,36 +32,21 @@ export class HtlCompletionItemProvider implements vscode.CompletionItemProvider 
         }
         
         let completionContext = linePrefix.substring(completionStart + 2).trim();
-        let completions: vscode.CompletionItem[] = [];
+        let completionProperties = this.completionData.getGlobalCompletions();
         let completionCandidate = "";
-        let previousJavaType = "";
 
         for ( const match of completionContext.matchAll(identifierAccess)) {
-            let completionProperties: CompletionDefinition[];
-            if ( previousJavaType ) {
-                completionProperties = this.completionData.findPropertyCompletions(previousJavaType);
-            }  else {
-                completionProperties = this.completionData.getGlobalCompletions();
-            }
             completionCandidate = match[1];
             let matchingDefinition = completionProperties.find( e => e.name === completionCandidate );
             if ( matchingDefinition ) {
-                previousJavaType = matchingDefinition.javaType;
+                completionProperties = this.completionData.findPropertyCompletions(matchingDefinition.javaType);
             }
         }
 
-        if ( completionCandidate ) {
-            let completionProposals = this.completionData.findPropertyCompletions(previousJavaType);
+        let completions: vscode.CompletionItem[] = [];
 
-            completionProposals.forEach ( element => {
-                completions.push( this.toCompletionItem(element) );
-            });
-        } else {
-
-            this.completionData.getGlobalCompletions().map( element => {
-                completions.push(this.toCompletionItem(element));
-            });
-
+        // top-level matches, propose completions based on HTML document
+        if ( !completionCandidate ) {
             let htmlDoc = parse(doc);
             let elements = htmlDoc.getElementsByTagName("*");
             // TODO - provide only relevant completions based on the position in the document
@@ -80,6 +65,11 @@ export class HtlCompletionItemProvider implements vscode.CompletionItemProvider 
                     // TODO - support named data-sly-repeat completions, e.g. data-sly-repeat.meh=...
                 });
         }
+
+        // provide completions based on properties ( top-level bindings or nested ones)
+        completionProperties.forEach ( element => {
+            completions.push( this.toCompletionItem(element) );
+        });
 
         return completions;
     }
