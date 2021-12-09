@@ -28,11 +28,11 @@
         "nestedCompletions": [
             { 
                 "name": "resource",
-                "javaType": "org.apache.sling.api.Resource"
+                "javaType": "org.apache.sling.api.resource.Resource"
             },
             {
                 "name": "resourceResolver",
-                "javaType": "org.apache.sling.api.ResourceResolver"
+                "javaType": "org.apache.sling.api.resource.ResourceResolver"
             },
             {
                 "name": "requestPathInfo",
@@ -44,7 +44,7 @@
             },
             {
                 "name": "requestParameterList",
-                "javaType": "java.util.List<String>"
+                "javaType": "java.util.List<java.lang.String>"
             },
             {
                 "name": "responseContentType",
@@ -52,7 +52,7 @@
             },
             {
                 "name": "requestProgressTracker",
-                "javaType": "java.util.Enumeration<String>"
+                "javaType": "java.util.Enumeration<java.lang.String>"
             },
             {
                 "name": "authType",
@@ -64,7 +64,7 @@
             },
             {
                 "name": "headerNames",
-                "javaType": "java.util.Enumeration<String>"
+                "javaType": "java.util.Enumeration<java.lang.String>"
             },
             {
                 "name": "method",
@@ -127,6 +127,46 @@
                 "javaType": "boolean"
             }
 
+        ]
+    },{
+        "javaType": "org.apache.sling.api.resource.Resource",
+        "nestedCompletions": [
+            { 
+                "name": "path",
+                "javaType": "java.lang.String"
+            },
+            { 
+                "name": "name",
+                "javaType": "java.lang.String"
+            },
+            { 
+                "name": "parent",
+                "javaType": "org.apache.sling.api.resource.Resource"
+            },
+            { 
+                "name": "children",
+                "javaType": "java.lang.Iterable<org.apache.sling.api.resource.Resource>"
+            },
+            {
+                "name": "resourceType",
+                "javaType": "java.lang.String"
+            },
+            {
+                "name": "resourceSuperType",
+                "javaType": "java.lang.String"
+            },
+            {
+                "name": "resourceMetaData",
+                "javaType": "org.apache.sling.api.resource.ResourceMetadata"
+            },
+            {
+                "name": "resourceResolver",
+                "javaType": "org.apache.sling.api.resource.ResourceResolver"
+            },
+            {
+                "name": "valueMap",
+                "javaType": "org.apache.sling.api.resource.ValueMap"
+            }
         ]
     }]
 }

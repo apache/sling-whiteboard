@@ -50,4 +50,46 @@ suite('Extension Test Suite',  () => {
 		let completionVariables = completions?.map ( c => c.label.toString());
 		assert.deepStrictEqual(completionVariables?.sort(), ["item", "itemList", "properties", "request", "resolver", "resource", "response"]);
 	});
+
+	test('completion test for request', () => {
+		let document = `
+			<html>
+				<body>
+					\${ request. }
+				</body>
+			</html>
+		`;
+		let completions = completionProvider.provideCompletionItems0('${request.', document);
+		// test a subset, otherwise it's too cumbersome
+		let completionVariables = completions?.map ( c => c.label.toString()).slice(0,5);
+		assert.deepStrictEqual(completionVariables?.sort(), ["requestParameterList", "requestParameterMap", "requestPathInfo", "resource", "resourceResolver"]);
+	});
+
+	test('completion test for resource', () => {
+		let document = `
+			<html>
+				<body>
+					\${ resource. }
+				</body>
+			</html>
+		`;
+		let completions = completionProvider.provideCompletionItems0('${resource.', document);
+		// test a subset, otherwise it's too cumbersome
+		let completionVariables = completions?.map ( c => c.label.toString()).slice(0,5);
+		assert.deepStrictEqual(completionVariables?.sort(), ["children", "name", "parent", "path", "resourceType"]);
+	});
+
+	test('nested completion test for', () => {
+		let document = `
+			<html>
+				<body>
+					\${ request.resource.parent. }
+				</body>
+			</html>
+		`;
+		let completions = completionProvider.provideCompletionItems0('${request.resource.parent.', document);
+		// test a subset, otherwise it's too cumbersome
+		let completionVariables = completions?.map ( c => c.label.toString()).slice(0,5);
+		assert.deepStrictEqual(completionVariables?.sort(), ["children", "name", "parent", "path", "resourceType"]);
+	});
 });

@@ -4,17 +4,20 @@ import * as vscode from 'vscode';
 // HTML parser module used to provide context-sensitive completion
 import { parse } from 'node-html-parser';
 import { readFileSync } from 'fs';
+import {CompletionDataAccess, CompletionDefinition} from './completionData';
+import { cpuUsage } from 'process';
 
 const slyUseRegexp = /data-sly-use\.([a-zA-Z0-9]+)=/g;
+const identifierAccess = /([a-zA-Z0-9]+)\./g;
 
 export class HtlCompletionItemProvider implements vscode.CompletionItemProvider {
 
-    completions: any;
+    completionData: CompletionDataAccess;
 
     constructor(completionsPath: vscode.Uri) {
         const slingCompletions = vscode.Uri.joinPath(completionsPath, "completions-sling.json");
         console.log("Reading completions from {}", slingCompletions.fsPath);
-        this.completions = JSON.parse(readFileSync(slingCompletions.fsPath, 'utf-8'));
+        this.completionData = new CompletionDataAccess(JSON.parse(readFileSync(slingCompletions.fsPath, 'utf-8')));
         
     }
            
@@ -23,27 +26,40 @@ export class HtlCompletionItemProvider implements vscode.CompletionItemProvider 
     }
 
     provideCompletionItems0(linePrefix: string, doc: string) {
-        if ( linePrefix.indexOf('${') === -1 ) {
+        let completionStart = linePrefix.indexOf('${');
+        if ( completionStart === -1 ) {
             return null;
         }
-        // request-specific branch
-        if ( linePrefix.endsWith('request.') ) {
-            return [
-                new vscode.CompletionItem('resource'),
-                new vscode.CompletionItem('resourceResolver'),
-                new vscode.CompletionItem('requestPathInfo'),
-                new vscode.CompletionItem('contextPath')
-            ];
+        
+        let completionContext = linePrefix.substring(completionStart + 2).trim();
+        let completions: vscode.CompletionItem[] = [];
+        let completionCandidate = "";
+        let previousJavaType = "";
+
+        for ( const match of completionContext.matchAll(identifierAccess)) {
+            let completionProperties: CompletionDefinition[];
+            if ( previousJavaType ) {
+                completionProperties = this.completionData.findPropertyCompletions(previousJavaType);
+            }  else {
+                completionProperties = this.completionData.getGlobalCompletions();
+            }
+            completionCandidate = match[1];
+            let matchingDefinition = completionProperties.find( e => e.name === completionCandidate );
+            if ( matchingDefinition ) {
+                previousJavaType = matchingDefinition.javaType;
+            }
+        }
+
+        if ( completionCandidate ) {
+            let completionProposals = this.completionData.findPropertyCompletions(previousJavaType);
+
+            completionProposals.forEach ( element => {
+                completions.push( this.toCompletionItem(element) );
+            });
         } else {
 
-            let generalCompletions: vscode.CompletionItem[] = [];
-
-            this.completions.globalCompletions.forEach( (globalCompletion: any) => {
-                let vsCodeCompletion = new vscode.CompletionItem(globalCompletion.name);
-                if ( globalCompletion.description ) {
-                    vsCodeCompletion.documentation = new vscode.MarkdownString(globalCompletion.description);
-                }
-                generalCompletions.push(vsCodeCompletion);
+            this.completionData.getGlobalCompletions().map( element => {
+                completions.push(this.toCompletionItem(element));
             });
 
             let htmlDoc = parse(doc);
@@ -55,16 +71,25 @@ export class HtlCompletionItemProvider implements vscode.CompletionItemProvider 
                     // element.attributes parses data-sly-use.foo="bar" incorrectly into {data-sly-use="", foo="bar"}
                     let rawAttrs = e.rawAttrs;
                     for ( const match of rawAttrs.matchAll(slyUseRegexp) ) {
-                        generalCompletions.push(new vscode.CompletionItem(match[1]));
+                        completions.push(new vscode.CompletionItem(match[1]));
                     }
                     if ( rawAttrs.indexOf('data-sly-repeat=') >= 0 )  {
-                        generalCompletions.push(new vscode.CompletionItem("item"));
-                        generalCompletions.push(new vscode.CompletionItem("itemList")); // TODO - expand completions for itemList
+                        completions.push(new vscode.CompletionItem("item"));
+                        completions.push(new vscode.CompletionItem("itemList")); // TODO - expand completions for itemList
                     }
                     // TODO - support named data-sly-repeat completions, e.g. data-sly-repeat.meh=...
                 });
-
-            return generalCompletions;
         }
+
+        return completions;
+    }
+
+    private toCompletionItem(completionDefintion: CompletionDefinition) {
+        let item = new vscode.CompletionItem(completionDefintion.name);
+        if ( completionDefintion.description ) {
+            item.documentation = new vscode.MarkdownString(completionDefintion.description);
+        }
+        return item;
+        
     }
 }
