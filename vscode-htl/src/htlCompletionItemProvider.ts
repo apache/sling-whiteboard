@@ -76,11 +76,16 @@ export class HtlCompletionItemProvider implements vscode.CompletionItemProvider 
         return completions;
     }
 
-    private toCompletionItem(completionDefintion: CompletionDefinition) {
-        let item = new vscode.CompletionItem(completionDefintion.name);
-        if ( completionDefintion.description ) {
-            item.documentation = new vscode.MarkdownString(completionDefintion.description);
+    private toCompletionItem(completionDefinition: CompletionDefinition) {
+        let item = new vscode.CompletionItem(completionDefinition.name);
+        let description = "";
+        if ( completionDefinition.description ) {
+            description = completionDefinition.description + "\n\n";
         }
+
+        description += "Type: _" + completionDefinition.javaType+"_";
+        item.documentation = new vscode.MarkdownString(description);
+        
         return item;
         
     }

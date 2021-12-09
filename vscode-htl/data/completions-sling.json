@@ -3,24 +3,27 @@
         {
             "name": "properties",
             "javaType": "org.apache.sling.api.resource.ValueMap",
-            "description": "List of properties of the current Resource. Backed by _org.apache.sling.api.resource.ValueMap_"
+            "description": "List of properties of the current Resource."
         },        
         {
             "name": "request",
             "javaType": "org.apache.sling.api.SlingHttpServletRequest",
-            "description": "The current request. Backed by _org.apache.sling.api.SlingHttpServletRequest_"
+            "description": "The current request."
         },
         {
             "name": "resolver",
-            "javaType": "org.apache.sling.api.resource.ResourceResolver"
+            "javaType": "org.apache.sling.api.resource.ResourceResolver",
+            "description": "The resource resolver associated with the current request"
         },
         {
             "name": "resource",
-            "javaType": "org.apache.sling.api.resource.Resource"
+            "javaType": "org.apache.sling.api.resource.Resource",
+            "description": "The resource being rendered."
         },
         {
             "name": "response",
-            "javaType": "org.apache.sling.api.SlingHttpServletResponse"
+            "javaType": "org.apache.sling.api.SlingHttpServletResponse",
+            "description": "The current response."
         }
     ],
     "completionProperties": [{
@@ -28,103 +31,133 @@
         "nestedCompletions": [
             { 
                 "name": "resource",
-                "javaType": "org.apache.sling.api.resource.Resource"
+                "javaType": "org.apache.sling.api.resource.Resource",
+                "description": "The Resource object on whose behalf the servlet acts"
             },
             {
                 "name": "resourceResolver",
-                "javaType": "org.apache.sling.api.resource.ResourceResolver"
+                "javaType": "org.apache.sling.api.resource.ResourceResolver",
+                "description": "The ResourceResolver which resovled the resource of this request"
             },
             {
                 "name": "requestPathInfo",
-                "javaType": "org.apache.sling.api.request.RequestPathInfo"
+                "javaType": "org.apache.sling.api.request.RequestPathInfo",
+                "description": "The RequestPathInfo pertaining to this request"
             },
             {
                 "name": "requestParameterMap",
-                "javaType": "org.apache.sling.api.request.RequestParameterMap"
+                "javaType": "org.apache.sling.api.request.RequestParameterMap",
+                "description": "A `Map` of the parameters of this request"
             },
             {
                 "name": "requestParameterList",
-                "javaType": "java.util.List<java.lang.String>"
+                "javaType": "java.util.List<org.apache.sling.api.request.RequestParameter>",
+                "description": "The requests parameters as instances of the `RequestParameter` interface"
             },
             {
                 "name": "responseContentType",
-                "javaType": "java.lang.String"
+                "javaType": "java.lang.String",
+                "description": "The framework preferred content type for the response. The content type only includes the MIME type, not the character set"
+            },
+            {
+                "name": "responseContentTypes",
+                "javaType": "java.util.Enumeration<java.lang.String>",
+                "description": "A list of content types which the framework accepts for the response. This list is ordered with the most preferable types listed first. The content type only includes the MIME type, not the character set."
             },
             {
                 "name": "requestProgressTracker",
-                "javaType": "java.util.Enumeration<java.lang.String>"
+                "javaType": "java.util.Enumeration<java.lang.String>",
+                "description": "The `RequestProgressTracker` for this request"
             },
             {
                 "name": "authType",
-                "javaType": "java.lang.String"
+                "javaType": "java.lang.String",
+                "description": "The name of the authentication scheme used to protect the servlet."
             },
             {
                 "name": "cookies",
-                "javaType": "javax.http.servlet.Cookie[]"
+                "javaType": "javax.http.servlet.Cookie[]",
+                "description": "An array containing all of the `Cookie` objects the client sent with this request."
             },
             {
                 "name": "headerNames",
-                "javaType": "java.util.Enumeration<java.lang.String>"
+                "javaType": "java.util.Enumeration<java.lang.String>",
+                "description": "An enumeration of all the header names this request contains."
             },
             {
                 "name": "method",
-                "javaType": "java.lang.String"
+                "javaType": "java.lang.String",
+                "description": "The name of the HTTP method with which this request was made."
             },
             {
                 "name": "pathInfo",
-                "javaType": "java.lang.String"
+                "javaType": "java.lang.String",
+                "description": "Any extra path information associated with the URL the client sent when it made the request"
             },
             {
                 "name": "pathTranslated",
-                "javaType": "java.lang.String"
+                "javaType": "java.lang.String",
+                "description": "Any extra path information after the servlet name but before the query string, and translates it to a real path."
             },
             {
                 "name": "contextPath",
-                "javaType": "java.lang.String"
+                "javaType": "java.lang.String",
+                "description": "The portion of the request URI that indicates the context of the request. The context path always comes first in a request URI."
             },
             {
                 "name": "queryString",
-                "javaType": "java.lang.String"
+                "javaType": "java.lang.String",
+                "description": "The query string that is contained in the request URL after the path"
             },
             {
                 "name": "remoteUser",
-                "javaType": "java.lang.String"
+                "javaType": "java.lang.String",
+                "description": "The login of the user making this request, if the user has been authenticated, or `null` if the user has not been authenticated."
             },
             {
                 "name": "userPrincipal",
-                "javaType": "java.security.Principal"
+                "javaType": "java.security.Principal",
+                "description": "Returns a `java.security.Principal` object containing the name of the current authenticated user."
             },
             {
                 "name": "requestedSessionId",
-                "javaType": "java.lang.String"
+                "javaType": "java.lang.String",
+                "description": "Returns the session ID specified by the client. This may not be the same as the ID of the current valid session for this request. If the client did not specify a session ID, this method returns `null`."
             },
             {
                 "name": "requestURI",
-                "javaType": "java.lang.String"
+                "javaType": "java.lang.String",
+                "description": "Returns the part of this request's URL from the protocol name up to the query string in the first line of the HTTP request. The web container does not decode this String."
             },
             {
                 "name": "requestURL",
-                "javaType": "java.lang.StringBuffer"
+                "javaType": "java.lang.StringBuffer",
+                "description": "Reconstructs the URL the client used to make the request. The returned URL contains a protocol, server name, port number, and server path, but it does not include query string parameters."
             },
             {
                 "name": "servletPath",
-                "javaType": "java.lang.String"
+                "javaType": "java.lan.String",
+                "description": "Returns the part of this request's URL that calls the servlet. This path starts with a \"/\" character and includes either the servlet name or a path to the servlet, but does not include any extra path information or a query string."
             },
             {
                 "name": "session",
-                "javaType": "javax.servlet.http.HttpSession"
+                "javaType": "javax.servlet.http.HttpSession",
+                "description": "Returns the current session associated with this request, or if the request does not have a session, creates one."
             },
             {
                 "name": "requestedSessionIdValid",
-                "javaType": "boolean"
+                "javaType": "boolean",
+                "description": "Checks whether the requested session ID is still valid."
             },
             {
                 "name": "requestedSessionIdFromCookie",
-                "javaType": "boolean"
+                "javaType": "boolean",
+                "description": "Checks whether the requested session ID came in as a cookie."
             },
             {
                 "name": "requestedSessionIdFromURL",
-                "javaType": "boolean"
+                "javaType": "boolean",
+                "description": "Checks whether the requested session ID came in as part of the request URL."
             }
 
         ]
@@ -133,39 +166,49 @@
         "nestedCompletions": [
             { 
                 "name": "path",
-                "javaType": "java.lang.String"
+                "javaType": "java.lang.String",
+                "description": "The absolute path of this resource in the resource tree."
             },
             { 
                 "name": "name",
-                "javaType": "java.lang.String"
+                "javaType": "java.lang.String",
+                "description": "The name of this resource. The name of a resource is the last segment of the path."
             },
             { 
                 "name": "parent",
-                "javaType": "org.apache.sling.api.resource.Resource"
+                "javaType": "org.apache.sling.api.resource.Resource",
+                "description": "The parent resource or `null` if this resource represents the root of the resource tree."
             },
             { 
                 "name": "children",
-                "javaType": "java.lang.Iterable<org.apache.sling.api.resource.Resource>"
+                "javaType": "java.lang.Iterable<org.apache.sling.api.resource.Resource>",
+                "description": "An iterable of the direct children of this resource."
             },
             {
                 "name": "resourceType",
-                "javaType": "java.lang.String"
+                "javaType": "java.lang.String",
+                "description": "The resource type is meant to point to rendering/processing scripts, editing dialogs, etc. It is usually a path in the repository, where scripts and other tools definitions are found, but the ResourceResolver is free to set this to any suitable value such as the primary node type of the JCR node from which the resource is created."
+                
             },
             {
                 "name": "resourceSuperType",
-                "javaType": "java.lang.String"
+                "javaType": "java.lang.String",
+                "description": "The super type of the resource if the resource defines its own super type. Otherwise `null` is returned."
             },
             {
                 "name": "resourceMetaData",
-                "javaType": "org.apache.sling.api.resource.ResourceMetadata"
+                "javaType": "org.apache.sling.api.resource.ResourceMetadata",
+                "description": "The meta data of this resource."
             },
             {
                 "name": "resourceResolver",
-                "javaType": "org.apache.sling.api.resource.ResourceResolver"
+                "javaType": "org.apache.sling.api.resource.ResourceResolver",
+                "description": "The ResourceResolver from which this resource has been retrieved."
             },
             {
                 "name": "valueMap",
-                "javaType": "org.apache.sling.api.resource.ValueMap"
+                "javaType": "org.apache.sling.api.resource.ValueMap",
+                "description": "A value map for this resource. The value map allows to read the properties of the resource"
             }
         ]
     }]
