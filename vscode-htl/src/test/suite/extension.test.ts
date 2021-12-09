@@ -92,4 +92,18 @@ suite('Extension Test Suite',  () => {
 		let completionVariables = completions?.map ( c => c.label.toString()).slice(0,5);
 		assert.deepStrictEqual(completionVariables?.sort(), ["children", "name", "parent", "path", "resourceType"]);
 	});
+
+	test('invalid completion test', () => {
+		let document = `
+			<html>
+				<body>
+					\${ request.foo. }
+				</body>
+			</html>
+		`;
+		let completions = completionProvider.provideCompletionItems0('${request.foo.', document);
+		// test a subset, otherwise it's too cumbersome
+		let completionVariables = completions?.map ( c => c.label.toString());
+		assert.deepStrictEqual(completionVariables?.sort(), []);
+	});
 });

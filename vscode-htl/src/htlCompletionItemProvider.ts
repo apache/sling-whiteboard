@@ -39,6 +39,9 @@ export class HtlCompletionItemProvider implements vscode.CompletionItemProvider 
             let matchingDefinition = completionProperties.find( e => e.name === completionCandidate );
             if ( matchingDefinition ) {
                 completionProperties = this.completionData.findPropertyCompletions(matchingDefinition.javaType);
+            } else {
+                completionProperties = [];
+                break;
             }
         }
 
