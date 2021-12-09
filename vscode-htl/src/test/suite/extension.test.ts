@@ -51,6 +51,23 @@ suite('Extension Test Suite',  () => {
 		assert.deepStrictEqual(completionVariables?.sort(), ["item", "itemList", "properties", "request", "resolver", "resource", "response"]);
 	});
 
+	test('completion test with data-sly-list', () => {
+		let document = `
+			<html>
+				<body data-sly-list="\${pageItems}">
+					<div>\${ itemList. }</div>
+				</body>
+			</html>
+		`;
+		let completions = completionProvider.provideCompletionItems0('<div>${', document);
+		let completionVariables = completions?.map ( c => c.label.toString());
+		assert.deepStrictEqual(completionVariables?.sort(), ["item", "itemList", "properties", "request", "resolver", "resource", "response"]);
+
+		let itemListCompletions = completionProvider.provideCompletionItems0('<div>${ itemList.', document);
+		let itemListVariables = itemListCompletions?.map ( c => c.label.toString());
+		assert.deepStrictEqual(itemListVariables?.sort(), ["index", "count", "first", "middle", "last", "odd", "even"].sort());
+	});
+
 	test('completion test for request', () => {
 		let document = `
 			<html>

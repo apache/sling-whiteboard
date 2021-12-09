@@ -41,3 +41,15 @@ export class CompletionDataAccess {
         return definition.nestedCompletions;
     }
 }
+
+export class LocalCompletionDefinition implements CompletionDefinition {
+    name: string;
+    javaType: string;
+    description: string;
+
+    constructor(name: string, javaType: string, description: string) {
+        this.javaType = javaType;
+        this.name = name;
+        this.description = description;
+    }
+}

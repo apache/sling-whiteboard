@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 // HTML parser module used to provide context-sensitive completion
 import { parse } from 'node-html-parser';
 import { readFileSync } from 'fs';
-import {CompletionDataAccess, CompletionDefinition} from './completionData';
+import {CompletionDataAccess, CompletionDefinition, LocalCompletionDefinition} from './completionData';
 
 const slyUseRegexp = /data-sly-use\.([a-zA-Z0-9]+)=/g;
 const identifierAccess = /([a-zA-Z0-9]+)\./g;
@@ -30,9 +30,33 @@ export class HtlCompletionItemProvider implements vscode.CompletionItemProvider 
         }
         
         let completionContext = linePrefix.substring(completionStart + 2).trim();
-        let completionProperties = this.completionData.getGlobalCompletions();
+
+        // 1. propose completions based on HTML document
+        let documentCompletions: CompletionDefinition[] = [];
+        let htmlDoc = parse(doc);
+        let elements = htmlDoc.getElementsByTagName("*");
+        // TODO - provide only relevant completions based on the position in the document
+        elements
+            .filter( e => e.rawAttrs.indexOf('data-sly-') >= 0 )
+            .forEach(e => {
+                // element.attributes parses data-sly-use.foo="bar" incorrectly into {data-sly-use="", foo="bar"}
+                let rawAttrs = e.rawAttrs;
+                for ( const match of rawAttrs.matchAll(slyUseRegexp) ) {
+                    documentCompletions.push(new LocalCompletionDefinition(match[1], "java.lang.Object", ""));
+                }
+                if ( rawAttrs.indexOf('data-sly-repeat=') >= 0 || rawAttrs.indexOf('data-sly-list') >= 0)  {
+                    // TODO - resolve item if possible
+                    documentCompletions.push(new LocalCompletionDefinition("item", "java.lang.Object", ""));
+                    documentCompletions.push(new LocalCompletionDefinition("itemList", "$io.sightly.ItemList", ""));
+                }
+                // TODO - support named data-sly-repeat completions, e.g. data-sly-repeat.meh=...
+            });
+
+        let completionProperties = this.completionData.getGlobalCompletions().concat(documentCompletions);
+
         let completionCandidate = "";
 
+        // 2. recursively resolve any nested properties
         for ( const match of completionContext.matchAll(identifierAccess)) {
             completionCandidate = match[1];
             let matchingDefinition = completionProperties.find( e => e.name === completionCandidate );
@@ -44,35 +68,8 @@ export class HtlCompletionItemProvider implements vscode.CompletionItemProvider 
             }
         }
 
-        let completions: vscode.CompletionItem[] = [];
-
-        // top-level matches, propose completions based on HTML document
-        if ( !completionCandidate ) {
-            let htmlDoc = parse(doc);
-            let elements = htmlDoc.getElementsByTagName("*");
-            // TODO - provide only relevant completions based on the position in the document
-            elements
-                .filter( e => e.rawAttrs.indexOf('data-sly-') >= 0 )
-                .forEach(e => {
-                    // element.attributes parses data-sly-use.foo="bar" incorrectly into {data-sly-use="", foo="bar"}
-                    let rawAttrs = e.rawAttrs;
-                    for ( const match of rawAttrs.matchAll(slyUseRegexp) ) {
-                        completions.push(new vscode.CompletionItem(match[1]));
-                    }
-                    if ( rawAttrs.indexOf('data-sly-repeat=') >= 0 )  {
-                        completions.push(new vscode.CompletionItem("item"));
-                        completions.push(new vscode.CompletionItem("itemList")); // TODO - expand completions for itemList
-                    }
-                    // TODO - support named data-sly-repeat completions, e.g. data-sly-repeat.meh=...
-                });
-        }
-
         // provide completions based on properties ( top-level bindings or nested ones)
-        completionProperties.forEach ( element => {
-            completions.push( this.toCompletionItem(element) );
-        });
-
-        return completions;
+        return completionProperties.map ( element =>  this.toCompletionItem(element) );
     }
 
     private toCompletionItem(completionDefinition: CompletionDefinition) {
@@ -82,7 +79,10 @@ export class HtlCompletionItemProvider implements vscode.CompletionItemProvider 
             description = completionDefinition.description + "\n\n";
         }
 
-        description += "Type: _" + completionDefinition.javaType+"_";
+        // filter out synthetic types
+        if ( completionDefinition.javaType.charAt(0) !== '$') {
+            description += "Type: _" + completionDefinition.javaType+"_";
+        }
         item.documentation = new vscode.MarkdownString(description);
         
         return item;

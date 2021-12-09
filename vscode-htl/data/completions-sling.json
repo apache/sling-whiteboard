@@ -211,5 +211,44 @@
                 "description": "A value map for this resource. The value map allows to read the properties of the resource"
             }
         ]
+    },{
+        "javaType": "$io.sightly.ItemList",
+        "nestedCompletions": [
+            {
+                "name": "index",
+                "javaType": "java.lang.Integer",
+                "description": "zero-based counter `(0..length-1)`"
+            },
+            {
+                "name": "count",
+                "javaType": "java.lang.Integer",
+                "description": "one-based counter `(1..length)`"
+            },
+            {
+                "name": "first",
+                "javaType": "java.lang.Boolean",
+                "description": "`true` if the current item is the first item"
+            },
+            {
+                "name": "middle",
+                "javaType": "java.lang.Boolean",
+                "description": "`true` if the current item is neither the first nor the last item"
+            },
+            {
+                "name": "last",
+                "javaType": "java.lang.Boolean",
+                "description": "`true` if the current item is the last item"
+            },
+            {
+                "name": "odd",
+                "javaType": "java.lang.Boolean",
+                "description": "`true` if the index is odd"
+            },
+            {
+                "name": "even",
+                "javaType": "java.lang.Boolean",
+                "description": "`true` if the index is even"
+            }
+        ]
     }]
 }
