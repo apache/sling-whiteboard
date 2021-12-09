@@ -2,12 +2,15 @@
   "name": "vscode-htl",
   "displayName": "HTL extension for Visual Studio Code",
   "description": "Extension that provides auto-completion for HTL template files.",
+  "icon": "images/sightly.png",
+  "publisher": "Apache Software Foundation",
+  "license": "SEE LICENSE IN LICENSE",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.62.0"
   },
   "categories": [
-    "Other"
+    "Programming Languages"
   ],
   "activationEvents": [
     "onLanguage:html"
