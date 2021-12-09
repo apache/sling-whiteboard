@@ -5,7 +5,6 @@ import * as vscode from 'vscode';
 import { parse } from 'node-html-parser';
 import { readFileSync } from 'fs';
 import {CompletionDataAccess, CompletionDefinition} from './completionData';
-import { cpuUsage } from 'process';
 
 const slyUseRegexp = /data-sly-use\.([a-zA-Z0-9]+)=/g;
 const identifierAccess = /([a-zA-Z0-9]+)\./g;
