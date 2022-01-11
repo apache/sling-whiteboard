@@ -22,6 +22,7 @@ package org.apache.sling.commons.metrics.internal;
 import java.lang.management.ManagementFactory;
 import java.util.Collections;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
@@ -126,6 +127,19 @@ public class MetricServiceTest {
         assertSame(histo, service.histogram("test"));
     }
 
+    @Test
+    public void gaugeRegistration () throws Exception{
+        activate();
+        Gauge<Long> gauge = service.gauge("gauge",() -> 42L);
+        assertNotNull(gauge);
+        assertTrue(getRegistry().getGauges().containsKey("gauge"));
+        assertEquals(new Long(42L),gauge.getValue());
+
+        // Just the name matters, not the supplier
+        Gauge<?> gauge2 = service.gauge("gauge", () -> 43L);
+        assertSame(gauge, gauge2);
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void sameNameDifferentTypeMetric() throws Exception{
         activate();
@@ -151,7 +165,7 @@ public class MetricServiceTest {
     }
 
     @Test
-    public void gaugeRegistration() throws Exception{
+    public void gaugeRegistrationViaWhiteboard() throws Exception{
         activate();
         ServiceRegistration<Gauge> reg = context.bundleContext().registerService(Gauge.class, new TestGauge(42),
                 MapUtil.toDictionary(Gauge.NAME, "foo"));

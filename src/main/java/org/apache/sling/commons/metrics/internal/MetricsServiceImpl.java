@@ -28,15 +28,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Supplier;
 
 import javax.management.MBeanServer;
 
 import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.MetricRegistry.MetricSupplier;
+
 import org.apache.sling.commons.metrics.Meter;
 import org.apache.sling.commons.metrics.MetricsService;
 import org.apache.sling.commons.metrics.Timer;
 import org.apache.sling.commons.metrics.Counter;
+import org.apache.sling.commons.metrics.Gauge;
 import org.apache.sling.commons.metrics.Histogram;
 import org.apache.sling.commons.metrics.Metric;
 import org.osgi.framework.BundleContext;
@@ -121,6 +125,10 @@ public class MetricsServiceImpl implements MetricsService {
         return getOrAdd(name, MetricBuilder.METERS);
     }
 
+    public <T> Gauge<T> gauge(String name, Supplier<T> supplier) {
+        return getOrAddGauge(name,supplier);
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public <A> A adaptTo(Class<A> type) {
@@ -156,12 +164,42 @@ public class MetricsServiceImpl implements MetricsService {
         throw new IllegalArgumentException(name + " is already used for a different type of metric");
     }
 
+    @SuppressWarnings("unchecked")
+    private <T> Gauge<T> getOrAddGauge(String name, Supplier<T> supplier) {
+        final Metric metric = metrics.get(name);
+        if (metric instanceof Gauge<?>) {
+            return (Gauge<T>) metric;
+        } else {
+            try {
+                return registerGauge(name,supplier);
+            } catch (IllegalArgumentException e) {
+                final Metric added = metrics.get(name);
+                if (added instanceof Gauge<?>) {
+                    return (Gauge<T>) added;
+                }
+            }
+        }
+        throw new IllegalArgumentException(name + " is already used for a different type of metric");
+    }
+
     private <T extends Metric> T register(String name, T metric) throws IllegalArgumentException {
         final Metric existing = metrics.putIfAbsent(name, metric);
         if (existing != null) {
             throw new IllegalArgumentException("A metric named " + name + " already exists");
         }
         return metric;
+    }
+
+    private <T> Gauge<T> registerGauge(String name, Supplier<T> supplier) {
+        com.codahale.metrics.Gauge<T> codahaleGauge = supplier::get;
+        @SuppressWarnings("rawtypes")
+        MetricSupplier<com.codahale.metrics.Gauge> metricSupplier = () -> codahaleGauge;
+
+        @SuppressWarnings("unchecked")
+        com.codahale.metrics.Gauge<T> g = registry.gauge(name, metricSupplier);
+        GaugeImpl<T> gauge = new GaugeImpl<>(g);
+        metrics.put(name, gauge);
+        return gauge;
     }
 
     /**

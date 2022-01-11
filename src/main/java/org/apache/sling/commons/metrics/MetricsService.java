@@ -20,6 +20,8 @@
 package org.apache.sling.commons.metrics;
 
 
+import java.util.function.Supplier;
+
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
@@ -54,6 +56,11 @@ public interface MetricsService {
 
         @Override
         public <A> A adaptTo(Class<A> type) {
+            return null;
+        }
+
+        @Override
+        public <T> Gauge<T> gauge(String name, Supplier<T> supplier) {
             return null;
         }
     };
@@ -95,6 +102,15 @@ public interface MetricsService {
     Meter meter(String name);
 
     /**
+     * Creates a new {@link Gauge} and registers it under the given name.
+     * If a gauge with teh same exists already the the same instance is returned.
+     * @param name the name of the gauge
+     * @param supplier provides the values which are returned by the gauge
+     * @return the gauge
+     */
+    <T> Gauge<T> gauge(String name, Supplier<T> supplier);
+
+    /**
      * Adapts the service to the specified type. This can be used to
      * get instance to underlying {@code MetricRegistry}
      *
@@ -104,4 +120,5 @@ public interface MetricsService {
      * or null if this metric cannot be adapted to the specified type.
      */
     <A> A adaptTo(Class<A> type);
+
 }

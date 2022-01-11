@@ -23,7 +23,16 @@ package org.apache.sling.commons.metrics;
 import org.osgi.annotation.versioning.ConsumerType;
 
 /**
- * A gauge metric is an instantaneous reading of a particular value. To instrument a queue's depth,
+ * A gauge metric is an instantaneous reading of a particular value. 
+ * 
+ * Since package version 1.3.0 a gauge can directly created via the MetricsService {@see MetricsService#gauge(String,Supplier<T>)},
+ * which should be used for the majority of cases.
+ * 
+ * <p> Nevertheless it's still possible to register a gauge instance with OSGi ServiceRegistry with {@code Gauge#NAME} set
+ * to Gauge name. Then the Gauge instance would be registered with MetricService via the whiteboard
+ * pattern.
+ * 
+ * To instrument a queue's depth,
  * for example:<br>
  * <pre><code>
  * final Queue&lt;String&gt; queue = new ConcurrentLinkedQueue&lt;String&gt;();
@@ -34,9 +43,7 @@ import org.osgi.annotation.versioning.ConsumerType;
  * };
  * </code></pre>
  *
- * <p> A Gauge instance should be registered with OSGi ServiceRegistry with {@code Gauge#NAME} set
- * to Gauge name. Then the Gauge instance would be registered with MetricService via whiteboard
- * pattern
+
  *
  * @param <T> the type of the metric's value
  */

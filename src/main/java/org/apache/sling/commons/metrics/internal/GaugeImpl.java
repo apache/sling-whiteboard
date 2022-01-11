@@ -17,13 +17,31 @@
  * under the License.
  */
 
-/**
- * Provides an API to generate and collect metrics in various forms
- *
- * @version 1.0
- */
-@Version("1.3.0")
-package org.apache.sling.commons.metrics;
+package org.apache.sling.commons.metrics.internal;
 
 
-import org.osgi.annotation.versioning.Version;
+import org.apache.sling.commons.metrics.Gauge;
+import org.apache.sling.commons.metrics.Metric;
+
+public class GaugeImpl<T> implements Gauge<T>, Metric {
+
+    com.codahale.metrics.Gauge<T> gauge;
+
+    public GaugeImpl(com.codahale.metrics.Gauge<T> g) {
+        this.gauge = g;
+    }
+
+    @Override
+    public <A> A adaptTo(Class<A> type) {
+        if (type == com.codahale.metrics.Gauge.class){
+            return (A) gauge;
+        }
+        return null;
+    }
+
+    @Override
+    public T getValue() {
+        return this.gauge.getValue();
+    }
+
+}

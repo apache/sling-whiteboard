@@ -22,8 +22,10 @@ package org.apache.sling.commons.metrics.internal;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 import org.apache.sling.commons.metrics.Counter;
+import org.apache.sling.commons.metrics.Gauge;
 import org.apache.sling.commons.metrics.Histogram;
 import org.apache.sling.commons.metrics.Meter;
 import org.apache.sling.commons.metrics.MetricsService;
@@ -98,5 +100,12 @@ class InternalMetricsServiceFactory implements ServiceFactory<MetricsService> {
             metricsMapper.addMapping(name, bundle);
             registeredNames.add(name);
         }
+
+        @Override
+        public <T> Gauge<T> gauge(String name, Supplier<T> supplier) {
+            addMapping(name);
+            return delegate.gauge(name, supplier);
+        }
+
     }
 }
