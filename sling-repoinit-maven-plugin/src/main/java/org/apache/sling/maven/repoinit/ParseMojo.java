@@ -55,19 +55,19 @@ public class ParseMojo extends BaseMojo {
      * work.
      */
     @Component
-    protected RepositorySystem repoSystem;
+    RepositorySystem repoSystem;
 
     /**
      * The current repository/network configuration of Maven.
      */
     @Parameter(defaultValue = "${repositorySystemSession}", readonly = true)
-    protected RepositorySystemSession repoSession;
+    RepositorySystemSession repoSession;
 
     /**
      * The project's remote repositories to use for the resolution.
      */
     @Parameter(defaultValue = "${project.remoteProjectRepositories}", readonly = true)
-    protected List<RemoteRepository> remoteRepos;
+    List<RemoteRepository> remoteRepos;
 
     /**
      * The version of Sling RepoInit parser to use to parse the repoinit files.
@@ -77,7 +77,7 @@ public class ParseMojo extends BaseMojo {
      * Sling RepoInit Parser versions</a>
      */
     @Parameter(property = "repoinit.parserVersion", required = true)
-    protected String parserVersion;
+    String parserVersion;
 
     public void execute()
             throws MojoExecutionException {

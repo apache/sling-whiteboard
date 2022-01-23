@@ -36,7 +36,7 @@ public abstract class BaseMojo extends AbstractMojo {
      * The base directory under which to search for repoinit files.
      */
     @Parameter(property = "repoinit.scriptBaseDir", defaultValue = "${project.basedir}/src/main/repoinit", required = false)
-    protected File scriptBaseDir;
+    File scriptBaseDir;
 
     /**
      * The files included when processing the plugin. Supports glob style patterns.
@@ -46,9 +46,9 @@ public abstract class BaseMojo extends AbstractMojo {
      * on Globs in Java</a>
      */
     @Parameter(property = "repoinit.includedFiles", required = false, defaultValue = "*.txt")
-    protected List<String> includedFiles;
+    List<String> includedFiles;
 
-    protected List<File> findScripts() throws MojoExecutionException {
+    List<File> findScripts() throws MojoExecutionException {
 
         List<PathMatcher> matchers = includedFiles.stream()
                 .map(pattern -> FileSystems.getDefault().getPathMatcher("glob:" + pattern))

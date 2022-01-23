@@ -34,14 +34,14 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class ToOsgiConfigMojoTest {
+class ToOsgiConfigMojoTest {
 
     ToOsgiConfigMojo toOsgiConfigMojo;
 
     CapturingLogger log = new CapturingLogger();
 
     @BeforeEach
-    public void beforeEach() {
+    void beforeEach() {
         toOsgiConfigMojo = new ToOsgiConfigMojo();
         log.reset();
         toOsgiConfigMojo.setLog(new DefaultLog(log));
@@ -49,7 +49,7 @@ public class ToOsgiConfigMojoTest {
 
     @ParameterizedTest
     @ValueSource(strings = { "JSON", "CONFIG" })
-    public void testConverter(String outputFormat) throws MojoExecutionException {
+    void testConverter(String outputFormat) throws MojoExecutionException {
         toOsgiConfigMojo.includedFiles = Collections.singletonList("*.txt");
 
         toOsgiConfigMojo.scriptBaseDir = new File("src/test/repoinit");
@@ -66,7 +66,7 @@ public class ToOsgiConfigMojoTest {
     }
 
     @Test
-    public void testLargeFile() throws MojoExecutionException {
+    void testLargeFile() throws MojoExecutionException {
         toOsgiConfigMojo.includedFiles = Collections.singletonList("large/combined.txt");
         toOsgiConfigMojo.scriptBaseDir = new File("src/test/repoinit");
         toOsgiConfigMojo.outputFormat = "JSON";
@@ -79,7 +79,7 @@ public class ToOsgiConfigMojoTest {
     }
 
     @Test
-    public void testNoFiles() throws MojoExecutionException {
+    void testNoFiles() throws MojoExecutionException {
         toOsgiConfigMojo.includedFiles = Collections.singletonList("*.tx");
         toOsgiConfigMojo.scriptBaseDir = new File("src/test/repoinit");
         toOsgiConfigMojo.outputFormat = "JSON";
@@ -92,7 +92,7 @@ public class ToOsgiConfigMojoTest {
     }
 
     @Test
-    public void testInvalidBase()
+    void testInvalidBase()
             throws MojoExecutionException {
         toOsgiConfigMojo.includedFiles = Collections.singletonList("*.txt");
         toOsgiConfigMojo.outputFormat = "JSON";
@@ -101,13 +101,14 @@ public class ToOsgiConfigMojoTest {
         toOsgiConfigMojo.scriptBaseDir = new File("src/test/repoinit/somethingelse");
 
         String message = assertThrows(MojoExecutionException.class, () -> toOsgiConfigMojo.execute()).getMessage();
-        assertTrue(message.contains("Could not find scripts in directory:"), "Did not recieve expected message in: " + message);
+        assertTrue(message.contains("Could not find scripts in directory:"),
+                "Did not recieve expected message in: " + message);
     }
 
     @ParameterizedTest
     @CsvSource({ "invalid/apache.png,JSON,Failed to convert script",
             "*.txt,XML,Unsupported output format: XML" })
-    public void testFailures(String filePattern, String format, String messageSubStr)
+    void testFailures(String filePattern, String format, String messageSubStr)
             throws MojoExecutionException {
         toOsgiConfigMojo.includedFiles = Collections.singletonList(filePattern);
         toOsgiConfigMojo.outputFormat = format;

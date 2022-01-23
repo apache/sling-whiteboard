@@ -46,13 +46,13 @@ public class ToOsgiConfigMojo extends BaseMojo {
      * The directory to which to output the OSGi configuration files
      */
     @Parameter(property = "repoinit.outputDir", required = true)
-    protected File outputDir;
+    File outputDir;
 
     /**
      * The format to output the OSGi configuration. Must be one of JSON or CONFIG.
      */
     @Parameter(property = "repoinit.outputFormat", defaultValue = "JSON")
-    protected String outputFormat;
+    String outputFormat;
 
     public void execute()
             throws MojoExecutionException {

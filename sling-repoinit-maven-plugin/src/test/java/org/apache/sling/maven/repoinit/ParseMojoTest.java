@@ -48,7 +48,7 @@ import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class ParseMojoTest {
+class ParseMojoTest {
 
     @Mock
     RepositorySystem repoSystem;
@@ -61,7 +61,7 @@ public class ParseMojoTest {
     CapturingLogger log = new CapturingLogger();
 
     @BeforeEach
-    public void beforeEach() throws IllegalArgumentException, ArtifactResolutionException {
+    void beforeEach() throws IllegalArgumentException, ArtifactResolutionException {
         parseMojo = new ParseMojo();
         parseMojo.repoSystem = repoSystem;
         parseMojo.repoSession = repoSession;
@@ -72,7 +72,7 @@ public class ParseMojoTest {
                 .thenAnswer(this::mockResponse);
     }
 
-    private ArtifactResult mockResponse(InvocationOnMock invocation) throws ArtifactResolutionException {
+    ArtifactResult mockResponse(InvocationOnMock invocation) throws ArtifactResolutionException {
         ArtifactRequest request = (ArtifactRequest) invocation.getArguments()[1];
 
         File artifactFile = new File(
@@ -90,7 +90,7 @@ public class ParseMojoTest {
     }
 
     @Test
-    public void testParser() throws MojoExecutionException {
+    void testParser() throws MojoExecutionException {
         parseMojo.includedFiles = Collections.singletonList("*.txt");
         parseMojo.parserVersion = "1.2.0";
         parseMojo.scriptBaseDir = new File("src/test/repoinit");
@@ -105,7 +105,7 @@ public class ParseMojoTest {
     }
 
     @Test
-    public void testLargeFile() throws MojoExecutionException {
+    void testLargeFile() throws MojoExecutionException {
         parseMojo.includedFiles = Collections.singletonList("large/combined.txt");
         parseMojo.parserVersion = "1.6.10";
         parseMojo.scriptBaseDir = new File("src/test/repoinit");
@@ -117,7 +117,7 @@ public class ParseMojoTest {
     }
 
     @Test
-    public void testNoFiles() throws MojoExecutionException {
+    void testNoFiles() throws MojoExecutionException {
         parseMojo.includedFiles = Collections.singletonList("*.tx");
         parseMojo.parserVersion = "1.2.0";
         parseMojo.scriptBaseDir = new File("src/test/repoinit");
@@ -137,7 +137,7 @@ public class ParseMojoTest {
             "invalid/invalid.txt,1.6.10,Failed to parse script",
             "invalid/apache.png,1.6.10,Failed to parse script",
             "*.txt,0.2.0,Couldn't download artifact: The following artifacts could not be resolved: org.apache.sling:org.apache.sling.repoinit.parser:jar:0.2.0" })
-    public void testFailures(String filePattern, String parserVersion, String messageSubStr)
+    void testFailures(String filePattern, String parserVersion, String messageSubStr)
             throws MojoExecutionException {
         parseMojo.includedFiles = Collections.singletonList(filePattern);
         parseMojo.parserVersion = parserVersion;
