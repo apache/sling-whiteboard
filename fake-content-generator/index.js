@@ -1,9 +1,9 @@
 // Generate fake content in the Sling initial content JSON format
-// Using faker.js (https://github.com/marak/Faker.js/)
+// Using faker.js ( https://github.com/faker-js/faker )
 
 // To run this do "npm install" and then "node index.js" to run it
 
-const faker = require('faker');
+const faker = require('@faker-js/faker')
 const fs = require('fs');
 
 const allTags = new Set();
