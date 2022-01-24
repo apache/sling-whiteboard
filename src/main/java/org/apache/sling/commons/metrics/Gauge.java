@@ -25,7 +25,7 @@ import org.osgi.annotation.versioning.ConsumerType;
 /**
  * A gauge metric is an instantaneous reading of a particular value. 
  * 
- * Since package version 1.3.0 a gauge can directly created via the MetricsService {@see MetricsService#gauge(String,Supplier<T>)},
+ * Since package version 1.3.0 a gauge can directly created via the MetricsService {@link MetricsService#gauge(String,Supplier)},
  * which should be used for the majority of cases.
  * 
  * <p> Nevertheless it's still possible to register a gauge instance with OSGi ServiceRegistry with {@code Gauge#NAME} set

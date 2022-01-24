@@ -106,6 +106,7 @@ public interface MetricsService {
      * If a gauge with teh same exists already the the same instance is returned.
      * @param name the name of the gauge
      * @param supplier provides the values which are returned by the gauge
+     * @param <T> the type of the metric
      * @return the gauge
      */
     <T> Gauge<T> gauge(String name, Supplier<T> supplier);
