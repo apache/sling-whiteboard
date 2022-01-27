@@ -87,7 +87,7 @@ class ToOsgiConfigMojoTest {
 
         toOsgiConfigMojo.execute();
 
-        assertTrue(log.getLogs().contains("[warn] No scripts found in directory:"),
+        assertTrue(log.getLogs().contains("[warn] No files found in directory:"),
                 () -> "Expected to warning and did not in: \n" + log.getLogs());
     }
 
@@ -101,7 +101,7 @@ class ToOsgiConfigMojoTest {
         toOsgiConfigMojo.scriptBaseDir = new File("src/test/repoinit/somethingelse");
 
         String message = assertThrows(MojoExecutionException.class, () -> toOsgiConfigMojo.execute()).getMessage();
-        assertTrue(message.contains("Could not find scripts in directory:"),
+        assertTrue(message.contains("Could not find files in directory:"),
                 "Did not recieve expected message in: " + message);
     }
 

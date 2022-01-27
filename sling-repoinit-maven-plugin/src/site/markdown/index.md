@@ -40,9 +40,6 @@ builds a content package containing the configurations.
                         <goals>
                             <goal>parse</goal>
                         </goals>
-                        <configuration>
-                            <parserVersion>1.6.10</parserVersion>
-                        </configuration>
                     </execution>
                     <execution>
                         <id>convert</id>

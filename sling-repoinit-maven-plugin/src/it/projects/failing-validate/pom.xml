@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
+    <!--
     Licensed to the Apache Software Foundation (ASF) under one
     or more contributor license agreements.  See the NOTICE file
     distributed with this work for additional information
@@ -19,10 +19,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.test.parent</groupId>
-    <artifactId>parse-simple</artifactId>
+    <artifactId>failing-parser</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 
-    <name>Simple Parser Test</name>
+    <name>Failing Parser Test</name>
 
     <build>
         <plugins>
@@ -38,6 +38,12 @@
                         </goals>
                     </execution>
                     <execution>
+                        <id>validate</id>
+                        <goals>
+                            <goal>validate</goal>
+                        </goals>
+                    </execution>
+                    <execution>
                         <id>convert</id>
                         <goals>
                             <goal>to-osgi-config</goal>
@@ -45,12 +51,6 @@
                         <configuration>
                             <outputDir>${project.basedir}/src/main/jcr_root</outputDir>
                         </configuration>
-                    </execution>
-                    <execution>
-                        <id>validate</id>
-                        <goals>
-                            <goal>validate</goal>
-                        </goals>
                     </execution>
                 </executions>
             </plugin>

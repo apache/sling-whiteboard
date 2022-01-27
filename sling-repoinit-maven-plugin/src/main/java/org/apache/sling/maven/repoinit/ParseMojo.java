@@ -21,63 +21,24 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.eclipse.aether.RepositorySystem;
-import org.eclipse.aether.RepositorySystemSession;
-import org.eclipse.aether.artifact.Artifact;
-import org.eclipse.aether.artifact.DefaultArtifact;
-import org.eclipse.aether.repository.RemoteRepository;
-import org.eclipse.aether.resolution.ArtifactRequest;
-import org.eclipse.aether.resolution.ArtifactResolutionException;
-import org.eclipse.aether.resolution.ArtifactResult;
+import org.apache.sling.repoinit.parser.impl.ParseException;
+import org.apache.sling.repoinit.parser.impl.RepoInitParserImpl;
+import org.apache.sling.repoinit.parser.impl.TokenMgrError;
+import org.apache.sling.repoinit.parser.operations.Operation;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Goal which parses the specified RepoInit files. Any errors encountered will
  * be reported and fail the build.
  */
-@Mojo(name = "parse", defaultPhase = LifecyclePhase.PROCESS_SOURCES, requiresProject = false, requiresDependencyResolution = ResolutionScope.RUNTIME)
+@Mojo(name = "parse", defaultPhase = LifecyclePhase.PROCESS_SOURCES, requiresProject = false)
 public class ParseMojo extends BaseMojo {
-
-    /**
-     * The entry point to Maven Artifact Resolver, i.e. the component doing all the
-     * work.
-     */
-    @Component
-    RepositorySystem repoSystem;
-
-    /**
-     * The current repository/network configuration of Maven.
-     */
-    @Parameter(defaultValue = "${repositorySystemSession}", readonly = true)
-    RepositorySystemSession repoSession;
-
-    /**
-     * The project's remote repositories to use for the resolution.
-     */
-    @Parameter(defaultValue = "${project.remoteProjectRepositories}", readonly = true)
-    List<RemoteRepository> remoteRepos;
-
-    /**
-     * The version of Sling RepoInit parser to use to parse the repoinit files.
-     * 
-     * <a href=
-     * "https://search.maven.org/search?q=a:org.apache.sling.repoinit.parser">Released
-     * Sling RepoInit Parser versions</a>
-     */
-    @Parameter(property = "repoinit.parserVersion", required = true)
-    String parserVersion;
 
     public void execute()
             throws MojoExecutionException {
@@ -89,59 +50,30 @@ public class ParseMojo extends BaseMojo {
             return;
         }
 
-        File parserJar = resolveParser();
-        try (URLClassLoader classLoader = new URLClassLoader(new URL[] { parserJar.toURI().toURL() })) {
-            Class<?> parserClass = classLoader
-                    .loadClass("org.apache.sling.repoinit.parser.impl.RepoInitParserImpl");
-
-            for (File script : scripts) {
-                getLog().info("Parsing script: " + script.getAbsolutePath());
-                parseScript(parserClass, script);
-            }
-            getLog().info("All scripts parsed successfully!");
-        } catch (IllegalArgumentException | SecurityException | ClassNotFoundException | IOException e) {
-            throw new MojoExecutionException("Could not parse scripts: " + e.getMessage(), e);
+        for (File script : scripts) {
+            getLog().info("Parsing script: " + script.getAbsolutePath());
+            parseScript(script);
         }
+        getLog().info("All scripts parsed successfully!");
     }
 
-    private void parseScript(Class<?> parserClass, File script) throws MojoExecutionException {
+    @NotNull
+    List<Operation> parseScript(@NotNull File script) throws MojoExecutionException {
         try {
             try (Reader reader = new BufferedReader(new FileReader(script))) {
-                Object parser = parserClass.getConstructor(Reader.class)
-                        .newInstance(reader);
-                Method parse = parser.getClass().getDeclaredMethod("parse");
-                List<?> operations = (List<?>) parse.invoke(parser);
+                List<Operation> operations = new RepoInitParserImpl(reader).parse();
                 getLog().info("Parsed operations: \n\n"
                         + operations.stream().map(Object::toString).collect(Collectors.joining("\n")) + "\n");
+                return operations;
             }
-        } catch (InvocationTargetException e) {
+        } catch (ParseException | TokenMgrError e) {
             throw new MojoExecutionException(
                     "Failed to parse script " + script.getAbsolutePath() + " Exception: "
-                            + e.getTargetException().getMessage(),
-                    e.getTargetException());
-        } catch (InstantiationException | NoSuchMethodException | SecurityException | IllegalAccessException
-                | IllegalArgumentException e) {
-            throw new MojoExecutionException("Unexpected exception calling parser: " + e.getMessage(), e);
+                            + e.getMessage(),
+                    e);
         } catch (IOException e) {
             throw new MojoExecutionException("Failed to read script from files: " + e.getMessage(), e);
         }
     }
 
-    private File resolveParser() throws MojoExecutionException {
-        try {
-            Artifact artifact = new DefaultArtifact(
-                    "org.apache.sling:org.apache.sling.repoinit.parser:" + parserVersion);
-            ArtifactRequest request = new ArtifactRequest();
-            request.setArtifact(artifact);
-            request.setRepositories(remoteRepos);
-            getLog().info("Getting Repoint Parser version " + artifact.getVersion() + " from " + remoteRepos);
-            ArtifactResult result = repoSystem.resolveArtifact(repoSession, request);
-            getLog().info("Resolved artifact " + artifact + " to " + result.getArtifact().getFile() + " from "
-                    + result.getRepository());
-            return result.getArtifact().getFile();
-        } catch (IllegalArgumentException | ArtifactResolutionException e) {
-            throw new MojoExecutionException("Couldn't download artifact: " + e.getMessage(), e);
-        }
-
-    }
 }

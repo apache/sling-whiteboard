@@ -29,6 +29,7 @@ import java.util.stream.Stream;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.jetbrains.annotations.NotNull;
 
 public abstract class BaseMojo extends AbstractMojo {
 
@@ -49,28 +50,32 @@ public abstract class BaseMojo extends AbstractMojo {
     List<String> includedFiles;
 
     List<File> findScripts() throws MojoExecutionException {
+        return findByGlob(scriptBaseDir, includedFiles);
+    }
 
-        List<PathMatcher> matchers = includedFiles.stream()
+    List<File> findByGlob(@NotNull File baseDir, @NotNull List<String> patterns) throws MojoExecutionException {
+
+        List<PathMatcher> matchers = patterns.stream()
                 .map(pattern -> FileSystems.getDefault().getPathMatcher("glob:" + pattern))
                 .collect(Collectors.toList());
 
-        getLog().info("Loading scripts from: " + scriptBaseDir + " using patterns: " + includedFiles);
+        getLog().debug("Loading files from: " + baseDir + " using patterns: " + patterns);
         try {
-            try (Stream<Path> paths = Files.walk(scriptBaseDir.toPath())) {
-                List<File> scripts = paths.map(path -> scriptBaseDir.toPath().relativize(path))
+            try (Stream<Path> paths = Files.walk(baseDir.toPath())) {
+                List<File> scripts = paths.map(path -> baseDir.toPath().relativize(path))
                         .filter(file -> matchers.stream().anyMatch(matcher -> matcher.matches(file)))
-                        .map(path -> scriptBaseDir.toPath().resolve(path).toAbsolutePath())
+                        .map(path -> baseDir.toPath().resolve(path).toAbsolutePath())
                         .map(Path::toFile)
                         .collect(Collectors.toList());
                 if (scripts.isEmpty()) {
                     getLog().warn(
-                            "No scripts found in directory: " + scriptBaseDir + " with patterns: " + includedFiles);
+                            "No files found in directory: " + baseDir + " with patterns: " + patterns);
                 }
                 return scripts;
             }
         } catch (IOException e) {
-            throw new MojoExecutionException("Could not find scripts in directory: " + scriptBaseDir
-                    + " using patterns: " + includedFiles + " Exception: " + e.getMessage(), e);
+            throw new MojoExecutionException("Could not find files in directory: " + baseDir
+                    + " using patterns: " + patterns + " Exception: " + e.getMessage(), e);
         }
     }
 }

@@ -36,9 +36,6 @@
                         <goals>
                             <goal>parse</goal>
                         </goals>
-                        <configuration>
-                            <parserVersion>1.2.0</parserVersion>
-                        </configuration>
                     </execution>
                     <execution>
                         <id>convert</id>
@@ -50,6 +47,13 @@
                         </configuration>
                     </execution>
                 </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.sling</groupId>
+                        <artifactId>org.apache.sling.repoinit.parser</artifactId>
+                        <version>1.2.0</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>

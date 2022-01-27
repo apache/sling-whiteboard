@@ -38,9 +38,12 @@
                         <goals>
                             <goal>parse</goal>
                         </goals>
-                        <configuration>
-                            <parserVersion>1.6.10</parserVersion>
-                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>validate</id>
+                        <goals>
+                            <goal>validate</goal>
+                        </goals>
                     </execution>
                     <execution>
                         <id>convert</id>
