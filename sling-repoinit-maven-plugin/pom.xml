@@ -243,7 +243,7 @@
                     <postBuildHookScript>verify.groovy</postBuildHookScript>
                     <goals>clean install</goals>
                     <writeJunitReport>true</writeJunitReport>
-                    <localRepositoryPath>/Users/klco/Desktop/it-repo</localRepositoryPath>
+                    <localRepositoryPath>${project.build.directory}/it-repo</localRepositoryPath>
                 </configuration>
             </plugin>
         </plugins>
