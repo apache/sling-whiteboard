@@ -18,6 +18,9 @@ package org.apache.sling.maven.repoinit;
 
 import java.io.File;
 
+/**
+ * Pojo for configuring folders of content to load for testing
+ */
 public class ContentFolder {
 
     public enum Type {
@@ -36,9 +39,9 @@ public class ContentFolder {
     }
 
     /**
-     * @param folder
-     * @param path
-     * @param type
+     * @param folder the folder to import
+     * @param path   the path to which to import the folder
+     * @param type   the type of folder contents
      */
     public ContentFolder(File folder, String path, Type type) {
         this.folder = folder;

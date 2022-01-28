@@ -92,8 +92,12 @@ class ToOsgiConfigMojoTest {
     }
 
     @Test
-    void testInvalidBase()
-            throws MojoExecutionException {
+    void testInvalidScriptName() throws MojoExecutionException {
+        assertThrows(MojoExecutionException.class, () -> ToOsgiConfigMojo.getConfigName("ÜñìÇðÐÈ.txt", "cfg.json"));
+    }
+
+    @Test
+    void testInvalidBase() throws MojoExecutionException {
         toOsgiConfigMojo.includedFiles = Collections.singletonList("*.txt");
         toOsgiConfigMojo.outputFormat = "JSON";
         toOsgiConfigMojo.outputDir = new File("target/unit-test-output");
@@ -120,4 +124,18 @@ class ToOsgiConfigMojoTest {
         assertTrue(message.contains(messageSubStr), "Did not recieve expected message in: " + message);
     }
 
+    @ParameterizedTest
+    @CsvSource({
+            "test.txt,cfg.json,org.apache.sling.jcr.repoinit.RepositoryInitializer~test.cfg.json",
+            "test-with_unexpected.characters.txt,cfg.json,org.apache.sling.jcr.repoinit.RepositoryInitializer~testwith_unexpectedcharacters.cfg.json",
+            "test-with_unexpected.characters.txt,config,org.apache.sling.jcr.repoinit.RepositoryInitializer~testwith_unexpectedcharacters.config",
+            "test-with_unexpected.characters.txt,config,org.apache.sling.jcr.repoinit.RepositoryInitializer~testwith_unexpectedcharacters.config",
+            " 0.txt,config,org.apache.sling.jcr.repoinit.RepositoryInitializer~0.config",
+            " 0 .txt,cfg.json,org.apache.sling.jcr.repoinit.RepositoryInitializer~0.cfg.json",
+    })
+    void testConfigNaming(String fileName, String format, String expectedConfigName)
+            throws MojoExecutionException {
+        String configName = ToOsgiConfigMojo.getConfigName(fileName, format);
+        assertEquals(expectedConfigName, configName);
+    }
 }

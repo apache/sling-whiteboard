@@ -37,8 +37,6 @@ import org.apache.sling.maven.repoinit.ContentFolder.Type;
 import org.apache.sling.repoinit.parser.operations.Operation;
 import org.apache.sling.testing.mock.sling.ResourceResolverType;
 import org.apache.sling.testing.mock.sling.context.SlingContextImpl;
-import org.apache.sling.testing.mock.sling.junit5.SlingContext;
-import org.apache.sling.testing.mock.sling.junit5.SlingContextBuilder;
 import org.jetbrains.annotations.NotNull;
 
 /**

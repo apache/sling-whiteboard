@@ -244,6 +244,7 @@
                     <goals>clean install</goals>
                     <writeJunitReport>true</writeJunitReport>
                     <localRepositoryPath>${project.build.directory}/it-repo</localRepositoryPath>
+                    <streamLogsOnFailures>true</streamLogsOnFailures>
                 </configuration>
             </plugin>
         </plugins>

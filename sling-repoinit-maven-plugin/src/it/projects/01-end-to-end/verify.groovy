@@ -16,7 +16,7 @@
  */
 import java.io.*;
     
-File file = new File(basedir, "src/main/jcr_root/org.apache.sling.jcr.repoinit.RepositoryInitializer.simple.cfg.json" );
+File file = new File(basedir, "src/main/jcr_root/org.apache.sling.jcr.repoinit.RepositoryInitializer~simple.cfg.json" );
 if (!file.isFile()) {
     throw new FileNotFoundException( "Could not find generated config: " + file );
 }

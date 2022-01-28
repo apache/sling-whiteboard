@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.jackrabbit.util.Text;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -91,11 +90,7 @@ public class ToOsgiConfigMojo extends BaseMojo {
 
             // strip off the extension, trim it, ensure there's no additional periods in the
             // name and then escape any illegal JCR chars
-            String configId = Text
-                    .escapeIllegalJcrChars(
-                            script.getName().substring(0, script.getName().lastIndexOf(".")).trim().replace(".", "-"));
-            String nodeName = String.format("org.apache.sling.jcr.repoinit.RepositoryInitializer.%s.%s", configId,
-                    extension);
+            String nodeName = getConfigName(script.getName(), extension);
 
             File destination = outputDir.toPath().resolve(nodeName).toFile();
             getLog().info("Saving to: " + destination.getAbsolutePath());
@@ -109,6 +104,16 @@ public class ToOsgiConfigMojo extends BaseMojo {
         } catch (IOException | UncheckedIOException e) {
             throw new MojoExecutionException("Failed to convert script " + e.getMessage(), e);
         }
+    }
+
+    static String getConfigName(String scriptName, String configExtension) throws MojoExecutionException {
+        String configId = scriptName.substring(0, scriptName.lastIndexOf(".")).trim()
+                .replaceAll("[^a-zA-Z0-9_]", "");
+        if (configId == null | configId.length() == 0) {
+            throw new MojoExecutionException("Invalid file name: " + scriptName);
+        }
+        return String.format("org.apache.sling.jcr.repoinit.RepositoryInitializer~%s.%s", configId,
+                configExtension);
     }
 
 }

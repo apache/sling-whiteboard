@@ -15,22 +15,8 @@
  * limitations under the License.
  */
 import java.io.*;
-import java.util.*;
     
-def archive = new File(basedir, "target/content-package-1.0.0-SNAPSHOT.zip" );
-
-assert archive.exists() && archive.isFile() : "Could not find generated archive: " + archive;
-
-def found = false;
-def zipFile = new java.util.zip.ZipFile(archive);
-
-def entryNames = new ArrayList<String>();
-def entries = zipFile.entries();
-while(entries.hasNext()){
-    def name = entries.next().getName();
-    entryNames.add(name);
-    if(name.equals("jcr_root/apps/test/config/org.apache.sling.jcr.repoinit.RepositoryInitializer.simple.cfg.json")){
-        found = true;
-    }
+File file = new File(basedir, "src/main/jcr_root/org.apache.sling.jcr.repoinit.RepositoryInitializer~simple.cfg.json" );
+if (!file.isFile()) {
+    throw new FileNotFoundException( "Could not find generated config: " + file );
 }
-assert found : "Did not find expected entry archive: " + entryNames;

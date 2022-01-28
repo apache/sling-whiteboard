@@ -18,60 +18,8 @@
 Apache Sling RepoInit Maven Plugin
 ======================================
 
-Maven Plugin for parsing and converting Sling RepoInit scripts to OSGi Configuration format.
+Maven Plugin for parsing, verifying and converting [Sling RepoInit scripts](https://sling.apache.org/documentation/bundles/repository-initialization.html) to [OSGi Configurations](https://sling.apache.org/documentation/bundles/configuration-installer-factory.html).
 
 See [Goals](plugin-info.html) for a list of supported goals.
 
-### Usage
-
-Parse and then convert repoinit text files into JSON OSGi configuration files and then
-builds a content package containing the configurations.
-
-    <build>
-        <sourceDirectory>src/main/content/jcr_root</sourceDirectory>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.sling</groupId>
-                <artifactId>org.apache.sling.maven.repoinit</artifactId>
-                <version>${currentStableVersion}</version>
-                <executions>
-                    <execution>
-                        <id>parse</id>
-                        <goals>
-                            <goal>parse</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>convert</id>
-                        <goals>
-                            <goal>to-osgi-config</goal>
-                        </goals>
-                        <configuration>
-                            <outputDir>${project.basedir}/src/main/content/jcr_root/apps/test/config</outputDir>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.jackrabbit</groupId>
-                <artifactId>filevault-package-maven-plugin</artifactId>
-                <version>1.2.2</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <filters>
-                        <filter>
-                            <root>/apps/test</root>
-                        </filter>
-                    </filters>
-                    <group>com.test</group>
-                    <name>test.ui.apps</name>
-                    <allowIndexDefinitions>true</allowIndexDefinitions>
-                    <noIntermediateSaves>false</noIntermediateSaves>
-                    <packageType>container</packageType>
-                    <jcrRootSourceDirectory>src/main/content/jcr_root</jcrRootSourceDirectory>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-
-Additional examples can be found in the [integration tests](https://github.com/apache/sling-repoinit-maven-plugin/blob/master/it/projects)
+See [Usage](usage.html) for examples of how to use the plugin. Additional examples can be found in the [integration tests](https://github.com/apache/sling-repoinit-maven-plugin/blob/master/it/projects)
