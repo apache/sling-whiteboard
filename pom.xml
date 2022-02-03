@@ -51,6 +51,8 @@
           <module>instance-stopper</module>
           <module>org.apache.sling.ddr</module>
           <module>sling-repoinit-maven-plugin</module>
+          <module>json-logs/org.apache.sling.commons.logback.configurator</module>
+          <module>json-logs/org.apache.sling.commons.log.json</module>
   </modules>
 
 </project>
