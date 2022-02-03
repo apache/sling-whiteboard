@@ -1,0 +1,2 @@
+Fragment-Host: ch.qos.logback.classic
+Bundle-ClassPath: .
