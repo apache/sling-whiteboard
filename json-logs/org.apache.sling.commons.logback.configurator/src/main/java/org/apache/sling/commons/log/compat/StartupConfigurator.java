@@ -18,8 +18,6 @@
  */
 package org.apache.sling.commons.log.compat;
 
-import java.util.Optional;
-
 import org.jetbrains.annotations.NotNull;
 
 import ch.qos.logback.classic.BasicConfigurator;
@@ -56,7 +54,6 @@ public class StartupConfigurator extends BasicConfigurator {
     private Encoder<ILoggingEvent> getEncoder(@NotNull LoggerContext context) {
         LogstashEncoder logstashEncoder = new LogstashEncoder();
         logstashEncoder.setContext(context);
-        logstashEncoder.setCustomFields(APPENDER_NAME);
         logstashEncoder.start();
 
         return logstashEncoder;
