@@ -18,7 +18,6 @@
  */
 package org.apache.sling.jaxrs;
 
-import javax.jcr.Session;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -31,7 +30,9 @@ import javax.ws.rs.core.MediaType;
 
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.jaxrs.whiteboard.propertytypes.JaxrsResource;
 
 @Path("/test")
@@ -42,13 +43,15 @@ public class TestService {
 
 	static int counter;
 	 
-	static ResourceResolver getResourceResolver(HttpServletRequest request) {
-		final Object obj = request.getAttribute("org.apache.sling.auth.core.ResourceResolver");
-		if(obj instanceof ResourceResolver) {
-			return (ResourceResolver)obj;
-		}
-		throw new IllegalStateException("Request does not provide a ResourceResolver");
+	@Reference
+	private ResourceResolverFactory factory;
 
+	ResourceResolver getResourceResolver(HttpServletRequest request) {
+		ResourceResolver rr = factory.getThreadResourceResolver();
+		if ( rr != null ) {
+			return rr;
+		}
+                throw new IllegalStateException("Request does not provide a ResourceResolver");
 	}
 
 	@GET
@@ -67,11 +70,7 @@ public class TestService {
 	@Path("/userinfo")
 	public String getUserInfo(@Context HttpServletRequest request) throws Exception {
 		try (ResourceResolver rr = getResourceResolver(request)) {
-			final Session s = rr.adaptTo(Session.class);
-			if(s == null) {
-				throw new Exception("ResourceResolver does not adapt to Session");
-			}
-			return String.format("userID='%s'%n", s.getUserID());
+			return String.format("userID='%s'%n", rr.getUserID());
 		}
 	}
 
