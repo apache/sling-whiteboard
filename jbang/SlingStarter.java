@@ -52,20 +52,24 @@ import org.apache.sling.feature.launcher.impl.Main;
  */
 class SlingStarter {
 
+    public static final String SCRIPT_VERSION = "0.1";
+
     public static void main(String[] args) {
 
         /* For now only Starter 12 is distributed with this
          * format, so there's no point in using this method's
          * args to switch versions. Later, maybe.
          */
-        final int version = 12;
+        final int slingVersion = 12;
         final String farURL = String.format(
             "https://repo1.maven.org/maven2/org/apache/sling/org.apache.sling.starter/%d/org.apache.sling.starter-%d-oak_tar_far.far",
-            version,
-            version
+            slingVersion,
+            slingVersion
         );
         
-        System.err.println(String.format("Starting Apache Sling %d using the Feature Launcher", version));
+        System.err.println(String.format("%s V%s : starting Apache Sling %d using the Feature Launcher",
+            SlingStarter.class.getSimpleName(), SCRIPT_VERSION, slingVersion
+        ));
         System.err.println("The first run of this script is slower, as it downloads the Sling starter feature file and dependencies");
         System.err.println("Starter feature file: " + farURL);
         System.err.println("TODO: need to handle arguments such as Sling server port number etc.");
