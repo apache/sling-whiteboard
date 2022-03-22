@@ -32,6 +32,8 @@
 //DEPS org.slf4j:slf4j-api:1.7.25
 //DEPS org.slf4j:slf4j-simple:1.7.25
 
+import java.util.List;
+import java.util.ArrayList;
 import org.apache.sling.feature.launcher.impl.Main;
 
 /** Thanks to the JBang catalog found at https://github.com/apache/sling-whiteboard/blob/master/jbang-catalog.json
@@ -41,15 +43,20 @@ import org.apache.sling.feature.launcher.impl.Main;
  * 
  *  After installing JBang from https://www.jbang.dev/
  *
+ *  To see additional launcher options, use
+ *
+ *    jbang start@apache/sling-whiteboard -h
+ *
  */
 class SlingStarter {
 
     public static void main(String[] args) {
 
-        // Starter 12 is the only version that we distribute like
-        // this, so there's no other version to switch to. Not yet.
-        final int defaultVersion = 12;
-        final int version = args == null || args.length == 0 ? defaultVersion : Integer.valueOf(args[0]);
+        /* For now only Starter 12 is distributed with this
+         * format, so there's no point in using this method's
+         * args to switch versions. Later, maybe.
+         */
+        final int version = 12;
         final String farURL = String.format(
             "https://repo1.maven.org/maven2/org/apache/sling/org.apache.sling.starter/%d/org.apache.sling.starter-%d-oak_tar_far.far",
             version,
@@ -61,10 +68,13 @@ class SlingStarter {
         System.err.println("Starter feature file: " + farURL);
         System.err.println("TODO: need to handle arguments such as Sling server port number etc.");
 
-        final String [] starterArgs = {
-            "-f",
-            farURL
-        };
-        Main.main(starterArgs);
+        final List<String> starterArgs = new ArrayList<>();
+        starterArgs.add("-f");
+        starterArgs.add(farURL);
+        for(String arg : args) {
+            starterArgs.add(arg);
+        }
+        final String [] strArgs = starterArgs.stream().toArray(String[]::new);
+        Main.main(strArgs);
     }
 }
