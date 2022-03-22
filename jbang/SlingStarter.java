@@ -17,6 +17,8 @@
  * the License.
  */
 
+//JAVA 11+
+
 //DEPS org.apache.sling:org.apache.sling.feature.launcher:1.2.0
 //DEPS commons-cli:commons-cli:1.4
 //DEPS org.apache.commons:commons-lang3:3.12.0
