@@ -2,7 +2,7 @@
   "catalogs": {},
   "aliases": {
     "start": {
-      "script-ref": "start.java",
+      "script-ref": "jbang/SlingStarter.java",
       "description": "Start Apache Sling"
     },
     "repoinitValidator": {
