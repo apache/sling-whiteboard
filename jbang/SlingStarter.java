@@ -52,7 +52,7 @@ import org.apache.sling.feature.launcher.impl.Main;
  */
 class SlingStarter {
 
-    public static final String SCRIPT_VERSION = "0.1";
+    public static final String SCRIPT_VERSION = "0.2";
 
     public static void main(String[] args) {
 
@@ -72,7 +72,6 @@ class SlingStarter {
         ));
         System.err.println("The first run of this script is slower, as it downloads the Sling starter feature file and dependencies");
         System.err.println("Starter feature file: " + farURL);
-        System.err.println("TODO: need to handle arguments such as Sling server port number etc.");
 
         final List<String> starterArgs = new ArrayList<>();
         starterArgs.add("-f");
