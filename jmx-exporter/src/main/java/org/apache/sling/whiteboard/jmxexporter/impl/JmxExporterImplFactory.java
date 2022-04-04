@@ -49,19 +49,19 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Component(configurationPolicy = ConfigurationPolicy.REQUIRE, immediate=true)
+@Component()
 @Designate(ocd=JmxExporterImplFactory.Config.class, factory=true)
 public class JmxExporterImplFactory {
     
     @ObjectClassDefinition(name="JMX to Metrics Exporter")
     public @interface Config {
         
-        @AttributeDefinition(name="objectname", description="A objectname pattern "
+        @AttributeDefinition(name="objectnames", description="export all attribute of the MBeans matching these objectnames as Sling Metrics"
                 + "(see https://docs.oracle.com/en/java/javase/11/docs/api/java.management/javax/management/ObjectName.html")
-        String objectname();
+        String[] objectnames();
         
         @AttributeDefinition
-        String webconsole_configurationFactory_nameHint() default "JMX to Metrics Exporter for pattern {objectname}";
+        String webconsole_configurationFactory_nameHint() default "Pattern: {objectnames}";
     }
     
     
@@ -75,7 +75,7 @@ public class JmxExporterImplFactory {
     @Activate
     public void activate(Config config) {
         server = ManagementFactory.getPlatformMBeanServer();
-        registerMetrics(config.objectname());
+        registerMetrics(config.objectnames());
     }
     
 
@@ -83,23 +83,28 @@ public class JmxExporterImplFactory {
      * Register all applicable metrics for an objectname pattern
      * @param pattern describes a objectname pattern
      */
-    private void registerMetrics(String patternString) {
+    private void registerMetrics(String[] patterns) {
         
-        try {
-            ObjectName pattern = new ObjectName(patternString);
-            Set<ObjectName> allMBeans = server.queryNames(pattern, null);
-            allMBeans.forEach(objectname -> {
-                LOG.debug("registering properties for {}", objectname.toString());
-                try {
-                    registerMBeanProperties(objectname);
-                } catch (IntrospectionException | InstanceNotFoundException | ReflectionException e) {
-                    LOG.error("Cannot register metrics for objectname = {}", objectname.toString());
+        for (String patternString : patterns) {
+            try {
+                ObjectName pattern = new ObjectName(patternString);
+                Set<ObjectName> allMBeans = server.queryNames(pattern, null);
+                if (allMBeans.isEmpty()) {
+                    LOG.info("pattern {} does not match any MBean", patternString);
+                } else {
+                    allMBeans.forEach(objectname -> {
+                        LOG.debug("registering properties for {}", objectname.toString());
+                        try {
+                            registerMBeanProperties(objectname);
+                        } catch (IntrospectionException | InstanceNotFoundException | ReflectionException e) {
+                            LOG.error("Cannot register metrics for objectname = {}", objectname.toString());
+                        }
+                    });
                 }
-            });
-        } catch (MalformedObjectNameException e) {
-            LOG.error("cannot create an objectname from pattern {}",patternString,e);
+            } catch (MalformedObjectNameException e) {
+                LOG.error("cannot create an objectname from pattern {}",patternString,e);
+            }
         }
-        
         
     }
     
@@ -110,23 +115,37 @@ public class JmxExporterImplFactory {
         for (MBeanAttributeInfo attr : attributes) {
             LOG.debug("Checking mbean = {}, name = {}, type={}",objectname, attr.getName(), attr.getType());
             
+            Supplier<?> supplier = null;
             if ("int".equals(attr.getType())) {
+                supplier = getSupplier(objectname, attr.getName(),-1);
+            } else if ("long".equals(attr.getType())) {
+                supplier = getSupplier(objectname, attr.getName(),-1L);
+            }
+            
+            if (supplier != null) {
                 String metricName = toMetricName(objectname, attr.getName());
-                LOG.info("Registering as metric: {}", metricName);
-                Supplier<Integer> supplier = () -> {
-                    try {
-                        return (Integer) server.getAttribute(objectname, attr.getName());
-                    } catch (InstanceNotFoundException | AttributeNotFoundException | ReflectionException
-                            | MBeanException e) {
-                        LOG.warn("error when retrieving value for mbean {}/attribute {}",objectname, attr.getName(),e);
-                        return -1;
-                    }
-                };
+                LOG.info("Registering metric {} from MBean (objectname={}, name={}, type={})", 
+                        metricName,objectname.toString(), attr.getName(), attr.getType());
                 metrics.gauge(metricName, supplier);
             }
         }
     }
     
+    
+    private <T> Supplier<T> getSupplier ( ObjectName name, String attributeName, T defaultValue ) {
+        
+        Supplier<T> supplier = () -> {
+            try {
+                return (T) server.getAttribute(name, attributeName);
+            } catch (InstanceNotFoundException | AttributeNotFoundException | ReflectionException
+                    | MBeanException e) {
+                LOG.warn("error when retrieving value for mbean {}/attribute {}",name, attributeName,e);
+                return defaultValue;
+            }
+            
+        };
+        return supplier;
+    }
     
     
     protected String toMetricName(ObjectName objectName, String attributeName) {

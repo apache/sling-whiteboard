@@ -22,6 +22,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.lang.management.ManagementFactory;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import javax.management.InstanceAlreadyExistsException;
@@ -53,21 +55,36 @@ public class JmxExporterFactoryTest {
     @Captor
     ArgumentCaptor<Supplier<Integer>> intSupplierCaptor;
     
+    @Captor
+    ArgumentCaptor<Supplier<Long>> longSupplierCaptor;
+    
     JmxExporterImplFactory exporter;
     
-    private static final String OBJECT_NAME = "org.apache.sling.whiteboard.jmxexporter.impl:type=sample";
+    private static final String OBJECT_NAME_0 = "org.apache.sling.whiteboard.jmxexporter.impl0:type=sample1";
+    private static final String OBJECT_NAME_1 = "org.apache.sling.whiteboard.jmxexporter.impl0.impl2:type=sample2";
+    private static final String OBJECT_NAME_2 = "org.apache.sling.whiteboard.jmxexporter.impl1:type=sample3";
     
-    private static final String EXPECTED_INT_NAME = "org.apache.sling.whiteboard.jmxexporter.impl.sample.Int";
+    // Query which will only match OBJECT_NAME_0 and OBJECT_NAME_1
+    private static final String OBJECT_NAME_QUERY = "org.apache.sling.whiteboard.jmxexporter.impl0*:type=*";
+    
+    private static final String EXPECTED_0_INT_NAME  = "org.apache.sling.whiteboard.jmxexporter.impl0.sample1.Int";
+    private static final String EXPECTED_0_LONG_NAME = "org.apache.sling.whiteboard.jmxexporter.impl0.sample1.Long";
+    
+    private static final String EXPECTED_1_INT_NAME  = "org.apache.sling.whiteboard.jmxexporter.impl0.impl2.sample2.Int";
+    private static final String EXPECTED_1_LONG_NAME = "org.apache.sling.whiteboard.jmxexporter.impl0.impl2.sample2.Long";
     
     MetricsService metrics;
+    
+    SimpleBean mbeans[] = { new SimpleBean(0,0L), new SimpleBean(1,1L), new SimpleBean(2,2L)};
     
     
     @Before
     public void setup() throws MalformedObjectNameException, InstanceAlreadyExistsException, MBeanRegistrationException, NotCompliantMBeanException {
         MBeanServer server = ManagementFactory.getPlatformMBeanServer();
-        ObjectName mbeanName = new ObjectName(OBJECT_NAME);
-        SimpleBean mbean = new SimpleBean();
-        server.registerMBean(mbean, mbeanName);
+
+        server.registerMBean(mbeans[0],new ObjectName(OBJECT_NAME_0));        
+        server.registerMBean(mbeans[1],new ObjectName(OBJECT_NAME_1));
+        server.registerMBean(mbeans[2],new ObjectName(OBJECT_NAME_2));
         
         exporter = new JmxExporterImplFactory(); 
         metrics = Mockito.mock(MetricsService.class);
@@ -76,20 +93,51 @@ public class JmxExporterFactoryTest {
     
     @Test
     public void test() {
-        context.registerInjectActivateService(exporter, "objectname",OBJECT_NAME);
-        Mockito.verify(metrics).gauge(Mockito.eq(EXPECTED_INT_NAME), intSupplierCaptor.capture());
+        Map<String,Object> props = new HashMap<>();
+        props.put("objectnames", new String[]{OBJECT_NAME_QUERY});
+        context.registerInjectActivateService(exporter, props);
+        
+        
+        // Integer
+        Mockito.verify(metrics).gauge(Mockito.eq(EXPECTED_0_INT_NAME), intSupplierCaptor.capture());
+        assertEquals(new Integer(0),intSupplierCaptor.getValue().get());
+        mbeans[0].setInt(10);
+        Mockito.verify(metrics).gauge(Mockito.eq(EXPECTED_0_INT_NAME), intSupplierCaptor.capture());
+        assertEquals(new Integer(10),intSupplierCaptor.getValue().get());
+        
+        // Long
+        Mockito.verify(metrics).gauge(Mockito.eq(EXPECTED_0_LONG_NAME), longSupplierCaptor.capture());
+        assertEquals(new Long(0L),longSupplierCaptor.getValue().get());
+        
+        // MBean 1
+        Mockito.verify(metrics).gauge(Mockito.eq(EXPECTED_1_INT_NAME), intSupplierCaptor.capture());
         assertEquals(new Integer(1),intSupplierCaptor.getValue().get());
+        
+        Mockito.verify(metrics).gauge(Mockito.eq(EXPECTED_1_LONG_NAME), longSupplierCaptor.capture());
+        assertEquals(new Long(1L),longSupplierCaptor.getValue().get());
+        
         
     }
     
     static class SimpleBean implements SimpleBeanMBean {
 
         
-        int internalInt = 1;
+        int internalInt = 0;
+        long internalLong = 0L;
+        
+        public SimpleBean(int i, long l) {
+            internalInt = i;
+            internalLong = l;
+        }
         
         @Override
         public int getInt() {
             return internalInt;
+        }
+        
+        @Override
+        public long getLong() {
+            return internalLong;
         }
         
         public void setInt(int value) {
@@ -103,6 +151,7 @@ public class JmxExporterFactoryTest {
     static public interface SimpleBeanMBean {
         
         public int getInt();
+        public long getLong();
         
     }
     
