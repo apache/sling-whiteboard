@@ -1,6 +1,18 @@
 # Apache Sling OpenID Connect Relying Party support bundle
 
-## Sling Starter Deployment
+## Prerequisites
+
+### Client registration
+
+An OpenID Connect client must be registrered with an authorization server, and a callback URL of $HOST/system/sling/oidc/callback registered. This is typically http://localhost:8080/system/sling/oidc/callback .
+
+Validated providers:
+
+- Google, with base URL of https://accounts.google.com , see [Google OIDC documentation](https://developers.google.com/identity/protocols/oauth2/openid-connect)
+
+## Sling Starter Prerequisites
+
+A number of additional bundles need to be added to the Sling Starter.
 
 ```diff
 diff --git a/src/main/features/app/starter.json b/src/main/features/app/starter.json
@@ -45,9 +57,24 @@ index 9c9231f..18c1586 100644
 
 ```
 
+### Deployment and configuration
+
+After deploying the bundle using `mvn package sling:install` go to http://localhost:8080/system/console/configMgr and create a new configuration instance for _OpenID Connect connection details_.
+
+### Kicking off the process
+
+Ensure you are logged in.
+
+- navigate to http://localhost:8080/system/sling/oidc/entry-point?redirect=/bin/browser.html
+- you will be redirect to the identity provider, where you will need authenticate yourself and authorize the connection
+- you will be redirected to the composum browser
+
+At this point you need to can navigate to /home/users/${USERNAME}/oidc-tokens/${CONNECTION_NAME} and you will see the stored token and expiry date (if available ).
+
+
 ## Whiteboard graudation TODO 
 
-- bundle/package should probably be org.apache.sling.extensions.odic-rp, as the primary entry point is the Java API
+- bundle/package should probably be org.apache.sling.extensions.oidc-rp, as the primary entry point is the Java API
 - document usage; make sure to explain this is _not_ an authentication handler
 - provide a sample content package and instructions how to use
 - review to see if we can use more of the Nimbus SDK, e.g. enpodints discovery, token parsing
