@@ -37,6 +37,7 @@ record Endpoints(String authorizationEndpoint, String tokenEndpoint) {
 
     // TODO - cache endpoints, move to service?
     static Endpoints discover(String base, HttpClient client) throws IOException, InterruptedException {
+        logger.info("Initiating discovery request for baseUrl {}", base);
         HttpRequest discoveryRequest = HttpRequest.newBuilder()
                 .uri(URI.create(base + "/.well-known/openid-configuration"))
                 .build();

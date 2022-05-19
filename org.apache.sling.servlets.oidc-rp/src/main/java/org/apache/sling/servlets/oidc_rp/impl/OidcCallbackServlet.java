@@ -30,6 +30,7 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.json.Json;
@@ -49,7 +50,6 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 import com.nimbusds.oauth2.sdk.ParseException;
-import com.nimbusds.oauth2.sdk.id.State;
 import com.nimbusds.openid.connect.sdk.AuthenticationErrorResponse;
 import com.nimbusds.openid.connect.sdk.AuthenticationResponse;
 import com.nimbusds.openid.connect.sdk.AuthenticationResponseParser;
@@ -78,15 +78,16 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response)
             throws ServletException, IOException {
+        if ( connection.baseUrl() == null )
+            throw new ServletException("Misconfigured baseUrl");
         try {
             StringBuffer requestURL = request.getRequestURL();
             if ( request.getQueryString() != null )
                 requestURL.append('?').append(request.getQueryString());
 
             AuthenticationResponse authResponse = AuthenticationResponseParser.parse(new URI(requestURL.toString()));
-            State state = (State) request.getSession().getAttribute(OidcEntryPointServlet.SESSION_ATTRIBUTE_STATE);
-            request.getSession().removeAttribute(OidcEntryPointServlet.SESSION_ATTRIBUTE_STATE);
-            if ( state == null || !authResponse.getState().equals(state))
+            OidcStateManager stateManager = OidcStateManager.stateFor(request);
+            if ( authResponse.getState() == null || !stateManager.isValidState(authResponse.getState()))
                 throw new ServletException("Failed state check");
 
             if ( response instanceof AuthenticationErrorResponse )
@@ -115,6 +116,8 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
                     .build();
 
             HttpResponse<String> tokenResponse = client.send(tokenRequest, BodyHandlers.ofString());
+            Optional<String> redirect = stateManager.getStateAttribute(authResponse.getState(), OidcStateManager.PARAMETER_NAME_REDIRECT);
+            stateManager.unregisterState(authResponse.getState());
 
             String accessToken;
             try ( JsonReader reader = Json.createReader(new StringReader(tokenResponse.body())) ) {
@@ -125,17 +128,14 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
 
             persister.persistToken(request.getResourceResolver(), accessToken);
 
-            String encodedRedirect = (String) request.getSession().getAttribute(OidcEntryPointServlet.SESSION_ATTRIBUTE_REDIRECT);
-            if ( encodedRedirect == null ) {
+            if ( redirect.isEmpty() ) {
                 response.setStatus(HttpServletResponse.SC_OK);
                 response.addHeader("Content-Type", "text/plain");
                 response.getWriter().write("OK");
                 response.getWriter().flush();
                 response.getWriter().close();
             } else {
-                request.getSession().removeAttribute(OidcEntryPointServlet.SESSION_ATTRIBUTE_REDIRECT);
-                String redirect = URLDecoder.decode(encodedRedirect, StandardCharsets.UTF_8);
-                response.sendRedirect(redirect);
+                response.sendRedirect(URLDecoder.decode(redirect.get(), StandardCharsets.UTF_8));
             }
         } catch (ParseException | URISyntaxException | IOException e) {
             throw new ServletException(e);

@@ -16,6 +16,8 @@
  */
 package org.apache.sling.servlets.oidc_rp.impl;
 
+import static org.apache.sling.servlets.oidc_rp.impl.OidcStateManager.PARAMETER_NAME_REDIRECT;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -44,8 +46,6 @@ import com.nimbusds.openid.connect.sdk.Nonce;
 public class OidcEntryPointServlet extends SlingAllMethodsServlet {
     private static final long serialVersionUID = 1L;
 
-    static final String SESSION_ATTRIBUTE_STATE = OidcEntryPointServlet.class.getName() + ".state";
-    static final String SESSION_ATTRIBUTE_REDIRECT = OidcEntryPointServlet.class.getName() + ".redirect";
     static final String PATH = "/system/sling/oidc/entry-point"; // NOSONAR
     private final OidcConnection connection;
 
@@ -56,7 +56,8 @@ public class OidcEntryPointServlet extends SlingAllMethodsServlet {
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response)
             throws ServletException, IOException {
-
+        if ( connection.baseUrl() == null )
+            throw new ServletException("Misconfigured baseUrl");
         try {
 
             Endpoints ep = Endpoints.discover(connection.baseUrl(), HttpClient.newHttpClient());
@@ -69,9 +70,10 @@ public class OidcEntryPointServlet extends SlingAllMethodsServlet {
             URI callback = new URI(OidcCallbackServlet.getCallbackUri(request));
             // Generate random state string to securely pair the callback to this request
             State state = new State();
-            request.getSession().setAttribute(SESSION_ATTRIBUTE_STATE, state);
-            if ( request.getParameter("redirect") != null )
-                request.getSession().setAttribute(SESSION_ATTRIBUTE_REDIRECT, request.getParameter("redirect"));
+            OidcStateManager stateManager = OidcStateManager.stateFor(request);
+            stateManager.registerState(state);
+            if ( request.getParameter(PARAMETER_NAME_REDIRECT) != null )
+                stateManager.putAttribute(state, PARAMETER_NAME_REDIRECT, request.getParameter(PARAMETER_NAME_REDIRECT));
 
             // Generate nonce for the ID token
             Nonce nonce = new Nonce();
