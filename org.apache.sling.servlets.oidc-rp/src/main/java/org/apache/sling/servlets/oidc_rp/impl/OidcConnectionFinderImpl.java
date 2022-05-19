@@ -24,6 +24,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Optional;
 
+import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
@@ -35,9 +36,16 @@ import org.apache.sling.servlets.oidc_rp.OidcConnectionFinder;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component
 public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConnectionPersister {
+
+    private static final String PROPERTY_NAME_EXPIRES_AT = "expiresAt";
+    private static final String PROPERTY_NAME_TOKEN = "token";
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final OidcConnection connection;
 
@@ -48,10 +56,20 @@ public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConne
 
     @Override
     public Optional<String> getOidcToken(ResourceResolver resolver) {
-        // TODO - remove expired tokens
         try {
             User user = resolver.adaptTo(User.class);
-            Value[] tokenValue = user.getProperty(tokenPropertyPath());
+
+            Value[] expiresAt = user.getProperty(propertyPath(PROPERTY_NAME_EXPIRES_AT));
+            if ( expiresAt != null  && expiresAt.length == 1 && expiresAt[0].getType() == PropertyType.DATE ) {
+                Calendar expiresCal = expiresAt[0].getDate();
+                if ( expiresCal.after(Calendar.getInstance())) {
+                    logger.info("Token for {} expired at {}, removing", connection.name(), expiresCal);
+                    user.removeProperty(nodePath()); // unsure if this will work ...
+                    return Optional.empty();
+                }
+            }
+
+            Value[] tokenValue = user.getProperty(propertyPath(PROPERTY_NAME_TOKEN));
             if ( tokenValue == null )
                 return Optional.empty();
 
@@ -69,11 +87,10 @@ public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConne
         try {
             User currentUser = resolver.adaptTo(User.class);
             Session session = resolver.adaptTo(Session.class);
-            String relativeNodePath = "oidc-tokens/" + connection.name();
-            currentUser.setProperty(relativeNodePath + "/token", session.getValueFactory().createValue(tokenValue));
+            currentUser.setProperty(propertyPath(PROPERTY_NAME_TOKEN), session.getValueFactory().createValue(tokenValue));
             if ( expiry != null ) {
                 Calendar cal = GregorianCalendar.from(expiry);
-                currentUser.setProperty(relativeNodePath + "/expiresAt", session.getValueFactory().createValue(cal));
+                currentUser.setProperty(propertyPath(PROPERTY_NAME_EXPIRES_AT), session.getValueFactory().createValue(cal));
             }
             session.save();
         } catch (RepositoryException e) {
@@ -91,8 +108,12 @@ public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConne
         return URI.create(uri.toString());
     }
 
-    private String tokenPropertyPath() {
-        return "oidc-tokens/" + connection.name() + "/token";
+    private String propertyPath(String propertyName) {
+        return nodePath() + "/" + propertyName;
+    }
+
+    private String nodePath() {
+        return "oidc-tokens/" + connection.name();
     }
 
 }
