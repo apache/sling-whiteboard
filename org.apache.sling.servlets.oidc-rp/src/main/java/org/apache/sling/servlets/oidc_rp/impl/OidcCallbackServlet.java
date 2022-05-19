@@ -28,12 +28,17 @@ import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.json.Json;
+import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.servlet.Servlet;
@@ -120,13 +125,18 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
             stateManager.unregisterState(authResponse.getState());
 
             String accessToken;
+            ZonedDateTime expiry = null;
+
             try ( JsonReader reader = Json.createReader(new StringReader(tokenResponse.body())) ) {
                 JsonObject tokenObject = reader.readObject();
                 accessToken = tokenObject.getString("access_token");
-//                int expires = tokenObject.getInt("expires_in"); // TODO - this is optional
+                JsonNumber expiresIn = tokenObject.getJsonNumber("expires_in");
+                if ( expiresIn != null ) {
+                    expiry = LocalDateTime.now().plus(expiresIn.intValue(), ChronoUnit.SECONDS).atZone(ZoneId.systemDefault());
+                }
             }
 
-            persister.persistToken(request.getResourceResolver(), accessToken);
+            persister.persistToken(request.getResourceResolver(), accessToken, expiry);
 
             if ( redirect.isEmpty() ) {
                 response.setStatus(HttpServletResponse.SC_OK);

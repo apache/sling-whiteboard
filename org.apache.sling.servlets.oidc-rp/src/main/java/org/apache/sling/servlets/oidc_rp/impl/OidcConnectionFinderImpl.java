@@ -19,6 +19,9 @@ package org.apache.sling.servlets.oidc_rp.impl;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.ZonedDateTime;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.Optional;
 
 import javax.jcr.RepositoryException;
@@ -62,11 +65,16 @@ public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConne
     }
 
     @Override
-    public void persistToken(ResourceResolver resolver, String tokenValue) {
+    public void persistToken(ResourceResolver resolver, String tokenValue, ZonedDateTime expiry) {
         try {
             User currentUser = resolver.adaptTo(User.class);
             Session session = resolver.adaptTo(Session.class);
-            currentUser.setProperty("oidc-tokens/" + connection.name() + "/token", session.getValueFactory().createValue(tokenValue));
+            String relativeNodePath = "oidc-tokens/" + connection.name();
+            currentUser.setProperty(relativeNodePath + "/token", session.getValueFactory().createValue(tokenValue));
+            if ( expiry != null ) {
+                Calendar cal = GregorianCalendar.from(expiry);
+                currentUser.setProperty(relativeNodePath + "/expiresAt", session.getValueFactory().createValue(cal));
+            }
             session.save();
         } catch (RepositoryException e) {
             throw new RuntimeException(e);
