@@ -27,4 +27,7 @@
   <root level="info">
     <appender-ref ref="STDOUT" />
   </root>
+  
+  <logger name="org.apache.sling.whiteboard.jmxexporter.impl" level="info" />
+  
 </configuration>

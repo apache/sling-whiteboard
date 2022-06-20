@@ -97,7 +97,7 @@ public class JmxExporterImplFactory {
                         try {
                             registerMBeanProperties(objectname);
                         } catch (IntrospectionException | InstanceNotFoundException | ReflectionException e) {
-                            LOG.error("Cannot register metrics for objectname = {}", objectname.toString());
+                            LOG.error("Cannot register metrics for objectname = {}", objectname.toString(),e);
                         }
                     });
                 }
@@ -117,14 +117,18 @@ public class JmxExporterImplFactory {
             
             Supplier<?> supplier = null;
             if ("int".equals(attr.getType())) {
-                supplier = getSupplier(objectname, attr.getName(),-1);
+                supplier = getSupplier(objectname, attr.getName(),0);
             } else if ("long".equals(attr.getType())) {
-                supplier = getSupplier(objectname, attr.getName(),-1L);
+                supplier = getSupplier(objectname, attr.getName(),0L);
+            } else if ("java.lang.String".equals(attr.getType())) {
+                supplier = getSupplier(objectname,attr.getName(),"");
+            } else if ("double".equals(attr.getType())) {
+                supplier = getSupplier(objectname,attr.getName(), Double.valueOf(0.0));
             }
             
             if (supplier != null) {
                 String metricName = toMetricName(objectname, attr.getName());
-                LOG.info("Registering metric {} from MBean (objectname={}, name={}, type={})", 
+                LOG.info("Registering metric {} from MBean (objectname=[{}], name={}, type={})", 
                         metricName,objectname.toString(), attr.getName(), attr.getType());
                 metrics.gauge(metricName, supplier);
             }
@@ -139,7 +143,7 @@ public class JmxExporterImplFactory {
                 return (T) server.getAttribute(name, attributeName);
             } catch (InstanceNotFoundException | AttributeNotFoundException | ReflectionException
                     | MBeanException e) {
-                LOG.warn("error when retrieving value for mbean {}/attribute {}",name, attributeName,e);
+                LOG.warn("error when retrieving value for MBean (objectname=[{}], attribute={})",name, attributeName,e);
                 return defaultValue;
             }
             

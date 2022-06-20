@@ -20,6 +20,7 @@ package org.apache.sling.whiteboard.jmxexporter.impl;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.never;
 
 import java.lang.management.ManagementFactory;
 import java.util.HashMap;
@@ -58,6 +59,12 @@ public class JmxExporterFactoryTest {
     @Captor
     ArgumentCaptor<Supplier<Long>> longSupplierCaptor;
     
+    @Captor
+    ArgumentCaptor<Supplier<String>> stringSupplierCaptor;
+    
+    @Captor
+    ArgumentCaptor<Supplier<Double>> doubleSupplierCaptor;
+    
     JmxExporterImplFactory exporter;
     
     private static final String OBJECT_NAME_0 = "org.apache.sling.whiteboard.jmxexporter.impl0:type=sample1";
@@ -69,9 +76,15 @@ public class JmxExporterFactoryTest {
     
     private static final String EXPECTED_0_INT_NAME  = "org.apache.sling.whiteboard.jmxexporter.impl0.sample1.Int";
     private static final String EXPECTED_0_LONG_NAME = "org.apache.sling.whiteboard.jmxexporter.impl0.sample1.Long";
+    private static final String EXPECTED_0_STRING_NAME = "org.apache.sling.whiteboard.jmxexporter.impl0.sample1.String";
+    private static final String EXPECTED_0_DOUBLE_NAME = "org.apache.sling.whiteboard.jmxexporter.impl0.sample1.Double";
     
     private static final String EXPECTED_1_INT_NAME  = "org.apache.sling.whiteboard.jmxexporter.impl0.impl2.sample2.Int";
     private static final String EXPECTED_1_LONG_NAME = "org.apache.sling.whiteboard.jmxexporter.impl0.impl2.sample2.Long";
+    
+    private static final String EXPECTED_2_INT_NAME  = "org.apache.sling.whiteboard.jmxexporter.impl1.sample3.Int";
+    
+    private static final Double STATIC_DOUBLE = 1.0;
     
     MetricsService metrics;
     
@@ -97,7 +110,6 @@ public class JmxExporterFactoryTest {
         props.put("objectnames", new String[]{OBJECT_NAME_QUERY});
         context.registerInjectActivateService(exporter, props);
         
-        
         // Integer
         Mockito.verify(metrics).gauge(Mockito.eq(EXPECTED_0_INT_NAME), intSupplierCaptor.capture());
         assertEquals(new Integer(0),intSupplierCaptor.getValue().get());
@@ -109,6 +121,14 @@ public class JmxExporterFactoryTest {
         Mockito.verify(metrics).gauge(Mockito.eq(EXPECTED_0_LONG_NAME), longSupplierCaptor.capture());
         assertEquals(new Long(0L),longSupplierCaptor.getValue().get());
         
+        // String
+        Mockito.verify(metrics).gauge(Mockito.eq(EXPECTED_0_STRING_NAME), stringSupplierCaptor.capture());
+        assertEquals("sample",stringSupplierCaptor.getValue().get());
+        
+        // Double
+        Mockito.verify(metrics).gauge(Mockito.eq(EXPECTED_0_DOUBLE_NAME), doubleSupplierCaptor.capture());
+        assertEquals(STATIC_DOUBLE,doubleSupplierCaptor.getValue().get());
+        
         // MBean 1
         Mockito.verify(metrics).gauge(Mockito.eq(EXPECTED_1_INT_NAME), intSupplierCaptor.capture());
         assertEquals(new Integer(1),intSupplierCaptor.getValue().get());
@@ -116,6 +136,8 @@ public class JmxExporterFactoryTest {
         Mockito.verify(metrics).gauge(Mockito.eq(EXPECTED_1_LONG_NAME), longSupplierCaptor.capture());
         assertEquals(new Long(1L),longSupplierCaptor.getValue().get());
         
+        // verify that no metrics for MBean2 have been registered
+        Mockito.verify(metrics, never()).gauge(Mockito.eq(EXPECTED_2_INT_NAME), intSupplierCaptor.capture());
         
     }
     
@@ -144,6 +166,13 @@ public class JmxExporterFactoryTest {
             internalInt = value;
         }
         
+        public String getString() {
+            return "sample";
+        }
+        
+        public double getDouble() {
+            return STATIC_DOUBLE;
+        }
         
     }
     
@@ -152,6 +181,8 @@ public class JmxExporterFactoryTest {
         
         public int getInt();
         public long getLong();
+        public String getString();
+        public double getDouble();
         
     }
     
