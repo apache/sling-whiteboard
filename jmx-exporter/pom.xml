@@ -21,7 +21,7 @@
     <modelVersion>4.0.0</modelVersion>
     
     <artifactId>jmx-exporter</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.2</version>
     <name>jmx-exporter</name>
     <groupId>org.apache.sling.whiteboard</groupId>
     <description>org.apache.sling.whiteboard - jmx-exporter</description>
@@ -32,7 +32,7 @@
     </parent>
     
     <properties>
-      <project.build.outputTimestamp>0</project.build.outputTimestamp>
+      <project.build.outputTimestamp>1655724217</project.build.outputTimestamp>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     </properties>
@@ -191,4 +191,8 @@
             </build>
         </profile>
     </profiles>
+
+  <scm>
+    <tag>jmx-exporter-0.2</tag>
+  </scm>
 </project>
