@@ -192,7 +192,11 @@
         </profile>
     </profiles>
 
-  <scm>
-    <tag>jmx-exporter-0.2</tag>
-  </scm>
+    <scm>
+        <connection>scm:git:https://github.com/apache/sling-whiteboard.git</connection>:
+        <developerConnection>scm:git:git@github.com:apache/sling-whiteboard.git</developerConnection>
+        <url>https://github.com/apache/sling-whiteboard</url>
+	<tag>HEAD</tag>
+    </scm>
+
 </project>
