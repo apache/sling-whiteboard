@@ -1,0 +1,11 @@
+{
+    "id": "org.apache.sling:jaxrs-sample:1.0",
+    "configurations": {
+      "org.apache.aries.jax.rs.whiteboard~test": {
+        "enabled": true,
+        "jax.rs.whiteboard.name": "test",
+        "default.application.base": "/",
+        "osgi.http.whiteboard.context.select": "(osgi.http.whiteboard.context.name=org.apache.sling.test)"
+      }
+    }
+  }
