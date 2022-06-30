@@ -44,6 +44,14 @@
             <plugin>
                 <groupId>biz.aQute.bnd</groupId>
                 <artifactId>bnd-maven-plugin</artifactId>
+                <configuration>
+                    <bnd>
+                        <![CDATA[
+                        -fixupmessages "Classes found in the wrong directory"; restrict:=error; is:=warning
+                        -includeresource: glob-[0-9\.]*.jar;lib:=true
+                    ]]>
+                    </bnd>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
@@ -162,6 +170,13 @@
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.annotation.versioning</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.hrakaroo</groupId>
+            <artifactId>glob</artifactId>
+            <version>0.9.0</version>
+        </dependency>
+
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
