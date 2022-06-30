@@ -230,7 +230,13 @@ class SlingPost {
     this.log.silly(`Sending parameters: ${JSON.stringify(params)}`);
     const formData = new FormData();
     Object.keys(params).forEach((key) => {
-      formData.append(key, params[key]);
+      if (Array.isArray(params[key])) {
+        for (const val of params[key]) {
+          formData.append(key, val);
+        }
+      } else {
+        formData.append(key, params[key]);
+      }
     });
     const response = await fetch(`${this.config.url}${path}`, {
       method: "POST",
@@ -243,6 +249,8 @@ class SlingPost {
       body: formData,
     });
     if (!response.ok) {
+      const body = await response.text();
+      this.log.silly(`Retrieved error response: ${body}`);
       throw new Error(
         `Failed with invalid status: ${response.status} - ${response.statusText}`
       );
@@ -270,12 +278,13 @@ class SlingPost {
    * @param {string} [path] The path under which to upload the file. If not specified, the base path will be used to calculate the repository path.
    * @param {Object} [params] Additional parameters to send to the Apache Sling Post API
    */
-  async uploadFile(file, path, params) {
+  async uploadFile(file, path, params, fileName) {
     this.log.info(`Uploading files: ${file}`);
     const files = glob.sync(file);
     for (let idx in files) {
       const f = files[idx];
       const p = path || this.repositoryPath(mod_path.dirname(f));
+      const fn = fileName || mod_path.basename(f);
       this.log.debug(`Uploading file: ${f} to ${p}`);
       const formData = new FormData();
       if (params) {
@@ -284,7 +293,7 @@ class SlingPost {
           formData.append(key, params[key]);
         });
       }
-      formData.append(mod_path.basename(f), fs.createReadStream(f));
+      formData.append("*", fs.createReadStream(f), { filename: fn });
       const response = await fetch(`${this.config.url}${p}`, {
         method: "POST",
         headers: {
