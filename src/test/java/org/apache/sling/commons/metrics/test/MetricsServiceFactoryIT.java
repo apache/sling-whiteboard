@@ -54,6 +54,7 @@ public class MetricsServiceFactoryIT extends TestSupport {
             // Commons Metrics
             testBundle("bundle.filename"),
             mavenBundle().groupId("io.dropwizard.metrics").artifactId("metrics-core").versionAsInProject(),
+            mavenBundle().groupId("org.apache.commons").artifactId("commons-lang3").versionAsInProject(),
             junitBundles()
         );
     }
