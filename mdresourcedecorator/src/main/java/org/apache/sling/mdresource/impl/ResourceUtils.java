@@ -26,14 +26,12 @@ import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.Future;
 
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ValueMap;
-import org.apache.sling.api.wrappers.CompositeValueMap;
 import org.apache.sling.api.wrappers.ValueMapDecorator;
+import org.apache.sling.api.wrappers.ValueMapUtil;
 import org.apache.sling.mdresource.impl.ResourceConfiguration.SourceType;
 import org.apache.sling.mdresource.impl.md.MarkdownProcessor;
 import org.apache.sling.mdresource.impl.md.ProcessingInstructions;
@@ -112,7 +110,6 @@ public class ResourceUtils {
         if ( origProps == null ) {
             return new ValueMapDecorator(props);
         }
-        Future<V>
-        return new CompositeValueMap(new ValueMapDecorator(props), origProps);
+        return ValueMapUtil.merge(new ValueMapDecorator(props), origProps);
     }
 }
