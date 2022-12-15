@@ -61,7 +61,7 @@
         <dependency>
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.repoinit.parser</artifactId>
-            <version>1.6.10</version>
+            <version>1.8.0</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -93,6 +93,7 @@
                             <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
                             <postBuildHookScript>verify.groovy</postBuildHookScript>
                             <streamLogsOnFailures>true</streamLogsOnFailures>
+                            <debug>true</debug>
                             <!-- reuse global repo for speeding up builds
                             <localRepositoryPath>target/it-repo</localRepositoryPath> -->
                         </configuration>

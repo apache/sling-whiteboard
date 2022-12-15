@@ -56,6 +56,13 @@
                         </validatorsSettings>
                     </configuration>
                     <dependencies>
+                        <!-- override the parser dependency (explicit downgrade from 1.8.0) -->
+                        <dependency>
+                            <groupId>org.apache.sling</groupId>
+                            <artifactId>org.apache.sling.repoinit.parser</artifactId>
+                            <version>1.6.14</version>
+                            <scope>compile</scope>
+                        </dependency>
                         <dependency>
                             <groupId>@project.groupId@</groupId>
                             <artifactId>@project.artifactId@</artifactId>

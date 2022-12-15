@@ -23,6 +23,12 @@ You can use this validator with the [FileVault Package Maven Plugin][2] in versi
       <artifactId>org.apache.sling.repoinit.filevault.validator</artifactId>
       <version><latestversion></version>
     </dependency>
+    <!-- use the following dependency to optionally overwrite the used repoinit parser version (default=1.8.0) -->
+    <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.repoinit.parser</artifactId>
+      <version>1.8.0</version>
+    </dependency>
   </dependencies>
 </plugin>
 ```
