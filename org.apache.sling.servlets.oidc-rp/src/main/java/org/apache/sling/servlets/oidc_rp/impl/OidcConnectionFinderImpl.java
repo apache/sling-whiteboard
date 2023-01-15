@@ -62,7 +62,7 @@ public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConne
             Value[] expiresAt = user.getProperty(propertyPath(PROPERTY_NAME_EXPIRES_AT));
             if ( expiresAt != null  && expiresAt.length == 1 && expiresAt[0].getType() == PropertyType.DATE ) {
                 Calendar expiresCal = expiresAt[0].getDate();
-                if ( expiresCal.after(Calendar.getInstance())) {
+                if ( expiresCal.before(Calendar.getInstance())) {
                     logger.info("Token for {} expired at {}, removing", connection.name(), expiresCal);
                     user.removeProperty(nodePath()); // unsure if this will work ...
                     return Optional.empty();
