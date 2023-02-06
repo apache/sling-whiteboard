@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.apache.sling</groupId>
         <artifactId>sling-bundle-parent</artifactId>
-        <version>47</version>
+        <version>49</version>
         <relativePath/>
     </parent>
 
@@ -104,6 +104,26 @@
             <artifactId>org.apache.sling.commons.johnzon</artifactId>
             <version>1.0.0</version>
             <scope>provided</scope>
+        </dependency>
+        
+        <!-- test dependencies -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.9.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.24.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.sling</groupId>
+            <artifactId>org.apache.sling.testing.clients</artifactId>
+            <version>3.0.18</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
