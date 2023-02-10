@@ -137,6 +137,12 @@ scopes: openid
 - complete the login flow
 - navigate in composum to the user name of the admin user and verify that the 'oidc-tokens' node contains a keycloak node with the respective access_token and refresh_token properties 
 
+#### Exporting the test realm
+
+```
+$ docker run --rm --volume (pwd)/keycloak-data:/opt/keycloak/data -p 8081:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin quay.io/keycloak/keycloak:20.0.3 export --realm sling --dir /opt/keycloak/data/export
+```
+
 ## Whiteboard graduation TODO 
 
 - bundle/package should probably be org.apache.sling.extensions.oidc-rp, as the primary entry point is the Java API

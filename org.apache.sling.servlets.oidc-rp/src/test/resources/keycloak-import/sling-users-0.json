@@ -1,0 +1,26 @@
+{
+  "realm" : "sling",
+  "users" : [ {
+    "id" : "968d808c-5923-41b9-b96c-ca72b1fe9339",
+    "createdTimestamp" : 1676046477062,
+    "username" : "test",
+    "enabled" : true,
+    "totp" : false,
+    "emailVerified" : false,
+    "firstName" : "",
+    "lastName" : "",
+    "credentials" : [ {
+      "id" : "1e4b9853-4b98-4f7d-aee0-ee1ce151bcf7",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1676046529270,
+      "secretData" : "{\"value\":\"H4t6rcOHTueKwCD27MrQ0hbGiODFgGE9KOOOwT+Zfo5Nco12lgsHdU/F5Ny0uK3WU728ijN5iufHKQnjSKnyjQ==\",\"salt\":\"QBpLiI1/SNdwxs/JfEw/CQ==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\",\"additionalParameters\":{}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-sling" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  } ]
+}

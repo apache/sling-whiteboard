@@ -41,15 +41,28 @@ import org.apache.sling.testing.clients.ClientException;
 import org.apache.sling.testing.clients.SlingClient;
 import org.apache.sling.testing.clients.SlingHttpResponse;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.nimbusds.jwt.SignedJWT;
 
+import dasniko.testcontainers.keycloak.KeycloakContainer;
+
+@Testcontainers
 class AuthorizationCodeFlowIT {
     
+    @Container
+    KeycloakContainer keycloak = new KeycloakContainer("quay.io/keycloak/keycloak:20.0.3")
+        .withRealmImportFiles("keycloak-import/sling-realm.json",  "keycloak-import/sling-users-0.json");
+
     @Test
     void accessTokenIsPresentOnSuccessfulLogin() throws Exception {
+        
+//        int keycloakPort = 8081;
+        int keycloakPort = keycloak.getHttpPort();
+
         // two parts
         // - local app on port 8080
         // - keycloak on port 8081
@@ -65,11 +78,14 @@ class AuthorizationCodeFlowIT {
         sling.deletePath(userPath + "/oidc-tokens/keycloak", 200);
         sling.doGet(userPath + "/oidc-tokens/keycloak", 404);
         
+        // TODO - install OSGi config pointing to KeyCloak
+        
+        
         // kick off oidc auth
         SlingHttpResponse entryPointResponse = sling.doGet("/system/sling/oidc/entry-point", 302);
         Header locationHeader = entryPointResponse.getFirstHeader("location");
         assertThat(locationHeader.getElements()).as("Location header value from entry-point request")
-            .singleElement().asString().startsWith("http://localhost:8081");
+            .singleElement().asString().startsWith("http://localhost:" + keycloakPort);
         
         String locationHeaderValue = locationHeader.getValue();
         
