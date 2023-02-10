@@ -43,6 +43,92 @@
 				<groupId>biz.aQute.bnd</groupId>
 				<artifactId>bnd-maven-plugin</artifactId>
 			</plugin>
+            <plugin>
+                <groupId>org.apache.sling</groupId>
+                <artifactId>slingfeature-maven-plugin</artifactId>
+                <version>1.6.8</version>
+                <extensions>true</extensions>
+
+                <configuration>
+                    <skipAddFeatureDependencies>true</skipAddFeatureDependencies>
+                    <framework>
+                        <groupId>org.apache.felix</groupId>
+                        <artifactId>org.apache.felix.framework</artifactId>
+                        <version>7.0.5</version>
+                    </framework>
+
+                    <!--
+                        Prepares a feature model aggregate that takes the following features from
+                        the Sling Starter:
+                        - nosample_base - the base Sling Starter
+                        - oak_persistence_sns - SegmentNodeStore persistence for Oak
+                        - composum - The Composum Nodes administration tool
+                        Notably missing are the slingshot and starter samples
+                     -->
+                    <aggregates>
+                        <aggregate>
+                            <classifier>app</classifier>
+                            <filesInclude>*.json</filesInclude>
+                            <includeArtifact>
+                                <groupId>org.apache.sling</groupId>
+                                <artifactId>org.apache.sling.starter</artifactId>
+                                <classifier>nosample_base</classifier>
+                                <version>13-SNAPSHOT</version>
+                                <type>slingosgifeature</type>
+                            </includeArtifact>
+                            <includeArtifact>
+                                <groupId>org.apache.sling</groupId>
+                                <artifactId>org.apache.sling.starter</artifactId>
+                                <classifier>oak_persistence_sns</classifier>
+                                <version>13-SNAPSHOT</version>
+                                <type>slingosgifeature</type>
+                            </includeArtifact>
+                            <includeArtifact>
+                                <groupId>org.apache.sling</groupId>
+                                <artifactId>org.apache.sling.starter</artifactId>
+                                <classifier>composum</classifier>
+                                <version>13-SNAPSHOT</version>
+                                <type>slingosgifeature</type>
+                            </includeArtifact>
+                        </aggregate>
+                    </aggregates>
+                    <scans>
+                        <scan>
+                            <includeClassifier>app</includeClassifier>
+                        </scan>
+                    </scans>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>prepare-features</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>aggregate-features</goal>
+                            <goal>analyse-features</goal>
+                            <goal>attach-features</goal>
+                        </goals>
+                    </execution>
+               </executions>
+            </plugin>
+            <!-- 
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>prepare-feature-launcher</id>
+                        <goals>
+                            <goal>get</goal>
+                            <goal>copy</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <artifact>org.apache.sling:org.apache.sling.feature.launcher:\${org.apache.sling.feature.launcher.version}</artifact>
+                            <stripVersion>true</stripVersion>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+             -->
 		</plugins>
 	</build>
 	<dependencies>
@@ -117,6 +203,11 @@
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
             <version>3.24.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
