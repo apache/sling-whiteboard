@@ -40,6 +40,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.sling.testing.clients.ClientException;
 import org.apache.sling.testing.clients.SlingClient;
 import org.apache.sling.testing.clients.SlingHttpResponse;
+import org.apache.sling.testing.clients.osgi.OsgiConsoleClient;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -55,31 +56,35 @@ class AuthorizationCodeFlowIT {
     
     @Container
     KeycloakContainer keycloak = new KeycloakContainer("quay.io/keycloak/keycloak:20.0.3")
-        .withRealmImportFiles("keycloak-import/sling-realm.json",  "keycloak-import/sling-users-0.json");
+        .withRealmImportFile("keycloak-import/sling.json");
 
     @Test
     void accessTokenIsPresentOnSuccessfulLogin() throws Exception {
-        
-//        int keycloakPort = 8081;
         int keycloakPort = keycloak.getHttpPort();
 
         // two parts
         // - local app on port 8080
         // - keycloak on port 8081
         
-        // TODO 
-        // 1. automatically start keycloak (test containers?) and import data
-        // 2. lookup external sling app from a env settting ( and start using maven infrastructure )
+        // TODO - lookup external sling app from a env settting ( and start using maven infrastructure )
 
         SlingClient sling = SlingClient.Builder.create(URI.create("http://localhost:8080"), "admin", "admin").disableRedirectHandling().build();
+
+        // configure connection to keycloak
+        sling.adaptTo(OsgiConsoleClient.class).editConfiguration("org.apache.sling.servlets.oidc_rp.impl.OidcConnectionImpl",null, 
+                Map.of(
+                    "name", "keycloak", 
+                    "baseUrl", "http://localhost:" + keycloakPort+"/realms/sling",
+                    "clientId", "oidc-test",
+                    "clientSecret", "wM2XIbxBTLJAac2rJSuHyKaoP8IWvSwJ",
+                    "scopes", "openid"
+                )
+            );
         
         // clean up any existing tokens
         String userPath = getUserPath(sling, sling.getUser());
         sling.deletePath(userPath + "/oidc-tokens/keycloak", 200);
         sling.doGet(userPath + "/oidc-tokens/keycloak", 404);
-        
-        // TODO - install OSGi config pointing to KeyCloak
-        
         
         // kick off oidc auth
         SlingHttpResponse entryPointResponse = sling.doGet("/system/sling/oidc/entry-point", 302);
