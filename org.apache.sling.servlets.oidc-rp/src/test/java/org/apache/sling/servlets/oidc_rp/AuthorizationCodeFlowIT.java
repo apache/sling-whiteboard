@@ -61,14 +61,13 @@ class AuthorizationCodeFlowIT {
     @Test
     void accessTokenIsPresentOnSuccessfulLogin() throws Exception {
         int keycloakPort = keycloak.getHttpPort();
+        int slingPort = Integer.getInteger("sling.http.port", 8080);
 
         // two parts
         // - local app on port 8080
         // - keycloak on port 8081
         
-        // TODO - lookup external sling app from a env settting ( and start using maven infrastructure )
-
-        SlingClient sling = SlingClient.Builder.create(URI.create("http://localhost:8080"), "admin", "admin").disableRedirectHandling().build();
+        SlingClient sling = SlingClient.Builder.create(URI.create("http://localhost:" + slingPort), "admin", "admin").disableRedirectHandling().build();
 
         // configure connection to keycloak
         sling.adaptTo(OsgiConsoleClient.class).editConfiguration("org.apache.sling.servlets.oidc_rp.impl.OidcConnectionImpl",null, 

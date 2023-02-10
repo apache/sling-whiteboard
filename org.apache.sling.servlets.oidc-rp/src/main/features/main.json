@@ -1,0 +1,36 @@
+{
+  "bundles": [
+    {
+        "id":"com.nimbusds:oauth2-oidc-sdk:9.35",
+        "start-order": 24
+    },
+    {
+        "id":"com.nimbusds:nimbus-jose-jwt:9.22",
+        "start-order": 24
+    },
+    {
+        "id":"com.nimbusds:content-type:2.2",
+        "start-order": 24
+    },
+    {
+       "id":"com.nimbusds:lang-tag:1.6",
+        "start-order": 24
+    },
+    {
+        "id":"org.apache.servicemix.bundles:org.apache.servicemix.bundles.jcip-annotations:1.0_2",
+        "start-order": 24
+    },
+    {
+        "id":"net.minidev:json-smart:2.4.8",
+        "start-order": 24
+    },
+    {
+        "id":"net.minidev:accessors-smart:2.4.8",
+        "start-order": 24
+     },
+    {
+        "id": "org.apache.sling:org.apache.sling.servlets.oidc-rp:${project.version}",
+        "start-order": 25
+    }
+  ]
+}

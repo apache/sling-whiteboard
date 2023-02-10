@@ -44,11 +44,26 @@
 				<artifactId>bnd-maven-plugin</artifactId>
 			</plugin>
             <plugin>
+               <artifactId>maven-failsafe-plugin</artifactId>
+               <executions>
+                   <execution>
+                       <goals>
+                           <goal>integration-test</goal>
+                           <goal>verify</goal>
+                       </goals>
+                   </execution>
+               </executions>
+               <configuration>
+                   <systemPropertyVariables>
+                       <sling.http.port>${http.port}/</sling.http.port>
+                   </systemPropertyVariables>
+               </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.sling</groupId>
                 <artifactId>slingfeature-maven-plugin</artifactId>
                 <version>1.6.8</version>
                 <extensions>true</extensions>
-
                 <configuration>
                     <skipAddFeatureDependencies>true</skipAddFeatureDependencies>
                     <framework>
@@ -110,25 +125,86 @@
                     </execution>
                </executions>
             </plugin>
-            <!-- 
+            <!-- reserve network ports for the integration tests -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>reserve-network-port</id>
+                        <goals>
+                            <goal>reserve-network-port</goal>
+                        </goals>
+                        <phase>pre-integration-test</phase>
+                        <configuration>
+                            <portNames>
+                                <portName>http.port</portName>
+                            </portNames>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
                         <id>prepare-feature-launcher</id>
                         <goals>
-                            <goal>get</goal>
-                            <goal>copy</goal>
+                            <goal>unpack</goal>
                         </goals>
                         <phase>package</phase>
                         <configuration>
-                            <artifact>org.apache.sling:org.apache.sling.feature.launcher:\${org.apache.sling.feature.launcher.version}</artifact>
-                            <stripVersion>true</stripVersion>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.apache.sling</groupId>
+                                    <artifactId>org.apache.sling.feature.launcher</artifactId>
+                                    <version>1.2.4</version>
+                                    <type>tar.gz</type>
+                                    <!-- remove the version number from the unpacked folder -->
+                                    <fileMappers>
+                                        <org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+                                            <pattern>\Qorg.apache.sling.feature.launcher-1.2.4\E</pattern>
+                                            <replacement>org.apache.sling.feature.launcher</replacement>
+                                        </org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+                                    </fileMappers>
+                                </artifactItem>
+                            </artifactItems>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-             -->
+            <plugin>
+                <groupId>org.apache.sling</groupId>
+                <artifactId>feature-launcher-maven-plugin</artifactId>
+                <version>0.1.4</version>
+                <configuration>
+                    <launches>
+                        <launch>
+                            <id>sling-starter-oak-tar</id>
+                            <feature>
+                                <groupId>${project.groupId}</groupId>
+                                <artifactId>${project.artifactId}</artifactId>
+                                <version>${project.version}</version>
+                                <classifier>app</classifier>
+                                <type>slingosgifeature</type>
+                            </feature>
+                            <launcherArguments>
+                                <frameworkProperties>
+                                    <org.osgi.service.http.port>${http.port}</org.osgi.service.http.port>
+                                </frameworkProperties>
+                            </launcherArguments>
+                        </launch>
+                    </launches>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>start</goal>
+                            <goal>stop</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 		</plugins>
 	</build>
 	<dependencies>
