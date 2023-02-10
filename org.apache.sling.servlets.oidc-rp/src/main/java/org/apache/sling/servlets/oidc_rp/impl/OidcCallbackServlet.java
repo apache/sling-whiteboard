@@ -100,6 +100,7 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
 
             String authCode = authResponse.toSuccessResponse().getAuthorizationCode().getValue();
 
+            // TODO - this code should be extracted and reused to refresh the access token with a refresh token, if present
             HttpClient client = HttpClient.newHttpClient();
             Endpoints ep = Endpoints.discover(connection.baseUrl(), client);
 
@@ -125,6 +126,7 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
             stateManager.unregisterState(authResponse.getState());
 
             String accessToken;
+            String refreshToken = null;
             ZonedDateTime expiry = null;
 
             try ( JsonReader reader = Json.createReader(new StringReader(tokenResponse.body())) ) {
@@ -134,9 +136,10 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
                 if ( expiresIn != null ) {
                     expiry = LocalDateTime.now().plus(expiresIn.intValue(), ChronoUnit.SECONDS).atZone(ZoneId.systemDefault());
                 }
+                refreshToken = tokenObject.getString("refresh_token", null);
             }
 
-            persister.persistToken(request.getResourceResolver(), accessToken, expiry);
+            persister.persistToken(request.getResourceResolver(), accessToken, refreshToken, expiry);
 
             if ( redirect.isEmpty() ) {
                 response.setStatus(HttpServletResponse.SC_OK);

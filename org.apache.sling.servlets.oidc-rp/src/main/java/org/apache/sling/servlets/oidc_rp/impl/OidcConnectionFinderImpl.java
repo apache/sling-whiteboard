@@ -43,7 +43,8 @@ import org.slf4j.LoggerFactory;
 public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConnectionPersister {
 
     private static final String PROPERTY_NAME_EXPIRES_AT = "expiresAt";
-    private static final String PROPERTY_NAME_TOKEN = "token";
+    private static final String PROPERTY_NAME_ACCESS_TOKEN = "access_token";
+    private static final String PROPERTY_NAME_REFRESH_TOKEN = "refresh_token";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -68,8 +69,10 @@ public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConne
                     return Optional.empty();
                 }
             }
+            
+            // TODO - how to handle scenario when access_token is null but refresh_token exists?
 
-            Value[] tokenValue = user.getProperty(propertyPath(PROPERTY_NAME_TOKEN));
+            Value[] tokenValue = user.getProperty(propertyPath(PROPERTY_NAME_ACCESS_TOKEN));
             if ( tokenValue == null )
                 return Optional.empty();
 
@@ -83,15 +86,22 @@ public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConne
     }
 
     @Override
-    public void persistToken(ResourceResolver resolver, String tokenValue, ZonedDateTime expiry) {
+    public void persistToken(ResourceResolver resolver, String tokenValue, String refreshToken, ZonedDateTime expiry) {
         try {
             User currentUser = resolver.adaptTo(User.class);
             Session session = resolver.adaptTo(Session.class);
-            currentUser.setProperty(propertyPath(PROPERTY_NAME_TOKEN), session.getValueFactory().createValue(tokenValue));
+            currentUser.setProperty(propertyPath(PROPERTY_NAME_ACCESS_TOKEN), session.getValueFactory().createValue(tokenValue));
             if ( expiry != null ) {
                 Calendar cal = GregorianCalendar.from(expiry);
                 currentUser.setProperty(propertyPath(PROPERTY_NAME_EXPIRES_AT), session.getValueFactory().createValue(cal));
-            }
+            } else
+                currentUser.removeProperty(propertyPath(PROPERTY_NAME_EXPIRES_AT));
+            
+            if ( refreshToken != null )
+                currentUser.setProperty(propertyPath(PROPERTY_NAME_REFRESH_TOKEN), session.getValueFactory().createValue(refreshToken));
+            else
+                currentUser.removeProperty(propertyPath(PROPERTY_NAME_REFRESH_TOKEN));
+            
             session.save();
         } catch (RepositoryException e) {
             throw new RuntimeException(e);

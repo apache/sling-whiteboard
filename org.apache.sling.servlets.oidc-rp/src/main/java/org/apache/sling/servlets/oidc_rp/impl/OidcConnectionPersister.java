@@ -22,5 +22,5 @@ import org.apache.sling.api.resource.ResourceResolver;
 
 public interface OidcConnectionPersister {
 
-    void persistToken(ResourceResolver resourceResolver, String tokenValue, ZonedDateTime expiry);
+    void persistToken(ResourceResolver resourceResolver, String tokenValue, String refreshToken, ZonedDateTime expiry);
 }
