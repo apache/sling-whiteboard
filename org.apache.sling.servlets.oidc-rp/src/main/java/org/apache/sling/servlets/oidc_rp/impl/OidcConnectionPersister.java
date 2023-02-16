@@ -19,8 +19,9 @@ package org.apache.sling.servlets.oidc_rp.impl;
 import java.time.ZonedDateTime;
 
 import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.servlets.oidc_rp.OidcConnection;
 
 public interface OidcConnectionPersister {
 
-    void persistToken(ResourceResolver resourceResolver, String tokenValue, String refreshToken, ZonedDateTime expiry);
+    void persistToken(OidcConnection connection, ResourceResolver resourceResolver, String tokenValue, String refreshToken, ZonedDateTime expiry);
 }

@@ -54,6 +54,7 @@ import dasniko.testcontainers.keycloak.KeycloakContainer;
 @Testcontainers
 class AuthorizationCodeFlowIT {
     
+    // TODO - allow not starting the container if we 'promise' an instance already exists
     @Container
     KeycloakContainer keycloak = new KeycloakContainer("quay.io/keycloak/keycloak:20.0.3")
         .withRealmImportFile("keycloak-import/sling.json");
@@ -62,6 +63,7 @@ class AuthorizationCodeFlowIT {
     void accessTokenIsPresentOnSuccessfulLogin() throws Exception {
         int keycloakPort = keycloak.getHttpPort();
         int slingPort = Integer.getInteger("sling.http.port", 8080);
+        String oidcConnectionName = "keycloak";
 
         // two parts
         // - local app on port 8080
@@ -70,9 +72,10 @@ class AuthorizationCodeFlowIT {
         SlingClient sling = SlingClient.Builder.create(URI.create("http://localhost:" + slingPort), "admin", "admin").disableRedirectHandling().build();
 
         // configure connection to keycloak
-        sling.adaptTo(OsgiConsoleClient.class).editConfiguration("org.apache.sling.servlets.oidc_rp.impl.OidcConnectionImpl",null, 
+        // TODO - create factory config
+        sling.adaptTo(OsgiConsoleClient.class).editConfiguration("org.apache.sling.servlets.oidc_rp.impl.OidcConnectionImpl","org.apache.sling.servlets.oidc_rp.impl.OidcConnectionImpl", 
                 Map.of(
-                    "name", "keycloak", 
+                    "name", oidcConnectionName, 
                     "baseUrl", "http://localhost:" + keycloakPort+"/realms/sling",
                     "clientId", "oidc-test",
                     "clientSecret", "wM2XIbxBTLJAac2rJSuHyKaoP8IWvSwJ",
@@ -82,11 +85,11 @@ class AuthorizationCodeFlowIT {
         
         // clean up any existing tokens
         String userPath = getUserPath(sling, sling.getUser());
-        sling.deletePath(userPath + "/oidc-tokens/keycloak", 200);
-        sling.doGet(userPath + "/oidc-tokens/keycloak", 404);
+        sling.deletePath(userPath + "/oidc-tokens/" + oidcConnectionName, 200);
+        sling.doGet(userPath + "/oidc-tokens/" + oidcConnectionName, 404);
         
         // kick off oidc auth
-        SlingHttpResponse entryPointResponse = sling.doGet("/system/sling/oidc/entry-point", 302);
+        SlingHttpResponse entryPointResponse = sling.doGet("/system/sling/oidc/entry-point", List.of(new BasicNameValuePair("c", oidcConnectionName)), 302);
         Header locationHeader = entryPointResponse.getFirstHeader("location");
         assertThat(locationHeader.getElements()).as("Location header value from entry-point request")
             .singleElement().asString().startsWith("http://localhost:" + keycloakPort);
@@ -134,7 +137,7 @@ class AuthorizationCodeFlowIT {
             .collect(Collectors.toList());
         sling.doGet(redirectUri.getRawPath(), params, 200);
         
-        JsonNode keycloakToken = sling.doGetJson(userPath + "/oidc-tokens/keycloak",0,  200);
+        JsonNode keycloakToken = sling.doGetJson(userPath + "/oidc-tokens/" + oidcConnectionName,0,  200);
         String accesToken = keycloakToken.get("access_token").asText();
         // validate that the JWT is valid; we trust what keycloak has returned but just want to ensure that
         // the token was stored correctly

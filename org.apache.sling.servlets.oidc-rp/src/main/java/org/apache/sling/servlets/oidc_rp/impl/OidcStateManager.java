@@ -37,6 +37,7 @@ class OidcStateManager {
 
     private static final String SESSION_ATTRIBUTE_KEY_PREFIX = OidcStateManager.class.getName();
     static final String PARAMETER_NAME_REDIRECT = "redirect";
+    static final String PARAMETER_NAME_CONNECTION = "connection";
 
     private static String attributeKey(State state) {
         return SESSION_ATTRIBUTE_KEY_PREFIX + "." + state.toString();

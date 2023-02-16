@@ -36,6 +36,7 @@ record Endpoints(String authorizationEndpoint, String tokenEndpoint) {
     private static final Logger logger = LoggerFactory.getLogger(Endpoints.class);
 
     // TODO - cache endpoints, move to service?
+    // TODO - can we reuse code from the Nimbus SDK?
     static Endpoints discover(String base, HttpClient client) throws IOException, InterruptedException {
         logger.info("Initiating discovery request for baseUrl {}", base);
         HttpRequest discoveryRequest = HttpRequest.newBuilder()

@@ -16,6 +16,8 @@
  */
 package org.apache.sling.servlets.oidc_rp.impl;
 
+import static org.osgi.service.component.annotations.ReferencePolicyOption.GREEDY;
+
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
@@ -33,8 +35,10 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.json.Json;
@@ -50,9 +54,12 @@ import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.servlets.annotations.SlingServletPaths;
+import org.apache.sling.servlets.oidc_rp.OidcConnection;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.openid.connect.sdk.AuthenticationErrorResponse;
@@ -67,7 +74,8 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
 
     private static final long serialVersionUID = 1L;
 
-    private final OidcConnection connection;
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Map<String, OidcConnection> connections;
     private final OidcConnectionPersister persister;
 
     static String getCallbackUri(HttpServletRequest request) {
@@ -75,16 +83,15 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
     }
 
     @Activate
-    public OidcCallbackServlet(@Reference OidcConnection connection, @Reference OidcConnectionPersister persister) {
-        this.connection = connection;
+    public OidcCallbackServlet(@Reference(policyOption = GREEDY) List<OidcConnection> connections, @Reference OidcConnectionPersister persister) {
+        this.connections = connections.stream()
+                .collect(Collectors.toMap( OidcConnection::name, Function.identity()));
         this.persister = persister;
     }
 
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response)
             throws ServletException, IOException {
-        if ( connection.baseUrl() == null )
-            throw new ServletException("Misconfigured baseUrl");
         try {
             StringBuffer requestURL = request.getRequestURL();
             if ( request.getQueryString() != null )
@@ -99,7 +106,23 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
                 throw new ServletException(authResponse.toErrorResponse().getErrorObject().toString());
 
             String authCode = authResponse.toSuccessResponse().getAuthorizationCode().getValue();
+            
+            Optional<String> desiredConnectionName = stateManager.getStateAttribute(authResponse.getState(), OidcStateManager.PARAMETER_NAME_CONNECTION);
+            if ( desiredConnectionName.isEmpty() ) {
+                logger.debug("Did not find any connection in stateManager");
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST);  
+                return;
+            }
+            OidcConnection connection = connections.get(desiredConnectionName.get());
+            if ( connection == null ) {
+                logger.debug("Requested unknown connection {}", desiredConnectionName.get());
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
 
+            if ( connection.baseUrl() == null )
+                throw new ServletException("Misconfigured baseUrl");
+            
             // TODO - this code should be extracted and reused to refresh the access token with a refresh token, if present
             HttpClient client = HttpClient.newHttpClient();
             Endpoints ep = Endpoints.discover(connection.baseUrl(), client);
@@ -139,7 +162,7 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
                 refreshToken = tokenObject.getString("refresh_token", null);
             }
 
-            persister.persistToken(request.getResourceResolver(), accessToken, refreshToken, expiry);
+            persister.persistToken(connection, request.getResourceResolver(), accessToken, refreshToken, expiry);
 
             if ( redirect.isEmpty() ) {
                 response.setStatus(HttpServletResponse.SC_OK);

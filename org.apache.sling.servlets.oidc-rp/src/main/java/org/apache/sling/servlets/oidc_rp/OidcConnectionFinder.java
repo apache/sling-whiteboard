@@ -22,7 +22,6 @@ import java.util.Optional;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.resource.ResourceResolver;
 
-// TODO - support more than one connection
 // TODO - bad name
 public interface OidcConnectionFinder {
 
@@ -32,7 +31,7 @@ public interface OidcConnectionFinder {
     // 1b. not found → redirect to oidc entry point uri
     // 2. after callback, redirect back to same page (how, cookie?)
     // see https://github.com/panva/node-openid-client/issues/83
-    Optional<String> getOidcToken(ResourceResolver resolver);
+    Optional<String> getOidcToken(OidcConnection connection, ResourceResolver resolver);
 
-    URI getOidcEntryPointUri(SlingHttpServletRequest request, String redirectPath);
+    URI getOidcEntryPointUri(OidcConnection connection, SlingHttpServletRequest request, String redirectPath);
 }

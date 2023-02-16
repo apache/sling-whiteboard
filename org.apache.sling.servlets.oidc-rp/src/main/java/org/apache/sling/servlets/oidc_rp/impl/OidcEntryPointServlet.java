@@ -16,23 +16,33 @@
  */
 package org.apache.sling.servlets.oidc_rp.impl;
 
+import static org.apache.sling.servlets.oidc_rp.impl.OidcStateManager.PARAMETER_NAME_CONNECTION;
 import static org.apache.sling.servlets.oidc_rp.impl.OidcStateManager.PARAMETER_NAME_REDIRECT;
+import static org.osgi.service.component.annotations.ReferencePolicyOption.GREEDY;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.servlets.annotations.SlingServletPaths;
+import org.apache.sling.servlets.oidc_rp.OidcConnection;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.nimbusds.oauth2.sdk.ResponseType;
 import com.nimbusds.oauth2.sdk.Scope;
@@ -47,15 +57,34 @@ public class OidcEntryPointServlet extends SlingAllMethodsServlet {
     private static final long serialVersionUID = 1L;
 
     static final String PATH = "/system/sling/oidc/entry-point"; // NOSONAR
-    private final OidcConnection connection;
+    
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+    
+    private final Map<String, OidcConnection> connections;
 
     @Activate
-    public OidcEntryPointServlet(@Reference OidcConnection connection) {
-        this.connection = connection;
+    public OidcEntryPointServlet(@Reference(policyOption = GREEDY) List<OidcConnection> connections) {
+        this.connections = connections.stream()
+                .collect(Collectors.toMap( OidcConnection::name, Function.identity()));
     }
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response)
             throws ServletException, IOException {
+        
+        String desiredConnectionName = request.getParameter("c");
+        if ( desiredConnectionName == null ) {
+            logger.debug("Missing mandatory request parameter 'c'");
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        }
+
+        OidcConnection connection = connections.get(desiredConnectionName);
+        if ( connection == null ) {
+            logger.debug("Client requested unknown connection {}; known: {}", desiredConnectionName, connections.keySet());
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        }
+        
         if ( connection.baseUrl() == null )
             throw new ServletException("Misconfigured baseUrl");
         try {
@@ -72,6 +101,7 @@ public class OidcEntryPointServlet extends SlingAllMethodsServlet {
             State state = new State();
             OidcStateManager stateManager = OidcStateManager.stateFor(request);
             stateManager.registerState(state);
+            stateManager.putAttribute(state, PARAMETER_NAME_CONNECTION, desiredConnectionName);
             if ( request.getParameter(PARAMETER_NAME_REDIRECT) != null )
                 stateManager.putAttribute(state, PARAMETER_NAME_REDIRECT, request.getParameter(PARAMETER_NAME_REDIRECT));
 
@@ -79,8 +109,15 @@ public class OidcEntryPointServlet extends SlingAllMethodsServlet {
             Nonce nonce = new Nonce();
 
             // Compose the OpenID authentication request (for the code flow)
-            AuthenticationRequest authRequest = new AuthenticationRequest.Builder(new ResponseType("code"), new Scope(connection.scopes()),
-                    clientID, callback).endpointURI(new URI(ep.authorizationEndpoint())).state(state).nonce(nonce).build();
+            AuthenticationRequest authRequest = new AuthenticationRequest.Builder(
+                    new ResponseType("code"),
+                    new Scope(connection.scopes()),
+                    clientID, callback)
+                .endpointURI(new URI(ep.authorizationEndpoint()))
+                .state(state)
+                .nonce(nonce)
+                .customParameter("access_type", "offline") // request refresh token. TODO - is this Google-specific?
+                .build();
 
             response.sendRedirect(authRequest.toURI().toString());
         } catch (URISyntaxException e) {

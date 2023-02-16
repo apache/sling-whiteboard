@@ -16,6 +16,7 @@
  */
 package org.apache.sling.servlets.oidc_rp.impl;
 
+import org.apache.sling.servlets.oidc_rp.OidcConnection;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
@@ -25,7 +26,7 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
 // TODO - bad name
 @Component
-@Designate(ocd = OidcConnectionImpl.Config.class)
+@Designate(ocd = OidcConnectionImpl.Config.class, factory = true)
 public class OidcConnectionImpl implements OidcConnection{
 
     @ObjectClassDefinition(name = "OpenID Connect connection details")
@@ -35,6 +36,8 @@ public class OidcConnectionImpl implements OidcConnection{
         String clientId();
         @AttributeDefinition(type = AttributeType.PASSWORD) String clientSecret();
         String[] scopes();
+        
+        String webconsole_configurationFactory_nameHint() default "Name: {name}, base URL: {baseUrl}, clientId: {clientId}";
     }
 
     private Config cfg;
