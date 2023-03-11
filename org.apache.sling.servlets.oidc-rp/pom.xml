@@ -55,7 +55,7 @@
                </executions>
                <configuration>
                    <systemPropertyVariables>
-                       <sling.http.port>${http.port}/</sling.http.port>
+                       <sling.http.port>${http.port}</sling.http.port>
                    </systemPropertyVariables>
                </configuration>
             </plugin>
@@ -95,6 +95,13 @@
                                 <groupId>org.apache.sling</groupId>
                                 <artifactId>org.apache.sling.starter</artifactId>
                                 <classifier>oak_persistence_sns</classifier>
+                                <version>13-SNAPSHOT</version>
+                                <type>slingosgifeature</type>
+                            </includeArtifact>
+                            <includeArtifact>
+                                <groupId>org.apache.sling</groupId>
+                                <artifactId>org.apache.sling.starter</artifactId>
+                                <classifier>starter</classifier>
                                 <version>13-SNAPSHOT</version>
                                 <type>slingosgifeature</type>
                             </includeArtifact>

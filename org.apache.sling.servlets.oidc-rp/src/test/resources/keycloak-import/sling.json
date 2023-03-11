@@ -539,7 +539,7 @@
     "alwaysDisplayInConsole" : false,
     "clientAuthenticatorType" : "client-secret",
     "secret" : "wM2XIbxBTLJAac2rJSuHyKaoP8IWvSwJ",
-    "redirectUris" : [ "http://localhost:8080/system/sling/oidc/callback" ],
+    "redirectUris" : [ "http://localhost*" ],
     "webOrigins" : [ ],
     "notBefore" : 0,
     "bearerOnly" : false,

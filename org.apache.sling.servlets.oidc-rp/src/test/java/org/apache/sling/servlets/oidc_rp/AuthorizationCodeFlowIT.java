@@ -72,7 +72,6 @@ class AuthorizationCodeFlowIT {
         SlingClient sling = SlingClient.Builder.create(URI.create("http://localhost:" + slingPort), "admin", "admin").disableRedirectHandling().build();
 
         // configure connection to keycloak
-        // TODO - create factory config
         sling.adaptTo(OsgiConsoleClient.class).editConfiguration("org.apache.sling.servlets.oidc_rp.impl.OidcConnectionImpl","org.apache.sling.servlets.oidc_rp.impl.OidcConnectionImpl", 
                 Map.of(
                     "name", oidcConnectionName, 
