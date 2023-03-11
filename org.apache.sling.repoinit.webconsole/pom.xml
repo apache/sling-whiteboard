@@ -206,7 +206,7 @@
         </dependency>
         <dependency>
             <artifactId>commons-fileupload</artifactId>
-            <version>1.4</version>
+            <version>1.5</version>
             <groupId>commons-fileupload</groupId>
             <scope>test</scope>
         </dependency>
