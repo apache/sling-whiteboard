@@ -1,7 +1,16 @@
 github:
-  description: Apache Sling Whiteboard - testing ground for new ideas
+  description: "Apache Sling Whiteboard - testing ground for new ideas"
   labels:
-    - java
-    - sling
-    - experimental
-
+  - "java"
+  - "sling"
+  - "experimental"
+  autolink_jira:
+  - "SLING"
+  - "OAK"
+  - "JCR"
+  - "JCRVLT"
+  - "INFRA"
+  - "FELIX"
+  - "MNG"
+notifications:
+  jira_options: "link"
