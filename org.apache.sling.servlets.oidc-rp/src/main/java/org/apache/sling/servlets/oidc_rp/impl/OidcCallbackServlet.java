@@ -19,32 +19,21 @@ package org.apache.sling.servlets.oidc_rp.impl;
 import static org.osgi.service.component.annotations.ReferencePolicyOption.GREEDY;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpRequest.BodyPublishers;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.json.Json;
-import javax.json.JsonNumber;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -61,7 +50,16 @@ import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.nimbusds.oauth2.sdk.AccessTokenResponse;
+import com.nimbusds.oauth2.sdk.AuthorizationCode;
+import com.nimbusds.oauth2.sdk.AuthorizationCodeGrant;
 import com.nimbusds.oauth2.sdk.ParseException;
+import com.nimbusds.oauth2.sdk.TokenErrorResponse;
+import com.nimbusds.oauth2.sdk.TokenRequest;
+import com.nimbusds.oauth2.sdk.TokenResponse;
+import com.nimbusds.oauth2.sdk.auth.ClientSecretBasic;
+import com.nimbusds.oauth2.sdk.auth.Secret;
+import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.openid.connect.sdk.AuthenticationErrorResponse;
 import com.nimbusds.openid.connect.sdk.AuthenticationResponse;
 import com.nimbusds.openid.connect.sdk.AuthenticationResponseParser;
@@ -105,6 +103,9 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
             if ( response instanceof AuthenticationErrorResponse )
                 throw new ServletException(authResponse.toErrorResponse().getErrorObject().toString());
 
+            Optional<String> redirect = stateManager.getStateAttribute(authResponse.getState(), OidcStateManager.PARAMETER_NAME_REDIRECT);
+            stateManager.unregisterState(authResponse.getState());
+            
             String authCode = authResponse.toSuccessResponse().getAuthorizationCode().getValue();
             
             Optional<String> desiredConnectionName = stateManager.getStateAttribute(authResponse.getState(), OidcStateManager.PARAMETER_NAME_CONNECTION);
@@ -124,42 +125,39 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
                 throw new ServletException("Misconfigured baseUrl");
             
             // TODO - this code should be extracted and reused to refresh the access token with a refresh token, if present
+            ClientID clientId = new ClientID(connection.clientId());
+            Secret clientSecret = new Secret(connection.clientSecret());
+            ClientSecretBasic clientCredentials = new ClientSecretBasic(clientId, clientSecret);
+            
+            AuthorizationCode code = new AuthorizationCode(authCode);
+            
             HttpClient client = HttpClient.newHttpClient();
             Endpoints ep = Endpoints.discover(connection.baseUrl(), client);
+            
+            TokenRequest tokenRequest = new TokenRequest(
+                new URI(ep.tokenEndpoint()),
+                clientCredentials,
+                new AuthorizationCodeGrant(code, new URI(getCallbackUri(request)))
+            );
+            
+            TokenResponse tokenResponse = TokenResponse.parse(tokenRequest.toHTTPRequest().send());
+            
+            if ( !tokenResponse.indicatesSuccess() ) {
+                TokenErrorResponse errorResponse = tokenResponse.toErrorResponse();
+                logger.warn("Error returned when trying to obtain access token : {}, {}", 
+                        errorResponse.getErrorObject().getCode(), errorResponse.getErrorObject().getDescription());
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
+            
+            AccessTokenResponse successResponse = tokenResponse.toSuccessResponse();
 
-            Map<String, String> params = new HashMap<>();
-            params.put("client_id", connection.clientId());
-            params.put("client_secret", connection.clientSecret());
-            params.put("code", authCode);
-            params.put("grant_type", "authorization_code");
-            params.put("redirect_uri", getCallbackUri(request));
-
-            String payload = params.entrySet().stream()
-                    .map( e -> e.getKey() + "=" +URLEncoder.encode(e.getValue(), StandardCharsets.UTF_8))
-                    .collect(Collectors.joining("&"));
-
-            HttpRequest tokenRequest = HttpRequest.newBuilder()
-                    .uri(URI.create(ep.tokenEndpoint()))
-                    .headers("Content-Type", "application/x-www-form-urlencoded")
-                    .POST(BodyPublishers.ofString(payload))
-                    .build();
-
-            HttpResponse<String> tokenResponse = client.send(tokenRequest, BodyHandlers.ofString());
-            Optional<String> redirect = stateManager.getStateAttribute(authResponse.getState(), OidcStateManager.PARAMETER_NAME_REDIRECT);
-            stateManager.unregisterState(authResponse.getState());
-
-            String accessToken;
-            String refreshToken = null;
+            String accessToken = successResponse.getTokens().getAccessToken().getValue();
+            String refreshToken = successResponse.getTokens().getRefreshToken().getValue();
             ZonedDateTime expiry = null;
-
-            try ( JsonReader reader = Json.createReader(new StringReader(tokenResponse.body())) ) {
-                JsonObject tokenObject = reader.readObject();
-                accessToken = tokenObject.getString("access_token");
-                JsonNumber expiresIn = tokenObject.getJsonNumber("expires_in");
-                if ( expiresIn != null ) {
-                    expiry = LocalDateTime.now().plus(expiresIn.intValue(), ChronoUnit.SECONDS).atZone(ZoneId.systemDefault());
-                }
-                refreshToken = tokenObject.getString("refresh_token", null);
+            long expiresIn = successResponse.getTokens().getAccessToken().getLifetime();
+            if ( expiresIn > 0 ) {
+                expiry = LocalDateTime.now().plus(expiresIn, ChronoUnit.SECONDS).atZone(ZoneId.systemDefault());
             }
 
             persister.persistToken(connection, request.getResourceResolver(), accessToken, refreshToken, expiry);
