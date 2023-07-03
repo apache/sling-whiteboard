@@ -14,6 +14,7 @@ objective is to simplify access to user and access tokens in a secure manner.
 - bundle/package should probably be org.apache.sling.extensions.oidc, as the primary entry point is the Java API
 - clarify Java API and allow extracting both id and access tokens
 - make use of refresh tokens
+- `mvn clean install` does not find the bundle generated in the current reactor build.
 - document usage for the supported OIDC providers; make sure to explain this is _not_ an authentication handler
 - provide a sample content package and instructions how to use
 - review to see if we can use more of the Nimbus SDK, e.g. enpodints discovery, token parsing
@@ -48,6 +49,32 @@ Ensure you are logged in.
 At this point you can navigate to /home/users/${USERNAME}/oidc-tokens/${CONNECTION_NAME} and you will see the stored access token.
 
 ### Local development setup
+
+#### tl;dr
+
+- run the keycloak container using the instructions for 'use existing test files'
+- build the bundle once with `mvn clean install`
+- run Sling with `mvn feature-launcher:start feature-launcher:stop -Dfeature-launcher.waitForInput`
+- create OSGi config with 
+
+```
+export CLIENT_SECRET=$(cat src/test/resources/keycloak-import/sling.json | jq --raw-output '.clients[] | select (.clientId == "oidc-test") | .secret')
+
+$ curl -u admin:admin -X POST -d "apply=true" -d "propertylist=name,baseUrl,clientId,clientSecret,scopes" \
+    -d "name=keycloak-dev" \
+    -d "baseUrl=http://localhost:8081/realms/sling" \
+    -d "clientId=oidc-test"\
+    -d "clientSecret=$CLIENT_SECRET" \
+    -d "scopes=openid" \
+    -d "factoryPid=org.apache.sling.servlets.oidc_rp.impl.OidcConnectionImpl" \
+    http://localhost:8080/system/console/configMgr/org.apache.sling.servlets.oidc_rp.impl.OidcConnectionImpl~keycloak-dev
+```
+
+Now you can 
+
+- access KeyCloak on http://localhost:8081 
+- access Sling on http://localhost:8080
+- start the OIDC login process on http://localhost:8080/system/sling/oidc/entry-point?c=keycloak-dev
 
 #### Keycloak
 
