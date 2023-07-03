@@ -1,8 +1,7 @@
 # Apache Sling OpenID Connect Relying Party support bundle
 
-<Warning>
-This bundle is under development, do not use in production.
-</Warning>
+> **Warning**
+> This bundle is under development, do not use in production.
 
 ## Introduction
 
