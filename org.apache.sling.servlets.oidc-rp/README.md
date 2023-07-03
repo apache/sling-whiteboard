@@ -1,5 +1,25 @@
 # Apache Sling OpenID Connect Relying Party support bundle
 
+<Warning>
+This bundle is under development, do not use in production.
+</Warning>
+
+## Introduction
+
+This bundle add support for Sling-based applications to function as
+[Open ID connect](https://openid.net/developers/how-connect-works/) relying parties. Its main
+objective is to simplify access to user and access tokens in a secure manner.
+
+## Whiteboard graduation TODO 
+
+- bundle/package should probably be org.apache.sling.extensions.oidc, as the primary entry point is the Java API
+- clarify Java API and allow extracting both id and access tokens
+- make use of refresh tokens
+- document usage for the supported OIDC providers; make sure to explain this is _not_ an authentication handler
+- provide a sample content package and instructions how to use
+- review to see if we can use more of the Nimbus SDK, e.g. enpodints discovery, token parsing
+- review security best practices
+
 ## Prerequisites
 
 ### Client registration
@@ -12,74 +32,40 @@ Validated providers:
 
 ## Sling Starter Prerequisites
 
-A number of additional bundles need to be added to the Sling Starter.
-
-```diff
-diff --git a/src/main/features/app/starter.json b/src/main/features/app/starter.json
-index 9c9231f..18c1586 100644
---- a/src/main/features/app/starter.json
-+++ b/src/main/features/app/starter.json
-@@ -3,6 +3,34 @@
-         {
-             "id":"org.apache.sling:org.apache.sling.starter.content:1.0.12",
-             "start-order":"20"
-+        },
-+        {
-+            "id":"com.nimbusds:oauth2-oidc-sdk:9.35",
-+            "start-order":"20"
-+        },
-+        {
-+            "id":"com.nimbusds:nimbus-jose-jwt:9.22",
-+            "start-order":"20"
-+        },
-+        {
-+            "id":"com.nimbusds:content-type:2.2",
-+            "start-order":"20"
-+        },
-+        {
-+            "id":"com.nimbusds:lang-tag:1.6",
-+            "start-order":"20"
-+        },
-+        {
-+            "id":"org.apache.servicemix.bundles:org.apache.servicemix.bundles.jcip-annotations:1.0_2",
-+            "start-order":"20"
-+        },
-+        {
-+            "id":"net.minidev:json-smart:2.4.8",
-+            "start-order":"20"
-+        },
-+        {
-+            "id":"net.minidev:accessors-smart:2.4.8",
-+            "start-order":"20"
-         }
-     ]
- }
-
-```
+A number of additional bundles need to be added to the Sling Starter, see the feature model definition at src/main/features/main.json .
 
 ### Deployment and configuration
 
-After deploying the bundle using `mvn package sling:install` go to http://localhost:8080/system/console/configMgr and create a new configuration instance for _OpenID Connect connection details_.
+After deploying the bundle using `mvn package sling:install` go to http://localhost:8080/system/console/configMgr and create a new configuration factory instance for _OpenID Connect connection details_. Write down the name property, we'll refer to it as `$CONNECTION_NAME`.
 
 ### Kicking off the process
 
 Ensure you are logged in.
 
-- navigate to http://localhost:8080/system/sling/oidc/entry-point?redirect=/bin/browser.html
+- navigate to http://localhost:8080/system/sling/oidc/entry-point?c=$CONNECTION_NAME&redirect=/bin/browser.html
 - you will be redirect to the identity provider, where you will need authenticate yourself and authorize the connection
 - you will be redirected to the composum browser
 
-At this point you need to can navigate to /home/users/${USERNAME}/oidc-tokens/${CONNECTION_NAME} and you will see the stored token and expiry date (if available ).
-
+At this point you can navigate to /home/users/${USERNAME}/oidc-tokens/${CONNECTION_NAME} and you will see the stored access token.
 
 ### Local development setup
 
 #### Keycloak
 
+##### Use existing test files
+
+Note that this imports the test setup with a single user with a _redirect_uri_ set to _http://localhost*_, which can be a security issue.
+
+```
+$ docker run --rm  --volume $(pwd)/src/test/resources/keycloak-import:/opt/keycloak/data/import -p 8081:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin quay.io/keycloak/keycloak:20.0.3 start-dev --import-realm
+```
+
+##### Manual setup
+
 1. Launch Keycloak locally
 
 ```
-$ docker run --rm --volume (pwd)/keycloak-data:/opt/keycloak/data -p 8081:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin quay.io/keycloak/keycloak:20.0.3 start-dev
+$ docker run --rm --volume $(pwd)/keycloak-data:/opt/keycloak/data -p 8081:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin quay.io/keycloak/keycloak:20.0.3 start-dev
 ```
 
 2. Create test realm
@@ -133,7 +119,7 @@ scopes: openid
 #### Obtaining the tokens
 
 - navigate to http://localhost:8080/system/sling/login and login as admin/admin
-- go to http://localhost:8080/system/sling/oidc/entry-point?redirect=/bin/browser.html/home/users
+- go to http://localhost:8080/system/sling/oidc/entry-point?c=keycloak&redirect=/bin/browser.html/home/users
 - complete the login flow
 - navigate in composum to the user name of the admin user and verify that the 'oidc-tokens' node contains a keycloak node with the respective access_token and refresh_token properties 
 
@@ -142,11 +128,3 @@ scopes: openid
 ```
 $ docker run --rm --volume (pwd)/keycloak-data:/opt/keycloak/data -p 8081:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin quay.io/keycloak/keycloak:20.0.3 export --realm sling --users realm_file --file /opt/keycloak/data/export/sling.json
 ```
-
-## Whiteboard graduation TODO 
-
-- bundle/package should probably be org.apache.sling.extensions.oidc-rp, as the primary entry point is the Java API
-- document usage; make sure to explain this is _not_ an authentication handler
-- provide a sample content package and instructions how to use
-- review to see if we can use more of the Nimbus SDK, e.g. enpodints discovery, token parsing
-- review security best practices
