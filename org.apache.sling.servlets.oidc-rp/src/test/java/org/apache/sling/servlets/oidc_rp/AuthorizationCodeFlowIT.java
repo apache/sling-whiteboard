@@ -40,10 +40,11 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.sling.testing.clients.ClientException;
 import org.apache.sling.testing.clients.SlingClient;
 import org.apache.sling.testing.clients.SlingHttpResponse;
+import org.apache.sling.testing.clients.exceptions.TestingValidationException;
 import org.apache.sling.testing.clients.osgi.OsgiConsoleClient;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -51,28 +52,67 @@ import com.nimbusds.jwt.SignedJWT;
 
 import dasniko.testcontainers.keycloak.KeycloakContainer;
 
-@Testcontainers
 class AuthorizationCodeFlowIT {
+
+    private static final String OIDC_CONFIG_PID = "org.apache.sling.servlets.oidc_rp.impl.OidcConnectionImpl";
+
+    private KeycloakContainer keycloak;
+    private SlingClient sling;
+
+    private int keycloakPort;
+
+    private String oidcOsgiConfigPid;
+
+    @BeforeEach
+    @SuppressWarnings("resource")
+    void initKeycloak() {
+        // support using an existing Keycloak instance by setting
+        // KEYCLOAK_URL=http://localhost:24098/
+        // this is most usually done in an IDE, with both Keycloak and Sling running
+        String existingKeyCloakUrl = System.getenv("KEYCLOAK_URL");
+        if ( existingKeyCloakUrl == null ) {
+            keycloak = new KeycloakContainer("quay.io/keycloak/keycloak:20.0.3")
+                    .withRealmImportFile("keycloak-import/sling.json");
+            keycloak.start();
+            keycloakPort = keycloak.getHttpPort();
+        } else {
+            keycloakPort = URI.create(existingKeyCloakUrl).getPort(); 
+        }
+    }
+
+    @BeforeEach
+    void initSling() throws ClientException {
+
+        int slingPort = Integer.getInteger("sling.http.port", 8080);
+        sling = SlingClient.Builder.create(URI.create("http://localhost:" + slingPort), "admin", "admin").disableRedirectHandling().build();
+
+        // ensure all previous connections are cleaned up
+        sling.adaptTo(OsgiConsoleClient.class).deleteConfiguration(OIDC_CONFIG_PID + ".keycloak");
+    }
+
+    @AfterEach
+    void shutdownKeycloak() {
+        if ( keycloak != null )
+            keycloak.close();
+    }
     
-    // TODO - allow not starting the container if we 'promise' an instance already exists
-    @Container
-    KeycloakContainer keycloak = new KeycloakContainer("quay.io/keycloak/keycloak:20.0.3")
-        .withRealmImportFile("keycloak-import/sling.json");
+    @AfterEach
+    void cleanupSlingOidcConfig() throws TestingValidationException, ClientException {
+
+        // the Sling testing clients do not offer a way of listing configurations, as assigned PIDs
+        // are not predictable. So instead of running deleting test configs when the test starts
+        // we fall back to cleaning after, which is hopefully reliable enough
+        if ( oidcOsgiConfigPid != null )
+            sling.adaptTo(OsgiConsoleClient.class).deleteConfiguration(oidcOsgiConfigPid);
+    }
 
     @Test
     void accessTokenIsPresentOnSuccessfulLogin() throws Exception {
-        int keycloakPort = keycloak.getHttpPort();
-        int slingPort = Integer.getInteger("sling.http.port", 8080);
+        
         String oidcConnectionName = "keycloak";
 
-        // two parts
-        // - local app on port 8080
-        // - keycloak on port 8081
-        
-        SlingClient sling = SlingClient.Builder.create(URI.create("http://localhost:" + slingPort), "admin", "admin").disableRedirectHandling().build();
-
         // configure connection to keycloak
-        sling.adaptTo(OsgiConsoleClient.class).editConfiguration("org.apache.sling.servlets.oidc_rp.impl.OidcConnectionImpl","org.apache.sling.servlets.oidc_rp.impl.OidcConnectionImpl", 
+        oidcOsgiConfigPid = sling.adaptTo(OsgiConsoleClient.class).editConfiguration(OIDC_CONFIG_PID+ ".keycloak",OIDC_CONFIG_PID, 
                 Map.of(
                     "name", oidcConnectionName, 
                     "baseUrl", "http://localhost:" + keycloakPort+"/realms/sling",
