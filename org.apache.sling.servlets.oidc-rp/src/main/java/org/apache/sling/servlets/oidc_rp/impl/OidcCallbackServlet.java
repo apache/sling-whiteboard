@@ -110,13 +110,13 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
             Optional<String> desiredConnectionName = stateManager.getStateAttribute(authResponse.getState(), OidcStateManager.PARAMETER_NAME_CONNECTION);
             stateManager.unregisterState(authResponse.getState());
             if ( desiredConnectionName.isEmpty() ) {
-                logger.debug("Did not find any connection in stateManager");
+                logger.warn("Did not find any connection in stateManager");
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);  
                 return;
             }
             OidcConnection connection = connections.get(desiredConnectionName.get());
             if ( connection == null ) {
-                logger.debug("Requested unknown connection {}", desiredConnectionName.get());
+                logger.warn("Requested unknown connection {}", desiredConnectionName.get());
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                 return;
             }
