@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
-import java.net.http.HttpClient;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +57,7 @@ import com.nimbusds.openid.connect.sdk.AuthenticationErrorResponse;
 import com.nimbusds.openid.connect.sdk.AuthenticationResponse;
 import com.nimbusds.openid.connect.sdk.AuthenticationResponseParser;
 import com.nimbusds.openid.connect.sdk.OIDCTokenResponse;
+import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
 
 @Component(service = { Servlet.class })
 @SlingServletPaths(OidcCallbackServlet.PATH)
@@ -70,15 +70,18 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final Map<String, OidcConnection> connections;
     private final OidcConnectionPersister persister;
+    private final OidcProviderMetadataRegistry metadataRegistry;
 
     static String getCallbackUri(HttpServletRequest request) {
         return request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + PATH;
     }
 
     @Activate
-    public OidcCallbackServlet(@Reference(policyOption = GREEDY) List<OidcConnection> connections, @Reference OidcConnectionPersister persister) {
+    public OidcCallbackServlet(@Reference(policyOption = GREEDY) List<OidcConnection> connections, @Reference OidcConnectionPersister persister,
+            @Reference OidcProviderMetadataRegistry metadataRegistry) {
         this.connections = connections.stream()
                 .collect(Collectors.toMap( OidcConnection::name, Function.identity()));
+        this.metadataRegistry = metadataRegistry;
         this.persister = persister;
     }
 
@@ -126,11 +129,10 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
             
             AuthorizationCode code = new AuthorizationCode(authCode);
             
-            HttpClient client = HttpClient.newHttpClient();
-            Endpoints ep = Endpoints.discover(connection.baseUrl(), client);
+            OIDCProviderMetadata providerMetadata = metadataRegistry.getProviderMetadata(connection.baseUrl());
             
             TokenRequest tokenRequest = new TokenRequest(
-                new URI(ep.tokenEndpoint()),
+                providerMetadata.getTokenEndpointURI(),
                 clientCredentials,
                 new AuthorizationCodeGrant(code, new URI(getCallbackUri(request)))
             );
@@ -163,8 +165,6 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
             }
         } catch (ParseException | URISyntaxException | IOException e) {
             throw new ServletException(e);
-        } catch (InterruptedException e1) {
-            Thread.currentThread().interrupt();
         }
     }
 

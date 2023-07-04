@@ -23,7 +23,6 @@ import static org.osgi.service.component.annotations.ReferencePolicyOption.GREED
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.http.HttpClient;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -50,6 +49,7 @@ import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.id.State;
 import com.nimbusds.openid.connect.sdk.AuthenticationRequest;
 import com.nimbusds.openid.connect.sdk.Nonce;
+import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
 
 @Component(service = { Servlet.class })
 @SlingServletPaths(OidcEntryPointServlet.PATH)
@@ -62,10 +62,14 @@ public class OidcEntryPointServlet extends SlingAllMethodsServlet {
     
     private final Map<String, OidcConnection> connections;
 
+    private final OidcProviderMetadataRegistry metadataRegistry;
+
     @Activate
-    public OidcEntryPointServlet(@Reference(policyOption = GREEDY) List<OidcConnection> connections) {
+    public OidcEntryPointServlet(@Reference(policyOption = GREEDY) List<OidcConnection> connections,
+            @Reference OidcProviderMetadataRegistry metadataRegistry) {
         this.connections = connections.stream()
                 .collect(Collectors.toMap( OidcConnection::name, Function.identity()));
+        this.metadataRegistry = metadataRegistry;
     }
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response)
@@ -89,7 +93,7 @@ public class OidcEntryPointServlet extends SlingAllMethodsServlet {
             throw new ServletException("Misconfigured baseUrl");
         try {
 
-            Endpoints ep = Endpoints.discover(connection.baseUrl(), HttpClient.newHttpClient());
+            OIDCProviderMetadata providerMetadata = metadataRegistry.getProviderMetadata(connection.baseUrl());
 
             // The client ID provisioned by the OpenID provider when
             // the client was registered
@@ -113,7 +117,7 @@ public class OidcEntryPointServlet extends SlingAllMethodsServlet {
                     new ResponseType("code"),
                     new Scope(connection.scopes()),
                     clientID, callback)
-                .endpointURI(new URI(ep.authorizationEndpoint()))
+                .endpointURI(providerMetadata.getAuthorizationEndpointURI())
                 .state(state)
                 .nonce(nonce)
                 .customParameter("access_type", "offline") // request refresh token. TODO - is this Google-specific?
@@ -122,8 +126,6 @@ public class OidcEntryPointServlet extends SlingAllMethodsServlet {
             response.sendRedirect(authRequest.toURI().toString());
         } catch (URISyntaxException e) {
             throw new ServletException(e);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
         }
     }
 }
