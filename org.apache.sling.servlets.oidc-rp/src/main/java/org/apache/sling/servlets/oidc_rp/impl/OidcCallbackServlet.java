@@ -104,11 +104,11 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
                 throw new ServletException(authResponse.toErrorResponse().getErrorObject().toString());
 
             Optional<String> redirect = stateManager.getStateAttribute(authResponse.getState(), OidcStateManager.PARAMETER_NAME_REDIRECT);
-            stateManager.unregisterState(authResponse.getState());
             
             String authCode = authResponse.toSuccessResponse().getAuthorizationCode().getValue();
             
             Optional<String> desiredConnectionName = stateManager.getStateAttribute(authResponse.getState(), OidcStateManager.PARAMETER_NAME_CONNECTION);
+            stateManager.unregisterState(authResponse.getState());
             if ( desiredConnectionName.isEmpty() ) {
                 logger.debug("Did not find any connection in stateManager");
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);  
