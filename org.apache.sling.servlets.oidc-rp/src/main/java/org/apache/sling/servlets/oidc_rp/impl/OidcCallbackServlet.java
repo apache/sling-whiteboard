@@ -50,19 +50,19 @@ import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.nimbusds.oauth2.sdk.AccessTokenResponse;
 import com.nimbusds.oauth2.sdk.AuthorizationCode;
 import com.nimbusds.oauth2.sdk.AuthorizationCodeGrant;
 import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.TokenErrorResponse;
 import com.nimbusds.oauth2.sdk.TokenRequest;
-import com.nimbusds.oauth2.sdk.TokenResponse;
 import com.nimbusds.oauth2.sdk.auth.ClientSecretBasic;
 import com.nimbusds.oauth2.sdk.auth.Secret;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.openid.connect.sdk.AuthenticationErrorResponse;
 import com.nimbusds.openid.connect.sdk.AuthenticationResponse;
 import com.nimbusds.openid.connect.sdk.AuthenticationResponseParser;
+import com.nimbusds.openid.connect.sdk.OIDCTokenResponse;
+import com.nimbusds.openid.connect.sdk.token.OIDCTokens;
 
 @Component(service = { Servlet.class })
 @SlingServletPaths(OidcCallbackServlet.PATH)
@@ -140,7 +140,7 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
                 new AuthorizationCodeGrant(code, new URI(getCallbackUri(request)))
             );
             
-            TokenResponse tokenResponse = TokenResponse.parse(tokenRequest.toHTTPRequest().send());
+            OIDCTokenResponse tokenResponse = OIDCTokenResponse.parse(tokenRequest.toHTTPRequest().send());
             
             if ( !tokenResponse.indicatesSuccess() ) {
                 TokenErrorResponse errorResponse = tokenResponse.toErrorResponse();
@@ -150,12 +150,12 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
                 return;
             }
             
-            AccessTokenResponse successResponse = tokenResponse.toSuccessResponse();
+            OIDCTokens tokens = tokenResponse.getOIDCTokens();
 
-            String accessToken = successResponse.getTokens().getAccessToken().getValue();
-            String refreshToken = successResponse.getTokens().getRefreshToken().getValue();
+            String accessToken = tokens.getAccessToken().getValue();
+            String refreshToken = tokens.getRefreshToken().getValue();
             ZonedDateTime expiry = null;
-            long expiresIn = successResponse.getTokens().getAccessToken().getLifetime();
+            long expiresIn = tokens.getAccessToken().getLifetime();
             if ( expiresIn > 0 ) {
                 expiry = LocalDateTime.now().plus(expiresIn, ChronoUnit.SECONDS).atZone(ZoneId.systemDefault());
             }
