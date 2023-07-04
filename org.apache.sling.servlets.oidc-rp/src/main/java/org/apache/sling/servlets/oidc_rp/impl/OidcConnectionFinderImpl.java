@@ -166,7 +166,10 @@ public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConne
     @Override
     public URI getOidcEntryPointUri(OidcConnection connection, SlingHttpServletRequest request, String redirectPath) {
         StringBuilder uri = new StringBuilder();
-        uri.append(request.getScheme()).append("://").append(request.getServerName()).append(":").append(request.getServerPort())
+        String scheme = request.getScheme();
+        if ( "http".equals(scheme) && request.isSecure() )
+            scheme = "https";
+        uri.append(scheme).append("://").append(request.getServerName()).append(":").append(request.getServerPort())
             .append(OidcEntryPointServlet.PATH).append("?c=").append(connection.name());
         if ( redirectPath != null )
             uri.append("?redirect=").append(URLEncoder.encode(redirectPath, StandardCharsets.UTF_8));
