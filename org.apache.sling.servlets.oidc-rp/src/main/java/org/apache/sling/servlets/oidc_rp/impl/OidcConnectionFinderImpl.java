@@ -85,7 +85,7 @@ public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConne
     }
 
     @Override
-    public void persistToken(OidcConnection connection, ResourceResolver resolver, OIDCTokens tokens) {
+    public void persistTokens(OidcConnection connection, ResourceResolver resolver, OIDCTokens tokens) {
         try {
             User currentUser = resolver.adaptTo(User.class);
             Session session = resolver.adaptTo(Session.class);

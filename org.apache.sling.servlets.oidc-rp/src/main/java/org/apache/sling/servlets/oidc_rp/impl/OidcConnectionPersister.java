@@ -23,5 +23,5 @@ import com.nimbusds.openid.connect.sdk.token.OIDCTokens;
 
 public interface OidcConnectionPersister {
 
-    void persistToken(OidcConnection connection, ResourceResolver resourceResolver, OIDCTokens tokens);
+    void persistTokens(OidcConnection connection, ResourceResolver resourceResolver, OIDCTokens tokens);
 }

@@ -152,7 +152,7 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
             // - nonce validation (?)
             // - iat/exp validation (?)
 
-            persister.persistToken(connection, request.getResourceResolver(), tokenResponse.getOIDCTokens());
+            persister.persistTokens(connection, request.getResourceResolver(), tokenResponse.getOIDCTokens());
 
             if ( redirect.isEmpty() ) {
                 response.setStatus(HttpServletResponse.SC_OK);
