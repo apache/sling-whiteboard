@@ -19,7 +19,10 @@ package org.apache.sling.servlets.oidc_rp.impl;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Optional;
@@ -37,6 +40,8 @@ import org.apache.sling.servlets.oidc_rp.OidcConnectionFinder;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.nimbusds.openid.connect.sdk.token.OIDCTokens;
 
 @Component
 public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConnectionPersister {
@@ -79,11 +84,20 @@ public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConne
     }
 
     @Override
-    public void persistToken(OidcConnection connection, ResourceResolver resolver, String tokenValue, String refreshToken, ZonedDateTime expiry) {
+    public void persistToken(OidcConnection connection, ResourceResolver resolver, OIDCTokens tokens) {
         try {
             User currentUser = resolver.adaptTo(User.class);
             Session session = resolver.adaptTo(Session.class);
-            currentUser.setProperty(propertyPath(connection, PROPERTY_NAME_ACCESS_TOKEN), session.getValueFactory().createValue(tokenValue));
+
+            String accessToken = tokens.getAccessToken().getValue();
+            String refreshToken = tokens.getRefreshToken().getValue();
+            ZonedDateTime expiry = null;
+            long expiresIn = tokens.getAccessToken().getLifetime();
+            if ( expiresIn > 0 ) {
+                expiry = LocalDateTime.now().plus(expiresIn, ChronoUnit.SECONDS).atZone(ZoneId.systemDefault());
+            }
+
+            currentUser.setProperty(propertyPath(connection, PROPERTY_NAME_ACCESS_TOKEN), session.getValueFactory().createValue(accessToken));
             if ( expiry != null ) {
                 Calendar cal = GregorianCalendar.from(expiry);
                 currentUser.setProperty(propertyPath(connection, PROPERTY_NAME_EXPIRES_AT), session.getValueFactory().createValue(cal));

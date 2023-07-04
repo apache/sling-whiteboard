@@ -24,10 +24,6 @@ import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.net.http.HttpClient;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -62,7 +58,6 @@ import com.nimbusds.openid.connect.sdk.AuthenticationErrorResponse;
 import com.nimbusds.openid.connect.sdk.AuthenticationResponse;
 import com.nimbusds.openid.connect.sdk.AuthenticationResponseParser;
 import com.nimbusds.openid.connect.sdk.OIDCTokenResponse;
-import com.nimbusds.openid.connect.sdk.token.OIDCTokens;
 
 @Component(service = { Servlet.class })
 @SlingServletPaths(OidcCallbackServlet.PATH)
@@ -149,18 +144,8 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                 return;
             }
-            
-            OIDCTokens tokens = tokenResponse.getOIDCTokens();
 
-            String accessToken = tokens.getAccessToken().getValue();
-            String refreshToken = tokens.getRefreshToken().getValue();
-            ZonedDateTime expiry = null;
-            long expiresIn = tokens.getAccessToken().getLifetime();
-            if ( expiresIn > 0 ) {
-                expiry = LocalDateTime.now().plus(expiresIn, ChronoUnit.SECONDS).atZone(ZoneId.systemDefault());
-            }
-
-            persister.persistToken(connection, request.getResourceResolver(), accessToken, refreshToken, expiry);
+            persister.persistToken(connection, request.getResourceResolver(), tokenResponse.getOIDCTokens());
 
             if ( redirect.isEmpty() ) {
                 response.setStatus(HttpServletResponse.SC_OK);

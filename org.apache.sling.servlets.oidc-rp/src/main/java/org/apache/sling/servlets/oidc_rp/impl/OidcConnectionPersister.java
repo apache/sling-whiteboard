@@ -16,12 +16,12 @@
  */
 package org.apache.sling.servlets.oidc_rp.impl;
 
-import java.time.ZonedDateTime;
-
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.servlets.oidc_rp.OidcConnection;
 
+import com.nimbusds.openid.connect.sdk.token.OIDCTokens;
+
 public interface OidcConnectionPersister {
 
-    void persistToken(OidcConnection connection, ResourceResolver resourceResolver, String tokenValue, String refreshToken, ZonedDateTime expiry);
+    void persistToken(OidcConnection connection, ResourceResolver resourceResolver, OIDCTokens tokens);
 }
