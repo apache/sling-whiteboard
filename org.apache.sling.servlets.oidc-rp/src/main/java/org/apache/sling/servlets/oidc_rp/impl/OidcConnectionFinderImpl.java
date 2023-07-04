@@ -16,6 +16,7 @@
  */
 package org.apache.sling.servlets.oidc_rp.impl;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -38,10 +39,14 @@ import org.apache.sling.servlets.oidc_rp.OidcConnection;
 import org.apache.sling.servlets.oidc_rp.OidcConnectionFinder;
 import org.apache.sling.servlets.oidc_rp.OidcToken;
 import org.apache.sling.servlets.oidc_rp.OidcTokenState;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.nimbusds.oauth2.sdk.ParseException;
+import com.nimbusds.oauth2.sdk.token.Tokens;
 import com.nimbusds.openid.connect.sdk.token.OIDCTokens;
 
 @Component
@@ -53,7 +58,13 @@ public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConne
     private static final String PROPERTY_NAME_REFRESH_TOKEN = "refresh_token";
     private static final String PROPERTY_NAME_ID_TOKEN = "id_token";
 
+    private final OidcClient oidcClient;
     private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    @Activate
+    public OidcConnectionFinderImpl(@Reference OidcClient oidcClient) {
+        this.oidcClient = oidcClient;
+    }
 
     @Override
     public OidcToken getAccessToken(OidcConnection connection, ResourceResolver resolver) {
@@ -89,16 +100,36 @@ public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConne
             throw new RuntimeException(e);
         }
     }
+    
+    @Override
+    public void refreshAccessToken(OidcConnection connection, ResourceResolver resolver) {
+
+        try {
+            User user = resolver.adaptTo(User.class);
+
+            Value[] tokenValue = user.getProperty(propertyPath(connection, PROPERTY_NAME_REFRESH_TOKEN));
+            if ( tokenValue == null )
+                throw new IllegalArgumentException("No refresh token present for user");
+
+            Tokens newTokens = oidcClient.refreshAccessToken(connection, tokenValue[0].getString());
+            persistTokens0(connection, resolver, newTokens);
+        } catch (ParseException | IOException | RepositoryException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @Override
     public void persistTokens(OidcConnection connection, ResourceResolver resolver, OIDCTokens tokens) {
+        persistTokens0(connection, resolver, tokens);
+    }
+
+    private void persistTokens0(OidcConnection connection, ResourceResolver resolver, Tokens tokens) {
         try {
             User currentUser = resolver.adaptTo(User.class);
             Session session = resolver.adaptTo(Session.class);
 
             String accessToken = tokens.getAccessToken().getValue();
             String refreshToken = tokens.getRefreshToken().getValue();
-            String idToken = tokens.getIDTokenString();
             ZonedDateTime expiry = null;
             long expiresIn = tokens.getAccessToken().getLifetime();
             if ( expiresIn > 0 ) {
@@ -116,11 +147,15 @@ public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConne
                 currentUser.setProperty(propertyPath(connection, PROPERTY_NAME_REFRESH_TOKEN), session.getValueFactory().createValue(refreshToken));
             else
                 currentUser.removeProperty(propertyPath(connection, PROPERTY_NAME_REFRESH_TOKEN));
-            
-            if ( idToken != null )
-                currentUser.setProperty(propertyPath(connection, PROPERTY_NAME_ID_TOKEN), session.getValueFactory().createValue(idToken));
-            else
-                currentUser.removeProperty(propertyPath(connection, PROPERTY_NAME_ID_TOKEN));
+
+            if ( tokens instanceof OIDCTokens oidcTokens) {
+                // don't touch the id token if we don't have an OIDC token, e.g. when refreshing the access token
+                String idToken = oidcTokens.getIDTokenString();
+                if ( idToken != null )
+                    currentUser.setProperty(propertyPath(connection, PROPERTY_NAME_ID_TOKEN), session.getValueFactory().createValue(idToken));
+                else
+                    currentUser.removeProperty(propertyPath(connection, PROPERTY_NAME_ID_TOKEN));
+            }
 
             session.save();
         } catch (RepositoryException e) {

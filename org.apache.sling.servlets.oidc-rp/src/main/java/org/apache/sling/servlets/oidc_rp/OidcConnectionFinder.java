@@ -26,5 +26,7 @@ public interface OidcConnectionFinder {
 
     OidcToken getAccessToken(OidcConnection connection, ResourceResolver resolver);
 
+    void refreshAccessToken(OidcConnection connection, ResourceResolver resolver);
+
     URI getOidcEntryPointUri(OidcConnection connection, SlingHttpServletRequest request, String redirectPath);
 }
