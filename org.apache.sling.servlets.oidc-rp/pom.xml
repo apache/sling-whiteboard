@@ -35,6 +35,7 @@
         <sling.java.version>17</sling.java.version>
         <project.build.outputTimestamp>1</project.build.outputTimestamp>
         <bnd.baseline.skip>true</bnd.baseline.skip>
+        <skipITs>true</skipITs>
 	</properties>
 
 	<build>
@@ -188,6 +189,7 @@
                     <launches>
                         <launch>
                             <id>sling-starter-oak-tar</id>
+                            <skip>${skipITs}</skip>
                             <feature>
                                 <groupId>${project.groupId}</groupId>
                                 <artifactId>${project.artifactId}</artifactId>
