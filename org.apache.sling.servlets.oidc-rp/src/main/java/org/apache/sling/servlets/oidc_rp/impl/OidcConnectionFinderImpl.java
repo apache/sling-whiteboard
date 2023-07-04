@@ -50,6 +50,7 @@ public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConne
     private static final String PROPERTY_NAME_EXPIRES_AT = "expiresAt";
     private static final String PROPERTY_NAME_ACCESS_TOKEN = "access_token";
     private static final String PROPERTY_NAME_REFRESH_TOKEN = "refresh_token";
+    private static final String PROPERTY_NAME_ID_TOKEN = "id_token";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -91,6 +92,7 @@ public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConne
 
             String accessToken = tokens.getAccessToken().getValue();
             String refreshToken = tokens.getRefreshToken().getValue();
+            String idToken = tokens.getIDTokenString();
             ZonedDateTime expiry = null;
             long expiresIn = tokens.getAccessToken().getLifetime();
             if ( expiresIn > 0 ) {
@@ -109,6 +111,11 @@ public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConne
             else
                 currentUser.removeProperty(propertyPath(connection, PROPERTY_NAME_REFRESH_TOKEN));
             
+            if ( idToken != null )
+                currentUser.setProperty(propertyPath(connection, PROPERTY_NAME_ID_TOKEN), session.getValueFactory().createValue(idToken));
+            else
+                currentUser.removeProperty(propertyPath(connection, PROPERTY_NAME_ID_TOKEN));
+
             session.save();
         } catch (RepositoryException e) {
             throw new RuntimeException(e);

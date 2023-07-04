@@ -145,6 +145,11 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
                 return;
             }
 
+            // TODO - additional validations for the id_token
+            // - does the 'aud' claim match the client id of our connection
+            // - nonce validation (?)
+            // - iat/exp validation (?)
+
             persister.persistToken(connection, request.getResourceResolver(), tokenResponse.getOIDCTokens());
 
             if ( redirect.isEmpty() ) {
