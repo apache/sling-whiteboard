@@ -25,7 +25,6 @@ import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.Optional;
 
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
@@ -37,6 +36,8 @@ import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.servlets.oidc_rp.OidcConnection;
 import org.apache.sling.servlets.oidc_rp.OidcConnectionFinder;
+import org.apache.sling.servlets.oidc_rp.OidcToken;
+import org.apache.sling.servlets.oidc_rp.OidcTokenState;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +56,7 @@ public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConne
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
-    public Optional<String> getOidcToken(OidcConnection connection, ResourceResolver resolver) {
+    public OidcToken getAccessToken(OidcConnection connection, ResourceResolver resolver) {
         try {
             User user = resolver.adaptTo(User.class);
 
@@ -63,22 +64,27 @@ public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConne
             if ( expiresAt != null  && expiresAt.length == 1 && expiresAt[0].getType() == PropertyType.DATE ) {
                 Calendar expiresCal = expiresAt[0].getDate();
                 if ( expiresCal.before(Calendar.getInstance())) {
-                    logger.info("Token for {} expired at {}, removing", connection.name(), expiresCal);
-                    user.removeProperty(nodePath(connection)); // unsure if this will work ...
-                    return Optional.empty();
+                    logger.info("Token for {} expired at {}, not returning", connection.name(), expiresCal);
+
+                    Value[] tokenValue = user.getProperty(propertyPath(connection, PROPERTY_NAME_REFRESH_TOKEN));
+                    // no refresh token, missing
+                    if ( tokenValue == null ) {
+                        return new OidcToken(OidcTokenState.MISSING, null);
+                    }
+
+                    // refresh token is present, mark as expired
+                    return new OidcToken(OidcTokenState.EXPIRED, null);
                 }
             }
-            
-            // TODO - how to handle scenario when access_token is null but refresh_token exists?
 
             Value[] tokenValue = user.getProperty(propertyPath(connection, PROPERTY_NAME_ACCESS_TOKEN));
             if ( tokenValue == null )
-                return Optional.empty();
+                return new OidcToken(OidcTokenState.MISSING, null);
 
             if ( tokenValue.length != 1)
                 throw new RuntimeException("Unexpected value count for token property : " + tokenValue.length);
 
-            return Optional.of(tokenValue[0].getString());
+            return  new OidcToken(OidcTokenState.VALID, tokenValue[0].getString());
         } catch (RepositoryException e) {
             throw new RuntimeException(e);
         }

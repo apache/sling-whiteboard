@@ -17,7 +17,6 @@
 package org.apache.sling.servlets.oidc_rp;
 
 import java.net.URI;
-import java.util.Optional;
 
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -25,13 +24,7 @@ import org.apache.sling.api.resource.ResourceResolver;
 // TODO - bad name
 public interface OidcConnectionFinder {
 
-    // flow would be :
-    // 1. get oidc token
-    // 1a. found → all good
-    // 1b. not found → redirect to oidc entry point uri
-    // 2. after callback, redirect back to same page (how, cookie?)
-    // see https://github.com/panva/node-openid-client/issues/83
-    Optional<String> getOidcToken(OidcConnection connection, ResourceResolver resolver);
+    OidcToken getAccessToken(OidcConnection connection, ResourceResolver resolver);
 
     URI getOidcEntryPointUri(OidcConnection connection, SlingHttpServletRequest request, String redirectPath);
 }
