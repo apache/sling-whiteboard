@@ -16,13 +16,10 @@
  */
 package org.apache.sling.servlets.oidc_rp.impl;
 
-import static org.apache.sling.servlets.oidc_rp.impl.OidcStateManager.PARAMETER_NAME_CONNECTION;
-import static org.apache.sling.servlets.oidc_rp.impl.OidcStateManager.PARAMETER_NAME_REDIRECT;
 import static org.osgi.service.component.annotations.ReferencePolicyOption.GREEDY;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -37,20 +34,13 @@ import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.auth.core.AuthConstants;
 import org.apache.sling.servlets.annotations.SlingServletPaths;
+import org.apache.sling.servlets.oidc_rp.OidcClient;
 import org.apache.sling.servlets.oidc_rp.OidcConnection;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.nimbusds.oauth2.sdk.ResponseType;
-import com.nimbusds.oauth2.sdk.Scope;
-import com.nimbusds.oauth2.sdk.id.ClientID;
-import com.nimbusds.oauth2.sdk.id.State;
-import com.nimbusds.openid.connect.sdk.AuthenticationRequest;
-import com.nimbusds.openid.connect.sdk.Nonce;
-import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
 
 @Component(service = { Servlet.class },
     property = { AuthConstants.AUTH_REQUIREMENTS +"=" + OidcEntryPointServlet.PATH }
@@ -65,14 +55,14 @@ public class OidcEntryPointServlet extends SlingAllMethodsServlet {
     
     private final Map<String, OidcConnection> connections;
 
-    private final OidcProviderMetadataRegistry metadataRegistry;
+    private final OidcClient oidcClient;
 
     @Activate
     public OidcEntryPointServlet(@Reference(policyOption = GREEDY) List<OidcConnection> connections,
-            @Reference OidcProviderMetadataRegistry metadataRegistry) {
+            @Reference OidcClient oidcClient) {
         this.connections = connections.stream()
                 .collect(Collectors.toMap( OidcConnection::name, Function.identity()));
-        this.metadataRegistry = metadataRegistry;
+        this.oidcClient = oidcClient;
     }
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response)
@@ -94,41 +84,7 @@ public class OidcEntryPointServlet extends SlingAllMethodsServlet {
         
         if ( connection.baseUrl() == null )
             throw new ServletException("Misconfigured baseUrl");
-        try {
-
-            OIDCProviderMetadata providerMetadata = metadataRegistry.getProviderMetadata(connection.baseUrl());
-
-            // The client ID provisioned by the OpenID provider when
-            // the client was registered
-            ClientID clientID = new ClientID(connection.clientId());
-
-            // The client callback URL
-            URI callback = new URI(OidcCallbackServlet.getCallbackUri(request));
-            // Generate random state string to securely pair the callback to this request
-            State state = new State();
-            OidcStateManager stateManager = OidcStateManager.stateFor(request);
-            stateManager.registerState(state);
-            stateManager.putAttribute(state, PARAMETER_NAME_CONNECTION, desiredConnectionName);
-            if ( request.getParameter(PARAMETER_NAME_REDIRECT) != null )
-                stateManager.putAttribute(state, PARAMETER_NAME_REDIRECT, request.getParameter(PARAMETER_NAME_REDIRECT));
-
-            // Generate nonce for the ID token
-            Nonce nonce = new Nonce();
-
-            // Compose the OpenID authentication request (for the code flow)
-            AuthenticationRequest authRequest = new AuthenticationRequest.Builder(
-                    new ResponseType("code"),
-                    new Scope(connection.scopes()),
-                    clientID, callback)
-                .endpointURI(providerMetadata.getAuthorizationEndpointURI())
-                .state(state)
-                .nonce(nonce)
-                .customParameter("access_type", "offline") // request refresh token. TODO - is this Google-specific?
-                .build();
-
-            response.sendRedirect(authRequest.toURI().toString());
-        } catch (URISyntaxException e) {
-            throw new ServletException(e);
-        }
+            
+        response.sendRedirect(oidcClient.getAuthenticationRequestUri(connection, request, URI.create(OidcCallbackServlet.getCallbackUri(request))).toString());
     }
 }

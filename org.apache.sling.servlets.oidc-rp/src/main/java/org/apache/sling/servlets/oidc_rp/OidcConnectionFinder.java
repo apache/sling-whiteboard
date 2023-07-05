@@ -16,17 +16,20 @@
  */
 package org.apache.sling.servlets.oidc_rp;
 
-import java.net.URI;
-
-import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.resource.ResourceResolver;
 
 // TODO - bad name
+// thoughts on the API
+// we have two main parts 
+// I. repository-based storage for tokens ( get access token / refresh token / user token )
+// II. interactions with the authorization and token endpoints ( build redirect URL for auth, use refresh token to get new access/refresh tokens , exchanging access codes for tokens )
+// These should be split into two client-facing interfaces, and the code from the Servlets pushed into II.
+// It is definitely an unpleasant smell that the OidcConnnectionFinderImpl needs to reach out to the OidcClient.
+// 
+// Further question - do we need a way of introspecting the OidcConnections?
 public interface OidcConnectionFinder {
 
     OidcToken getAccessToken(OidcConnection connection, ResourceResolver resolver);
-
-    void refreshAccessToken(OidcConnection connection, ResourceResolver resolver);
-
-    URI getOidcEntryPointUri(OidcConnection connection, SlingHttpServletRequest request, String redirectPath);
+    
+    /* TODO OidcToken getRefreshToken(OidcConnection connection, ResourceResolver resolver); */
 }

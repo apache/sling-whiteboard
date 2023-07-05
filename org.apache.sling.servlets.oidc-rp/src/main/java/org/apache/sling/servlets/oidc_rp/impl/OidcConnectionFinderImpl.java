@@ -16,10 +16,6 @@
  */
 package org.apache.sling.servlets.oidc_rp.impl;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -33,19 +29,15 @@ import javax.jcr.Session;
 import javax.jcr.Value;
 
 import org.apache.jackrabbit.api.security.user.User;
-import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.servlets.oidc_rp.OidcConnection;
 import org.apache.sling.servlets.oidc_rp.OidcConnectionFinder;
 import org.apache.sling.servlets.oidc_rp.OidcToken;
 import org.apache.sling.servlets.oidc_rp.OidcTokenState;
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.token.Tokens;
 import com.nimbusds.openid.connect.sdk.token.OIDCTokens;
 
@@ -58,13 +50,7 @@ public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConne
     private static final String PROPERTY_NAME_REFRESH_TOKEN = "refresh_token";
     private static final String PROPERTY_NAME_ID_TOKEN = "id_token";
 
-    private final OidcClient oidcClient;
     private final Logger logger = LoggerFactory.getLogger(getClass());
-
-    @Activate
-    public OidcConnectionFinderImpl(@Reference OidcClient oidcClient) {
-        this.oidcClient = oidcClient;
-    }
 
     @Override
     public OidcToken getAccessToken(OidcConnection connection, ResourceResolver resolver) {
@@ -95,23 +81,6 @@ public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConne
         }
     }
     
-    @Override
-    public void refreshAccessToken(OidcConnection connection, ResourceResolver resolver) {
-
-        try {
-            User user = resolver.adaptTo(User.class);
-
-            Value[] tokenValue = user.getProperty(propertyPath(connection, PROPERTY_NAME_REFRESH_TOKEN));
-            if ( tokenValue == null )
-                throw new IllegalArgumentException("No refresh token present for user");
-
-            Tokens newTokens = oidcClient.refreshAccessToken(connection, tokenValue[0].getString());
-            persistTokens0(connection, resolver, newTokens);
-        } catch (ParseException | IOException | RepositoryException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     @Override
     public void persistTokens(OidcConnection connection, ResourceResolver resolver, OIDCTokens tokens) {
         persistTokens0(connection, resolver, tokens);
@@ -157,17 +126,6 @@ public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConne
         } catch (RepositoryException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public URI getOidcEntryPointUri(OidcConnection connection, SlingHttpServletRequest request, String redirectPath) {
-        StringBuilder uri = new StringBuilder();
-        uri.append(request.getScheme()).append("://").append(request.getServerName()).append(":").append(request.getServerPort())
-            .append(OidcEntryPointServlet.PATH).append("?c=").append(connection.name());
-        if ( redirectPath != null )
-            uri.append("?redirect=").append(URLEncoder.encode(redirectPath, StandardCharsets.UTF_8));
-
-        return URI.create(uri.toString());
     }
 
     private String propertyPath(OidcConnection connection, String propertyName) {

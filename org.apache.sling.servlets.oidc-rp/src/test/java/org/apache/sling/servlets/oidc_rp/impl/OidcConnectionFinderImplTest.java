@@ -58,7 +58,7 @@ class OidcConnectionFinderImplTest {
 
         OIDCTokens tokens = new OIDCTokens(new BearerAccessToken(12), null);
 
-        OidcConnectionFinderImpl connectionFinder = new OidcConnectionFinderImpl(null);
+        OidcConnectionFinderImpl connectionFinder = new OidcConnectionFinderImpl();
         connectionFinder.persistTokens(connection, context.resourceResolver(), tokens);
 
         Resource connectionResource = getConnectionResource(connection);
@@ -75,7 +75,7 @@ class OidcConnectionFinderImplTest {
 
         OIDCTokens tokens = new OIDCTokens(new PlainJWT(new JWTClaimsSet.Builder().issuer("example.com").build()), new BearerAccessToken(12), null);
 
-        OidcConnectionFinderImpl connectionFinder = new OidcConnectionFinderImpl(null);
+        OidcConnectionFinderImpl connectionFinder = new OidcConnectionFinderImpl();
         connectionFinder.persistTokens(connection, context.resourceResolver(), tokens);
 
         Resource connectionResource = getConnectionResource(connection);
@@ -91,7 +91,7 @@ class OidcConnectionFinderImplTest {
     @Test
     void getAccessToken_missing() {
         
-        OidcConnectionFinderImpl connectionFinder = new OidcConnectionFinderImpl(null);
+        OidcConnectionFinderImpl connectionFinder = new OidcConnectionFinderImpl();
         
         OidcToken accessToken = connectionFinder.getAccessToken(connection, context.resourceResolver());
         
@@ -106,7 +106,7 @@ class OidcConnectionFinderImplTest {
         
         OIDCTokens tokens = new OIDCTokens(new BearerAccessToken(12), null);
 
-        OidcConnectionFinderImpl connectionFinder = new OidcConnectionFinderImpl(null);
+        OidcConnectionFinderImpl connectionFinder = new OidcConnectionFinderImpl();
         connectionFinder.persistTokens(connection, context.resourceResolver(), tokens);
         
         OidcToken accessToken = connectionFinder.getAccessToken(connection, context.resourceResolver());
@@ -122,7 +122,7 @@ class OidcConnectionFinderImplTest {
         int lifetimeSeconds = 1;
         OIDCTokens tokens = new OIDCTokens(new BearerAccessToken(12, lifetimeSeconds, null), null);
         
-        OidcConnectionFinderImpl connectionFinder = new OidcConnectionFinderImpl(null);
+        OidcConnectionFinderImpl connectionFinder = new OidcConnectionFinderImpl();
         connectionFinder.persistTokens(connection, context.resourceResolver(), tokens);
 
         // wait for the token to expire
