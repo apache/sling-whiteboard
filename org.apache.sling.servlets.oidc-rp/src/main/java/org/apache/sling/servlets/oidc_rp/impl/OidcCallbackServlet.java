@@ -125,7 +125,6 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
             if ( connection.baseUrl() == null )
                 throw new ServletException("Misconfigured baseUrl");
             
-            // TODO - this code should be extracted and reused to refresh the access token with a refresh token, if present
             ClientID clientId = new ClientID(connection.clientId());
             Secret clientSecret = new Secret(connection.clientSecret());
             ClientSecretBasic clientCredentials = new ClientSecretBasic(clientId, clientSecret);

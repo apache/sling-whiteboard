@@ -75,13 +75,7 @@ public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConne
             if ( expiresAt != null  && expiresAt.length == 1 && expiresAt[0].getType() == PropertyType.DATE ) {
                 Calendar expiresCal = expiresAt[0].getDate();
                 if ( expiresCal.before(Calendar.getInstance())) {
-                    logger.info("Token for {} expired at {}, not returning", connection.name(), expiresCal);
-
-                    Value[] tokenValue = user.getProperty(propertyPath(connection, PROPERTY_NAME_REFRESH_TOKEN));
-                    // no refresh token, missing
-                    if ( tokenValue == null ) {
-                        return new OidcToken(OidcTokenState.MISSING, null);
-                    }
+                    logger.info("Token for {} expired at {}, marking as expired", connection.name(), expiresCal);
 
                     // refresh token is present, mark as expired
                     return new OidcToken(OidcTokenState.EXPIRED, null);
