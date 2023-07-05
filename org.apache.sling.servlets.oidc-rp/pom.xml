@@ -122,6 +122,11 @@
                             <includeClassifier>app</includeClassifier>
                         </scan>
                     </scans>
+                    <repositories>
+                        <repository>
+                            <includeClassifier>app</includeClassifier>
+                        </repository>
+                    </repositories>
                 </configuration>
                 <executions>
                     <execution>
@@ -131,6 +136,13 @@
                             <goal>aggregate-features</goal>
                             <goal>analyse-features</goal>
                             <goal>attach-features</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>create-repository</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>repository</goal>
                         </goals>
                     </execution>
                </executions>
