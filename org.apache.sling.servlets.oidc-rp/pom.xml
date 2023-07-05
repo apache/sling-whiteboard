@@ -63,10 +63,12 @@
             <plugin>
                 <groupId>org.apache.sling</groupId>
                 <artifactId>slingfeature-maven-plugin</artifactId>
-                <version>1.6.8</version>
+                <version>1.7.0</version>
                 <extensions>true</extensions>
                 <configuration>
                     <skipAddFeatureDependencies>true</skipAddFeatureDependencies>
+                    <skipAddJarToFeature>false</skipAddJarToFeature>
+                    <jarStartOrder>25</jarStartOrder>
                     <framework>
                         <groupId>org.apache.felix</groupId>
                         <artifactId>org.apache.felix.framework</artifactId>

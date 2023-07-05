@@ -27,10 +27,6 @@
     {
         "id":"net.minidev:accessors-smart:2.4.8",
         "start-order": 24
-     },
-    {
-        "id": "org.apache.sling:org.apache.sling.servlets.oidc-rp:${project.version}",
-        "start-order": 25
-    }
+     }
   ]
 }
