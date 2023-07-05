@@ -63,7 +63,8 @@
             <plugin>
                 <groupId>org.apache.sling</groupId>
                 <artifactId>slingfeature-maven-plugin</artifactId>
-                <version>1.7.0</version>
+                <!-- Need a snapshot until SLING-11932 is released -->
+                <version>1.7.1-SNAPSHOT</version>
                 <extensions>true</extensions>
                 <configuration>
                     <skipAddFeatureDependencies>true</skipAddFeatureDependencies>
@@ -117,6 +118,11 @@
                             </includeArtifact>
                         </aggregate>
                     </aggregates>
+                    <repositories>
+                        <repository>
+                            <includeClassifier>app</includeClassifier>
+                        </repository>
+                    </repositories>
                     <scans>
                         <scan>
                             <includeClassifier>app</includeClassifier>
@@ -131,6 +137,13 @@
                             <goal>aggregate-features</goal>
                             <goal>analyse-features</goal>
                             <goal>attach-features</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>create-app-repository</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>repository</goal>
                         </goals>
                     </execution>
                </executions>
