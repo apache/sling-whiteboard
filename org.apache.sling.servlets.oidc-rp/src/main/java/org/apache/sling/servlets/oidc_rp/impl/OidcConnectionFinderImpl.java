@@ -128,25 +128,27 @@ public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConne
             User currentUser = resolver.adaptTo(User.class);
             Session session = resolver.adaptTo(Session.class);
 
-            String accessToken = tokens.getAccessToken().getValue();
-            String refreshToken = tokens.getRefreshToken().getValue();
             ZonedDateTime expiry = null;
             long expiresIn = tokens.getAccessToken().getLifetime();
             if ( expiresIn > 0 ) {
                 expiry = LocalDateTime.now().plus(expiresIn, ChronoUnit.SECONDS).atZone(ZoneId.systemDefault());
             }
 
+            String accessToken = tokens.getAccessToken().getValue();
             currentUser.setProperty(propertyPath(connection, PROPERTY_NAME_ACCESS_TOKEN), session.getValueFactory().createValue(accessToken));
             if ( expiry != null ) {
                 Calendar cal = GregorianCalendar.from(expiry);
                 currentUser.setProperty(propertyPath(connection, PROPERTY_NAME_EXPIRES_AT), session.getValueFactory().createValue(cal));
             } else
                 currentUser.removeProperty(propertyPath(connection, PROPERTY_NAME_EXPIRES_AT));
-            
-            if ( refreshToken != null )
-                currentUser.setProperty(propertyPath(connection, PROPERTY_NAME_REFRESH_TOKEN), session.getValueFactory().createValue(refreshToken));
-            else
-                currentUser.removeProperty(propertyPath(connection, PROPERTY_NAME_REFRESH_TOKEN));
+
+            if ( tokens.getRefreshToken() != null ) {
+                String refreshToken = tokens.getRefreshToken().getValue();
+                if ( refreshToken != null )
+                    currentUser.setProperty(propertyPath(connection, PROPERTY_NAME_REFRESH_TOKEN), session.getValueFactory().createValue(refreshToken));
+                else
+                    currentUser.removeProperty(propertyPath(connection, PROPERTY_NAME_REFRESH_TOKEN));
+            }
 
             if ( tokens instanceof OIDCTokens oidcTokens) {
                 // don't touch the id token if we don't have an OIDC token, e.g. when refreshing the access token
