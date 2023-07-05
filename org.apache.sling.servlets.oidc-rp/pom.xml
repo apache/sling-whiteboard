@@ -35,7 +35,6 @@
         <sling.java.version>17</sling.java.version>
         <project.build.outputTimestamp>1</project.build.outputTimestamp>
         <bnd.baseline.skip>true</bnd.baseline.skip>
-        <skipITs>true</skipITs>
 	</properties>
 
 	<build>
@@ -199,7 +198,7 @@
             <plugin>
                 <groupId>org.apache.sling</groupId>
                 <artifactId>feature-launcher-maven-plugin</artifactId>
-                <version>0.1.4</version>
+                <version>0.1.5-SNAPSHOT</version>
                 <configuration>
                     <launches>
                         <launch>
@@ -212,6 +211,9 @@
                                 <classifier>app</classifier>
                                 <type>slingosgifeature</type>
                             </feature>
+                            <repositoryUrls>
+                                <repositoryUrl>file://${project.build.directory}/artifacts</repositoryUrl>
+                            </repositoryUrls>
                             <launcherArguments>
                                 <frameworkProperties>
                                     <org.osgi.service.http.port>${http.port}</org.osgi.service.http.port>
