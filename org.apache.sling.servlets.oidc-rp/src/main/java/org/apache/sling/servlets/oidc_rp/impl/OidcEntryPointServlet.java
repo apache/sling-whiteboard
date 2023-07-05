@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
+import org.apache.sling.auth.core.AuthConstants;
 import org.apache.sling.servlets.annotations.SlingServletPaths;
 import org.apache.sling.servlets.oidc_rp.OidcConnection;
 import org.osgi.service.component.annotations.Activate;
@@ -51,7 +52,9 @@ import com.nimbusds.openid.connect.sdk.AuthenticationRequest;
 import com.nimbusds.openid.connect.sdk.Nonce;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
 
-@Component(service = { Servlet.class })
+@Component(service = { Servlet.class },
+    property = { AuthConstants.AUTH_REQUIREMENTS +"=" + OidcEntryPointServlet.PATH }
+)
 @SlingServletPaths(OidcEntryPointServlet.PATH)
 public class OidcEntryPointServlet extends SlingAllMethodsServlet {
     private static final long serialVersionUID = 1L;
