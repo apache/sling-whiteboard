@@ -19,6 +19,7 @@ objective is to simplify access to user and access tokens in a secure manner.
 - provide a sample content package and instructions how to use
 - review to see if we can use more of the Nimbus SDK, e.g. enpodints discovery, token parsing
 - review security best practices
+- do not start the OIDC process if the user can't write to their home directory ( anonymous )
 
 ## Prerequisites
 
