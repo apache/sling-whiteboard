@@ -27,9 +27,23 @@ import org.apache.sling.api.resource.ResourceResolver;
 // It is definitely an unpleasant smell that the OidcConnnectionFinderImpl needs to reach out to the OidcClient.
 // 
 // Further question - do we need a way of introspecting the OidcConnections?
+//
+// In terms of what typed objects we expose, there are a number of ways
+//
+// - expose Nimbus objects, which ties us to the library 'forever' ( or makes us break backwards
+//   compatibility if we need to change to another library, like we did for the XSS APIU
+// - create our own wrapper objects, which is nice for the consumer but a lot of duplicate work
+// - pass Strings (or simple types like a StringToken which promises to hold valid JSON ) around
+//   and ask consumers to parse them, while internally using the Nimbus SDK. This is the most
+//   flexible, but also a bit wasteful
+// - (?) can we do without exposing the actual tokens?
 public interface OidcConnectionFinder {
 
     OidcToken getAccessToken(OidcConnection connection, ResourceResolver resolver);
     
-    /* TODO OidcToken getRefreshToken(OidcConnection connection, ResourceResolver resolver); */
+    OidcToken getRefreshToken(OidcConnection connection, ResourceResolver resolver);
+    
+    /* TODO OidcToken getUserToken(OidcConnection connection, ResourceResolver resolver);
+    
+    /* TODO void persistTokens(); */
 }

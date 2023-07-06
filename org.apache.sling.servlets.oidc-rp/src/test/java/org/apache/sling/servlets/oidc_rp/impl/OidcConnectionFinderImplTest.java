@@ -40,6 +40,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.PlainJWT;
 import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
+import com.nimbusds.oauth2.sdk.token.RefreshToken;
 import com.nimbusds.openid.connect.sdk.token.OIDCTokens;
 
 @ExtendWith(SlingContextExtension.class)
@@ -133,6 +134,32 @@ class OidcConnectionFinderImplTest {
             .isNotNull()
             .extracting( OidcToken::getState )
             .isEqualTo( OidcTokenState.EXPIRED );
+    }
+    
+    @Test
+    void getRefreshToken_valid() {
+        OIDCTokens tokens = new OIDCTokens(new BearerAccessToken(12), new RefreshToken(12));
+
+        OidcConnectionFinderImpl connectionFinder = new OidcConnectionFinderImpl();
+        connectionFinder.persistTokens(connection, context.resourceResolver(), tokens);
+        
+        OidcToken refreshToken = connectionFinder.getRefreshToken(connection, context.resourceResolver());
+        assertThat(refreshToken).as("refresh token")
+            .isNotNull()
+            .extracting( OidcToken::getState , OidcToken::getValue )
+            .containsExactly( OidcTokenState.VALID, tokens.getRefreshToken().getValue() );
+    }
+    
+    @Test
+    void getRefreshToken_missing() {
+        
+        OidcConnectionFinderImpl connectionFinder = new OidcConnectionFinderImpl();
+        
+        OidcToken refreshToken = connectionFinder.getRefreshToken(connection, context.resourceResolver());
+        assertThat(refreshToken).as("refresh token")
+            .isNotNull()
+            .extracting( OidcToken::getState )
+            .isEqualTo( OidcTokenState.MISSING);
     }
 
     private Resource getConnectionResource(OidcConnection connection) throws RepositoryException {

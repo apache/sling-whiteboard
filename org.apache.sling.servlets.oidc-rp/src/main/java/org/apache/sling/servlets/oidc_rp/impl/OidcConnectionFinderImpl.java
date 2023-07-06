@@ -68,14 +68,30 @@ public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConne
                 }
             }
 
-            Value[] tokenValue = user.getProperty(propertyPath(connection, PROPERTY_NAME_ACCESS_TOKEN));
-            if ( tokenValue == null )
-                return new OidcToken(OidcTokenState.MISSING, null);
+            return getToken(connection, user, PROPERTY_NAME_ACCESS_TOKEN);
+        } catch (RepositoryException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-            if ( tokenValue.length != 1)
-                throw new RuntimeException("Unexpected value count for token property : " + tokenValue.length);
+    private OidcToken getToken(OidcConnection connection, User user, String propertyName) throws RepositoryException {
 
-            return  new OidcToken(OidcTokenState.VALID, tokenValue[0].getString());
+        Value[] tokenValue = user.getProperty(propertyPath(connection, propertyName));
+        if ( tokenValue == null )
+            return new OidcToken(OidcTokenState.MISSING, null);
+
+        if ( tokenValue.length != 1)
+            throw new RuntimeException(String.format("Unexpected value count %d for token property %s" , tokenValue.length, propertyName));
+
+        return  new OidcToken(OidcTokenState.VALID, tokenValue[0].getString());
+    }
+    
+    @Override
+    public OidcToken getRefreshToken(OidcConnection connection, ResourceResolver resolver) {
+        try {
+            User user = resolver.adaptTo(User.class);
+            
+            return getToken(connection, user, PROPERTY_NAME_REFRESH_TOKEN);
         } catch (RepositoryException e) {
             throw new RuntimeException(e);
         }
