@@ -47,7 +47,7 @@ import com.nimbusds.openid.connect.sdk.token.OIDCTokens;
 class OidcConnectionFinderImplTest {
 
     private final SlingContext context = new SlingContext(ResourceResolverType.JCR_OAK);
-    private final MockOidcConnection connection = new MockOidcConnection(new String[] {"openid"}, "mock-oidc", "client-id", "client-secret", "http://example.com");
+    private final MockOidcConnection connection = MockOidcConnection.DEFAULT_CONNECTION;
 
     @BeforeEach
     public void registerAdapterFactories() {
@@ -201,6 +201,4 @@ class OidcConnectionFinderImplTest {
             .isNotNull();
         return connectionResource;
     }
-
-    public record MockOidcConnection(String[] scopes, String name, String clientId, String clientSecret, String baseUrl) implements OidcConnection { }
 }

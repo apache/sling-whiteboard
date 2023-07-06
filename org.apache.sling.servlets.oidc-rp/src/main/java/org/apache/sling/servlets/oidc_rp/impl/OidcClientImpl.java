@@ -97,10 +97,16 @@ public class OidcClientImpl implements OidcClient {
     public URI getOidcEntryPointUri(OidcConnection connection, SlingHttpServletRequest request, String redirectPath) {
         
         StringBuilder uri = new StringBuilder();
-        uri.append(request.getScheme()).append("://").append(request.getServerName()).append(":").append(request.getServerPort())
-            .append(OidcEntryPointServlet.PATH).append("?c=").append(connection.name());
+        uri.append(request.getScheme()).append("://").append(request.getServerName());
+        boolean needsExplicitPort = ( "https".equals(request.getScheme()) && request.getServerPort() != 443 )
+                || ( "http".equals(request.getScheme()) && request.getServerPort() != 80 ) ;
+                
+        if ( needsExplicitPort ) {
+            uri.append(':').append(request.getServerPort());
+        }
+        uri.append(OidcEntryPointServlet.PATH).append("?c=").append(connection.name());
         if ( redirectPath != null )
-            uri.append("?redirect=").append(URLEncoder.encode(redirectPath, StandardCharsets.UTF_8));
+            uri.append("&redirect=").append(URLEncoder.encode(redirectPath, StandardCharsets.UTF_8));
 
         return URI.create(uri.toString());
     }
