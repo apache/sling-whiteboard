@@ -26,7 +26,7 @@ public class Converter {
 
     public static OIDCTokens toNimbusOidcTokens(OidcTokens tokens) {
         OIDCTokens nimbusTokens;
-        RefreshToken nimbusRefreshToken = new RefreshToken(tokens.refreshToken());
+        RefreshToken nimbusRefreshToken = tokens.refreshToken() != null ? new RefreshToken(tokens.refreshToken()) : null;
         BearerAccessToken nimbusAccessToken = new BearerAccessToken(tokens.accessToken(), tokens.expiresAt(), null);
         if ( tokens.idToken() != null ) {
             nimbusTokens = new OIDCTokens(tokens.idToken(), nimbusAccessToken, nimbusRefreshToken); 
