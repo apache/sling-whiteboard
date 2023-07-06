@@ -16,6 +16,12 @@
  */
 package org.apache.sling.servlets.oidc_rp;
 
+/**
+ * Information about an OIDC token
+ * 
+ * <p>This class encapsulated the known information about and OIDC token. It allows the client to
+ * make decisions based on the possible states.</p>
+ */
 public class OidcToken {
 
     private final OidcTokenState state;
@@ -30,6 +36,12 @@ public class OidcToken {
         return state;
     }
 
+    /**
+     * Returns the token value
+     * 
+     * @return the value, in case the {@link #getState() state} is {@code OidcTokenState#VALID}.
+     * @throws IllegalStateException in case the {@link #getState() state} is not {@code OidcTokenState#VALID}.
+     */
     public String getValue() {
         if ( state != OidcTokenState.VALID )
             throw new IllegalStateException("Can't retrieve a token value when the token state is "  + state);

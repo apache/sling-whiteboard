@@ -31,10 +31,10 @@ import javax.jcr.Value;
 import org.apache.jackrabbit.api.security.user.User;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.servlets.oidc_rp.OidcConnection;
-import org.apache.sling.servlets.oidc_rp.OidcConnectionFinder;
 import org.apache.sling.servlets.oidc_rp.OidcException;
 import org.apache.sling.servlets.oidc_rp.OidcToken;
 import org.apache.sling.servlets.oidc_rp.OidcTokenState;
+import org.apache.sling.servlets.oidc_rp.OidcTokenStore;
 import org.apache.sling.servlets.oidc_rp.OidcTokens;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
@@ -45,8 +45,8 @@ import com.nimbusds.oauth2.sdk.token.RefreshToken;
 import com.nimbusds.oauth2.sdk.token.Tokens;
 import com.nimbusds.openid.connect.sdk.token.OIDCTokens;
 
-@Component
-public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConnectionPersister {
+@Component(service = { OidcTokenStore.class, JcrUserHomeOidcTokenStore.class } )
+public class JcrUserHomeOidcTokenStore implements OidcTokenStore {
 
     // TODO - expires_at
     private static final String PROPERTY_NAME_EXPIRES_AT = "expiresAt";
@@ -112,7 +112,6 @@ public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConne
         }
     }
     
-    @Override
     public void persistTokens(OidcConnection connection, ResourceResolver resolver, OIDCTokens tokens) {
         persistTokens0(connection, resolver, tokens);
     }

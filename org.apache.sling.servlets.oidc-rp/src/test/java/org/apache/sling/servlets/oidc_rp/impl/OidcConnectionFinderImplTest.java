@@ -59,7 +59,7 @@ class OidcConnectionFinderImplTest {
 
         OIDCTokens tokens = new OIDCTokens(new BearerAccessToken(12), null);
 
-        OidcConnectionFinderImpl connectionFinder = new OidcConnectionFinderImpl();
+        JcrUserHomeOidcTokenStore connectionFinder = new JcrUserHomeOidcTokenStore();
         connectionFinder.persistTokens(connection, context.resourceResolver(), tokens);
 
         Resource connectionResource = getConnectionResource(connection);
@@ -76,7 +76,7 @@ class OidcConnectionFinderImplTest {
 
         OIDCTokens tokens = new OIDCTokens(new PlainJWT(new JWTClaimsSet.Builder().issuer("example.com").build()), new BearerAccessToken(12), null);
 
-        OidcConnectionFinderImpl connectionFinder = new OidcConnectionFinderImpl();
+        JcrUserHomeOidcTokenStore connectionFinder = new JcrUserHomeOidcTokenStore();
         connectionFinder.persistTokens(connection, context.resourceResolver(), tokens);
 
         Resource connectionResource = getConnectionResource(connection);
@@ -92,7 +92,7 @@ class OidcConnectionFinderImplTest {
     @Test
     void getAccessToken_missing() {
         
-        OidcConnectionFinderImpl connectionFinder = new OidcConnectionFinderImpl();
+        JcrUserHomeOidcTokenStore connectionFinder = new JcrUserHomeOidcTokenStore();
         
         OidcToken accessToken = connectionFinder.getAccessToken(connection, context.resourceResolver());
         
@@ -107,7 +107,7 @@ class OidcConnectionFinderImplTest {
         
         OIDCTokens tokens = new OIDCTokens(new BearerAccessToken(12), null);
 
-        OidcConnectionFinderImpl connectionFinder = new OidcConnectionFinderImpl();
+        JcrUserHomeOidcTokenStore connectionFinder = new JcrUserHomeOidcTokenStore();
         connectionFinder.persistTokens(connection, context.resourceResolver(), tokens);
         
         OidcToken accessToken = connectionFinder.getAccessToken(connection, context.resourceResolver());
@@ -123,7 +123,7 @@ class OidcConnectionFinderImplTest {
         int lifetimeSeconds = 1;
         OIDCTokens tokens = new OIDCTokens(new BearerAccessToken(12, lifetimeSeconds, null), null);
         
-        OidcConnectionFinderImpl connectionFinder = new OidcConnectionFinderImpl();
+        JcrUserHomeOidcTokenStore connectionFinder = new JcrUserHomeOidcTokenStore();
         connectionFinder.persistTokens(connection, context.resourceResolver(), tokens);
 
         // wait for the token to expire
@@ -140,7 +140,7 @@ class OidcConnectionFinderImplTest {
     void getRefreshToken_valid() {
         OIDCTokens tokens = new OIDCTokens(new BearerAccessToken(12), new RefreshToken(12));
 
-        OidcConnectionFinderImpl connectionFinder = new OidcConnectionFinderImpl();
+        JcrUserHomeOidcTokenStore connectionFinder = new JcrUserHomeOidcTokenStore();
         connectionFinder.persistTokens(connection, context.resourceResolver(), tokens);
         
         OidcToken refreshToken = connectionFinder.getRefreshToken(connection, context.resourceResolver());
@@ -153,7 +153,7 @@ class OidcConnectionFinderImplTest {
     @Test
     void getRefreshToken_missing() {
         
-        OidcConnectionFinderImpl connectionFinder = new OidcConnectionFinderImpl();
+        JcrUserHomeOidcTokenStore connectionFinder = new JcrUserHomeOidcTokenStore();
         
         OidcToken refreshToken = connectionFinder.getRefreshToken(connection, context.resourceResolver());
         assertThat(refreshToken).as("refresh token")
@@ -164,7 +164,7 @@ class OidcConnectionFinderImplTest {
     
     @Test
     void getIdToken_missing() {
-        OidcConnectionFinderImpl connectionFinder = new OidcConnectionFinderImpl();
+        JcrUserHomeOidcTokenStore connectionFinder = new JcrUserHomeOidcTokenStore();
         
         OidcToken refreshToken = connectionFinder.getIdToken(connection, context.resourceResolver());
         assertThat(refreshToken).as("id token")
@@ -176,7 +176,7 @@ class OidcConnectionFinderImplTest {
     @Test
     void getIdToken_valid() {
         OIDCTokens tokens = new OIDCTokens(new PlainJWT(new JWTClaimsSet.Builder().issuer("example.com").build()), new BearerAccessToken(12), null);
-        OidcConnectionFinderImpl connectionFinder = new OidcConnectionFinderImpl();
+        JcrUserHomeOidcTokenStore connectionFinder = new JcrUserHomeOidcTokenStore();
         connectionFinder.persistTokens(connection, context.resourceResolver(), tokens);
         
         OidcToken refreshToken = connectionFinder.getIdToken(connection, context.resourceResolver());

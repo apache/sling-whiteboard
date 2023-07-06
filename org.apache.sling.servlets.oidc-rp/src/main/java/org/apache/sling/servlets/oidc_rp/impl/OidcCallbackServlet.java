@@ -72,7 +72,7 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final Map<String, OidcConnection> connections;
-    private final OidcConnectionPersister persister;
+    private final JcrUserHomeOidcTokenStore tokenStore;
     private final OidcProviderMetadataRegistry metadataRegistry;
 
     static String getCallbackUri(HttpServletRequest request) {
@@ -80,12 +80,12 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
     }
 
     @Activate
-    public OidcCallbackServlet(@Reference(policyOption = GREEDY) List<OidcConnection> connections, @Reference OidcConnectionPersister persister,
+    public OidcCallbackServlet(@Reference(policyOption = GREEDY) List<OidcConnection> connections, @Reference JcrUserHomeOidcTokenStore tokenStore,
             @Reference OidcProviderMetadataRegistry metadataRegistry) {
         this.connections = connections.stream()
                 .collect(Collectors.toMap( OidcConnection::name, Function.identity()));
         this.metadataRegistry = metadataRegistry;
-        this.persister = persister;
+        this.tokenStore = tokenStore;
     }
 
     @Override
@@ -154,7 +154,7 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
             // - nonce validation (?)
             // - iat/exp validation (?)
 
-            persister.persistTokens(connection, request.getResourceResolver(), tokenResponse.getOIDCTokens());
+            tokenStore.persistTokens(connection, request.getResourceResolver(), tokenResponse.getOIDCTokens());
 
             if ( redirect.isEmpty() ) {
                 response.setStatus(HttpServletResponse.SC_OK);
