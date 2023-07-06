@@ -28,5 +28,5 @@ public interface OidcClient {
     
     // void /* TODO OIDCTokens */ getOidcTokens(OidcConnection connection, String authenticationCode);
     
-    // void /* TODO Tokens*/ refreshAccessToken(OidcConnection connection, String refreshToken2) throws ParseException, IOException;
+    OidcTokens refreshTokens(OidcConnection connection, String refreshToken);
 }
