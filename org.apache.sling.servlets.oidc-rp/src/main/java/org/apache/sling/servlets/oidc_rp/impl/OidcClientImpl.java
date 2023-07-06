@@ -27,6 +27,7 @@ import java.nio.charset.StandardCharsets;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.servlets.oidc_rp.OidcClient;
 import org.apache.sling.servlets.oidc_rp.OidcConnection;
+import org.apache.sling.servlets.oidc_rp.OidcException;
 import org.apache.sling.servlets.oidc_rp.OidcTokens;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -89,7 +90,7 @@ public class OidcClientImpl implements OidcClient {
          if (! response.indicatesSuccess()) {
              // We got an error response...
              TokenErrorResponse errorResponse = response.toErrorResponse();
-             throw new RuntimeException("Failed refreshing the access token " + errorResponse.getErrorObject().getCode() + " : " + errorResponse.getErrorObject().getDescription());
+             throw new OidcException("Failed refreshing the access token " + errorResponse.getErrorObject().getCode() + " : " + errorResponse.getErrorObject().getDescription());
          }
         
          OIDCTokenResponse successResponse = response.toSuccessResponse();
@@ -97,7 +98,7 @@ public class OidcClientImpl implements OidcClient {
          // Get the access token, the refresh token may be updated
          return successResponse.getOIDCTokens();
     } catch (ParseException |IOException e) {
-        throw new RuntimeException(e);
+        throw new OidcException(e);
     }
     }
     

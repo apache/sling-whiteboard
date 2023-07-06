@@ -13,7 +13,7 @@ objective is to simplify access to user and access tokens in a secure manner.
 
 - bundle/package should probably be org.apache.sling.extensions.oidc, as the primary entry point is the Java API
 - clarify Java API and allow extracting both id and access tokens
-- make use of refresh tokens
+- allow use of refresh tokens
 - document usage for the supported OIDC providers; make sure to explain this is _not_ an authentication handler
 - provide a sample content package and instructions how to use
 - review security best practices

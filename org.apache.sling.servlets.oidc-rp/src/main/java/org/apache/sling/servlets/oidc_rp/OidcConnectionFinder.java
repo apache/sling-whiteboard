@@ -39,11 +39,11 @@ import org.apache.sling.api.resource.ResourceResolver;
 // - (?) can we do without exposing the actual tokens?
 public interface OidcConnectionFinder {
 
-    OidcToken getAccessToken(OidcConnection connection, ResourceResolver resolver);
+    OidcToken getAccessToken(OidcConnection connection, ResourceResolver resolver) throws OidcException;
     
-    OidcToken getRefreshToken(OidcConnection connection, ResourceResolver resolver);
+    OidcToken getRefreshToken(OidcConnection connection, ResourceResolver resolver) throws OidcException;
     
-    OidcToken getIdToken(OidcConnection connection, ResourceResolver resolver);
+    OidcToken getIdToken(OidcConnection connection, ResourceResolver resolver) throws OidcException;
     
-    void persistTokens(OidcConnection connection, ResourceResolver resolver, OidcTokens tokens);
+    void persistTokens(OidcConnection connection, ResourceResolver resolver, OidcTokens tokens) throws OidcException;
 }

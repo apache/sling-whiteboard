@@ -16,17 +16,24 @@
  */
 package org.apache.sling.servlets.oidc_rp;
 
-import java.net.URI;
+public class OidcException extends RuntimeException {
 
-import org.apache.sling.api.SlingHttpServletRequest;
+    private static final long serialVersionUID = 1L;
 
-public interface OidcClient {
+    public OidcException() {
+        super();
+    }
 
-    URI getOidcEntryPointUri(OidcConnection connection, SlingHttpServletRequest request, String redirectPath) throws OidcException;
-    
-    URI getAuthenticationRequestUri(OidcConnection connection, SlingHttpServletRequest request, URI redirectUri) throws OidcException;
-    
-    // void /* TODO OIDCTokens */ getOidcTokens(OidcConnection connection, String authenticationCode) throws OidcException;
-    
-    OidcTokens refreshTokens(OidcConnection connection, String refreshToken) throws OidcException;
+    public OidcException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public OidcException(String message) {
+        super(message);
+    }
+
+    public OidcException(Throwable cause) {
+        super(cause);
+    }
+
 }

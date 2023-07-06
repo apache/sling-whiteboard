@@ -32,6 +32,7 @@ import org.apache.jackrabbit.api.security.user.User;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.servlets.oidc_rp.OidcConnection;
 import org.apache.sling.servlets.oidc_rp.OidcConnectionFinder;
+import org.apache.sling.servlets.oidc_rp.OidcException;
 import org.apache.sling.servlets.oidc_rp.OidcToken;
 import org.apache.sling.servlets.oidc_rp.OidcTokenState;
 import org.apache.sling.servlets.oidc_rp.OidcTokens;
@@ -73,7 +74,7 @@ public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConne
 
             return getToken(connection, user, PROPERTY_NAME_ACCESS_TOKEN);
         } catch (RepositoryException e) {
-            throw new RuntimeException(e);
+            throw new OidcException(e);
         }
     }
 
@@ -84,7 +85,7 @@ public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConne
             return new OidcToken(OidcTokenState.MISSING, null);
 
         if ( tokenValue.length != 1)
-            throw new RuntimeException(String.format("Unexpected value count %d for token property %s" , tokenValue.length, propertyName));
+            throw new OidcException(String.format("Unexpected value count %d for token property %s" , tokenValue.length, propertyName));
 
         return  new OidcToken(OidcTokenState.VALID, tokenValue[0].getString());
     }
@@ -96,7 +97,7 @@ public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConne
             
             return getToken(connection, user, PROPERTY_NAME_REFRESH_TOKEN);
         } catch (RepositoryException e) {
-            throw new RuntimeException(e);
+            throw new OidcException(e);
         }
     }
     
@@ -107,7 +108,7 @@ public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConne
             
             return getToken(connection, user, PROPERTY_NAME_ID_TOKEN);
         } catch (RepositoryException e) {
-            throw new RuntimeException(e);
+            throw new OidcException(e);
         }
     }
     
@@ -154,7 +155,7 @@ public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConne
 
             session.save();
         } catch (RepositoryException e) {
-            throw new RuntimeException(e);
+            throw new OidcException(e);
         }
     }
     
