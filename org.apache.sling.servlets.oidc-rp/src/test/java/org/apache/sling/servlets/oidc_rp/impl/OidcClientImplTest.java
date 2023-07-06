@@ -19,11 +19,16 @@ package org.apache.sling.servlets.oidc_rp.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
+import java.util.Collections;
 
 import org.apache.sling.testing.mock.sling.junit5.SlingContext;
 import org.apache.sling.testing.mock.sling.junit5.SlingContextExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
+import com.nimbusds.oauth2.sdk.id.Issuer;
+import com.nimbusds.openid.connect.sdk.SubjectType;
+import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
 
 @ExtendWith(SlingContextExtension.class)
 class OidcClientImplTest {
@@ -55,6 +60,36 @@ class OidcClientImplTest {
             .hasPort(8080)
             .hasPath("/system/sling/oidc/entry-point")
             .hasQuery("c=mock-oidc");
+    }
+    
+    @Test
+    void testGetAuthenticationRequestUri() {
+    
+        OidcClientImpl clientImpl = new OidcClientImpl(new OidcProviderMetadataRegistry() {
+            @Override
+            public OIDCProviderMetadata getProviderMetadata(String base) {
+                return new OIDCProviderMetadata(new Issuer(base), Collections.singletonList(SubjectType.PUBLIC), URI.create("https://foo.example/jwks")) {
+                    @Override
+                    public URI getAuthorizationEndpointURI() {
+                        return URI.create("https://foo.example/authz");
+                    }
+                };
+            }
+        });
+        URI requestUri = clientImpl.getAuthenticationRequestUri(MockOidcConnection.DEFAULT_CONNECTION, context.request(), URI.create("http://localhost/callback"));
+
+        assertThat(requestUri).as("authentication request uri")
+            .hasScheme("https")
+            .hasHost("foo.example")
+            .hasPath("/authz")
+            .hasParameter("scope", "openid")
+            .hasParameter("response_type", "code")
+            .hasParameter("client_id", "client-id")
+            .hasParameter("redirect_uri", "http://localhost/callback")
+            .hasParameter("nonce")
+            .hasParameter("state");
+        
+        
     }
 
 }
