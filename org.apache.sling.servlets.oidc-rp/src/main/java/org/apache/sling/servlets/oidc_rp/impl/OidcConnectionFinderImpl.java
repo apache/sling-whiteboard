@@ -34,10 +34,13 @@ import org.apache.sling.servlets.oidc_rp.OidcConnection;
 import org.apache.sling.servlets.oidc_rp.OidcConnectionFinder;
 import org.apache.sling.servlets.oidc_rp.OidcToken;
 import org.apache.sling.servlets.oidc_rp.OidcTokenState;
+import org.apache.sling.servlets.oidc_rp.OidcTokens;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
+import com.nimbusds.oauth2.sdk.token.RefreshToken;
 import com.nimbusds.oauth2.sdk.token.Tokens;
 import com.nimbusds.openid.connect.sdk.token.OIDCTokens;
 
@@ -142,6 +145,20 @@ public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConne
         } catch (RepositoryException e) {
             throw new RuntimeException(e);
         }
+    }
+    
+    @Override
+    public void persistTokens(OidcConnection connection, ResourceResolver resolver, OidcTokens tokenPair) {
+        OIDCTokens nimbusTokens;
+        RefreshToken nimbusRefreshToken = new RefreshToken(tokenPair.refreshToken());
+        BearerAccessToken nimbusAccessToken = new BearerAccessToken(tokenPair.accessToken(), tokenPair.expiresAt(), null);
+        if ( tokenPair.idToken() != null ) {
+            nimbusTokens = new OIDCTokens(tokenPair.idToken(), nimbusAccessToken, nimbusRefreshToken); 
+        } else {
+            nimbusTokens = new OIDCTokens(nimbusAccessToken, nimbusRefreshToken);
+        }
+        
+        persistTokens(connection, resolver, nimbusTokens);
     }
 
     private String propertyPath(OidcConnection connection, String propertyName) {
