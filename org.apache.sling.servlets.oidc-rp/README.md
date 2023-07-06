@@ -17,6 +17,7 @@ objective is to simplify access to user and access tokens in a secure manner.
 - document usage for the supported OIDC providers; make sure to explain this is _not_ an authentication handler
 - provide a sample content package and instructions how to use
 - review security best practices
+- investigate whether the OIDC entry point servlet is really needed
 
 ## Prerequisites
 

@@ -20,13 +20,51 @@ import java.net.URI;
 
 import org.apache.sling.api.SlingHttpServletRequest;
 
+/**
+ * A client for dealing with over-the-network OIDC concerns
+ * 
+ * <p>This client is able to generate URLs and make network calls related to OIDC.</p>
+ * 
+ */
 public interface OidcClient {
 
+    /**
+     * Generates a local URI to the OIDC entry point servlet
+     * 
+     * <p>The URI can be used as-is to send a redirect to the user and start the OIDC flow.</p>
+     * 
+     * @param connection The connection to start the OIDC flow for
+     * @param request The current request
+     * @param redirectPath The local redirect path to use after completing the OIDC flow
+     * @return a local URI
+     * @throws OidcException in case anything goes wrong
+     */
     URI getOidcEntryPointUri(OidcConnection connection, SlingHttpServletRequest request, String redirectPath) throws OidcException;
     
+    /**
+     * Generates a URI to the OIDC provider's authorization endpoint
+     * 
+     * <p>The URI can be used as-is to start the OIDC flow directly on the identity provider's side.</p>
+     * 
+     * @param connection The connection to start the OIDC flow for
+     * @param request The current request
+     * @param redirectUri The redirect path to use after completing the OIDC flow
+     * @return a remote URI
+     * @throws OidcException in case anything goes wrong
+     */
     URI getAuthenticationRequestUri(OidcConnection connection, SlingHttpServletRequest request, URI redirectUri) throws OidcException;
     
-    // void /* TODO OIDCTokens */ getOidcTokens(OidcConnection connection, String authenticationCode) throws OidcException;
+    // OidcTokens getOidcTokens(OidcConnection connection, String authenticationCode) throws OidcException;
     
+    /**
+     * Refreshes the OIDC tokens based on the supplied refresh token
+     * 
+     * <p>It is the responsibility of the invoker to persist the returned tokens.</p> 
+     * 
+     * @param connection The connection to start the OIDC flow for
+     * @param refreshToken An existing refresh token
+     * @return OIDC tokens
+     * @throws OidcException in case anything goes wrong
+     */
     OidcTokens refreshTokens(OidcConnection connection, String refreshToken) throws OidcException;
 }
