@@ -101,6 +101,17 @@ public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConne
     }
     
     @Override
+    public OidcToken getIdToken(OidcConnection connection, ResourceResolver resolver) {
+        try {
+            User user = resolver.adaptTo(User.class);
+            
+            return getToken(connection, user, PROPERTY_NAME_ID_TOKEN);
+        } catch (RepositoryException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    @Override
     public void persistTokens(OidcConnection connection, ResourceResolver resolver, OIDCTokens tokens) {
         persistTokens0(connection, resolver, tokens);
     }
@@ -168,5 +179,4 @@ public class OidcConnectionFinderImpl implements OidcConnectionFinder, OidcConne
     private String nodePath(OidcConnection connection) {
         return "oidc-tokens/" + connection.name();
     }
-
 }

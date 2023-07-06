@@ -43,7 +43,7 @@ public interface OidcConnectionFinder {
     
     OidcToken getRefreshToken(OidcConnection connection, ResourceResolver resolver);
     
-    void persistTokens(OidcConnection connection, ResourceResolver resolver, OidcTokens tokens);
+    OidcToken getIdToken(OidcConnection connection, ResourceResolver resolver);
     
-    /* TODO OidcToken getUserToken(OidcConnection connection, ResourceResolver resolver); */
+    void persistTokens(OidcConnection connection, ResourceResolver resolver, OidcTokens tokens);
 }

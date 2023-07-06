@@ -161,7 +161,31 @@ class OidcConnectionFinderImplTest {
             .extracting( OidcToken::getState )
             .isEqualTo( OidcTokenState.MISSING);
     }
+    
+    @Test
+    void getIdToken_missing() {
+        OidcConnectionFinderImpl connectionFinder = new OidcConnectionFinderImpl();
+        
+        OidcToken refreshToken = connectionFinder.getIdToken(connection, context.resourceResolver());
+        assertThat(refreshToken).as("id token")
+            .isNotNull()
+            .extracting( OidcToken::getState )
+            .isEqualTo( OidcTokenState.MISSING);
+    }
 
+    @Test
+    void getIdToken_valid() {
+        OIDCTokens tokens = new OIDCTokens(new PlainJWT(new JWTClaimsSet.Builder().issuer("example.com").build()), new BearerAccessToken(12), null);
+        OidcConnectionFinderImpl connectionFinder = new OidcConnectionFinderImpl();
+        connectionFinder.persistTokens(connection, context.resourceResolver(), tokens);
+        
+        OidcToken refreshToken = connectionFinder.getIdToken(connection, context.resourceResolver());
+        assertThat(refreshToken).as("id token")
+            .isNotNull()
+            .extracting( OidcToken::getState, OidcToken::getValue )
+            .containsExactly( OidcTokenState.VALID, tokens.getIDTokenString() );
+    }
+    
     private Resource getConnectionResource(OidcConnection connection) throws RepositoryException {
         String userPath = context.resourceResolver().adaptTo(User.class).getPath();
         Resource userHomeResource = context.resourceResolver().getResource(userPath);
