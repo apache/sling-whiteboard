@@ -16,7 +16,6 @@ objective is to simplify access to user and access tokens in a secure manner.
 - make use of refresh tokens
 - document usage for the supported OIDC providers; make sure to explain this is _not_ an authentication handler
 - provide a sample content package and instructions how to use
-- review to see if we can use more of the Nimbus SDK, e.g. enpodints discovery, token parsing
 - review security best practices
 
 ## Prerequisites
