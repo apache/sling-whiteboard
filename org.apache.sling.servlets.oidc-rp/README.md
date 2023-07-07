@@ -42,7 +42,7 @@ public class MySlingServlet {
       case EXPIRED:
         OidcToken refreshToken = tokenStore.getRefreshToken(connection, request.getResourceResolver());
         if ( refreshToken.getState() != OidcTokenState.VALID )
-            throw new ServletException(String.format("access token is expired but refresh token not found ( state = %s)", refreshToken.getState()));
+          response.sendRedirect(oidcClient.getOidcEntryPointUri(connection, request, "/bin/myservlet").toString());
         
         OidcTokens oidcTokens = oidcClient.refreshTokens(connection, refreshToken.getValue());
         tokenStore.persistTokens(connection, request.getResourceResolver(), oidcTokens);
