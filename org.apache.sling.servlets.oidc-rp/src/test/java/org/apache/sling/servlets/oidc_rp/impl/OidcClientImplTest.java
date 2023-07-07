@@ -21,10 +21,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.net.URI;
 import java.util.Collections;
 
+import org.apache.sling.extensions.oidc_rp.OidcConnection;
 import org.apache.sling.extensions.oidc_rp.impl.OidcClientImpl;
 import org.apache.sling.extensions.oidc_rp.impl.OidcProviderMetadataRegistry;
 import org.apache.sling.testing.mock.sling.junit5.SlingContext;
 import org.apache.sling.testing.mock.sling.junit5.SlingContextExtension;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -37,9 +39,25 @@ class OidcClientImplTest {
 
     private final SlingContext context = new SlingContext();
     
+    private OidcClientImpl clientImpl;
+    
+    @BeforeEach
+    void initClient() {
+        clientImpl =  new OidcClientImpl(new OidcProviderMetadataRegistry() {
+            @Override
+            public OIDCProviderMetadata getProviderMetadata(String base) {
+                return new OIDCProviderMetadata(new Issuer(base), Collections.singletonList(SubjectType.PUBLIC), URI.create("https://foo.example/jwks")) {
+                    @Override
+                    public URI getAuthorizationEndpointURI() {
+                        return URI.create("https://foo.example/authz");
+                    }
+                };
+            }
+        });
+    }
+    
     @Test
     void testRedirectUri() {
-        OidcClientImpl clientImpl = new OidcClientImpl(null);
         URI redirectUri = clientImpl.getOidcEntryPointUri(MockOidcConnection.DEFAULT_CONNECTION, context.request(), "/foo");
         
         assertThat(redirectUri).as("redirect uri")
@@ -52,7 +70,6 @@ class OidcClientImplTest {
 
     @Test
     void testRedirectUri_customPort_noRedirect() {
-        OidcClientImpl clientImpl = new OidcClientImpl(null);
         context.request().setServerPort(8080);
         URI redirectUri = clientImpl.getOidcEntryPointUri(MockOidcConnection.DEFAULT_CONNECTION, context.request(), null);
         
@@ -67,17 +84,6 @@ class OidcClientImplTest {
     @Test
     void testGetAuthenticationRequestUri() {
     
-        OidcClientImpl clientImpl = new OidcClientImpl(new OidcProviderMetadataRegistry() {
-            @Override
-            public OIDCProviderMetadata getProviderMetadata(String base) {
-                return new OIDCProviderMetadata(new Issuer(base), Collections.singletonList(SubjectType.PUBLIC), URI.create("https://foo.example/jwks")) {
-                    @Override
-                    public URI getAuthorizationEndpointURI() {
-                        return URI.create("https://foo.example/authz");
-                    }
-                };
-            }
-        });
         URI requestUri = clientImpl.getAuthenticationRequestUri(MockOidcConnection.DEFAULT_CONNECTION, context.request(), URI.create("http://localhost/callback"));
 
         assertThat(requestUri).as("authentication request uri")
@@ -90,8 +96,17 @@ class OidcClientImplTest {
             .hasParameter("redirect_uri", "http://localhost/callback")
             .hasParameter("nonce")
             .hasParameter("state");
+    }
+    
+    @Test
+    void testGetAuthenticationRequestUri_customParam() {
+    
+        OidcConnection connection = new MockOidcConnection(new String[] {"openid"}, "mock-oidc", "client-id", "client-secret", "http://example.com", new String[] { "access_type=offline" } );
         
-        
+        URI requestUri = clientImpl.getAuthenticationRequestUri(connection, context.request(), URI.create("http://localhost/callback"));
+
+        assertThat(requestUri).as("authentication request uri")
+            .hasParameter("access_type", "offline");
     }
 
 }

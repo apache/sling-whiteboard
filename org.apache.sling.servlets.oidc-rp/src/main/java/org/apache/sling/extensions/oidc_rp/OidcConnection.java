@@ -24,4 +24,5 @@ public interface OidcConnection {
     String clientId();
     String clientSecret();
     String[] scopes();
+    String[] additionalAuthorizationParameters();
 }

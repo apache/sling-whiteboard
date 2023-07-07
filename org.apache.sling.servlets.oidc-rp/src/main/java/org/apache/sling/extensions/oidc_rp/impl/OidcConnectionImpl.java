@@ -36,6 +36,7 @@ public class OidcConnectionImpl implements OidcConnection{
         String clientId();
         @AttributeDefinition(type = AttributeType.PASSWORD) String clientSecret();
         String[] scopes();
+        String[] additionalAuthorizationParameters();
         
         String webconsole_configurationFactory_nameHint() default "Name: {name}, base URL: {baseUrl}, clientId: {clientId}";
     }
@@ -71,5 +72,11 @@ public class OidcConnectionImpl implements OidcConnection{
     public String name() {
         return cfg.name();
     }
+
+    @Override
+    public String[] additionalAuthorizationParameters() {
+        return cfg.additionalAuthorizationParameters();
+    }
+    
 
 }

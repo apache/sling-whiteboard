@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.extensions.oidc_rp.OidcClient;
@@ -140,16 +141,21 @@ public class OidcClientImpl implements OidcClient {
         Nonce nonce = new Nonce();
 
         // Compose the OpenID authentication request (for the code flow)
-        AuthenticationRequest authRequest = new AuthenticationRequest.Builder(
+        AuthenticationRequest.Builder authRequestBuilder = new AuthenticationRequest.Builder(
                 new ResponseType("code"),
                 new Scope(connection.scopes()),
                 clientID, redirectUri)
             .endpointURI(providerMetadata.getAuthorizationEndpointURI())
             .state(state)
-            .nonce(nonce)
-            .customParameter("access_type", "offline") // request refresh token. TODO - is this Google-specific?
-            .build();
+            .nonce(nonce);
         
-        return authRequest.toURI();
+        if ( connection.additionalAuthorizationParameters() != null ) {
+            Arrays.stream(connection.additionalAuthorizationParameters())
+                .map( s -> s.split("=") )
+                .filter( p -> p.length == 2 )
+                .forEach( p -> authRequestBuilder.customParameter(p[0], p[1]));
+        }
+        
+        return authRequestBuilder.build().toURI();
     }
 }
