@@ -3,52 +3,103 @@
 > **Warning**
 > This bundle is under development, do not use in production.
 
-## Introduction
+## Usage
 
 This bundle add support for Sling-based applications to function as
 [Open ID connect](https://openid.net/developers/how-connect-works/) relying parties. Its main
-objective is to simplify access to user and access tokens in a secure manner.
+objective is to simplify access to user and access id in a secure manner. It currently supports
+the Authorization Code flow.
+
+The bundle offers the following entry points
+
+- and `OidcClient` service that communicates with the remote Open ID connect provider
+- a `TokenStore` service that allows storage and retrieval of persisted tokens.
+
+Basic usage is as follows
+
+```java
+
+import org.apache.sling.extensions.oidc_rp.*;
+
+@Component(service = { Servlet.class })
+@SlingServletPaths(value = "/bin/myservlet")
+public class MySlingServlet {
+
+  @Reference private OidcTokenStore tokenStore;
+  @Reference private OidcClient oidcClient;
+
+  public void accessRemoteResource(SlingHttpServletRequest request, SlingHttpServletResponse response) {
+    OidcConnection connection = getConnection();
+    OidcToken tokenResponse = tokenStore.getAccessToken(connection, request.getResourceResolver());
+    
+    switch ( tokenResponse.getState() ) {
+      case VALID:
+        doStuffWithToken(tokenResponse.getValue());
+        break;
+      case MISSING:
+        response.sendRedirect(oidcClient.getOidcEntryPointUri(connection, request, "/bin/myservlet").toString());
+        break;
+      case EXPIRED:
+        OidcToken refreshToken = tokenStore.getRefreshToken(connection, request.getResourceResolver());
+        if ( refreshToken.getState() != OidcTokenState.VALID )
+            throw new ServletException(String.format("access token is expired but refresh token not found ( state = %s)", refreshToken.getState()));
+        
+        OidcTokens oidcTokens = oidcClient.refreshTokens(connection, refreshToken.getValue());
+        tokenStore.persistTokens(connection, request.getResourceResolver(), oidcTokens);
+        doStuffWithToken(tokenResponse.getValue());
+        break;
+    }
+  }
+}
+```
+
+### Client registration
+
+Client registration is specific to each provider. When registering, note the following:
+
+- the redirect URL must be set to $HOST/system/sling/oidc/callback registered. For development this is typically http://localhost:8080/system/sling/oidc/callback
+- write down the client id, client secret obtained from the OIDC provider
+- you may need to provide in advance the set of scopes accessible to your client
+
+Validated providers:
+
+- Google, with base URL of https://accounts.google.com , see [Google OIDC documentation](https://developers.google.com/identity/protocols/oauth2/openid-connect)
+- KeyCloak ( see [#keycloak] )
+
+### Deployment
+
+A set of dependencies required by this bundle, on top of the Sling Starter ones, is available at `src/main/features/main.json`.
+In addition, the following OSGi configuration must be added
+
+```json
+"org.apache.sling.servlets.oidc_rp.impl.OidcConnectionImpl~provider": {
+    "name": "provider",
+    "baseUrl": "https://.example.com",
+    "clientId": "$[secret:provider/clientId]",
+    "clientSecret": "$[secret:provider/clientSecret]",
+    "scopes": ["openid"]
+}
+```
+
+At this point, the OIDC process can be kicked of by navigating to http://localhost:8080/system/sling/oidc/entry-point?c=provider
+
+### Token storage
+
+The tokens are stored under the user's home, under the `oidc-tokens/$PROVIDER_NAME` node.
+
 
 ## Whiteboard graduation TODO 
 
 - allow use of refresh tokens
 - extract the token exchange code from the OidcCallbackServlet and move it to the OauthClientImpl
-- document usage for the supported OIDC providers; make sure to explain this is _not_ an authentication handler
-- provide a sample content package and instructions how to use
+- provide a sample content package
 - review security best practices
 - investigate whether the OIDC entry point servlet is really needed
 
-## Prerequisites
 
-### Client registration
+## Local development setup
 
-An OpenID Connect client must be registrered with an authorization server, and a callback URL of $HOST/system/sling/oidc/callback registered. This is typically http://localhost:8080/system/sling/oidc/callback .
-
-Validated providers:
-
-- Google, with base URL of https://accounts.google.com , see [Google OIDC documentation](https://developers.google.com/identity/protocols/oauth2/openid-connect)
-
-## Sling Starter Prerequisites
-
-A number of additional bundles need to be added to the Sling Starter, see the feature model definition at src/main/features/main.json .
-
-### Deployment and configuration
-
-After deploying the bundle using `mvn package sling:install` go to http://localhost:8080/system/console/configMgr and create a new configuration factory instance for _OpenID Connect connection details_. Write down the name property, we'll refer to it as `$CONNECTION_NAME`.
-
-### Kicking off the process
-
-Ensure you are logged in.
-
-- navigate to http://localhost:8080/system/sling/oidc/entry-point?c=$CONNECTION_NAME&redirect=/bin/browser.html
-- you will be redirect to the identity provider, where you will need authenticate yourself and authorize the connection
-- you will be redirected to the composum browser
-
-At this point you can navigate to /home/users/${USERNAME}/oidc-tokens/${CONNECTION_NAME} and you will see the stored access token.
-
-### Local development setup
-
-#### tl;dr
+### tl;dr
 
 - run the keycloak container using the instructions for 'use existing test files'
 - build the bundle once with `mvn clean install`
@@ -74,9 +125,9 @@ Now you can
 - access Sling on http://localhost:8080
 - start the OIDC login process on http://localhost:8080/system/sling/oidc/entry-point?c=keycloak-dev
 
-#### Keycloak
+### Keycloak
 
-##### Use existing test files
+#### Use existing test files
 
 Note that this imports the test setup with a single user with a _redirect_uri_ set to _http://localhost*_, which can be a security issue.
 
@@ -84,7 +135,7 @@ Note that this imports the test setup with a single user with a _redirect_uri_ s
 $ docker run --rm  --volume $(pwd)/src/test/resources/keycloak-import:/opt/keycloak/data/import -p 8081:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin quay.io/keycloak/keycloak:20.0.3 start-dev --import-realm
 ```
 
-##### Manual setup
+#### Manual setup
 
 1. Launch Keycloak locally
 
@@ -122,32 +173,8 @@ $ docker run --rm --volume $(pwd)/keycloak-data:/opt/keycloak/data -p 8081:8080 
 - in the dialog, use 'test' for the password and password confirmation fields and then press 'save'
 - confirm by pressing 'save password' in the new dialog
 
-#### Sling
- 
-1. OSGi bundles
 
-TODO
-
-2. OSGi config
-
-```
-org.apache.sling.extensions.oidc_rp.impl.OidcConnectionImpl
-name: keycloak
-baseUrl: http://localhost:8081/realms/sling
-clientId: oidc-test
-clientSecret: ( copied from above)
-scopes: openid 
-
-```
-
-#### Obtaining the tokens
-
-- navigate to http://localhost:8080/system/sling/login and login as admin/admin
-- go to http://localhost:8080/system/sling/oidc/entry-point?c=keycloak&redirect=/bin/browser.html/home/users
-- complete the login flow
-- navigate in composum to the user name of the admin user and verify that the 'oidc-tokens' node contains a keycloak node with the respective access_token and refresh_token properties 
-
-#### Exporting the test realm
+### Exporting the test realm
 
 ```
 $ docker run --rm --volume (pwd)/keycloak-data:/opt/keycloak/data -p 8081:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin quay.io/keycloak/keycloak:20.0.3 export --realm sling --users realm_file --file /opt/keycloak/data/export/sling.json
