@@ -37,6 +37,7 @@ import java.util.stream.Stream;
 import org.apache.http.Header;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.sling.extensions.oidc_rp.impl.OidcConnectionImpl;
 import org.apache.sling.testing.clients.ClientException;
 import org.apache.sling.testing.clients.SlingClient;
 import org.apache.sling.testing.clients.SlingHttpResponse;
@@ -54,7 +55,7 @@ import dasniko.testcontainers.keycloak.KeycloakContainer;
 
 class AuthorizationCodeFlowIT {
 
-    private static final String OIDC_CONFIG_PID = "org.apache.sling.servlets.oidc_rp.impl.OidcConnectionImpl";
+    private static final String OIDC_CONFIG_PID = OidcConnectionImpl.class.getName();
 
     private KeycloakContainer keycloak;
     private SlingClient sling;
