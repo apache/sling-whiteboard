@@ -1,14 +1,14 @@
-# Apache Sling OpenID Connect Relying Party support bundle
+# Apache Sling OpenID Connect and OAuth 2.0 support
 
 > **Warning**
 > This bundle is under development, do not use in production.
 
-## Usage
+This bundle adds support for Sling-based applications to function as a
+[Open ID connect](https://openid.net/developers/how-connect-works/) relying parties or OAuth 2.0 clients 
+ Its main objective is to simplify access to user and access tokens in a secure manner. It currently supports
+the OIDC Authentication Code flow.
 
-This bundle add support for Sling-based applications to function as
-[Open ID connect](https://openid.net/developers/how-connect-works/) relying parties. Its main
-objective is to simplify access to user and access id in a secure manner. It currently supports
-the Authorization Code flow.
+## Usage
 
 The bundle offers the following entry points
 

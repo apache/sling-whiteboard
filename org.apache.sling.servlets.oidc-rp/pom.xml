@@ -29,7 +29,7 @@
 	<artifactId>org.apache.sling.extensions.oidc-rp</artifactId>
 	<version>0.1-SNAPSHOT</version>
 
-	<name>Apache Sling Extensions OIDC Relying Party</name>
+	<name>Apache Sling Extensions OpenID Connect and OAuth 2.0 support</name>
 
     <properties>
         <sling.java.version>17</sling.java.version>
