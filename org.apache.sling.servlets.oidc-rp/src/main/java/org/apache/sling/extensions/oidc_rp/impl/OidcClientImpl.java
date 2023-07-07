@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.servlets.oidc_rp.impl;
+package org.apache.sling.extensions.oidc_rp.impl;
 
-import static org.apache.sling.servlets.oidc_rp.impl.OidcStateManager.PARAMETER_NAME_CONNECTION;
-import static org.apache.sling.servlets.oidc_rp.impl.OidcStateManager.PARAMETER_NAME_REDIRECT;
+import static org.apache.sling.extensions.oidc_rp.impl.OidcStateManager.PARAMETER_NAME_CONNECTION;
+import static org.apache.sling.extensions.oidc_rp.impl.OidcStateManager.PARAMETER_NAME_REDIRECT;
 
 import java.io.IOException;
 import java.net.URI;
@@ -25,10 +25,10 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.sling.api.SlingHttpServletRequest;
-import org.apache.sling.servlets.oidc_rp.OidcClient;
-import org.apache.sling.servlets.oidc_rp.OidcConnection;
-import org.apache.sling.servlets.oidc_rp.OidcException;
-import org.apache.sling.servlets.oidc_rp.OidcTokens;
+import org.apache.sling.extensions.oidc_rp.OidcClient;
+import org.apache.sling.extensions.oidc_rp.OidcConnection;
+import org.apache.sling.extensions.oidc_rp.OidcException;
+import org.apache.sling.extensions.oidc_rp.OidcTokens;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;

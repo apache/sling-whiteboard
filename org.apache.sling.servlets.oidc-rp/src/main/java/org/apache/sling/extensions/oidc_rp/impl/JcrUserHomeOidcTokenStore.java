@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.servlets.oidc_rp.impl;
+package org.apache.sling.extensions.oidc_rp.impl;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -30,12 +30,12 @@ import javax.jcr.Value;
 
 import org.apache.jackrabbit.api.security.user.User;
 import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.servlets.oidc_rp.OidcConnection;
-import org.apache.sling.servlets.oidc_rp.OidcException;
-import org.apache.sling.servlets.oidc_rp.OidcToken;
-import org.apache.sling.servlets.oidc_rp.OidcTokenState;
-import org.apache.sling.servlets.oidc_rp.OidcTokenStore;
-import org.apache.sling.servlets.oidc_rp.OidcTokens;
+import org.apache.sling.extensions.oidc_rp.OidcConnection;
+import org.apache.sling.extensions.oidc_rp.OidcException;
+import org.apache.sling.extensions.oidc_rp.OidcToken;
+import org.apache.sling.extensions.oidc_rp.OidcTokenState;
+import org.apache.sling.extensions.oidc_rp.OidcTokenStore;
+import org.apache.sling.extensions.oidc_rp.OidcTokens;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

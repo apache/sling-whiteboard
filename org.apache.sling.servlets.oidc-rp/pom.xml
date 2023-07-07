@@ -26,10 +26,10 @@
         <relativePath/>
     </parent>
 
-	<artifactId>org.apache.sling.servlets.oidc-rp</artifactId>
+	<artifactId>org.apache.sling.extensions.oidc-rp</artifactId>
 	<version>0.1-SNAPSHOT</version>
 
-	<name>Apache Sling Servlets OIDC Relying Party</name>
+	<name>Apache Sling Extensions OIDC Relying Party</name>
 
     <properties>
         <sling.java.version>17</sling.java.version>

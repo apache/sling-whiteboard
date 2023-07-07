@@ -21,6 +21,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.net.URI;
 import java.util.Collections;
 
+import org.apache.sling.extensions.oidc_rp.impl.OidcClientImpl;
+import org.apache.sling.extensions.oidc_rp.impl.OidcProviderMetadataRegistry;
 import org.apache.sling.testing.mock.sling.junit5.SlingContext;
 import org.apache.sling.testing.mock.sling.junit5.SlingContextExtension;
 import org.junit.jupiter.api.Test;

@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.servlets.oidc_rp.impl;
+package org.apache.sling.extensions.oidc_rp.impl;
 
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.apache.sling.servlets.oidc_rp.OidcException;
+import org.apache.sling.extensions.oidc_rp.OidcException;
 import org.osgi.service.component.annotations.Component;
 
 import com.nimbusds.oauth2.sdk.GeneralException;

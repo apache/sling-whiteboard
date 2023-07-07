@@ -14,7 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@Version("0.1.0")
-package org.apache.sling.servlets.oidc_rp;
+package org.apache.sling.extensions.oidc_rp;
 
-import org.osgi.annotation.versioning.Version;
+// TODO - bad name
+public interface OidcConnection {
+
+    String name();
+    String baseUrl();
+    String clientId();
+    String clientSecret();
+    String[] scopes();
+}

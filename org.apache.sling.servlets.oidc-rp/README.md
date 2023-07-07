@@ -11,7 +11,6 @@ objective is to simplify access to user and access tokens in a secure manner.
 
 ## Whiteboard graduation TODO 
 
-- bundle/package should probably be org.apache.sling.extensions.oidc, as the primary entry point is the Java API
 - allow use of refresh tokens
 - extract the token exchange code from the OidcCallbackServlet and move it to the OauthClientImpl
 - document usage for the supported OIDC providers; make sure to explain this is _not_ an authentication handler
@@ -65,8 +64,8 @@ $ curl -u admin:admin -X POST -d "apply=true" -d "propertylist=name,baseUrl,clie
     -d "clientId=oidc-test"\
     -d "clientSecret=$CLIENT_SECRET" \
     -d "scopes=openid" \
-    -d "factoryPid=org.apache.sling.servlets.oidc_rp.impl.OidcConnectionImpl" \
-    http://localhost:8080/system/console/configMgr/org.apache.sling.servlets.oidc_rp.impl.OidcConnectionImpl~keycloak-dev
+    -d "factoryPid=org.apache.sling.extensions.oidc_rp.impl.OidcConnectionImpl" \
+    http://localhost:8080/system/console/configMgr/org.apache.sling.extensions.oidc_rp.impl.OidcConnectionImpl~keycloak-dev
 ```
 
 Now you can 
@@ -132,7 +131,7 @@ TODO
 2. OSGi config
 
 ```
-org.apache.sling.servlets.oidc_rp.impl.OidcConnectionImpl
+org.apache.sling.extensions.oidc_rp.impl.OidcConnectionImpl
 name: keycloak
 baseUrl: http://localhost:8081/realms/sling
 clientId: oidc-test

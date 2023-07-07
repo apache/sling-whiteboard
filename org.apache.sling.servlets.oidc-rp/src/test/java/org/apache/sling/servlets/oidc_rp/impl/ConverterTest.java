@@ -18,7 +18,8 @@ package org.apache.sling.servlets.oidc_rp.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.sling.servlets.oidc_rp.OidcTokens;
+import org.apache.sling.extensions.oidc_rp.OidcTokens;
+import org.apache.sling.extensions.oidc_rp.impl.Converter;
 import org.junit.jupiter.api.Test;
 
 import com.nimbusds.oauth2.sdk.token.AccessToken;

@@ -14,8 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.servlets.oidc_rp;
+package org.apache.sling.extensions.oidc_rp;
 
-public enum OidcTokenState {
-    VALID, EXPIRED, MISSING;
+public class OidcException extends RuntimeException {
+
+    private static final long serialVersionUID = 1L;
+
+    public OidcException() {
+        super();
+    }
+
+    public OidcException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public OidcException(String message) {
+        super(message);
+    }
+
+    public OidcException(Throwable cause) {
+        super(cause);
+    }
+
 }
