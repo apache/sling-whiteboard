@@ -62,8 +62,7 @@
             <plugin>
                 <groupId>org.apache.sling</groupId>
                 <artifactId>slingfeature-maven-plugin</artifactId>
-                <!-- Need a snapshot until SLING-11932 is released -->
-                <version>1.7.1-SNAPSHOT</version>
+                <version>1.7.2</version>
                 <extensions>true</extensions>
                 <configuration>
                     <skipAddFeatureDependencies>true</skipAddFeatureDependencies>
@@ -198,7 +197,7 @@
             <plugin>
                 <groupId>org.apache.sling</groupId>
                 <artifactId>feature-launcher-maven-plugin</artifactId>
-                <version>0.1.5-SNAPSHOT</version>
+                <version>0.1.6</version>
                 <configuration>
                     <launches>
                         <launch>
