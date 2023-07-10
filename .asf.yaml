@@ -12,5 +12,7 @@ github:
   - "INFRA"
   - "FELIX"
   - "MNG"
+  dependabot_alerts:  false
+  dependabot_updates: false
 notifications:
   jira_options: "link"
