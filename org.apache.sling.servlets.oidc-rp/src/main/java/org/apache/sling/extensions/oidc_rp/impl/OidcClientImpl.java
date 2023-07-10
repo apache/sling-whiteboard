@@ -144,7 +144,7 @@ public class OidcClientImpl implements OidcClient {
         AuthenticationRequest.Builder authRequestBuilder = new AuthenticationRequest.Builder(
                 new ResponseType("code"),
                 new Scope(connection.scopes()),
-                clientID, redirectUri)
+                clientID, URI.create(OidcCallbackServlet.getCallbackUri(request)))
             .endpointURI(providerMetadata.getAuthorizationEndpointURI())
             .state(state)
             .nonce(nonce);
