@@ -4,15 +4,15 @@
 > This bundle is under development, do not use in production.
 
 This bundle adds support for Sling-based applications to function as a
-[Open ID connect](https://openid.net/developers/how-connect-works/) relying parties or OAuth 2.0 clients 
- Its main objective is to simplify access to user and access tokens in a secure manner. It currently supports
+[Open ID connect](https://openid.net/developers/how-connect-works/) relying parties or OAuth 2.0 clients. 
+Its main objective is to simplify access to user and access tokens in a secure manner. It currently supports
 the OIDC Authentication Code flow.
 
 ## Usage
 
 The bundle offers the following entry points
 
-- and `OidcClient` service that communicates with the remote Open ID connect provider
+- an `OidcClient` service that communicates with the remote Open ID connect provider
 - a `TokenStore` service that allows storage and retrieval of persisted tokens.
 
 Basic usage is as follows
