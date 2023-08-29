@@ -48,6 +48,13 @@ import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.dropwizard.DropwizardExports;
 import io.prometheus.client.exporter.MetricsServlet;
 
+/**
+ * Exports metrics taking into account multiple registry instances
+ * 
+ * <p>For historical reasons, Sling and Oak have their own metrics registry implementations. This
+ * may occur for other applications as well so we take care to gracefully handle multiple child
+ * registries.</p>
+ */
 @HttpWhiteboardServletPattern("/metrics")
 @HttpWhiteboardContextSelect("(osgi.http.whiteboard.context.name=org.osgi.service.http)")
 @Component(service = Servlet.class)

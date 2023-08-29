@@ -21,6 +21,9 @@ import org.osgi.service.component.annotations.Component;
 
 import io.prometheus.client.hotspot.DefaultExports;
 
+/**
+ * Registers the default JVM metrics with the default registry
+ */
 @Component(immediate = true)
 public class DefaultJvmMetricsRegistrar {
 
