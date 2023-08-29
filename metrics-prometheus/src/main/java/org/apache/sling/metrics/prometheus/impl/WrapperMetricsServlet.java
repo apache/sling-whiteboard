@@ -21,9 +21,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import javax.servlet.Servlet;
-import javax.servlet.ServletException;
 
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
@@ -62,17 +63,15 @@ public class WrapperMetricsServlet extends MetricsServlet {
     
     private final ConcurrentMap<MetricRegistry, CopyMetricRegistryListener> childRegistries = new ConcurrentHashMap<>();
 
-    @Override
-    public void init() throws ServletException {
-        super.init();
+    @Activate
+    public WrapperMetricsServlet() {
         this.exports = new DropwizardExports(metrics);
         CollectorRegistry.defaultRegistry.register(this.exports);
     }
 
-    @Override
-    public void destroy() {
+    @Deactivate
+    public void deactivate() {
         CollectorRegistry.defaultRegistry.unregister(this.exports);
-        super.destroy();
     }
 
     @Reference(service = MetricRegistry.class, cardinality = ReferenceCardinality.MULTIPLE,
