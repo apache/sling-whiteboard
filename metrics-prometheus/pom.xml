@@ -22,6 +22,9 @@
     <artifactId>org.apache.sling.commons.metrics.prometheus</artifactId>
     <version>1.0-SNAPSHOT</version>
     <name>Apache Sling Commons Prometheus Metrics Exporter</name>
+    <properties>
+        <io.prometheus.simpleclient.version>0.6.0</io.prometheus.simpleclient.version>
+    </properties>
     <build>
         <plugins>
             <plugin>
@@ -65,19 +68,19 @@
         <dependency>
             <groupId>io.prometheus</groupId>
             <artifactId>simpleclient_servlet</artifactId>
-            <version>0.0.23</version>
+            <version>${io.prometheus.simpleclient.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.prometheus</groupId>
             <artifactId>simpleclient_dropwizard</artifactId>
-            <version>0.0.23</version>
+            <version>${io.prometheus.simpleclient.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.prometheus</groupId>
             <artifactId>simpleclient_hotspot</artifactId>
-            <version>0.0.23</version>
+            <version>${io.prometheus.simpleclient.version}</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
