@@ -44,6 +44,9 @@ public class ResourceConfiguration {
     /** The property holding the rendered html */
     public String htmlProperty;
 
+    /** The property holding the elements list (pair of element name and html contents) */
+    public String elementsProperty;
+
     /** The property holding the first title (optional) */
     public String titleProperty;
 

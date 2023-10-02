@@ -25,9 +25,5 @@ public class ProcessingInstructions {
 
     public boolean extractTitle = false;
 
-    public boolean renderHtml = false;
-
     public boolean handleYamlFrontmatter = false;
-
-    public boolean rewriteLinks = false;
 }

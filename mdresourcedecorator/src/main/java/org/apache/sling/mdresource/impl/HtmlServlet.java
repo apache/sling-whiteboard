@@ -20,6 +20,8 @@ package org.apache.sling.mdresource.impl;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
+import java.util.Map;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
@@ -57,6 +59,9 @@ public class HtmlServlet extends HttpServlet {
 
         @AttributeDefinition(name = "Head Content", description = "Content to be added to the <head> section")
         String head_contents();
+
+        @AttributeDefinition(name = "HTML Property", description = "Name of the property holding the HTML")
+        String html_property() default "jcr:description";
     }
 
     private final Config cfg;
@@ -67,6 +72,7 @@ public class HtmlServlet extends HttpServlet {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     protected void doGet(final HttpServletRequest req, final HttpServletResponse resp)
     throws ServletException, IOException {
         final SlingHttpServletRequest request = (SlingHttpServletRequest) req;
@@ -93,9 +99,21 @@ public class HtmlServlet extends HttpServlet {
         }
         pw.println("</header>");
         pw.println("<main>");
-        final String desc = props.get("jcr:description", String.class);
-        if (desc != null) {
-            pw.println(desc);
+        final Object html = props.get(this.cfg.html_property());
+        if (html instanceof String) {
+            pw.println(html.toString());
+        } else if (html instanceof List) {
+            boolean startSection = true;
+            for (final Map.Entry<String, String> element : (List<Map.Entry<String,String>>) html) {
+                if (startSection) {
+                    pw.println("<div class=\"section\">");
+                    startSection = false;
+                }
+                pw.print(element.getValue());
+            }
+            if (!startSection) {
+                pw.println("</div>");
+            }
         }
         pw.println("<footer>");
         if (this.cfg.footer_resource() != null) {

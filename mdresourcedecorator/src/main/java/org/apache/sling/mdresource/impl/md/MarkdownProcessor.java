@@ -29,10 +29,8 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.mdresource.impl.md.handler.HeadingHandler;
 import org.apache.sling.mdresource.impl.md.handler.NodeHandler;
 import org.apache.sling.mdresource.impl.md.handler.YamlFrontMatterHandler;
-import org.apache.sling.mdresource.impl.md.links.CustomLinkResolverFactory;
 
 import com.vladsch.flexmark.ext.yaml.front.matter.YamlFrontMatterExtension;
-import com.vladsch.flexmark.html.HtmlRenderer;
 import com.vladsch.flexmark.parser.Parser;
 import com.vladsch.flexmark.util.ast.Document;
 import com.vladsch.flexmark.util.ast.Node;
@@ -76,16 +74,6 @@ public class MarkdownProcessor {
             }
 
             currentNode = nextNode;
-        }
-
-        if ( document.hasChildren() && inst.renderHtml) {
-            final HtmlRenderer.Builder builder = HtmlRenderer.builder();
-            if ( inst.rewriteLinks ) {
-                builder.linkResolverFactory(new CustomLinkResolverFactory(baseResource));
-            }
-            final HtmlRenderer htmlRenderer = builder.build();
-
-            result.html = htmlRenderer.render(document);
         }
 
         result.document = document;

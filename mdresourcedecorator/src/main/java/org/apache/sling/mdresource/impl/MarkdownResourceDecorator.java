@@ -79,6 +79,10 @@ public class MarkdownResourceDecorator implements ResourceDecorator {
                 description = "Name of the property holding the rendered html")
         String html_property() default "jcr:description";
 
+        @AttributeDefinition(name = "Html Elements",
+                description = "Name of the property holding the list of top level HTML elements (optional)")
+        String html_elements_property();
+
         @AttributeDefinition(name = "Markdown Property",
                 description = "Name of the property holding the read markdown (optional)")
         String markdown_property();
@@ -115,6 +119,7 @@ public class MarkdownResourceDecorator implements ResourceDecorator {
         this.config.resourceType = cfg.resource_type();
         this.config.sourceMarkdownProperty = cleanInput(cfg.source_markdown_property());
         this.config.htmlProperty = cleanInput(cfg.html_property());
+        this.config.elementsProperty = cleanInput(cfg.html_elements_property());
         this.config.titleProperty = cleanInput(cfg.title_property());
         this.config.markdownProperty = cleanInput(cfg.markdown_property());
         this.config.rewriteLinks = cfg.rewrite_links();
