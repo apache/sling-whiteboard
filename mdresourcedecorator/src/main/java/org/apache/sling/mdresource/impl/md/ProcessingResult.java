@@ -20,8 +20,11 @@ package org.apache.sling.mdresource.impl.md;
 
 import java.util.HashMap;
 import java.util.Map;
+import com.vladsch.flexmark.util.ast.Document;
 
 public class ProcessingResult {
+
+    public Document document;
 
     public String title;
 

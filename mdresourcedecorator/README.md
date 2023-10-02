@@ -11,16 +11,16 @@ A resource decorator can decorate resources provided by any resource provider. F
 ## Installation
 
 Install this bundle alongside with these two bundles:
-- org.jsoup:jsoup:1.13.1
-- com.vladsch.flexmark:flexmark-osgi:0.62.2
+- org.jsoup:jsoup:1.16.1
+- com.vladsch.flexmark:flexmark-osgi:0.64.8
 
 ## Configuration
 
 As the decorator is decorating resources from an already existing resource provider, you need to have a resource provider providing markdown files. You could use the file resource provider or store the files in the JCR repository.
 
-Configure a `org.apache.sling.resource.MarkdownResourceDecorator`, e.g.
+Configure a `org.apache.sling.resource.MarkdownResourceDecorator`. As the decorator is a factory, you can configure it multiple times and you need to use a factory configuration, e.g.
 
-    "org.apache.sling.resource.MarkdownResourceDecorator" : {
+    "org.apache.sling.resource.MarkdownResourceDecorator~files" : {
         "decoration.paths" : "/content/files/**.md"
     }
         

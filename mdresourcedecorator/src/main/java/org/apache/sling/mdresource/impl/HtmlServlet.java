@@ -1,0 +1,99 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package org.apache.sling.mdresource.impl;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+
+import javax.servlet.Servlet;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.api.resource.ValueMap;
+import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.ConfigurationPolicy;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
+
+@SlingServletResourceTypes(
+    resourceTypes="sling/markdown/file",
+    methods="GET",
+    extensions="html"
+)
+@Component(service=Servlet.class, configurationPolicy = ConfigurationPolicy.REQUIRE)
+@Designate(ocd = HtmlServlet.Config.class)
+public class HtmlServlet extends HttpServlet {
+
+    @ObjectClassDefinition(name = "Apache Sling Markdown HTML Servlet", description = "Servlet to render Markdown files as HTML")
+    public @interface Config {
+
+//        @AttributeDefinition(name = "Navigation Resource", description = "Path to the navigation resource")
+//        String nav_resource();
+
+//        @AttributeDefinition(name = "Footer Resource", description = "Path to the footer resource")
+//        String footer_resource();
+
+        @AttributeDefinition(name = "Head Content", description = "Content to be added to the <head> section")
+        String head_contents();
+    }
+
+    private final Config cfg;
+
+    @Activate
+    public HtmlServlet(final Config cfg) {
+        this.cfg = cfg;
+    }
+
+    @Override
+    protected void doGet(final HttpServletRequest req, final HttpServletResponse resp)
+    throws ServletException, IOException {
+        final SlingHttpServletRequest request = (SlingHttpServletRequest) req;
+        resp.setContentType("text/html");
+        resp.setCharacterEncoding("UTF-8");
+        final PrintWriter pw = resp.getWriter();
+        pw.println("<html>");
+        pw.println("<head>");
+        final ValueMap props = request.getResource().getValueMap();
+        final String title = props.get("jcr:title", String.class);
+        if (title != null) {
+            pw.print("<title>");
+            pw.print(title);
+            pw.println("</title>");
+        }
+        if (this.cfg.head_contents() != null) {
+            pw.println(this.cfg.head_contents());
+        }
+        pw.println("</head>");
+        pw.println("<body>");
+        pw.println("<main>");
+        final String desc = props.get("jcr:description", String.class);
+        if (desc != null) {
+            pw.println(desc);
+        }
+        pw.println("</main>");
+        pw.println("</body>");
+        pw.println("</html>");
+    }
+}

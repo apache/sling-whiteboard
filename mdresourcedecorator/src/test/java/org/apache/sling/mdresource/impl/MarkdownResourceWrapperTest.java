@@ -61,7 +61,7 @@ public class MarkdownResourceWrapperTest {
                 map.get("jcr:title", String.class));
 
         assertEquals("valueMap[jcr:description]",
-                "<p>This is an example of a simple markdown file</p>\n",
+                "<h1>Simple markdown file</h1>\n<p>This is an example of a simple markdown file</p>\n",
                 map.get("jcr:description", String.class));
 
         assertEquals("valueMap[author]", "John Doe", map.get("author", String.class));
@@ -125,7 +125,7 @@ public class MarkdownResourceWrapperTest {
 
         assertEquals("valueMap[jcr:title]", "First",
                 map.get("jcr:title", String.class));
-        assertEquals("valueMap[jcr:description]", "<h1>And</h1>\n" +
+        assertEquals("valueMap[jcr:description]", "<h1>First</h1>\n<h1>And</h1>\n" +
                 "<h2>Last</h2>\n" +
                 "<h1>And</h1>\n" +
                 "<h1>Always</h1>\n",

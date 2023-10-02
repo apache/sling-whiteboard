@@ -55,10 +55,6 @@ public class MarkdownResourceDecorator implements ResourceDecorator {
                 description = "Resources contained in the tree below these paths are decorated. Patterns are supported, e.g. \"/content/**.md\".")
         String[] decoration_paths();
 
-        @AttributeDefinition(name = "Decoration Extensions",
-                description = "Only resources with these extensions are decorated. If set to \"*\" all resources match.")
-        String[] decoration_extensions() default {"md"};
-
         @AttributeDefinition(name = "Decoration Resource Types",
                 description = "Only resources with these resource types are decorated. If set to \"*\" all resources match.")
         String[] decoration_types() default {RESOURCE_TYPE_FILE};
@@ -103,19 +99,12 @@ public class MarkdownResourceDecorator implements ResourceDecorator {
     private final PathSet paths;
     private final Set<String> resourceTypes;
     private final ResourceConfiguration config = new ResourceConfiguration();
-    private final Set<String> extensions;
 
     @Activate
     public MarkdownResourceDecorator(final Config cfg) {
         this.paths = PathSet.fromStringCollection(Arrays.stream(cfg.decoration_paths())
                 .map(path -> path.contains("*") ? Path.GLOB_PREFIX.concat(path) : path)
                 .collect(Collectors.toList()));
-        final Set<String> exts =  new HashSet<>(Arrays.asList(cfg.decoration_extensions()));
-        if (exts.contains("*") ) {
-            this.extensions = null;
-        } else {
-            this.extensions = exts;
-        }
         final Set<String> rts =  new HashSet<>(Arrays.asList(cfg.decoration_types()));
         if (rts.contains("*") ) {
             this.resourceTypes = null;
@@ -143,11 +132,7 @@ public class MarkdownResourceDecorator implements ResourceDecorator {
         // check resource type and path
         if ( (this.resourceTypes == null || this.resourceTypes.contains(resource.getResourceType()))
              && this.paths.matches( resource.getPath() ) != null ) {
-
-            final int pos = resource.getName().lastIndexOf('.');
-            if ( this.extensions == null || (pos != -1 && this.extensions.contains(resource.getName().substring(pos + 1))) ) {
-                return new MarkdownResourceWrapper(resource, this.config);
-            }
+            return new MarkdownResourceWrapper(resource, this.config);
         }
         return null;
     }

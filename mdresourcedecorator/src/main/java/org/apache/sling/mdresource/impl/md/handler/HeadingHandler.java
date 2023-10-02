@@ -29,12 +29,11 @@ public class HeadingHandler implements NodeHandler {
 
     @Override
     public boolean consume(final Node n, final ProcessingResult result) {
-        if ( n instanceof Heading && !hasTitle) {
+        if ( !hasTitle && n instanceof Heading ) {
             final Heading h = (Heading) n;
             if ( h.getLevel() == 1 ) {
                 result.title = h.getText().toString();
                 this.hasTitle = true;
-                return true;
             }
         }
         return false;

@@ -88,6 +88,7 @@ public class MarkdownProcessor {
             result.html = htmlRenderer.render(document);
         }
 
+        result.document = document;
         return result;
     }
 }
