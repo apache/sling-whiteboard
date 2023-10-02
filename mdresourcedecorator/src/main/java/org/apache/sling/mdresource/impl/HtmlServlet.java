@@ -49,11 +49,11 @@ public class HtmlServlet extends HttpServlet {
     @ObjectClassDefinition(name = "Apache Sling Markdown HTML Servlet", description = "Servlet to render Markdown files as HTML")
     public @interface Config {
 
-//        @AttributeDefinition(name = "Navigation Resource", description = "Path to the navigation resource")
-//        String nav_resource();
+        @AttributeDefinition(name = "Header Resource", description = "Path to the header resource")
+        String header_resource();
 
-//        @AttributeDefinition(name = "Footer Resource", description = "Path to the footer resource")
-//        String footer_resource();
+        @AttributeDefinition(name = "Footer Resource", description = "Path to the footer resource")
+        String footer_resource();
 
         @AttributeDefinition(name = "Head Content", description = "Content to be added to the <head> section")
         String head_contents();
@@ -87,11 +87,21 @@ public class HtmlServlet extends HttpServlet {
         }
         pw.println("</head>");
         pw.println("<body>");
+         pw.println("<header>");
+        if (this.cfg.header_resource() != null) {
+            request.getRequestDispatcher(this.cfg.header_resource()).include(request, resp);
+        }
+        pw.println("</header>");
         pw.println("<main>");
         final String desc = props.get("jcr:description", String.class);
         if (desc != null) {
             pw.println(desc);
         }
+        pw.println("<footer>");
+        if (this.cfg.footer_resource() != null) {
+            request.getRequestDispatcher(this.cfg.footer_resource()).include(request, resp);
+        }
+        pw.println("</footer>");
         pw.println("</main>");
         pw.println("</body>");
         pw.println("</html>");
