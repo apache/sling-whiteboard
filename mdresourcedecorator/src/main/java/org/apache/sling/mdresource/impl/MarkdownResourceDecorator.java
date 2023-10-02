@@ -48,13 +48,16 @@ import org.slf4j.LoggerFactory;
 @Designate(ocd = MarkdownResourceDecorator.Config.class, factory = true)
 public class MarkdownResourceDecorator implements ResourceDecorator {
 
-
-	@ObjectClassDefinition(name = "Apache Sling Markdown Resource Decorator")
+    @ObjectClassDefinition(name = "Apache Sling Markdown Resource Decorator")
     public @interface Config {
 
         @AttributeDefinition(name = "Decoration Paths",
                 description = "Resources contained in the tree below these paths are decorated. Patterns are supported, e.g. \"/content/**.md\".")
         String[] decoration_paths();
+
+        @AttributeDefinition(name = "Decoration Extensions",
+                description = "Only resources with these extensions are decorated. If set to \"*\" all resources match.")
+        String[] decoration_extensions() default {"md"};
 
         @AttributeDefinition(name = "Decoration Resource Types",
                 description = "Only resources with these resource types are decorated. If set to \"*\" all resources match.")
@@ -91,21 +94,28 @@ public class MarkdownResourceDecorator implements ResourceDecorator {
         @AttributeDefinition(name = "Rewrite Links",
                 description = "If enabled, links in the markdown are rewritten.")
         boolean rewrite_links() default true;
-	}
+    }
 
-	public static final Logger LOGGER = LoggerFactory.getLogger(MarkdownResourceDecorator.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(MarkdownResourceDecorator.class);
 
     private static final String RESOURCE_TYPE_FILE = "nt:file";
 
     private final PathSet paths;
     private final Set<String> resourceTypes;
     private final ResourceConfiguration config = new ResourceConfiguration();
+    private final Set<String> extensions;
 
     @Activate
     public MarkdownResourceDecorator(final Config cfg) {
         this.paths = PathSet.fromStringCollection(Arrays.stream(cfg.decoration_paths())
                 .map(path -> path.contains("*") ? Path.GLOB_PREFIX.concat(path) : path)
                 .collect(Collectors.toList()));
+        final Set<String> exts =  new HashSet<>(Arrays.asList(cfg.decoration_extensions()));
+        if (exts.contains("*") ) {
+            this.extensions = null;
+        } else {
+            this.extensions = exts;
+        }
         final Set<String> rts =  new HashSet<>(Arrays.asList(cfg.decoration_types()));
         if (rts.contains("*") ) {
             this.resourceTypes = null;
@@ -134,14 +144,16 @@ public class MarkdownResourceDecorator implements ResourceDecorator {
         if ( (this.resourceTypes == null || this.resourceTypes.contains(resource.getResourceType()))
              && this.paths.matches( resource.getPath() ) != null ) {
 
-            return new MarkdownResourceWrapper(resource, this.config);
+            final int pos = resource.getName().lastIndexOf('.');
+            if ( this.extensions == null || (pos != -1 && this.extensions.contains(resource.getName().substring(pos + 1))) ) {
+                return new MarkdownResourceWrapper(resource, this.config);
+            }
         }
         return null;
     }
 
-
     @Override
-    public @Nullable Resource decorate(@NotNull Resource resource, @NotNull HttpServletRequest request) {
+    public @Nullable Resource decorate(final @NotNull Resource resource, final @NotNull HttpServletRequest request) {
         // This method is deprecated but just in case....
         return this.decorate(null);
     }
