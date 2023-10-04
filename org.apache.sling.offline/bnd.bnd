@@ -1,0 +1,9 @@
+Export-Package=org.osgi.service.http.context, \
+  org.osgi.service.http.runtime, \
+  org.osgi.service.http.runtime.dto, \
+  org.osgi.service.http.whiteboard
+
+Provide-Capability=osgi.implementation;osgi.implementation="osgi.http";version:Version="1.1"; \
+  uses:="javax.servlet,javax.servlet.http,org.osgi.service.http.context,org.osgi.service.http.whiteboard"
+
+Require-Capability=osgi.contract;filter:="(&(osgi.contract=JavaServlet)(version=3.0))"
