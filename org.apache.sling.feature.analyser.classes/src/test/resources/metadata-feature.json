@@ -1,0 +1,74 @@
+{
+  "id": "org.acme:acmefeature:slingosgifeature:metadata-feature:0.0.1",
+  "bundles": [
+    "org.apache.jackrabbit:oak-jackrabbit-api:1.56.0"
+  ],
+  "analyser-metadata:JSON|false": {
+    "org.slf4j:jcl-over-slf4j:1.7.25": {
+      "manifest" : {
+        "Manifest-Version": "1.0",
+        "Archiver-Version": "Plexus Archiver",
+        "Created-By": "Apache Maven",
+        "Built-By": "ceki",
+        "Build-Jdk": "1.7.0_17",
+        "Bundle-Description": "JCL 1.2 implemented over SLF4J",
+        "Bundle-Version": "1.7.25",
+        "Implementation-Version": "1.7.25",
+        "X-Compile-Source-JDK": "1.5",
+        "X-Compile-Target-JDK": "1.5",
+        "Implementation-Title": "jcl-over-slf4j",
+        "Bundle-ManifestVersion": "2",
+        "Bundle-SymbolicName": "jcl.over.slf4j",
+        "Bundle-Name": "jcl-over-slf4j",
+        "Bundle-Vendor": "SLF4J.ORG",
+        "Bundle-RequiredExecutionEnvironment": "J2SE-1.5",
+        "Export-Package": "org.apache.commons.logging;version=1.2,  org.apache.commons.logging.impl;version=1.2",
+        "Import-Package": "org.slf4j;version=1.7.25, org.slf4j.spi;version=1.7.25"
+      }
+    },
+    "org.slf4j:log4j-over-slf4j:1.7.25": {
+      "manifest" : {
+        "Manifest-Version": "2.0",
+        "Archiver-Version": "Plexus Archiver",
+        "Created-By": "Apache Maven",
+        "Built-By": "ceki",
+        "Build-Jdk": "1.7.0_17",
+        "Bundle-Description": "Log4j implemented over SLF4J",
+        "Bundle-Version": "1.7.25",
+        "Implementation-Version": "1.7.25",
+        "X-Compile-Source-JDK": "1.5",
+        "X-Compile-Target-JDK": "1.5",
+        "Implementation-Title": "log4j-over-slf4j",
+        "Bundle-ManifestVersion": "2",
+        "Bundle-SymbolicName": "log4j.over.slf4j",
+        "Bundle-Name": "log4j-over-slf4j",
+        "Bundle-Vendor": "SLF4J.ORG",
+        "Bundle-RequiredExecutionEnvironment": "J2SE-1.5",
+        "Export-Package": "org.apache.log4j;version=1.2.17,org.apache.log4j.helpers;version=1.2.17,org.apache.log4j.spi;version=1.2.17,org.apache.log4j.xml;version=1.2.17",
+        "Import-Package": "org.slf4j;version=1.6.0,org.slf4j.helpers;version=1.6.0,org.slf4j.spi;version=1.6.0"
+      }
+    },
+    "org.slf4j:slf4j-api:1.7.25": {
+      "manifest" : {
+        "Manifest-Version": "1.0",
+        "Archiver-Version": "Plexus Archiver",
+        "Created-By": "Apache Maven",
+        "Built-By": "ceki",
+        "Build-Jdk": "1.7.0_17",
+        "Bundle-Description": "The slf4j API",
+        "Bundle-Version": "1.7.25",
+        "Implementation-Version": "1.7.25",
+        "X-Compile-Source-JDK": "1.5",
+        "X-Compile-Target-JDK": "1.5",
+        "Implementation-Title": "slf4j-api",
+        "Bundle-ManifestVersion": "2",
+        "Bundle-SymbolicName": "slf4j.api",
+        "Bundle-Name": "slf4j-api",
+        "Bundle-Vendor": "SLF4J.ORG",
+        "Bundle-RequiredExecutionEnvironment": "J2SE-1.5",
+        "Export-Package": "org.slf4j;version=1.7.25, org.slf4j.spi;version=1.7.25, org.slf4j.helpers;version=1.7.25, org.slf4j.event;version=1.7.25",
+        "Import-Package": "org.slf4j.impl;version=1.6.0"
+      }
+    }
+  }
+}
