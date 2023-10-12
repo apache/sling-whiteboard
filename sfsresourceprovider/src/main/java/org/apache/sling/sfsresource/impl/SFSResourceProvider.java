@@ -25,11 +25,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.spi.resource.provider.ResolveContext;
 import org.apache.sling.spi.resource.provider.ResourceContext;
 import org.apache.sling.spi.resource.provider.ResourceProvider;
+import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
@@ -61,6 +64,10 @@ public class SFSResourceProvider extends ResourceProvider<Object> {
                 + "file system resources are mapped in. This property must not be an empty string.")
         String provider_root();
 
+        @AttributeDefinition(name = "Modifiable", description = "Whether the resources provided by this provider are "
+                + "modifiable.")
+        boolean provider_modifiable() default false;
+
         // Internal Name hint for web console.
         String webconsole_configurationFactory_nameHint() default "{"
                 + ResourceProvider.PROPERTY_ROOT + "}";
@@ -70,6 +77,8 @@ public class SFSResourceProvider extends ResourceProvider<Object> {
 
     private final String home;
 
+    private final boolean modifiable;
+
     @Activate
     public SFSResourceProvider(final Config config) {
         if (config.provider_root().endsWith("/")) {
@@ -78,6 +87,13 @@ public class SFSResourceProvider extends ResourceProvider<Object> {
             this.pathPrefix = config.provider_root().concat("/");
         }
         this.home = config.provider_file();
+        this.modifiable = config.provider_modifiable();
+    }
+
+    private boolean include(final File file) {
+        return file.exists()
+            && !file.getName().startsWith(".")
+            && (file.isDirectory() || file.canRead());
     }
 
     @Override
@@ -91,16 +107,8 @@ public class SFSResourceProvider extends ResourceProvider<Object> {
         // try one to one mapping
         final Path filePath = Paths.get(this.home, rsrcPath.replace('/', File.separatorChar));
         final File file = filePath.toFile();
-        if (file.isDirectory() || file.canRead()) {
-            return new FileResource(ctx.getResourceResolver(), path, file);
-        }
-
-        final int lastSlash = rsrcPath.lastIndexOf('/');
-        final int lastDot = rsrcPath.lastIndexOf('.');
-
-        if ( lastDot > lastSlash ) {
-            // has extension, don't try anything else
-            return null;
+        if (include(file)) {
+            return new FileResource(ctx.getResourceResolver(), path, file, modifiable);
         }
         return null;
     }
@@ -111,9 +119,10 @@ public class SFSResourceProvider extends ResourceProvider<Object> {
             final File file = parent.adaptTo(File.class);
             if (file != null && file.isDirectory()) {
                 final List<File> children = new ArrayList<>();
-                // TODO filter out some files
                 for (final File c : file.listFiles()) {
-                    children.add(c);
+                    if (include(c)) {
+                        children.add(c);
+                    }
                 }
                 Collections.sort(children);
                 final Iterator<File> i = children.iterator();
@@ -128,11 +137,56 @@ public class SFSResourceProvider extends ResourceProvider<Object> {
                     public Resource next() {
                         final File file = i.next();
                         return new FileResource(ctx.getResourceResolver(),
-                                parent.getPath().concat("/").concat(file.getName()), file);
+                                parent.getPath().concat("/").concat(file.getName()), file, modifiable);
                     }
                 };
             }
         }
         return null;
+    }
+
+    @Override
+    public void commit(@NotNull ResolveContext<Object> ctx) throws PersistenceException {
+        // gets only called if modifiable is true
+        super.commit(ctx);
+    }
+
+    @Override
+    public boolean copy(@NotNull ResolveContext<Object> ctx, @NotNull String srcAbsPath, @NotNull String destAbsPath)
+            throws PersistenceException {
+        // gets only called if modifiable is true
+        return super.copy(ctx, srcAbsPath, destAbsPath);
+    }
+
+    @Override
+    public @NotNull Resource create(@NotNull ResolveContext<Object> ctx, String path, Map<String, Object> properties)
+            throws PersistenceException {
+        // gets only called if modifiable is true
+        return super.create(ctx, path, properties);
+    }
+
+    @Override
+    public void delete(@NotNull ResolveContext<Object> ctx, @NotNull Resource resource) throws PersistenceException {
+        // gets only called if modifiable is true
+        super.delete(ctx, resource);
+    }
+
+    @Override
+    public boolean isLive(@NotNull ResolveContext<Object> ctx) {
+        // gets only called if modifiable is true
+        return super.isLive(ctx);
+    }
+
+    @Override
+    public boolean move(@NotNull ResolveContext<Object> ctx, @NotNull String srcAbsPath, @NotNull String destAbsPath)
+            throws PersistenceException {
+        // gets only called if modifiable is true
+        return super.move(ctx, srcAbsPath, destAbsPath);
+    }
+
+    @Override
+    public void revert(@NotNull ResolveContext<Object> ctx) {
+        // gets only called if modifiable is true
+        super.revert(ctx);
     }
 }

@@ -58,7 +58,11 @@ public class FileResource extends AbstractResource {
 
     private final ResourceMetadata metadata;
 
-    public FileResource(final ResourceResolver resourceResolver, final String path, final File file) {
+    private final boolean modifiable;
+
+    private ValueMap valueMap;
+
+    public FileResource(final ResourceResolver resourceResolver, final String path, final File file, final boolean modifiable) {
         this.resolver = resourceResolver;
         this.path = path;
         this.file = file;
@@ -68,6 +72,7 @@ public class FileResource extends AbstractResource {
         if (file.isFile()) {
             this.metadata.setContentLength(file.length());
         }
+        this.modifiable = modifiable;
     }
 
     @Override
@@ -129,10 +134,16 @@ public class FileResource extends AbstractResource {
 
     @Override
     public ValueMap getValueMap() {
-        Map<String, Object> props = new HashMap<>();
-        props.put("sling:resourceType", getResourceType());
-
-        return new ValueMapDecorator(props);
+        if (this.valueMap == null) {
+            final Map<String, Object> props = new HashMap<>();
+            props.put("sling:resourceType", getResourceType());
+            props.put(ResourceMetadata.MODIFICATION_TIME, this.file.lastModified());
+            if (this.metadata.getContentLength() > 0) {
+                props.put(ResourceMetadata.CONTENT_LENGTH, this.metadata.getContentLength());
+            }
+            this.valueMap = new ValueMapDecorator(props);
+        }
+        return this.valueMap;
     }
 
     @Override
