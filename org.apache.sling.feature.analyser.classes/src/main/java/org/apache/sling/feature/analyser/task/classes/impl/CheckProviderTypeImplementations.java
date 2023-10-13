@@ -34,12 +34,13 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.osgi.annotation.versioning.ProviderType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CheckProviderTypeImplementations implements AnalyserTask {
 
-    private static final String PROVIDER_TYPE_ANNOTATION = "Lorg/osgi/annotation/versioning/ProviderType;";
+    private static final String PROVIDER_TYPE_ANNOTATION_DESCRIPTOR = Type.getType(ProviderType.class).getDescriptor();
     private static final String MESSAGE = "Type %s %s provider type %s. This is not allowed!";
 
     static final Logger LOG = LoggerFactory.getLogger(CheckProviderTypeImplementations.class);
@@ -64,7 +65,7 @@ public class CheckProviderTypeImplementations implements AnalyserTask {
     }
 
     private Set<String> collectProviderTypes(AnalyserTaskContext ctx) throws IOException {
-        AnnotatedTypeCollectorClassVisitor providerTypeCollector = new AnnotatedTypeCollectorClassVisitor(PROVIDER_TYPE_ANNOTATION);
+        AnnotatedTypeCollectorClassVisitor providerTypeCollector = new AnnotatedTypeCollectorClassVisitor(PROVIDER_TYPE_ANNOTATION_DESCRIPTOR);
         forEachClass(ctx, providerTypeCollector, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
         return providerTypeCollector.getProviderTypes();
     }
@@ -81,7 +82,6 @@ public class CheckProviderTypeImplementations implements AnalyserTask {
             this.providerTypes = new HashSet<>();
         }
 
-        
         @Override
         public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
             currentClassName = name;
