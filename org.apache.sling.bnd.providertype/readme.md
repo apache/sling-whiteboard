@@ -8,7 +8,7 @@ That ensures that the `import-package` version ranges are not narrow but [broad]
 
 # Usage
 
-For usage with Maven the Bnd plugin to the plugin dependencies of either `bnd-maven-plugin` or `maven-bundle-plugin` like this:
+For usage with Maven the Bnd plugin has to be added to the plugin dependencies of either `bnd-maven-plugin` or `maven-bundle-plugin` like this:
 
 ```
 <plugin>
@@ -37,5 +37,5 @@ Bnd 6.0 or newer (integrated in `bnd-maven-plugin` version 6.0.0+ or `maven-bund
 
 # Provider Type Information
 
-The information whether a type (i.e. a class or interface) is designed as provider or consumer is determined originally from the the annotations `[@org.osgi.annotation.versioning.ProviderType](https://docs.osgi.org/javadoc/osgi.annotation/8.0.0/org/osgi/annotation/versioning/ProviderType.html)` or `[@org.osgi.annotation.versioning.ConsumerType](https://docs.osgi.org/javadoc/osgi.annotation/8.0.0/org/osgi/annotation/versioning/ConsumerType.html)`.
+The information whether a type (i.e. a class or interface) is designed as provider or consumer is determined originally from the the annotations [`@org.osgi.annotation.versioning.ProviderType`](https://docs.osgi.org/javadoc/osgi.annotation/8.0.0/org/osgi/annotation/versioning/ProviderType.html) or [`@org.osgi.annotation.versioning.ConsumerType`](https://docs.osgi.org/javadoc/osgi.annotation/8.0.0/org/osgi/annotation/versioning/ConsumerType.html)`.
 In order to speed up the check [the annotation is evaluated and extracted into a dedicated JSON file named `META-INF/api-info.json` when generating the apis jar](https://issues.apache.org/jira/browse/SLING-12135) and being looked up from there within this plugin.
