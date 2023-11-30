@@ -93,7 +93,7 @@ class OidcClientImplTest {
             .hasParameter("scope", "openid")
             .hasParameter("response_type", "code")
             .hasParameter("client_id", "client-id")
-            .hasParameter("redirect_uri", "http://localhost/callback")
+            .hasParameter("redirect_uri", "http://localhost/system/sling/oidc/callback")
             .hasParameter("nonce")
             .hasParameter("state");
     }

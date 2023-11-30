@@ -76,7 +76,13 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
     private final OidcProviderMetadataRegistry metadataRegistry;
 
     static String getCallbackUri(HttpServletRequest request) {
-        return request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + PATH;
+        String portFragment = "";
+        boolean isNonDefaultHttpPort = request.getScheme().equals("http") && request.getServerPort() != 80;
+        boolean isNonDefaultHttpsPort = request.getScheme().equals("https") && request.getServerPort() != 443;
+        if ( isNonDefaultHttpPort || isNonDefaultHttpsPort )
+            portFragment = ":" + request.getServerPort();
+
+        return request.getScheme() + "://" + request.getServerName() + portFragment + PATH;
     }
 
     @Activate
