@@ -18,8 +18,6 @@
  */
 package org.apache.sling.bnd.providertype;
 
-import static org.junit.jupiter.api.Assertions.fail;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;

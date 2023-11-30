@@ -28,7 +28,13 @@ For usage with Maven the Bnd plugin has to be added to the plugin dependencies o
 In addition the `bnd.bnd` file needs to register the Bnd plugin with the [plugin instruction](https://bnd.bndtools.org/instructions/plugin.html)
 
 ```
--plugin.providertype=org.apache.sling.bnd.providertype.ProviderTypeScanner
+-plugin.providertype:org.apache.sling.bnd.providertype.ProviderTypeScanner
+```
+
+To explicitly ignore certain provider types (i.e. don't fail when these are extended/implemented) one can use the attribute `ignored` with one or multiple comma-separated fully qualified provider type names. For example
+
+```
+-plugin.providertype:org.apache.sling.bnd.providertype.ProviderTypeScanner;ignored=org.apache.jackrabbit.api.security.user.User
 ```
 
 ## Prerequisites

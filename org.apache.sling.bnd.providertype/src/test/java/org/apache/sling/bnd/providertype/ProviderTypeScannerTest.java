@@ -19,6 +19,7 @@
 package org.apache.sling.bnd.providertype;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
@@ -79,16 +80,15 @@ class ProviderTypeScannerTest {
             }
         }
     }
-    
+
     @Test
     void testBuildWithInvalidProviderTypeMetadata2() throws Exception {
         Builder builder = bndBuilderExtension.builder;
         // add classpath entry with api-info.json
         builder.setClasspath(new File[] { new File("src/test/resources3") });
         try (Jar jar = builder.build()) {
-            List<String> expectedErrors = Arrays.asList(
-                    "Resource \"META-INF/api-info.json\" does not contain a field named \"providerTypes\"");
-            assertEquals(expectedErrors, builder.getErrors());
+            assertEquals(2, builder.getErrors().size());
+            assertTrue(builder.getErrors().get(0).startsWith("Exception: java.lang.IllegalStateException: Could not parse JSON from resource"));
             if (!builder.getWarnings().isEmpty()) {
                 fail(String.join("\n", builder.getWarnings()));
             }

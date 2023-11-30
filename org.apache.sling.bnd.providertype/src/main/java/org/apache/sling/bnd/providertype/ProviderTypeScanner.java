@@ -1,8 +1,28 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.apache.sling.bnd.providertype;
 
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +34,7 @@ import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.AnalyzerPlugin;
+import aQute.bnd.service.Plugin;
 import aQute.lib.json.Decoder;
 import aQute.lib.json.JSONCodec;
 import aQute.service.reporter.Reporter;
@@ -23,11 +44,26 @@ import aQute.service.reporter.Reporter;
  * Provider types are retrieved from the resource "META-INF/api-info.json" which is expected to be provided
  * in the class path.
  */
-public class ProviderTypeScanner implements AnalyzerPlugin {
+public class ProviderTypeScanner implements AnalyzerPlugin, Plugin {
 
     private static final String API_INFO_JSON_RESOURCE_PATH = "META-INF/api-info.json";
     private static final String FIELD_PROVIDER_TYPES = "providerTypes";
     private static final String MESSAGE = "Type \"%s\" %s provider type \"%s\". This is not allowed!";
+    private static final String ATTRIBUTE_IGNORED_PROVIDER_TYPES = "ignored";
+    
+    private Map<String,String> parameters = new HashMap<>();
+
+    @Override
+    public void setProperties(Map<String, String> map) throws Exception {
+        // https://docs.osgi.org/specification/osgi.core/8.0.0/framework.module.html#framework.common.header.syntax
+        parameters.clear();
+        parameters.putAll(map);
+    }
+
+    @Override
+    public void setReporter(Reporter processor) {
+        // no need to store it as passed in analyzeJar(...) as well
+    }
 
     @Override
     public boolean analyzeJar(Analyzer analyzer) throws Exception {
@@ -43,6 +79,14 @@ public class ProviderTypeScanner implements AnalyzerPlugin {
                     throw new IllegalStateException("Could not parse JSON from resource " + apiInfoJsonResource, e);
                 }
             }
+            // remove ignored provider types
+            Arrays.stream(parameters.getOrDefault(ATTRIBUTE_IGNORED_PROVIDER_TYPES, "").split(",")).filter(s -> !s.isBlank()).forEach(ignored -> {
+                if (providerTypes.remove(ignored)) {
+                    analyzer.trace("Ignore extensions of provider type \"%s\" due to plugin configuration", ignored);
+                } else {
+                    analyzer.warning("Ignored class \"%s\" is not defined as provider type at all, you can safely remove the according plugin parameter", ignored);
+                }
+            });
             checkIfExtendingType(analyzer, analyzer.getClassspace().values(), providerTypes);
         }
         return false;
@@ -51,11 +95,11 @@ public class ProviderTypeScanner implements AnalyzerPlugin {
     private void checkIfExtendingType(Reporter reporter, Collection<Clazz> clazzes, Set<String> providerTypes) {
         for (Clazz clazz : clazzes) {
             if (clazz.getSuper() != null &&  (providerTypes.contains(clazz.getSuper().getFQN()))) {
-                reporter.error(MESSAGE, clazz.getFQN(), "extends", clazz.getSuper().getFQN());
+                reporter.error(MESSAGE, clazz.getFQN(), "extends", clazz.getSuper().getFQN()).file(clazz.getSourceFile());
             }
             for (TypeRef interfaceType : clazz.interfaces()) {
                 if (providerTypes.contains(interfaceType.getFQN())) {
-                    reporter.error(MESSAGE, clazz.getFQN(), "implements", interfaceType.getFQN());
+                    reporter.error(MESSAGE, clazz.getFQN(), "implements", interfaceType.getFQN()).file(clazz.getSourceFile());
                 }
             }
         }
@@ -78,5 +122,6 @@ public class ProviderTypeScanner implements AnalyzerPlugin {
         }
         return Collections.emptySet();
     }
+
 
 }
