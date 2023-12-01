@@ -34,12 +34,15 @@
     <name>Apache Sling Atomos feature launcher</name>
     <description></description>
     <version>0.0.1-SNAPSHOT</version>
+    <properties>
+        <sling.java.version>11</sling.java.version>
+    </properties>
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.sling</groupId>
                 <artifactId>slingfeature-maven-plugin</artifactId>
-                <version>1.1.6</version>
+                <version>1.6.4</version>
                 <extensions>true</extensions>
                 <executions>
                     <execution>
@@ -59,8 +62,104 @@
                         <goals>
                             <goal>repository</goal>
                         </goals>
+                        <configuration>
+                            <repositories>
+                                <repository>
+                                    <filesInclude>**/*.*</filesInclude>
+                                    <embedArtifacts>
+                                        <dependency>
+                                            <groupId>org.apache.sling</groupId>
+                                            <artifactId>org.apache.sling.feature.launcher.atomos</artifactId>
+                                            <version>0.0.1-SNAPSHOT</version>
+                                            <type>jar</type>
+                                        </dependency>
+                                        <dependency>
+                                            <groupId>org.apache.sling</groupId>
+                                            <artifactId>org.apache.sling.feature.launcher</artifactId>
+                                            <version>1.2.4</version>
+                                            <type>jar</type>
+                                        </dependency>
+                                        <dependency>
+                                            <groupId>org.osgi</groupId>
+                                            <artifactId>osgi.core</artifactId>
+                                            <version>8.0.0</version>
+                                        </dependency>
+                                        <dependency>
+                                            <groupId>org.apache.felix</groupId>
+                                            <artifactId>org.apache.felix.framework</artifactId>
+                                            <version>7.0.5</version>
+                                        </dependency>
+                                        <dependency>
+                                            <groupId>org.apache.felix</groupId>
+                                            <artifactId>org.apache.felix.atomos</artifactId>
+                                            <version>1.0.1-SNAPSHOT</version>
+                                        </dependency>
+                                        <dependency>
+                                            <groupId>org.apache.commons</groupId>
+                                            <artifactId>commons-text</artifactId>
+                                            <version>1.10.0</version>
+                                        </dependency>
+                                        <dependency>
+                                            <groupId>org.apache.commons</groupId>
+                                            <artifactId>commons-lang3</artifactId>
+                                            <version>3.12.0</version>
+                                        </dependency>
+                                        <dependency>
+                                            <groupId>org.slf4j</groupId>
+                                            <artifactId>slf4j-simple</artifactId>
+                                            <version>1.7.25</version>
+                                        </dependency>
+                                        <dependency>
+                                            <groupId>org.apache.sling</groupId>
+                                            <artifactId>org.apache.sling.feature</artifactId>
+                                            <version>1.3.0</version>
+                                        </dependency>
+                                        <dependency>
+                                            <groupId>org.apache.felix</groupId>
+                                            <artifactId>org.apache.felix.cm.json</artifactId>
+                                            <version>1.0.6</version>
+                                        </dependency>
+                                        <dependency>
+                                            <groupId>commons-cli</groupId>
+                                            <artifactId>commons-cli</artifactId>
+                                            <version>1.4</version>
+                                        </dependency>
+                                    </embedArtifacts>
+                                </repository>
+                            </repositories>
+                        </configuration>
                     </execution>
                 </executions>
+            </plugin>
+           <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <phase>package</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <executable>java</executable>
+                    <arguments>
+                       <!-- <argument>-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n</argument> -->
+                        <argument>-jar</argument>
+                        <classpath>
+                            <dependency>org.apache.sling:org.apache.sling.feature.launcher.atomos.config</dependency>
+                        </classpath>
+                        <argument>-u</argument>
+                        <argument>file:${build.directory}/artifacts</argument>
+                        <argument>-f</argument>
+                        <argument>mvn:org.apache.sling/org.apache.sling.feature.launcher.atomos/0.0.1-SNAPSHOT/slingosgifeature</argument>
+                    </arguments>
+                    <inheritIo>true</inheritIo>
+                    <addOutputToClasspath>false</addOutputToClasspath>
+                    <workingDirectory>${build.directory}</workingDirectory>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -69,6 +168,14 @@
                 <configuration>
                     <mainClass>org.apache.sling.feature.launcher.atomos.AtomosLaucherMain</mainClass>
                     <classifier>fatjar</classifier>
+                    <excludes><exclude><groupId>org.apache.sling</groupId>
+                        <artifactId>org.apache.sling.feature.launcher.atomos.config</artifactId>
+                        <classifier>fatjar</classifier></exclude>
+                        <exclude>
+                            <groupId>com.oracle.substratevm</groupId>
+                            <artifactId>svm</artifactId>
+                        </exclude>
+                    </excludes>
                 </configuration>
                 <executions>
                     <execution>
@@ -95,12 +202,34 @@
                         <exclude>**/*.properties</exclude>
                         <exclude>launcher/**</exclude>
                         <exclude>**/*.patch</exclude>
+                        <exclude>*</exclude>
                     </excludes>
                 </configuration>
             </plugin>
         </plugins>
     </build>
     <dependencies>
+        <dependency>
+            <groupId>com.oracle.substratevm</groupId>
+            <artifactId>svm</artifactId>
+            <version>19.2.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.sling</groupId>
+            <artifactId>org.apache.sling.feature.launcher.atomos.config</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <classifier>fatjar</classifier>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion></exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.sling</groupId>
+            <artifactId>org.apache.sling.feature.launcher.atomos.weaver</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>osgi.core</artifactId>

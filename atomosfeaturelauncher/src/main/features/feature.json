@@ -1,244 +1,244 @@
 {
-  "bundles":[
-{
-      "id":"commons-fileupload:commons-fileupload:1.5",
-      "start-order":"1"
+  "bundles": [
+    {
+      "id": "commons-fileupload:commons-fileupload:1.5",
+      "start-order": "1"
     },
     {
-      "id":"commons-io:commons-io:2.11.0",
-      "start-order":"1"
+      "id": "commons-io:commons-io:2.11.0",
+      "start-order": "1"
     },
     {
-      "id":"org.osgi:org.osgi.util.function:1.2.0",
-      "start-order":"1"
+      "id": "org.osgi:org.osgi.util.function:1.2.0",
+      "start-order": "1"
     },
     {
-      "id":"org.osgi:org.osgi.util.promise:1.2.0",
-      "start-order":"1"
+      "id": "org.osgi:org.osgi.util.promise:1.2.0",
+      "start-order": "1"
     },
     {
-      "id":"org.osgi:org.osgi.service.component:1.5.0",
-      "start-order":"1"
+      "id": "org.osgi:org.osgi.service.component:1.5.0",
+      "start-order": "1"
     },
     {
-      "id":"org.osgi:org.osgi.util.converter:1.0.9",
-      "start-order":"1"
+      "id": "org.osgi:org.osgi.util.converter:1.0.9",
+      "start-order": "1"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.commons.log:5.4.2",
-      "start-order":"1"
+      "id": "org.apache.sling:org.apache.sling.commons.log:5.4.2",
+      "start-order": "1"
     },
     {
-      "id":"org.apache.commons:commons-lang3:3.12.0",
-      "start-order":"1"
+      "id": "org.apache.commons:commons-lang3:3.12.0",
+      "start-order": "1"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.commons.logservice:1.1.0",
-      "start-order":"1"
+      "id": "org.apache.sling:org.apache.sling.commons.logservice:1.1.0",
+      "start-order": "1"
     },
     {
-      "id":"org.apache.felix:org.apache.felix.log:1.2.6",
-      "start-order":"1"
+      "id": "org.apache.felix:org.apache.felix.log:1.2.6",
+      "start-order": "1"
     },
     {
-      "id":"org.slf4j:jcl-over-slf4j:1.7.36",
-      "start-order":"1"
+      "id": "org.slf4j:jcl-over-slf4j:1.7.36",
+      "start-order": "1"
     },
     {
-      "id":"org.slf4j:log4j-over-slf4j:1.7.36",
-      "start-order":"1"
+      "id": "org.slf4j:log4j-over-slf4j:1.7.36",
+      "start-order": "1"
     },
     {
-      "id":"org.slf4j:slf4j-api:1.7.36",
-      "start-order":"1"
+      "id": "org.slf4j:slf4j-api:1.7.36",
+      "start-order": "1"
     },
     {
-      "id":"org.apache.logging.log4j:log4j-api:2.20.0",
-      "start-order":1
+      "id": "org.apache.logging.log4j:log4j-api:2.20.0",
+      "start-order": 1
     },
     {
-      "id":"org.apache.logging.log4j:log4j-to-slf4j:2.20.0",
-      "start-order":1
+      "id": "org.apache.logging.log4j:log4j-to-slf4j:2.20.0",
+      "start-order": 1
     },
     {
-      "id":"org.apache.felix:org.apache.felix.configadmin:1.9.26",
-      "start-order":"1"
+      "id": "org.apache.felix:org.apache.felix.configadmin:1.9.26",
+      "start-order": "1"
     },
     {
-      "id":"org.apache.felix:org.apache.felix.eventadmin:1.6.4",
-      "start-order":"2"
+      "id": "org.apache.felix:org.apache.felix.eventadmin:1.6.4",
+      "start-order": "2"
     },
     {
-      "id":"org.apache.felix:org.apache.felix.metatype:1.2.4",
-      "start-order":"2"
+      "id": "org.apache.felix:org.apache.felix.metatype:1.2.4",
+      "start-order": "2"
     },
     {
-      "id":"org.apache.felix:org.apache.felix.inventory:1.1.0",
-      "start-order":"2"
+      "id": "org.apache.felix:org.apache.felix.inventory:1.1.0",
+      "start-order": "2"
     },
     {
-      "id":"org.apache.felix:org.apache.felix.http.servlet-api:2.0.0",
-      "start-order":"1"
+      "id": "org.apache.felix:org.apache.felix.http.servlet-api:2.0.0",
+      "start-order": "1"
     },
     {
-      "id":"org.apache.felix:org.apache.felix.http.jetty:4.2.8",
-      "start-order":"2"
+      "id": "org.apache.felix:org.apache.felix.http.jetty:4.2.8",
+      "start-order": "2"
     },
     {
-      "id":"org.apache.felix:org.apache.felix.scr:2.2.6",
-      "start-order":"1"
+      "id": "org.apache.felix:org.apache.felix.scr:2.2.6",
+      "start-order": "1"
     },
     {
-      "id":"io.dropwizard.metrics:metrics-core:3.2.3",
-      "start-order":"1"
+      "id": "io.dropwizard.metrics:metrics-core:3.2.3",
+      "start-order": "1"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.commons.metrics:1.2.12",
-      "start-order":"1"
+      "id": "org.apache.sling:org.apache.sling.commons.metrics:1.2.12",
+      "start-order": "1"
     },
     {
-      "id":"org.apache.httpcomponents:httpcore-osgi:4.4.15",
-      "start-order":"20"
+      "id": "org.apache.httpcomponents:httpcore-osgi:4.4.15",
+      "start-order": "20"
     },
     {
-      "id":"org.apache.httpcomponents:httpclient-osgi:4.5.13",
-      "start-order":"20"
+      "id": "org.apache.httpcomponents:httpclient-osgi:4.5.13",
+      "start-order": "20"
     },
     {
-      "id":"commons-codec:commons-codec:1.15",
-      "start-order":"20"
+      "id": "commons-codec:commons-codec:1.15",
+      "start-order": "20"
     },
     {
-      "id":"org.apache.commons:commons-collections4:4.4",
-      "start-order":"20"
+      "id": "org.apache.commons:commons-collections4:4.4",
+      "start-order": "20"
     },
     {
-      "id":"org.apache.commons:commons-text:1.10.0",
-      "start-order":"20"
+      "id": "org.apache.commons:commons-text:1.10.0",
+      "start-order": "20"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.api:2.27.0",
-      "start-order":"20"
+      "id": "org.apache.sling:org.apache.sling.api:2.27.0",
+      "start-order": "20"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.auth.core:1.6.0",
-      "start-order":"20"
+      "id": "org.apache.sling:org.apache.sling.auth.core:1.6.0",
+      "start-order": "20"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.commons.classloader:1.4.4",
-      "start-order":"20"
+      "id": "org.apache.sling:org.apache.sling.commons.classloader:1.4.4",
+      "start-order": "20"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.commons.compiler:2.4.0",
-      "start-order":"20"
+      "id": "org.apache.sling:org.apache.sling.commons.compiler:2.4.0",
+      "start-order": "20"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.commons.johnzon:1.2.14",
-      "start-order":"20"
+      "id": "org.apache.sling:org.apache.sling.commons.johnzon:1.2.14",
+      "start-order": "20"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.commons.mime:2.2.2",
-      "start-order":"20"
+      "id": "org.apache.sling:org.apache.sling.commons.mime:2.2.2",
+      "start-order": "20"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.commons.osgi:2.4.2",
-      "start-order":"20"
+      "id": "org.apache.sling:org.apache.sling.commons.osgi:2.4.2",
+      "start-order": "20"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.sfsresourceprovider:0.0.1-SNAPSHOT",
-      "start-order":"20"
+      "id": "org.apache.sling:org.apache.sling.sfsresourceprovider:0.0.1-SNAPSHOT",
+      "start-order": "20"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.serviceusermapper:1.5.6",
-      "start-order":"20"
+      "id": "org.apache.sling:org.apache.sling.serviceusermapper:1.5.6",
+      "start-order": "20"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.servlets.post:2.5.0",
-      "start-order":"20"
+      "id": "org.apache.sling:org.apache.sling.servlets.post:2.5.0",
+      "start-order": "20"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.settings:1.4.2",
-      "start-order":"20"
+      "id": "org.apache.sling:org.apache.sling.settings:1.4.2",
+      "start-order": "20"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.xss:2.2.0",
-      "start-order":"20"
+      "id": "org.apache.sling:org.apache.sling.xss:2.2.0",
+      "start-order": "20"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.scripting.api:2.2.0",
-      "start-order":"20"
+      "id": "org.apache.sling:org.apache.sling.scripting.api:2.2.0",
+      "start-order": "20"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.scripting.core:2.4.8",
-      "start-order":"20"
+      "id": "org.apache.sling:org.apache.sling.scripting.core:2.4.8",
+      "start-order": "20"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.scripting.spi:1.0.4",
-      "start-order":"20"
+      "id": "org.apache.sling:org.apache.sling.scripting.spi:1.0.4",
+      "start-order": "20"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.commons.threads:3.2.22",
-      "start-order":"20"
+      "id": "org.apache.sling:org.apache.sling.commons.threads:3.2.22",
+      "start-order": "20"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.engine:2.14.0",
-      "start-order":"20"
+      "id": "org.apache.sling:org.apache.sling.engine:2.14.0",
+      "start-order": "20"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.resourceresolver:1.10.0",
-      "start-order":"20"
+      "id": "org.apache.sling:org.apache.sling.resourceresolver:1.10.0",
+      "start-order": "20"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.servlets.get:2.1.44",
-      "start-order":"20"
+      "id": "org.apache.sling:org.apache.sling.servlets.get:2.1.44",
+      "start-order": "20"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.servlets.resolver:2.9.10",
-      "start-order":"20"
+      "id": "org.apache.sling:org.apache.sling.servlets.resolver:2.9.10",
+      "start-order": "20"
     },
     {
-      "id":"org.apache.felix:org.apache.felix.webconsole.plugins.packageadmin:1.0.4",
-      "start-order":"10"
+      "id": "org.apache.felix:org.apache.felix.webconsole.plugins.packageadmin:1.0.4",
+      "start-order": "10"
     },
     {
-      "id":"org.apache.felix:org.apache.felix.webconsole.plugins.ds:2.2.0",
-      "start-order":"10"
+      "id": "org.apache.felix:org.apache.felix.webconsole.plugins.ds:2.2.0",
+      "start-order": "10"
     },
     {
-      "id":"org.apache.felix:org.apache.felix.webconsole:4.8.8",
-      "start-order":"10"
+      "id": "org.apache.felix:org.apache.felix.webconsole:4.8.8",
+      "start-order": "10"
     },
     {
-      "id":"org.apache.felix:org.apache.felix.webconsole.plugins.event:1.1.8",
-      "start-order":"10"
+      "id": "org.apache.felix:org.apache.felix.webconsole.plugins.event:1.1.8",
+      "start-order": "10"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.commons.log.webconsole:1.0.0",
-      "start-order":"10"
+      "id": "org.apache.sling:org.apache.sling.commons.log.webconsole:1.0.0",
+      "start-order": "10"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.scripting.sightly:1.4.20-1.4.0",
-      "start-order":"10"
+      "id": "org.apache.sling:org.apache.sling.scripting.sightly:1.4.20-1.4.0",
+      "start-order": "10"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.scripting.sightly.runtime:1.2.6-1.4.0",
-      "start-order":"10"
+      "id": "org.apache.sling:org.apache.sling.scripting.sightly.runtime:1.2.6-1.4.0",
+      "start-order": "10"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.i18n:2.5.18",
-      "start-order":"10"
+      "id": "org.apache.sling:org.apache.sling.i18n:2.5.18",
+      "start-order": "10"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.commons.scheduler:2.7.12",
-      "start-order":"10"
+      "id": "org.apache.sling:org.apache.sling.commons.scheduler:2.7.12",
+      "start-order": "10"
     },
     {
-      "id":"org.apache.tika:tika-core:1.20",
-      "start-order":"10"
+      "id": "org.apache.tika:tika-core:1.20",
+      "start-order": "10"
     },
     {
-      "id":"org.apache.tika:tika-parsers:1.20",
-      "start-order":"10"
+      "id": "org.apache.tika:tika-parsers:1.20",
+      "start-order": "10"
     },
     {
       "id": "org.apache.sling:org.apache.sling.models.api:1.5.0"
@@ -247,19 +247,491 @@
       "id": "org.apache.geronimo.specs:geronimo-atinject_1.0_spec:1.2"
     }
   ],
-  "configurations":{
-    "org.apache.sling.jcr.resource.internal.JcrResourceResolverFactoryImpl":{
-      "resource.resolver.required.providernames":""
+  "configurations": {
+    "org.apache.sling.jcr.resource.internal.JcrResourceResolverFactoryImpl": {
+      "resource.resolver.required.providernames": ""
     },
-    "org.apache.sling.sfsresource.impl.SFSResourceProvider~pictures":{
-      "provider.root":"/content",
-      "provider.file":"content"
+    "org.apache.sling.sfsresource.impl.SFSResourceProvider~pictures": {
+      "provider.root": "/content",
+      "provider.file": "content"
     },
-    "org.apache.sling.servlets.resolver.SlingServletResolver":{
-      "servletresolver.mountPathProviders":true
+    "org.apache.sling.servlets.resolver.SlingServletResolver": {
+      "servletresolver.mountPathProviders": true
     }
   },
   "framework-properties": {
     "felix.cm.pm": "featurelauncher"
+  },
+  "atomos-config:JSON|false": {
+    "initialize-at-build-time": [
+      "org.apache.felix",
+      "org.osgi",
+      "org.eclipse.jetty",
+      "ch",
+      "org.slf4j",
+      "org.apache.johnzon",
+      "org.apache.http",
+      "org.owasp",
+      "org.apache.logging.slf4j",
+      "org.quartz.core",
+      "org.apache.logging",
+      "org.apache.sling.api"
+    ],
+    "reflect-config": [
+
+        {
+          "name":"[B"
+        },
+        {
+          "name":"[C"
+        },
+        {
+          "name":"[D"
+        },
+        {
+          "name":"[F"
+        },
+        {
+          "name":"[I"
+        },
+        {
+          "name":"[J"
+        },
+        {
+          "name":"[Ljava.lang.String;",
+          "allPublicFields":true,
+          "queryAllPublicMethods":true
+        },
+        {
+          "name":"[Ljava.lang.invoke.MethodHandles$Lookup$ClassOption;"
+        },
+        {
+          "name":"[Ljavax.management.openmbean.CompositeData;"
+        },
+        {
+          "name":"[Lorg.eclipse.jetty.server.Handler;"
+        },
+        {
+          "name":"[Lorg.eclipse.jetty.server.handler.ContextHandlerCollection$Branch;"
+        },
+        {
+          "name":"[Lorg.eclipse.jetty.servlet.ServletMapping;"
+        },
+        {
+          "name":"[S"
+        },
+        {
+          "name":"[Z"
+        },
+        {
+          "name":"com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl",
+          "methods":[{"name":"<init>","parameterTypes":[] }]
+        },
+        {
+          "name":"com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl",
+          "methods":[{"name":"<init>","parameterTypes":[] }]
+        },
+        {
+          "name":"java.io.FilePermission"
+        },
+        {
+          "name":"java.lang.Boolean",
+          "fields":[{"name":"TYPE"}],
+          "methods":[{"name":"valueOf","parameterTypes":["java.lang.String"] }]
+        },
+        {
+          "name":"java.lang.Byte",
+          "fields":[{"name":"TYPE"}],
+          "methods":[{"name":"valueOf","parameterTypes":["java.lang.String"] }]
+        },
+        {
+          "name":"java.lang.Character",
+          "fields":[{"name":"TYPE"}]
+        },
+        {
+          "name":"java.lang.Class",
+          "methods":[{"name":"getModule","parameterTypes":[] }]
+        },
+        {
+          "name":"java.lang.ClassLoader",
+          "methods":[{"name":"getPlatformClassLoader","parameterTypes":[] }]
+        },
+        {
+          "name":"java.lang.Deprecated",
+          "queryAllPublicMethods":true
+        },
+        {
+          "name":"java.lang.Double",
+          "fields":[{"name":"TYPE"}],
+          "methods":[{"name":"valueOf","parameterTypes":["java.lang.String"] }]
+        },
+        {
+          "name":"java.lang.Float",
+          "fields":[{"name":"TYPE"}],
+          "methods":[{"name":"valueOf","parameterTypes":["java.lang.String"] }]
+        },
+        {
+          "name":"java.lang.Integer",
+          "fields":[{"name":"TYPE"}],
+          "methods":[{"name":"valueOf","parameterTypes":["java.lang.String"] }]
+        },
+        {
+          "name":"java.lang.Long",
+          "fields":[{"name":"TYPE"}],
+          "methods":[{"name":"valueOf","parameterTypes":["java.lang.String"] }]
+        },
+        {
+          "name":"java.lang.Module",
+          "methods":[{"name":"getDescriptor","parameterTypes":[] }, {"name":"getLayer","parameterTypes":[] }, {"name":"getName","parameterTypes":[] }]
+        },
+        {
+          "name":"java.lang.ModuleLayer",
+          "methods":[{"name":"boot","parameterTypes":[] }, {"name":"configuration","parameterTypes":[] }, {"name":"modules","parameterTypes":[] }]
+        },
+        {
+          "name":"java.lang.Object",
+          "queryAllDeclaredMethods":true,
+          "queryAllPublicMethods":true,
+          "methods":[{"name":"activate","parameterTypes":["org.osgi.service.component.ComponentContext"] }, {"name":"deactivate","parameterTypes":["org.osgi.service.component.ComponentContext"] }]
+        },
+        {
+          "name":"java.lang.Runnable"
+        },
+        {
+          "name":"java.lang.RuntimePermission"
+        },
+        {
+          "name":"java.lang.Short",
+          "fields":[{"name":"TYPE"}],
+          "methods":[{"name":"valueOf","parameterTypes":["java.lang.String"] }]
+        },
+        {
+          "name":"java.lang.StackTraceElement",
+          "queryAllPublicMethods":true
+        },
+        {
+          "name":"java.lang.String",
+          "queryAllPublicMethods":true,
+          "fields":[{"name":"TYPE"}]
+        },
+        {
+          "name":"java.lang.Thread",
+          "fields":[{"name":"threadLocalRandomProbe"}, {"name":"threadLocals"}],
+          "methods":[{"name":"getId","parameterTypes":[] }, {"name":"getStackTrace","parameterTypes":[] }]
+        },
+        {
+          "name":"java.lang.Throwable",
+          "methods":[{"name":"getSuppressed","parameterTypes":[] }]
+        },
+        {
+          "name":"java.lang.Void",
+          "fields":[{"name":"TYPE"}]
+        },
+        {
+          "name":"java.lang.annotation.Annotation",
+          "queryAllPublicMethods":true
+        },
+
+
+
+
+      {
+        "name":"java.net.URL",
+        "allDeclaredFields":true,
+        "methods":[{"name":"getURLStreamHandler","parameterTypes":["java.lang.String"] }]
+      },
+      {
+        "name":"java.net.URLClassLoader",
+        "methods":[{"name":"addURL","parameterTypes":["java.net.URL"] }]
+      },
+      {
+        "name":"java.net.URLConnection",
+        "allDeclaredFields":true
+      },
+      {
+        "name":"java.net.URLPermission",
+        "methods":[{"name":"<init>","parameterTypes":["java.lang.String","java.lang.String"] }]
+      },
+      {
+        "name":"java.net.URLStreamHandler",
+        "methods":[{"name":"equals","parameterTypes":["java.net.URL","java.net.URL"] }, {"name":"getDefaultPort","parameterTypes":[] }, {"name":"getHostAddress","parameterTypes":["java.net.URL"] }, {"name":"hashCode","parameterTypes":["java.net.URL"] }, {"name":"hostsEqual","parameterTypes":["java.net.URL","java.net.URL"] }, {"name":"openConnection","parameterTypes":["java.net.URL"] }, {"name":"openConnection","parameterTypes":["java.net.URL","java.net.Proxy"] }, {"name":"sameFile","parameterTypes":["java.net.URL","java.net.URL"] }, {"name":"toExternalForm","parameterTypes":["java.net.URL"] }]
+      },
+      {
+        "name":"org.osgi.service.metatype.MetaTypeProvider"
+      },
+      {
+        "name": "org.apache.sling.feature.launcher.atomos.AtomosRunner",
+        "allPublicConstructors": true
+      },
+      {
+        "name": "org.apache.felix.cm.impl.persistence.MemoryPersistenceManager",
+        "methods": [
+        {
+          "name": "store",
+          "parameterTypes": [
+            "java.lang.String",
+            "java.util.Dictionary"
+          ]
+        }]
+      },
+      {
+        "name": "org.apache.xerces.util.SecurityManager",
+        "allPublicMethods" : true
+      },
+      {
+        "name":"org.osgi.service.cm.Configuration",
+        "methods":[{"name":"getProcessedProperties","parameterTypes":["org.osgi.framework.ServiceReference"] }, {"name":"getProperties","parameterTypes":[] }]
+      },
+      {
+        "name":"org.osgi.service.cm.ConfigurationAdmin",
+        "queryAllPublicMethods":true,
+        "methods":[{"name":"getConfiguration","parameterTypes":["java.lang.String","java.lang.String"] }, {"name":"listConfigurations","parameterTypes":["java.lang.String"] }]
+      },
+      {
+        "name":"org.osgi.service.cm.ConfigurationEvent",
+        "methods":[{"name":"getPid","parameterTypes":[] }, {"name":"getType","parameterTypes":[] }]
+      },
+      {
+        "name":"org.osgi.service.cm.ConfigurationListener",
+        "methods":[{"name":"configurationEvent","parameterTypes":["org.osgi.service.cm.ConfigurationEvent"] }]
+      },
+      {
+        "name": "org.apache.felix.webconsole.internal.configuration.ConfigManager",
+        "allPublicConstructors": true
+      },
+      {
+        "name": "org.apache.felix.webconsole.internal.compendium.LogServlet",
+        "allPublicConstructors": true
+      },
+      {
+        "name": "org.apache.felix.webconsole.internal.core.BundlesServlet",
+        "allPublicConstructors": true
+      },
+      {
+        "name": "org.apache.felix.webconsole.internal.core.ServicesServlet",
+        "allPublicConstructors": true
+      },
+      {
+        "name": "org.apache.felix.webconsole.internal.misc.LicenseServlet",
+        "allPublicConstructors": true
+      },
+      {
+        "name": "org.apache.felix.webconsole.internal.system.VMStatPlugin",
+        "allPublicConstructors": true
+      },
+      {
+        "name": "org.apache.xerces.util.SecurityManager",
+        "allPublicConstructors": true
+      },
+      {
+        "name": "org.owasp.esapi.reference.DefaultSecurityConfiguration",
+        "allPublicConstructors": true
+      },
+      {
+
+        "name": "org.apache.sling.commons.scheduler.impl.NonParallelQuartzJobExecutor",
+        "allPublicConstructors": true
+      },
+      {
+
+        "name": "org.owasp.esapi.reference.DefaultValidator",
+        "allPublicConstructors": true
+      },
+      {
+
+        "name": "org.owasp.esapi.reference.DefaultEncoder",
+        "allPublicConstructors": true,
+        "methods":[{"name":"<init>","parameterTypes":[] }]
+      },{
+        "name":"org.owasp.esapi.codecs.HTMLEntityCodec",
+        "methods":[{"name":"<init>","parameterTypes":[] }]
+      },
+      {
+        "name":"org.owasp.esapi.codecs.PercentCodec",
+        "methods":[{"name":"<init>","parameterTypes":[] }]
+      },
+      {
+        "name":"org.owasp.esapi.reference.DefaultEncoder",
+        "methods":[{"name":"getInstance","parameterTypes":[] }]
+      },
+      {
+        "name":"org.owasp.esapi.reference.DefaultSecurityConfiguration",
+        "methods":[{"name":"getInstance","parameterTypes":[] }]
+      },
+      {
+        "name":"org.owasp.esapi.reference.DefaultValidator",
+        "methods":[{"name":"getInstance","parameterTypes":[] }]
+      },
+      {
+        "name":"org.owasp.esapi.reference.JavaLogFactory",
+        "methods":[{"name":"getInstance","parameterTypes":[] }]
+      }
+    ],
+    "resource-config": {
+      "resources" : [{ "pattern" : "META-INF/features/.*" }, { "pattern" :  "OSGI-INF/metatype/.*"}]
+    },
+    "proxy-config": [
+      ["org.osgi.service.cm.ConfigurationListener"]
+    ],
+    "jni-config": [
+      {
+        "name": "[Lcom.sun.management.internal.DiagnosticCommandArgumentInfo;"
+      },
+      {
+        "name": "[Lcom.sun.management.internal.DiagnosticCommandInfo;"
+      },
+      {
+        "name": "com.sun.management.internal.DiagnosticCommandArgumentInfo",
+        "methods": [
+          {
+            "name": "<init>",
+            "parameterTypes": [
+              "java.lang.String",
+              "java.lang.String",
+              "java.lang.String",
+              "java.lang.String",
+              "boolean",
+              "boolean",
+              "boolean",
+              "int"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "com.sun.management.internal.DiagnosticCommandInfo",
+        "methods": [
+          {
+            "name": "<init>",
+            "parameterTypes": [
+              "java.lang.String",
+              "java.lang.String",
+              "java.lang.String",
+              "java.lang.String",
+              "java.lang.String",
+              "java.lang.String",
+              "boolean",
+              "java.util.List"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "java.lang.Boolean",
+        "methods": [
+          {
+            "name": "getBoolean",
+            "parameterTypes": [
+              "java.lang.String"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "java.lang.SecurityManager",
+        "fields": [
+          {
+            "name": "initialized"
+          }
+        ]
+      },
+      {
+        "name": "java.lang.String",
+        "methods": [
+          {
+            "name": "lastIndexOf",
+            "parameterTypes": [
+              "int"
+            ]
+          },
+          {
+            "name": "substring",
+            "parameterTypes": [
+              "int"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "java.lang.System",
+        "methods": [
+          {
+            "name": "getProperty",
+            "parameterTypes": [
+              "java.lang.String"
+            ]
+          },
+          {
+            "name": "setProperty",
+            "parameterTypes": [
+              "java.lang.String",
+              "java.lang.String"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "java.util.Arrays",
+        "methods": [
+          {
+            "name": "asList",
+            "parameterTypes": [
+              "java.lang.Object[]"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "org.apache.felix.atomos.Atomos",
+        "methods": [
+          {
+            "name": "main",
+            "parameterTypes": [
+              "java.lang.String[]"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "sun.management.VMManagementImpl",
+        "fields": [
+          {
+            "name": "compTimeMonitoringSupport"
+          },
+          {
+            "name": "currentThreadCpuTimeSupport"
+          },
+          {
+            "name": "objectMonitorUsageSupport"
+          },
+          {
+            "name": "otherThreadCpuTimeSupport"
+          },
+          {
+            "name": "remoteDiagnosticCommandsSupport"
+          },
+          {
+            "name": "synchronizerUsageSupport"
+          },
+          {
+            "name": "threadAllocatedMemorySupport"
+          },
+          {
+            "name": "threadContentionMonitoringSupport"
+          }
+        ]
+      }
+    ],
+    "serialization-config": {
+      "types": [
+        {
+          "name": "java.util.ArrayList"
+        }
+      ],
+      "lambdaCapturingTypes": [
+      ],
+      "proxies": [
+      ]
+    }
   }
 }
