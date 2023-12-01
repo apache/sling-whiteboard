@@ -39,7 +39,8 @@ To explicitly ignore certain provider types (i.e. don't fail when these are exte
 
 ## Prerequisites
 
-Bnd 6.0 or newer (integrated in `bnd-maven-plugin` version 6.0.0+ or `maven-bundle-plugin` version 5.1.5+)
+* Bnd 6.0 or newer (integrated in `bnd-maven-plugin` version 6.0.0+ or `maven-bundle-plugin` version 5.1.5+)
+* Java 11 or newer
 
 # Provider Type Information
 

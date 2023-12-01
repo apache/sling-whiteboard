@@ -61,7 +61,7 @@ class ProviderTypeScannerTest {
                 fail(String.join("\n", builder.getErrors()));
             }
             List<String> expectedWarnings = Arrays.asList(
-                    "Could not find resource \"META-INF/api-info.json\" exposed from the classpath");
+                    "Could not find resource \"META-INF/api-info.json\" in the classpath");
             assertEquals(expectedWarnings, builder.getWarnings());
         }
     }

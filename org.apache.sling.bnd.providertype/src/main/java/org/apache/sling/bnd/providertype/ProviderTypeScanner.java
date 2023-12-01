@@ -69,12 +69,14 @@ public class ProviderTypeScanner implements AnalyzerPlugin, Plugin {
     public boolean analyzeJar(Analyzer analyzer) throws Exception {
         List<Resource> apiInfoJsonResources = analyzer.findResources(s -> s.equals(API_INFO_JSON_RESOURCE_PATH)).collect(Collectors.toList());
         if(apiInfoJsonResources.isEmpty()) {
-            analyzer.warning("Could not find resource \"%s\" exposed from the classpath", API_INFO_JSON_RESOURCE_PATH);
+            analyzer.warning("Could not find resource \"%s\" in the classpath", API_INFO_JSON_RESOURCE_PATH);
         } else {
             Set<String> providerTypes = new HashSet<>();
             for (Resource apiInfoJsonResource : apiInfoJsonResources) {
                 try {
-                    providerTypes.addAll(collectProviderTypes(analyzer, apiInfoJsonResource));
+                    Set<String> resourceProviderTypes = collectProviderTypes(analyzer, apiInfoJsonResource);
+                    analyzer.trace("Added provider types from resource \"%s\": %s", apiInfoJsonResource, String.join(",", resourceProviderTypes));
+                    providerTypes.addAll(resourceProviderTypes);
                 } catch (Exception e) {
                     throw new IllegalStateException("Could not parse JSON from resource " + apiInfoJsonResource, e);
                 }
