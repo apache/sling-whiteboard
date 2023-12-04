@@ -18,32 +18,9 @@
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 package org.apache.sling.feature.launcher.atomos;
 
-import org.apache.felix.atomos.Atomos;
-import org.apache.felix.atomos.AtomosContent;
-import org.apache.felix.atomos.AtomosLayer;
-import org.apache.felix.atomos.impl.base.AtomosBase;
-import org.apache.felix.framework.BundleWiringImpl;
-import org.apache.sling.feature.ArtifactId;
-import org.apache.sling.feature.io.IOUtils;
-import org.apache.sling.feature.launcher.impl.launchers.FrameworkRunner;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleException;
-import org.osgi.framework.BundleReference;
-import org.osgi.framework.Constants;
-import org.osgi.framework.FrameworkUtil;
-import org.osgi.framework.Version;
-import org.osgi.framework.connect.ConnectContent;
-import org.osgi.framework.connect.FrameworkUtilHelper;
-import org.osgi.framework.launch.Framework;
-import org.osgi.framework.launch.FrameworkFactory;
-import org.osgi.framework.startlevel.BundleStartLevel;
-
-import javax.swing.text.html.Option;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
@@ -57,6 +34,21 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
+
+import org.apache.felix.atomos.Atomos;
+import org.apache.felix.atomos.AtomosContent;
+import org.apache.felix.atomos.impl.base.AtomosBase;
+import org.apache.sling.feature.launcher.impl.launchers.FrameworkRunner;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
+import org.osgi.framework.BundleReference;
+import org.osgi.framework.Constants;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.connect.ConnectContent;
+import org.osgi.framework.launch.Framework;
+import org.osgi.framework.launch.FrameworkFactory;
+import org.osgi.framework.startlevel.BundleStartLevel;
 
 public class AtomosRunner extends FrameworkRunner {
 
@@ -130,8 +122,15 @@ public class AtomosRunner extends FrameworkRunner {
         /*for (File child : new File(new File("."), "content").listFiles()) {
             System.out.println(child.getAbsolutePath());
         }*/
+        /*
+        if (1 == (2-1)) {
+            throw new RuntimeException("Yaaaa!!");
+        }
+         */
+        System.out.println("+++ About to process");
 
         for (final Integer startLevel : sortStartLevels(bundleMap.keySet(), defaultStartLevel)) {
+            System.out.println("*** SL:" + startLevel);
             logger.debug("Installing bundles with start level {}", startLevel);
 
             for (final URL file : bundleMap.get(startLevel)) {
@@ -144,15 +143,25 @@ public class AtomosRunner extends FrameworkRunner {
                     }
                 };
 
+                System.out.println("%%% URL:" + file);
                 AtomosContent content = m_atomos
                         .getBootLayer()
                         .getAtomosContents().stream()
                         .filter(atomosContent -> {
+                            System.out.println("$$$" + atomosContent);
                             try {
+                                if (atomosContent instanceof AtomosBase.AtomosLayerBase.AtomosContentIndexed) {
+                                    System.out.println("??? instance of AtomosBase.AtomosLayerBase.AtomosContentIndexed: " + atomosContent);
+                                } else {
+                                    System.out.println("!!! not instance of AtomosBase.AtomosLayerBase.AtomosContentIndexed: " + atomosContent);
+                                }
+
                                 if (atomosContent instanceof  AtomosBase.AtomosLayerBase.AtomosContentIndexed) {
                                     ConnectContent.ConnectEntry fileLocation = atomosContent.getConnectContent().getEntry("META-INF/atomos/file.location").orElse(null);
                                     if (fileLocation != null) {
                                         String fileName = file.getPath().substring(file.getPath().lastIndexOf('/') + 1);
+                                        System.out.println("***" + fileName);
+                                        System.out.println("###" + new String(fileLocation.getBytes()));
                                         return new String(fileLocation.getBytes()).endsWith(fileName);
                                     } else {
                                         return false;

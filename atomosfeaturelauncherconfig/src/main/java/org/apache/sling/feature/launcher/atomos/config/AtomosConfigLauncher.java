@@ -18,6 +18,26 @@
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 package org.apache.sling.feature.launcher.atomos.config;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.jar.JarOutputStream;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonString;
+import javax.script.ScriptEngineManager;
+
 import org.apache.felix.atomos.utils.api.plugin.SubstratePlugin;
 import org.apache.felix.atomos.utils.core.LauncherBuilderImpl;
 import org.apache.felix.atomos.utils.substrate.api.resource.ResourceConfiguration;
@@ -28,8 +48,6 @@ import org.apache.felix.scr.impl.logger.BundleLogger;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Extension;
-import org.apache.sling.feature.ExtensionState;
-import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.builder.BuilderContext;
 import org.apache.sling.feature.builder.FeatureBuilder;
@@ -43,24 +61,6 @@ import org.osgi.framework.FrameworkEvent;
 import org.osgi.util.converter.Converter;
 import org.osgi.util.function.Function;
 import org.slf4j.LoggerFactory;
-
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonString;
-import javax.json.JsonStructure;
-import javax.script.ScriptEngineManager;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.io.StringReader;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class AtomosConfigLauncher extends FrameworkLauncher {
 
@@ -108,53 +108,90 @@ public class AtomosConfigLauncher extends FrameworkLauncher {
         m_app = app;
     }
 
+    private JarOutputStream getJarToBuild(File inJar, File outJar) throws IOException {
+        try(JarFile srcJar = new JarFile(inJar)) {
+            JarOutputStream destJar = new JarOutputStream(new FileOutputStream(outJar), srcJar.getManifest());
+
+            for(JarEntry entry : Collections.list(srcJar.entries())) {
+                if ("META-INF/MANIFEST.MF".equals(entry.getName())) {
+                    continue;
+                }
+
+                InputStream is = srcJar.getInputStream(entry);
+                destJar.putNextEntry(entry);
+                is.transferTo(destJar);
+            }
+
+            return destJar;
+        }
+    }
+
     @Override
     public int run(LauncherRunContext context, ClassLoader cl) throws Exception {
         int result = super.run(context, cl);
         if (result == FrameworkEvent.STOPPED) {
             File outputDir = new File(Paths.get("").toAbsolutePath().toFile(), "atomos-config");
             outputDir.mkdirs();
-            try (Reader reader = new FileReader(new File(outputDir, "config-feature.slingosgifeature"), StandardCharsets.UTF_8)) {
-                Feature config = FeatureJSONReader.read(reader, null);
-                Feature assembled = FeatureBuilder.assemble(ArtifactId.parse("config:assembled:1.0.0"), new BuilderContext(new FeatureProvider() {
-                    @Override
-                    public Feature provide(ArtifactId id) {
-                        return null;
-                    }
-                }), m_app, config);
-                Extension assembledEx = assembled.getExtensions().getByName("atomos-config");
-                JsonObject nativeConfig = assembledEx.getJSONStructure().asJsonObject();
-                write(outputDir, "reflect-config", nativeConfig);
-                write(outputDir, "resource-config", nativeConfig);
-                write(outputDir, "proxy-config", nativeConfig);
-                write(outputDir, "jni-config", nativeConfig);
-                write(outputDir, "serialization-config", nativeConfig);
 
-                try (FileOutputStream output = new FileOutputStream(new File(outputDir,  "atomos_init.sh"))) {
-                    String script = "#!/bin/sh\n\nexport ATOMOS_CLASSPATH=\"";
-                    if (nativeConfig.containsKey("classpath")) {
-                        script += nativeConfig.getJsonArray("classpath").getValuesAs(JsonString.class).stream().map(JsonString::getString).collect(Collectors.joining(":"));
+            try (JarOutputStream jarToBuild = getJarToBuild(new File(outputDir, "atomos.substrate.jar"), new File(outputDir, "app.substrate.jar"))) {
+            //     // nothing else to add
+            // } catch (Exception e) {
+            //     e.printStackTrace();
+
+            //     // Do system exit here for now because otherwise any exception here gets drowned out by others
+            //     System.exit(-1);
+            // }
+
+                try (Reader reader = new FileReader(new File(outputDir, "config-feature.slingosgifeature"), StandardCharsets.UTF_8)) {
+                    Feature config = FeatureJSONReader.read(reader, null);
+                    Feature assembled = FeatureBuilder.assemble(ArtifactId.parse("config:assembled:1.0.0"), new BuilderContext(new FeatureProvider() {
+                        @Override
+                        public Feature provide(ArtifactId id) {
+                            return null;
+                        }
+                    }), m_app, config);
+                    Extension assembledEx = assembled.getExtensions().getByName("atomos-config");
+                    JsonObject nativeConfig = assembledEx.getJSONStructure().asJsonObject();
+                    write(outputDir, jarToBuild, "reflect-config", nativeConfig);
+                    write(outputDir, jarToBuild, "resource-config", nativeConfig);
+                    write(outputDir, jarToBuild, "proxy-config", nativeConfig);
+                    write(outputDir, jarToBuild, "jni-config", nativeConfig);
+                    write(outputDir, jarToBuild, "serialization-config", nativeConfig);
+
+                    try (FileOutputStream output = new FileOutputStream(new File(outputDir,  "atomos_init.sh"))) {
+                        String script = "#!/bin/sh\n\nexport ATOMOS_CLASSPATH=\"";
+                        if (nativeConfig.containsKey("classpath")) {
+                            script += nativeConfig.getJsonArray("classpath").getValuesAs(JsonString.class).stream().map(JsonString::getString).collect(Collectors.joining(":"));
+                        }
+                        script += "\"\n\nexport ATOMOS_INIT=\"";
+                        if (nativeConfig.containsKey("initialize-at-build-time")) {
+                            script += "--initialize-at-build-time=" + nativeConfig.getJsonArray("initialize-at-build-time").getValuesAs(JsonString.class).stream().map(JsonString::getString).collect(Collectors.joining(","));
+                        }
+                        script += "\"\n";
+                        output.write(script.getBytes(StandardCharsets.UTF_8));
                     }
-                    script += "\"\n\nexport ATOMOS_INIT=\"";
-                    if (nativeConfig.containsKey("initialize-at-build-time")) {
-                        script += "--initialize-at-build-time=" + nativeConfig.getJsonArray("initialize-at-build-time").getValuesAs(JsonString.class).stream().map(JsonString::getString).collect(Collectors.joining(","));
-                    }
-                    script += "\"\n";
-                    output.write(script.getBytes(StandardCharsets.UTF_8));
+                } catch (Throwable t) {
+                    t.printStackTrace();
+                    /* */ System.out.println("*** About to throw t");
+                    throw t;
                 }
-            } catch (Throwable t) {
-                t.printStackTrace();
-                throw t;
             }
-
         }
+
+        /* */ System.out.println("*** Finished");
+        System.exit(0);
         return result;
     }
 
-    private void write(File outputDir, String name, JsonObject source) throws IOException {
+    private void write(File outputDir, JarOutputStream outputJar, String name, JsonObject source) throws IOException {
         try (FileOutputStream output = new FileOutputStream(new File(outputDir, name + ".json"))) {
             if (source.containsKey(name)) {
                 Json.createWriter(output).write(source.get(name));
+
+                JarEntry je = new JarEntry("META-INF/native-image/app/" + name + ".json");
+
+                outputJar.putNextEntry(je);
+                Json.createWriter(outputJar).write(source.get(name));
             }
         }
     }
