@@ -23,15 +23,25 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Reader;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ServiceLoader;
+import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.ZipException;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -54,6 +64,7 @@ import org.apache.sling.feature.builder.FeatureBuilder;
 import org.apache.sling.feature.builder.FeatureProvider;
 import org.apache.sling.feature.io.IOUtils;
 import org.apache.sling.feature.io.json.FeatureJSONReader;
+import org.apache.sling.feature.launcher.atomos.weaver.AtomosWeaver;
 import org.apache.sling.feature.launcher.impl.launchers.FrameworkLauncher;
 import org.apache.sling.feature.launcher.spi.LauncherPrepareContext;
 import org.apache.sling.feature.launcher.spi.LauncherRunContext;
@@ -65,6 +76,23 @@ import org.slf4j.LoggerFactory;
 public class AtomosConfigLauncher extends FrameworkLauncher {
 
     private volatile Feature m_app;
+    private final AtomosWeaver m_weaver;
+
+    public AtomosConfigLauncher() {
+        m_weaver = getWeaver();
+
+        if (m_weaver == null) {
+            throw new IllegalStateException("AtomosWeaver not found via ServiceLoader");
+        }
+    }
+
+    private static AtomosWeaver getWeaver() {
+        Iterator<AtomosWeaver> loader = ServiceLoader.load(AtomosWeaver.class).iterator();
+        if (loader.hasNext()) {
+            return loader.next();
+        }
+        return null;
+    }
 
     @Override
     public void prepare(final LauncherPrepareContext context,
@@ -117,13 +145,126 @@ public class AtomosConfigLauncher extends FrameworkLauncher {
                     continue;
                 }
 
-                InputStream is = srcJar.getInputStream(entry);
                 destJar.putNextEntry(entry);
+                InputStream is = srcJar.getInputStream(entry);
                 is.transferTo(destJar);
+                destJar.closeEntry();
             }
 
             return destJar;
         }
+    }
+
+    private void addClassesToJar(String jarFileName, JarOutputStream outJar, ClassLoader cl) throws IOException {
+        System.out.println("*** Jar file: " + jarFileName);
+        try (JarFile jf = new JarFile(jarFileName)) {
+            for (JarEntry entry : Collections.list(jf.entries())) {
+                String fileName = entry.getName();
+
+                // only add class entries.
+                if (!fileName.endsWith(".class")) {
+                    continue;
+                }
+
+                if (fileName.endsWith("module-info.class")) {
+                    continue;
+                }
+
+                try {
+                    JarEntry newEntry = new JarEntry(entry.getName());
+                    outJar.putNextEntry(newEntry);
+                    InputStream is = jf.getInputStream(entry);
+
+                    // Weave the class bytes and then write them to the target jar
+                    String className = fileName.substring(0, fileName.length() - 6).replace('/', '.');
+                    byte[] classBytes = is.readAllBytes();
+                    System.out.print("Classname: " + className + " length before " + classBytes.length);
+                    try {
+                        byte[] woven = m_weaver.weave(classBytes, "org.apache.sling.feature.launcher.atomos.AtomosRunner",
+                            "getAtomosLoaderWrapped", "getAtomosLoaderResourceWrapped", "getAtomosLoaderStreamWrapped", cl);
+                        System.out.print(" length after " + woven.length);
+                        if (classBytes.length != woven.length) {
+                            System.out.println(" - woven!");
+                        } else {
+                            System.out.println();
+                        }
+                        outJar.write(woven);
+                    } catch (Exception ex) {
+                        System.out.println("\nProblem weaving " + className + " " + ex.getMessage());
+                        // Use unwoven bytes
+                        outJar.write(classBytes);
+                    }
+                    outJar.closeEntry();
+                } catch (ZipException ze) {
+                    // Happens in case of a duplicate class file.
+                    System.out.println("Warn: " + ze.getMessage());
+
+                    continue;
+                }
+            }
+        }
+    }
+
+    private void addNativeImageProperties(JarOutputStream jarToBuild, String iabt) throws IOException {
+        // String iart = "--initialize-at-run-time=org.apache.http.osgi.impl.OSGiCredentialsProvider," +
+        //     "org.eclipse.jetty.http.MimeTypes," +
+        //     "org.eclipse.jetty.server.handler.ContextHandler," +
+        //     "org.osgi.util.converter.Converters," +
+        //     "org.osgi.util.converter.ConvertingImpl," +
+        //     "org.owasp.esapi.reference.DefaultValidator," +
+        //     "org.owasp.esapi.reference.JavaLogFactory$JavaLogger," +
+        //     "org.quartz.core.QuartzScheduler";
+
+        String iart = "--initialize-at-run-time=" +
+            "org.owasp.esapi.reference.DefaultValidator," +
+            "org.owasp.esapi.reference.JavaLogFactory$JavaLogger";
+
+        iabt += ",org.apache.sling.feature.launcher.atomos.AtomosRunner";
+
+        JarEntry je = new JarEntry("META-INF/native-image/app/native-image.properties");
+        jarToBuild.putNextEntry(je);
+        String args = "Args = " + iabt + " " + iart + System.lineSeparator();
+        jarToBuild.write(args.getBytes());
+        jarToBuild.closeEntry();
+    }
+
+    private List<String> extractBundleClassPathJars(List<String> jars, File targetDir) throws IOException {
+        targetDir.mkdirs();
+        List<String> result = new ArrayList<>();
+
+        for (String jar : jars) {
+            System.out.println("Extracting BCP jars from " + jar);
+            File file = new File(jar);
+            try (JarFile jf = new JarFile(file)) {
+                Manifest mf = jf.getManifest();
+                Attributes ma = mf.getMainAttributes();
+                String bcp = ma.getValue("Bundle-ClassPath");
+
+                if (bcp == null) {
+                    continue;
+                }
+                System.out.println("Found Bundle Classpath: " + bcp);
+
+                for (String embedded : bcp.split(",")) {
+                    JarEntry entry = jf.getJarEntry(embedded);
+                    if (entry == null) {
+                        continue;
+                    }
+
+                    File tDir = new File(targetDir, file.getName());
+                    tDir.mkdirs();
+                    File tFile = new File(tDir, entry.getName());
+
+                    try (InputStream is = jf.getInputStream(entry);
+                        OutputStream os = new FileOutputStream(tFile)) {
+                        is.transferTo(os);
+                    }
+                    result.add(tFile.getAbsolutePath());
+                }
+            }
+        }
+
+        return result;
     }
 
     @Override
@@ -134,14 +275,6 @@ public class AtomosConfigLauncher extends FrameworkLauncher {
             outputDir.mkdirs();
 
             try (JarOutputStream jarToBuild = getJarToBuild(new File(outputDir, "atomos.substrate.jar"), new File(outputDir, "app.substrate.jar"))) {
-            //     // nothing else to add
-            // } catch (Exception e) {
-            //     e.printStackTrace();
-
-            //     // Do system exit here for now because otherwise any exception here gets drowned out by others
-            //     System.exit(-1);
-            // }
-
                 try (Reader reader = new FileReader(new File(outputDir, "config-feature.slingosgifeature"), StandardCharsets.UTF_8)) {
                     Feature config = FeatureJSONReader.read(reader, null);
                     Feature assembled = FeatureBuilder.assemble(ArtifactId.parse("config:assembled:1.0.0"), new BuilderContext(new FeatureProvider() {
@@ -162,10 +295,16 @@ public class AtomosConfigLauncher extends FrameworkLauncher {
                         String script = "#!/bin/sh\n\nexport ATOMOS_CLASSPATH=\"";
                         if (nativeConfig.containsKey("classpath")) {
                             script += nativeConfig.getJsonArray("classpath").getValuesAs(JsonString.class).stream().map(JsonString::getString).collect(Collectors.joining(":"));
+
+                            extractJarsAndCollect(nativeConfig, jarToBuild, outputDir);
                         }
                         script += "\"\n\nexport ATOMOS_INIT=\"";
                         if (nativeConfig.containsKey("initialize-at-build-time")) {
-                            script += "--initialize-at-build-time=" + nativeConfig.getJsonArray("initialize-at-build-time").getValuesAs(JsonString.class).stream().map(JsonString::getString).collect(Collectors.joining(","));
+                            String iabt = "--initialize-at-build-time=" + nativeConfig.getJsonArray("initialize-at-build-time").getValuesAs(JsonString.class).stream().map(JsonString::getString).collect(Collectors.joining(","));
+                            script += iabt;
+
+                            // Add the initialize at build time to a native-image.properties file
+                            addNativeImageProperties(jarToBuild, iabt);
                         }
                         script += "\"\n";
                         output.write(script.getBytes(StandardCharsets.UTF_8));
@@ -181,6 +320,42 @@ public class AtomosConfigLauncher extends FrameworkLauncher {
         /* */ System.out.println("*** Finished");
         System.exit(0);
         return result;
+    }
+
+    private void extractJarsAndCollect(JsonObject nativeConfig, JarOutputStream jarToBuild, File outputDir) throws IOException {
+        List<String> jarsToBeCleaned = nativeConfig.getJsonArray("classpath").getValuesAs(JsonString.class).stream().map(JsonString::getString).collect(Collectors.toList());
+        List<String> jars = jarsToBeCleaned.stream()
+            .filter(n -> !n.equals("atomos.substrate.jar"))
+            .filter(n -> !n.contains("org.apache.felix.framework-"))
+            .collect(Collectors.toList());
+
+        List<String> bcpJars = extractBundleClassPathJars(jars, new File(outputDir, "../bcpJars"));
+        jars.addAll(bcpJars);
+
+        List<URL> jarURLs = nativeConfig.getJsonArray("classpath").getValuesAs(JsonString.class).stream().map(JsonString::getString)
+            .map(j -> {
+                try {
+                    return new File(j).toURI().toURL();
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }}).collect(Collectors.toList());
+        List<URL> bcpJarURLs = bcpJars.stream().map(j -> {
+                try {
+                    return new File(j).toURI().toURL();
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }}).collect(Collectors.toList());
+        jarURLs.addAll(bcpJarURLs);
+        ClassLoader jarCL = new URLClassLoader(jarURLs.toArray(new URL[0]));
+
+        for (String jar : jars) {
+            try {
+            addClassesToJar(jar, jarToBuild, jarCL);
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.exit(-1);
+            }
+        }
     }
 
     private void write(File outputDir, JarOutputStream outputJar, String name, JsonObject source) throws IOException {

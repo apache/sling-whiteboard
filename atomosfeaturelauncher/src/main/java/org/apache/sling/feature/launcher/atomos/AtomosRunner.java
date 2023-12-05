@@ -54,7 +54,7 @@ public class AtomosRunner extends FrameworkRunner {
 
     private static final ConcurrentHashMap<String, ClassLoader> location2Loader = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<String, Bundle> classToBundle = new ConcurrentHashMap<>();
-    private static final Atomos m_atomos = Atomos.newAtomos();
+    private static Atomos m_atomos;
     private BiConsumer<URL, Map<String, String>> bundleReporter;
 
     public AtomosRunner(Map<String, String> frameworkProperties, Map<Integer, List<URL>> bundlesMap, List<Object[]> configurations, List<URL> installables) throws Exception {
@@ -71,6 +71,13 @@ public class AtomosRunner extends FrameworkRunner {
         return result;
     }
 
+    private synchronized static Atomos getAtomos() {
+        if (m_atomos == null) {
+            m_atomos = Atomos.newAtomos();
+        }
+        return m_atomos;
+    }
+
     private static int getProperty(BundleContext bc, String propName, int defaultValue) {
         String val = bc.getProperty(propName);
         if (val == null) {
@@ -82,7 +89,7 @@ public class AtomosRunner extends FrameworkRunner {
 
     @Override
     protected FrameworkFactory getFrameworkFactory() throws Exception {
-        return new AtomosFrameworkFactory(m_atomos);
+        return new AtomosFrameworkFactory(getAtomos());
     }
 
     @Override
@@ -144,7 +151,7 @@ public class AtomosRunner extends FrameworkRunner {
                 };
 
                 System.out.println("%%% URL:" + file);
-                AtomosContent content = m_atomos
+                AtomosContent content = getAtomos()
                         .getBootLayer()
                         .getAtomosContents().stream()
                         .filter(atomosContent -> {
