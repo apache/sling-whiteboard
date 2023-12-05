@@ -1,6 +1,6 @@
 [![Apache Sling](https://sling.apache.org/res/logos/sling.png)](https://sling.apache.org)
 
-# Apache Sling Bnd Provider Type Checker
+# Apache Sling Provider Type Checker Bnd Plugin
 
 This module contains a [Bnd plugin](https://bnd.bndtools.org/chapters/870-plugins.html) enforcing that no class of the current bundle extends or implements a provider type. Note that *using* a provider type (without implementing or extending it) is still allowed (even for consumers).
 
@@ -18,7 +18,7 @@ For usage with Maven the Bnd plugin has to be added to the plugin dependencies o
     <dependencies>
         <dependency>
             <groupId>org.apache.sling</groupId>
-            <artifactId>org.apache.sling.bnd.providertype</artifactId>
+            <artifactId>org.apache.sling.providertype.bnd-plugin</artifactId>
             <version>1.0.0</version>
         </dependency>
     </dependencies>
@@ -28,13 +28,13 @@ For usage with Maven the Bnd plugin has to be added to the plugin dependencies o
 In addition the `bnd.bnd` file needs to register the Bnd plugin with the [plugin instruction](https://bnd.bndtools.org/instructions/plugin.html)
 
 ```
--plugin.providertype:org.apache.sling.bnd.providertype.ProviderTypeScanner
+-plugin.providertype:org.apache.sling.providertype.bndplugin.ProviderTypeScanner
 ```
 
 To explicitly ignore certain provider types (i.e. don't fail when these are extended/implemented) one can use the attribute `ignored` with one or multiple comma-separated fully qualified provider type names. For example
 
 ```
--plugin.providertype:org.apache.sling.bnd.providertype.ProviderTypeScanner;ignored=org.apache.jackrabbit.api.security.user.User
+-plugin.providertype:org.apache.sling.providertype.bndplugin.ProviderTypeScanner;ignored=org.apache.jackrabbit.api.security.user.User
 ```
 
 ## Prerequisites

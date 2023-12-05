@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.sling.bnd.providertype;
+package org.apache.sling.providertype.bndplugin;
 
 import java.io.File;
 import java.io.IOException;

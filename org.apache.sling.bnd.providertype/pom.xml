@@ -27,10 +27,10 @@
         <version>52</version>
         <relativePath />
     </parent>
-    <artifactId>org.apache.sling.bnd.providertype</artifactId>
+    <artifactId>org.apache.sling.providertype.bnd-plugin</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
-    <name>Apache Sling Bnd Provider Type Checker</name>
+    <name>Apache Sling Provider Type Checker Bnd Plugin</name>
     <description>Bnd plugin enforcing that no class extends/implements a provider type</description>
 
     <properties>

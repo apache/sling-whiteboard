@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.sling.bnd.providertype;
+package org.apache.sling.providertype.bndplugin;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -44,8 +44,8 @@ class ProviderTypeScannerTest {
         builder.setClasspath(new File[] { new File("src/test/resources") });
         try (Jar jar = builder.build()) {
             List<String> expectedErrors = Arrays.asList(
-                    "Type \"org.apache.sling.bnd.providertype.TypeAImpl\" implements provider type \"org.apache.sling.bnd.providertype.TypeA\". This is not allowed!",
-                    "Type \"org.apache.sling.bnd.providertype.TypeBExtension\" extends provider type \"org.apache.sling.bnd.providertype.TypeB\". This is not allowed!");
+                    "Type \"org.apache.sling.providertype.bndplugin.TypeAImpl\" implements provider type \"org.apache.sling.providertype.bndplugin.TypeA\". This is not allowed!",
+                    "Type \"org.apache.sling.providertype.bndplugin.TypeBExtension\" extends provider type \"org.apache.sling.providertype.bndplugin.TypeB\". This is not allowed!");
             assertEquals(expectedErrors, builder.getErrors());
             if (!builder.getWarnings().isEmpty()) {
                 fail(String.join("\n", builder.getWarnings()));
