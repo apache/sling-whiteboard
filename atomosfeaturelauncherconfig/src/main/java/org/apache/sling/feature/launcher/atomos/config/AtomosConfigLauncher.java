@@ -156,7 +156,6 @@ public class AtomosConfigLauncher extends FrameworkLauncher {
     }
 
     private void addClassesToJar(String jarFileName, JarOutputStream outJar, ClassLoader cl) throws IOException {
-        System.out.println("*** Jar file: " + jarFileName);
         try (JarFile jf = new JarFile(jarFileName)) {
             for (JarEntry entry : Collections.list(jf.entries())) {
                 String fileName = entry.getName();
@@ -164,7 +163,6 @@ public class AtomosConfigLauncher extends FrameworkLauncher {
                 // only add class entries.
                 if (!fileName.endsWith(".class") &&
                     !fileName.endsWith(".properties")) {  // The .properties files are included here until we have weave ResourceBundle invocations
-                    // !fileName.endsWith(".css") && !fileName.endsWith(".js") &&  !fileName.endsWith(".gif") && !fileName.endsWith(".png")) {
                     continue;
                 }
 
@@ -180,16 +178,10 @@ public class AtomosConfigLauncher extends FrameworkLauncher {
                     // Weave the class bytes and then write them to the target jar
                     String className = fileName.substring(0, fileName.length() - 6).replace('/', '.');
                     byte[] classBytes = is.readAllBytes();
-                    System.out.print("Classname: " + className + " length before " + classBytes.length);
+
                     try {
                         byte[] woven = m_weaver.weave(classBytes, "org.apache.sling.feature.launcher.atomos.AtomosRunner",
                             "getAtomosLoaderWrapped", "getAtomosLoaderResourceWrapped", "getAtomosLoaderStreamWrapped", cl);
-                        System.out.print(" length after " + woven.length);
-                        if (classBytes.length != woven.length) {
-                            System.out.println(" - woven!");
-                        } else {
-                            System.out.println();
-                        }
                         outJar.write(woven);
                     } catch (Exception ex) {
                         System.out.println("\nProblem weaving " + className + " " + ex.getMessage());
@@ -208,15 +200,6 @@ public class AtomosConfigLauncher extends FrameworkLauncher {
     }
 
     private void addNativeImageProperties(JarOutputStream jarToBuild, String iabt) throws IOException {
-        // String iart = "--initialize-at-run-time=org.apache.http.osgi.impl.OSGiCredentialsProvider," +
-        //     "org.eclipse.jetty.http.MimeTypes," +
-        //     "org.eclipse.jetty.server.handler.ContextHandler," +
-        //     "org.osgi.util.converter.Converters," +
-        //     "org.osgi.util.converter.ConvertingImpl," +
-        //     "org.owasp.esapi.reference.DefaultValidator," +
-        //     "org.owasp.esapi.reference.JavaLogFactory$JavaLogger," +
-        //     "org.quartz.core.QuartzScheduler";
-
         String iart = "--initialize-at-run-time=" +
             "org.owasp.esapi.reference.DefaultValidator," +
             "org.owasp.esapi.reference.JavaLogFactory$JavaLogger";
@@ -235,7 +218,6 @@ public class AtomosConfigLauncher extends FrameworkLauncher {
         List<String> result = new ArrayList<>();
 
         for (String jar : jars) {
-            System.out.println("Extracting BCP jars from " + jar);
             File file = new File(jar);
             try (JarFile jf = new JarFile(file)) {
                 Manifest mf = jf.getManifest();
@@ -245,7 +227,6 @@ public class AtomosConfigLauncher extends FrameworkLauncher {
                 if (bcp == null) {
                     continue;
                 }
-                System.out.println("Found Bundle Classpath: " + bcp);
 
                 for (String embedded : bcp.split(",")) {
                     JarEntry entry = jf.getJarEntry(embedded);
@@ -313,7 +294,6 @@ public class AtomosConfigLauncher extends FrameworkLauncher {
                     }
                 } catch (Throwable t) {
                     t.printStackTrace();
-                    /* */ System.out.println("*** About to throw t");
                     throw t;
                 }
             }

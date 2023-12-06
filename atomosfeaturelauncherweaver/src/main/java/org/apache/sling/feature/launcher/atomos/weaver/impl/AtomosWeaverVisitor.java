@@ -115,32 +115,11 @@ public class AtomosWeaverVisitor  extends ClassVisitor implements Opcodes {
 
             if (opcode == INVOKEINTERFACE && owner.replace('/', '.').equals("org.osgi.framework.Bundle")) {
                 if (name.equals("getResource")) {
-                    System.out.println("@@@ getResource");
                     invokeInterface(Type.getType("L" + owner.replace('.', '/') + ";"), targetMethodBundleResource);
                     m_woven = true;
                     return;
                 }
             }
-            /*
-            if (opcode == INVOKEVIRTUAL && owner.replace('/', '.').equals("org.osgi.framework.Bundle")) {
-                // Method targetMethod;
-                if (name.equals("getResource")) {
-                    name = "getEntry";
-                    m_woven = true;
-                    System.out.println("@@@ getResource");
-                }
-                // } else if (name.equals("getResources")) {
-                //     targetMethod = targetMethodStream;
-                // } else {
-                //     targetMethod = null;
-                // }
-                // if (targetMethod != null) {
-                //     invokeStatic(target, targetMethod);
-                //     m_woven = true;
-                //     return;
-                // }
-            }
-            */
             super.visitMethodInsn(opcode, owner, name, desc, itf);
         }
     }

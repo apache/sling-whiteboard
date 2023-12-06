@@ -126,16 +126,6 @@ public class AtomosRunner extends FrameworkRunner {
         System.out.println(new File(".").getAbsolutePath());
         System.out.println(new File(new File("."), "content").getAbsolutePath());
 
-        /*for (File child : new File(new File("."), "content").listFiles()) {
-            System.out.println(child.getAbsolutePath());
-        }*/
-        /*
-        if (1 == (2-1)) {
-            throw new RuntimeException("Yaaaa!!");
-        }
-         */
-        System.out.println("+++ About to process");
-
         for (final Integer startLevel : sortStartLevels(bundleMap.keySet(), defaultStartLevel)) {
             System.out.println("*** SL:" + startLevel);
             logger.debug("Installing bundles with start level {}", startLevel);
@@ -157,12 +147,6 @@ public class AtomosRunner extends FrameworkRunner {
                         .filter(atomosContent -> {
                             System.out.println("$$$" + atomosContent);
                             try {
-                                if (atomosContent instanceof AtomosBase.AtomosLayerBase.AtomosContentIndexed) {
-                                    System.out.println("??? instance of AtomosBase.AtomosLayerBase.AtomosContentIndexed: " + atomosContent);
-                                } else {
-                                    System.out.println("!!! not instance of AtomosBase.AtomosLayerBase.AtomosContentIndexed: " + atomosContent);
-                                }
-
                                 if (atomosContent instanceof  AtomosBase.AtomosLayerBase.AtomosContentIndexed) {
                                     ConnectContent.ConnectEntry fileLocation = atomosContent.getConnectContent().getEntry("META-INF/atomos/file.location").orElse(null);
                                     if (fileLocation != null) {
@@ -231,18 +215,14 @@ public class AtomosRunner extends FrameworkRunner {
     }
 
     public static InputStream getAtomosLoaderStreamWrapped(Class origin, String resource) {
-        // return getAtomosLoaderWrapped(origin).getResourceAsStream(resolveName(origin, resource));
         URL u = getAtomosLoaderWrapped(origin).getResource(resolveName(origin, resource));
         if (u == null) {
-            System.out.println("!!! getResourceAsStream does not find it: " + resource);
             return null;
         }
 
         try {
-            System.out.println("!!! getResourceAsStream: " + u);
             return u.openStream();
         } catch (IOException e) {
-            System.out.println("!!! getResourceAsStream exception " + e.getMessage());
             return null;
         }
     }
@@ -259,34 +239,9 @@ public class AtomosRunner extends FrameworkRunner {
                 return null;
             }});
 
-        ClassLoader cl = Optional.ofNullable(bundle).map(b ->
+        return Optional.ofNullable(bundle).map(b ->
                     location2Loader.computeIfAbsent(b.getLocation(), location -> new BundleClassLoader(origin, bundle) )
                 ).orElseGet(origin::getClassLoader);
-        System.out.println(cl + "-" + bundle);
-
-        if (bundle != null) {
-            if ("org.apache.felix.webconsole.plugins.event".equals(bundle.getSymbolicName())) {
-                System.out.println("!!! entry: " + bundle.getEntry("/res/events.html"));
-                System.out.println("!!! cl.getResource: " + cl.getResource("/res/events.html"));
-                URL url = cl.getResource("/res/events.html");
-                if (url != null) {
-                    try (InputStream is = url.openStream()) {
-                        System.out.println("Was able to open stream");
-                        byte[] bytes = is.readAllBytes();
-                        String s = new String(bytes);
-                        System.out.println("Bytes: " + s.substring(0, 256));
-                    } catch (Exception ex) {
-                        System.out.println("!!! unable to open stream");
-                        ex.printStackTrace();
-                    }
-                }
-
-                // Enumeration<URL> e = bundle.findEntries("/", "*", true);
-                // System.out.println("!!! Found entries: " + Collections.list(e));
-            }
-        }
-
-        return cl;
     }
 
     private static class BundleClassLoader extends ClassLoader implements BundleReference {
@@ -320,18 +275,14 @@ public class AtomosRunner extends FrameworkRunner {
 
         @Override
         public InputStream getResourceAsStream(String name) {
-            System.out.println("Bundle:" + bundle + " origin:" + origin + " ResolveName: " + resolveName(origin, name));
             URL u = getResource(name);
             if (u == null) {
-                System.out.println("~~~ getResourceAsStream does not find it: " + name);
                 return null;
             }
 
             try {
-                System.out.println("~~~ getResourceAsStream: " + u);
                 return u.openStream();
             } catch (IOException e) {
-                System.out.println("~~~ getResourceAsStream exception " + e.getMessage());
                 return null;
             }
         }

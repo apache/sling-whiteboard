@@ -18,34 +18,14 @@
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 package org.apache.sling.feature.launcher.atomos;
 
-import org.apache.felix.atomos.Atomos;
-import org.apache.felix.atomos.AtomosContent;
-import org.apache.felix.atomos.AtomosLayer;
+import java.io.IOException;
+import java.net.URL;
+
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.launcher.atomos.weaver.AtomosWeaver;
 import org.apache.sling.feature.launcher.impl.launchers.FrameworkLauncher;
 import org.apache.sling.feature.launcher.spi.LauncherPrepareContext;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleException;
-import org.osgi.framework.Version;
-import org.osgi.framework.connect.ConnectContent;
 import org.slf4j.Logger;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.JarURLConnection;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.security.CodeSource;
-import java.security.ProtectionDomain;
-import java.security.cert.Certificate;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.Optional;
-import java.util.ServiceLoader;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.jar.JarFile;
 
 public class AtomosLauncher extends FrameworkLauncher {
     @Override
@@ -73,6 +53,7 @@ public class AtomosLauncher extends FrameworkLauncher {
         return AtomosRunner.class.getName();
     }
 
+    /*
     @Override
     public LauncherClassLoader createClassLoader() {
         return LOADER;
@@ -145,4 +126,5 @@ public class AtomosLauncher extends FrameworkLauncher {
             return parent.getResources(name);
         }
     }
+     */
 }
