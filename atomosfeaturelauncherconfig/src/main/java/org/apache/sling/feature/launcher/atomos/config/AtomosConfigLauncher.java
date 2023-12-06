@@ -162,7 +162,9 @@ public class AtomosConfigLauncher extends FrameworkLauncher {
                 String fileName = entry.getName();
 
                 // only add class entries.
-                if (!fileName.endsWith(".class")) {
+                if (!fileName.endsWith(".class") &&
+                    !fileName.endsWith(".properties")) {  // The .properties files are included here until we have weave ResourceBundle invocations
+                    // !fileName.endsWith(".css") && !fileName.endsWith(".js") &&  !fileName.endsWith(".gif") && !fileName.endsWith(".png")) {
                     continue;
                 }
 
@@ -346,7 +348,13 @@ public class AtomosConfigLauncher extends FrameworkLauncher {
                     throw new RuntimeException(ex);
                 }}).collect(Collectors.toList());
         jarURLs.addAll(bcpJarURLs);
-        ClassLoader jarCL = new URLClassLoader(jarURLs.toArray(new URL[0]));
+
+        List<URL> clURLs = new ArrayList<>(jarURLs);
+        // Temp hack for the org.owasp.esapi.reference.DefaultSecurityConfiguration which references (imports)
+        // an antiquated commons-lang class but doesn't use it through the code path we are executing.
+        // It also doesn't import it on the OSGi level.
+        clURLs.add(new URL("https://repo.maven.apache.org/maven2/commons-lang/commons-lang/2.6/commons-lang-2.6.jar"));
+        URLClassLoader jarCL = new URLClassLoader(clURLs.toArray(new URL[0]));
 
         for (String jar : jars) {
             try {

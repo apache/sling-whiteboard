@@ -209,7 +209,7 @@
       "start-order": "10"
     },
     {
-      "id": "org.apache.felix:org.apache.felix.webconsole.plugins.event:1.1.8",
+      "id": "org.apache.felix:org.apache.felix.webconsole.plugins.event:1.1.9-SNAPSHOT",
       "start-order": "10"
     },
     {

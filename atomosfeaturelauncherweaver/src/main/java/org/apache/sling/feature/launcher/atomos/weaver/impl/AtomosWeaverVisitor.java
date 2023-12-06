@@ -18,19 +18,18 @@
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 package org.apache.sling.feature.launcher.atomos.weaver.impl;
 
+import java.io.InputStream;
+import java.net.URL;
+
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
-
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.JSRInlinerAdapter;
 import org.objectweb.asm.commons.Method;
-
-import java.io.InputStream;
-import java.net.URL;
 
 public class AtomosWeaverVisitor  extends ClassVisitor implements Opcodes {
     public static byte[] weave(byte[] bytes, String targetClass, String targetMethodClassLoader, String targetMethodResource, String targetMethodStream, ClassLoader cl) {
@@ -44,10 +43,12 @@ public class AtomosWeaverVisitor  extends ClassVisitor implements Opcodes {
             ),new Method(targetMethodResource,
                 Type.getType(URL.class),
                 new Type[] {Type.getType(Class.class),Type.getType(String.class)}
-        ),new Method(targetMethodStream,
+            ),new Method(targetMethodStream,
                 Type.getType(InputStream.class),
                 new Type[] {Type.getType(Class.class), Type.getType(String.class)}
-        )
+            ),new Method("getEntry",
+                Type.getType(URL.class),
+                new Type[] {Type.getType(String.class)}        )
         );
         cr.accept(cv, ClassReader.SKIP_FRAMES);
         if (cv.isWoven()) {
@@ -62,13 +63,15 @@ public class AtomosWeaverVisitor  extends ClassVisitor implements Opcodes {
     private final Method targetMethodClassLoader;
     private final Method targetMethodResource;
     private final Method targetMethodStream;
+    private final Method targetMethodBundleResource;
 
-    AtomosWeaverVisitor(ClassWriter cv, Type target, Method targetMethodClassLoader, Method targetMethodResource, Method targetMethodStream) {
+    AtomosWeaverVisitor(ClassWriter cv, Type target, Method targetMethodClassLoader, Method targetMethodResource, Method targetMethodStream, Method targetMethodBundleResource) {
         super(Opcodes.ASM9, cv);
         this.target = target;
         this.targetMethodClassLoader = targetMethodClassLoader;
         this.targetMethodResource = targetMethodResource;
         this.targetMethodStream = targetMethodStream;
+        this.targetMethodBundleResource = targetMethodBundleResource;
     }
 
     boolean isWoven() {
@@ -109,6 +112,35 @@ public class AtomosWeaverVisitor  extends ClassVisitor implements Opcodes {
                     return;
                 }
             }
+
+            if (opcode == INVOKEINTERFACE && owner.replace('/', '.').equals("org.osgi.framework.Bundle")) {
+                if (name.equals("getResource")) {
+                    System.out.println("@@@ getResource");
+                    invokeInterface(Type.getType("L" + owner.replace('.', '/') + ";"), targetMethodBundleResource);
+                    m_woven = true;
+                    return;
+                }
+            }
+            /*
+            if (opcode == INVOKEVIRTUAL && owner.replace('/', '.').equals("org.osgi.framework.Bundle")) {
+                // Method targetMethod;
+                if (name.equals("getResource")) {
+                    name = "getEntry";
+                    m_woven = true;
+                    System.out.println("@@@ getResource");
+                }
+                // } else if (name.equals("getResources")) {
+                //     targetMethod = targetMethodStream;
+                // } else {
+                //     targetMethod = null;
+                // }
+                // if (targetMethod != null) {
+                //     invokeStatic(target, targetMethod);
+                //     m_woven = true;
+                //     return;
+                // }
+            }
+            */
             super.visitMethodInsn(opcode, owner, name, desc, itf);
         }
     }

@@ -231,7 +231,20 @@ public class AtomosRunner extends FrameworkRunner {
     }
 
     public static InputStream getAtomosLoaderStreamWrapped(Class origin, String resource) {
-        return getAtomosLoaderWrapped(origin).getResourceAsStream(resolveName(origin, resource));
+        // return getAtomosLoaderWrapped(origin).getResourceAsStream(resolveName(origin, resource));
+        URL u = getAtomosLoaderWrapped(origin).getResource(resolveName(origin, resource));
+        if (u == null) {
+            System.out.println("!!! getResourceAsStream does not find it: " + resource);
+            return null;
+        }
+
+        try {
+            System.out.println("!!! getResourceAsStream: " + u);
+            return u.openStream();
+        } catch (IOException e) {
+            System.out.println("!!! getResourceAsStream exception " + e.getMessage());
+            return null;
+        }
     }
 
     public static ClassLoader getAtomosLoaderWrapped(Class origin) {
@@ -245,10 +258,35 @@ public class AtomosRunner extends FrameworkRunner {
             } catch (Throwable ex) {
                 return null;
             }});
-        System.out.println(bundle);
-        return Optional.ofNullable(bundle).map(b ->
+
+        ClassLoader cl = Optional.ofNullable(bundle).map(b ->
                     location2Loader.computeIfAbsent(b.getLocation(), location -> new BundleClassLoader(origin, bundle) )
                 ).orElseGet(origin::getClassLoader);
+        System.out.println(cl + "-" + bundle);
+
+        if (bundle != null) {
+            if ("org.apache.felix.webconsole.plugins.event".equals(bundle.getSymbolicName())) {
+                System.out.println("!!! entry: " + bundle.getEntry("/res/events.html"));
+                System.out.println("!!! cl.getResource: " + cl.getResource("/res/events.html"));
+                URL url = cl.getResource("/res/events.html");
+                if (url != null) {
+                    try (InputStream is = url.openStream()) {
+                        System.out.println("Was able to open stream");
+                        byte[] bytes = is.readAllBytes();
+                        String s = new String(bytes);
+                        System.out.println("Bytes: " + s.substring(0, 256));
+                    } catch (Exception ex) {
+                        System.out.println("!!! unable to open stream");
+                        ex.printStackTrace();
+                    }
+                }
+
+                // Enumeration<URL> e = bundle.findEntries("/", "*", true);
+                // System.out.println("!!! Found entries: " + Collections.list(e));
+            }
+        }
+
+        return cl;
     }
 
     private static class BundleClassLoader extends ClassLoader implements BundleReference {
