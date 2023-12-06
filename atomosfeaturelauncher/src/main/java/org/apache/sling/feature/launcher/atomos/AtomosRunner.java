@@ -319,6 +319,24 @@ public class AtomosRunner extends FrameworkRunner {
         }
 
         @Override
+        public InputStream getResourceAsStream(String name) {
+            System.out.println("Bundle:" + bundle + " origin:" + origin + " ResolveName: " + resolveName(origin, name));
+            URL u = getResource(name);
+            if (u == null) {
+                System.out.println("~~~ getResourceAsStream does not find it: " + name);
+                return null;
+            }
+
+            try {
+                System.out.println("~~~ getResourceAsStream: " + u);
+                return u.openStream();
+            } catch (IOException e) {
+                System.out.println("~~~ getResourceAsStream exception " + e.getMessage());
+                return null;
+            }
+        }
+
+        @Override
         public Bundle getBundle() {
             return bundle;
         }

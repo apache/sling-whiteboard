@@ -201,7 +201,7 @@
       "start-order": "10"
     },
     {
-      "id": "org.apache.felix:org.apache.felix.webconsole.plugins.ds:2.2.0",
+      "id": "org.apache.felix:org.apache.felix.webconsole.plugins.ds:2.2.1-SNAPSHOT",
       "start-order": "10"
     },
     {
@@ -565,6 +565,12 @@
       {
         "name":"org.owasp.esapi.reference.JavaLogFactory",
         "methods":[{"name":"getInstance","parameterTypes":[] }]
+      },
+      {
+        "name":"org.apache.felix.webconsole.SimpleWebConsolePlugin",
+        "queryAllDeclaredMethods":true,
+        "queryAllPublicMethods":true,
+        "methods":[{"name":"getResource","parameterTypes":["java.lang.String"] }]
       }
     ],
     "resource-config": {
