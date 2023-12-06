@@ -127,7 +127,6 @@ public class AtomosRunner extends FrameworkRunner {
         System.out.println(new File(new File("."), "content").getAbsolutePath());
 
         for (final Integer startLevel : sortStartLevels(bundleMap.keySet(), defaultStartLevel)) {
-            System.out.println("*** SL:" + startLevel);
             logger.debug("Installing bundles with start level {}", startLevel);
 
             for (final URL file : bundleMap.get(startLevel)) {
@@ -140,19 +139,15 @@ public class AtomosRunner extends FrameworkRunner {
                     }
                 };
 
-                System.out.println("%%% URL:" + file);
                 AtomosContent content = getAtomos()
                         .getBootLayer()
                         .getAtomosContents().stream()
                         .filter(atomosContent -> {
-                            System.out.println("$$$" + atomosContent);
                             try {
                                 if (atomosContent instanceof  AtomosBase.AtomosLayerBase.AtomosContentIndexed) {
                                     ConnectContent.ConnectEntry fileLocation = atomosContent.getConnectContent().getEntry("META-INF/atomos/file.location").orElse(null);
                                     if (fileLocation != null) {
                                         String fileName = file.getPath().substring(file.getPath().lastIndexOf('/') + 1);
-                                        System.out.println("***" + fileName);
-                                        System.out.println("###" + new String(fileLocation.getBytes()));
                                         return new String(fileLocation.getBytes()).endsWith(fileName);
                                     } else {
                                         return false;
