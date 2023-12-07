@@ -75,7 +75,8 @@ public class Starter {
         return r.getName().endsWith(".md");
     }
 
-    private void process(final ResourceResolver resolver, final Resource resource) throws IOException, ServletException {
+    private void process(final ResourceResolver resolver, final Resource resource, final boolean retry) 
+    throws IOException, ServletException {
         if ( this.ignore(resource) ) {
             return;
         }
@@ -83,16 +84,31 @@ public class Starter {
             return;
         }
         logger.info("Processing {}", resource.getPath());
-        final SlingHttpServletRequest req = Builders.newRequestBuilder(resource)
-            .withExtension("html")
-            .build();
-        final SlingHttpServletResponseResult resp = Builders.newResponseBuilder().build();
-        processor.processRequest(req, resp, resolver);
+        final long endAt = System.currentTimeMillis() + 5000;
+        while ( System.currentTimeMillis() < endAt ) {
+            final SlingHttpServletRequest req = Builders.newRequestBuilder(resource)
+                .withExtension("html")
+                .build();
+            final SlingHttpServletResponseResult resp = Builders.newResponseBuilder().build();
+            processor.processRequest(req, resp, resolver);
 
-        final File output = new File(config.output_path(), resource.getPath().substring(this.config.input_path().length()).concat(".html"));
-        logger.info("Writing output to {}", output.getAbsolutePath());
-        output.getParentFile().mkdirs();
-        Files.writeString(output.toPath(), resp.getOutputAsString());
+            if ( resp.getStatus() == 200 ) {
+                final File output = new File(config.output_path(), resource.getPath().substring(this.config.input_path().length()).concat(".html"));
+                logger.info("Writing output to {}", output.getAbsolutePath());
+                output.getParentFile().mkdirs();
+                Files.writeString(output.toPath(), resp.getOutputAsString());
+                return;
+            }
+            if (!retry) {
+                break;
+            }
+            try {
+                Thread.sleep(100);
+            } catch ( final InterruptedException ie) {
+                // ignore
+            }
+        }
+        logger.error("Unable to create html for {}", resource.getPath());
     }
 
     private Resource getResource(final ResourceResolver resolver, final String path) {
@@ -121,8 +137,10 @@ public class Starter {
             if ( root == null ) {
                 logger.error("Unable to find root resource at {}", config.input_path());
             } else {
+                boolean first = true;
                 for(final Resource c : root.getChildren()) {
-                    process(resolver, c);
+                    process(resolver, c, first);
+                    first = false;
                 }
             }
         } catch ( final Exception e ) {
