@@ -84,6 +84,12 @@ public class Starter {
             return;
         }
         logger.info("Processing {}", resource.getPath());
+        final long lastModified = resource.getResourceMetadata().getModificationTime();
+        final File output = new File(config.output_path(), resource.getPath().substring(this.config.input_path().length()).concat(".html"));
+        if ( lastModified > 0 && output.exists() && output.lastModified() >= lastModified ) {
+            logger.info("Skipping {} as it is up to date", resource.getPath());
+            return;
+        }
         final long endAt = System.currentTimeMillis() + 5000;
         while ( System.currentTimeMillis() < endAt ) {
             final SlingHttpServletRequest req = Builders.newRequestBuilder(resource)
@@ -93,7 +99,6 @@ public class Starter {
             processor.processRequest(req, resp, resolver);
 
             if ( resp.getStatus() == 200 ) {
-                final File output = new File(config.output_path(), resource.getPath().substring(this.config.input_path().length()).concat(".html"));
                 logger.info("Writing output to {}", output.getAbsolutePath());
                 output.getParentFile().mkdirs();
                 Files.writeString(output.toPath(), resp.getOutputAsString());
