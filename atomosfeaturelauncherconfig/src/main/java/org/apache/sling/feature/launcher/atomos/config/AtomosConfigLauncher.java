@@ -24,7 +24,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
+import java.io.Writer;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
@@ -64,6 +66,7 @@ import org.apache.sling.feature.builder.FeatureBuilder;
 import org.apache.sling.feature.builder.FeatureProvider;
 import org.apache.sling.feature.io.IOUtils;
 import org.apache.sling.feature.io.json.FeatureJSONReader;
+import org.apache.sling.feature.io.json.FeatureJSONWriter;
 import org.apache.sling.feature.launcher.atomos.weaver.AtomosWeaver;
 import org.apache.sling.feature.launcher.impl.launchers.FrameworkLauncher;
 import org.apache.sling.feature.launcher.spi.LauncherPrepareContext;
@@ -292,6 +295,8 @@ public class AtomosConfigLauncher extends FrameworkLauncher {
                         script += "\"\n";
                         output.write(script.getBytes(StandardCharsets.UTF_8));
                     }
+
+                    addFeatureToJar(jarToBuild);
                 } catch (Throwable t) {
                     t.printStackTrace();
                     throw t;
@@ -302,6 +307,14 @@ public class AtomosConfigLauncher extends FrameworkLauncher {
         /* */ System.out.println("*** Finished");
         System.exit(0);
         return result;
+    }
+
+    private void addFeatureToJar(JarOutputStream jarToBuild) throws IOException {
+        JarEntry je = new JarEntry("META-INF/features/feature.json");
+        jarToBuild.putNextEntry(je);
+        try (Writer wr = new OutputStreamWriter(jarToBuild)) {
+            FeatureJSONWriter.write(null, m_app);
+        }
     }
 
     private void extractJarsAndCollect(JsonObject nativeConfig, JarOutputStream jarToBuild, File outputDir) throws IOException {
