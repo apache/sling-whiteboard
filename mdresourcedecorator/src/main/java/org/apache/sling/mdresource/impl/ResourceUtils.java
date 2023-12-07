@@ -125,7 +125,6 @@ public class ResourceUtils {
                         elements.add(new AbstractMap.SimpleEntry<>(node.getNodeName(), htmlRenderer.render(node)));
                     }
                     props.put(config.elementsProperty, elements);
-                    LoggerFactory.getLogger("foo").info("Setting {} to {}", config.elementsProperty, elements.size());
                 }
             } else {
                 if (config.htmlProperty != null) {
