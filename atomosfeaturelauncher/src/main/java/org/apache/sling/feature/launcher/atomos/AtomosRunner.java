@@ -120,7 +120,7 @@ public class AtomosRunner extends FrameworkRunner {
     private void install(final Framework framework, final Map<Integer, List<URL>> bundleMap) throws BundleException {
         System.out.println(System.getProperty("java.specification.version"));
         final BundleContext bc = framework.getBundleContext();
-        System.out.println(bc.getBundle(0).getHeaders());
+        // System.out.println(bc.getBundle(0).getHeaders());
         int defaultStartLevel = getProperty(bc, "felix.startlevel.bundle", 1);
 
         System.out.println(new File(".").getAbsolutePath());
@@ -223,7 +223,6 @@ public class AtomosRunner extends FrameworkRunner {
     }
 
     public static ClassLoader getAtomosLoaderWrapped(Class origin) {
-        System.out.println("TRAP: " + origin.getName());
         if (origin.isInterface()) {
             return origin.getClassLoader();
         }

@@ -178,18 +178,23 @@ public class AtomosConfigLauncher extends FrameworkLauncher {
                     outJar.putNextEntry(newEntry);
                     InputStream is = jf.getInputStream(entry);
 
-                    // Weave the class bytes and then write them to the target jar
-                    String className = fileName.substring(0, fileName.length() - 6).replace('/', '.');
-                    byte[] classBytes = is.readAllBytes();
+                    if (fileName.endsWith(".class")) {
+                        // Weave the class bytes and then write them to the target jar
+                        String className = fileName.substring(0, fileName.length() - 6).replace('/', '.');
+                        byte[] classBytes = is.readAllBytes();
 
-                    try {
-                        byte[] woven = m_weaver.weave(classBytes, "org.apache.sling.feature.launcher.atomos.AtomosRunner",
-                            "getAtomosLoaderWrapped", "getAtomosLoaderResourceWrapped", "getAtomosLoaderStreamWrapped", cl);
-                        outJar.write(woven);
-                    } catch (Exception ex) {
-                        System.out.println("\nProblem weaving " + className + " " + ex.getMessage());
-                        // Use unwoven bytes
-                        outJar.write(classBytes);
+                        try {
+                            byte[] woven = m_weaver.weave(classBytes, "org.apache.sling.feature.launcher.atomos.AtomosRunner",
+                                "getAtomosLoaderWrapped", "getAtomosLoaderResourceWrapped", "getAtomosLoaderStreamWrapped", cl);
+                            outJar.write(woven);
+                        } catch (Exception ex) {
+                            System.out.println("\nProblem weaving " + className + " " + ex.getMessage());
+                            // Use unwoven bytes
+                            outJar.write(classBytes);
+                        }
+                    } else {
+                        // It's not a class file, don't try to weave
+                        is.transferTo(outJar);
                     }
                     outJar.closeEntry();
                 } catch (ZipException ze) {
@@ -313,7 +318,7 @@ public class AtomosConfigLauncher extends FrameworkLauncher {
         JarEntry je = new JarEntry("META-INF/features/feature.json");
         jarToBuild.putNextEntry(je);
         try (Writer wr = new OutputStreamWriter(jarToBuild)) {
-            FeatureJSONWriter.write(null, m_app);
+            FeatureJSONWriter.write(wr, m_app);
         }
     }
 
