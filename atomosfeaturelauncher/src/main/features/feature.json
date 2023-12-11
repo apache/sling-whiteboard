@@ -565,6 +565,12 @@
       {
         "name":"org.owasp.esapi.reference.JavaLogFactory",
         "methods":[{"name":"getInstance","parameterTypes":[] }]
+      },
+      {
+        "name":"org.apache.felix.webconsole.SimpleWebConsolePlugin",
+        "queryAllDeclaredMethods":true,
+        "queryAllPublicMethods":true,
+        "methods":[{"name":"getResource","parameterTypes":["java.lang.String"] }]
       }
     ],
     "resource-config": {

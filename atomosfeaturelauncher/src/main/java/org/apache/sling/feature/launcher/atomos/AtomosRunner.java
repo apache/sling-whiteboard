@@ -18,32 +18,9 @@
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 package org.apache.sling.feature.launcher.atomos;
 
-import org.apache.felix.atomos.Atomos;
-import org.apache.felix.atomos.AtomosContent;
-import org.apache.felix.atomos.AtomosLayer;
-import org.apache.felix.atomos.impl.base.AtomosBase;
-import org.apache.felix.framework.BundleWiringImpl;
-import org.apache.sling.feature.ArtifactId;
-import org.apache.sling.feature.io.IOUtils;
-import org.apache.sling.feature.launcher.impl.launchers.FrameworkRunner;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleException;
-import org.osgi.framework.BundleReference;
-import org.osgi.framework.Constants;
-import org.osgi.framework.FrameworkUtil;
-import org.osgi.framework.Version;
-import org.osgi.framework.connect.ConnectContent;
-import org.osgi.framework.connect.FrameworkUtilHelper;
-import org.osgi.framework.launch.Framework;
-import org.osgi.framework.launch.FrameworkFactory;
-import org.osgi.framework.startlevel.BundleStartLevel;
-
-import javax.swing.text.html.Option;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
@@ -58,11 +35,26 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
+import org.apache.felix.atomos.Atomos;
+import org.apache.felix.atomos.AtomosContent;
+import org.apache.felix.atomos.impl.base.AtomosBase;
+import org.apache.sling.feature.launcher.impl.launchers.FrameworkRunner;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
+import org.osgi.framework.BundleReference;
+import org.osgi.framework.Constants;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.connect.ConnectContent;
+import org.osgi.framework.launch.Framework;
+import org.osgi.framework.launch.FrameworkFactory;
+import org.osgi.framework.startlevel.BundleStartLevel;
+
 public class AtomosRunner extends FrameworkRunner {
 
     private static final ConcurrentHashMap<String, ClassLoader> location2Loader = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<String, Bundle> classToBundle = new ConcurrentHashMap<>();
-    private static final Atomos m_atomos = Atomos.newAtomos();
+    private static Atomos m_atomos;
     private BiConsumer<URL, Map<String, String>> bundleReporter;
 
     public AtomosRunner(Map<String, String> frameworkProperties, Map<Integer, List<URL>> bundlesMap, List<Object[]> configurations, List<URL> installables) throws Exception {
@@ -79,6 +71,13 @@ public class AtomosRunner extends FrameworkRunner {
         return result;
     }
 
+    private synchronized static Atomos getAtomos() {
+        if (m_atomos == null) {
+            m_atomos = Atomos.newAtomos();
+        }
+        return m_atomos;
+    }
+
     private static int getProperty(BundleContext bc, String propName, int defaultValue) {
         String val = bc.getProperty(propName);
         if (val == null) {
@@ -90,7 +89,7 @@ public class AtomosRunner extends FrameworkRunner {
 
     @Override
     protected FrameworkFactory getFrameworkFactory() throws Exception {
-        return new AtomosFrameworkFactory(m_atomos);
+        return new AtomosFrameworkFactory(getAtomos());
     }
 
     @Override
@@ -121,15 +120,11 @@ public class AtomosRunner extends FrameworkRunner {
     private void install(final Framework framework, final Map<Integer, List<URL>> bundleMap) throws BundleException {
         System.out.println(System.getProperty("java.specification.version"));
         final BundleContext bc = framework.getBundleContext();
-        System.out.println(bc.getBundle(0).getHeaders());
+        // System.out.println(bc.getBundle(0).getHeaders());
         int defaultStartLevel = getProperty(bc, "felix.startlevel.bundle", 1);
 
         System.out.println(new File(".").getAbsolutePath());
         System.out.println(new File(new File("."), "content").getAbsolutePath());
-
-        /*for (File child : new File(new File("."), "content").listFiles()) {
-            System.out.println(child.getAbsolutePath());
-        }*/
 
         for (final Integer startLevel : sortStartLevels(bundleMap.keySet(), defaultStartLevel)) {
             logger.debug("Installing bundles with start level {}", startLevel);
@@ -144,7 +139,7 @@ public class AtomosRunner extends FrameworkRunner {
                     }
                 };
 
-                AtomosContent content = m_atomos
+                AtomosContent content = getAtomos()
                         .getBootLayer()
                         .getAtomosContents().stream()
                         .filter(atomosContent -> {
@@ -215,11 +210,19 @@ public class AtomosRunner extends FrameworkRunner {
     }
 
     public static InputStream getAtomosLoaderStreamWrapped(Class origin, String resource) {
-        return getAtomosLoaderWrapped(origin).getResourceAsStream(resolveName(origin, resource));
+        URL u = getAtomosLoaderWrapped(origin).getResource(resolveName(origin, resource));
+        if (u == null) {
+            return null;
+        }
+
+        try {
+            return u.openStream();
+        } catch (IOException e) {
+            return null;
+        }
     }
 
     public static ClassLoader getAtomosLoaderWrapped(Class origin) {
-        System.out.println("TRAP: " + origin.getName());
         if (origin.isInterface()) {
             return origin.getClassLoader();
         }
@@ -229,7 +232,7 @@ public class AtomosRunner extends FrameworkRunner {
             } catch (Throwable ex) {
                 return null;
             }});
-        System.out.println(bundle);
+
         return Optional.ofNullable(bundle).map(b ->
                     location2Loader.computeIfAbsent(b.getLocation(), location -> new BundleClassLoader(origin, bundle) )
                 ).orElseGet(origin::getClassLoader);
@@ -262,6 +265,20 @@ public class AtomosRunner extends FrameworkRunner {
             }
             Enumeration<URL> result = bundle.findEntries(path, name, false);
             return result != null ? result : Collections.emptyEnumeration();
+        }
+
+        @Override
+        public InputStream getResourceAsStream(String name) {
+            URL u = getResource(name);
+            if (u == null) {
+                return null;
+            }
+
+            try {
+                return u.openStream();
+            } catch (IOException e) {
+                return null;
+            }
         }
 
         @Override

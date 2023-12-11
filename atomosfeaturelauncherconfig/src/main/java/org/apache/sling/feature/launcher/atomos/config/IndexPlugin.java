@@ -18,20 +18,8 @@
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 package org.apache.sling.feature.launcher.atomos.config;
 
-import org.apache.felix.atomos.utils.api.Context;
-import org.apache.felix.atomos.utils.api.FileType;
-import org.apache.felix.atomos.utils.api.IndexInfo;
-import org.apache.felix.atomos.utils.api.plugin.JarPlugin;
-import org.apache.felix.atomos.utils.core.IndexInfoImpl;
-import org.apache.felix.atomos.utils.core.plugins.index.IndexOutputType;
-import org.apache.felix.atomos.utils.core.plugins.index.IndexPluginConfig;
-import org.apache.felix.atomos.utils.substrate.impl.config.DefaultResourceConfiguration;
-import org.apache.felix.atomos.utils.substrate.impl.json.ResourceJsonUtil;
-import org.osgi.framework.Constants;
-
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -55,6 +43,17 @@ import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
+
+import org.apache.felix.atomos.utils.api.Context;
+import org.apache.felix.atomos.utils.api.FileType;
+import org.apache.felix.atomos.utils.api.IndexInfo;
+import org.apache.felix.atomos.utils.api.plugin.JarPlugin;
+import org.apache.felix.atomos.utils.core.IndexInfoImpl;
+import org.apache.felix.atomos.utils.core.plugins.index.IndexOutputType;
+import org.apache.felix.atomos.utils.core.plugins.index.IndexPluginConfig;
+import org.apache.felix.atomos.utils.substrate.impl.config.DefaultResourceConfiguration;
+import org.apache.felix.atomos.utils.substrate.impl.json.ResourceJsonUtil;
+import org.osgi.framework.Constants;
 
 public class IndexPlugin implements JarPlugin<IndexPluginConfig> {
     private static final String ATOMOS_BUNDLE_SEPARATOR = "ATOMOS_BUNDLE";
@@ -93,6 +92,7 @@ public class IndexPlugin implements JarPlugin<IndexPluginConfig> {
 
     @Override
     public void initJar(JarFile jar, Context context, URLClassLoader classLoader) {
+        /*
         // Detect if there are duplicates using the uniquePaths map
         jar.stream().filter(this::include).forEach(e -> uniquePaths.compute(
                 e.getName(),
@@ -106,6 +106,11 @@ public class IndexPlugin implements JarPlugin<IndexPluginConfig> {
                                 || b != null //
                                 ? Boolean.FALSE
                                 : Boolean.TRUE));
+        */
+
+        jar.stream().filter(this::include).forEach(e -> uniquePaths.compute(
+                e.getName(),
+                (p, b) ->  Boolean.FALSE));
     }
 
     @Override
