@@ -20,6 +20,7 @@ package org.apache.sling.offline.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 
 import javax.servlet.ServletException;
@@ -32,6 +33,8 @@ import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.engine.SlingRequestProcessor;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
+import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
@@ -46,6 +49,10 @@ public class Starter {
         String input_path();
 
         String output_path();
+
+        long retry_delay() default 10;
+
+        long timeout() default 5000;
     }
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -58,9 +65,12 @@ public class Starter {
 
     private volatile Config config;
 
+    private volatile BundleContext ctx;
+
     @Activate
     public void activate(final BundleContext ctx, final Config config) {
         logger.info("Activating offliner...");
+        this.ctx = ctx;
         this.config = config;
         final Thread t = new Thread(Starter.this::run);
         t.setDaemon(true);
@@ -75,12 +85,22 @@ public class Starter {
         return r.getName().endsWith(".md");
     }
 
+    private boolean isImage(final Resource r) {
+        return r.getName().endsWith(".png") || r.getName().endsWith(".jpg");
+    }
+
     private void process(final ResourceResolver resolver, final Resource resource, final boolean retry) 
     throws IOException, ServletException {
         if ( this.ignore(resource) ) {
             return;
         }
+        if ( this.isImage(resource) ) {
+            this.handleBinary(resolver, resource);
+        }
         if ( !this.isWebPage(resource) ) {
+            for(final Resource c : resource.getChildren()) {
+                process(resolver, c, retry);
+            }
             return;
         }
         logger.info("Processing {}", resource.getPath());
@@ -90,7 +110,7 @@ public class Starter {
             logger.info("Skipping {} as it is up to date", resource.getPath());
             return;
         }
-        final long endAt = System.currentTimeMillis() + 5000;
+        final long endAt = System.currentTimeMillis() + this.config.timeout();
         while ( System.currentTimeMillis() < endAt ) {
             final SlingHttpServletRequest req = Builders.newRequestBuilder(resource)
                 .withExtension("html")
@@ -108,7 +128,7 @@ public class Starter {
                 break;
             }
             try {
-                Thread.sleep(100);
+                Thread.sleep(this.config.retry_delay());
             } catch ( final InterruptedException ie) {
                 // ignore
             }
@@ -116,17 +136,30 @@ public class Starter {
         logger.error("Unable to create html for {}", resource.getPath());
     }
 
+    private void handleBinary(final ResourceResolver resolver, final Resource resource) throws IOException {
+        logger.info("Processing binary {}", resource.getPath());
+        final long lastModified = resource.getResourceMetadata().getModificationTime();
+        final File output = new File(config.output_path(), resource.getPath().substring(this.config.input_path().length()));
+        if ( lastModified > 0 && output.exists() && output.lastModified() >= lastModified ) {
+            logger.info("Skipping {} as it is up to date", resource.getPath());
+            return;
+        }
+        logger.info("Copying to {}", output.getAbsolutePath());
+        output.getParentFile().mkdirs();
+        Files.copy(resource.adaptTo(InputStream.class), output.toPath());
+    }
+
     private Resource getResource(final ResourceResolver resolver, final String path) {
         logger.info("Trying to get resource {}", path);
         // 5 seconds to get the resource
-        final long endAt = System.currentTimeMillis() + 5000;
+        final long endAt = System.currentTimeMillis() + this.config.timeout();
         while ( System.currentTimeMillis() < endAt ) {
             final Resource resource = resolver.getResource(path);
             if ( resource != null ) {
                 return resource;
             }
             try {
-                Thread.sleep(100);
+                Thread.sleep(this.config.retry_delay());
             } catch ( final InterruptedException ie) {
                 // ignore
             }
@@ -151,5 +184,12 @@ public class Starter {
         } catch ( final Exception e ) {
             throw new RuntimeException(e);
         }
+        // shutdown
+        try {
+            ctx.getBundle(Constants.SYSTEM_BUNDLE_LOCATION).stop();
+        } catch (final BundleException e) {
+            // ignore
+        }
+        System.exit(0);
     }
 }
