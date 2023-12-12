@@ -48,7 +48,6 @@ public class CustomLinkResolverFactory implements LinkResolverFactory {
 
     @Override
     public boolean affectsGlobalScope() {
-        // TODO true or false?
         return false;
     }
 

@@ -19,7 +19,6 @@
 package org.apache.sling.mdresource.impl.md.links;
 
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.api.resource.ResourceUtil;
 import org.jetbrains.annotations.NotNull;
 
 import com.vladsch.flexmark.html.LinkResolver;
@@ -43,9 +42,10 @@ public class CustomLinkResolver implements LinkResolver {
         if ( link.getLinkType().equals(LinkType.IMAGE) || link.getLinkType().equals(LinkType.LINK) ) {
             String url = link.getUrl();
             if ( url.indexOf(":/") == - 1 && !url.startsWith("/") ) {
-                // relative
-                final String path = this.baseResource.getPath().concat("/").concat(url);
-                link = link.withUrl(this.baseResource.getResourceResolver().map(ResourceUtil.normalize(path)));
+                // check if link to
+                if ( url.endsWith(".md") ) {
+                    link = link.withUrl(url.concat(".html"));
+                }
             }
         }
 

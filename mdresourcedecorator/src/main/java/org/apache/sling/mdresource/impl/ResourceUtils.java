@@ -30,7 +30,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ValueMap;
@@ -41,8 +40,6 @@ import org.apache.sling.mdresource.impl.md.MarkdownProcessor;
 import org.apache.sling.mdresource.impl.md.ProcessingInstructions;
 import org.apache.sling.mdresource.impl.md.ProcessingResult;
 import org.apache.sling.mdresource.impl.md.links.CustomLinkResolverFactory;
-import org.slf4j.LoggerFactory;
-
 import com.vladsch.flexmark.html.HtmlRenderer;
 import com.vladsch.flexmark.util.ast.Node;
 
@@ -121,8 +118,15 @@ public class ResourceUtils {
                 }
                 if ( config.elementsProperty != null ) {
                     final List<Map.Entry<String, String>> elements = new ArrayList<>();
+                    final List<Node> nodes = new ArrayList<>();
                     for(final Node node : result.document.getChildren()) {
-                        elements.add(new AbstractMap.SimpleEntry<>(node.getNodeName(), htmlRenderer.render(node)));
+                        nodes.add(node);
+                        node.unlink();
+                    }
+                    for(final Node node : nodes) {
+                        result.document.appendChild(node);
+                        elements.add(new AbstractMap.SimpleEntry<>(node.getNodeName(), htmlRenderer.render(result.document)));
+                        node.unlink();
                     }
                     props.put(config.elementsProperty, elements);
                 }
