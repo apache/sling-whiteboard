@@ -1,0 +1,34 @@
+{
+  "bundles":[
+    {
+      "id":"org.jsoup:jsoup:1.16.1",
+      "start-order":"20"
+    },
+    {
+      "id":"com.vladsch.flexmark:flexmark-osgi:0.64.8",
+      "start-order":"20"
+    },
+    {
+      "id":"org.apache.sling:org.apache.sling.sfsresourceprovider:0.0.1-SNAPSHOT",
+      "start-order":"20"
+    },
+    {
+      "id":"org.apache.sling:org.apache.sling.mdresourcedecorator:0.0.1-SNAPSHOT",
+      "start-order":"20"
+    }
+  ],
+  "configurations":{
+    "org.apache.sling.sfsresource.impl.SFSResourceProvider~files":{
+      "provider.root":"/content/docs",
+      "provider.file":"$[env:SOURCE_DIR;default=/tmp/docs]"
+    },
+    "org.apache.sling.resource.MarkdownResourceDecorator~files":{
+      "decoration.paths" : "/content/**.md",
+      "html.property":"",
+      "html.elements.property":"html-elements"
+    },
+    "org.apache.sling.mdresource.impl.HtmlServlet":{
+      "html.property":"html-elements"
+    }
+  }
+}

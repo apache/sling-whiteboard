@@ -1,0 +1,48 @@
+{
+  "bundles" : [
+    {
+      "id":"org.codehaus.woodstox:stax2-api:4.2.2",
+      "start-order":"20"
+    },
+    {
+      "id":"com.fasterxml.jackson.core:jackson-annotations:2.16.1",
+      "start-order":"20"
+    },
+    {
+      "id":"com.fasterxml.jackson.core:jackson-core:2.16.1",
+      "start-order":"20"
+    },
+    {
+      "id":"com.fasterxml.jackson.core:jackson-databind:2.16.1",
+      "start-order":"20"
+    },
+    {
+      "id":"com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.16.1",
+      "start-order":"20"
+    },
+    {
+      "id": "org.apache.commons:commons-text:1.11.0",
+      "start-order": "20"
+    },  
+    {
+      "id": "org.slf4j:jcl-over-slf4j:1.7.36",
+      "start-order": "1"
+    },
+    {
+      "id": "org.slf4j:log4j-over-slf4j:1.7.36",
+      "start-order": "1"
+    },
+    {
+      "id": "org.apache.sling:org.apache.sling.xss:2.4.1-SNAPSHOT",
+      "start-order": "20"
+    },
+    {
+      "id": "org.apache.sling:org.apache.sling.scripting.sightly:1.4.23-1.4.0-SNAPSHOT",
+      "start-order": "20"
+    },
+    {
+      "id": "org.apache.sling:org.apache.sling.scripting.sightly.runtime:1.2.6-1.4.0",
+      "start-order": "20"
+    }
+  ]
+}

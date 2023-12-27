@@ -1,0 +1,14 @@
+{
+  "bundles": [
+    {
+        "id":"org.apache.sling:org.apache.sling.offline:0.0.1-SNAPSHOT",
+        "start-order":"20"
+    }
+  ],
+  "configurations": {
+    "org.apache.sling.offline.impl.Starter":{
+      "input.path":"/content/docs",
+      "output.path":"$[env:TARGET_DIR;default=/tmp/offliner]"
+    }
+  }
+}
