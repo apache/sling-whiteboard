@@ -20,36 +20,12 @@ package org.apache.sling.mdresource.impl;
 
 public class ResourceConfiguration {
 
-    /**
-     * Source for markdown
-     *
-     */
-    public enum SourceType {
-        InputStream, // the resource is adapted to an InputStream
-        Property     // the resource has a string property
-    }
-
-    /** The source type for the markdown */
-    public SourceType sourceType;
-
-    /** The name of the property containing the markdown if type is "Property" */
-    public String sourceMarkdownProperty;
-
     /** The resource type for the md resource */
     public String resourceType;
-
-    /** The property holding the markdown (optional) */
-    public String markdownProperty;
-
-    /** The property holding the rendered html */
-    public String htmlProperty;
 
     /** The property holding the elements list (pair of element name and html contents) */
     public String elementsProperty;
 
     /** The property holding the first title (optional) */
     public String titleProperty;
-
-    /** Rewrite links */
-    public boolean rewriteLinks;
 }

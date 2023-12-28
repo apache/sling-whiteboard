@@ -28,7 +28,5 @@ public class ProcessingResult {
 
     public String title;
 
-    public String html;
-
     public Map<String, Object> properties = new HashMap<>();
 }

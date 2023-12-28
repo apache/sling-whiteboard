@@ -23,12 +23,7 @@
       "provider.file":"$[env:SOURCE_DIR;default=/tmp/docs]"
     },
     "org.apache.sling.resource.MarkdownResourceDecorator~files":{
-      "decoration.paths" : "/content/**.md",
-      "html.property":"",
-      "html.elements.property":"html-elements"
-    },
-    "org.apache.sling.mdresource.impl.HtmlServlet":{
-      "html.property":"html-elements"
+      "decoration.paths" : "/content/**.md"
     }
   }
 }

@@ -18,7 +18,6 @@
  */
 package org.apache.sling.mdresource.impl.md.links;
 
-import org.apache.sling.api.resource.Resource;
 import org.jetbrains.annotations.NotNull;
 
 import com.vladsch.flexmark.html.LinkResolver;
@@ -28,13 +27,6 @@ import com.vladsch.flexmark.html.renderer.ResolvedLink;
 import com.vladsch.flexmark.util.ast.Node;
 
 public class CustomLinkResolver implements LinkResolver {
-
-    private final Resource baseResource;
-
-    public CustomLinkResolver(final Resource baseResource) {
-        this.baseResource = baseResource;
-    }
-
 
     @Override
     public @NotNull ResolvedLink resolveLink(@NotNull Node node, @NotNull LinkResolverBasicContext context,

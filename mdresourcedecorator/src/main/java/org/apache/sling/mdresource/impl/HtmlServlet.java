@@ -34,7 +34,6 @@ import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
@@ -44,7 +43,7 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
     methods="GET",
     extensions="html"
 )
-@Component(service=Servlet.class, configurationPolicy = ConfigurationPolicy.REQUIRE)
+@Component(service=Servlet.class)
 @Designate(ocd = HtmlServlet.Config.class)
 public class HtmlServlet extends HttpServlet {
 
@@ -60,8 +59,8 @@ public class HtmlServlet extends HttpServlet {
         @AttributeDefinition(name = "Head Content", description = "Content to be added to the <head> section")
         String head_contents();
 
-        @AttributeDefinition(name = "HTML Property", description = "Name of the property holding the HTML")
-        String html_property() default "jcr:description";
+        @AttributeDefinition(name = "HTML Elements Property", description = "Name of the property holding the HTML elements")
+        String html_elements_property() default "html-elements";
     }
 
     private final Config cfg;
@@ -99,7 +98,7 @@ public class HtmlServlet extends HttpServlet {
         }
         pw.println("</header>");
         pw.println("<main>");
-        final Object html = props.get(this.cfg.html_property());
+        final Object html = props.get(this.cfg.html_elements_property());
         if (html instanceof String) {
             pw.println(html.toString());
         } else if (html instanceof List) {

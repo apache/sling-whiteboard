@@ -20,7 +20,6 @@ package org.apache.sling.mdresource.impl.md.links;
 
 import java.util.Set;
 
-import org.apache.sling.api.resource.Resource;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,12 +28,6 @@ import com.vladsch.flexmark.html.LinkResolverFactory;
 import com.vladsch.flexmark.html.renderer.LinkResolverBasicContext;
 
 public class CustomLinkResolverFactory implements LinkResolverFactory {
-
-    private final Resource baseResource;
-
-    public CustomLinkResolverFactory(final Resource baseResource) {
-        this.baseResource = baseResource;
-    }
 
     @Override
     public @Nullable Set<Class<?>> getAfterDependents() {
@@ -53,6 +46,6 @@ public class CustomLinkResolverFactory implements LinkResolverFactory {
 
     @Override
     public @NotNull LinkResolver apply(@NotNull LinkResolverBasicContext context) {
-        return new CustomLinkResolver(this.baseResource);
+        return new CustomLinkResolver();
     }
 }

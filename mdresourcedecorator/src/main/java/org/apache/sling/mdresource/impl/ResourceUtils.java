@@ -22,11 +22,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +33,6 @@ import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.api.wrappers.ValueMapDecorator;
 import org.apache.sling.api.wrappers.ValueMapUtil;
-import org.apache.sling.mdresource.impl.ResourceConfiguration.SourceType;
 import org.apache.sling.mdresource.impl.md.MarkdownProcessor;
 import org.apache.sling.mdresource.impl.md.ProcessingInstructions;
 import org.apache.sling.mdresource.impl.md.ProcessingResult;
@@ -47,46 +44,6 @@ public class ResourceUtils {
 
     public static final String PROPERTY_RESOURCE_SUPER_TYPE = "sling:resourceSuperType";
 
-    private static String readMarkdown(final Reader reader) throws IOException {
-        try {
-            final StringBuilder sb = new StringBuilder();
-            final char[] buf = new char[4096];
-            int l;
-            while ( (l = reader.read(buf)) > 0) {
-                sb.append(buf, 0, l);
-            }
-
-            return sb.toString();
-        } finally {
-            if ( reader != null ) {
-                reader.close();
-            }
-        }
-
-    }
-
-    private static Reader getMarkdownReader(final ResourceConfiguration config,
-            final Resource rsrc,
-            final ValueMap origProps,
-            final Map<String, Object> props) throws IOException {
-        if ( config.markdownProperty != null ) {
-            final String md;
-            if ( config.sourceType == SourceType.Property) {
-                md = origProps.get(config.sourceMarkdownProperty, String.class);
-            } else {
-                md = readMarkdown(new InputStreamReader(rsrc.adaptTo(InputStream.class), StandardCharsets.UTF_8));
-            }
-            props.put(config.markdownProperty, md);
-
-            return new StringReader(md);
-        }
-        if ( config.sourceType == SourceType.Property) {
-            final String md = origProps.get(config.sourceMarkdownProperty, String.class);
-            return new StringReader(md);
-        }
-        return new InputStreamReader(rsrc.adaptTo(InputStream.class), StandardCharsets.UTF_8);
-    }
-
     public static ValueMap newValueMap(final ResourceConfiguration config, final Resource rsrc, final ValueMap origProps) {
         final Map<String, Object> props = new HashMap<>();
         props.put(ResourceResolver.PROPERTY_RESOURCE_TYPE, rsrc.getResourceType());
@@ -96,57 +53,33 @@ public class ResourceUtils {
         inst.extractTitle = config.titleProperty != null;
         inst.handleYamlFrontmatter = true;
 
-        try ( final Reader r = getMarkdownReader(config, rsrc, origProps, props)) {
+        try ( final Reader r = new InputStreamReader(rsrc.adaptTo(InputStream.class), StandardCharsets.UTF_8)) {
 
             final ProcessingResult result = MarkdownProcessor.INSTANCE.process(r, rsrc.getParent(), inst);
             props.putAll(result.properties);
             if ( result.title != null ) {
                 props.put(config.titleProperty, result.title);
             }
-            if ( result.html != null ) {
-                props.put(config.htmlProperty, result.html);
+            final HtmlRenderer.Builder builder = HtmlRenderer.builder();
+            builder.linkResolverFactory(new CustomLinkResolverFactory());
+            final HtmlRenderer htmlRenderer = builder.build();
+
+            final List<Map.Entry<String, String>> elements = new ArrayList<>();
+            final List<Node> nodes = new ArrayList<>();
+            for(final Node node : result.document.getChildren()) {
+                nodes.add(node);
+                node.unlink();
             }
-            if ( result.document.hasChildren()) {
-                final HtmlRenderer.Builder builder = HtmlRenderer.builder();
-                if ( config.rewriteLinks ) {
-                    builder.linkResolverFactory(new CustomLinkResolverFactory(rsrc));
-                }
-                final HtmlRenderer htmlRenderer = builder.build();
-
-                if (config.htmlProperty != null) {
-                    props.put(config.htmlProperty, htmlRenderer.render(result.document));
-                }
-                if ( config.elementsProperty != null ) {
-                    final List<Map.Entry<String, String>> elements = new ArrayList<>();
-                    final List<Node> nodes = new ArrayList<>();
-                    for(final Node node : result.document.getChildren()) {
-                        nodes.add(node);
-                        node.unlink();
-                    }
-                    for(final Node node : nodes) {
-                        result.document.appendChild(node);
-                        elements.add(new AbstractMap.SimpleEntry<>(node.getNodeName(), htmlRenderer.render(result.document)));
-                        node.unlink();
-                    }
-                    props.put(config.elementsProperty, elements);
-                }
-            } else {
-                if (config.htmlProperty != null) {
-                    props.put(config.htmlProperty, "");
-                }
-                if ( config.elementsProperty != null ) {
-                    props.put(config.elementsProperty, Collections.emptyMap());
-                }
+            for(final Node node : nodes) {
+                result.document.appendChild(node);
+                elements.add(new AbstractMap.SimpleEntry<>(node.getNodeName(), htmlRenderer.render(result.document)));
+                node.unlink();
             }
-
-
+            props.put(config.elementsProperty, elements);
         } catch (final IOException e) {
             MarkdownResourceDecorator.LOGGER.error("Unable to read markdown : " + e.getMessage(), e);
         }
 
-        if ( origProps == null ) {
-            return new ValueMapDecorator(props);
-        }
         return ValueMapUtil.merge(new ValueMapDecorator(props), origProps);
     }
 }

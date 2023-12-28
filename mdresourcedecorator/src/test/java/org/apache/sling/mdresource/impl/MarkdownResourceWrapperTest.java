@@ -20,6 +20,7 @@ package org.apache.sling.mdresource.impl;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.io.InputStream;
 import java.util.Collections;
@@ -28,7 +29,6 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.api.wrappers.ValueMapDecorator;
-import org.apache.sling.mdresource.impl.ResourceConfiguration.SourceType;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -36,10 +36,9 @@ public class MarkdownResourceWrapperTest {
 
     private ResourceConfiguration newDefaultConfiguration() {
         final ResourceConfiguration cfg = new ResourceConfiguration();
-        cfg.htmlProperty = "jcr:description";
         cfg.titleProperty = "jcr:title";
-        cfg.sourceType = SourceType.InputStream;
         cfg.resourceType = "resource/type";
+        cfg.elementsProperty = "html-elements";
         return cfg;
     }
 
@@ -59,10 +58,6 @@ public class MarkdownResourceWrapperTest {
 
         assertEquals("valueMap[jcr:title]", "Simple markdown file",
                 map.get("jcr:title", String.class));
-
-        assertEquals("valueMap[jcr:description]",
-                "<h1>Simple markdown file</h1>\n<p>This is an example of a simple markdown file</p>\n",
-                map.get("jcr:description", String.class));
 
         assertEquals("valueMap[author]", "John Doe", map.get("author", String.class));
 
@@ -90,9 +85,7 @@ public class MarkdownResourceWrapperTest {
 
         final ValueMap map = rsrc.getValueMap();
 
-        assertEquals("valueMap[jcr:description]",
-                "<h1>Simple markdown file</h1>\n<p>This is an example of a simple markdown file</p>\n",
-                map.get("jcr:description", String.class));
+        assertNull(map.get("jcr:title", String.class));
     }
 
     @Test
@@ -125,11 +118,5 @@ public class MarkdownResourceWrapperTest {
 
         assertEquals("valueMap[jcr:title]", "First",
                 map.get("jcr:title", String.class));
-        assertEquals("valueMap[jcr:description]", "<h1>First</h1>\n<h1>And</h1>\n" +
-                "<h2>Last</h2>\n" +
-                "<h1>And</h1>\n" +
-                "<h1>Always</h1>\n",
-                map.get("jcr:description", String.class));
-
     }
 }

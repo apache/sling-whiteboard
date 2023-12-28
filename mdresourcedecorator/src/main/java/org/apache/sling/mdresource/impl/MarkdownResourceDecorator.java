@@ -37,7 +37,6 @@ import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
-import org.osgi.service.metatype.annotations.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,37 +62,13 @@ public class MarkdownResourceDecorator implements ResourceDecorator {
                 description = "The resource type for the decorated resources")
         String resource_type() default "sling/markdown/file";
 
-        @AttributeDefinition(name = "Source",
-                description = "Set the source of the markdown, either InputStream (default) or Property",
-                options = {
-                        @Option(label = "Input Stream", value ="InputStream"),
-                        @Option(label = "Property", value = "Property")
-                })
-        ResourceConfiguration.SourceType source_type() default ResourceConfiguration.SourceType.InputStream;
-
-        @AttributeDefinition(name = "Source Markdown Property",
-                description = "The property is used to read the markdown if source is set to Property.")
-        String source_markdown_property();
-
-        @AttributeDefinition(name = "Html Property",
-                description = "Name of the property holding the rendered html")
-        String html_property() default "jcr:description";
-
         @AttributeDefinition(name = "Html Elements",
                 description = "Name of the property holding the list of top level HTML elements (optional)")
-        String html_elements_property();
-
-        @AttributeDefinition(name = "Markdown Property",
-                description = "Name of the property holding the read markdown (optional)")
-        String markdown_property();
+        String html_elements_property() default "html-elements";
 
         @AttributeDefinition(name = "Title Property",
                 description = "Name of the property holding the title (optional)")
         String title_property() default "jcr:title";
-
-        @AttributeDefinition(name = "Rewrite Links",
-                description = "If enabled, links in the markdown are rewritten.")
-        boolean rewrite_links() default true;
     }
 
     public static final Logger LOGGER = LoggerFactory.getLogger(MarkdownResourceDecorator.class);
@@ -115,14 +90,9 @@ public class MarkdownResourceDecorator implements ResourceDecorator {
         } else {
             this.resourceTypes = rts;
         }
-        this.config.sourceType = cfg.source_type();
         this.config.resourceType = cfg.resource_type();
-        this.config.sourceMarkdownProperty = cleanInput(cfg.source_markdown_property());
-        this.config.htmlProperty = cleanInput(cfg.html_property());
         this.config.elementsProperty = cleanInput(cfg.html_elements_property());
         this.config.titleProperty = cleanInput(cfg.title_property());
-        this.config.markdownProperty = cleanInput(cfg.markdown_property());
-        this.config.rewriteLinks = cfg.rewrite_links();
     }
 
     private String cleanInput(final String value) {
