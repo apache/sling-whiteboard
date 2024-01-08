@@ -27,7 +27,6 @@ import biz.aQute.resolve.ResolverLogger;
 import org.apache.sling.testing.osgi.unit.impl.BundleUtil;
 import org.apache.sling.testing.osgi.unit.impl.OSGiUnitConfig;
 import org.apache.sling.testing.osgi.unit.impl.OSGiUtil;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
 import org.junit.jupiter.api.extension.BeforeTestExecutionCallback;
@@ -73,9 +72,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.ServiceLoader;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -85,11 +82,6 @@ import static java.util.function.Predicate.not;
 import static org.apache.sling.testing.osgi.unit.impl.BundleUtil.collectJarFilesFromClassPath;
 import static org.osgi.framework.Constants.FRAMEWORK_STORAGE;
 
-// TODO - When running the bundled test in the OSGi framework, it imports org.apache.sling.testing.osgi.unit
-//        because it uses the OSGiSupport annotation. However, in that context, the annotation is no longer
-//        needed, because the test method is invoked via InvocationInterceptor#interceptTestMethod.
-//        If we can weave the class before bundling, and strip its use of the OSGiSupport annotation,
-//        then we could avoid having to install this bundle and all its transitive dependencies, mostly aQute.
 public class OSGiSupportImpl implements BeforeTestExecutionCallback, AfterTestExecutionCallback, InvocationInterceptor, ParameterResolver {
 
     private static final Logger LOG = LoggerFactory.getLogger(OSGiSupportImpl.class);
@@ -98,6 +90,17 @@ public class OSGiSupportImpl implements BeforeTestExecutionCallback, AfterTestEx
 
     @Override
     public void interceptTestMethod(Invocation<Void> invocation, ReflectiveInvocationContext<Method> invocationContext, ExtensionContext extensionContext) throws Throwable {
+        invokeWithinContextOfOSGiFramework(invocationContext, extensionContext);
+        invocation.skip();
+    }
+
+    @Override
+    public void interceptTestTemplateMethod(Invocation<Void> invocation, ReflectiveInvocationContext<Method> invocationContext, ExtensionContext extensionContext) throws Throwable {
+        invokeWithinContextOfOSGiFramework(invocationContext, extensionContext);
+        invocation.skip();
+    }
+
+    private static void invokeWithinContextOfOSGiFramework(ReflectiveInvocationContext<Method> invocationContext, ExtensionContext extensionContext) throws ClassNotFoundException, NoSuchMethodException {
         final ExtensionContext.Store store = getStore(extensionContext);
         final Bundle bundle = store.get(Bundle.class, Bundle.class);
         final Method method = invocationContext.getExecutable();
@@ -124,7 +127,6 @@ public class OSGiSupportImpl implements BeforeTestExecutionCallback, AfterTestEx
 
         final Object instanceInOSGi = ReflectionSupport.newInstance(targetClassInOsgi);
         ReflectionSupport.invokeMethod(methodInOsgi, instanceInOSGi, arguments);
-        invocation.skip();
     }
 
     @Override

@@ -21,8 +21,14 @@ package org.apache.sling.testing.osgi.unit.impl;
 import org.apache.sling.testing.osgi.unit.OSGiSupport;
 import org.apache.sling.testing.osgi.unit.Service;
 import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.RepetitionInfo;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
@@ -186,6 +192,38 @@ class OSGiSupportTest {
         assertNotNull(file);
         assertNotNull(condition);
     }
+
+    @RepeatedTest(2)
+    void repeatedTestSupport(Framework framework, @Service Condition condition) {
+        assertNotNull(framework);
+        assertNotNull(condition);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"foo", "bar"})
+    void parameterizedTestSupport(String fooOrBar, Framework framework, @Service Condition condition) {
+        assertThat(fooOrBar).matches(List.of("foo", "bar")::contains);
+        assertNotNull(framework);
+        assertNotNull(condition);
+    }
+
+    @Disabled("The RepetitionInfo class of the resolved object is different from the RepetitionInfo class within OSGi ")
+    @RepeatedTest(2)
+    void repetitionInfoSupport(Framework framework, @Service Condition condition, RepetitionInfo repetitionInfo) {
+        assertNotNull(framework);
+        assertNotNull(condition);
+        assertThat(repetitionInfo.getCurrentRepetition()).isBetween(1, repetitionInfo.getTotalRepetitions());
+    }
+
+    @Disabled("The TestInfo class of the resolved object is different from the TestInfo class within OSGi ")
+    @Test
+    void testInfoSupport(Framework framework, @Service Condition condition, TestInfo testInfo) {
+        assertNotNull(framework);
+        assertNotNull(condition);
+        assertThat(testInfo.getDisplayName()).isEqualTo("testInfoSupport");
+    }
+
+
 
     @NotNull
     private static List<String> getSymbolicNames(Bundle... bundles) {
