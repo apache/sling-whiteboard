@@ -32,6 +32,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.ServiceObjects;
+import org.osgi.framework.ServiceReference;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.service.component.annotations.Component;
@@ -53,6 +55,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.osgi.framework.wiring.BundleWiring.LISTRESOURCES_LOCAL;
 
 @OSGiSupport(verbose = ENABLED)
@@ -185,6 +188,75 @@ class OSGiSupportTest {
     }
 
     @Test
+    void serviceReferenceInjection(
+            @Service ServiceReference<Condition> serviceReference,
+            @Service ServiceReference<Condition>[] serviceReferencesArray,
+            @Service List<ServiceReference<Condition>> serviceReferencesList) throws Throwable {
+        assertThat(serviceReference)
+                .isNotNull()
+                .matches(ref -> withService(ref, Condition.class::isInstance));
+
+        assertThat(serviceReferencesArray)
+                .isNotNull()
+                .hasSizeGreaterThan(0)
+                .allMatch(reference -> withService(reference, Condition.class::isInstance));
+
+        assertThat(serviceReferencesList)
+                .isNotNull()
+                .hasSizeGreaterThan(0)
+                .allMatch(reference -> withService(reference, Condition.class::isInstance));
+    }
+
+    @Test
+    void serviceObjectsInjection(
+            @Service ServiceObjects<Condition> serviceObject,
+            @Service ServiceObjects<Condition>[] serviceObjectsArray,
+            @Service List<ServiceObjects<Condition>> serviceObjectsList) {
+        assertThat(serviceObject)
+                .isNotNull()
+                .matches(so -> withService(so, Condition.class::isInstance));
+
+        assertThat(serviceObjectsArray)
+                .isNotNull()
+                .hasSizeGreaterThan(0)
+                .allMatch(reference -> withService(reference, Condition.class::isInstance));
+
+        assertThat(serviceObjectsList)
+                .isNotNull()
+                .hasSizeGreaterThan(0)
+                .allMatch(reference -> withService(reference, Condition.class::isInstance));
+    }
+
+    private interface ThrowingPredicate<T> {
+        boolean test(T object) throws Throwable;
+    }
+
+    private static <T> boolean withService(ServiceObjects<T> serviceObjects, ThrowingPredicate<T> servicePredicate) {
+        final T service = serviceObjects.getService();
+        try {
+            return servicePredicate.test(service);
+        } catch (Throwable t) {
+            fail(t);
+            return false;
+        } finally {
+            serviceObjects.ungetService(service);
+        }
+    }
+
+    private static <T> boolean withService(ServiceReference<T> serviceReference, ThrowingPredicate<T> servicePredicate) {
+        final BundleContext bc = serviceReference.getBundle().getBundleContext();
+        try {
+            final T service = bc.getService(serviceReference);
+            return servicePredicate.test(service);
+        } catch (Throwable t) {
+            fail(t);
+            return false;
+        } finally {
+            bc.ungetService(serviceReference);
+        }
+    }
+
+    @Test
     void ignoreUnsupportedInjections(Framework framework, @TempDir Path path, Bundle bundle, @TempDir File file, @Service Condition condition) {
         assertNotNull(framework);
         assertNotNull(path);
@@ -222,8 +294,6 @@ class OSGiSupportTest {
         assertNotNull(condition);
         assertThat(testInfo.getDisplayName()).isEqualTo("testInfoSupport");
     }
-
-
 
     @NotNull
     private static List<String> getSymbolicNames(Bundle... bundles) {

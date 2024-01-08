@@ -42,6 +42,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.ServiceObjects;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
@@ -59,9 +60,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Array;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -154,42 +157,77 @@ public class OSGiSupportImpl implements BeforeTestExecutionCallback, AfterTestEx
 
     @Nullable
     private static Object resolveServiceObject(Service service, ExtensionContext.Store store, Parameter parameter) {
-        final Optional<String> filter = Optional.ofNullable(service.filter()).filter(not(String::isBlank));
-        final BundleContext bc = store.get(BundleContext.class, BundleContext.class);
-        final Class<?> parameterType = parameter.getType();
-        final String type;
-        if (parameterType.isArray()) {
-            type = parameterType.getComponentType().getName();
-        } else if (parameterType.isAssignableFrom(List.class)) {
-            type = ((ParameterizedType) parameter.getParameterizedType()).getActualTypeArguments()[0].getTypeName();
-        } else {
-            type = parameterType.getName();
-        }
-        try {
-            // use string representation of class in order to avoid issues
-            // when mixing classes from different class loaders
-            final ServiceReference<?>[] serviceReferences =
-                    bc.getAllServiceReferences(type, filter.orElse(null));
+        final String filter = Optional.ofNullable(service.filter()).filter(not(String::isBlank)).orElse(null);
+        final Class<?> parameterClass = parameter.getType();
 
-            final Stream<?> serviceStream = Optional.ofNullable(serviceReferences).stream()
+        if (parameterClass.isArray()) {
+            final Type componentType;
+            final Class<?> castType;
+            if (parameter.getParameterizedType() instanceof GenericArrayType) {
+                final GenericArrayType genericArrayType = (GenericArrayType) parameter.getParameterizedType();
+                componentType = genericArrayType.getGenericComponentType();
+                castType = (Class<?>) ((ParameterizedType) componentType).getRawType();
+            } else {
+                componentType = parameterClass.getComponentType();
+                castType = parameterClass.getComponentType();
+            }
+
+            return resolveServices(store, componentType, filter)
+                    .toArray(i -> (Object[]) Array.newInstance(castType, i));
+        } else if (parameterClass.isAssignableFrom(List.class)) {
+            final Type genericType = getParameterizedType(parameter).getActualTypeArguments()[0];
+            return resolveServices(store, genericType, filter).collect(Collectors.toUnmodifiableList());
+        } else {
+            return resolveServices(store, parameter.getParameterizedType(), filter).findFirst().orElse(null);
+        }
+    }
+
+    private static Stream<?> resolveServices(ExtensionContext.Store store, Type wrapperType, String filter) {
+        final BundleContext bc = store.get(BundleContext.class, BundleContext.class);
+
+        final Type serviceType;
+        final Function<ServiceReference<?>, ?> transformer;
+        final Function<ServiceReference<?>, Closeable> closeableFactory;
+
+        if (wrapperType instanceof ParameterizedType) {
+            final ParameterizedType type = (ParameterizedType) wrapperType;
+            final Class<?> wrapperClass = (Class<?>) type.getRawType();
+            if (ServiceReference.class.isAssignableFrom(wrapperClass)) {
+                serviceType = type.getActualTypeArguments()[0];
+                transformer = Function.identity();
+                closeableFactory = ref -> () -> {};
+            } else if (ServiceObjects.class.isAssignableFrom(wrapperClass)) {
+                serviceType = type.getActualTypeArguments()[0];
+                transformer = bc::getServiceObjects;
+                closeableFactory = ref -> () -> {};
+            } else {
+                throw new UnsupportedOperationException("Unsupported wrapper type " + wrapperType);
+            }
+        } else {
+            serviceType = wrapperType;
+            transformer = bc::getService;
+            closeableFactory = ref -> () -> bc.ungetService(ref);
+        }
+
+        final String objectClass = serviceType.getTypeName();
+        try {
+            final ServiceReference<?>[] serviceReferences = bc.getAllServiceReferences(objectClass, filter);
+            return Optional.ofNullable(serviceReferences).stream()
                     .flatMap(Stream::of)
                     .map(ref -> {
                         store.getOrComputeIfAbsent(Closeables.class, k -> new Closeables(), Closeables.class)
-                                .add(() -> bc.ungetService(ref));
-                        return bc.getService(ref);
+                                .add(closeableFactory.apply(ref));
+                        return transformer.apply(ref);
                     });
-
-            if (parameterType.isArray()) {
-                return serviceStream.toArray(i -> (Object[]) Array.newInstance(parameterType.getComponentType(), i));
-            } else if (parameterType.isAssignableFrom(List.class)) {
-                return serviceStream.collect(Collectors.toUnmodifiableList());
-            } else {
-                return serviceStream.findFirst().orElse(null);
-            }
         } catch (InvalidSyntaxException e) {
             throw new ParameterResolutionException(
-                    String.format("Failed to retrieve service of type %s%s", type, filter.map(f -> "with filter " + f).orElse("")), e);
+                    String.format("Failed to retrieve service of type %s%s",
+                            objectClass, filter == null ? "" : "with filter " + filter), e);
         }
+    }
+
+    private static ParameterizedType getParameterizedType(Parameter parameter) {
+        return (ParameterizedType) parameter.getParameterizedType();
     }
 
     @Override
