@@ -29,7 +29,9 @@ import java.util.List;
 
 @Target({ ElementType.ANNOTATION_TYPE, ElementType.METHOD, ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
-@ExtendWith(OSGiSupportImpl.class)
+@ExtendWith(OSGiSupportFrameworkHandler.class)
+@ExtendWith(OSGiSupportParameterResolver.class)
+@ExtendWith(OSGiSupportInvocationInterceptor.class)
 public @interface OSGiSupport {
 
     Enablement verbose() default Enablement.INHERIT;
