@@ -136,6 +136,9 @@ class OSGiSupportTest {
     @Component(service = ServiceA.class)
     public static class ServiceA {}
 
+    @Component(service = ServiceB.class)
+    public static class ServiceB {}
+
     @Test
     @OSGiSupport(logService = SLING, additionalBundles = {"org.apache.felix.scr"})
     void serviceInjection(Framework framework, @Service ServiceComponentRuntime scr, @Service ServiceA serviceA) {
@@ -268,9 +271,9 @@ class OSGiSupportTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"foo", "bar"})
-    void parameterizedTestSupport(String fooOrBar, Framework framework, @Service Condition condition) {
-        assertThat(fooOrBar).matches(List.of("foo", "bar")::contains);
+    @ValueSource(classes = {OSGiSupportTest.ServiceA.class, OSGiSupportTest.ServiceB.class})
+    void parameterizedTestSupport(Class<?> serviceClass, Framework framework, @Service Condition condition) {
+        assertThat(serviceClass).matches(List.of(ServiceA.class, ServiceB.class)::contains);
         assertNotNull(framework);
         assertNotNull(condition);
     }

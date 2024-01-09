@@ -80,7 +80,12 @@ class OSGiSupportInvocationInterceptor implements InvocationInterceptor {
             if (serviceAnnotations[i] != null) {
                 arguments[i] = resolveServiceObject(serviceAnnotations[i], store, parameters[i]);
             } else {
-                arguments[i] = invocationContext.getArguments().get(i);
+                final Object argument = invocationContext.getArguments().get(i);
+                if (argument instanceof Class) {
+                    arguments[i] = bundle.loadClass(((Class<?>)argument).getName());
+                } else {
+                    arguments[i] = argument;
+                }
             }
         }
 
