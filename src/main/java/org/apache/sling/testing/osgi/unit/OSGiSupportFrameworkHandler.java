@@ -32,12 +32,17 @@ import org.junit.jupiter.api.extension.BeforeTestExecutionCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.platform.commons.support.AnnotationSupport;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
+import org.osgi.framework.connect.ConnectContent;
+import org.osgi.framework.connect.ConnectFrameworkFactory;
+import org.osgi.framework.connect.ConnectModule;
+import org.osgi.framework.connect.ModuleConnector;
 import org.osgi.framework.launch.Framework;
-import org.osgi.framework.launch.FrameworkFactory;
 import org.osgi.framework.startlevel.BundleStartLevel;
 import org.osgi.framework.startlevel.FrameworkStartLevel;
+import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.resource.Wire;
 import org.osgi.service.resolver.ResolutionException;
@@ -60,6 +65,7 @@ import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -67,15 +73,21 @@ import static java.util.Arrays.asList;
 import static java.util.function.Predicate.not;
 import static org.apache.sling.testing.osgi.unit.impl.BundleUtil.collectJarFilesFromClassPath;
 import static org.osgi.framework.Constants.FRAMEWORK_STORAGE;
+import static org.osgi.framework.namespace.PackageNamespace.PACKAGE_NAMESPACE;
 
 class OSGiSupportFrameworkHandler implements BeforeTestExecutionCallback, AfterTestExecutionCallback {
 
     private static final Logger LOG = LoggerFactory.getLogger(OSGiSupportFrameworkHandler.class);
 
     private static final ExtensionContext.Namespace namespace = ExtensionContext.Namespace.create(OSGiSupportInvocationInterceptor.class);
+    public static final String JUPITER_EXTENSION_API_PACKAGE = "org.junit.jupiter.api.extension";
 
     static ExtensionContext.Store getStore(ExtensionContext context) {
         return context.getStore(namespace);
+    }
+
+    static Predicate<Requirement> isPackage(String packageName) {
+        return req -> Objects.equals(req.getAttributes().get(PACKAGE_NAMESPACE).toString(), packageName);
     }
 
     @Override
@@ -105,16 +117,56 @@ class OSGiSupportFrameworkHandler implements BeforeTestExecutionCallback, AfterT
                 osgiIdentities(bundleSymbolicName, config.getLogServiceBundles(), config.getAdditionalBundles()),
                 testBundleJar);
 
+        final Map<Boolean, List<Resource>> bundles = resolutions.keySet().stream()
+                .collect(Collectors.groupingBy(res -> res.getRequirements(PACKAGE_NAMESPACE).stream()
+                        .anyMatch(isPackage(JUPITER_EXTENSION_API_PACKAGE))
+                ));
+        final List<Resource> jupiterExtensionProviders = bundles.get(Boolean.TRUE);
+        final List<Resource> normalBundles = bundles.get(Boolean.FALSE);
+
+        final Map<String, Resource> jupiterExtensionProvidersByUri = jupiterExtensionProviders.stream()
+                .collect(Collectors.toMap(res -> ResourceUtils.getURI(res).get().toString(), Function.identity()));
+
         final Map<String, String> frameworkProperties = Map.of(
                 FRAMEWORK_STORAGE, Files.createDirectories(storageDir).toAbsolutePath().toString());
 
-        ServiceLoader<FrameworkFactory> frameworkFactories = ServiceLoader.load(FrameworkFactory.class);
-        final FrameworkFactory factory = frameworkFactories.iterator().next();
-        final Framework framework = factory.newFramework(frameworkProperties);
+        ServiceLoader<ConnectFrameworkFactory> frameworkFactories = ServiceLoader.load(ConnectFrameworkFactory.class);
+        final ConnectFrameworkFactory factory = frameworkFactories.iterator().next();
+        final Framework framework = factory.newFramework(frameworkProperties, new ModuleConnector() {
+            @Override
+            public void initialize(File file, Map<String, String> map) {
+
+            }
+
+            @Override
+            public Optional<ConnectModule> connect(String uri) {
+                return Optional.ofNullable(jupiterExtensionProvidersByUri.get(uri))
+                        .map(resource -> new ConnectModule() {
+                            @Override
+                            public ConnectContent getContent() throws IOException {
+                                final Path bundleTempDir = Files.createDirectories(
+                                        storageDir
+                                                .resolve("connectBundles")
+                                                .resolve(ResourceUtils.getIdentity(resource) + '-' + ResourceUtils.getIdentityVersion(resource)));
+                                return new BundleWithClassLoaderContent(resource, getClass().getClassLoader(), bundleTempDir);
+                            }
+                        });
+            }
+
+            @Override
+            public Optional<BundleActivator> newBundleActivator() {
+                return Optional.empty();
+            }
+        });
+
         framework.init();
         framework.start();
 
-        for (Resource resource : resolutions.keySet()) {
+        for (Resource resource : jupiterExtensionProvidersByUri.values()) {
+            framework.getBundleContext().installBundle(ResourceUtils.getURI(resource).get().toString(), null);
+        }
+
+        for (Resource resource : normalBundles) {
             // fragments are not added to the resolutions map by the resolver,
             // they need to be retrieved from the wire of a host bundle
             final List<Resource> fragments = resolutions.get(resource).stream()
@@ -218,7 +270,7 @@ class OSGiSupportFrameworkHandler implements BeforeTestExecutionCallback, AfterT
                 .collect(Collectors.joining(","));
     }
 
-    private static Optional<Bundle> installBundle(Framework framework, Resource resource) throws IOException, BundleException {
+    private static Optional<Bundle> installBundle(Framework framework, Resource resource) {
         return ResourceUtils.getURI(resource)
                 .map(uri -> {
                     try (InputStream bundleStream = Files.newInputStream(Path.of(uri))) {

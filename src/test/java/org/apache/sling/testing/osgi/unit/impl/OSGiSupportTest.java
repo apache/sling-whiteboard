@@ -21,7 +21,6 @@ package org.apache.sling.testing.osgi.unit.impl;
 import org.apache.sling.testing.osgi.unit.OSGiSupport;
 import org.apache.sling.testing.osgi.unit.Service;
 import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.RepetitionInfo;
 import org.junit.jupiter.api.Test;
@@ -45,6 +44,7 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -191,7 +191,7 @@ class OSGiSupportTest {
     void serviceReferenceInjection(
             @Service ServiceReference<Condition> serviceReference,
             @Service ServiceReference<Condition>[] serviceReferencesArray,
-            @Service List<ServiceReference<Condition>> serviceReferencesList) throws Throwable {
+            @Service List<ServiceReference<Condition>> serviceReferencesList) {
         assertThat(serviceReference)
                 .isNotNull()
                 .matches(ref -> withService(ref, Condition.class::isInstance));
@@ -227,11 +227,7 @@ class OSGiSupportTest {
                 .allMatch(reference -> withService(reference, Condition.class::isInstance));
     }
 
-    private interface ThrowingPredicate<T> {
-        boolean test(T object) throws Throwable;
-    }
-
-    private static <T> boolean withService(ServiceObjects<T> serviceObjects, ThrowingPredicate<T> servicePredicate) {
+    private static <T> boolean withService(ServiceObjects<T> serviceObjects, Predicate<T> servicePredicate) {
         final T service = serviceObjects.getService();
         try {
             return servicePredicate.test(service);
@@ -243,7 +239,7 @@ class OSGiSupportTest {
         }
     }
 
-    private static <T> boolean withService(ServiceReference<T> serviceReference, ThrowingPredicate<T> servicePredicate) {
+    private static <T> boolean withService(ServiceReference<T> serviceReference, Predicate<T> servicePredicate) {
         final BundleContext bc = serviceReference.getBundle().getBundleContext();
         try {
             final T service = bc.getService(serviceReference);
@@ -279,7 +275,6 @@ class OSGiSupportTest {
         assertNotNull(condition);
     }
 
-    @Disabled("The RepetitionInfo class of the resolved object is different from the RepetitionInfo class within OSGi ")
     @RepeatedTest(2)
     void repetitionInfoSupport(Framework framework, @Service Condition condition, RepetitionInfo repetitionInfo) {
         assertNotNull(framework);
@@ -287,12 +282,11 @@ class OSGiSupportTest {
         assertThat(repetitionInfo.getCurrentRepetition()).isBetween(1, repetitionInfo.getTotalRepetitions());
     }
 
-    @Disabled("The TestInfo class of the resolved object is different from the TestInfo class within OSGi ")
     @Test
     void testInfoSupport(Framework framework, @Service Condition condition, TestInfo testInfo) {
         assertNotNull(framework);
         assertNotNull(condition);
-        assertThat(testInfo.getDisplayName()).isEqualTo("testInfoSupport");
+        assertThat(testInfo.getDisplayName()).isEqualTo("testInfoSupport(Framework, Condition, TestInfo)");
     }
 
     @NotNull

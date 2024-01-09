@@ -40,13 +40,3 @@ class SampleTest {
     } 
 }
 ```
-
-## Known Limitations
-
-Due to the fact that the test-class and test-instance are processed outside the OSGi environment,
-`org.junit.jupiter.api.extension.ParameterResolver` implementations returning objects that are **not
-exported by the system-bundle** in a running OSGi framework, cannot currently be injected.
-
-Known injections that are currently impossible due to this limitation are
-- `org.junit.jupiter.api.TestInfo`
-- `org.junit.jupiter.api.RepetitionInfo`

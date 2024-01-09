@@ -46,6 +46,7 @@ class OSGiSupportParameterResolver implements ParameterResolver {
         final Optional<Service> serviceAnnotation = parameterContext.findAnnotation(Service.class);
         if (serviceAnnotation.isPresent()) {
             // services need to be resolved late, because they may be loaded by different class loaders in OSGi
+            // see OSGiSupportInvocationInterceptor
             serviceAnnotations[parameterContext.getIndex()] = serviceAnnotation.get();
             return null;
         }

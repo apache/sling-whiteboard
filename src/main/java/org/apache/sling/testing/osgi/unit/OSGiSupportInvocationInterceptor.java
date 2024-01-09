@@ -45,7 +45,7 @@ import java.util.stream.Stream;
 
 import static java.util.function.Predicate.not;
 
-public class OSGiSupportInvocationInterceptor implements InvocationInterceptor {
+class OSGiSupportInvocationInterceptor implements InvocationInterceptor {
 
     @Override
     public void interceptTestMethod(Invocation<Void> invocation, ReflectiveInvocationContext<Method> invocationContext, ExtensionContext extensionContext) throws Throwable {

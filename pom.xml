@@ -122,6 +122,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.framework</artifactId>
+            <version>1.10.0</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
             <groupId>biz.aQute.bnd</groupId>
             <artifactId>biz.aQute.bndlib</artifactId>
             <version>${bnd.version}</version>
