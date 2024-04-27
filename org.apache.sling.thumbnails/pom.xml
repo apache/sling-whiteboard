@@ -92,7 +92,7 @@
             <plugin>
                 <groupId>org.apache.sling</groupId>
                 <artifactId>slingfeature-maven-plugin</artifactId>
-                <version>1.4.18</version>
+                <version>1.8.2</version>
                 <extensions>true</extensions>
                 <configuration>
                     <framework>
