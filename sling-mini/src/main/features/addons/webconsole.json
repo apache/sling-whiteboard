@@ -9,7 +9,7 @@
       "start-order":"10"
     },
     {
-      "id":"org.apache.felix:org.apache.felix.webconsole:5.0.0",
+      "id":"org.apache.felix:org.apache.felix.webconsole:5.0.6",
       "start-order":"10"
     },
     {
@@ -29,11 +29,11 @@
       "start-order":"10"
     },
     {
-      "id":"org.apache.felix:org.apache.felix.http.webconsoleplugin:1.1.0",
+      "id":"org.apache.felix:org.apache.felix.http.webconsoleplugin:1.2.0",
       "start-order":"20"
     },
     {
-      "id":"org.apache.felix:org.apache.felix.http.inventoryprinter:1.0.0",
+      "id":"org.apache.felix:org.apache.felix.http.inventoryprinter:1.0.2",
       "start-order":"20"
     }
   ]

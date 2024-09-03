@@ -33,11 +33,11 @@
       "start-order": "1"
     },
     {
-      "id": "org.apache.sling:org.apache.sling.xss:2.4.1-SNAPSHOT",
+      "id": "org.apache.sling:org.apache.sling.xss:2.4.2",
       "start-order": "20"
     },
     {
-      "id": "org.apache.sling:org.apache.sling.scripting.sightly:1.4.23-1.4.0-SNAPSHOT",
+      "id": "org.apache.sling:org.apache.sling.scripting.sightly:1.4.24-1.4.0",
       "start-order": "20"
     },
     {

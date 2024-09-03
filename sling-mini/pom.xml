@@ -29,11 +29,11 @@
 
     <properties>
         <sling.java.version>11</sling.java.version>
-	<launcher.version>1.3.0</launcher.version>
-	<port>8088</port>
-	<project.build.outputTimestamp>1</project.build.outputTimestamp>
-	<sourceDir>/tmp/docs</sourceDir>
-	<targetDir>/tmp/offliner</targetDir>
+        <launcher.version>1.3.0</launcher.version>
+        <project.build.outputTimestamp>1</project.build.outputTimestamp>
+        <sourceDir>/tmp/docs</sourceDir>
+        <targetDir>/tmp/offliner</targetDir>
+        <feature>offlineapp</feature>
     </properties>
 
     <build>
@@ -41,7 +41,7 @@
             <plugin>
                 <groupId>org.apache.sling</groupId>
                 <artifactId>slingfeature-maven-plugin</artifactId>
-                <version>1.8.0</version>
+                <version>1.8.4</version>
                 <extensions>true</extensions>
                 <executions>
                     <execution>
@@ -59,7 +59,7 @@
                                     <classifier>offlineapp</classifier>
                                     <filesInclude>*.json</filesInclude>
                                     <filesInclude>addons/sightly.json</filesInclude>
-				    <filesInclude>deployments/offline.json</filesInclude>
+                                    <filesInclude>deployments/offline.json</filesInclude>
                                 </aggregate>
                                  <aggregate>
                                     <classifier>fullwebapp</classifier>
@@ -88,9 +88,9 @@
                                     <includeClassifier>offlineapp</includeClassifier>
                                     <includeClassifier>fullwebapp</includeClassifier>
                                     <includeTasks>
-					    <includeTask>bundle-packages</includeTask>
-					    <includeTask>api-regions-exportsimports</includeTask>
-				            <includeTask>check-unused-bundles</includeTask>
+                                        <includeTask>bundle-packages</includeTask>
+                                        <includeTask>api-regions-exportsimports</includeTask>
+                                        <includeTask>check-unused-bundles</includeTask>
                                     </includeTasks>
                                 </scan>
                             </scans>
@@ -148,7 +148,7 @@
                     <executable>${basedir}/target/org.apache.sling.feature.launcher-${launcher.version}/bin/launcher</executable>
                     <arguments>
                         <argument>-f</argument>
-			<argument>mvn:${project.groupId}/${project.artifactId}/${project.version}/slingosgifeature/offlineapp</argument>
+                        <argument>mvn:${project.groupId}/${project.artifactId}/${project.version}/slingosgifeature/${feature}</argument>
                         <argument>-p</argument>
                         <argument>target/launcher</argument>
                         <argument>-c</argument>
