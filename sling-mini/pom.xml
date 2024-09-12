@@ -58,7 +58,9 @@
                                 <aggregate>
                                     <classifier>offlineapp</classifier>
                                     <filesInclude>*.json</filesInclude>
+<!--
                                     <filesInclude>addons/sightly.json</filesInclude>
+-->
                                     <filesInclude>deployments/offline.json</filesInclude>
                                 </aggregate>
                                  <aggregate>
