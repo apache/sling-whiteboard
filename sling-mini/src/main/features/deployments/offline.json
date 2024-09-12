@@ -8,7 +8,7 @@
   "configurations": {
     "org.apache.sling.offline.impl.Starter":{
       "input.path":"/content/docs",
-      "output.path":"$[env:TARGET_DIR;default=/tmp/offliner]"
+      "output.path":"$[prop:TARGET_DIR;default=/tmp/offliner]"
     }
   }
 }

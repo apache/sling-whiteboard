@@ -20,7 +20,7 @@
   "configurations":{
     "org.apache.sling.sfsresource.impl.SFSResourceProvider~files":{
       "provider.root":"/content/docs",
-      "provider.file":"$[env:SOURCE_DIR;default=/tmp/docs]"
+      "provider.file":"$[prop:SOURCE_DIR;default=/tmp/docs]"
     },
     "org.apache.sling.resource.MarkdownResourceDecorator~files":{
       "decoration.paths" : "/content/**.md"

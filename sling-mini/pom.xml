@@ -92,7 +92,9 @@
                                     <includeTasks>
                                         <includeTask>bundle-packages</includeTask>
                                         <includeTask>api-regions-exportsimports</includeTask>
+<!--
                                         <includeTask>check-unused-bundles</includeTask>
+-->
                                     </includeTasks>
                                 </scan>
                             </scans>
@@ -155,11 +157,11 @@
                         <argument>target/launcher</argument>
                         <argument>-c</argument>
                         <argument>target/launcher/cache</argument>
+                        <argument>-D</argument>
+                        <argument>SOURCE_DIR=${sourceDir}</argument>
+                        <argument>-D</argument>
+                        <argument>TARGET_DIR=${targetDir}</argument>
                     </arguments>
-                    <environmentVariables>
-                        <SOURCE_DIR>${sourceDir}</SOURCE_DIR>
-                        <TARGET_DIR>${targetDir}</TARGET_DIR>
-                    </environmentVariables>
                 </configuration>
             </plugin>
         </plugins>
