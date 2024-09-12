@@ -31,12 +31,12 @@
         <sling.java.version>11</sling.java.version>
         <launcher.version>1.3.0</launcher.version>
         <project.build.outputTimestamp>1</project.build.outputTimestamp>
-        <sourceDir>/tmp/docs</sourceDir>
-        <targetDir>/tmp/offliner</targetDir>
-        <!--
+        <sourceDir>/Users/david/clones/sling-whiteboard_2/sling-mini/content/docs</sourceDir>
+        <targetDir>/Users/david/clones/sling-whiteboard_2/sling-mini/content/offline</targetDir>
         <feature>offlineapp</feature>
-        -->
+        <!--
         <feature>fullwebapp</feature>
+        -->
     </properties>
 
     <build>
