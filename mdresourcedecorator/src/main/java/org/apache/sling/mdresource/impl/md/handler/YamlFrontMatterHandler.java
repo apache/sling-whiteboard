@@ -47,7 +47,6 @@ public class YamlFrontMatterHandler implements NodeHandler {
                 result.properties.put(entry.getKey(), entry.getValue().toArray(new String[0]));
             }
         }
-
         return true;
     }
 }

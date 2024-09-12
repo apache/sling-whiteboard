@@ -81,7 +81,12 @@ public class HtmlServlet extends HttpServlet {
         pw.println("<html>");
         pw.println("<head>");
         final ValueMap props = request.getResource().getValueMap();
-        final String title = props.get("jcr:title", String.class);
+        boolean hasMainHeading = true;
+        String title = props.get("jcr:title", String.class);
+        if ( title == null ) {
+            title = props.get("title", String.class);
+            hasMainHeading = false;
+        }
         if (title != null) {
             pw.print("<title>");
             pw.print(title);
@@ -102,6 +107,11 @@ public class HtmlServlet extends HttpServlet {
         if (html instanceof String) {
             pw.println(html.toString());
         } else if (html instanceof List) {
+            if (!hasMainHeading) {
+                pw.print("<h1>");
+                pw.print(title);
+                pw.println("</h1>");
+            }
             boolean startSection = true;
             for (final Map.Entry<String, String> element : (List<Map.Entry<String,String>>) html) {
                 if (startSection) {
