@@ -218,37 +218,18 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.1.0</version>
                 <executions>
-                    <!-- run with  mvn exec:exec@run-launcher -->
-                    <!--
+                    <!-- run with  mvn exec:exec, configuration is below the <executions> section -->
                     <execution>
                         <id>run-launcher</id>
                         <goals>
                             <goal>exec</goal>
                         </goals>
-                        <configuration>
-                            <executable>${basedir}/target/org.apache.sling.feature.launcher-${launcher.version}/bin/launcher</executable>
-                            <arguments>
-                                <argument>-f</argument>
-                                <argument>mvn:${project.groupId}/${project.artifactId}/${project.version}/slingosgifeature/${feature}</argument>
-                                <argument>-p</argument>
-                                <argument>target/launcher</argument>
-                                <argument>-c</argument>
-                                <argument>target/launcher/cache</argument>
-                                <argument>-D</argument>
-                                <argument>SOURCE_DIR=${sourceDir}</argument>
-                                <argument>-D</argument>
-                                <argument>TARGET_DIR=${targetDir}</argument>
-                            </arguments>
-                        </configuration>
                     </execution>
-                    -->
                     <execution>
                         <goals>
                             <goal>exec</goal>
                         </goals>
                         <phase>package</phase>
-                    </execution>
-                </executions>
                         <configuration>
                             <executable>java</executable>
                             <arguments>
@@ -259,12 +240,30 @@
                                 <argument>-u</argument>
                                 <argument>file:${build.directory}/artifacts</argument>
                                 <argument>-f</argument>
-                                <argument>file:${build.directory}/slingfeature-tmp/feature-fullwebapp.json</argument>
+                                <argument>file:${build.directory}/slingfeature-tmp/feature-${feature}.json</argument>
                             </arguments>
                             <inheritIo>true</inheritIo>
                             <addOutputToClasspath>false</addOutputToClasspath>
                             <workingDirectory>${build.directory}</workingDirectory>
                         </configuration>
+                    </execution>
+                </executions>
+                <configuration>
+                    <!-- This is the configuration for the exec:exec goal -->
+                    <executable>${basedir}/target/org.apache.sling.feature.launcher-${launcher.version}/bin/launcher</executable>
+                    <arguments>
+                        <argument>-f</argument>
+                        <argument>mvn:${project.groupId}/${project.artifactId}/${project.version}/slingosgifeature/${feature}</argument>
+                        <argument>-p</argument>
+                        <argument>target/launcher</argument>
+                        <argument>-c</argument>
+                        <argument>target/launcher/cache</argument>
+                        <argument>-D</argument>
+                        <argument>SOURCE_DIR=${sourceDir}</argument>
+                        <argument>-D</argument>
+                        <argument>TARGET_DIR=${targetDir}</argument>
+                    </arguments>
+                </configuration>
             </plugin>
         </plugins>
     </build>
