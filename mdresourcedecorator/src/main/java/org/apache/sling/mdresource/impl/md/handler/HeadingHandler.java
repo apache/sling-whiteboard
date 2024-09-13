@@ -32,7 +32,9 @@ public class HeadingHandler implements NodeHandler {
         if ( !hasTitle && n instanceof Heading ) {
             final Heading h = (Heading) n;
             if ( h.getLevel() == 1 ) {
-                result.title = h.getText().toString();
+                if (result.title == null) {
+                    result.title = h.getText().toString();
+                }
                 this.hasTitle = true;
             }
         }

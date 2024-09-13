@@ -32,6 +32,8 @@ import com.vladsch.flexmark.util.ast.Node;
  */
 public class YamlFrontMatterHandler implements NodeHandler {
 
+    private static final String TITLE = "title";
+
     @Override
     public boolean consume(final Node n, final ProcessingResult result) {
         final AbstractYamlFrontMatterVisitor vis = new AbstractYamlFrontMatterVisitor();
@@ -46,6 +48,9 @@ public class YamlFrontMatterHandler implements NodeHandler {
             } else {
                 result.properties.put(entry.getKey(), entry.getValue().toArray(new String[0]));
             }
+        }
+        if (result.properties.containsKey(TITLE) ) {
+            result.title = result.properties.get(TITLE).toString();
         }
         return true;
     }

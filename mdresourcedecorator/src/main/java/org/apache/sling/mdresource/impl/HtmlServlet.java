@@ -37,6 +37,7 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
+import org.owasp.encoder.Encode;
 
 @SlingServletResourceTypes(
     resourceTypes="sling/markdown/file",
@@ -79,58 +80,51 @@ public class HtmlServlet extends HttpServlet {
         resp.setCharacterEncoding("UTF-8");
         final PrintWriter pw = resp.getWriter();
         pw.println("<html>");
-        pw.println("<head>");
+        pw.println("  <head>");
         final ValueMap props = request.getResource().getValueMap();
-        boolean hasMainHeading = true;
         String title = props.get("jcr:title", String.class);
         if ( title == null ) {
             title = props.get("title", String.class);
-            hasMainHeading = false;
         }
         if (title != null) {
-            pw.print("<title>");
-            pw.print(title);
+            pw.print("    <title>");
+            pw.print(Encode.forHtmlContent(title));
             pw.println("</title>");
         }
         if (this.cfg.head_contents() != null) {
             pw.println(this.cfg.head_contents());
         }
-        pw.println("</head>");
-        pw.println("<body>");
-         pw.println("<header>");
+        pw.println("  </head>");
+        pw.println("  <body>");
+        pw.println("    <header>");
         if (this.cfg.header_resource() != null) {
             request.getRequestDispatcher(this.cfg.header_resource()).include(request, resp);
         }
-        pw.println("</header>");
-        pw.println("<main>");
+        pw.println("    </header>");
+        pw.println("    <main>");
         final Object html = props.get(this.cfg.html_elements_property());
         if (html instanceof String) {
             pw.println(html.toString());
         } else if (html instanceof List) {
-            if (!hasMainHeading) {
-                pw.print("<h1>");
-                pw.print(title);
-                pw.println("</h1>");
-            }
             boolean startSection = true;
             for (final Map.Entry<String, String> element : (List<Map.Entry<String,String>>) html) {
                 if (startSection) {
-                    pw.println("<div class=\"section\">");
+                    pw.println("      <div class=\"section\">");
                     startSection = false;
                 }
                 pw.print(element.getValue());
             }
             if (!startSection) {
-                pw.println("</div>");
+                pw.println("      </div>");
             }
         }
-        pw.println("<footer>");
+        pw.println("    </main>");
+        pw.println("    <footer>");
         if (this.cfg.footer_resource() != null) {
             request.getRequestDispatcher(this.cfg.footer_resource()).include(request, resp);
         }
-        pw.println("</footer>");
-        pw.println("</main>");
-        pw.println("</body>");
+        pw.println("    </footer>");
+        pw.println("  </body>");
         pw.println("</html>");
     }
 }
