@@ -37,4 +37,11 @@
       "start-order":"20"
     }
   ]
+  /*
+  "atomos-config:JSON|false": {
+    "initialize-at-run-time": [
+      "org.apache.felix.webconsole.internal"
+    ]
+  }
+  */
 }
