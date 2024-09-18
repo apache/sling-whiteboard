@@ -182,10 +182,6 @@ class AuthorizationCodeFlowIT {
         // validate that the JWT is valid; we trust what keycloak has returned but just want to ensure that
         // the token was stored correctly
         SignedJWT.parse(accesToken);
-
-        // in a similar manner, validate the id_token
-        String idToken = keycloakToken.get("id_token").asText();
-        SignedJWT.parse(idToken);
     }
 
     private String getUserPath(SlingClient sling, String authorizableId) throws ClientException {

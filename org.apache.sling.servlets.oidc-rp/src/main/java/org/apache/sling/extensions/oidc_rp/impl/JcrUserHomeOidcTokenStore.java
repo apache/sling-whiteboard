@@ -16,10 +16,9 @@
  */
 package org.apache.sling.extensions.oidc_rp.impl;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
@@ -40,19 +39,13 @@ import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
-import com.nimbusds.oauth2.sdk.token.RefreshToken;
-import com.nimbusds.oauth2.sdk.token.Tokens;
-import com.nimbusds.openid.connect.sdk.token.OIDCTokens;
-
-@Component(service = { OidcTokenStore.class, JcrUserHomeOidcTokenStore.class } )
+@Component(service = { OidcTokenStore.class } )
 public class JcrUserHomeOidcTokenStore implements OidcTokenStore {
 
     // TODO - expires_at
     private static final String PROPERTY_NAME_EXPIRES_AT = "expiresAt";
     private static final String PROPERTY_NAME_ACCESS_TOKEN = "access_token";
     private static final String PROPERTY_NAME_REFRESH_TOKEN = "refresh_token";
-    private static final String PROPERTY_NAME_ID_TOKEN = "id_token";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -102,32 +95,18 @@ public class JcrUserHomeOidcTokenStore implements OidcTokenStore {
     }
     
     @Override
-    public OidcToken getIdToken(OidcConnection connection, ResourceResolver resolver) {
-        try {
-            User user = resolver.adaptTo(User.class);
-            
-            return getToken(connection, user, PROPERTY_NAME_ID_TOKEN);
-        } catch (RepositoryException e) {
-            throw new OidcException(e);
-        }
-    }
-    
-    public void persistTokens(OidcConnection connection, ResourceResolver resolver, OIDCTokens tokens) {
-        persistTokens0(connection, resolver, tokens);
-    }
-
-    private void persistTokens0(OidcConnection connection, ResourceResolver resolver, Tokens tokens) {
+    public void persistTokens(OidcConnection connection, ResourceResolver resolver, OidcTokens tokens) {
         try {
             User currentUser = resolver.adaptTo(User.class);
             Session session = resolver.adaptTo(Session.class);
 
             ZonedDateTime expiry = null;
-            long expiresIn = tokens.getAccessToken().getLifetime();
-            if ( expiresIn > 0 ) {
-                expiry = LocalDateTime.now().plus(expiresIn, ChronoUnit.SECONDS).atZone(ZoneId.systemDefault());
+            long expiresAt = tokens.expiresAt();
+            if ( expiresAt > 0 ) {
+                expiry = ZonedDateTime.ofInstant(Instant.ofEpochMilli(expiresAt), ZoneId.systemDefault());
             }
 
-            String accessToken = tokens.getAccessToken().getValue();
+            String accessToken = tokens.accessToken();
             currentUser.setProperty(propertyPath(connection, PROPERTY_NAME_ACCESS_TOKEN), session.getValueFactory().createValue(accessToken));
             if ( expiry != null ) {
                 Calendar cal = GregorianCalendar.from(expiry);
@@ -135,41 +114,18 @@ public class JcrUserHomeOidcTokenStore implements OidcTokenStore {
             } else
                 currentUser.removeProperty(propertyPath(connection, PROPERTY_NAME_EXPIRES_AT));
 
-            if ( tokens.getRefreshToken() != null ) {
-                String refreshToken = tokens.getRefreshToken().getValue();
+            if ( tokens.refreshToken() != null ) {
+                String refreshToken = tokens.refreshToken();
                 if ( refreshToken != null )
                     currentUser.setProperty(propertyPath(connection, PROPERTY_NAME_REFRESH_TOKEN), session.getValueFactory().createValue(refreshToken));
                 else
                     currentUser.removeProperty(propertyPath(connection, PROPERTY_NAME_REFRESH_TOKEN));
             }
 
-            if ( tokens instanceof OIDCTokens oidcTokens) {
-                // don't touch the id token if we don't have an OIDC token, e.g. when refreshing the access token
-                String idToken = oidcTokens.getIDTokenString();
-                if ( idToken != null )
-                    currentUser.setProperty(propertyPath(connection, PROPERTY_NAME_ID_TOKEN), session.getValueFactory().createValue(idToken));
-                else
-                    currentUser.removeProperty(propertyPath(connection, PROPERTY_NAME_ID_TOKEN));
-            }
-
             session.save();
         } catch (RepositoryException e) {
             throw new OidcException(e);
         }
-    }
-    
-    @Override
-    public void persistTokens(OidcConnection connection, ResourceResolver resolver, OidcTokens tokenPair) {
-        OIDCTokens nimbusTokens;
-        RefreshToken nimbusRefreshToken = new RefreshToken(tokenPair.refreshToken());
-        BearerAccessToken nimbusAccessToken = new BearerAccessToken(tokenPair.accessToken(), tokenPair.expiresAt(), null);
-        if ( tokenPair.idToken() != null ) {
-            nimbusTokens = new OIDCTokens(tokenPair.idToken(), nimbusAccessToken, nimbusRefreshToken); 
-        } else {
-            nimbusTokens = new OIDCTokens(nimbusAccessToken, nimbusRefreshToken);
-        }
-        
-        persistTokens(connection, resolver, nimbusTokens);
     }
 
     private String propertyPath(OidcConnection connection, String propertyName) {

@@ -39,6 +39,8 @@ import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.auth.core.AuthConstants;
 import org.apache.sling.extensions.oidc_rp.OidcConnection;
+import org.apache.sling.extensions.oidc_rp.OidcTokenStore;
+import org.apache.sling.extensions.oidc_rp.OidcTokens;
 import org.apache.sling.servlets.annotations.SlingServletPaths;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -72,7 +74,7 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final Map<String, OidcConnection> connections;
-    private final JcrUserHomeOidcTokenStore tokenStore;
+    private final OidcTokenStore tokenStore;
     private final OidcProviderMetadataRegistry metadataRegistry;
 
     static String getCallbackUri(HttpServletRequest request) {
@@ -86,7 +88,7 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
     }
 
     @Activate
-    public OidcCallbackServlet(@Reference(policyOption = GREEDY) List<OidcConnection> connections, @Reference JcrUserHomeOidcTokenStore tokenStore,
+    public OidcCallbackServlet(@Reference(policyOption = GREEDY) List<OidcConnection> connections, @Reference OidcTokenStore tokenStore,
             @Reference OidcProviderMetadataRegistry metadataRegistry) {
         this.connections = connections.stream()
                 .collect(Collectors.toMap( OidcConnection::name, Function.identity()));
@@ -159,8 +161,10 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
             // - does the 'aud' claim match the client id of our connection
             // - nonce validation (?)
             // - iat/exp validation (?)
-
-            tokenStore.persistTokens(connection, request.getResourceResolver(), tokenResponse.getOIDCTokens());
+            
+            OidcTokens tokens = Converter.toApiOidcTokens(tokenResponse.getOIDCTokens());
+            
+            tokenStore.persistTokens(connection, request.getResourceResolver(), tokens);
 
             if ( redirect.isEmpty() ) {
                 response.setStatus(HttpServletResponse.SC_OK);
