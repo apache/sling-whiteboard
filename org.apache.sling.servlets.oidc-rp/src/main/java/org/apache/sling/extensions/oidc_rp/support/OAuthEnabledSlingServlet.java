@@ -25,7 +25,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
-import org.apache.sling.extensions.oidc_rp.OidcClient;
+import org.apache.sling.extensions.oidc_rp.OAuthUris;
+import org.apache.sling.extensions.oidc_rp.OAuthTokenRefresher;
 import org.apache.sling.extensions.oidc_rp.OidcConnection;
 import org.apache.sling.extensions.oidc_rp.OidcToken;
 import org.apache.sling.extensions.oidc_rp.OidcTokenState;
@@ -45,9 +46,9 @@ public abstract class OAuthEnabledSlingServlet extends SlingSafeMethodsServlet {
 
     private final OidcTokenStore tokenStore;
 
-    private final OidcClient oidcClient;
+    private final OAuthTokenRefresher oidcClient;
 	
-    protected OAuthEnabledSlingServlet(OidcConnection connection, OidcTokenStore tokenStore, OidcClient oidcClient) {
+    protected OAuthEnabledSlingServlet(OidcConnection connection, OidcTokenStore tokenStore, OAuthTokenRefresher oidcClient) {
         this.connection = Objects.requireNonNull(connection, "connection may not null");
         this.tokenStore = Objects.requireNonNull(tokenStore, "tokenStore may not null");
         this.oidcClient = Objects.requireNonNull(oidcClient, "oidcClient may not null");
@@ -74,12 +75,12 @@ public abstract class OAuthEnabledSlingServlet extends SlingSafeMethodsServlet {
 	        doGetWithToken(request, response, tokenResponse);
 	        break;
 	      case MISSING:
-	        response.sendRedirect(oidcClient.getOidcEntryPointUri(connection, request, redirectPath).toString());
+	        response.sendRedirect(OAuthUris.getOidcEntryPointUri(connection, request, redirectPath).toString());
 	        break;
 	      case EXPIRED:
 	        OidcToken refreshToken = tokenStore.getRefreshToken(connection, request.getResourceResolver());
 	        if ( refreshToken.getState() != OidcTokenState.VALID ) {
-	          response.sendRedirect(oidcClient.getOidcEntryPointUri(connection, request, redirectPath).toString());
+	          response.sendRedirect(OAuthUris.getOidcEntryPointUri(connection, request, redirectPath).toString());
 	          return;
 	        }
 	        

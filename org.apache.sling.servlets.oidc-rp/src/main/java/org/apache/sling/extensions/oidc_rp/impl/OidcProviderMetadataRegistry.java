@@ -17,6 +17,7 @@
 package org.apache.sling.extensions.oidc_rp.impl;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -40,7 +41,8 @@ import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
 public class OidcProviderMetadataRegistry {
     private final ConcurrentMap<String, OIDCProviderMetadata> cache = new ConcurrentHashMap<>();
 
-    public OIDCProviderMetadata getProviderMetadata(String base) {
+    // visible for testing
+    protected OIDCProviderMetadata getProviderMetadata(String base) {
         return cache.computeIfAbsent(base, s -> {
             try {
                 return OIDCProviderMetadata.resolve(new Issuer(s));
@@ -48,5 +50,13 @@ public class OidcProviderMetadataRegistry {
                 throw new OidcException(e);
             }
         });
+    }
+    
+    public URI getTokenEndpoint(String base) {
+        return getProviderMetadata(base).getTokenEndpointURI();
+    }
+    
+    public URI getAuthorizationEndpoint(String base) {
+        return getProviderMetadata(base).getAuthorizationEndpointURI();
     }
 }

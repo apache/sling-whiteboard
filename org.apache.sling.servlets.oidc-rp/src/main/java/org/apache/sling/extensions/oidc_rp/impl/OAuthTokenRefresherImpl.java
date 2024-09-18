@@ -16,17 +16,10 @@
  */
 package org.apache.sling.extensions.oidc_rp.impl;
 
-import static org.apache.sling.extensions.oidc_rp.impl.OidcStateManager.PARAMETER_NAME_CONNECTION;
-import static org.apache.sling.extensions.oidc_rp.impl.OidcStateManager.PARAMETER_NAME_REDIRECT;
-
 import java.io.IOException;
 import java.net.URI;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
-import org.apache.sling.api.SlingHttpServletRequest;
-import org.apache.sling.extensions.oidc_rp.OidcClient;
+import org.apache.sling.extensions.oidc_rp.OAuthTokenRefresher;
 import org.apache.sling.extensions.oidc_rp.OidcConnection;
 import org.apache.sling.extensions.oidc_rp.OidcException;
 import org.apache.sling.extensions.oidc_rp.OidcTokens;
@@ -37,29 +30,23 @@ import org.osgi.service.component.annotations.Reference;
 import com.nimbusds.oauth2.sdk.AuthorizationGrant;
 import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.RefreshTokenGrant;
-import com.nimbusds.oauth2.sdk.ResponseType;
-import com.nimbusds.oauth2.sdk.Scope;
 import com.nimbusds.oauth2.sdk.TokenErrorResponse;
 import com.nimbusds.oauth2.sdk.TokenRequest;
 import com.nimbusds.oauth2.sdk.auth.ClientAuthentication;
 import com.nimbusds.oauth2.sdk.auth.ClientSecretBasic;
 import com.nimbusds.oauth2.sdk.auth.Secret;
 import com.nimbusds.oauth2.sdk.id.ClientID;
-import com.nimbusds.oauth2.sdk.id.State;
 import com.nimbusds.oauth2.sdk.token.RefreshToken;
-import com.nimbusds.openid.connect.sdk.AuthenticationRequest;
-import com.nimbusds.openid.connect.sdk.Nonce;
 import com.nimbusds.openid.connect.sdk.OIDCTokenResponse;
-import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
 import com.nimbusds.openid.connect.sdk.token.OIDCTokens;
 
-@Component(service = { OidcClientImpl.class, OidcClient.class })
-public class OidcClientImpl implements OidcClient {
+@Component
+public class OAuthTokenRefresherImpl implements OAuthTokenRefresher {
 
     private final OidcProviderMetadataRegistry providerMetadataRegistry;
 
     @Activate
-    public OidcClientImpl(@Reference OidcProviderMetadataRegistry providerMetadataRegistry) {
+    public OAuthTokenRefresherImpl(@Reference OidcProviderMetadataRegistry providerMetadataRegistry) {
         this.providerMetadataRegistry = providerMetadataRegistry;
     }
     
@@ -101,61 +88,5 @@ public class OidcClientImpl implements OidcClient {
     } catch (ParseException |IOException e) {
         throw new OidcException(e);
     }
-    }
-    
-    @Override
-    public URI getOidcEntryPointUri(OidcConnection connection, SlingHttpServletRequest request, String redirectPath) {
-        
-        StringBuilder uri = new StringBuilder();
-        uri.append(request.getScheme()).append("://").append(request.getServerName());
-        boolean needsExplicitPort = ( "https".equals(request.getScheme()) && request.getServerPort() != 443 )
-                || ( "http".equals(request.getScheme()) && request.getServerPort() != 80 ) ;
-                
-        if ( needsExplicitPort ) {
-            uri.append(':').append(request.getServerPort());
-        }
-        uri.append(OidcEntryPointServlet.PATH).append("?c=").append(connection.name());
-        if ( redirectPath != null )
-            uri.append("&redirect=").append(URLEncoder.encode(redirectPath, StandardCharsets.UTF_8));
-
-        return URI.create(uri.toString());
-    }
-
-    @Override
-    public URI getAuthenticationRequestUri(OidcConnection connection, SlingHttpServletRequest request, URI redirectUri) {
-        OIDCProviderMetadata providerMetadata = providerMetadataRegistry.getProviderMetadata(connection.baseUrl());
-
-        // The client ID provisioned by the OpenID provider when
-        // the client was registered
-        ClientID clientID = new ClientID(connection.clientId());
-
-        // Generate random state string to securely pair the callback to this request
-        State state = new State();
-        OidcStateManager stateManager = OidcStateManager.stateFor(request);
-        stateManager.registerState(state);
-        stateManager.putAttribute(state, PARAMETER_NAME_CONNECTION, connection.name());
-        if ( request.getParameter(PARAMETER_NAME_REDIRECT) != null )
-            stateManager.putAttribute(state, PARAMETER_NAME_REDIRECT, request.getParameter(PARAMETER_NAME_REDIRECT));
-
-        // Generate nonce for the ID token
-        Nonce nonce = new Nonce();
-
-        // Compose the OpenID authentication request (for the code flow)
-        AuthenticationRequest.Builder authRequestBuilder = new AuthenticationRequest.Builder(
-                new ResponseType("code"),
-                new Scope(connection.scopes()),
-                clientID, URI.create(OidcCallbackServlet.getCallbackUri(request)))
-            .endpointURI(providerMetadata.getAuthorizationEndpointURI())
-            .state(state)
-            .nonce(nonce);
-        
-        if ( connection.additionalAuthorizationParameters() != null ) {
-            Arrays.stream(connection.additionalAuthorizationParameters())
-                .map( s -> s.split("=") )
-                .filter( p -> p.length == 2 )
-                .forEach( p -> authRequestBuilder.customParameter(p[0], p[1]));
-        }
-        
-        return authRequestBuilder.build().toURI();
     }
 }
