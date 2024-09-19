@@ -29,7 +29,8 @@
 	<artifactId>org.apache.sling.extensions.oauth-client</artifactId>
 	<version>0.1-SNAPSHOT</version>
 
-	<name>Apache Sling Extensions OAuth 2.0 client with OIDC support</name>
+	<name>Apache Sling OAuth client</name>
+	<description>Apache Sling OAuth 2.0 client with OIDC support</description>
 
     <properties>
         <sling.java.version>17</sling.java.version>

@@ -1,4 +1,4 @@
-# Apache Sling OpenID Connect and OAuth 2.0 support
+# Apache Sling OAuth 2.0 client with OIDC support
 
 > **Warning**
 > This bundle is under development, do not use in production.
