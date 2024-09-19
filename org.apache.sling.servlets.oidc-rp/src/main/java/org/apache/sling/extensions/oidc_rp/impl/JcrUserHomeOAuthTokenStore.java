@@ -40,8 +40,7 @@ import org.slf4j.LoggerFactory;
 @Component(service = { OAuthTokenStore.class } )
 public class JcrUserHomeOAuthTokenStore implements OAuthTokenStore {
 
-    // TODO - expires_at
-    private static final String PROPERTY_NAME_EXPIRES_AT = "expiresAt";
+    private static final String PROPERTY_NAME_EXPIRES_AT = "expires_at";
     private static final String PROPERTY_NAME_ACCESS_TOKEN = "access_token";
     private static final String PROPERTY_NAME_REFRESH_TOKEN = "refresh_token";
 
@@ -131,6 +130,6 @@ public class JcrUserHomeOAuthTokenStore implements OAuthTokenStore {
     }
 
     private String nodePath(OidcConnection connection) {
-        return "oidc-tokens/" + connection.name();
+        return "oauth-tokens/" + connection.name();
     }
 }

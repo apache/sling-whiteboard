@@ -125,8 +125,8 @@ class AuthorizationCodeFlowIT {
         
         // clean up any existing tokens
         String userPath = getUserPath(sling, sling.getUser());
-        sling.deletePath(userPath + "/oidc-tokens/" + oidcConnectionName, 200);
-        sling.doGet(userPath + "/oidc-tokens/" + oidcConnectionName, 404);
+        sling.deletePath(userPath + "/oauth-tokens/" + oidcConnectionName, 200);
+        sling.doGet(userPath + "/oauth-tokens/" + oidcConnectionName, 404);
         
         // kick off oidc auth
         SlingHttpResponse entryPointResponse = sling.doGet("/system/sling/oidc/entry-point", List.of(new BasicNameValuePair("c", oidcConnectionName)), 302);
@@ -177,7 +177,7 @@ class AuthorizationCodeFlowIT {
             .collect(Collectors.toList());
         sling.doGet(redirectUri.getRawPath(), params, 200);
         
-        JsonNode keycloakToken = sling.doGetJson(userPath + "/oidc-tokens/" + oidcConnectionName,0,  200);
+        JsonNode keycloakToken = sling.doGetJson(userPath + "/oauth-tokens/" + oidcConnectionName,0,  200);
         String accesToken = keycloakToken.get("access_token").asText();
         // validate that the JWT is valid; we trust what keycloak has returned but just want to ensure that
         // the token was stored correctly

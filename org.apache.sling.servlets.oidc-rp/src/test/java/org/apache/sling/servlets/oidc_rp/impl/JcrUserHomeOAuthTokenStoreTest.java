@@ -182,15 +182,15 @@ class JcrUserHomeOAuthTokenStoreTest {
     private Resource getConnectionResource(OidcConnection connection) throws RepositoryException {
         String userPath = context.resourceResolver().adaptTo(User.class).getPath();
         Resource userHomeResource = context.resourceResolver().getResource(userPath);
-        Resource oidcTokensResource = userHomeResource.getChild("oidc-tokens");
+        Resource oidcTokensResource = userHomeResource.getChild("oauth-tokens");
 
         assertThat(oidcTokensResource)
-            .describedAs("oidc-tokens resource")
+            .describedAs("oauth-tokens resource")
             .isNotNull();
 
         Resource connectionResource = oidcTokensResource.getChild(connection.name());
         assertThat(connectionResource)
-            .as("oidc-tokens/connection resource")
+            .as("oauth-tokens/connection resource")
             .isNotNull();
         return connectionResource;
     }
