@@ -37,11 +37,11 @@ import java.util.stream.Stream;
 import org.apache.http.Header;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.sling.extensions.oauth_client.impl.JcrUserHomeOAuthTokenStore;
 import org.apache.sling.extensions.oauth_client.impl.OidcConnectionImpl;
 import org.apache.sling.testing.clients.ClientException;
 import org.apache.sling.testing.clients.SlingClient;
 import org.apache.sling.testing.clients.SlingHttpResponse;
-import org.apache.sling.testing.clients.exceptions.TestingValidationException;
 import org.apache.sling.testing.clients.osgi.OsgiConsoleClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,6 +63,8 @@ class AuthorizationCodeFlowIT {
     private int keycloakPort;
 
     private String oidcOsgiConfigPid;
+
+    private String tokenStoreOsgiConfigPid;
 
     @BeforeEach
     @SuppressWarnings("resource")
@@ -98,17 +100,26 @@ class AuthorizationCodeFlowIT {
     }
     
     @AfterEach
-    void cleanupSlingOidcConfig() throws TestingValidationException, ClientException {
+    void cleanupOsgiConfigs() throws ClientException {
 
         // the Sling testing clients do not offer a way of listing configurations, as assigned PIDs
         // are not predictable. So instead of running deleting test configs when the test starts
         // we fall back to cleaning after, which is hopefully reliable enough
         if ( oidcOsgiConfigPid != null )
             sling.adaptTo(OsgiConsoleClient.class).deleteConfiguration(oidcOsgiConfigPid);
+        if ( tokenStoreOsgiConfigPid != null )
+            sling.adaptTo(OsgiConsoleClient.class).deleteConfiguration(tokenStoreOsgiConfigPid);
     }
 
     @Test
     void accessTokenIsPresentOnSuccessfulLogin() throws Exception {
+
+        // configure token store
+        tokenStoreOsgiConfigPid = sling.adaptTo(OsgiConsoleClient.class).editConfiguration(JcrUserHomeOAuthTokenStore.class.getName(), null,
+                Map.of(
+                        "unused", "unused"
+                )
+            );
         
         String oidcConnectionName = "keycloak";
 
@@ -122,6 +133,7 @@ class AuthorizationCodeFlowIT {
                     "scopes", "openid"
                 )
             );
+
         
         // clean up any existing tokens
         String userPath = getUserPath(sling, sling.getUser());

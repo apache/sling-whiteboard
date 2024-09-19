@@ -16,6 +16,8 @@
  */
 package org.apache.sling.extensions.oauth_client.impl;
 
+import static org.osgi.service.component.annotations.ConfigurationPolicy.REQUIRE;
+
 import java.time.ZonedDateTime;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -37,7 +39,8 @@ import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Component(service = { OAuthTokenStore.class } )
+// a config class is intentionally not defined, but a config is required to select an implementation
+@Component(configurationPolicy = REQUIRE)
 public class JcrUserHomeOAuthTokenStore implements OAuthTokenStore {
 
     private static final String PROPERTY_NAME_EXPIRES_AT = "expires_at";
