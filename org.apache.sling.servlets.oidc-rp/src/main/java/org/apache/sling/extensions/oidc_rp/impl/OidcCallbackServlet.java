@@ -38,9 +38,9 @@ import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.auth.core.AuthConstants;
+import org.apache.sling.extensions.oidc_rp.OAuthTokenStore;
+import org.apache.sling.extensions.oidc_rp.OAuthTokens;
 import org.apache.sling.extensions.oidc_rp.OidcConnection;
-import org.apache.sling.extensions.oidc_rp.OidcTokenStore;
-import org.apache.sling.extensions.oidc_rp.OidcTokens;
 import org.apache.sling.servlets.annotations.SlingServletPaths;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -74,7 +74,7 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final Map<String, OidcConnection> connections;
-    private final OidcTokenStore tokenStore;
+    private final OAuthTokenStore tokenStore;
     private final OidcProviderMetadataRegistry metadataRegistry;
 
     static String getCallbackUri(HttpServletRequest request) {
@@ -88,7 +88,7 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
     }
 
     @Activate
-    public OidcCallbackServlet(@Reference(policyOption = GREEDY) List<OidcConnection> connections, @Reference OidcTokenStore tokenStore,
+    public OidcCallbackServlet(@Reference(policyOption = GREEDY) List<OidcConnection> connections, @Reference OAuthTokenStore tokenStore,
             @Reference OidcProviderMetadataRegistry metadataRegistry) {
         this.connections = connections.stream()
                 .collect(Collectors.toMap( OidcConnection::name, Function.identity()));
@@ -105,18 +105,18 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
                 requestURL.append('?').append(request.getQueryString());
 
             AuthenticationResponse authResponse = AuthenticationResponseParser.parse(new URI(requestURL.toString()));
-            OidcStateManager stateManager = OidcStateManager.stateFor(request);
+            OAuthStateManager stateManager = OAuthStateManager.stateFor(request);
             if ( authResponse.getState() == null || !stateManager.isValidState(authResponse.getState()))
                 throw new ServletException("Failed state check");
 
             if ( response instanceof AuthenticationErrorResponse )
                 throw new ServletException(authResponse.toErrorResponse().getErrorObject().toString());
 
-            Optional<String> redirect = stateManager.getStateAttribute(authResponse.getState(), OidcStateManager.PARAMETER_NAME_REDIRECT);
+            Optional<String> redirect = stateManager.getStateAttribute(authResponse.getState(), OAuthStateManager.PARAMETER_NAME_REDIRECT);
             
             String authCode = authResponse.toSuccessResponse().getAuthorizationCode().getValue();
             
-            Optional<String> desiredConnectionName = stateManager.getStateAttribute(authResponse.getState(), OidcStateManager.PARAMETER_NAME_CONNECTION);
+            Optional<String> desiredConnectionName = stateManager.getStateAttribute(authResponse.getState(), OAuthStateManager.PARAMETER_NAME_CONNECTION);
             stateManager.unregisterState(authResponse.getState());
             if ( desiredConnectionName.isEmpty() ) {
                 logger.warn("Did not find any connection in stateManager");
@@ -157,12 +157,7 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
                 return;
             }
 
-            // TODO - additional validations for the id_token
-            // - does the 'aud' claim match the client id of our connection
-            // - nonce validation (?)
-            // - iat/exp validation (?)
-            
-            OidcTokens tokens = Converter.toApiOidcTokens(tokenResponse.getOIDCTokens());
+            OAuthTokens tokens = Converter.toSlingOAuthTokens(tokenResponse.getOIDCTokens());
             
             tokenStore.persistTokens(connection, request.getResourceResolver(), tokens);
 

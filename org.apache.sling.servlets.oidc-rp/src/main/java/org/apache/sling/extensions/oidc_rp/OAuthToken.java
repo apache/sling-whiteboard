@@ -17,22 +17,22 @@
 package org.apache.sling.extensions.oidc_rp;
 
 /**
- * Information about an OIDC token
+ * Information about an OAuth token
  * 
- * <p>This class encapsulated the known information about and OIDC token. It allows the client to
+ * <p>This class encapsulated the known information about the token. It allows the client to
  * make decisions based on the possible states.</p>
  */
-public class OidcToken {
+public class OAuthToken {
 
-    private final OidcTokenState state;
+    private final TokenState state;
     private final String value;
 
-    public OidcToken(OidcTokenState state, String value) {
+    public OAuthToken(TokenState state, String value) {
         this.state = state;
         this.value = value;
     }
 
-    public OidcTokenState getState() {
+    public TokenState getState() {
         return state;
     }
 
@@ -43,7 +43,7 @@ public class OidcToken {
      * @throws IllegalStateException in case the {@link #getState() state} is not {@code OidcTokenState#VALID}.
      */
     public String getValue() {
-        if ( state != OidcTokenState.VALID )
+        if ( state != TokenState.VALID )
             throw new IllegalStateException("Can't retrieve a token value when the token state is "  + state);
         return value;
     }

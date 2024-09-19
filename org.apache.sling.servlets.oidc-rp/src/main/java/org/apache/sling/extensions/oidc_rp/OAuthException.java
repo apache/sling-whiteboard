@@ -16,23 +16,23 @@
  */
 package org.apache.sling.extensions.oidc_rp;
 
-public class OidcException extends RuntimeException {
+public class OAuthException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
-    public OidcException() {
+    public OAuthException() {
         super();
     }
 
-    public OidcException(String message, Throwable cause) {
+    public OAuthException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public OidcException(String message) {
+    public OAuthException(String message) {
         super(message);
     }
 
-    public OidcException(Throwable cause) {
+    public OAuthException(Throwable cause) {
         super(cause);
     }
 

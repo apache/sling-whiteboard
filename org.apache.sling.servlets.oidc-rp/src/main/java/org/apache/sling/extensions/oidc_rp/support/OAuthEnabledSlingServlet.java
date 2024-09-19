@@ -25,13 +25,13 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
-import org.apache.sling.extensions.oidc_rp.OAuthUris;
+import org.apache.sling.extensions.oidc_rp.OAuthToken;
 import org.apache.sling.extensions.oidc_rp.OAuthTokenRefresher;
+import org.apache.sling.extensions.oidc_rp.OAuthTokenStore;
+import org.apache.sling.extensions.oidc_rp.OAuthTokens;
+import org.apache.sling.extensions.oidc_rp.OAuthUris;
 import org.apache.sling.extensions.oidc_rp.OidcConnection;
-import org.apache.sling.extensions.oidc_rp.OidcToken;
-import org.apache.sling.extensions.oidc_rp.OidcTokenState;
-import org.apache.sling.extensions.oidc_rp.OidcTokenStore;
-import org.apache.sling.extensions.oidc_rp.OidcTokens;
+import org.apache.sling.extensions.oidc_rp.TokenState;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,11 +44,11 @@ public abstract class OAuthEnabledSlingServlet extends SlingSafeMethodsServlet {
 
     private final OidcConnection connection;
 
-    private final OidcTokenStore tokenStore;
+    private final OAuthTokenStore tokenStore;
 
     private final OAuthTokenRefresher oidcClient;
 	
-    protected OAuthEnabledSlingServlet(OidcConnection connection, OidcTokenStore tokenStore, OAuthTokenRefresher oidcClient) {
+    protected OAuthEnabledSlingServlet(OidcConnection connection, OAuthTokenStore tokenStore, OAuthTokenRefresher oidcClient) {
         this.connection = Objects.requireNonNull(connection, "connection may not null");
         this.tokenStore = Objects.requireNonNull(tokenStore, "tokenStore may not null");
         this.oidcClient = Objects.requireNonNull(oidcClient, "oidcClient may not null");
@@ -68,7 +68,7 @@ public abstract class OAuthEnabledSlingServlet extends SlingSafeMethodsServlet {
 	    if ( logger.isDebugEnabled() )
 	        logger.debug("Configured with connection (name={}) and redirectPath={}", connection.name(), redirectPath);
 	    
-	    OidcToken tokenResponse = tokenStore.getAccessToken(connection, request.getResourceResolver());
+	    OAuthToken tokenResponse = tokenStore.getAccessToken(connection, request.getResourceResolver());
 	    
 		switch ( tokenResponse.getState() ) {
 	      case VALID:
@@ -78,13 +78,13 @@ public abstract class OAuthEnabledSlingServlet extends SlingSafeMethodsServlet {
 	        response.sendRedirect(OAuthUris.getOidcEntryPointUri(connection, request, redirectPath).toString());
 	        break;
 	      case EXPIRED:
-	        OidcToken refreshToken = tokenStore.getRefreshToken(connection, request.getResourceResolver());
-	        if ( refreshToken.getState() != OidcTokenState.VALID ) {
+	        OAuthToken refreshToken = tokenStore.getRefreshToken(connection, request.getResourceResolver());
+	        if ( refreshToken.getState() != TokenState.VALID ) {
 	          response.sendRedirect(OAuthUris.getOidcEntryPointUri(connection, request, redirectPath).toString());
 	          return;
 	        }
 	        
-	        OidcTokens oidcTokens = oidcClient.refreshTokens(connection, refreshToken.getValue());
+	        OAuthTokens oidcTokens = oidcClient.refreshTokens(connection, refreshToken.getValue());
 	        tokenStore.persistTokens(connection, request.getResourceResolver(), oidcTokens);
 	        doGetWithToken(request, response, tokenResponse);
 	        break;
@@ -96,6 +96,6 @@ public abstract class OAuthEnabledSlingServlet extends SlingSafeMethodsServlet {
 	    return request.getRequestURI();
 	}
 
-	protected abstract void doGetWithToken(@NotNull SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response, OidcToken token)
+	protected abstract void doGetWithToken(@NotNull SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response, OAuthToken token)
 	        throws ServletException, IOException;
 }

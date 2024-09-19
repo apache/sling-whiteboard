@@ -33,9 +33,9 @@ import com.nimbusds.oauth2.sdk.id.State;
  * DocumentNodeStore cluster or external state store.</p>
  *
  */
-class OidcStateManager {
+class OAuthStateManager {
 
-    private static final String SESSION_ATTRIBUTE_KEY_PREFIX = OidcStateManager.class.getName();
+    private static final String SESSION_ATTRIBUTE_KEY_PREFIX = OAuthStateManager.class.getName();
     static final String PARAMETER_NAME_REDIRECT = "redirect";
     static final String PARAMETER_NAME_CONNECTION = "connection";
 
@@ -45,12 +45,12 @@ class OidcStateManager {
 
     private final HttpServletRequest request;
 
-    private OidcStateManager(HttpServletRequest request) {
+    private OAuthStateManager(HttpServletRequest request) {
         this.request = request;
     }
 
-    static OidcStateManager stateFor(HttpServletRequest request) {
-        return new OidcStateManager(request);
+    static OAuthStateManager stateFor(HttpServletRequest request) {
+        return new OAuthStateManager(request);
     }
 
     public void registerState(State state) {

@@ -16,6 +16,6 @@
  */
 package org.apache.sling.extensions.oidc_rp;
 
-public enum OidcTokenState {
+public enum TokenState {
     VALID, EXPIRED, MISSING;
 }

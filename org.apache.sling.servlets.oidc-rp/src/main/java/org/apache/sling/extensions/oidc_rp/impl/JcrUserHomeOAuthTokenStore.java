@@ -29,18 +29,18 @@ import javax.jcr.Value;
 
 import org.apache.jackrabbit.api.security.user.User;
 import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.extensions.oidc_rp.OAuthException;
+import org.apache.sling.extensions.oidc_rp.OAuthToken;
+import org.apache.sling.extensions.oidc_rp.OAuthTokenStore;
+import org.apache.sling.extensions.oidc_rp.OAuthTokens;
 import org.apache.sling.extensions.oidc_rp.OidcConnection;
-import org.apache.sling.extensions.oidc_rp.OidcException;
-import org.apache.sling.extensions.oidc_rp.OidcToken;
-import org.apache.sling.extensions.oidc_rp.OidcTokenState;
-import org.apache.sling.extensions.oidc_rp.OidcTokenStore;
-import org.apache.sling.extensions.oidc_rp.OidcTokens;
+import org.apache.sling.extensions.oidc_rp.TokenState;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Component(service = { OidcTokenStore.class } )
-public class JcrUserHomeOidcTokenStore implements OidcTokenStore {
+@Component(service = { OAuthTokenStore.class } )
+public class JcrUserHomeOAuthTokenStore implements OAuthTokenStore {
 
     // TODO - expires_at
     private static final String PROPERTY_NAME_EXPIRES_AT = "expiresAt";
@@ -50,7 +50,7 @@ public class JcrUserHomeOidcTokenStore implements OidcTokenStore {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
-    public OidcToken getAccessToken(OidcConnection connection, ResourceResolver resolver) {
+    public OAuthToken getAccessToken(OidcConnection connection, ResourceResolver resolver) {
         try {
             User user = resolver.adaptTo(User.class);
 
@@ -61,41 +61,41 @@ public class JcrUserHomeOidcTokenStore implements OidcTokenStore {
                     logger.info("Token for {} expired at {}, marking as expired", connection.name(), expiresCal);
 
                     // refresh token is present, mark as expired
-                    return new OidcToken(OidcTokenState.EXPIRED, null);
+                    return new OAuthToken(TokenState.EXPIRED, null);
                 }
             }
 
             return getToken(connection, user, PROPERTY_NAME_ACCESS_TOKEN);
         } catch (RepositoryException e) {
-            throw new OidcException(e);
+            throw new OAuthException(e);
         }
     }
 
-    private OidcToken getToken(OidcConnection connection, User user, String propertyName) throws RepositoryException {
+    private OAuthToken getToken(OidcConnection connection, User user, String propertyName) throws RepositoryException {
 
         Value[] tokenValue = user.getProperty(propertyPath(connection, propertyName));
         if ( tokenValue == null )
-            return new OidcToken(OidcTokenState.MISSING, null);
+            return new OAuthToken(TokenState.MISSING, null);
 
         if ( tokenValue.length != 1)
-            throw new OidcException(String.format("Unexpected value count %d for token property %s" , tokenValue.length, propertyName));
+            throw new OAuthException(String.format("Unexpected value count %d for token property %s" , tokenValue.length, propertyName));
 
-        return  new OidcToken(OidcTokenState.VALID, tokenValue[0].getString());
+        return  new OAuthToken(TokenState.VALID, tokenValue[0].getString());
     }
     
     @Override
-    public OidcToken getRefreshToken(OidcConnection connection, ResourceResolver resolver) {
+    public OAuthToken getRefreshToken(OidcConnection connection, ResourceResolver resolver) {
         try {
             User user = resolver.adaptTo(User.class);
             
             return getToken(connection, user, PROPERTY_NAME_REFRESH_TOKEN);
         } catch (RepositoryException e) {
-            throw new OidcException(e);
+            throw new OAuthException(e);
         }
     }
     
     @Override
-    public void persistTokens(OidcConnection connection, ResourceResolver resolver, OidcTokens tokens) {
+    public void persistTokens(OidcConnection connection, ResourceResolver resolver, OAuthTokens tokens) {
         try {
             User currentUser = resolver.adaptTo(User.class);
             Session session = resolver.adaptTo(Session.class);
@@ -124,7 +124,7 @@ public class JcrUserHomeOidcTokenStore implements OidcTokenStore {
 
             session.save();
         } catch (RepositoryException e) {
-            throw new OidcException(e);
+            throw new OAuthException(e);
         }
     }
 

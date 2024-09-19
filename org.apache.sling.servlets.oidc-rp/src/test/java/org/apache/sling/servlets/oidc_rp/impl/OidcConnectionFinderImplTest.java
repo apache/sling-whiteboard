@@ -25,11 +25,11 @@ import javax.jcr.RepositoryException;
 import org.apache.jackrabbit.api.security.user.User;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ValueMap;
+import org.apache.sling.extensions.oidc_rp.OAuthToken;
 import org.apache.sling.extensions.oidc_rp.OidcConnection;
-import org.apache.sling.extensions.oidc_rp.OidcToken;
-import org.apache.sling.extensions.oidc_rp.OidcTokenState;
+import org.apache.sling.extensions.oidc_rp.TokenState;
 import org.apache.sling.extensions.oidc_rp.impl.Converter;
-import org.apache.sling.extensions.oidc_rp.impl.JcrUserHomeOidcTokenStore;
+import org.apache.sling.extensions.oidc_rp.impl.JcrUserHomeOAuthTokenStore;
 import org.apache.sling.jackrabbit.usermanager.impl.AuthorizableAdapterFactory;
 import org.apache.sling.testing.mock.sling.ResourceResolverType;
 import org.apache.sling.testing.mock.sling.junit5.SlingContext;
@@ -60,8 +60,8 @@ class OidcConnectionFinderImplTest {
 
         OIDCTokens tokens = new OIDCTokens(new BearerAccessToken(12), null);
 
-        JcrUserHomeOidcTokenStore connectionFinder = new JcrUserHomeOidcTokenStore();
-        connectionFinder.persistTokens(connection, context.resourceResolver(), Converter.toApiOidcTokens(tokens));
+        JcrUserHomeOAuthTokenStore connectionFinder = new JcrUserHomeOAuthTokenStore();
+        connectionFinder.persistTokens(connection, context.resourceResolver(), Converter.toSlingOAuthTokens(tokens));
 
         Resource connectionResource = getConnectionResource(connection);
 
@@ -77,8 +77,8 @@ class OidcConnectionFinderImplTest {
 
         OIDCTokens tokens = new OIDCTokens(new PlainJWT(new JWTClaimsSet.Builder().issuer("example.com").build()), new BearerAccessToken(12), null);
 
-        JcrUserHomeOidcTokenStore connectionFinder = new JcrUserHomeOidcTokenStore();
-        connectionFinder.persistTokens(connection, context.resourceResolver(), Converter.toApiOidcTokens(tokens));
+        JcrUserHomeOAuthTokenStore connectionFinder = new JcrUserHomeOAuthTokenStore();
+        connectionFinder.persistTokens(connection, context.resourceResolver(), Converter.toSlingOAuthTokens(tokens));
 
         Resource connectionResource = getConnectionResource(connection);
 
@@ -94,14 +94,14 @@ class OidcConnectionFinderImplTest {
     @Test
     void getAccessToken_missing() {
         
-        JcrUserHomeOidcTokenStore connectionFinder = new JcrUserHomeOidcTokenStore();
+        JcrUserHomeOAuthTokenStore connectionFinder = new JcrUserHomeOAuthTokenStore();
         
-        OidcToken accessToken = connectionFinder.getAccessToken(connection, context.resourceResolver());
+        OAuthToken accessToken = connectionFinder.getAccessToken(connection, context.resourceResolver());
         
         assertThat(accessToken).as("access token")
             .isNotNull()
-            .extracting( OidcToken::getState )
-            .isEqualTo( OidcTokenState.MISSING );
+            .extracting( OAuthToken::getState )
+            .isEqualTo( TokenState.MISSING );
     }
     
     @Test
@@ -109,14 +109,14 @@ class OidcConnectionFinderImplTest {
         
         OIDCTokens tokens = new OIDCTokens(new BearerAccessToken(12), null);
 
-        JcrUserHomeOidcTokenStore connectionFinder = new JcrUserHomeOidcTokenStore();
-        connectionFinder.persistTokens(connection, context.resourceResolver(), Converter.toApiOidcTokens(tokens));
+        JcrUserHomeOAuthTokenStore connectionFinder = new JcrUserHomeOAuthTokenStore();
+        connectionFinder.persistTokens(connection, context.resourceResolver(), Converter.toSlingOAuthTokens(tokens));
         
-        OidcToken accessToken = connectionFinder.getAccessToken(connection, context.resourceResolver());
+        OAuthToken accessToken = connectionFinder.getAccessToken(connection, context.resourceResolver());
         assertThat(accessToken).as("access token")
             .isNotNull()
-            .extracting( OidcToken::getState , OidcToken::getValue )
-            .containsExactly( OidcTokenState.VALID, tokens.getAccessToken().getValue() );
+            .extracting( OAuthToken::getState , OAuthToken::getValue )
+            .containsExactly( TokenState.VALID, tokens.getAccessToken().getValue() );
     }
 
     @Test
@@ -125,43 +125,43 @@ class OidcConnectionFinderImplTest {
         int lifetimeSeconds = 1;
         OIDCTokens tokens = new OIDCTokens(new BearerAccessToken(12, lifetimeSeconds, null), null);
         
-        JcrUserHomeOidcTokenStore connectionFinder = new JcrUserHomeOidcTokenStore();
-        connectionFinder.persistTokens(connection, context.resourceResolver(), Converter.toApiOidcTokens(tokens));
+        JcrUserHomeOAuthTokenStore connectionFinder = new JcrUserHomeOAuthTokenStore();
+        connectionFinder.persistTokens(connection, context.resourceResolver(), Converter.toSlingOAuthTokens(tokens));
 
         // wait for the token to expire
         Thread.sleep( TimeUnit.SECONDS.toMillis( 2 * lifetimeSeconds ) );
         
-        OidcToken accessToken = connectionFinder.getAccessToken(connection, context.resourceResolver());
+        OAuthToken accessToken = connectionFinder.getAccessToken(connection, context.resourceResolver());
         assertThat(accessToken).as("access token")
             .isNotNull()
-            .extracting( OidcToken::getState )
-            .isEqualTo( OidcTokenState.EXPIRED );
+            .extracting( OAuthToken::getState )
+            .isEqualTo( TokenState.EXPIRED );
     }
     
     @Test
     void getRefreshToken_valid() {
         OIDCTokens tokens = new OIDCTokens(new BearerAccessToken(12), new RefreshToken(12));
 
-        JcrUserHomeOidcTokenStore connectionFinder = new JcrUserHomeOidcTokenStore();
-        connectionFinder.persistTokens(connection, context.resourceResolver(), Converter.toApiOidcTokens(tokens));
+        JcrUserHomeOAuthTokenStore connectionFinder = new JcrUserHomeOAuthTokenStore();
+        connectionFinder.persistTokens(connection, context.resourceResolver(), Converter.toSlingOAuthTokens(tokens));
         
-        OidcToken refreshToken = connectionFinder.getRefreshToken(connection, context.resourceResolver());
+        OAuthToken refreshToken = connectionFinder.getRefreshToken(connection, context.resourceResolver());
         assertThat(refreshToken).as("refresh token")
             .isNotNull()
-            .extracting( OidcToken::getState , OidcToken::getValue )
-            .containsExactly( OidcTokenState.VALID, tokens.getRefreshToken().getValue() );
+            .extracting( OAuthToken::getState , OAuthToken::getValue )
+            .containsExactly( TokenState.VALID, tokens.getRefreshToken().getValue() );
     }
     
     @Test
     void getRefreshToken_missing() {
         
-        JcrUserHomeOidcTokenStore connectionFinder = new JcrUserHomeOidcTokenStore();
+        JcrUserHomeOAuthTokenStore connectionFinder = new JcrUserHomeOAuthTokenStore();
         
-        OidcToken refreshToken = connectionFinder.getRefreshToken(connection, context.resourceResolver());
+        OAuthToken refreshToken = connectionFinder.getRefreshToken(connection, context.resourceResolver());
         assertThat(refreshToken).as("refresh token")
             .isNotNull()
-            .extracting( OidcToken::getState )
-            .isEqualTo( OidcTokenState.MISSING);
+            .extracting( OAuthToken::getState )
+            .isEqualTo( TokenState.MISSING);
     }
     
     private Resource getConnectionResource(OidcConnection connection) throws RepositoryException {

@@ -30,18 +30,18 @@ import org.apache.sling.api.resource.ResourceResolver;
 // - (?) can we do without exposing the actual tokens?
 
 /**
- * Storage for OIDC Tokens
+ * Storage for OAuth Tokens
  * 
- * <p>This service allows access to storing and retrieving OIDC tokens. It is the responsibility of the caller
+ * <p>This service allows access to storing and retrieving OAuth tokens. It is the responsibility of the caller
  * to ensure that the tokens are valid.</p>
  * 
- * <p>For methods that return {@link OidcToken}, the state must be inspected before attempting to read the value.</p>
+ * <p>For methods that return {@link OAuthToken}, the state must be inspected before attempting to read the value.</p>
  */
-public interface OidcTokenStore {
+public interface OAuthTokenStore {
 
-    OidcToken getAccessToken(OidcConnection connection, ResourceResolver resolver) throws OidcException;
+    OAuthToken getAccessToken(OidcConnection connection, ResourceResolver resolver) throws OAuthException;
     
-    OidcToken getRefreshToken(OidcConnection connection, ResourceResolver resolver) throws OidcException;
+    OAuthToken getRefreshToken(OidcConnection connection, ResourceResolver resolver) throws OAuthException;
     
-    void persistTokens(OidcConnection connection, ResourceResolver resolver, OidcTokens tokens) throws OidcException;
+    void persistTokens(OidcConnection connection, ResourceResolver resolver, OAuthTokens tokens) throws OAuthException;
 }

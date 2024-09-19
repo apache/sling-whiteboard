@@ -16,8 +16,8 @@
  */
 package org.apache.sling.extensions.oidc_rp.impl;
 
-import static org.apache.sling.extensions.oidc_rp.impl.OidcStateManager.PARAMETER_NAME_CONNECTION;
-import static org.apache.sling.extensions.oidc_rp.impl.OidcStateManager.PARAMETER_NAME_REDIRECT;
+import static org.apache.sling.extensions.oidc_rp.impl.OAuthStateManager.PARAMETER_NAME_CONNECTION;
+import static org.apache.sling.extensions.oidc_rp.impl.OAuthStateManager.PARAMETER_NAME_REDIRECT;
 import static org.osgi.service.component.annotations.ReferencePolicyOption.GREEDY;
 
 import java.io.IOException;
@@ -108,7 +108,7 @@ public class OidcEntryPointServlet extends SlingAllMethodsServlet {
 
         // Generate random state string to securely pair the callback to this request
         State state = new State();
-        OidcStateManager stateManager = OidcStateManager.stateFor(request);
+        OAuthStateManager stateManager = OAuthStateManager.stateFor(request);
         stateManager.registerState(state);
         stateManager.putAttribute(state, PARAMETER_NAME_CONNECTION, connection.name());
         if ( request.getParameter(PARAMETER_NAME_REDIRECT) != null )

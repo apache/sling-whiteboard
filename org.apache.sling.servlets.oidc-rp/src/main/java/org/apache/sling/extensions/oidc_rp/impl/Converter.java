@@ -16,10 +16,12 @@
  */
 package org.apache.sling.extensions.oidc_rp.impl;
 
+import org.apache.sling.extensions.oidc_rp.OAuthTokens;
 import org.apache.sling.extensions.oidc_rp.OidcTokens;
 
 import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
 import com.nimbusds.oauth2.sdk.token.RefreshToken;
+import com.nimbusds.oauth2.sdk.token.Tokens;
 import com.nimbusds.openid.connect.sdk.token.OIDCTokens;
 
 public class Converter {
@@ -44,6 +46,22 @@ public class Converter {
         String idToken = nimbusTokens.getIDTokenString();
         
         return new OidcTokens(accessToken, expiresAt, refreshToken, idToken);
+    }
+    
+    public static OAuthTokens toSlingOAuthTokens(OIDCTokens nimbusTokens) {
+        String accessToken = nimbusTokens.getAccessToken() != null ? nimbusTokens.getAccessToken().getValue() : null;
+        long expiresAt = nimbusTokens.getAccessToken() != null ? nimbusTokens.getAccessToken().getLifetime() : 0;
+        String refreshToken = nimbusTokens.getRefreshToken() != null ? nimbusTokens.getRefreshToken().getValue() : null;
+        
+        return new OAuthTokens(accessToken, expiresAt, refreshToken);        
+    }
+    
+    public static OAuthTokens toSlingOAuthTokens(Tokens oAuthTokens) {
+        String accessToken = oAuthTokens.getAccessToken() != null ? oAuthTokens.getAccessToken().getValue() : null;
+        long expiresAt = oAuthTokens.getAccessToken() != null ? oAuthTokens.getAccessToken().getLifetime() : 0;
+        String refreshToken = oAuthTokens.getRefreshToken() != null ? oAuthTokens.getRefreshToken().getValue() : null;
+
+        return new OAuthTokens(accessToken, expiresAt, refreshToken);
     }
     
     private Converter() {

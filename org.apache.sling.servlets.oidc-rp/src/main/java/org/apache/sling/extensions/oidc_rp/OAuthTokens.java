@@ -16,17 +16,6 @@
  */
 package org.apache.sling.extensions.oidc_rp;
 
-public interface OAuthTokenRefresher {
+public record OAuthTokens(String accessToken, long expiresAt, String refreshToken) {
 
-    /**
-     * Refreshes the OAuth tokens based on the supplied refresh token
-     * 
-     * <p>It is the responsibility of the invoker to persist the returned tokens.</p> 
-     * 
-     * @param connection The connection to start the OIDC flow for
-     * @param refreshToken An existing refresh token
-     * @return OAuth tokens
-     * @throws OAuthException in case anything goes wrong
-     */
-    OAuthTokens refreshTokens(OidcConnection connection, String refreshToken) throws OAuthException;
 }

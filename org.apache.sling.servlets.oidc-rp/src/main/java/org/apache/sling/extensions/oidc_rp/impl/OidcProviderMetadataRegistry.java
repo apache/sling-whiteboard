@@ -21,7 +21,7 @@ import java.net.URI;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.apache.sling.extensions.oidc_rp.OidcException;
+import org.apache.sling.extensions.oidc_rp.OAuthException;
 import org.osgi.service.component.annotations.Component;
 
 import com.nimbusds.oauth2.sdk.GeneralException;
@@ -47,7 +47,7 @@ public class OidcProviderMetadataRegistry {
             try {
                 return OIDCProviderMetadata.resolve(new Issuer(s));
             } catch (GeneralException | IOException e) {
-                throw new OidcException(e);
+                throw new OAuthException(e);
             }
         });
     }
