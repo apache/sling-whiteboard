@@ -16,8 +16,6 @@
  */
 package org.apache.sling.extensions.oidc_rp.impl;
 
-import java.time.Instant;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -103,7 +101,7 @@ public class JcrUserHomeOAuthTokenStore implements OAuthTokenStore {
             ZonedDateTime expiry = null;
             long expiresAt = tokens.expiresAt();
             if ( expiresAt > 0 ) {
-                expiry = ZonedDateTime.ofInstant(Instant.ofEpochMilli(expiresAt), ZoneId.systemDefault());
+                expiry = ZonedDateTime.now().plusSeconds(expiresAt);
             }
 
             String accessToken = tokens.accessToken();

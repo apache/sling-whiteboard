@@ -118,6 +118,21 @@ class JcrUserHomeOAuthTokenStoreTest {
             .extracting( OAuthToken::getState , OAuthToken::getValue )
             .containsExactly( TokenState.VALID, tokens.getAccessToken().getValue() );
     }
+    
+    @Test
+    void getAccessToken_notYetExpired() throws InterruptedException {
+        
+        OIDCTokens tokens = new OIDCTokens(new BearerAccessToken(12, 3600, null), null);
+        
+        JcrUserHomeOAuthTokenStore tokenStore = new JcrUserHomeOAuthTokenStore();
+        tokenStore.persistTokens(connection, context.resourceResolver(), Converter.toSlingOAuthTokens(tokens));
+
+        OAuthToken accessToken = tokenStore.getAccessToken(connection, context.resourceResolver());
+        assertThat(accessToken).as("access token")
+            .isNotNull()
+            .extracting( OAuthToken::getState )
+            .isEqualTo( TokenState.VALID);
+    }    
 
     @Test
     void getAccessToken_expired() throws InterruptedException {
