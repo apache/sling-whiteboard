@@ -3,14 +3,20 @@
 > **Warning**
 > This bundle is under development, do not use in production.
 
-This bundle adds support for Sling-based applications to function as a
-[Open ID connect](https://openid.net/developers/how-connect-works/) relying parties or OAuth 2.0 clients. 
-Its main objective is to simplify access to user and access tokens in a secure manner. It currently supports
-the OIDC Authentication Code flow.
+This bundle adds support for Sling-based applications to function as an OAuth 2.0 client 
+([RFC 6749](https://datatracker.ietf.org/doc/html/rfc6749)) and implements the basis for being an 
+[Open ID connect](https://openid.net/developers/how-connect-works/) relying party.
+
+Its main objective is to simplify access to id and access tokens in a secure manner. It currently supports
+the authentication code flow based on OIDC entry points. Support for OAuth 2.0 is possible and planned.
 
 ## Usage
 
-The bundle offers the following entry points
+### High-level APIs
+
+The bundle exposes an abstract `OAuthEnabledSlingServlet` that contains the boilerplate code needed
+to obtain a valid OAuth 2 access token.
+
 
 - an `OidcClient` service that communicates with the remote Open ID connect provider
 - a `TokenStore` service that allows storage and retrieval of persisted tokens.
@@ -19,39 +25,35 @@ Basic usage is as follows
 
 ```java
 
-import org.apache.sling.extensions.oidc_rp.*;
+import org.apache.sling.extensions.oauth_client.*;
 
 @Component(service = { Servlet.class })
 @SlingServletPaths(value = "/bin/myservlet")
-public class MySlingServlet {
+public class MySlingServlet extends OAuthEnabledSlingServlet {
 
-  @Reference private OidcTokenStore tokenStore;
-  @Reference private OidcClient oidcClient;
-
-  public void accessRemoteResource(SlingHttpServletRequest request, SlingHttpServletResponse response) {
-    OidcConnection connection = getConnection();
-    OidcToken tokenResponse = tokenStore.getAccessToken(connection, request.getResourceResolver());
-    
-    switch ( tokenResponse.getState() ) {
-      case VALID:
-        doStuffWithToken(tokenResponse.getValue());
-        break;
-      case MISSING:
-        response.sendRedirect(oidcClient.getOidcEntryPointUri(connection, request, "/bin/myservlet").toString());
-        break;
-      case EXPIRED:
-        OidcToken refreshToken = tokenStore.getRefreshToken(connection, request.getResourceResolver());
-        if ( refreshToken.getState() != OidcTokenState.VALID )
-          response.sendRedirect(oidcClient.getOidcEntryPointUri(connection, request, "/bin/myservlet").toString());
-        
-        OidcTokens oidcTokens = oidcClient.refreshTokens(connection, refreshToken.getValue());
-        tokenStore.persistTokens(connection, request.getResourceResolver(), oidcTokens);
-        doStuffWithToken(tokenResponse.getValue());
-        break;
+    private final MyRemoteService svc;
+   
+    @Activate
+    public MySlingServlet(@Reference OidcConnection connection, 
+        @Reference OAuthTokenStore tokenStore,
+        @Reference OAuthTokenRefresher oidcClient,
+        @Reference MyRemoteService svc) {
+        super(connection, tokenStore, oidcClient);
+        this.svc = svc;
     }
-  }
+
+    @Override
+    protected void doGetWithToken(@NotNull SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response,
+            OAuthToken token) throws IOException, ServletException {
+
+        this.csv.query("my-query", token.getValue()).writeResponseTo(response.getOutputStream());
+    }
 }
 ```
+
+### Low-level APIs
+
+TODO
 
 ### Client registration
 
@@ -87,16 +89,6 @@ At this point, the OIDC process can be kicked of by navigating to http://localho
 
 The tokens are stored under the user's home, under the `oidc-tokens/$PROVIDER_NAME` node.
 
-
-## Whiteboard graduation TODO 
-
-- allow use of refresh tokens
-- extract the token exchange code from the OidcCallbackServlet and move it to the OauthClientImpl
-- provide a sample content package
-- review security best practices
-- investigate whether the OIDC entry point servlet is really needed
-
-
 ## Local development setup
 
 ### tl;dr
@@ -115,8 +107,8 @@ $ curl -u admin:admin -X POST -d "apply=true" -d "propertylist=name,baseUrl,clie
     -d "clientId=oidc-test"\
     -d "clientSecret=$CLIENT_SECRET" \
     -d "scopes=openid" \
-    -d "factoryPid=org.apache.sling.extensions.oidc_rp.impl.OidcConnectionImpl" \
-    http://localhost:8080/system/console/configMgr/org.apache.sling.extensions.oidc_rp.impl.OidcConnectionImpl~keycloak-dev
+    -d "factoryPid=org.apache.sling.extensions.oauth_client.impl.OidcConnectionImpl" \
+    http://localhost:8080/system/console/configMgr/org.apache.sling.extensions.oauth_client.impl.OidcConnectionImpl~keycloak-dev
 ```
 
 Now you can 

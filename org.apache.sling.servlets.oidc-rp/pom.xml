@@ -26,10 +26,10 @@
         <relativePath/>
     </parent>
 
-	<artifactId>org.apache.sling.extensions.oidc-rp</artifactId>
+	<artifactId>org.apache.sling.extensions.oauth-client</artifactId>
 	<version>0.1-SNAPSHOT</version>
 
-	<name>Apache Sling Extensions OpenID Connect and OAuth 2.0 support</name>
+	<name>Apache Sling Extensions OAuth 2.0 client with OIDC support</name>
 
     <properties>
         <sling.java.version>17</sling.java.version>

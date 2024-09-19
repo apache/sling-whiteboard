@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.extensions.oidc_rp.impl;
+package org.apache.sling.extensions.oauth_client.impl;
 
-import org.apache.sling.extensions.oidc_rp.OidcConnection;
+import org.apache.sling.extensions.oauth_client.OidcConnection;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.metatype.annotations.AttributeDefinition;

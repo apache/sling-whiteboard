@@ -27,9 +27,9 @@ import java.util.Objects;
 
 import javax.servlet.ServletException;
 
-import org.apache.sling.extensions.oidc_rp.OidcConnection;
-import org.apache.sling.extensions.oidc_rp.impl.OidcEntryPointServlet;
-import org.apache.sling.extensions.oidc_rp.impl.OidcProviderMetadataRegistry;
+import org.apache.sling.extensions.oauth_client.OidcConnection;
+import org.apache.sling.extensions.oauth_client.impl.OidcEntryPointServlet;
+import org.apache.sling.extensions.oauth_client.impl.OidcProviderMetadataRegistry;
 import org.apache.sling.testing.mock.sling.junit5.SlingContext;
 import org.apache.sling.testing.mock.sling.junit5.SlingContextExtension;
 import org.apache.sling.testing.mock.sling.servlet.MockSlingHttpServletResponse;

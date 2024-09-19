@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.extensions.oidc_rp.impl;
+package org.apache.sling.extensions.oauth_client.impl;
 
-import org.apache.sling.extensions.oidc_rp.OAuthTokens;
-import org.apache.sling.extensions.oidc_rp.OidcTokens;
+import org.apache.sling.extensions.oauth_client.OAuthTokens;
+import org.apache.sling.extensions.oauth_client.OidcTokens;
 
 import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
 import com.nimbusds.oauth2.sdk.token.RefreshToken;

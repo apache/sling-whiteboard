@@ -16,7 +16,7 @@
  */
 package org.apache.sling.servlets.oidc_rp.impl;
 
-import org.apache.sling.extensions.oidc_rp.OidcConnection;
+import org.apache.sling.extensions.oauth_client.OidcConnection;
 
 record MockOidcConnection(String[] scopes, String name, String clientId, String clientSecret, String baseUrl, String[] additionalAuthorizationParameters) implements OidcConnection { 
     static MockOidcConnection DEFAULT_CONNECTION = new MockOidcConnection(new String[] {"openid"}, "mock-oidc", "client-id", "client-secret", "http://example.com", new String[0]);

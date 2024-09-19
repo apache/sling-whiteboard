@@ -15,6 +15,6 @@
  * limitations under the License.
  */
 @Version("0.1.0")
-package org.apache.sling.extensions.oidc_rp.support;
+package org.apache.sling.extensions.oauth_client.support;
 
 import org.osgi.annotation.versioning.Version;

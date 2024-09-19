@@ -14,15 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.extensions.oidc_rp;
+package org.apache.sling.extensions.oauth_client;
 
-// TODO - bad name
-public interface OidcConnection {
+public record OAuthTokens(String accessToken, long expiresAt, String refreshToken) {
 
-    String name();
-    String baseUrl();
-    String clientId();
-    String clientSecret();
-    String[] scopes();
-    String[] additionalAuthorizationParameters();
 }

@@ -14,19 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.extensions.oidc_rp;
+@Version("0.1.0")
+package org.apache.sling.extensions.oauth_client;
 
-public interface OAuthTokenRefresher {
-
-    /**
-     * Refreshes the OAuth tokens based on the supplied refresh token
-     * 
-     * <p>It is the responsibility of the invoker to persist the returned tokens.</p> 
-     * 
-     * @param connection The connection to start the OIDC flow for
-     * @param refreshToken An existing refresh token
-     * @return OAuth tokens
-     * @throws OAuthException in case anything goes wrong
-     */
-    OAuthTokens refreshTokens(OidcConnection connection, String refreshToken) throws OAuthException;
-}
+import org.osgi.annotation.versioning.Version;

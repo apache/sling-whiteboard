@@ -14,7 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@Version("0.1.0")
-package org.apache.sling.extensions.oidc_rp;
+package org.apache.sling.extensions.oauth_client;
 
-import org.osgi.annotation.versioning.Version;
+public class OAuthException extends RuntimeException {
+
+    private static final long serialVersionUID = 1L;
+
+    public OAuthException() {
+        super();
+    }
+
+    public OAuthException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public OAuthException(String message) {
+        super(message);
+    }
+
+    public OAuthException(Throwable cause) {
+        super(cause);
+    }
+
+}

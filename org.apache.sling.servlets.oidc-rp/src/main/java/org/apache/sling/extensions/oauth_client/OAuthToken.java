@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.extensions.oidc_rp;
+package org.apache.sling.extensions.oauth_client;
 
 /**
  * Information about an OAuth token

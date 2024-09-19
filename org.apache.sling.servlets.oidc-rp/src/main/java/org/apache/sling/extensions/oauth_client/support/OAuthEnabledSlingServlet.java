@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.extensions.oidc_rp.support;
+package org.apache.sling.extensions.oauth_client.support;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -25,13 +25,13 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
-import org.apache.sling.extensions.oidc_rp.OAuthToken;
-import org.apache.sling.extensions.oidc_rp.OAuthTokenRefresher;
-import org.apache.sling.extensions.oidc_rp.OAuthTokenStore;
-import org.apache.sling.extensions.oidc_rp.OAuthTokens;
-import org.apache.sling.extensions.oidc_rp.OAuthUris;
-import org.apache.sling.extensions.oidc_rp.OidcConnection;
-import org.apache.sling.extensions.oidc_rp.TokenState;
+import org.apache.sling.extensions.oauth_client.OAuthToken;
+import org.apache.sling.extensions.oauth_client.OAuthTokenRefresher;
+import org.apache.sling.extensions.oauth_client.OAuthTokenStore;
+import org.apache.sling.extensions.oauth_client.OAuthTokens;
+import org.apache.sling.extensions.oauth_client.OAuthUris;
+import org.apache.sling.extensions.oauth_client.OidcConnection;
+import org.apache.sling.extensions.oauth_client.TokenState;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

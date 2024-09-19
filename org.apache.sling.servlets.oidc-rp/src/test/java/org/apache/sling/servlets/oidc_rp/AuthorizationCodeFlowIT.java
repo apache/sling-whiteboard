@@ -37,7 +37,7 @@ import java.util.stream.Stream;
 import org.apache.http.Header;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.sling.extensions.oidc_rp.impl.OidcConnectionImpl;
+import org.apache.sling.extensions.oauth_client.impl.OidcConnectionImpl;
 import org.apache.sling.testing.clients.ClientException;
 import org.apache.sling.testing.clients.SlingClient;
 import org.apache.sling.testing.clients.SlingHttpResponse;

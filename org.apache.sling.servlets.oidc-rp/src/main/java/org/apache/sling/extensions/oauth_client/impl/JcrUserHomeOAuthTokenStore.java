@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.extensions.oidc_rp.impl;
+package org.apache.sling.extensions.oauth_client.impl;
 
 import java.time.ZonedDateTime;
 import java.util.Calendar;
@@ -27,12 +27,12 @@ import javax.jcr.Value;
 
 import org.apache.jackrabbit.api.security.user.User;
 import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.extensions.oidc_rp.OAuthException;
-import org.apache.sling.extensions.oidc_rp.OAuthToken;
-import org.apache.sling.extensions.oidc_rp.OAuthTokenStore;
-import org.apache.sling.extensions.oidc_rp.OAuthTokens;
-import org.apache.sling.extensions.oidc_rp.OidcConnection;
-import org.apache.sling.extensions.oidc_rp.TokenState;
+import org.apache.sling.extensions.oauth_client.OAuthException;
+import org.apache.sling.extensions.oauth_client.OAuthToken;
+import org.apache.sling.extensions.oauth_client.OAuthTokenStore;
+import org.apache.sling.extensions.oauth_client.OAuthTokens;
+import org.apache.sling.extensions.oauth_client.OidcConnection;
+import org.apache.sling.extensions.oauth_client.TokenState;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

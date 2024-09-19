@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.extensions.oidc_rp;
+package org.apache.sling.extensions.oauth_client;
 
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.sling.api.SlingHttpServletRequest;
-import org.apache.sling.extensions.oidc_rp.impl.OidcEntryPointServlet;
+import org.apache.sling.extensions.oauth_client.impl.OidcEntryPointServlet;
 
 public abstract class OAuthUris {
 

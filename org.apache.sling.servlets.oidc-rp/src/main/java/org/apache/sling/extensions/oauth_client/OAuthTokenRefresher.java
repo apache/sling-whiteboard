@@ -14,26 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.extensions.oidc_rp;
+package org.apache.sling.extensions.oauth_client;
 
-public class OAuthException extends RuntimeException {
+public interface OAuthTokenRefresher {
 
-    private static final long serialVersionUID = 1L;
-
-    public OAuthException() {
-        super();
-    }
-
-    public OAuthException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public OAuthException(String message) {
-        super(message);
-    }
-
-    public OAuthException(Throwable cause) {
-        super(cause);
-    }
-
+    /**
+     * Refreshes the OAuth tokens based on the supplied refresh token
+     * 
+     * <p>It is the responsibility of the invoker to persist the returned tokens.</p> 
+     * 
+     * @param connection The connection to start the OIDC flow for
+     * @param refreshToken An existing refresh token
+     * @return OAuth tokens
+     * @throws OAuthException in case anything goes wrong
+     */
+    OAuthTokens refreshTokens(OidcConnection connection, String refreshToken) throws OAuthException;
 }

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.extensions.oidc_rp.impl;
+package org.apache.sling.extensions.oauth_client.impl;
 
 import static org.osgi.service.component.annotations.ReferencePolicyOption.GREEDY;
 
@@ -38,9 +38,9 @@ import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.auth.core.AuthConstants;
-import org.apache.sling.extensions.oidc_rp.OAuthTokenStore;
-import org.apache.sling.extensions.oidc_rp.OAuthTokens;
-import org.apache.sling.extensions.oidc_rp.OidcConnection;
+import org.apache.sling.extensions.oauth_client.OAuthTokenStore;
+import org.apache.sling.extensions.oauth_client.OAuthTokens;
+import org.apache.sling.extensions.oauth_client.OidcConnection;
 import org.apache.sling.servlets.annotations.SlingServletPaths;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
