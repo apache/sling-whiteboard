@@ -86,7 +86,7 @@ public abstract class OAuthEnabledSlingServlet extends SlingSafeMethodsServlet {
 	        
 	        OAuthTokens oidcTokens = oidcClient.refreshTokens(connection, refreshToken.getValue());
 	        tokenStore.persistTokens(connection, request.getResourceResolver(), oidcTokens);
-	        doGetWithToken(request, response, tokenResponse);
+	        doGetWithToken(request, response, new OAuthToken(TokenState.VALID, oidcTokens.accessToken()));
 	        break;
 	    }
 	}
