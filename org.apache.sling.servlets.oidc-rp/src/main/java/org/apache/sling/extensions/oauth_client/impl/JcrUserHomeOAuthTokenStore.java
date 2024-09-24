@@ -33,7 +33,7 @@ import org.apache.sling.extensions.oauth_client.OAuthException;
 import org.apache.sling.extensions.oauth_client.OAuthToken;
 import org.apache.sling.extensions.oauth_client.OAuthTokenStore;
 import org.apache.sling.extensions.oauth_client.OAuthTokens;
-import org.apache.sling.extensions.oauth_client.OidcConnection;
+import org.apache.sling.extensions.oauth_client.ClientConnection;
 import org.apache.sling.extensions.oauth_client.TokenState;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
@@ -50,7 +50,7 @@ public class JcrUserHomeOAuthTokenStore implements OAuthTokenStore {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
-    public OAuthToken getAccessToken(OidcConnection connection, ResourceResolver resolver) {
+    public OAuthToken getAccessToken(ClientConnection connection, ResourceResolver resolver) {
         try {
             User user = resolver.adaptTo(User.class);
 
@@ -71,7 +71,7 @@ public class JcrUserHomeOAuthTokenStore implements OAuthTokenStore {
         }
     }
 
-    private OAuthToken getToken(OidcConnection connection, User user, String propertyName) throws RepositoryException {
+    private OAuthToken getToken(ClientConnection connection, User user, String propertyName) throws RepositoryException {
 
         Value[] tokenValue = user.getProperty(propertyPath(connection, propertyName));
         if ( tokenValue == null )
@@ -84,7 +84,7 @@ public class JcrUserHomeOAuthTokenStore implements OAuthTokenStore {
     }
     
     @Override
-    public OAuthToken getRefreshToken(OidcConnection connection, ResourceResolver resolver) {
+    public OAuthToken getRefreshToken(ClientConnection connection, ResourceResolver resolver) {
         try {
             User user = resolver.adaptTo(User.class);
             
@@ -95,7 +95,7 @@ public class JcrUserHomeOAuthTokenStore implements OAuthTokenStore {
     }
     
     @Override
-    public void persistTokens(OidcConnection connection, ResourceResolver resolver, OAuthTokens tokens) {
+    public void persistTokens(ClientConnection connection, ResourceResolver resolver, OAuthTokens tokens) {
         try {
             User currentUser = resolver.adaptTo(User.class);
             Session session = resolver.adaptTo(Session.class);
@@ -128,11 +128,11 @@ public class JcrUserHomeOAuthTokenStore implements OAuthTokenStore {
         }
     }
 
-    private String propertyPath(OidcConnection connection, String propertyName) {
+    private String propertyPath(ClientConnection connection, String propertyName) {
         return nodePath(connection) + "/" + propertyName;
     }
 
-    private String nodePath(OidcConnection connection) {
+    private String nodePath(ClientConnection connection) {
         return "oauth-tokens/" + connection.name();
     }
 }

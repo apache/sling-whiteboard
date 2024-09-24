@@ -38,9 +38,9 @@ import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.auth.core.AuthConstants;
+import org.apache.sling.extensions.oauth_client.ClientConnection;
 import org.apache.sling.extensions.oauth_client.OAuthTokenStore;
 import org.apache.sling.extensions.oauth_client.OAuthTokens;
-import org.apache.sling.extensions.oauth_client.OidcConnection;
 import org.apache.sling.servlets.annotations.SlingServletPaths;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -50,17 +50,16 @@ import org.slf4j.LoggerFactory;
 
 import com.nimbusds.oauth2.sdk.AuthorizationCode;
 import com.nimbusds.oauth2.sdk.AuthorizationCodeGrant;
+import com.nimbusds.oauth2.sdk.AuthorizationResponse;
 import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.TokenErrorResponse;
 import com.nimbusds.oauth2.sdk.TokenRequest;
+import com.nimbusds.oauth2.sdk.TokenResponse;
 import com.nimbusds.oauth2.sdk.auth.ClientSecretBasic;
 import com.nimbusds.oauth2.sdk.auth.Secret;
+import com.nimbusds.oauth2.sdk.http.HTTPRequest;
+import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.id.ClientID;
-import com.nimbusds.openid.connect.sdk.AuthenticationErrorResponse;
-import com.nimbusds.openid.connect.sdk.AuthenticationResponse;
-import com.nimbusds.openid.connect.sdk.AuthenticationResponseParser;
-import com.nimbusds.openid.connect.sdk.OIDCTokenResponse;
-import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
 
 @Component(service = { Servlet.class },
     property = { AuthConstants.AUTH_REQUIREMENTS +"=" + OidcCallbackServlet.PATH }
@@ -73,9 +72,8 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
     private static final long serialVersionUID = 1L;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final Map<String, OidcConnection> connections;
+    private final Map<String, ClientConnection> connections;
     private final OAuthTokenStore tokenStore;
-    private final OidcProviderMetadataRegistry metadataRegistry;
 
     static String getCallbackUri(HttpServletRequest request) {
         String portFragment = "";
@@ -88,11 +86,9 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
     }
 
     @Activate
-    public OidcCallbackServlet(@Reference(policyOption = GREEDY) List<OidcConnection> connections, @Reference OAuthTokenStore tokenStore,
-            @Reference OidcProviderMetadataRegistry metadataRegistry) {
+    public OidcCallbackServlet(@Reference(policyOption = GREEDY) List<ClientConnection> connections, @Reference OAuthTokenStore tokenStore) {
         this.connections = connections.stream()
-                .collect(Collectors.toMap( OidcConnection::name, Function.identity()));
-        this.metadataRegistry = metadataRegistry;
+                .collect(Collectors.toMap( ClientConnection::name, Function.identity()));
         this.tokenStore = tokenStore;
     }
 
@@ -104,12 +100,13 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
             if ( request.getQueryString() != null )
                 requestURL.append('?').append(request.getQueryString());
 
-            AuthenticationResponse authResponse = AuthenticationResponseParser.parse(new URI(requestURL.toString()));
+            AuthorizationResponse authResponse = AuthorizationResponse.parse(new URI(requestURL.toString()));
+            
             OAuthStateManager stateManager = OAuthStateManager.stateFor(request);
             if ( authResponse.getState() == null || !stateManager.isValidState(authResponse.getState()))
                 throw new ServletException("Failed state check");
 
-            if ( response instanceof AuthenticationErrorResponse )
+            if ( !authResponse.indicatesSuccess() )
                 throw new ServletException(authResponse.toErrorResponse().getErrorObject().toString());
 
             Optional<String> redirect = stateManager.getStateAttribute(authResponse.getState(), OAuthStateManager.PARAMETER_NAME_REDIRECT);
@@ -123,31 +120,37 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);  
                 return;
             }
-            OidcConnection connection = connections.get(desiredConnectionName.get());
+            ClientConnection connection = connections.get(desiredConnectionName.get());
             if ( connection == null ) {
                 logger.warn("Requested unknown connection {}", desiredConnectionName.get());
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                 return;
             }
-
-            if ( connection.baseUrl() == null )
-                throw new ServletException("Misconfigured baseUrl");
             
-            ClientID clientId = new ClientID(connection.clientId());
-            Secret clientSecret = new Secret(connection.clientSecret());
+            ResolvedOAuthConnection conn = ResolvedOAuthConnection.resolve(connection);
+
+            ClientID clientId = new ClientID(conn.clientId());
+            Secret clientSecret = new Secret(conn.clientSecret());
             ClientSecretBasic clientCredentials = new ClientSecretBasic(clientId, clientSecret);
             
             AuthorizationCode code = new AuthorizationCode(authCode);
             
-            OIDCProviderMetadata providerMetadata = metadataRegistry.getProviderMetadata(connection.baseUrl());
+            URI tokenEndpoint = new URI(conn.tokenEndpoint());
             
             TokenRequest tokenRequest = new TokenRequest(
-                providerMetadata.getTokenEndpointURI(),
+                tokenEndpoint,
                 clientCredentials,
                 new AuthorizationCodeGrant(code, new URI(getCallbackUri(request)))
             );
             
-            OIDCTokenResponse tokenResponse = OIDCTokenResponse.parse(tokenRequest.toHTTPRequest().send());
+            HTTPRequest httpRequest = tokenRequest.toHTTPRequest();
+            // GitHub requires an explicitly set Accept header, otherwise the response is url encoded
+            // https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps#2-users-are-redirected-back-to-your-site-by-github
+            // see also https://bitbucket.org/connect2id/oauth-2.0-sdk-with-openid-connect-extensions/issues/107/support-application-x-www-form-urlencoded
+            httpRequest.setHeader("Accept", "application/json"); 
+            HTTPResponse httpResponse = httpRequest.send();
+            
+            TokenResponse tokenResponse = TokenResponse.parse(httpResponse);
             
             if ( !tokenResponse.indicatesSuccess() ) {
                 TokenErrorResponse errorResponse = tokenResponse.toErrorResponse();
@@ -157,7 +160,7 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
                 return;
             }
 
-            OAuthTokens tokens = Converter.toSlingOAuthTokens(tokenResponse.getOIDCTokens());
+            OAuthTokens tokens = Converter.toSlingOAuthTokens(tokenResponse.toSuccessResponse().getTokens());
             
             tokenStore.persistTokens(connection, request.getResourceResolver(), tokens);
 

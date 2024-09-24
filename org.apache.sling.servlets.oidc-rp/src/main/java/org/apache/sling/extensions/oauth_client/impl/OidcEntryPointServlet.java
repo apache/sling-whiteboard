@@ -22,7 +22,6 @@ import static org.osgi.service.component.annotations.ReferencePolicyOption.GREED
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -36,7 +35,7 @@ import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.auth.core.AuthConstants;
-import org.apache.sling.extensions.oauth_client.OidcConnection;
+import org.apache.sling.extensions.oauth_client.ClientConnection;
 import org.apache.sling.servlets.annotations.SlingServletPaths;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -44,13 +43,11 @@ import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.nimbusds.oauth2.sdk.AuthorizationRequest;
 import com.nimbusds.oauth2.sdk.ResponseType;
 import com.nimbusds.oauth2.sdk.Scope;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.id.State;
-import com.nimbusds.openid.connect.sdk.AuthenticationRequest;
-import com.nimbusds.openid.connect.sdk.Nonce;
-import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
 
 @Component(service = { Servlet.class },
     property = { AuthConstants.AUTH_REQUIREMENTS +"=" + OidcEntryPointServlet.PATH }
@@ -63,16 +60,12 @@ public class OidcEntryPointServlet extends SlingAllMethodsServlet {
     
     private final Logger logger = LoggerFactory.getLogger(getClass());
     
-    private final Map<String, OidcConnection> connections;
-
-    private final OidcProviderMetadataRegistry oidcRegistry;
+    private final Map<String, ClientConnection> connections;
 
     @Activate
-    public OidcEntryPointServlet(@Reference(policyOption = GREEDY) List<OidcConnection> connections,
-            @Reference OidcProviderMetadataRegistry oidcRegistry) {
+    public OidcEntryPointServlet(@Reference(policyOption = GREEDY) List<ClientConnection> connections) {
         this.connections = connections.stream()
-                .collect(Collectors.toMap( OidcConnection::name, Function.identity()));
-        this.oidcRegistry = oidcRegistry;
+                .collect(Collectors.toMap( ClientConnection::name, Function.identity()));
     }
 
     @Override
@@ -86,25 +79,23 @@ public class OidcEntryPointServlet extends SlingAllMethodsServlet {
             return;
         }
 
-        OidcConnection connection = connections.get(desiredConnectionName);
+        ClientConnection connection = connections.get(desiredConnectionName);
         if ( connection == null ) {
             logger.debug("Client requested unknown connection {}; known: {}", desiredConnectionName, connections.keySet());
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
-        
-        if ( connection.baseUrl() == null )
-            throw new ServletException("Misconfigured baseUrl");
             
         response.sendRedirect(getAuthenticationRequestUri(connection, request, URI.create(OidcCallbackServlet.getCallbackUri(request))).toString());
     }
     
-    private URI getAuthenticationRequestUri(OidcConnection connection, SlingHttpServletRequest request, URI redirectUri) {
-        OIDCProviderMetadata providerMetadata = oidcRegistry.getProviderMetadata(connection.baseUrl());
+    private URI getAuthenticationRequestUri(ClientConnection connection, SlingHttpServletRequest request, URI redirectUri) {
+        
+        ResolvedOAuthConnection conn = ResolvedOAuthConnection.resolve(connection);
 
         // The client ID provisioned by the OpenID provider when
         // the client was registered
-        ClientID clientID = new ClientID(connection.clientId());
+        ClientID clientID = new ClientID(conn.clientId());
 
         // Generate random state string to securely pair the callback to this request
         State state = new State();
@@ -114,20 +105,19 @@ public class OidcEntryPointServlet extends SlingAllMethodsServlet {
         if ( request.getParameter(PARAMETER_NAME_REDIRECT) != null )
             stateManager.putAttribute(state, PARAMETER_NAME_REDIRECT, request.getParameter(PARAMETER_NAME_REDIRECT));
 
-        // Generate nonce for the ID token
-        Nonce nonce = new Nonce();
+        URI authorizationEndpointUri = URI.create(conn.authorizationEndpoint());
 
         // Compose the OpenID authentication request (for the code flow)
-        AuthenticationRequest.Builder authRequestBuilder = new AuthenticationRequest.Builder(
-                new ResponseType("code"),
-                new Scope(connection.scopes()),
-                clientID, URI.create(OidcCallbackServlet.getCallbackUri(request)))
-            .endpointURI(providerMetadata.getAuthorizationEndpointURI())
-            .state(state)
-            .nonce(nonce);
+        AuthorizationRequest.Builder authRequestBuilder = new AuthorizationRequest.Builder(
+                ResponseType.CODE,
+                clientID)
+            .scope(new Scope(conn.scopes().toArray(new String[0])))
+            .endpointURI(authorizationEndpointUri)
+            .redirectionURI(redirectUri)
+            .state(state);
         
-        if ( connection.additionalAuthorizationParameters() != null ) {
-            Arrays.stream(connection.additionalAuthorizationParameters())
+        if ( conn.additionalAuthorizationParameters() != null ) {
+            conn.additionalAuthorizationParameters().stream()
                 .map( s -> s.split("=") )
                 .filter( p -> p.length == 2 )
                 .forEach( p -> authRequestBuilder.customParameter(p[0], p[1]));

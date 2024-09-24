@@ -23,10 +23,10 @@ public interface OAuthTokenRefresher {
      * 
      * <p>It is the responsibility of the invoker to persist the returned tokens.</p> 
      * 
-     * @param connection The connection to start the OIDC flow for
+     * @param connection The connection to refresh the tokens for
      * @param refreshToken An existing refresh token
      * @return OAuth tokens
      * @throws OAuthException in case anything goes wrong
      */
-    OAuthTokens refreshTokens(OidcConnection connection, String refreshToken) throws OAuthException;
+    OAuthTokens refreshTokens(ClientConnection connection, String refreshToken) throws OAuthException;
 }

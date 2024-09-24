@@ -16,8 +16,27 @@
  */
 package org.apache.sling.servlets.oidc_rp.impl;
 
-import org.apache.sling.extensions.oauth_client.OidcConnection;
+import java.util.Map;
 
-record MockOidcConnection(String[] scopes, String name, String clientId, String clientSecret, String baseUrl, String[] additionalAuthorizationParameters) implements OidcConnection { 
-    static MockOidcConnection DEFAULT_CONNECTION = new MockOidcConnection(new String[] {"openid"}, "mock-oidc", "client-id", "client-secret", "http://example.com", new String[0]);
+import org.apache.sling.extensions.oauth_client.impl.OidcConnectionImpl;
+import org.osgi.util.converter.Converters;
+
+public class MockOidcConnection extends OidcConnectionImpl {
+    static MockOidcConnection DEFAULT_CONNECTION = new MockOidcConnection(new String[] {"openid"}, "mock-oidc", "client-id", "client-secret", "https://example.com", new String[0]);
+    
+    public MockOidcConnection(String[] scopes, String name, String clientId, String clientSecret, String baseUrl,
+            String[] additionalAuthorizationParameters) {
+        super(Converters.standardConverter().convert(Map.of("name", name, "baseUrl", baseUrl, "clientId", clientId, "clientSecret", clientSecret, "scopes", scopes, "additionalAuthorizationParameters", additionalAuthorizationParameters))
+                .to(Config.class), null);
+    }
+    
+    @Override
+    public String authorizationEndpoint() {
+        return baseUrl() + "/authorize";
+    }
+    
+    @Override
+    public String tokenEndpoint() {
+        return baseUrl() + "/token";
+    }
 }

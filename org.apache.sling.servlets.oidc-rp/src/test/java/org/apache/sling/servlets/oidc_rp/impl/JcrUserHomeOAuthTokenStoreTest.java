@@ -26,7 +26,7 @@ import org.apache.jackrabbit.api.security.user.User;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.extensions.oauth_client.OAuthToken;
-import org.apache.sling.extensions.oauth_client.OidcConnection;
+import org.apache.sling.extensions.oauth_client.ClientConnection;
 import org.apache.sling.extensions.oauth_client.TokenState;
 import org.apache.sling.extensions.oauth_client.impl.Converter;
 import org.apache.sling.extensions.oauth_client.impl.JcrUserHomeOAuthTokenStore;
@@ -179,7 +179,7 @@ class JcrUserHomeOAuthTokenStoreTest {
             .isEqualTo( TokenState.MISSING);
     }
     
-    private Resource getConnectionResource(OidcConnection connection) throws RepositoryException {
+    private Resource getConnectionResource(ClientConnection connection) throws RepositoryException {
         String userPath = context.resourceResolver().adaptTo(User.class).getPath();
         Resource userHomeResource = context.resourceResolver().getResource(userPath);
         Resource oidcTokensResource = userHomeResource.getChild("oauth-tokens");

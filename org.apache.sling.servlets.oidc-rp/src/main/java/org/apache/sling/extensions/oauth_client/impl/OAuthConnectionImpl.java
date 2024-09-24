@@ -19,7 +19,6 @@ package org.apache.sling.extensions.oauth_client.impl;
 import org.apache.sling.extensions.oauth_client.ClientConnection;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.AttributeType;
 import org.osgi.service.metatype.annotations.Designate;
@@ -27,28 +26,27 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
 // TODO - bad name
 @Component
-@Designate(ocd = OidcConnectionImpl.Config.class, factory = true)
-public class OidcConnectionImpl implements ClientConnection {
+@Designate(ocd = OAuthConnectionImpl.Config.class, factory = true)
+public class OAuthConnectionImpl implements ClientConnection {
 
-    @ObjectClassDefinition(name = "OpenID Connect connection details")
+    @ObjectClassDefinition(name = "OAuth connection details")
     public @interface Config {
         String name();
-        String baseUrl();
+        String authorizationEndpoint();
+        String tokenEndpoint();
         String clientId();
         @AttributeDefinition(type = AttributeType.PASSWORD) String clientSecret();
         String[] scopes();
         String[] additionalAuthorizationParameters();
         
-        String webconsole_configurationFactory_nameHint() default "Name: {name}, base URL: {baseUrl}, clientId: {clientId}";
+        String webconsole_configurationFactory_nameHint() default "Name: {name}, auth endpoint: {authorizationEndpoint}, clientId: {clientId}";
     }
 
     private final Config cfg;
-    private final OidcProviderMetadataRegistry metadataRegistry;
 
     @Activate
-    public OidcConnectionImpl(Config cfg, @Reference OidcProviderMetadataRegistry metadataRegistry) {
+    public OAuthConnectionImpl(Config cfg) {
         this.cfg = cfg;
-        this.metadataRegistry = metadataRegistry;
     }
     
     @Override
@@ -56,16 +54,13 @@ public class OidcConnectionImpl implements ClientConnection {
         return cfg.name();
     }
 
-    public String baseUrl() {
-        return cfg.baseUrl();
-    }
 
     public String authorizationEndpoint() {
-        return metadataRegistry.getAuthorizationEndpoint(cfg.baseUrl()).toString();
+        return cfg.authorizationEndpoint();
     }
     
     public String tokenEndpoint() {
-        return metadataRegistry.getTokenEndpoint(cfg.baseUrl()).toString();
+        return cfg.tokenEndpoint();
     }
     
     public String clientId() {

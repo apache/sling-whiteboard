@@ -16,13 +16,10 @@
  */
 package org.apache.sling.extensions.oauth_client;
 
-// TODO - bad name
-public interface OidcConnection {
+/**
+ * Identifies an OAuth or OIDC connection
+ */
+public interface ClientConnection {
 
     String name();
-    String baseUrl();
-    String clientId();
-    String clientSecret();
-    String[] scopes();
-    String[] additionalAuthorizationParameters();
 }

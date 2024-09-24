@@ -30,7 +30,7 @@ import org.apache.sling.extensions.oauth_client.OAuthTokenRefresher;
 import org.apache.sling.extensions.oauth_client.OAuthTokenStore;
 import org.apache.sling.extensions.oauth_client.OAuthTokens;
 import org.apache.sling.extensions.oauth_client.OAuthUris;
-import org.apache.sling.extensions.oauth_client.OidcConnection;
+import org.apache.sling.extensions.oauth_client.ClientConnection;
 import org.apache.sling.extensions.oauth_client.TokenState;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -42,13 +42,13 @@ public abstract class OAuthEnabledSlingServlet extends SlingSafeMethodsServlet {
 	
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final OidcConnection connection;
+    private final ClientConnection connection;
 
     private final OAuthTokenStore tokenStore;
 
     private final OAuthTokenRefresher oidcClient;
 	
-    protected OAuthEnabledSlingServlet(OidcConnection connection, OAuthTokenStore tokenStore, OAuthTokenRefresher oidcClient) {
+    protected OAuthEnabledSlingServlet(ClientConnection connection, OAuthTokenStore tokenStore, OAuthTokenRefresher oidcClient) {
         this.connection = Objects.requireNonNull(connection, "connection may not null");
         this.tokenStore = Objects.requireNonNull(tokenStore, "tokenStore may not null");
         this.oidcClient = Objects.requireNonNull(oidcClient, "oidcClient may not null");

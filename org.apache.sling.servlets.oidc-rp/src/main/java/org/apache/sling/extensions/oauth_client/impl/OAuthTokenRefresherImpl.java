@@ -19,13 +19,11 @@ package org.apache.sling.extensions.oauth_client.impl;
 import java.io.IOException;
 import java.net.URI;
 
+import org.apache.sling.extensions.oauth_client.ClientConnection;
 import org.apache.sling.extensions.oauth_client.OAuthException;
 import org.apache.sling.extensions.oauth_client.OAuthTokenRefresher;
 import org.apache.sling.extensions.oauth_client.OAuthTokens;
-import org.apache.sling.extensions.oauth_client.OidcConnection;
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 import com.nimbusds.oauth2.sdk.AccessTokenResponse;
 import com.nimbusds.oauth2.sdk.AuthorizationGrant;
@@ -43,32 +41,27 @@ import com.nimbusds.oauth2.sdk.token.Tokens;
 @Component
 public class OAuthTokenRefresherImpl implements OAuthTokenRefresher {
 
-    private final OidcProviderMetadataRegistry providerMetadataRegistry;
-
-    @Activate
-    public OAuthTokenRefresherImpl(@Reference OidcProviderMetadataRegistry providerMetadataRegistry) {
-        this.providerMetadataRegistry = providerMetadataRegistry;
-    }
-    
     @Override
-    public OAuthTokens refreshTokens(OidcConnection connection, String refreshToken2) {
+    public OAuthTokens refreshTokens(ClientConnection connection, String refreshToken2) {
         return Converter.toSlingOAuthTokens(refreshTokensInternal(connection, refreshToken2));
     }
     
-    public Tokens refreshTokensInternal(OidcConnection connection, String refreshToken2) {
+    public Tokens refreshTokensInternal(ClientConnection connection, String refreshToken2) {
 
          try {
             // Construct the grant from the saved refresh token
              RefreshToken refreshToken = new RefreshToken(refreshToken2);
              AuthorizationGrant refreshTokenGrant = new RefreshTokenGrant(refreshToken);
+             
+             ResolvedOAuthConnection conn = ResolvedOAuthConnection.resolve(connection);
             
              // The credentials to authenticate the client at the token endpoint
-             ClientID clientID = new ClientID(connection.clientId());
-             Secret clientSecret = new Secret(connection.clientSecret());
+             ClientID clientID = new ClientID(conn.clientId());
+             Secret clientSecret = new Secret(conn.clientSecret());
              ClientAuthentication clientAuth = new ClientSecretBasic(clientID, clientSecret);
             
              // The token endpoint
-             URI tokenEndpoint = providerMetadataRegistry.getProviderMetadata(connection.baseUrl()).getTokenEndpointURI();
+             URI tokenEndpoint = URI.create(conn.tokenEndpoint());
             
              // Make the token request
              TokenRequest request = new TokenRequest(tokenEndpoint, clientAuth, refreshTokenGrant);

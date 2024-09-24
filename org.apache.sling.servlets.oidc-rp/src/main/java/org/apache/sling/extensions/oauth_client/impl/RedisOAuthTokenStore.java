@@ -23,7 +23,7 @@ import org.apache.sling.extensions.oauth_client.OAuthException;
 import org.apache.sling.extensions.oauth_client.OAuthToken;
 import org.apache.sling.extensions.oauth_client.OAuthTokenStore;
 import org.apache.sling.extensions.oauth_client.OAuthTokens;
-import org.apache.sling.extensions.oauth_client.OidcConnection;
+import org.apache.sling.extensions.oauth_client.ClientConnection;
 import org.apache.sling.extensions.oauth_client.TokenState;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -61,7 +61,7 @@ public class RedisOAuthTokenStore implements OAuthTokenStore {
     }
 
     @Override
-    public OAuthToken getAccessToken(OidcConnection connection, ResourceResolver resolver) throws OAuthException {
+    public OAuthToken getAccessToken(ClientConnection connection, ResourceResolver resolver) throws OAuthException {
         String userId = resolver.getUserID();
         
         try ( Jedis jedis = pool.getResource()) {
@@ -80,7 +80,7 @@ public class RedisOAuthTokenStore implements OAuthTokenStore {
     }
 
     @Override
-    public OAuthToken getRefreshToken(OidcConnection connection, ResourceResolver resolver) throws OAuthException {
+    public OAuthToken getRefreshToken(ClientConnection connection, ResourceResolver resolver) throws OAuthException {
         String userId = resolver.getUserID();
         
         try (Jedis jedis = pool.getResource()) {
@@ -94,7 +94,7 @@ public class RedisOAuthTokenStore implements OAuthTokenStore {
     }
 
     @Override
-    public void persistTokens(OidcConnection connection, ResourceResolver resolver, OAuthTokens tokens)
+    public void persistTokens(ClientConnection connection, ResourceResolver resolver, OAuthTokens tokens)
             throws OAuthException {
         String userId = resolver.getUserID();
 

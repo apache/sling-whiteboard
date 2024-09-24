@@ -39,9 +39,9 @@ import org.apache.sling.api.resource.ResourceResolver;
  */
 public interface OAuthTokenStore {
 
-    OAuthToken getAccessToken(OidcConnection connection, ResourceResolver resolver) throws OAuthException;
+    OAuthToken getAccessToken(ClientConnection connection, ResourceResolver resolver) throws OAuthException;
     
-    OAuthToken getRefreshToken(OidcConnection connection, ResourceResolver resolver) throws OAuthException;
+    OAuthToken getRefreshToken(ClientConnection connection, ResourceResolver resolver) throws OAuthException;
     
-    void persistTokens(OidcConnection connection, ResourceResolver resolver, OAuthTokens tokens) throws OAuthException;
+    void persistTokens(ClientConnection connection, ResourceResolver resolver, OAuthTokens tokens) throws OAuthException;
 }
