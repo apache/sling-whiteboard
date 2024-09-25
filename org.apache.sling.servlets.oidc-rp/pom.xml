@@ -290,7 +290,7 @@
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>oauth2-oidc-sdk</artifactId>
-            <version>9.35</version>
+            <version>11.19</version>
             <scope>provided</scope>
         </dependency>
         <!-- Redis persistence support-->

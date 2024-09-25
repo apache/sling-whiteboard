@@ -64,7 +64,7 @@ public class OAuthTokenRefresherImpl implements OAuthTokenRefresher {
              URI tokenEndpoint = URI.create(conn.tokenEndpoint());
             
              // Make the token request
-             TokenRequest request = new TokenRequest(tokenEndpoint, clientAuth, refreshTokenGrant);
+             TokenRequest request = new TokenRequest.Builder(tokenEndpoint, clientAuth, refreshTokenGrant).build();
             
              AccessTokenResponse response = AccessTokenResponse.parse(request.toHTTPRequest().send());
             

@@ -1,19 +1,19 @@
 {
   "bundles": [
     {
-        "id":"com.nimbusds:oauth2-oidc-sdk:9.35",
+        "id":"com.nimbusds:oauth2-oidc-sdk:11.19.1",
         "start-order": 24
     },
     {
-        "id":"com.nimbusds:nimbus-jose-jwt:9.22",
+        "id":"com.nimbusds:nimbus-jose-jwt:9.41.1",
         "start-order": 24
     },
     {
-        "id":"com.nimbusds:content-type:2.2",
+        "id":"com.nimbusds:content-type:2.3",
         "start-order": 24
     },
     {
-       "id":"com.nimbusds:lang-tag:1.6",
+       "id":"com.nimbusds:lang-tag:1.7",
         "start-order": 24
     },
     {
@@ -21,11 +21,11 @@
         "start-order": 24
     },
     {
-        "id":"net.minidev:json-smart:2.4.8",
+        "id":"net.minidev:json-smart:2.5.1",
         "start-order": 24
     },
     {
-        "id":"net.minidev:accessors-smart:2.4.8",
+        "id":"net.minidev:accessors-smart:2.5.1",
         "start-order": 24
      },
     {

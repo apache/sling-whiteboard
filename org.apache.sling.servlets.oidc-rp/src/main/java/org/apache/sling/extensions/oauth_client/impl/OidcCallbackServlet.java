@@ -137,17 +137,17 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
             
             URI tokenEndpoint = new URI(conn.tokenEndpoint());
             
-            TokenRequest tokenRequest = new TokenRequest(
+            TokenRequest tokenRequest = new TokenRequest.Builder(
                 tokenEndpoint,
                 clientCredentials,
                 new AuthorizationCodeGrant(code, new URI(getCallbackUri(request)))
-            );
+            ).build();
             
             HTTPRequest httpRequest = tokenRequest.toHTTPRequest();
             // GitHub requires an explicitly set Accept header, otherwise the response is url encoded
             // https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps#2-users-are-redirected-back-to-your-site-by-github
             // see also https://bitbucket.org/connect2id/oauth-2.0-sdk-with-openid-connect-extensions/issues/107/support-application-x-www-form-urlencoded
-            httpRequest.setHeader("Accept", "application/json"); 
+            httpRequest.setAccept("application/json");
             HTTPResponse httpResponse = httpRequest.send();
             
             TokenResponse tokenResponse = TokenResponse.parse(httpResponse);
