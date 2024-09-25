@@ -27,7 +27,7 @@ import java.util.Objects;
 import javax.servlet.ServletException;
 
 import org.apache.sling.extensions.oauth_client.ClientConnection;
-import org.apache.sling.extensions.oauth_client.impl.OidcEntryPointServlet;
+import org.apache.sling.extensions.oauth_client.impl.OAuthEntryPointServlet;
 import org.apache.sling.testing.mock.sling.junit5.SlingContext;
 import org.apache.sling.testing.mock.sling.junit5.SlingContextExtension;
 import org.apache.sling.testing.mock.sling.servlet.MockSlingHttpServletResponse;
@@ -42,7 +42,7 @@ class OidcEntryPointServletTest {
     
     private final SlingContext context = new SlingContext();
     private List<ClientConnection> connections;
-    private OidcEntryPointServlet servlet;
+    private OAuthEntryPointServlet servlet;
     
     @BeforeEach
     void initServlet() {
@@ -50,7 +50,7 @@ class OidcEntryPointServletTest {
                 MockOidcConnection.DEFAULT_CONNECTION,
                 new MockOidcConnection(new String[] {"openid"}, MOCK_OIDC_PARAM, "client-id", "client-secret", "http://example.com", new String[] { "access_type=offline" } )
             );
-        servlet =  new OidcEntryPointServlet(connections);
+        servlet =  new OAuthEntryPointServlet(connections);
     }
     
     @Test
@@ -70,7 +70,7 @@ class OidcEntryPointServletTest {
             .hasParameter("scope", "openid")
             .hasParameter("response_type", "code")
             .hasParameter("client_id", "client-id")
-            .hasParameter("redirect_uri", "http://localhost/system/sling/oidc/callback")
+            .hasParameter("redirect_uri", "http://localhost/system/sling/oauth/callback")
             .hasParameter("state");        
     }
     

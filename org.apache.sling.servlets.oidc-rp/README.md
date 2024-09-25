@@ -59,7 +59,7 @@ TODO
 
 Client registration is specific to each provider. When registering, note the following:
 
-- the redirect URL must be set to $HOST/system/sling/oidc/callback registered. For development this is typically http://localhost:8080/system/sling/oidc/callback
+- the redirect URL must be set to $HOST/system/sling/oauth/callback registered. For development this is typically http://localhost:8080/system/sling/oauth/callback
 - write down the client id, client secret obtained from the OIDC provider
 - you may need to provide in advance the set of scopes accessible to your client
 
@@ -83,7 +83,7 @@ In addition, the following OSGi configuration must be added
 }
 ```
 
-At this point, the OIDC process can be kicked of by navigating to http://localhost:8080/system/sling/oidc/entry-point?c=provider
+At this point, the OIDC process can be kicked of by navigating to http://localhost:8080/system/sling/oauth/entry-point?c=provider
 
 ### Token storage
 
@@ -115,7 +115,7 @@ Now you can
 
 - access KeyCloak on http://localhost:8081 
 - access Sling on http://localhost:8080
-- start the OIDC login process on http://localhost:8080/system/sling/oidc/entry-point?c=keycloak-dev
+- start the OIDC login process on http://localhost:8080/system/sling/oauth/entry-point?c=keycloak-dev
 
 ### Keycloak
 
@@ -152,7 +152,7 @@ $ docker run --rm --volume $(pwd)/keycloak-data:/opt/keycloak/data -p 8081:8080 
 
 4. Configure clients
 
-- in the client details page, set the valid redirect URIs to http://localhost:8080/system/sling/oidc/callback and save
+- in the client details page, set the valid redirect URIs to http://localhost:8080/system/sling/oauth/callback and save
 - navigate to the 'Credentials' tab and copy the Client secret
 
 5. Add users

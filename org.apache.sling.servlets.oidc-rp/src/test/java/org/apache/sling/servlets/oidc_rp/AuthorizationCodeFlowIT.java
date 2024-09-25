@@ -141,7 +141,7 @@ class AuthorizationCodeFlowIT {
         sling.doGet(userPath + "/oauth-tokens/" + oidcConnectionName, 404);
         
         // kick off oidc auth
-        SlingHttpResponse entryPointResponse = sling.doGet("/system/sling/oidc/entry-point", List.of(new BasicNameValuePair("c", oidcConnectionName)), 302);
+        SlingHttpResponse entryPointResponse = sling.doGet("/system/sling/oauth/entry-point", List.of(new BasicNameValuePair("c", oidcConnectionName)), 302);
         Header locationHeader = entryPointResponse.getFirstHeader("location");
         assertThat(locationHeader.getElements()).as("Location header value from entry-point request")
             .singleElement().asString().startsWith("http://localhost:" + keycloakPort);

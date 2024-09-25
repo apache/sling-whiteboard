@@ -50,20 +50,20 @@ import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.id.State;
 
 @Component(service = { Servlet.class },
-    property = { AuthConstants.AUTH_REQUIREMENTS +"=" + OidcEntryPointServlet.PATH }
+    property = { AuthConstants.AUTH_REQUIREMENTS +"=" + OAuthEntryPointServlet.PATH }
 )
-@SlingServletPaths(OidcEntryPointServlet.PATH)
-public class OidcEntryPointServlet extends SlingAllMethodsServlet {
+@SlingServletPaths(OAuthEntryPointServlet.PATH)
+public class OAuthEntryPointServlet extends SlingAllMethodsServlet {
     private static final long serialVersionUID = 1L;
 
-    public static final String PATH = "/system/sling/oidc/entry-point"; // NOSONAR
+    public static final String PATH = "/system/sling/oauth/entry-point"; // NOSONAR
     
     private final Logger logger = LoggerFactory.getLogger(getClass());
     
     private final Map<String, ClientConnection> connections;
 
     @Activate
-    public OidcEntryPointServlet(@Reference(policyOption = GREEDY) List<ClientConnection> connections) {
+    public OAuthEntryPointServlet(@Reference(policyOption = GREEDY) List<ClientConnection> connections) {
         this.connections = connections.stream()
                 .collect(Collectors.toMap( ClientConnection::name, Function.identity()));
     }
@@ -86,7 +86,7 @@ public class OidcEntryPointServlet extends SlingAllMethodsServlet {
             return;
         }
             
-        response.sendRedirect(getAuthenticationRequestUri(connection, request, URI.create(OidcCallbackServlet.getCallbackUri(request))).toString());
+        response.sendRedirect(getAuthenticationRequestUri(connection, request, URI.create(OAuthCallbackServlet.getCallbackUri(request))).toString());
     }
     
     private URI getAuthenticationRequestUri(ClientConnection connection, SlingHttpServletRequest request, URI redirectUri) {

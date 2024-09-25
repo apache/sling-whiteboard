@@ -62,12 +62,12 @@ import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 
 @Component(service = { Servlet.class },
-    property = { AuthConstants.AUTH_REQUIREMENTS +"=" + OidcCallbackServlet.PATH }
+    property = { AuthConstants.AUTH_REQUIREMENTS +"=" + OAuthCallbackServlet.PATH }
 )
-@SlingServletPaths(OidcCallbackServlet.PATH)
-public class OidcCallbackServlet extends SlingAllMethodsServlet {
+@SlingServletPaths(OAuthCallbackServlet.PATH)
+public class OAuthCallbackServlet extends SlingAllMethodsServlet {
 
-    static final String PATH = "/system/sling/oidc/callback";
+    static final String PATH = "/system/sling/oauth/callback";
 
     private static final long serialVersionUID = 1L;
 
@@ -86,7 +86,7 @@ public class OidcCallbackServlet extends SlingAllMethodsServlet {
     }
 
     @Activate
-    public OidcCallbackServlet(@Reference(policyOption = GREEDY) List<ClientConnection> connections, @Reference OAuthTokenStore tokenStore) {
+    public OAuthCallbackServlet(@Reference(policyOption = GREEDY) List<ClientConnection> connections, @Reference OAuthTokenStore tokenStore) {
         this.connections = connections.stream()
                 .collect(Collectors.toMap( ClientConnection::name, Function.identity()));
         this.tokenStore = tokenStore;

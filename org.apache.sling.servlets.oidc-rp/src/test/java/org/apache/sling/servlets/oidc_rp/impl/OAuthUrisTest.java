@@ -39,7 +39,7 @@ class OAuthUrisTest {
             .hasScheme("http")    
             .hasHost("localhost")
             .hasNoPort()
-            .hasPath("/system/sling/oidc/entry-point")
+            .hasPath("/system/sling/oauth/entry-point")
             .hasQuery("c=mock-oidc&redirect=/foo");
     }
 
@@ -52,7 +52,7 @@ class OAuthUrisTest {
             .hasScheme("http")    
             .hasHost("localhost")
             .hasPort(8080)
-            .hasPath("/system/sling/oidc/entry-point")
+            .hasPath("/system/sling/oauth/entry-point")
             .hasQuery("c=mock-oidc");
     }
 

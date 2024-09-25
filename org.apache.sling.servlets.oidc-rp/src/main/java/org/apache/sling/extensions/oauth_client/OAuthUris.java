@@ -21,7 +21,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.sling.api.SlingHttpServletRequest;
-import org.apache.sling.extensions.oauth_client.impl.OidcEntryPointServlet;
+import org.apache.sling.extensions.oauth_client.impl.OAuthEntryPointServlet;
 
 public abstract class OAuthUris {
 
@@ -45,7 +45,7 @@ public abstract class OAuthUris {
         if ( needsExplicitPort ) {
             uri.append(':').append(request.getServerPort());
         }
-        uri.append(OidcEntryPointServlet.PATH).append("?c=").append(connection.name());
+        uri.append(OAuthEntryPointServlet.PATH).append("?c=").append(connection.name());
         if ( redirectPath != null )
             uri.append("&redirect=").append(URLEncoder.encode(redirectPath, StandardCharsets.UTF_8));
 
