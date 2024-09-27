@@ -8,7 +8,7 @@ This bundle adds support for Sling-based applications to function as an OAuth 2.
 [Open ID connect](https://openid.net/developers/how-connect-works/) relying party.
 
 Its main objective is to simplify access to id and access tokens in a secure manner. It currently supports
-the authentication code flow based on OIDC entry points. Support for OAuth 2.0 is possible and planned.
+the authentication code flow based on OIDC and OAuth 2.0 .
 
 ## Usage
 
@@ -16,10 +16,6 @@ the authentication code flow based on OIDC entry points. Support for OAuth 2.0 i
 
 The bundle exposes an abstract `OAuthEnabledSlingServlet` that contains the boilerplate code needed
 to obtain a valid OAuth 2 access token.
-
-
-- an `OidcClient` service that communicates with the remote Open ID connect provider
-- a `TokenStore` service that allows storage and retrieval of persisted tokens.
 
 Basic usage is as follows
 
@@ -65,29 +61,62 @@ Client registration is specific to each provider. When registering, note the fol
 
 Validated providers:
 
-- Google, with base URL of https://accounts.google.com , see [Google OIDC documentation](https://developers.google.com/identity/protocols/oauth2/openid-connect)
+- Google, OIDC, with base URL of https://accounts.google.com , see [Google OIDC documentation](https://developers.google.com/identity/protocols/oauth2/openid-connect)
+- GitHub, OAuth 2.0, with authorizationEndpoint https://github.com/login/oauth/authorize and tokenEndpoint https://github.com/login/oauth/access_token
 - KeyCloak ( see [#keycloak] )
 
 ### Deployment
 
 A set of dependencies required by this bundle, on top of the Sling Starter ones, is available at `src/main/features/main.json`.
-In addition, the following OSGi configuration must be added
+In addition, one of the following types of OSGi configuration must be added:
+
+#### OIDC variant
 
 ```json
-"org.apache.sling.servlets.oidc_rp.impl.OidcConnectionImpl~provider": {
+"org.apache.sling.extensions.oauth_client.impl.OidcConnectionImpl~provider": {
     "name": "provider",
-    "baseUrl": "https://.example.com",
+    "baseUrl": "https://example.com",
     "clientId": "$[secret:provider/clientId]",
     "clientSecret": "$[secret:provider/clientSecret]",
     "scopes": ["openid"]
 }
 ```
 
-At this point, the OIDC process can be kicked of by navigating to http://localhost:8080/system/sling/oauth/entry-point?c=provider
+#### OAuth variant
+
+```json
+"org.apache.sling.extensions.oauth_client.impl.OAuthConnectionImpl~github": {
+    "name": "provider",
+    "authorizationEndpoint": "https://example.com/login/oauth/authorize",
+    "tokenEndpoint": "https://example.com/login/oauth/access_token",
+    "clientId": "$[secret:provider/clientId]",
+    "clientSecret": "$[secret:provider/clientSecret]",
+    "scopes": ["user:email"]
+}
+```
+
+At this point, the OAuth process can be kicked of by navigating to http://localhost:8080/system/sling/oauth/entry-point?c=provider
 
 ### Token storage
 
-The tokens are stored under the user's home, under the `oidc-tokens/$PROVIDER_NAME` node.
+The tokens can be stored either in the JCR repository, under the user's home, or in Redis. A configuration is required to select a provider.
+
+#### JCR Storage
+
+The tokens are stored under the user's home, under the `oauth-tokens/$PROVIDER_NAME` node.
+
+```json
+"org.apache.sling.extensions.oauth_client.impl.JcrUserHomeOAuthTokenStore" : {
+}
+```
+
+#### Redis storage
+
+```json
+"org.apache.sling.extensions.oauth_client.impl.RedisOAuthTokenStore" : {
+    "redisUrl": "redis://localhost:6379"
+}
+```
 
 ## Local development setup
 
@@ -115,7 +144,7 @@ Now you can
 
 - access KeyCloak on http://localhost:8081 
 - access Sling on http://localhost:8080
-- start the OIDC login process on http://localhost:8080/system/sling/oauth/entry-point?c=keycloak-dev
+- start the login process on http://localhost:8080/system/sling/oauth/entry-point?c=keycloak-dev
 
 ### Keycloak
 
