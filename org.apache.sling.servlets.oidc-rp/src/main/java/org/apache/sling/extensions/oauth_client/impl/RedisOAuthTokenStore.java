@@ -19,11 +19,11 @@ package org.apache.sling.extensions.oauth_client.impl;
 import static org.osgi.service.component.annotations.ConfigurationPolicy.REQUIRE;
 
 import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.extensions.oauth_client.ClientConnection;
 import org.apache.sling.extensions.oauth_client.OAuthException;
 import org.apache.sling.extensions.oauth_client.OAuthToken;
 import org.apache.sling.extensions.oauth_client.OAuthTokenStore;
 import org.apache.sling.extensions.oauth_client.OAuthTokens;
-import org.apache.sling.extensions.oauth_client.ClientConnection;
 import org.apache.sling.extensions.oauth_client.TokenState;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -65,12 +65,12 @@ public class RedisOAuthTokenStore implements OAuthTokenStore {
         String userId = resolver.getUserID();
         
         try ( Jedis jedis = pool.getResource()) {
-            String accessToken = jedis.get(keyFor(userId, KEY_SEGMENT_ACCESS_TOKEN));
+            String accessToken = jedis.get(keyFor(userId, connection, KEY_SEGMENT_ACCESS_TOKEN));
             if ( accessToken != null ) {
                 return new OAuthToken(TokenState.VALID , accessToken);
             }
             
-            String refreshToken = jedis.get(keyFor(userId, KEY_SEGMENT_REFRESH_TOKEN));
+            String refreshToken = jedis.get(keyFor(userId, connection, KEY_SEGMENT_REFRESH_TOKEN));
             if ( refreshToken != null ) {
                 return new OAuthToken(TokenState.EXPIRED, null);
             }
@@ -84,7 +84,7 @@ public class RedisOAuthTokenStore implements OAuthTokenStore {
         String userId = resolver.getUserID();
         
         try (Jedis jedis = pool.getResource()) {
-            String refreshToken = jedis.get(keyFor(userId, KEY_SEGMENT_REFRESH_TOKEN));
+            String refreshToken = jedis.get(keyFor(userId, connection, KEY_SEGMENT_REFRESH_TOKEN));
             if (refreshToken != null) {
                 return new OAuthToken(TokenState.VALID, refreshToken);
             }
@@ -99,9 +99,9 @@ public class RedisOAuthTokenStore implements OAuthTokenStore {
         String userId = resolver.getUserID();
 
         try (Jedis jedis = pool.getResource()) {
-            setWithExpiry(jedis, keyFor(userId, KEY_SEGMENT_ACCESS_TOKEN), tokens.accessToken(), tokens.expiresAt() );
+            setWithExpiry(jedis, keyFor(userId, connection, KEY_SEGMENT_ACCESS_TOKEN), tokens.accessToken(), tokens.expiresAt() );
             if ( tokens.refreshToken() != null )
-                jedis.set(keyFor(userId, KEY_SEGMENT_REFRESH_TOKEN), tokens.refreshToken());
+                jedis.set(keyFor(userId, connection, KEY_SEGMENT_REFRESH_TOKEN), tokens.refreshToken());
         }
     }
     
@@ -110,7 +110,7 @@ public class RedisOAuthTokenStore implements OAuthTokenStore {
         jedis.expire(key, expiry);
     }
     
-    private String keyFor(String principal, String tokenType) {
-        return KEY_PREFIX + "." + principal + "." + tokenType;
+    private String keyFor(String principal, ClientConnection connection, String tokenType) {
+        return KEY_PREFIX + "." + principal + "." + connection.name() + "." + tokenType;
     }
 }
