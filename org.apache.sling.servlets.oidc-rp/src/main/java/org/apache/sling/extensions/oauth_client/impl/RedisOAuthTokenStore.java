@@ -107,7 +107,8 @@ public class RedisOAuthTokenStore implements OAuthTokenStore {
     
     private void setWithExpiry(Jedis jedis, String key, String value, long expiry) {
         jedis.set(key, value);
-        jedis.expire(key, expiry);
+        if ( expiry > 0 )
+            jedis.expire(key, expiry);
     }
     
     private String keyFor(String principal, ClientConnection connection, String tokenType) {
