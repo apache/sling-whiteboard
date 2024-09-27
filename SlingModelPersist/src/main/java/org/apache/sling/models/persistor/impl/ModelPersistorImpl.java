@@ -18,6 +18,7 @@
  */
 package org.apache.sling.models.persistor.impl;
 
+import com.drew.lang.annotations.NotNull;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -42,7 +43,6 @@ import org.apache.sling.models.annotations.Path;
 import org.apache.sling.models.persistor.ModelPersistor;
 import org.apache.sling.models.persistor.annotations.DirectDescendants;
 import org.apache.sling.models.persistor.impl.util.ReflectionUtils;
-import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -112,12 +112,14 @@ public class ModelPersistorImpl implements ModelPersistor {
         final ResourceTypeKey resourceType = ResourceTypeKey.fromObject(instance);
 
         // let's create the resource first
-        LOGGER.debug("Creating node at: {} of type: {}", nodePath, resourceType.primaryType);
+        LOGGER.debug("Creating node at: {} of type: {}", nodePath, resourceType.nodeType);
         boolean isUpdate = resourceResolver.getResource(nodePath) != null;
-        resource = ResourceUtil.getOrCreateResource(resourceResolver, nodePath, resourceType.primaryType, NT_UNSTRUCTURED, true);
-        if (StringUtils.isNotEmpty(resourceType.childType)) {
-            LOGGER.debug("Needs a child node, creating node at: {} of type: {}", nodePath, resourceType.childType);
-            resource = ResourceUtil.getOrCreateResource(resourceResolver, nodePath + "/" + JCR_CONTENT, resourceType.childType, NT_UNSTRUCTURED, true);
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("jcr:primaryType", resourceType.nodeType);
+
+        resource = ResourceUtil.getOrCreateResource(resourceResolver, nodePath,  properties, NT_UNSTRUCTURED, true);
+        if (resourceType.resourceType != null) {
+            resource.adaptTo(ModifiableValueMap.class).put("sling:resourceType", resourceType.resourceType);
         }
 
         if (ReflectionUtils.isArrayOrCollection(instance)) {
@@ -132,6 +134,7 @@ public class ModelPersistorImpl implements ModelPersistor {
                 fields.stream()
                         .filter(field -> ReflectionUtils.isNotTransient(field, isUpdate))
                         .filter(field -> ReflectionUtils.isSupportedType(field) || ReflectionUtils.isCollectionOfPrimitiveType(field))
+                        // TODO: Be smarter about transient fields declared with Lombok
                         .filter(f -> ReflectionUtils.hasNoTransientGetter(f.getName(), instance.getClass()))
                         .forEach(field -> persistField(r, instance, field, deepPersist));
             }
@@ -160,7 +163,9 @@ public class ModelPersistorImpl implements ModelPersistor {
                 Object value = ReflectionUtils.getStorableValue(field.get(instance));
 
                 // remove the attribute that is null, or remove in case it changes type
-                values.remove(fieldName);
+                if (!fieldName.equals("jcr:primaryType")) {
+                    values.remove(fieldName);
+                }
                 if (value != null) {
                     values.put(fieldName, value);
                 }
