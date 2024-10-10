@@ -43,6 +43,14 @@
      {
         "id": "org.json:json:20231013",
         "start-order": 24
+     },
+     {
+        "id": "org.apache.sling:org.apache.sling.commons.crypto:1.1.0",
+        "start-order": 24
+     },
+     {
+        "id": "org.apache.servicemix.bundles:org.apache.servicemix.bundles.jasypt:1.9.3_1",
+        "start-order": 24
      }
   ]
 }

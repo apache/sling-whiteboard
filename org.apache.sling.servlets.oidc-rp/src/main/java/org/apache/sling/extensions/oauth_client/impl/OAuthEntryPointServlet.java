@@ -16,8 +16,6 @@
  */
 package org.apache.sling.extensions.oauth_client.impl;
 
-import static org.apache.sling.extensions.oauth_client.impl.OAuthStateManager.PARAMETER_NAME_CONNECTION;
-import static org.apache.sling.extensions.oauth_client.impl.OAuthStateManager.PARAMETER_NAME_REDIRECT;
 import static org.osgi.service.component.annotations.ReferencePolicyOption.GREEDY;
 
 import java.io.IOException;
@@ -61,11 +59,15 @@ public class OAuthEntryPointServlet extends SlingAllMethodsServlet {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     
     private final Map<String, ClientConnection> connections;
+    private final OAuthStateManager stateManager;
+
 
     @Activate
-    public OAuthEntryPointServlet(@Reference(policyOption = GREEDY) List<ClientConnection> connections) {
+    public OAuthEntryPointServlet(@Reference(policyOption = GREEDY) List<ClientConnection> connections,
+            @Reference OAuthStateManager stateManager) {
         this.connections = connections.stream()
                 .collect(Collectors.toMap( ClientConnection::name, Function.identity()));
+        this.stateManager = stateManager;
     }
 
     @Override
@@ -96,14 +98,11 @@ public class OAuthEntryPointServlet extends SlingAllMethodsServlet {
         // The client ID provisioned by the OpenID provider when
         // the client was registered
         ClientID clientID = new ClientID(conn.clientId());
-
-        // Generate random state string to securely pair the callback to this request
-        State state = new State();
-        OAuthStateManager stateManager = OAuthStateManager.stateFor(request);
-        stateManager.registerState(state);
-        stateManager.putAttribute(state, PARAMETER_NAME_CONNECTION, connection.name());
-        if ( request.getParameter(PARAMETER_NAME_REDIRECT) != null )
-            stateManager.putAttribute(state, PARAMETER_NAME_REDIRECT, request.getParameter(PARAMETER_NAME_REDIRECT));
+        
+        String connectionName = connection.name();
+        String redirect = request.getParameter(OAuthStateManager.PARAMETER_NAME_REDIRECT);
+        
+        State state = stateManager.toNimbusState(new OAuthState(connectionName, redirect));
 
         URI authorizationEndpointUri = URI.create(conn.authorizationEndpoint());
 

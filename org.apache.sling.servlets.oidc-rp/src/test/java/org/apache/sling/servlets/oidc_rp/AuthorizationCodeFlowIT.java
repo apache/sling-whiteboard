@@ -19,6 +19,7 @@ package org.apache.sling.servlets.oidc_rp;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -26,6 +27,7 @@ import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -37,6 +39,9 @@ import java.util.stream.Stream;
 import org.apache.http.Header;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.sling.commons.crypto.internal.EnvironmentVariablePasswordProvider;
+import org.apache.sling.commons.crypto.jasypt.internal.JasyptRandomIvGeneratorRegistrar;
+import org.apache.sling.commons.crypto.jasypt.internal.JasyptStandardPbeStringCryptoService;
 import org.apache.sling.extensions.oauth_client.impl.JcrUserHomeOAuthTokenStore;
 import org.apache.sling.extensions.oauth_client.impl.OidcConnectionImpl;
 import org.apache.sling.testing.clients.ClientException;
@@ -55,6 +60,10 @@ import dasniko.testcontainers.keycloak.KeycloakContainer;
 
 class AuthorizationCodeFlowIT {
 
+    private static final String IV_GENERATOR_REGISTRAR_PID = JasyptRandomIvGeneratorRegistrar.class.getName();
+    private static final String PASSWORD_PROVIDER_PID = EnvironmentVariablePasswordProvider.class.getName();
+    private static final String CRYPTO_SERVICE_PID = JasyptStandardPbeStringCryptoService.class.getName();
+    
     private static final String OIDC_CONFIG_PID = OidcConnectionImpl.class.getName();
 
     private KeycloakContainer keycloak;
@@ -62,9 +71,8 @@ class AuthorizationCodeFlowIT {
 
     private int keycloakPort;
 
-    private String oidcOsgiConfigPid;
+    private List<String> configPidsToCleanup = new ArrayList<>();
 
-    private String tokenStoreOsgiConfigPid;
 
     @BeforeEach
     @SuppressWarnings("resource")
@@ -105,26 +113,37 @@ class AuthorizationCodeFlowIT {
         // the Sling testing clients do not offer a way of listing configurations, as assigned PIDs
         // are not predictable. So instead of running deleting test configs when the test starts
         // we fall back to cleaning after, which is hopefully reliable enough
-        if ( oidcOsgiConfigPid != null )
-            sling.adaptTo(OsgiConsoleClient.class).deleteConfiguration(oidcOsgiConfigPid);
-        if ( tokenStoreOsgiConfigPid != null )
-            sling.adaptTo(OsgiConsoleClient.class).deleteConfiguration(tokenStoreOsgiConfigPid);
+        for ( String pid : configPidsToCleanup )
+            sling.adaptTo(OsgiConsoleClient.class).deleteConfiguration(pid);
     }
 
     @Test
     void accessTokenIsPresentOnSuccessfulLogin() throws Exception {
+        
+        // configure Commons Crypto, see https://sling.apache.org/documentation/bundles/commons-crypto.html
+        configPidsToCleanup.add(sling.adaptTo(OsgiConsoleClient.class).editConfiguration(IV_GENERATOR_REGISTRAR_PID +".sling-oauth", IV_GENERATOR_REGISTRAR_PID, 
+            Map.of("algorithm", "SHA1PRNG")
+        ));
+        
+        configPidsToCleanup.add(sling.adaptTo(OsgiConsoleClient.class).editConfiguration(PASSWORD_PROVIDER_PID+".sling-oauth", PASSWORD_PROVIDER_PID,
+            Map.of("name", "IT_ENCRYPTION_PASSWORD")
+        ));
+        
+        configPidsToCleanup.add(sling.adaptTo(OsgiConsoleClient.class).editConfiguration(CRYPTO_SERVICE_PID+".sling-oauth", CRYPTO_SERVICE_PID,
+            Map.of("algorithm", "PBEWITHHMACSHA512ANDAES_256", "names", "sling-oauth")
+        ));
 
         // configure token store
-        tokenStoreOsgiConfigPid = sling.adaptTo(OsgiConsoleClient.class).editConfiguration(JcrUserHomeOAuthTokenStore.class.getName(), null,
+        configPidsToCleanup.add(sling.adaptTo(OsgiConsoleClient.class).editConfiguration(JcrUserHomeOAuthTokenStore.class.getName(), null,
                 Map.of(
                         "unused", "unused"
                 )
-            );
+            ));
         
         String oidcConnectionName = "keycloak";
 
         // configure connection to keycloak
-        oidcOsgiConfigPid = sling.adaptTo(OsgiConsoleClient.class).editConfiguration(OIDC_CONFIG_PID+ ".keycloak",OIDC_CONFIG_PID, 
+        configPidsToCleanup.add(sling.adaptTo(OsgiConsoleClient.class).editConfiguration(OIDC_CONFIG_PID+ ".keycloak",OIDC_CONFIG_PID, 
                 Map.of(
                     "name", oidcConnectionName, 
                     "baseUrl", "http://localhost:" + keycloakPort+"/realms/sling",
@@ -132,7 +151,7 @@ class AuthorizationCodeFlowIT {
                     "clientSecret", "wM2XIbxBTLJAac2rJSuHyKaoP8IWvSwJ",
                     "scopes", "openid"
                 )
-            );
+            ));
 
         
         // clean up any existing tokens
@@ -184,7 +203,7 @@ class AuthorizationCodeFlowIT {
         List<NameValuePair> params = Arrays.stream(redirectUri.getRawQuery().split("&"))
             .map( s -> {
                 var parts = s.split("=");
-                return (NameValuePair) new BasicNameValuePair(parts[0], parts[1]);
+                return (NameValuePair) new BasicNameValuePair(parts[0], URLDecoder.decode(parts[1], StandardCharsets.UTF_8));
             })
             .collect(Collectors.toList());
         sling.doGet(redirectUri.getRawPath(), params, 200);

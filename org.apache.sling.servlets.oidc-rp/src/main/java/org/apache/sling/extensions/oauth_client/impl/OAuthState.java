@@ -16,16 +16,4 @@
  */
 package org.apache.sling.extensions.oauth_client.impl;
 
-import java.util.Optional;
-
-import com.nimbusds.oauth2.sdk.id.State;
-
-public interface OAuthStateManager {
-    
-    static final String PARAMETER_NAME_REDIRECT = "redirect";
-    
-    State toNimbusState(OAuthState state);
-    
-    Optional<OAuthState> toOAuthState(State state);
-
-}
+public record OAuthState(String connectionName, String redirect) {}

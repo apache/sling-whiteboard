@@ -26,11 +26,14 @@ import java.util.Objects;
 
 import javax.servlet.ServletException;
 
+import org.apache.sling.commons.crypto.CryptoService;
 import org.apache.sling.extensions.oauth_client.ClientConnection;
+import org.apache.sling.extensions.oauth_client.impl.CryptoOAuthStateManager;
 import org.apache.sling.extensions.oauth_client.impl.OAuthEntryPointServlet;
 import org.apache.sling.testing.mock.sling.junit5.SlingContext;
 import org.apache.sling.testing.mock.sling.junit5.SlingContextExtension;
 import org.apache.sling.testing.mock.sling.servlet.MockSlingHttpServletResponse;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,7 +53,18 @@ class OidcEntryPointServletTest {
                 MockOidcConnection.DEFAULT_CONNECTION,
                 new MockOidcConnection(new String[] {"openid"}, MOCK_OIDC_PARAM, "client-id", "client-secret", "http://example.com", new String[] { "access_type=offline" } )
             );
-        servlet =  new OAuthEntryPointServlet(connections);
+        servlet =  new OAuthEntryPointServlet(connections, new CryptoOAuthStateManager(new CryptoService() {
+            
+            @Override
+            public @NotNull String encrypt(@NotNull String message) {
+                return message;
+            }
+            
+            @Override
+            public @NotNull String decrypt(@NotNull String ciphertext) {
+                return ciphertext;
+            }
+        }));
     }
     
     @Test

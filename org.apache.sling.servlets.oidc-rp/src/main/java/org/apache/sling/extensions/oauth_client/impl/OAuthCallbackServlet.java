@@ -74,6 +74,7 @@ public class OAuthCallbackServlet extends SlingAllMethodsServlet {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final Map<String, ClientConnection> connections;
     private final OAuthTokenStore tokenStore;
+    private final OAuthStateManager stateManager;
 
     static String getCallbackUri(HttpServletRequest request) {
         String portFragment = "";
@@ -86,10 +87,13 @@ public class OAuthCallbackServlet extends SlingAllMethodsServlet {
     }
 
     @Activate
-    public OAuthCallbackServlet(@Reference(policyOption = GREEDY) List<ClientConnection> connections, @Reference OAuthTokenStore tokenStore) {
+    public OAuthCallbackServlet(@Reference(policyOption = GREEDY) List<ClientConnection> connections, 
+            @Reference OAuthTokenStore tokenStore,
+            @Reference OAuthStateManager stateManager) {
         this.connections = connections.stream()
                 .collect(Collectors.toMap( ClientConnection::name, Function.identity()));
         this.tokenStore = tokenStore;
+        this.stateManager = stateManager;
     }
 
     @Override
@@ -102,27 +106,26 @@ public class OAuthCallbackServlet extends SlingAllMethodsServlet {
 
             AuthorizationResponse authResponse = AuthorizationResponse.parse(new URI(requestURL.toString()));
             
-            OAuthStateManager stateManager = OAuthStateManager.stateFor(request);
-            if ( authResponse.getState() == null || !stateManager.isValidState(authResponse.getState()))
+            Optional<OAuthState> clientState = stateManager.toOAuthState(authResponse.getState());
+            if ( !clientState.isPresent() )
                 throw new ServletException("Failed state check");
 
             if ( !authResponse.indicatesSuccess() )
                 throw new ServletException(authResponse.toErrorResponse().getErrorObject().toString());
 
-            Optional<String> redirect = stateManager.getStateAttribute(authResponse.getState(), OAuthStateManager.PARAMETER_NAME_REDIRECT);
+            Optional<String> redirect = Optional.ofNullable(clientState.get().redirect());
             
             String authCode = authResponse.toSuccessResponse().getAuthorizationCode().getValue();
             
-            Optional<String> desiredConnectionName = stateManager.getStateAttribute(authResponse.getState(), OAuthStateManager.PARAMETER_NAME_CONNECTION);
-            stateManager.unregisterState(authResponse.getState());
-            if ( desiredConnectionName.isEmpty() ) {
+            String desiredConnectionName = clientState.get().connectionName();
+            if ( desiredConnectionName == null || desiredConnectionName.isEmpty() ) {
                 logger.warn("Did not find any connection in stateManager");
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);  
                 return;
             }
-            ClientConnection connection = connections.get(desiredConnectionName.get());
+            ClientConnection connection = connections.get(desiredConnectionName);
             if ( connection == null ) {
-                logger.warn("Requested unknown connection {}", desiredConnectionName.get());
+                logger.warn("Requested unknown connection {}", desiredConnectionName);
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                 return;
             }

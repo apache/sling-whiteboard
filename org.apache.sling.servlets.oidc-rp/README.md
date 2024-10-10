@@ -68,6 +68,25 @@ Validated providers:
 ### Deployment
 
 A set of dependencies required by this bundle, on top of the Sling Starter ones, is available at `src/main/features/main.json`.
+
+Since the bundle relies on encryption to create and validate the OAuth 2.0 `state` parameter, a `CryptoService` must be configured
+
+```json
+    "org.apache.sling.commons.crypto.internal.FilePasswordProvider~oauth": {
+        "path": "secrets/encrypt/password",
+        "fix.posixNewline": true
+    },
+    "org.apache.sling.commons.crypto.jasypt.internal.JasyptRandomIvGeneratorRegistrar~oauth": {
+       "algorithm": "SHA1PRNG"
+    },
+    "org.apache.sling.commons.crypto.jasypt.internal.JasyptStandardPbeStringCryptoService~oauth": {
+       "names": [ "sling-oauth" ],
+       "algorithm": "PBEWITHHMACSHA512ANDAES_256"
+    }
+```
+
+The _sling-oauth_ names property is important since it is used to select the CryptoService used by this bundle.
+
 In addition, one of the following types of OSGi configuration must be added:
 
 #### OIDC variant
