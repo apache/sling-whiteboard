@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.servlets.oidc_rp.impl;
+package org.apache.sling.extensions.oauth_client.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -39,7 +39,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(SlingContextExtension.class)
-class OidcEntryPointServletTest {
+class OAuthEntryPointServletTest {
 
     private static final String MOCK_OIDC_PARAM = "mock-oidc-param";
     

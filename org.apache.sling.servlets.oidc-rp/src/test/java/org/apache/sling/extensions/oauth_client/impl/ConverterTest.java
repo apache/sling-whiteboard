@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sling.servlets.oidc_rp.impl;
+package org.apache.sling.extensions.oauth_client.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
