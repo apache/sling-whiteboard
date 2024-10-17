@@ -221,7 +221,7 @@ class AuthorizationCodeFlowIT {
         
         List<Header> headers = new ArrayList<>();
         headers.add(new BasicHeader("Cookie", "sling.oauth-request-key=" + oauthRequestKey));
-        sling.doGet(redirectUri.getRawPath(), params, headers, 200);
+        sling.doGet(redirectUri.getRawPath(), params, headers, 204);
         
         JsonNode keycloakToken = sling.doGetJson(userPath + "/oauth-tokens/" + oidcConnectionName,0,  200);
         String accesToken = keycloakToken.get("access_token").asText();

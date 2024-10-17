@@ -108,22 +108,31 @@ public class OAuthCallbackServlet extends SlingAllMethodsServlet {
             AuthorizationResponse authResponse = AuthorizationResponse.parse(new URI(requestURL.toString()));
             
             Optional<OAuthState> clientState = stateManager.toOAuthState(authResponse.getState());
-            if ( !clientState.isPresent() )
-                throw stateCheckFailedException();
+            if ( !clientState.isPresent() ) {
+                logger.debug("Failed state check: no state found in authorization response");
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "State check failed");
+                return;
+            }
             
-            String stateFromAuthServer = clientState.get().perRequestKey();
             Cookie stateCookie = request.getCookie(OAuthStateManager.COOKIE_NAME_REQUEST_KEY);
             if ( stateCookie == null ) {
-                throw stateCheckFailedException();
-            }
-            
-            String stateFromClient = stateCookie.getValue();
-            if ( ! stateFromAuthServer.equals(stateFromClient) ) {
-                throw stateCheckFailedException();
+                logger.debug("Failed state check: No request cookie named {} found", OAuthStateManager.COOKIE_NAME_REQUEST_KEY);
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "State check failed");
+                return;
             }
 
-            if ( !authResponse.indicatesSuccess() )
-                throw new ServletException(authResponse.toErrorResponse().getErrorObject().toString());
+            String stateFromAuthServer = clientState.get().perRequestKey();
+            String stateFromClient = stateCookie.getValue();
+            if ( ! stateFromAuthServer.equals(stateFromClient) ) {
+                logger.debug("Failed state check: request keys from client and server are not the same");
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "State check failed");
+                return;
+            }
+
+            if ( !authResponse.indicatesSuccess() ) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, authResponse.toErrorResponse().getErrorObject().toString());
+                return;
+            }
 
             Optional<String> redirect = Optional.ofNullable(clientState.get().redirect());
             
@@ -131,13 +140,13 @@ public class OAuthCallbackServlet extends SlingAllMethodsServlet {
             
             String desiredConnectionName = clientState.get().connectionName();
             if ( desiredConnectionName == null || desiredConnectionName.isEmpty() ) {
-                logger.warn("Did not find any connection in stateManager");
+                logger.warn("No connection found in clientState");
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);  
                 return;
             }
             ClientConnection connection = connections.get(desiredConnectionName);
             if ( connection == null ) {
-                logger.warn("Requested unknown connection {}", desiredConnectionName);
+                logger.debug("Requested unknown connection {}", desiredConnectionName);
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                 return;
             }
@@ -180,11 +189,7 @@ public class OAuthCallbackServlet extends SlingAllMethodsServlet {
             tokenStore.persistTokens(connection, request.getResourceResolver(), tokens);
 
             if ( redirect.isEmpty() ) {
-                response.setStatus(HttpServletResponse.SC_OK);
-                response.addHeader("Content-Type", "text/plain");
-                response.getWriter().write("OK");
-                response.getWriter().flush();
-                response.getWriter().close();
+                response.setStatus(HttpServletResponse.SC_NO_CONTENT);
             } else {
                 response.sendRedirect(URLDecoder.decode(redirect.get(), StandardCharsets.UTF_8));
             }
@@ -192,9 +197,4 @@ public class OAuthCallbackServlet extends SlingAllMethodsServlet {
             throw new ServletException(e);
         }
     }
-
-    private ServletException stateCheckFailedException() {
-        return new ServletException("Failed state check");
-    }
-
 }
