@@ -38,6 +38,10 @@ import java.util.stream.Stream;
 
 import org.apache.http.Header;
 import org.apache.http.NameValuePair;
+import org.apache.http.cookie.Cookie;
+import org.apache.http.cookie.CookieOrigin;
+import org.apache.http.impl.cookie.DefaultCookieSpec;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.sling.commons.crypto.internal.EnvironmentVariablePasswordProvider;
 import org.apache.sling.commons.crypto.jasypt.internal.JasyptRandomIvGeneratorRegistrar;
@@ -72,6 +76,7 @@ class AuthorizationCodeFlowIT {
     private int keycloakPort;
 
     private List<String> configPidsToCleanup = new ArrayList<>();
+    private int slingPort;
 
 
     @BeforeEach
@@ -94,7 +99,7 @@ class AuthorizationCodeFlowIT {
     @BeforeEach
     void initSling() throws ClientException {
 
-        int slingPort = Integer.getInteger("sling.http.port", 8080);
+        slingPort = Integer.getInteger("sling.http.port", 8080);
         sling = SlingClient.Builder.create(URI.create("http://localhost:" + slingPort), "admin", "admin").disableRedirectHandling().build();
 
         // ensure all previous connections are cleaned up
@@ -164,8 +169,15 @@ class AuthorizationCodeFlowIT {
         Header locationHeader = entryPointResponse.getFirstHeader("location");
         assertThat(locationHeader.getElements()).as("Location header value from entry-point request")
             .singleElement().asString().startsWith("http://localhost:" + keycloakPort);
-        
         String locationHeaderValue = locationHeader.getValue();
+        
+        DefaultCookieSpec cookieSpec = new DefaultCookieSpec();
+        List<Cookie> cookies = cookieSpec.parse(entryPointResponse.getFirstHeader("set-cookie"), new CookieOrigin("localhost", slingPort, "/", true));
+        Optional<Cookie> oauthCookie = cookies.stream().filter( c -> c.getName().equals("sling.oauth-request-key") )
+            .findFirst();
+       
+        assertThat(oauthCookie).as("OAuth cookie set by entry point servlet").isPresent();
+        String oauthRequestKey = oauthCookie.get().getValue();
         
         // load login form from keycloak
         HttpClient keycloak = HttpClient.newHttpClient();        
@@ -206,7 +218,10 @@ class AuthorizationCodeFlowIT {
                 return (NameValuePair) new BasicNameValuePair(parts[0], URLDecoder.decode(parts[1], StandardCharsets.UTF_8));
             })
             .collect(Collectors.toList());
-        sling.doGet(redirectUri.getRawPath(), params, 200);
+        
+        List<Header> headers = new ArrayList<>();
+        headers.add(new BasicHeader("Cookie", "oauth-cookie=" + oauthRequestKey));
+        sling.doGet(redirectUri.getRawPath(), params, headers, 200);
         
         JsonNode keycloakToken = sling.doGetJson(userPath + "/oauth-tokens/" + oidcConnectionName,0,  200);
         String accesToken = keycloakToken.get("access_token").asText();

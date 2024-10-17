@@ -46,8 +46,8 @@ class CryptoOAuthStateManagerTest {
     }
     
     static Stream<OAuthState> states() {
-        return Stream.of(new OAuthState("conn1", "redir1"), 
-                new OAuthState("conn2", null)
+        return Stream.of(new OAuthState("key1", "conn1", "redir1"), 
+                new OAuthState("key2", "conn2", null)
         );
     }
 

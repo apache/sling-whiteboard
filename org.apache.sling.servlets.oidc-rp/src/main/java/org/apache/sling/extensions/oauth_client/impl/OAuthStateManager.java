@@ -23,6 +23,7 @@ import com.nimbusds.oauth2.sdk.id.State;
 public interface OAuthStateManager {
     
     static final String PARAMETER_NAME_REDIRECT = "redirect";
+    static final String COOKIE_NAME_REQUEST_KEY = "sling.oauth-request-key";
     
     State toNimbusState(OAuthState state);
     

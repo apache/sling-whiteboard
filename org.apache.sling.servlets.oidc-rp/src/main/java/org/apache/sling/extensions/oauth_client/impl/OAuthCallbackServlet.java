@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -108,7 +109,18 @@ public class OAuthCallbackServlet extends SlingAllMethodsServlet {
             
             Optional<OAuthState> clientState = stateManager.toOAuthState(authResponse.getState());
             if ( !clientState.isPresent() )
-                throw new ServletException("Failed state check");
+                throw stateCheckFailedException();
+            
+            String stateFromAuthServer = clientState.get().perRequestKey();
+            Cookie stateCookie = request.getCookie(OAuthStateManager.COOKIE_NAME_REQUEST_KEY);
+            if ( stateCookie == null ) {
+                throw stateCheckFailedException();
+            }
+            
+            String stateFromClient = stateCookie.getValue();
+            if ( ! stateFromAuthServer.equals(stateFromClient) ) {
+                throw stateCheckFailedException();
+            }
 
             if ( !authResponse.indicatesSuccess() )
                 throw new ServletException(authResponse.toErrorResponse().getErrorObject().toString());
@@ -179,6 +191,10 @@ public class OAuthCallbackServlet extends SlingAllMethodsServlet {
         } catch (ParseException | URISyntaxException | IOException e) {
             throw new ServletException(e);
         }
+    }
+
+    private ServletException stateCheckFailedException() {
+        return new ServletException("Failed state check");
     }
 
 }

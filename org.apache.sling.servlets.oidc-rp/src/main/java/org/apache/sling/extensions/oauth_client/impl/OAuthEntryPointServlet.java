@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.sling.api.SlingHttpServletRequest;
@@ -45,6 +46,7 @@ import com.nimbusds.oauth2.sdk.AuthorizationRequest;
 import com.nimbusds.oauth2.sdk.ResponseType;
 import com.nimbusds.oauth2.sdk.Scope;
 import com.nimbusds.oauth2.sdk.id.ClientID;
+import com.nimbusds.oauth2.sdk.id.Identifier;
 import com.nimbusds.oauth2.sdk.id.State;
 
 @Component(service = { Servlet.class },
@@ -52,8 +54,10 @@ import com.nimbusds.oauth2.sdk.id.State;
 )
 @SlingServletPaths(OAuthEntryPointServlet.PATH)
 public class OAuthEntryPointServlet extends SlingAllMethodsServlet {
+
     private static final long serialVersionUID = 1L;
 
+    private static final int COOKIE_MAX_AGE_SECONDS = 60;
     public static final String PATH = "/system/sling/oauth/entry-point"; // NOSONAR
     
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -88,10 +92,12 @@ public class OAuthEntryPointServlet extends SlingAllMethodsServlet {
             return;
         }
             
-        response.sendRedirect(getAuthenticationRequestUri(connection, request, URI.create(OAuthCallbackServlet.getCallbackUri(request))).toString());
+        var redirect = getAuthenticationRequestUri(connection, request, URI.create(OAuthCallbackServlet.getCallbackUri(request)));
+        response.addCookie(redirect.cookie());
+        response.sendRedirect(redirect.uri().toString());
     }
     
-    private URI getAuthenticationRequestUri(ClientConnection connection, SlingHttpServletRequest request, URI redirectUri) {
+    private RedirectTarget getAuthenticationRequestUri(ClientConnection connection, SlingHttpServletRequest request, URI redirectUri) {
         
         ResolvedOAuthConnection conn = ResolvedOAuthConnection.resolve(connection);
 
@@ -101,8 +107,14 @@ public class OAuthEntryPointServlet extends SlingAllMethodsServlet {
         
         String connectionName = connection.name();
         String redirect = request.getParameter(OAuthStateManager.PARAMETER_NAME_REDIRECT);
+        String perRequestKey = new Identifier().getValue();
         
-        State state = stateManager.toNimbusState(new OAuthState(connectionName, redirect));
+        Cookie cookie = new Cookie(OAuthStateManager.COOKIE_NAME_REQUEST_KEY, perRequestKey);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setMaxAge(COOKIE_MAX_AGE_SECONDS);
+        
+        State state = stateManager.toNimbusState(new OAuthState(perRequestKey, connectionName, redirect));
 
         URI authorizationEndpointUri = URI.create(conn.authorizationEndpoint());
 
@@ -122,6 +134,8 @@ public class OAuthEntryPointServlet extends SlingAllMethodsServlet {
                 .forEach( p -> authRequestBuilder.customParameter(p[0], p[1]));
         }
         
-        return authRequestBuilder.build().toURI();
+        return new RedirectTarget(authRequestBuilder.build().toURI(), cookie);
     }
+    
+    record RedirectTarget(URI uri, Cookie cookie) {} 
 }

@@ -16,4 +16,4 @@
  */
 package org.apache.sling.extensions.oauth_client.impl;
 
-public record OAuthState(String connectionName, String redirect) {}
+public record OAuthState(String perRequestKey, String connectionName, String redirect) {}

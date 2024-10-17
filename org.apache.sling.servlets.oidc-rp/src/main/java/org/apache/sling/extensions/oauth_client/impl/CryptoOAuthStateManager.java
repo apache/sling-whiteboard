@@ -42,7 +42,7 @@ public class CryptoOAuthStateManager implements OAuthStateManager {
     public State toNimbusState(OAuthState state) {
         
         // Generate and encrypt state
-        String rawState = state.connectionName();
+        String rawState = state.perRequestKey() + "|" + state.connectionName();
         if ( state.redirect() != null ) {
             rawState += "|" + state.redirect();
         }
@@ -62,10 +62,10 @@ public class CryptoOAuthStateManager implements OAuthStateManager {
             String rawState = cryptoService.decrypt(encrypted);
             
             String[] parts = rawState.split("\\|");
-            if ( parts.length == 1 )
-                return Optional.of(new OAuthState(parts[0], null));
-            else if ( parts.length == 2) 
-                return Optional.of(new OAuthState(parts[0], parts[1]));
+            if ( parts.length == 2 )
+                return Optional.of(new OAuthState(parts[0], parts[1], null));
+            else if ( parts.length == 3) 
+                return Optional.of(new OAuthState(parts[0], parts[1], parts[2]));
                         
             logger.warn("Decoded state token does not contain the expected number of parts");
             return Optional.empty();
