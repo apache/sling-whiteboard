@@ -1,8 +1,8 @@
 # Apache Sling OAuth 2.0 client with OIDC support
 
 > [!WARNING]
-> This bundle is under development, do not use in production. See [todos](#todos) for a list 
-> of open items.
+> This bundle is under development, do not use in production without reviewing the
+> outstanding [todos](#todos).
 
 This bundle adds support for Sling-based applications to function as an OAuth 2.0 client 
 ([RFC 6749](https://datatracker.ietf.org/doc/html/rfc6749)) and implements the basis for being an 
