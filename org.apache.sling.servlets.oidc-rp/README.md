@@ -1,6 +1,6 @@
 # Apache Sling OAuth 2.0 client with OIDC support
 
-> **Warning**
+> [!WARNING]
 > This bundle is under development, do not use in production. See [todos](#todos) for a list 
 > of open items.
 
