@@ -1,7 +1,8 @@
 # Apache Sling OAuth 2.0 client with OIDC support
 
 > **Warning**
-> This bundle is under development, do not use in production.
+> This bundle is under development, do not use in production. See [todos](#todos) for a list 
+> of open items.
 
 This bundle adds support for Sling-based applications to function as an OAuth 2.0 client 
 ([RFC 6749](https://datatracker.ietf.org/doc/html/rfc6749)) and implements the basis for being an 
@@ -219,3 +220,15 @@ $ docker run --rm --volume $(pwd)/keycloak-data:/opt/keycloak/data -p 8081:8080 
 ```
 $ docker run --rm --volume (pwd)/keycloak-data:/opt/keycloak/data -p 8081:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin quay.io/keycloak/keycloak:20.0.3 export --realm sling --users realm_file --file /opt/keycloak/data/export/sling.json
 ```
+
+## Todos
+
+The following items should be addressed for the bundle to be able to completely support OAuth applications:
+
+- missing error handling in case of unsuccessful flows ( `error=access_denied` )
+    - clear state data cookie
+    - redirect to servlet/script with error status
+-  handle tokens that are invalid for reasons other than expiry
+    - revoked tokens
+    - tokens that expired implicitly when the expiry_time is not included in the responses
+- mark all APIs with `@ProviderType` during pre-1.0 releases to allow evolving the APIs easier
