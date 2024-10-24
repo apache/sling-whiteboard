@@ -1,0 +1,12 @@
+FROM openjdk:21-jdk-oracle
+
+WORKDIR /root
+
+RUN mkdir artifacts && mkdir atomos-config && mkdir slingfeature-tmp && mkdir /tmp/offliner
+
+COPY target/artifacts artifacts
+COPY target/atomos-config/app.substrate.jar atomos-config
+COPY target/slingfeature-tmp/feature.json slingfeature-tmp
+COPY launch-offline-bare.sh .
+
+ENTRYPOINT ["sh", "-c", "./launch-offline-bare.sh"]
