@@ -16,11 +16,11 @@
  */
 package org.apache.sling.extensions.oauth_client.impl;
 
+import static java.lang.String.format;
 import static org.osgi.service.component.annotations.ReferencePolicyOption.GREEDY;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -46,14 +46,13 @@ import org.apache.sling.servlets.annotations.SlingServletPaths;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.nimbusds.oauth2.sdk.AuthorizationCode;
 import com.nimbusds.oauth2.sdk.AuthorizationCodeGrant;
+import com.nimbusds.oauth2.sdk.AuthorizationErrorResponse;
 import com.nimbusds.oauth2.sdk.AuthorizationResponse;
+import com.nimbusds.oauth2.sdk.ErrorResponse;
 import com.nimbusds.oauth2.sdk.ParseException;
-import com.nimbusds.oauth2.sdk.TokenErrorResponse;
 import com.nimbusds.oauth2.sdk.TokenRequest;
 import com.nimbusds.oauth2.sdk.TokenResponse;
 import com.nimbusds.oauth2.sdk.auth.ClientSecretBasic;
@@ -72,7 +71,6 @@ public class OAuthCallbackServlet extends SlingAllMethodsServlet {
 
     private static final long serialVersionUID = 1L;
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
     private final Map<String, ClientConnection> connections;
     private final OAuthTokenStore tokenStore;
     private final OAuthStateManager stateManager;
@@ -85,6 +83,20 @@ public class OAuthCallbackServlet extends SlingAllMethodsServlet {
             portFragment = ":" + request.getServerPort();
 
         return request.getScheme() + "://" + request.getServerName() + portFragment + PATH;
+    }
+    
+    private static String toErrorMessage(String context, ErrorResponse error) {
+        
+        String description = error.getErrorObject().getDescription();
+        
+        StringBuilder message = new StringBuilder();
+        message.append(context)
+            .append(": ")
+            .append(error.getErrorObject().getCode());
+        if ( description != null )
+           message.append(description);
+       
+        return message.toString();
     }
 
     @Activate
@@ -101,6 +113,7 @@ public class OAuthCallbackServlet extends SlingAllMethodsServlet {
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response)
             throws ServletException, IOException {
         try {
+
             StringBuffer requestURL = request.getRequestURL();
             if ( request.getQueryString() != null )
                 requestURL.append('?').append(request.getQueryString());
@@ -108,30 +121,21 @@ public class OAuthCallbackServlet extends SlingAllMethodsServlet {
             AuthorizationResponse authResponse = AuthorizationResponse.parse(new URI(requestURL.toString()));
             
             Optional<OAuthState> clientState = stateManager.toOAuthState(authResponse.getState());
-            if ( !clientState.isPresent() ) {
-                logger.debug("Failed state check: no state found in authorization response");
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "State check failed");
-                return;
-            }
+            if ( !clientState.isPresent() ) 
+                throw new IllegalStateException("Failed state check: no state found in authorization response");
             
             Cookie stateCookie = request.getCookie(OAuthStateManager.COOKIE_NAME_REQUEST_KEY);
-            if ( stateCookie == null ) {
-                logger.debug("Failed state check: No request cookie named {} found", OAuthStateManager.COOKIE_NAME_REQUEST_KEY);
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "State check failed");
-                return;
-            }
+            if ( stateCookie == null )
+                throw new IllegalStateException(format("Failed state check: No request cookie named '%s' found", OAuthStateManager.COOKIE_NAME_REQUEST_KEY));
 
             String stateFromAuthServer = clientState.get().perRequestKey();
             String stateFromClient = stateCookie.getValue();
-            if ( ! stateFromAuthServer.equals(stateFromClient) ) {
-                logger.debug("Failed state check: request keys from client and server are not the same");
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "State check failed");
-                return;
-            }
+            if ( ! stateFromAuthServer.equals(stateFromClient) )
+                throw new IllegalStateException("Failed state check: request keys from client and server are not the same");
 
             if ( !authResponse.indicatesSuccess() ) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, authResponse.toErrorResponse().getErrorObject().toString());
-                return;
+                AuthorizationErrorResponse errorResponse = authResponse.toErrorResponse();
+                throw new OAuthCallbackException("Authentication failed", new RuntimeException(toErrorMessage("Error in authentication response", errorResponse)));
             }
 
             Optional<String> redirect = Optional.ofNullable(clientState.get().redirect());
@@ -139,17 +143,12 @@ public class OAuthCallbackServlet extends SlingAllMethodsServlet {
             String authCode = authResponse.toSuccessResponse().getAuthorizationCode().getValue();
             
             String desiredConnectionName = clientState.get().connectionName();
-            if ( desiredConnectionName == null || desiredConnectionName.isEmpty() ) {
-                logger.warn("No connection found in clientState");
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST);  
-                return;
-            }
+            if ( desiredConnectionName == null || desiredConnectionName.isEmpty() )
+                throw new IllegalArgumentException("No connection found in clientState");
+            
             ClientConnection connection = connections.get(desiredConnectionName);
-            if ( connection == null ) {
-                logger.debug("Requested unknown connection {}", desiredConnectionName);
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-                return;
-            }
+            if ( connection == null )
+                throw new IllegalArgumentException(String.format("Requested unknown connection '%s'", desiredConnectionName));
             
             ResolvedOAuthConnection conn = ResolvedOAuthConnection.resolve(connection);
 
@@ -176,13 +175,8 @@ public class OAuthCallbackServlet extends SlingAllMethodsServlet {
             
             TokenResponse tokenResponse = TokenResponse.parse(httpResponse);
             
-            if ( !tokenResponse.indicatesSuccess() ) {
-                TokenErrorResponse errorResponse = tokenResponse.toErrorResponse();
-                logger.warn("Error returned when trying to obtain access token : {}, {}", 
-                        errorResponse.getErrorObject().getCode(), errorResponse.getErrorObject().getDescription());
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-                return;
-            }
+            if ( !tokenResponse.indicatesSuccess() )
+                throw new IllegalArgumentException(toErrorMessage("Error in token response", tokenResponse.toErrorResponse()));
 
             OAuthTokens tokens = Converter.toSlingOAuthTokens(tokenResponse.toSuccessResponse().getTokens());
             
@@ -193,8 +187,17 @@ public class OAuthCallbackServlet extends SlingAllMethodsServlet {
             } else {
                 response.sendRedirect(URLDecoder.decode(redirect.get(), StandardCharsets.UTF_8));
             }
-        } catch (ParseException | URISyntaxException | IOException e) {
-            throw new ServletException(e);
+
+        } catch (IllegalStateException e) {
+            throw new OAuthCallbackException("State check failed", e);
+        } catch (IllegalArgumentException e) {
+            throw new OAuthCallbackException("Internal error", e);
+        } catch (ParseException e) {
+            throw new OAuthCallbackException("Invalid invocation", e);
+        } catch ( OAuthCallbackException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new OAuthCallbackException("Unknown error", e);
         }
     }
 }

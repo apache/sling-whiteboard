@@ -52,6 +52,22 @@ public class MySlingServlet extends OAuthEnabledSlingServlet {
 
 TODO
 
+### Error handling
+
+The top-level servlets used for the OAuth flow will throw specific subclasses of ServletException.
+These exceptions will return generic messages that can be displayed directly to the user and store
+the actual cause in nested exception so that it is logged.
+
+These exceptions are:
+
+- `org.apache.sling.extensions.oauth_client.impl.OAuthCallbackException`
+- `org.apache.sling.extensions.oauth_client.impl.OAuthEntryPointException`
+- `org.apache.sling.extensions.oauth_client.impl.OAuthFlowException` (superclass)
+
+It is recommended that applications install specific error handlers for these exceptions. See the
+[Apache Sling error handling documentation](https://sling.apache.org/documentation/the-sling-engine/errorhandling.html)
+for more details.
+
 ### Client registration
 
 Client registration is specific to each provider. When registering, note the following:
