@@ -12,7 +12,8 @@ github:
   - "INFRA"
   - "FELIX"
   - "MNG"
-  dependabot_alerts:  false
+  dependabot_alerts: false
   dependabot_updates: false
 notifications:
   jira_options: "link"
+  pullrequests_bot_sonarcloud: "commits@sling.apache.org"
