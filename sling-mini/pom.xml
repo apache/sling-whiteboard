@@ -41,7 +41,7 @@
             <plugin>
                 <groupId>org.apache.sling</groupId>
                 <artifactId>slingfeature-maven-plugin</artifactId>
-                <version>1.8.4</version>
+                <version>1.9.0</version>
                 <extensions>true</extensions>
                 <executions>
                     <execution>
@@ -162,6 +162,15 @@
                         <argument>-D</argument>
                         <argument>TARGET_DIR=${targetDir}</argument>
                     </arguments>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.rat</groupId>
+                <artifactId>apache-rat-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>native/**</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
         </plugins>
