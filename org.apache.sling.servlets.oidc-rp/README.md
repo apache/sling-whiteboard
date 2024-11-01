@@ -244,9 +244,6 @@ $ docker run --rm --volume (pwd)/keycloak-data:/opt/keycloak/data -p 8081:8080 -
 
 The following items should be addressed for the bundle to be able to completely support OAuth applications:
 
-- missing error handling in case of unsuccessful flows ( `error=access_denied` )
-    - clear state data cookie
-    - redirect to servlet/script with error status
 -  handle tokens that are invalid for reasons other than expiry
     - revoked tokens
     - tokens that expired implicitly when the expiry_time is not included in the responses
