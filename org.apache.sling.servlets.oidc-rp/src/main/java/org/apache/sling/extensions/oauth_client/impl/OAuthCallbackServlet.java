@@ -53,6 +53,7 @@ import com.nimbusds.oauth2.sdk.AuthorizationCode;
 import com.nimbusds.oauth2.sdk.AuthorizationCodeGrant;
 import com.nimbusds.oauth2.sdk.AuthorizationErrorResponse;
 import com.nimbusds.oauth2.sdk.AuthorizationResponse;
+import com.nimbusds.oauth2.sdk.ErrorObject;
 import com.nimbusds.oauth2.sdk.ErrorResponse;
 import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.TokenRequest;
@@ -91,14 +92,18 @@ public class OAuthCallbackServlet extends SlingAllMethodsServlet {
     
     private static String toErrorMessage(String context, ErrorResponse error) {
         
-        String description = error.getErrorObject().getDescription();
-        
+        ErrorObject errorObject = error.getErrorObject();
         StringBuilder message = new StringBuilder();
+        
         message.append(context)
             .append(": ")
-            .append(error.getErrorObject().getCode());
+            .append(errorObject.getCode());
+        
+        message.append(". Status code: ").append(errorObject.getHTTPStatusCode());
+        
+        String description = errorObject.getDescription();
         if ( description != null )
-           message.append(description);
+           message.append(". ").append(description);
        
         return message.toString();
     }
@@ -196,7 +201,7 @@ public class OAuthCallbackServlet extends SlingAllMethodsServlet {
             TokenResponse tokenResponse = TokenResponse.parse(httpResponse);
             
             if ( !tokenResponse.indicatesSuccess() )
-                throw new IllegalArgumentException(toErrorMessage("Error in token response", tokenResponse.toErrorResponse()));
+                throw new OAuthCallbackException("Token exchange error", new RuntimeException(toErrorMessage("Error in token response", tokenResponse.toErrorResponse())));
 
             OAuthTokens tokens = Converter.toSlingOAuthTokens(tokenResponse.toSuccessResponse().getTokens());
             
