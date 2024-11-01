@@ -251,3 +251,9 @@ The following items should be addressed for the bundle to be able to completely 
     - revoked tokens
     - tokens that expired implicitly when the expiry_time is not included in the responses
 - mark all APIs with `@ProviderType` during pre-1.0 releases to allow evolving the APIs easier
+
+### Future plans
+
+- explore an AuthenticationHandler that can optionally expose the access tokens
+- investigate PKCE (RFC 7636)
+- investigate encrypted client-side storage of tokens
