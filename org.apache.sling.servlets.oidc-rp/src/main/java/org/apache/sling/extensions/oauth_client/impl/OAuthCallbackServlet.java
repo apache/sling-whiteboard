@@ -16,11 +16,11 @@
  */
 package org.apache.sling.extensions.oauth_client.impl;
 
-import static java.lang.String.format;
 import static org.osgi.service.component.annotations.ReferencePolicyOption.GREEDY;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -46,6 +46,8 @@ import org.apache.sling.servlets.annotations.SlingServletPaths;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.nimbusds.oauth2.sdk.AuthorizationCode;
 import com.nimbusds.oauth2.sdk.AuthorizationCodeGrant;
@@ -71,6 +73,8 @@ public class OAuthCallbackServlet extends SlingAllMethodsServlet {
 
     private static final long serialVersionUID = 1L;
 
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+    
     private final Map<String, ClientConnection> connections;
     private final OAuthTokenStore tokenStore;
     private final OAuthStateManager stateManager;
@@ -112,22 +116,38 @@ public class OAuthCallbackServlet extends SlingAllMethodsServlet {
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response)
             throws ServletException, IOException {
+
+        StringBuffer requestURL = request.getRequestURL();
+        if ( request.getQueryString() != null )
+            requestURL.append('?').append(request.getQueryString());
+
+        AuthorizationResponse authResponse;
+        Optional<OAuthState>  clientState;
+        Cookie stateCookie;
         try {
-
-            StringBuffer requestURL = request.getRequestURL();
-            if ( request.getQueryString() != null )
-                requestURL.append('?').append(request.getQueryString());
-
-            AuthorizationResponse authResponse = AuthorizationResponse.parse(new URI(requestURL.toString()));
+            authResponse = AuthorizationResponse.parse(new URI(requestURL.toString()));
             
-            Optional<OAuthState> clientState = stateManager.toOAuthState(authResponse.getState());
-            if ( !clientState.isPresent() ) 
-                throw new IllegalStateException("Failed state check: no state found in authorization response");
+            clientState = stateManager.toOAuthState(authResponse.getState());
+            if ( !clientState.isPresent() )  {
+                logger.debug("Failed state check: no state found in authorization response");
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
             
-            Cookie stateCookie = request.getCookie(OAuthStateManager.COOKIE_NAME_REQUEST_KEY);
-            if ( stateCookie == null )
-                throw new IllegalStateException(format("Failed state check: No request cookie named '%s' found", OAuthStateManager.COOKIE_NAME_REQUEST_KEY));
+            stateCookie = request.getCookie(OAuthStateManager.COOKIE_NAME_REQUEST_KEY);
+            if ( stateCookie == null ) {
+                logger.debug("Failed state check: No request cookie named '{}' found", OAuthStateManager.COOKIE_NAME_REQUEST_KEY);
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
 
+        } catch (ParseException | URISyntaxException e) {
+            logger.debug("Failed to parse authorization response", e);
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        }
+
+        try {            
             String stateFromAuthServer = clientState.get().perRequestKey();
             String stateFromClient = stateCookie.getValue();
             if ( ! stateFromAuthServer.equals(stateFromClient) )

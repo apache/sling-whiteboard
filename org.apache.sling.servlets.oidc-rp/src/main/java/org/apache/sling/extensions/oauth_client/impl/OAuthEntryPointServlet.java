@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
@@ -38,6 +39,8 @@ import org.apache.sling.servlets.annotations.SlingServletPaths;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.nimbusds.oauth2.sdk.AuthorizationRequest;
 import com.nimbusds.oauth2.sdk.ResponseType;
@@ -60,6 +63,8 @@ public class OAuthEntryPointServlet extends SlingAllMethodsServlet {
     private static final int COOKIE_MAX_AGE_SECONDS = 300;
     public static final String PATH = "/system/sling/oauth/entry-point"; // NOSONAR
     
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+    
     private final Map<String, ClientConnection> connections;
     private final OAuthStateManager stateManager;
 
@@ -77,18 +82,23 @@ public class OAuthEntryPointServlet extends SlingAllMethodsServlet {
         
         try {
             String desiredConnectionName = request.getParameter("c");
-            if ( desiredConnectionName == null )
-                throw new IllegalArgumentException("Missing mandatory request parameter 'c'");
+            if ( desiredConnectionName == null ) {
+                logger.debug("Missing mandatory request parameter 'c'");
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
 
             ClientConnection connection = connections.get(desiredConnectionName);
-            if ( connection == null )
-                throw new IllegalArgumentException(String.format("Client requested unknown connection '%s'; known: '%s'", desiredConnectionName, connections.keySet()));
+            if ( connection == null ) {
+                if ( logger.isDebugEnabled() )
+                        logger.debug("Client requested unknown connection '{}'; known: '{}'", desiredConnectionName, connections.keySet());
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
                 
             var redirect = getAuthenticationRequestUri(connection, request, URI.create(OAuthCallbackServlet.getCallbackUri(request)));
             response.addCookie(redirect.cookie());
             response.sendRedirect(redirect.uri().toString());
-        } catch (IllegalArgumentException e) {
-            throw new OAuthEntryPointException("Invalid invocation", e);
         } catch (Exception e) {
             throw new OAuthEntryPointException("Internal error", e);
         }

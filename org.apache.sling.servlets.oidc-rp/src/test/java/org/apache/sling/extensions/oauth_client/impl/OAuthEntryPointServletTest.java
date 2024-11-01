@@ -25,15 +25,12 @@ import java.util.List;
 import java.util.Objects;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 
-import org.apache.sling.commons.crypto.CryptoService;
 import org.apache.sling.extensions.oauth_client.ClientConnection;
-import org.apache.sling.extensions.oauth_client.impl.CryptoOAuthStateManager;
-import org.apache.sling.extensions.oauth_client.impl.OAuthEntryPointServlet;
 import org.apache.sling.testing.mock.sling.junit5.SlingContext;
 import org.apache.sling.testing.mock.sling.junit5.SlingContextExtension;
 import org.apache.sling.testing.mock.sling.servlet.MockSlingHttpServletResponse;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,18 +50,7 @@ class OAuthEntryPointServletTest {
                 MockOidcConnection.DEFAULT_CONNECTION,
                 new MockOidcConnection(new String[] {"openid"}, MOCK_OIDC_PARAM, "client-id", "client-secret", "http://example.com", new String[] { "access_type=offline" } )
             );
-        servlet =  new OAuthEntryPointServlet(connections, new CryptoOAuthStateManager(new CryptoService() {
-            
-            @Override
-            public @NotNull String encrypt(@NotNull String message) {
-                return message;
-            }
-            
-            @Override
-            public @NotNull String decrypt(@NotNull String ciphertext) {
-                return ciphertext;
-            }
-        }));
+        servlet =  new OAuthEntryPointServlet(connections, new StubOAuthStateManager());
     }
     
     @Test
@@ -100,5 +86,26 @@ class OAuthEntryPointServletTest {
         
         assertThat(location).as("authentication request uri")
             .hasParameter("access_type", "offline");
+    }
+    
+    @Test
+    void missingConnectionParameter() throws ServletException, IOException {
+        
+        servlet.service(context.request(), context.response());
+        
+        assertThat(context.response().getStatus()).as("response code")
+            .isEqualTo(HttpServletResponse.SC_BAD_REQUEST);
+    }
+    
+    @Test
+    void invalidConnectionParameter() throws ServletException, IOException {
+        
+        context.request().setQueryString("c=invalid");
+        
+        MockSlingHttpServletResponse response = context.response();
+        servlet.service(context.request(), response);
+        
+        assertThat(context.response().getStatus()).as("response code")
+            .isEqualTo(HttpServletResponse.SC_BAD_REQUEST);
     }
 }

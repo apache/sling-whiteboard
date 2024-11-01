@@ -54,8 +54,11 @@ TODO
 
 ### Error handling
 
-The top-level servlets used for the OAuth flow will throw specific subclasses of ServletException.
-These exceptions will return generic messages that can be displayed directly to the user and store
+The top-level servlets used for the OAuth flow will validate parameters that are expected to be
+sent by the client and return a status code of 400 in case the parameters are missing or invalid.
+
+For others problems related to the OAuth flow these servlets throw specific subclasses of ServletException.
+The exceptions will return generic messages that can be displayed directly to the user and store
 the actual cause in nested exception so that it is logged.
 
 These exceptions are:
