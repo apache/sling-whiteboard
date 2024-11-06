@@ -105,6 +105,16 @@ public class RedisOAuthTokenStore implements OAuthTokenStore {
         }
     }
     
+    @Override
+    public void clearAccessToken(ClientConnection connection, ResourceResolver resolver) throws OAuthException {
+    	   String userId = resolver.getUserID();
+
+           try (Jedis jedis = pool.getResource()) {
+        	   jedis.del(keyFor(userId, connection, KEY_SEGMENT_ACCESS_TOKEN));
+           }
+    	
+    }
+    
     private void setWithExpiry(Jedis jedis, String key, String value, long expiry) {
         jedis.set(key, value);
         if ( expiry > 0 )
