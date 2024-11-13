@@ -34,9 +34,8 @@ public abstract class OAuthUris {
      * @param request The current request
      * @param redirectPath The local redirect path to use after completing the OIDC flow
      * @return a local URI
-     * @throws OAuthException in case anything goes wrong
      */
-    public static URI getOidcEntryPointUri(ClientConnection connection, SlingHttpServletRequest request, String redirectPath) throws OAuthException {
+    public static URI getOidcEntryPointUri(ClientConnection connection, SlingHttpServletRequest request, String redirectPath) {
         StringBuilder uri = new StringBuilder();
         uri.append(request.getScheme()).append("://").append(request.getServerName());
         boolean needsExplicitPort = ( "https".equals(request.getScheme()) && request.getServerPort() != 443 )
