@@ -135,4 +135,19 @@ public class JcrUserHomeOAuthTokenStore implements OAuthTokenStore {
     private String nodePath(ClientConnection connection) {
         return "oauth-tokens/" + connection.name();
     }
+    
+    @Override
+    public void clearAccessToken(ClientConnection connection, ResourceResolver resolver) throws OAuthException {
+        try {
+            User currentUser = resolver.adaptTo(User.class);
+            Session session = resolver.adaptTo(Session.class);
+            
+            currentUser.removeProperty(propertyPath(connection, PROPERTY_NAME_ACCESS_TOKEN));
+            currentUser.removeProperty(propertyPath(connection, PROPERTY_NAME_EXPIRES_AT));
+
+            session.save();
+        } catch (RepositoryException e) {
+            throw new OAuthException(e);
+        }
+    }
 }

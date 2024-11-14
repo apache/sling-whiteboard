@@ -52,6 +52,49 @@ public class MySlingServlet extends OAuthEnabledSlingServlet {
 
 TODO
 
+### Clearing access tokens
+
+If an access token response contains an expiry date the bundle will make sure that it is not
+accessible via APIs. This will not cover all scenarios because access tokens can expire or be
+invalidated out of band.
+
+The client will need to determine if the access token is invalid as this is a provider-specific
+check.
+
+To remove invalid access tokens there is a low-level API
+
+```java
+public class MyComponent {}
+    @Reference private OAuthTokenStore tokenStore;
+    
+    public void execute(@Reference OidcConnection connection, ResourceResolver resolver) {
+        // code elided
+        if ( accessTokenIsInvalid() ) {
+            tokenStore.clearAccessToken(connection, resolver);
+            // redirect to provider or present a message to the user
+        }
+    }
+}
+```
+
+For classes that extend from the `OAuthEnabledSlingServlet` the following method override can be
+applied
+
+```java
+@Component(service = { Servlet.class })
+@SlingServletPaths(value = "/bin/myservlet")
+public class MySlingServlet extends OAuthEnabledSlingServlet {
+
+    // other methods elided
+
+    @Override
+    protected boolean isInvalidAccessTokenException(Exception e) {
+        return e.getCause() instanceof InvalidAccessTokenException;
+    }
+}
+```
+
+
 ### Error handling
 
 The top-level servlets used for the OAuth flow will validate parameters that are expected to be
@@ -244,13 +287,11 @@ $ docker run --rm --volume (pwd)/keycloak-data:/opt/keycloak/data -p 8081:8080 -
 
 The following items should be addressed for the bundle to be able to completely support OAuth applications:
 
--  handle tokens that are invalid for reasons other than expiry
-    - revoked tokens
-    - tokens that expired implicitly when the expiry_time is not included in the responses
 - mark all APIs with `@ProviderType` during pre-1.0 releases to allow evolving the APIs easier
 
 ### Future plans
 
+- make the OAuthEnabledSlingServlet handle any method, not just get
 - explore an AuthenticationHandler that can optionally expose the access tokens
 - investigate PKCE (RFC 7636)
 - investigate encrypted client-side storage of tokens

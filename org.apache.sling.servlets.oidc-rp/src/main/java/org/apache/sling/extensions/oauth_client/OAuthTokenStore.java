@@ -44,4 +44,6 @@ public interface OAuthTokenStore {
     OAuthToken getRefreshToken(ClientConnection connection, ResourceResolver resolver) throws OAuthException;
     
     void persistTokens(ClientConnection connection, ResourceResolver resolver, OAuthTokens tokens) throws OAuthException;
+    
+    void clearAccessToken(ClientConnection connection, ResourceResolver resolver) throws OAuthException;
 }

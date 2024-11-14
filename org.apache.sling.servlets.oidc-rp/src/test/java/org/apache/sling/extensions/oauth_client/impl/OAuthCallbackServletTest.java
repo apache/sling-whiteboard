@@ -72,6 +72,12 @@ class OAuthCallbackServletTest {
         public OAuthToken getAccessToken(ClientConnection connection, ResourceResolver resolver) throws OAuthException {
             throw new IllegalStateException("Not implemented");
         }
+        
+        @Override
+        public void clearAccessToken(ClientConnection connection, ResourceResolver resolver) throws OAuthException {
+        	throw new IllegalStateException("Not implemented");
+        }
+        
         public OAuthTokens getTokens() {
             return tokens;
         }

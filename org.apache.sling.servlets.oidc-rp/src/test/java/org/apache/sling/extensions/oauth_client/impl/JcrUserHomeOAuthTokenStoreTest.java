@@ -25,11 +25,9 @@ import javax.jcr.RepositoryException;
 import org.apache.jackrabbit.api.security.user.User;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ValueMap;
-import org.apache.sling.extensions.oauth_client.OAuthToken;
 import org.apache.sling.extensions.oauth_client.ClientConnection;
+import org.apache.sling.extensions.oauth_client.OAuthToken;
 import org.apache.sling.extensions.oauth_client.TokenState;
-import org.apache.sling.extensions.oauth_client.impl.Converter;
-import org.apache.sling.extensions.oauth_client.impl.JcrUserHomeOAuthTokenStore;
 import org.apache.sling.jackrabbit.usermanager.impl.AuthorizableAdapterFactory;
 import org.apache.sling.testing.mock.sling.ResourceResolverType;
 import org.apache.sling.testing.mock.sling.junit5.SlingContext;
@@ -177,6 +175,40 @@ class JcrUserHomeOAuthTokenStoreTest {
             .isNotNull()
             .extracting( OAuthToken::getState )
             .isEqualTo( TokenState.MISSING);
+    }
+    
+    @Test
+    void clearAccessToken() {
+        JcrUserHomeOAuthTokenStore tokenStore = new JcrUserHomeOAuthTokenStore();
+            
+        OIDCTokens tokens = new OIDCTokens(new BearerAccessToken(12), null);
+        tokenStore.persistTokens(connection, context.resourceResolver(), Converter.toSlingOAuthTokens(tokens));
+
+        assertThat(tokenStore.getAccessToken(connection, context.resourceResolver()))
+            .as("persisted access token")
+            .isNotNull()
+            .extracting( OAuthToken::getState )
+            .isEqualTo( TokenState.VALID );
+
+        tokenStore.clearAccessToken(connection, context.resourceResolver());
+        
+        assertThat(tokenStore.getAccessToken(connection, context.resourceResolver()))
+            .as("cleared access token")
+            .isNotNull()
+            .extracting( OAuthToken::getState )
+            .isEqualTo( TokenState.MISSING );
+    }
+    
+    @Test
+    void clearAccessToken_missingAlready() {
+        JcrUserHomeOAuthTokenStore tokenStore = new JcrUserHomeOAuthTokenStore();
+        tokenStore.clearAccessToken(connection, context.resourceResolver());
+        
+        assertThat(tokenStore.getAccessToken(connection, context.resourceResolver()))
+            .as("access token")
+            .isNotNull()
+            .extracting( OAuthToken::getState )
+            .isEqualTo( TokenState.MISSING );
     }
     
     private Resource getConnectionResource(ClientConnection connection) throws RepositoryException {

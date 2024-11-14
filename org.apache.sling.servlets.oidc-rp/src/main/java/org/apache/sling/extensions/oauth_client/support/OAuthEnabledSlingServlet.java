@@ -25,17 +25,16 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
+import org.apache.sling.extensions.oauth_client.ClientConnection;
 import org.apache.sling.extensions.oauth_client.OAuthToken;
 import org.apache.sling.extensions.oauth_client.OAuthTokenRefresher;
 import org.apache.sling.extensions.oauth_client.OAuthTokenStore;
 import org.apache.sling.extensions.oauth_client.OAuthTokens;
 import org.apache.sling.extensions.oauth_client.OAuthUris;
-import org.apache.sling.extensions.oauth_client.ClientConnection;
 import org.apache.sling.extensions.oauth_client.TokenState;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 public abstract class OAuthEnabledSlingServlet extends SlingSafeMethodsServlet {
 
 	private static final long serialVersionUID = 1L;
@@ -72,7 +71,7 @@ public abstract class OAuthEnabledSlingServlet extends SlingSafeMethodsServlet {
 	    
 		switch ( tokenResponse.getState() ) {
 	      case VALID:
-	        doGetWithToken(request, response, tokenResponse);
+            doGetWithPossiblyInvalidToken(request, response, tokenResponse, redirectPath);
 	        break;
 	      case MISSING:
 	        response.sendRedirect(OAuthUris.getOidcEntryPointUri(connection, request, redirectPath).toString());
@@ -86,10 +85,24 @@ public abstract class OAuthEnabledSlingServlet extends SlingSafeMethodsServlet {
 	        
 	        OAuthTokens oidcTokens = oidcClient.refreshTokens(connection, refreshToken.getValue());
 	        tokenStore.persistTokens(connection, request.getResourceResolver(), oidcTokens);
-	        doGetWithToken(request, response, new OAuthToken(TokenState.VALID, oidcTokens.accessToken()));
+	        doGetWithPossiblyInvalidToken(request, response, new OAuthToken(TokenState.VALID, oidcTokens.accessToken()), redirectPath);
 	        break;
 	    }
 	}
+	
+	private void doGetWithPossiblyInvalidToken(@NotNull SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response, OAuthToken token, String redirectPath) throws ServletException, IOException {
+	    try {
+            doGetWithToken(request, response, token);
+        } catch (ServletException | IOException e) {
+            if (isInvalidAccessTokenException(e)) {
+                logger.warn("Invalid access token, clearing and attempting to retrieve a fresh one", e);
+                tokenStore.clearAccessToken(connection, request.getResourceResolver());
+                response.sendRedirect(OAuthUris.getOidcEntryPointUri(connection, request, redirectPath).toString());
+            } else {
+                throw e;
+            }
+        }
+    }
 	
 	// TODO - do we need this as a protected method?
 	protected @NotNull String getRedirectPath(@NotNull SlingHttpServletRequest request) {
@@ -98,4 +111,8 @@ public abstract class OAuthEnabledSlingServlet extends SlingSafeMethodsServlet {
 
 	protected abstract void doGetWithToken(@NotNull SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response, OAuthToken token)
 	        throws ServletException, IOException;
+	
+    protected boolean isInvalidAccessTokenException(Exception e) {
+        return false;
+    }
 }
