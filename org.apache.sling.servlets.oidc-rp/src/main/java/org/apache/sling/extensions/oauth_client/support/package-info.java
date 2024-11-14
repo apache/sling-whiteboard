@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 @Version("0.1.0")
+@org.osgi.annotation.versioning.ProviderType
 package org.apache.sling.extensions.oauth_client.support;
 
 import org.osgi.annotation.versioning.Version;
