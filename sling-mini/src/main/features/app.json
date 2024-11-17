@@ -9,7 +9,7 @@
       "start-order":"20"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.fsresource.simple:1.0.0-SNAPSHOT",
+      "id":"org.apache.sling:org.apache.sling.fsresource:jar:simple:2.2.1-SNAPSHOT",
       "start-order":"20"
     },
     {
@@ -18,7 +18,7 @@
     }
   ],
   "configurations":{
-    "org.apache.sling.simplefsprovider.FsResourceProvider~files":{
+    "org.apache.sling.fsprovider.internal.FsResourceProvider~files":{
       "provider.root":"/content/docs",
       "provider.file":"$[prop:SOURCE_DIR;default=/tmp/docs]"
     },
