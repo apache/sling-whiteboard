@@ -22,7 +22,7 @@ Basic usage is as follows
 
 ```java
 
-import org.apache.sling.extensions.oauth_client.*;
+import org.apache.sling.auth.oauth_client.*;
 
 @Component(service = { Servlet.class })
 @SlingServletPaths(value = "/bin/myservlet")
@@ -106,9 +106,9 @@ the actual cause in nested exception so that it is logged.
 
 These exceptions are:
 
-- `org.apache.sling.extensions.oauth_client.impl.OAuthCallbackException`
-- `org.apache.sling.extensions.oauth_client.impl.OAuthEntryPointException`
-- `org.apache.sling.extensions.oauth_client.impl.OAuthFlowException` (superclass)
+- `org.apache.sling.auth.oauth_client.impl.OAuthCallbackException`
+- `org.apache.sling.auth.oauth_client.impl.OAuthEntryPointException`
+- `org.apache.sling.auth.oauth_client.impl.OAuthFlowException` (superclass)
 
 It is recommended that applications install specific error handlers for these exceptions. See the
 [Apache Sling error handling documentation](https://sling.apache.org/documentation/the-sling-engine/errorhandling.html)
@@ -155,7 +155,7 @@ In addition, one of the following types of OSGi configuration must be added:
 #### OIDC variant
 
 ```json
-"org.apache.sling.extensions.oauth_client.impl.OidcConnectionImpl~provider": {
+"org.apache.sling.auth.oauth_client.impl.OidcConnectionImpl~provider": {
     "name": "provider",
     "baseUrl": "https://example.com",
     "clientId": "$[secret:provider/clientId]",
@@ -167,7 +167,7 @@ In addition, one of the following types of OSGi configuration must be added:
 #### OAuth variant
 
 ```json
-"org.apache.sling.extensions.oauth_client.impl.OAuthConnectionImpl~github": {
+"org.apache.sling.auth.oauth_client.impl.OAuthConnectionImpl~github": {
     "name": "provider",
     "authorizationEndpoint": "https://example.com/login/oauth/authorize",
     "tokenEndpoint": "https://example.com/login/oauth/access_token",
@@ -188,14 +188,14 @@ The tokens can be stored either in the JCR repository, under the user's home, or
 The tokens are stored under the user's home, under the `oauth-tokens/$PROVIDER_NAME` node.
 
 ```json
-"org.apache.sling.extensions.oauth_client.impl.JcrUserHomeOAuthTokenStore" : {
+"org.apache.sling.auth.oauth_client.impl.JcrUserHomeOAuthTokenStore" : {
 }
 ```
 
 #### Redis storage
 
 ```json
-"org.apache.sling.extensions.oauth_client.impl.RedisOAuthTokenStore" : {
+"org.apache.sling.auth.oauth_client.impl.RedisOAuthTokenStore" : {
     "redisUrl": "redis://localhost:6379"
 }
 ```
@@ -218,8 +218,8 @@ $ curl -u admin:admin -X POST -d "apply=true" -d "propertylist=name,baseUrl,clie
     -d "clientId=oidc-test"\
     -d "clientSecret=$CLIENT_SECRET" \
     -d "scopes=openid" \
-    -d "factoryPid=org.apache.sling.extensions.oauth_client.impl.OidcConnectionImpl" \
-    http://localhost:8080/system/console/configMgr/org.apache.sling.extensions.oauth_client.impl.OidcConnectionImpl~keycloak-dev
+    -d "factoryPid=org.apache.sling.auth.oauth_client.impl.OidcConnectionImpl" \
+    http://localhost:8080/system/console/configMgr/org.apache.sling.auth.oauth_client.impl.OidcConnectionImpl~keycloak-dev
 ```
 
 Now you can 
