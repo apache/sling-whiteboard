@@ -3,6 +3,10 @@
     {
         "id":"org.apache.sling:org.apache.sling.offline:0.0.1-SNAPSHOT",
         "start-order":"20"
+    },
+    {
+        "id":"org.apache.felix:org.apache.felix.http.wrappers:1.1.8",
+        "start-order":"1"
     }
   ],
   "configurations": {

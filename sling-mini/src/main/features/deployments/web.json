@@ -1,7 +1,7 @@
 {
   "bundles":[
     {
-      "id":"org.apache.felix:org.apache.felix.http.jetty:5.1.24",
+      "id":"org.apache.felix:org.apache.felix.http.jetty12:1.0.19",
       "start-order":"2"
     },
     {
