@@ -1,9 +1,15 @@
 Export-Package=org.osgi.service.http.context, \
   org.osgi.service.http.runtime, \
   org.osgi.service.http.runtime.dto, \
-  org.osgi.service.http.whiteboard
+  org.osgi.service.http.whiteboard, \
+  org.osgi.service.servlet.context, \
+  org.osgi.service.servlet.runtime, \
+  org.osgi.service.servlet.runtime.dto, \
+  org.osgi.service.servlet.whiteboard
 
 Provide-Capability=osgi.implementation;osgi.implementation="osgi.http";version:Version="1.1"; \
-  uses:="javax.servlet,javax.servlet.http,org.osgi.service.http.context,org.osgi.service.http.whiteboard"
+  uses:="javax.servlet,javax.servlet.http,org.osgi.service.http.context,org.osgi.service.http.whiteboard", \
+  osgi.implementation;osgi.implementation="osgi.http";version:Version="2.0"; \
+  uses:="jakarta.servlet,jakarta.servlet.http,org.osgi.service.servlet.context,org.osgi.service.servlet.whiteboard"
 
 Require-Capability=osgi.contract;filter:="(&(osgi.contract=JavaServlet)(version=3.0))"
