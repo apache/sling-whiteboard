@@ -23,13 +23,13 @@ import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.Servlet;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.api.SlingJakartaHttpServletRequest;
 import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
 import org.osgi.service.component.annotations.Activate;
@@ -75,7 +75,7 @@ public class HtmlServlet extends HttpServlet {
     @SuppressWarnings("unchecked")
     protected void doGet(final HttpServletRequest req, final HttpServletResponse resp)
     throws ServletException, IOException {
-        final SlingHttpServletRequest request = (SlingHttpServletRequest) req;
+        final SlingJakartaHttpServletRequest request = (SlingJakartaHttpServletRequest) req;
         resp.setContentType("text/html");
         resp.setCharacterEncoding("UTF-8");
         final PrintWriter pw = resp.getWriter();

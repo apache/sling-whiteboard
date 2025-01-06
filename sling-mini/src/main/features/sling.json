@@ -5,7 +5,15 @@
       "start-order":"1"
     },
     {
-      "id":"commons-io:commons-io:2.13.0",
+      "id":"org.apache.commons:commons-fileupload2-core:2.0.0-M2",
+      "start-order":"1"
+    },
+    {
+      "id":"org.apache.commons:commons-fileupload2-jakarta-servlet5:2.0.0-M2",
+      "start-order":"1"
+    },
+    {
+      "id":"commons-io:commons-io:2.17.0",
       "start-order":"1"
     },
     {
