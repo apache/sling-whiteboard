@@ -5,7 +5,7 @@
       "start-order":"2"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.servlets.get:2.2.0",
+      "id":"org.apache.sling:org.apache.sling.servlets.get:3.0.0-SNAPSHOT",
       "start-order":"20"
     }
   ]

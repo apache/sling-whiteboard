@@ -29,11 +29,11 @@
       "start-order":"20"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.api:2.28.0-SNAPSHOT",
+      "id":"org.apache.sling:org.apache.sling.api:3.0.0-SNAPSHOT",
       "start-order":"20"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.auth.core:1.7.1-SNAPSHOT",
+      "id":"org.apache.sling:org.apache.sling.auth.core:2.0.0-SNAPSHOT",
       "start-order":"20"
     },
     {
@@ -53,7 +53,7 @@
       "start-order":"20"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.scripting.core:2.4.11-SNAPSHOT",
+      "id":"org.apache.sling:org.apache.sling.scripting.core:3.0.0-SNAPSHOT",
       "start-order":"20"
     },
     {
@@ -61,15 +61,15 @@
       "start-order":"20"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.engine:2.16.1-SNAPSHOT",
+      "id":"org.apache.sling:org.apache.sling.engine:3.0.0-SNAPSHOT",
       "start-order":"20"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.resourceresolver:1.12.3-SNAPSHOT",
+      "id":"org.apache.sling:org.apache.sling.resourceresolver:2.0.0-SNAPSHOT",
       "start-order":"20"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.servlets.resolver:2.11.9-SNAPSHOT",
+      "id":"org.apache.sling:org.apache.sling.servlets.resolver:3.0.0-SNAPSHOT",
       "start-order":"20"
     }
   ],
