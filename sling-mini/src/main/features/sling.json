@@ -1,10 +1,6 @@
 {
   "bundles":[
     {
-      "id":"commons-fileupload:commons-fileupload:1.5",
-      "start-order":"1"
-    },
-    {
       "id":"org.apache.commons:commons-fileupload2-core:2.0.0-M2",
       "start-order":"1"
     },
@@ -17,7 +13,7 @@
       "start-order":"1"
     },
     {
-      "id":"org.apache.commons:commons-lang3:3.14.0",
+      "id":"org.apache.commons:commons-lang3:3.17.0",
       "start-order":"1"
     },
     {
