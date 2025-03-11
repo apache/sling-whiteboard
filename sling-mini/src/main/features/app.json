@@ -9,7 +9,7 @@
       "start-order":"20"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.fsresource:jar:simple:2.2.1-SNAPSHOT",
+      "id":"org.apache.sling:org.apache.sling.fsresource:jar:simple:2.3.0",
       "start-order":"20"
     },
     {
