@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
     Licensed to the Apache Software Foundation (ASF) under one or more contributor license
     agreements. See the NOTICE file distributed with this work for additional information
@@ -16,24 +16,25 @@
     <parent>
         <groupId>org.apache.sling</groupId>
         <artifactId>sling</artifactId>
-        <version>52</version>
+        <version>62</version>
         <relativePath />
     </parent>
 
     <artifactId>org.apache.sling.starter.minimal</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+
+    <packaging>slingosgifeature</packaging>
     <name>Apache Sling Minimal Starter</name>
     <description>A minimal starter for Apache Sling</description>
 
-    <packaging>slingosgifeature</packaging>
-
     <properties>
-        <sling.java.version>11</sling.java.version>
-        <launcher.version>1.3.0</launcher.version>
+        <sling.java.version>17</sling.java.version>
+        <launcher.version>1.3.4</launcher.version>
         <project.build.outputTimestamp>1</project.build.outputTimestamp>
         <sourceDir>/tmp/docs</sourceDir>
         <targetDir>/tmp/offliner</targetDir>
         <feature>offlineapp</feature>
+        <minimalMavenBuildVersion>3.8.1</minimalMavenBuildVersion>
     </properties>
 
     <build>
@@ -41,8 +42,12 @@
             <plugin>
                 <groupId>org.apache.sling</groupId>
                 <artifactId>slingfeature-maven-plugin</artifactId>
-                <version>1.9.0</version>
+                <version>1.9.2</version>
                 <extensions>true</extensions>
+                <configuration>
+                    <createReferenceFile>true</createReferenceFile>
+                    <enableLegacyVariableReplacement>true</enableLegacyVariableReplacement>
+                </configuration>
                 <executions>
                     <execution>
                         <id>create-full</id>
@@ -58,12 +63,12 @@
                                 <aggregate>
                                     <classifier>offlineapp</classifier>
                                     <filesInclude>*.json</filesInclude>
-<!--
+                                    <!--
                                     <filesInclude>addons/sightly.json</filesInclude>
 -->
                                     <filesInclude>deployments/offline.json</filesInclude>
                                 </aggregate>
-                                 <aggregate>
+                                <aggregate>
                                     <classifier>fullwebapp</classifier>
                                     <filesInclude>*.json</filesInclude>
                                     <filesInclude>deployments/web.json</filesInclude>
@@ -92,7 +97,7 @@
                                     <includeTasks>
                                         <includeTask>bundle-packages</includeTask>
                                         <includeTask>api-regions-exportsimports</includeTask>
-<!--
+                                        <!--
                                         <includeTask>check-unused-bundles</includeTask>
 -->
                                     </includeTasks>
@@ -107,29 +112,25 @@
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <createReferenceFile>true</createReferenceFile>
-                    <enableLegacyVariableReplacement>true</enableLegacyVariableReplacement>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.5.0</version>
+                <version>3.8.1</version>
                 <executions>
                     <execution>
                         <id>unpack</id>
-                        <phase>package</phase>
                         <goals>
                             <goal>unpack</goal>
                         </goals>
+                        <phase>package</phase>
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                   <groupId>org.apache.sling</groupId>
-                                   <artifactId>org.apache.sling.feature.launcher</artifactId>
-                                   <version>${launcher.version}</version>
-                                   <type>zip</type>
+                                    <groupId>org.apache.sling</groupId>
+                                    <artifactId>org.apache.sling.feature.launcher</artifactId>
+                                    <version>${launcher.version}</version>
+                                    <type>zip</type>
                                 </artifactItem>
                             </artifactItems>
                             <outputDirectory>target</outputDirectory>
@@ -140,14 +141,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>1.5.0</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                    </execution>
-                </executions>
+                <version>3.5.1</version>
                 <configuration>
                     <executable>${basedir}/target/org.apache.sling.feature.launcher-${launcher.version}/bin/launcher</executable>
                     <arguments>
@@ -163,6 +157,13 @@
                         <argument>TARGET_DIR=${targetDir}</argument>
                     </arguments>
                 </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.rat</groupId>

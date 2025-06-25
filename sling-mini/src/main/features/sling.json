@@ -1,15 +1,11 @@
 {
   "bundles":[
     {
-      "id":"org.apache.commons:commons-fileupload2-core:2.0.0-M2",
+      "id":"commons-fileupload:commons-fileupload:1.6.0",
       "start-order":"1"
     },
     {
-      "id":"org.apache.commons:commons-fileupload2-jakarta-servlet5:2.0.0-M2",
-      "start-order":"1"
-    },
-    {
-      "id":"commons-io:commons-io:2.17.0",
+      "id":"commons-io:commons-io:2.19.0",
       "start-order":"1"
     },
     {
@@ -17,19 +13,19 @@
       "start-order":"1"
     },
     {
-      "id":"commons-codec:commons-codec:1.16.0",
+      "id":"commons-codec:commons-codec:1.18.0",
       "start-order":"20"
     },
     {
-      "id":"org.apache.commons:commons-collections4:4.4",
+      "id":"org.apache.commons:commons-collections4:4.5.0",
       "start-order":"20"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.api:3.0.0-SNAPSHOT",
+      "id":"org.apache.sling:org.apache.sling.api:3.0.0",
       "start-order":"20"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.auth.core:2.0.0-SNAPSHOT",
+      "id":"org.apache.sling:org.apache.sling.auth.core:2.0.0",
       "start-order":"20"
     },
     {
@@ -45,27 +41,27 @@
       "start-order":"20"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.scripting.api:2.2.0",
+      "id":"org.apache.sling:org.apache.sling.scripting.api:2.2.2",
       "start-order":"20"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.scripting.core:3.0.0-SNAPSHOT",
+      "id":"org.apache.sling:org.apache.sling.scripting.core:3.0.0",
       "start-order":"20"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.scripting.spi:1.0.4",
+      "id":"org.apache.sling:org.apache.sling.scripting.spi:2.0.0",
       "start-order":"20"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.engine:3.0.0-SNAPSHOT",
+      "id":"org.apache.sling:org.apache.sling.engine:3.0.0",
       "start-order":"20"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.resourceresolver:2.0.0-SNAPSHOT",
+      "id":"org.apache.sling:org.apache.sling.resourceresolver:2.0.0",
       "start-order":"20"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.servlets.resolver:3.0.0-SNAPSHOT",
+      "id":"org.apache.sling:org.apache.sling.servlets.resolver:3.0.0",
       "start-order":"20"
     }
   ],

@@ -9,7 +9,7 @@
       "start-order":"10"
     },
     {
-      "id":"org.apache.felix:org.apache.felix.webconsole:5.0.8",
+      "id":"org.apache.felix:org.apache.felix.webconsole:5.0.12",
       "start-order":"10"
     },
     {
@@ -25,11 +25,7 @@
       "start-order":"10"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.commons.log.webconsole:1.0.0",
-      "start-order":"10"
-    },
-    {
-      "id":"org.apache.felix:org.apache.felix.http.webconsoleplugin:1.2.0",
+      "id":"org.apache.felix:org.apache.felix.http.webconsoleplugin:1.2.2",
       "start-order":"20"
     },
     {

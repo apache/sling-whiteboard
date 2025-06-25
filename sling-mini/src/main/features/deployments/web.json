@@ -1,11 +1,11 @@
 {
   "bundles":[
     {
-      "id":"org.apache.felix:org.apache.felix.http.jetty12:1.0.19",
+      "id":"org.apache.felix:org.apache.felix.http.jetty12:1.0.34",
       "start-order":"2"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.servlets.get:3.0.0-SNAPSHOT",
+      "id":"org.apache.sling:org.apache.sling.servlets.get:3.0.0",
       "start-order":"20"
     }
   ]

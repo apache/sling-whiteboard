@@ -17,19 +17,15 @@
       "start-order":"1"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.commons.log:5.5.0",
+      "id":"org.apache.sling:org.apache.sling.commons.log:jar:all:6.0.0",
       "start-order":"1"
     },
     {
-      "id":"org.apache.sling:org.apache.sling.commons.logservice:1.1.0",
+      "id":"org.apache.sling:org.apache.sling.commons.logservice:1.1.2",
       "start-order":"1"
     },
     {
       "id":"org.apache.felix:org.apache.felix.log:1.3.0",
-      "start-order":"1"
-    },
-    {
-      "id":"org.slf4j:slf4j-api:1.7.36",
       "start-order":"1"
     },
     {
@@ -45,7 +41,7 @@
       "start-order":"1"
     },
     {
-      "id":"org.apache.felix:org.apache.felix.http.servlet-api:3.0.0",
+      "id":"org.apache.felix:org.apache.felix.http.servlet-api:6.1.0",
       "start-order":"1"
     },
     {

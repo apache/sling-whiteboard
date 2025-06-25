@@ -5,31 +5,31 @@
       "start-order":"20"
     },
     {
-      "id":"com.fasterxml.jackson.core:jackson-annotations:2.16.1",
+      "id":"com.fasterxml.jackson.core:jackson-annotations:2.19.1",
       "start-order":"20"
     },
     {
-      "id":"com.fasterxml.jackson.core:jackson-core:2.16.1",
+      "id":"com.fasterxml.jackson.core:jackson-core:2.19.1",
       "start-order":"20"
     },
     {
-      "id":"com.fasterxml.jackson.core:jackson-databind:2.16.1",
+      "id":"com.fasterxml.jackson.core:jackson-databind:2.19.1",
       "start-order":"20"
     },
     {
-      "id":"com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.16.1",
+      "id":"com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.19.1",
       "start-order":"20"
     },
     {
-      "id": "org.apache.commons:commons-text:1.11.0",
+      "id": "org.apache.commons:commons-text:1.13.1",
       "start-order": "20"
     },  
     {
-      "id": "org.slf4j:jcl-over-slf4j:1.7.36",
+      "id": "org.slf4j:jcl-over-slf4j:2.0.17",
       "start-order": "1"
     },
     {
-      "id": "org.slf4j:log4j-over-slf4j:1.7.36",
+      "id": "org.slf4j:log4j-over-slf4j:2.0.17",
       "start-order": "1"
     },
     {
@@ -37,7 +37,7 @@
       "start-order": "20"
     },
     {
-      "id": "org.apache.sling:org.apache.sling.scripting.sightly:1.4.24-1.4.0",
+      "id": "org.apache.sling:org.apache.sling.scripting.sightly:1.4.28-1.4.0",
       "start-order": "20"
     },
     {
