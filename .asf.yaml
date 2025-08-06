@@ -14,6 +14,10 @@ github:
   - "MNG"
   dependabot_alerts: false
   dependabot_updates: false
+  pull_requests:
+    del_branch_on_merge: true
+  protected_branches:
+    master: {}
 notifications:
   jira_options: "link"
   pullrequests_bot_sonarcloud: "commits@sling.apache.org"
