@@ -1,0 +1,36 @@
+{
+  "bundles": [
+     {
+        "id": "${project.groupId}:${project.artifactId}:${project.version}",
+        "start-order": 25
+    },
+    {
+        "id": "io.modelcontextprotocol.sdk:mcp-core:0.15.0",
+        "start-order": 25
+    },
+    {
+        "id": "io.projectreactor:reactor-core:3.7.0",
+        "start-order": 25
+    },
+    {
+        "id": "org.reactivestreams:reactive-streams:1.0.4",
+        "start-order": 25
+    },
+    {
+        "id": "com.networknt:json-schema-validator:1.5.7",
+        "start-order": 25
+    },
+    {
+        "id": "com.ethlo.time:itu:1.10.3",
+        "start-order": 25
+    },
+    {
+        "id": "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.18.3",
+        "start-order": 25
+    },
+    {
+        "id": "org.yaml:snakeyaml:2.3",
+        "start-order": 25
+    }
+  ]
+}
