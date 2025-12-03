@@ -70,7 +70,7 @@ import org.osgi.service.component.annotations.Deactivate;
 @SlingServletPaths(value = {McpServlet.ENDPOINT})
 public class McpServlet extends SlingJakartaAllMethodsServlet {
 
-    static final String ENDPOINT = "/mcp";
+    static final String ENDPOINT = "/bin/mcp";
     private static final long serialVersionUID = 1L;
     private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
 
