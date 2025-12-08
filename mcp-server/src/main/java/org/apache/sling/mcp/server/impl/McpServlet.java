@@ -79,6 +79,18 @@ public class McpServlet extends SlingJakartaAllMethodsServlet {
     private MethodHandle doGetMethod;
     private MethodHandle doPostMethod;
 
+    private static String getStateString(int state) {
+        return switch (state) {
+            case Bundle.UNINSTALLED -> "UNINSTALLED";
+            case Bundle.INSTALLED -> "INSTALLED";
+            case Bundle.RESOLVED -> "RESOLVED";
+            case Bundle.STARTING -> "STARTING";
+            case Bundle.STOPPING -> "STOPPING";
+            case Bundle.ACTIVE -> "ACTIVE";
+            default -> "UNKNOWN";
+        };
+    }
+
     @Activate
     public McpServlet(BundleContext ctx) throws IllegalAccessException, NoSuchMethodException {
 
@@ -164,14 +176,14 @@ public class McpServlet extends SlingJakartaAllMethodsServlet {
                         .mimeType("text/plain")
                         .build(),
                 (context, request) -> {
-                    List<McpSchema.ResourceContents> res = Stream.of(ctx.getBundles())
-                            .map(b -> new TextResourceContents(
-                                    "bundle://" + b.getSymbolicName(),
-                                    "text-plain",
-                                    "Bundle " + b.getSymbolicName() + " is in state " + b.getState()))
-                            .collect(Collectors.toList());
+                    String bundleInfo = Stream.of(ctx.getBundles())
+                            .map(b -> "Bundle " + b.getSymbolicName() + " is in state " + getStateString(b.getState())
+                                    + " (" + b.getState() + ")")
+                            .collect(Collectors.joining("\n"));
 
-                    return new McpSchema.ReadResourceResult(res);
+                    TextResourceContents contents = new TextResourceContents("bundle://", "text/plain", bundleInfo);
+
+                    return new McpSchema.ReadResourceResult(List.of(contents));
                 }));
 
         syncServer.addResourceTemplate(new McpStatelessServerFeatures.SyncResourceTemplateSpecification(
@@ -180,18 +192,18 @@ public class McpServlet extends SlingJakartaAllMethodsServlet {
                         .name("bundles")
                         .build(),
                 (context, request) -> {
-                    List<ResourceContents> bundles = List.of();
+                    String bundleInfo = "";
                     if ("bundles://state/resolved".equals(request.uri().toLowerCase(Locale.ENGLISH))) {
-                        bundles = Arrays.stream(ctx.getBundles())
+                        bundleInfo = Arrays.stream(ctx.getBundles())
                                 .filter(b -> b.getState() == Bundle.RESOLVED)
-                                .<ResourceContents>map(b -> new TextResourceContents(
-                                        "bundle://" + b.getSymbolicName(),
-                                        "text-plain",
-                                        "Bundle " + b.getSymbolicName() + " is in state " + b.getState()))
-                                .toList();
+                                .map(b -> "Bundle " + b.getSymbolicName() + " is in state "
+                                        + getStateString(b.getState()) + " (" + b.getState() + ")")
+                                .collect(Collectors.joining("\n"));
                     }
 
-                    return new ReadResourceResult(bundles);
+                    TextResourceContents contents = new TextResourceContents(request.uri(), "text/plain", bundleInfo);
+
+                    return new ReadResourceResult(List.of(contents));
                 }));
     }
 
