@@ -33,18 +33,19 @@ import io.modelcontextprotocol.json.jackson.JacksonMcpJsonMapper;
 import io.modelcontextprotocol.json.schema.jackson.DefaultJsonSchemaValidator;
 import io.modelcontextprotocol.server.McpServer;
 import io.modelcontextprotocol.server.McpStatelessServerFeatures;
+import io.modelcontextprotocol.server.McpStatelessServerFeatures.SyncCompletionSpecification;
 import io.modelcontextprotocol.server.McpStatelessServerFeatures.SyncPromptSpecification;
 import io.modelcontextprotocol.server.McpStatelessServerFeatures.SyncToolSpecification;
 import io.modelcontextprotocol.server.McpStatelessSyncServer;
 import io.modelcontextprotocol.server.transport.HttpServletStatelessServerTransport;
 import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
+import io.modelcontextprotocol.spec.McpSchema.CompleteResult.CompleteCompletion;
 import io.modelcontextprotocol.spec.McpSchema.Prompt;
 import io.modelcontextprotocol.spec.McpSchema.PromptArgument;
 import io.modelcontextprotocol.spec.McpSchema.PromptMessage;
 import io.modelcontextprotocol.spec.McpSchema.ReadResourceResult;
 import io.modelcontextprotocol.spec.McpSchema.Resource;
-import io.modelcontextprotocol.spec.McpSchema.ResourceContents;
 import io.modelcontextprotocol.spec.McpSchema.ResourceTemplate;
 import io.modelcontextprotocol.spec.McpSchema.Role;
 import io.modelcontextprotocol.spec.McpSchema.ServerCapabilities;
@@ -65,10 +66,29 @@ import org.osgi.framework.wiring.FrameworkWiring;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
 @Component(service = Servlet.class)
 @SlingServletPaths(value = {McpServlet.ENDPOINT})
+@Designate(ocd = McpServlet.Config.class)
 public class McpServlet extends SlingJakartaAllMethodsServlet {
+
+    @ObjectClassDefinition(name = "Apache Sling MCP Server Configuration")
+    public @interface Config {
+        @AttributeDefinition(name = "Server Title", description = "The title of the MCP server")
+        String serverTitle() default "Apache Sling";
+
+        @AttributeDefinition(
+                name = "Server Version",
+                description = "The version of the MCP server. Defaults to the bundle version if not set")
+        String serverVersion();
+
+        @AttributeDefinition(name = "Instructions", description = "Initial instructions for the MCP server")
+        String instructions() default
+                "This MCP server provides access to an Apache Sling development instance. Exposed tools and information always reference the Sling deployment and not local projects or files";
+    }
 
     static final String ENDPOINT = "/bin/mcp";
     private static final long serialVersionUID = 1L;
@@ -92,7 +112,7 @@ public class McpServlet extends SlingJakartaAllMethodsServlet {
     }
 
     @Activate
-    public McpServlet(BundleContext ctx) throws IllegalAccessException, NoSuchMethodException {
+    public McpServlet(BundleContext ctx, Config config) throws IllegalAccessException, NoSuchMethodException {
 
         McpJsonMapper jsonMapper = new JacksonMcpJsonMapper(new ObjectMapper());
 
@@ -115,14 +135,26 @@ public class McpServlet extends SlingJakartaAllMethodsServlet {
                 java.lang.invoke.MethodType.methodType(
                         void.class, HttpServletRequest.class, HttpServletResponse.class));
 
+        SyncCompletionSpecification servletCompletionSpec = new McpStatelessServerFeatures.SyncCompletionSpecification(
+                new McpSchema.PromptReference("ref/prompt", "new-sling-servlet"), (context, request) -> {
+                    return new McpSchema.CompleteResult(new CompleteCompletion(List.of(), 0, false));
+                });
+
+        String serverVersion = config.serverVersion();
+        if (serverVersion == null || serverVersion.isEmpty()) {
+            serverVersion = ctx.getBundle().getVersion().toString();
+        }
         syncServer = McpServer.sync(transportProvider)
-                .serverInfo("apache-sling", "0.1.0")
+                .serverInfo(config.serverTitle(), serverVersion)
                 .jsonMapper(jsonMapper)
                 .jsonSchemaValidator(new DefaultJsonSchemaValidator())
+                .instructions(config.instructions())
+                .completions(List.of(servletCompletionSpec))
                 .capabilities(ServerCapabilities.builder()
-                        .tools(true)
-                        .prompts(true)
-                        .resources(true, true)
+                        .tools(false)
+                        .prompts(false)
+                        .resources(false, false)
+                        .completions()
                         .build())
                 .build();
 
