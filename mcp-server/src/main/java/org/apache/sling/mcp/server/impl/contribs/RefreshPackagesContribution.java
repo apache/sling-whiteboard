@@ -66,7 +66,9 @@ public class RefreshPackagesContribution implements McpServerContribution {
 
                     fw.refreshBundles(null);
 
-                    return new CallToolResult("Bundles refreshed successfully", Boolean.FALSE);
+                    return CallToolResult.builder()
+                            .addTextContent("Bundles refreshed successfully")
+                            .build();
                 }));
     }
 }
