@@ -37,12 +37,14 @@ import io.modelcontextprotocol.spec.McpSchema.TextResourceContents;
 import org.apache.sling.mcp.server.impl.McpServerContribution;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.wiring.BundleRevision;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 
 @Component
 public class BundleResourceContribution implements McpServerContribution {
 
+    private static final String URI_BUNDLES_ALL = "bundles://all";
     private static final String RESOURCE_TEMPLATE_BUNDLES_STATE_PREFIX = "bundles://state/";
     private static final String RESOURCE_TEMPLATE_BUNDLES_STATE_PATTERN =
             RESOURCE_TEMPLATE_BUNDLES_STATE_PREFIX + "{state}";
@@ -59,16 +61,17 @@ public class BundleResourceContribution implements McpServerContribution {
 
         return Optional.of(new McpStatelessServerFeatures.SyncResourceSpecification(
                 new Resource.Builder()
-                        .name("bundle")
-                        .uri("bundle://")
-                        .description("OSGi bundle status")
+                        .name("bundles")
+                        .uri(URI_BUNDLES_ALL)
+                        .description(
+                                "List all OSGi bundles with symbolic name, version, and state. Fragment bundles are marked with [Fragment]")
                         .mimeType("text/plain")
                         .build(),
                 (context, request) -> {
                     String bundleInfo =
                             Stream.of(ctx.getBundles()).map(this::describe).collect(Collectors.joining("\n"));
 
-                    TextResourceContents contents = new TextResourceContents("bundle://", "text/plain", bundleInfo);
+                    TextResourceContents contents = new TextResourceContents(URI_BUNDLES_ALL, "text/plain", bundleInfo);
 
                     return new McpSchema.ReadResourceResult(List.of(contents));
                 }));
@@ -88,9 +91,7 @@ public class BundleResourceContribution implements McpServerContribution {
                         if (!bundleState.isValid()) {
                             throw new IllegalArgumentException("Invalid bundle state: " + requestedState);
                         }
-                        String bundleInfo = "";
-                        // extract desired state from URI
-                        bundleInfo = Arrays.stream(ctx.getBundles())
+                        String bundleInfo = Arrays.stream(ctx.getBundles())
                                 .filter(b -> b.getState() == bundleState.getState())
                                 .map(this::describe)
                                 .collect(Collectors.joining("\n"));
@@ -130,7 +131,12 @@ public class BundleResourceContribution implements McpServerContribution {
     }
 
     private String describe(Bundle b) {
-        return "Bundle " + b.getSymbolicName() + " (version " + b.getVersion() + ") is in state "
+        boolean isFragment = Optional.ofNullable(b.adapt(BundleRevision.class)).stream()
+                .map(br -> (br.getTypes() & BundleRevision.TYPE_FRAGMENT) != 0)
+                .findAny()
+                .orElse(false);
+        String additionalInfo = isFragment ? " [Fragment]" : "";
+        return "Bundle " + b.getSymbolicName() + additionalInfo + " (version " + b.getVersion() + ") is in state "
                 + BundleState.fromState(b.getState()) + " (" + b.getState() + ")";
     }
 }
