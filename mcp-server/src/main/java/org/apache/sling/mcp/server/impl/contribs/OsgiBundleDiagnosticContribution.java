@@ -160,10 +160,12 @@ public class OsgiBundleDiagnosticContribution implements McpServerContribution {
             result.append("\n⚠ Bundle is INSTALLED but not RESOLVED\n");
             result.append("This typically means there are unsatisfied dependencies.\n\n");
 
+            boolean foundIssues = false;
+
+            // First try to get info from BundleWiring (for resolved requirements)
             BundleWiring wiring = bundle.adapt(BundleWiring.class);
             if (wiring != null) {
                 List<BundleRequirement> requirements = wiring.getRequirements(null);
-                boolean foundIssues = false;
 
                 for (BundleRequirement req : requirements) {
                     List<BundleWire> wires = wiring.getRequiredWires(req.getNamespace());
@@ -187,10 +189,31 @@ public class OsgiBundleDiagnosticContribution implements McpServerContribution {
                         }
                     }
                 }
+            }
 
-                if (!foundIssues) {
-                    result.append("No obvious dependency issues found. Bundle may have internal errors.\n");
+            // If no issues found via wiring, check manifest directly and compare with available exports
+            if (!foundIssues) {
+                String importPackage = bundle.getHeaders().get(Constants.IMPORT_PACKAGE);
+
+                if (importPackage != null && !importPackage.isEmpty()) {
+                    result.append("Analyzing Package Dependencies:\n\n");
+                    analyzePackageImports(importPackage, result);
+                    foundIssues = true;
                 }
+
+                String requireBundle = bundle.getHeaders().get(Constants.REQUIRE_BUNDLE);
+                if (requireBundle != null && !requireBundle.isEmpty()) {
+                    result.append("\nRequired Bundles (from manifest):\n");
+                    result.append("  ")
+                            .append(requireBundle.replace(",", ",\n  "))
+                            .append("\n\n");
+                    result.append("⚠ One or more of these bundles are not available or not in the correct state.\n");
+                    foundIssues = true;
+                }
+            }
+
+            if (!foundIssues) {
+                result.append("No dependency information found. Bundle may have internal errors.\n");
             }
         } else if (bundle.getState() == Bundle.RESOLVED) {
             result.append("\n✓ Bundle is RESOLVED (all dependencies satisfied)\n");
@@ -205,6 +228,198 @@ public class OsgiBundleDiagnosticContribution implements McpServerContribution {
             result.append("\nNote: This is a fragment bundle (attached to: ")
                     .append(bundle.getHeaders().get(Constants.FRAGMENT_HOST))
                     .append(")\n");
+        }
+    }
+
+    /**
+     * Analyzes imported packages by checking if they are available in the OSGi environment.
+     * Scans all bundles to find which packages are exported and matches them against imports.
+     */
+    private void analyzePackageImports(String importPackageHeader, StringBuilder result) {
+        // Build a map of all exported packages in the system
+        java.util.Map<String, List<PackageExport>> exportedPackages = new java.util.HashMap<>();
+
+        for (Bundle b : ctx.getBundles()) {
+            if (b.getState() == Bundle.UNINSTALLED) {
+                continue;
+            }
+
+            String exportPackage = b.getHeaders().get(Constants.EXPORT_PACKAGE);
+            if (exportPackage != null && !exportPackage.isEmpty()) {
+                List<PackageInfo> exports = parsePackages(exportPackage);
+                for (PackageInfo pkg : exports) {
+                    if (pkg.name != null && !pkg.name.isEmpty() && pkg.name.contains(".")) {
+                        exportedPackages
+                                .computeIfAbsent(pkg.name, k -> new ArrayList<>())
+                                .add(new PackageExport(b, pkg.name, pkg.version));
+                    }
+                }
+            }
+        }
+
+        // Parse and check each imported package
+        List<PackageInfo> imports = parsePackages(importPackageHeader);
+        int missingCount = 0;
+        int availableCount = 0;
+        List<String> missingPackages = new ArrayList<>();
+
+        for (PackageInfo importPkg : imports) {
+            // Skip invalid package names
+            if (importPkg.name == null || importPkg.name.isEmpty() || !importPkg.name.contains(".")) {
+                continue;
+            }
+
+            List<PackageExport> availableExports = exportedPackages.get(importPkg.name);
+
+            if (availableExports == null || availableExports.isEmpty()) {
+                missingCount++;
+                missingPackages.add("  ✗ " + importPkg.name
+                        + (importPkg.version.isEmpty() ? "" : " " + importPkg.version)
+                        + (importPkg.optional ? " (optional)" : "") + "\n");
+            } else {
+                availableCount++;
+            }
+        }
+
+        // Only show missing packages
+        if (missingCount > 0) {
+            result.append("Missing Packages (")
+                    .append(missingCount)
+                    .append(" of ")
+                    .append(imports.size())
+                    .append(" imports):\n\n");
+            for (String missing : missingPackages) {
+                result.append(missing);
+            }
+            result.append("\n⚠ Action Required: Install bundles that provide the missing packages.\n");
+        } else {
+            result.append("✓ All ").append(imports.size()).append(" imported packages are available.\n");
+            result.append("Bundle should be resolvable. Check for other issues.\n");
+        }
+    }
+
+    /**
+     * Parse OSGi package header (Import-Package or Export-Package).
+     * Handles complex cases with version ranges, attributes, and directives.
+     */
+    private List<PackageInfo> parsePackages(String header) {
+        List<PackageInfo> packages = new ArrayList<>();
+        if (header == null || header.isEmpty()) {
+            return packages;
+        }
+
+        // State machine for parsing
+        StringBuilder current = new StringBuilder();
+        int depth = 0; // Track depth of quotes and brackets
+        boolean inQuotes = false;
+
+        for (int i = 0; i < header.length(); i++) {
+            char c = header.charAt(i);
+
+            if (c == '"') {
+                inQuotes = !inQuotes;
+                current.append(c);
+            } else if (!inQuotes && (c == '[' || c == '(')) {
+                depth++;
+                current.append(c);
+            } else if (!inQuotes && (c == ']' || c == ')')) {
+                depth--;
+                current.append(c);
+            } else if (c == ',' && depth == 0 && !inQuotes) {
+                // This is a package separator
+                String pkg = current.toString().trim();
+                if (!pkg.isEmpty()) {
+                    packages.add(parsePackageEntry(pkg));
+                }
+                current = new StringBuilder();
+            } else {
+                current.append(c);
+            }
+        }
+
+        // Don't forget the last package
+        String pkg = current.toString().trim();
+        if (!pkg.isEmpty()) {
+            packages.add(parsePackageEntry(pkg));
+        }
+
+        return packages;
+    }
+
+    /**
+     * Parse a single package entry like "com.example.pkg;version="[1.0,2.0)";resolution:=optional"
+     */
+    private PackageInfo parsePackageEntry(String entry) {
+        // Split on first semicolon to separate package name from attributes
+        int semicolonPos = entry.indexOf(';');
+        String packageName;
+        String attributes;
+
+        if (semicolonPos > 0) {
+            packageName = entry.substring(0, semicolonPos).trim();
+            attributes = entry.substring(semicolonPos + 1);
+        } else {
+            packageName = entry.trim();
+            attributes = "";
+        }
+
+        // Extract version
+        String version = "";
+        if (attributes.contains("version=")) {
+            int vStart = attributes.indexOf("version=") + 8;
+            int vEnd = attributes.length();
+            // Find the end of the version value (next semicolon outside quotes)
+            boolean inQuote = false;
+            for (int i = vStart; i < attributes.length(); i++) {
+                char c = attributes.charAt(i);
+                if (c == '"') {
+                    inQuote = !inQuote;
+                } else if (c == ';' && !inQuote) {
+                    vEnd = i;
+                    break;
+                }
+            }
+            version = attributes.substring(vStart, vEnd).trim().replaceAll("\"", "");
+        }
+
+        boolean optional = attributes.contains("resolution:=optional");
+
+        return new PackageInfo(packageName, version, optional);
+    }
+
+    private String extractVersion(String exportEntry) {
+        if (exportEntry.contains("version=")) {
+            int start = exportEntry.indexOf("version=") + 8;
+            int end = exportEntry.indexOf(";", start);
+            if (end == -1) {
+                end = exportEntry.length();
+            }
+            return exportEntry.substring(start, end).replaceAll("\"", "").trim();
+        }
+        return "0.0.0";
+    }
+
+    private static class PackageInfo {
+        final String name;
+        final String version;
+        final boolean optional;
+
+        PackageInfo(String name, String version, boolean optional) {
+            this.name = name;
+            this.version = version;
+            this.optional = optional;
+        }
+    }
+
+    private static class PackageExport {
+        final Bundle bundle;
+        final String packageName;
+        final String version;
+
+        PackageExport(Bundle bundle, String packageName, String version) {
+            this.bundle = bundle;
+            this.packageName = packageName;
+            this.version = version;
         }
     }
 
