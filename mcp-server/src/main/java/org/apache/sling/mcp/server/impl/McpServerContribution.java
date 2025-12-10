@@ -33,7 +33,7 @@ import io.modelcontextprotocol.server.McpStatelessServerFeatures.SyncToolSpecifi
 //
 // Expect this abstraction to change
 public interface McpServerContribution {
-    
+
     default Optional<SyncToolSpecification> getSyncToolSpecification() {
         return Optional.empty();
     }

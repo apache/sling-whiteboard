@@ -23,17 +23,16 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import io.modelcontextprotocol.server.McpStatelessServerFeatures.SyncResourceSpecification;
+import io.modelcontextprotocol.spec.McpSchema.ReadResourceResult;
+import io.modelcontextprotocol.spec.McpSchema.Resource;
+import io.modelcontextprotocol.spec.McpSchema.TextResourceContents;
 import org.apache.sling.engine.RequestInfo;
 import org.apache.sling.engine.RequestInfoProvider;
 import org.apache.sling.mcp.server.impl.McpServerContribution;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
-
-import io.modelcontextprotocol.server.McpStatelessServerFeatures.SyncResourceSpecification;
-import io.modelcontextprotocol.spec.McpSchema.ReadResourceResult;
-import io.modelcontextprotocol.spec.McpSchema.Resource;
-import io.modelcontextprotocol.spec.McpSchema.TextResourceContents;
 
 @Component
 public class RecentRequestsContribution implements McpServerContribution {
@@ -56,7 +55,8 @@ public class RecentRequestsContribution implements McpServerContribution {
         return Optional.of(new SyncResourceSpecification(
                 new Resource.Builder()
                         .uri("recent-requests://all")
-                        .description("Prints all recent requests ( excluding /bin/mcp ). Contains information about method, path, user id and a verbose log of internal operations, including authenticaiton, resource resolution, script resolution, nested scripts/servlets and filters.")
+                        .description(
+                                "Prints all recent requests ( excluding /bin/mcp ). Contains information about method, path, user id and a verbose log of internal operations, including authentication, resource resolution, script resolution, nested scripts/servlets and filters.")
                         .name("recent-requests-all")
                         .build(),
                 (context, request) -> {
