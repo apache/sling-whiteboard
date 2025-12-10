@@ -26,8 +26,14 @@ import io.modelcontextprotocol.server.McpStatelessServerFeatures.SyncResourceSpe
 import io.modelcontextprotocol.server.McpStatelessServerFeatures.SyncResourceTemplateSpecification;
 import io.modelcontextprotocol.server.McpStatelessServerFeatures.SyncToolSpecification;
 
+// Temporary abstraction to make it easier to contribute various MCP server features
+//
+// The major problem with this approach is that all contributions are loaded once the MCPServlet
+// is activated and therefore it does not take into account added/changed/removed contributions
+//
+// Expect this abstraction to change
 public interface McpServerContribution {
-
+    
     default Optional<SyncToolSpecification> getSyncToolSpecification() {
         return Optional.empty();
     }
