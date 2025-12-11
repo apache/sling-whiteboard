@@ -5,7 +5,7 @@
         "start-order": 25
     },
     {
-        "id": "io.modelcontextprotocol.sdk:mcp-core:0.15.0",
+        "id": "io.modelcontextprotocol.sdk:mcp-core:0.17.0",
         "start-order": 25
     },
     {
@@ -17,11 +17,11 @@
         "start-order": 25
     },
     {
-        "id": "com.networknt:json-schema-validator:1.5.7",
+        "id": "com.networknt:json-schema-validator:2.0.0",
         "start-order": 25
     },
     {
-        "id": "com.ethlo.time:itu:1.10.3",
+        "id": "com.ethlo.time:itu:1.14.0",
         "start-order": 25
     },
     {
