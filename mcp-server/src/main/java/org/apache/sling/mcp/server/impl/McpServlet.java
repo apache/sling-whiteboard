@@ -71,7 +71,7 @@ public class McpServlet extends SlingJakartaAllMethodsServlet {
                 "This MCP server provides access to an Apache Sling development instance. Exposed tools and information always reference the Sling deployment and not local projects or files";
     }
 
-    public static final String ENDPOINT = "/bin/mcp";
+    static final String ENDPOINT = "/bin/mcp";
     private static final long serialVersionUID = 1L;
     private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
 
