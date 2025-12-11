@@ -291,7 +291,8 @@ public class OsgiBundleDiagnosticContribution implements McpServerContribution {
             for (String missing : missingPackages) {
                 result.append(missing);
             }
-            result.append("\n⚠ Action Required: Install bundles that provide the missing packages, or downgrade / change the dependencies.\n");
+            result.append(
+                    "\n⚠ Action Required: Install bundles that provide the missing packages, or downgrade / change the dependencies.\n");
         } else {
             result.append("✓ All ").append(imports.size()).append(" imported packages are available.\n");
             result.append("Bundle should be resolvable. Check for other issues.\n");
