@@ -102,7 +102,12 @@ public class RepositoryPromptsRegistrar {
                         }
                     }
                 },
-                new Hashtable<>(Map.of(ResourceChangeListener.PATHS, PROMPT_LIBS_DIR, ResourceChangeListener.CHANGES, new String[] { ResourceChangeListener.CHANGE_ADDED, ResourceChangeListener.CHANGE_CHANGED, ResourceChangeListener.CHANGE_REMOVED } )));
+                new Hashtable<>(Map.of(
+                        ResourceChangeListener.PATHS, PROMPT_LIBS_DIR, ResourceChangeListener.CHANGES, new String[] {
+                            ResourceChangeListener.CHANGE_ADDED,
+                            ResourceChangeListener.CHANGE_CHANGED,
+                            ResourceChangeListener.CHANGE_REMOVED
+                        })));
 
         // TODO - use service user
         try (ResourceResolver resolver = rrf.getAdministrativeResourceResolver(null)) {
@@ -136,7 +141,7 @@ public class RepositoryPromptsRegistrar {
 
         // remove prefix
         String promptName = path.substring(PROMPT_LIBS_DIR.length() + 1); // account for trailing slash
-        
+
         // remove optional /jcr:content node name
         if (promptName.endsWith("/jcr:content")) {
             promptName = promptName.substring(0, promptName.length() - "/jcr:content".length());
@@ -159,7 +164,7 @@ public class RepositoryPromptsRegistrar {
             try {
                 Resource promptResource = resolver.getResource(promptPath);
                 String encoding = promptResource.getResourceMetadata().getCharacterEncoding();
-                if ( encoding == null ) {
+                if (encoding == null) {
                     encoding = StandardCharsets.UTF_8.name();
                 }
                 try (InputStream stream = promptResource.adaptTo(InputStream.class)) {
