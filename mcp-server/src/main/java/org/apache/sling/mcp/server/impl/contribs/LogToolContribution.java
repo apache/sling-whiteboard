@@ -110,10 +110,11 @@ public class LogToolContribution implements McpServerContribution {
                     if (logLevelStr != null && !logLevelStr.isEmpty()) {
                         minLogLevel = parseLogLevel(logLevelStr);
                         if (minLogLevel == -1) {
-                            return new CallToolResult(
-                                    "Invalid log level: " + logLevelStr
-                                            + ". Valid options are: ERROR, WARN, INFO, DEBUG, TRACE",
-                                    Boolean.TRUE);
+                            return CallToolResult.builder()
+                                    .addTextContent("Invalid log level: " + logLevelStr
+                                            + ". Valid options are: ERROR, WARN, INFO, DEBUG, TRACE")
+                                    .isError(true)
+                                    .build();
                         }
                     }
 
@@ -123,7 +124,10 @@ public class LogToolContribution implements McpServerContribution {
                         try {
                             pattern = Pattern.compile(regexPattern, Pattern.CASE_INSENSITIVE);
                         } catch (PatternSyntaxException e) {
-                            return new CallToolResult("Invalid regex pattern: " + e.getMessage(), Boolean.TRUE);
+                            return CallToolResult.builder()
+                                    .addTextContent("Invalid regex pattern: " + e.getMessage())
+                                    .isError(true)
+                                    .build();
                         }
                     }
 
@@ -133,7 +137,7 @@ public class LogToolContribution implements McpServerContribution {
                     // Format output
                     String result = formatLogs(filteredLogs, regexPattern, minLogLevel, maxEntries);
 
-                    return new CallToolResult(result, Boolean.FALSE);
+                    return CallToolResult.builder().addTextContent(result).build();
                 }));
     }
 

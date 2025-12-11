@@ -105,7 +105,10 @@ public class OsgiBundleDiagnosticContribution implements McpServerContribution {
     private CallToolResult diagnoseSpecificBundle(String symbolicName) {
         Bundle bundle = findBundle(symbolicName);
         if (bundle == null) {
-            return new CallToolResult("Bundle '" + symbolicName + "' not found.", Boolean.TRUE);
+            return CallToolResult.builder()
+                    .addTextContent("Bundle '" + symbolicName + "' not found.")
+                    .isError(true)
+                    .build();
         }
 
         StringBuilder result = new StringBuilder();
@@ -124,7 +127,7 @@ public class OsgiBundleDiagnosticContribution implements McpServerContribution {
             appendComponentDiagnostics(bundle, result);
         }
 
-        return new CallToolResult(result.toString(), Boolean.FALSE);
+        return CallToolResult.builder().addTextContent(result.toString()).build();
     }
 
     private CallToolResult diagnoseAllProblematicBundles() {
@@ -152,7 +155,7 @@ public class OsgiBundleDiagnosticContribution implements McpServerContribution {
         // Check for components with issues
         appendAllComponentIssues(result);
 
-        return new CallToolResult(result.toString(), Boolean.FALSE);
+        return CallToolResult.builder().addTextContent(result.toString()).build();
     }
 
     private void analyzeBundleIssues(Bundle bundle, StringBuilder result) {
