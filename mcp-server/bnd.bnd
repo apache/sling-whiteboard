@@ -1,3 +1,5 @@
 # workaround for https://github.com/modelcontextprotocol/java-sdk/issues/562
 Private-Package: io.modelcontextprotocol.json.jackson, \
     io.modelcontextprotocol.json.schema.jackson
+
+Sling-Initial-Content: SLING-INF/libs/sling/mcp/prompts;path:=/libs/sling/mcp/prompts;overwrite:=true

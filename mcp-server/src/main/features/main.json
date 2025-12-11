@@ -32,5 +32,13 @@
         "id": "org.yaml:snakeyaml:2.3",
         "start-order": 25
     }
-  ]
+  ],
+  "configurations": {
+        "org.apache.sling.jcr.base.internal.LoginAdminWhitelist.fragment~mcp-server":{
+            "whitelist.bundles":[
+                "org.apache.sling.mcp-server"
+            ],
+            "whitelist.name":"mcp-server"
+        }
+  }
 }

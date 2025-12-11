@@ -22,13 +22,18 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+import io.modelcontextprotocol.common.McpTransportContext;
 import io.modelcontextprotocol.json.McpJsonMapper;
 import io.modelcontextprotocol.json.schema.jackson.DefaultJsonSchemaValidator;
 import io.modelcontextprotocol.server.McpServer;
+import io.modelcontextprotocol.server.McpStatelessServerFeatures.SyncPromptSpecification;
 import io.modelcontextprotocol.server.McpStatelessSyncServer;
 import io.modelcontextprotocol.server.transport.HttpServletStatelessServerTransport;
+import io.modelcontextprotocol.spec.McpSchema;
+import io.modelcontextprotocol.spec.McpSchema.Prompt;
 import io.modelcontextprotocol.spec.McpSchema.ServerCapabilities;
 import jakarta.servlet.Servlet;
 import jakarta.servlet.ServletException;
@@ -36,6 +41,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.sling.api.SlingJakartaHttpServletRequest;
 import org.apache.sling.api.SlingJakartaHttpServletResponse;
+import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.servlets.SlingJakartaAllMethodsServlet;
 import org.apache.sling.servlets.annotations.SlingServletPaths;
 import org.jetbrains.annotations.NotNull;
@@ -44,6 +50,7 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
@@ -91,6 +98,8 @@ public class McpServlet extends SlingJakartaAllMethodsServlet {
         transportProvider = HttpServletStatelessServerTransport.builder()
                 .messageEndpoint(ENDPOINT)
                 .jsonMapper(jsonMapper)
+                .contextExtractor(request -> McpTransportContext.create(
+                        Map.of("resourceResolver", ((SlingJakartaHttpServletRequest) request).getResourceResolver())))
                 .build();
 
         MethodHandles.Lookup privateLookup =
@@ -150,6 +159,21 @@ public class McpServlet extends SlingJakartaAllMethodsServlet {
                 .map(McpServerContribution::getSyncPromptSpecification)
                 .flatMap(Optional::stream)
                 .forEach(syncPrompt -> syncServer.addPrompt(syncPrompt));
+    }
+
+    @Reference(policy = ReferencePolicy.DYNAMIC, policyOption = GREEDY, cardinality = MULTIPLE)
+    protected void bindPrompt(DiscoveredPrompt prompt, Map<String, Object> properties) {
+        String promptName = (String) properties.get(DiscoveredPrompt.SERVICE_PROP_NAME);
+        syncServer.addPrompt(new SyncPromptSpecification(new Prompt(promptName, null, List.of()), (c, r) -> {
+            ResourceResolver resourceResolver = (ResourceResolver) c.get("resourceResolver");
+            var messages = prompt.getPromptMessages(resourceResolver);
+            return new McpSchema.GetPromptResult(null, messages);
+        }));
+    }
+
+    protected void unbindPrompt(Map<String, Object> properties) {
+        String promptName = (String) properties.get(DiscoveredPrompt.SERVICE_PROP_NAME);
+        syncServer.removePrompt(promptName);
     }
 
     @Override
