@@ -34,6 +34,8 @@
 
     <properties>
         <sling.java.version>17</sling.java.version>
+        <!-- Run with -Dslingfeature.app.vmOption=-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=30303 for debug mode-->
+        <slingfeature.app.vmOption />
     </properties>
 
     <dependencies>
@@ -249,6 +251,11 @@
                         <launch>
                             <id>app</id>
                             <featureFile>${project.slingfeature.outputDirectory}/feature-app.json</featureFile>
+                            <launcherArguments>
+                                <vmOptions>
+                                    <vmOption>${slingfeature.app.vmOption}</vmOption>
+                                </vmOptions>
+                            </launcherArguments>
                         </launch>
                     </launches>
                 </configuration>
