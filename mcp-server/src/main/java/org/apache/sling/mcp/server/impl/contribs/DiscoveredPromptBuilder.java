@@ -18,7 +18,6 @@
  */
 package org.apache.sling.mcp.server.impl.contribs;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -40,6 +39,7 @@ import org.commonmark.ext.front.matter.YamlFrontMatterExtension;
 import org.commonmark.ext.front.matter.YamlFrontMatterVisitor;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
+import org.commonmark.renderer.markdown.MarkdownRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -133,16 +133,27 @@ class DiscoveredPromptBuilder {
                 if (encoding == null) {
                     encoding = StandardCharsets.UTF_8.name();
                 }
+
+                Parser parser = Parser.builder()
+                        .extensions(List.of(YamlFrontMatterExtension.create()))
+                        .build();
+
                 try (InputStream stream = promptResource.adaptTo(InputStream.class)) {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    stream.transferTo(baos);
-                    String contents = baos.toString(encoding);
+
+                    Node node = parser.parseReader(new InputStreamReader(stream, encoding));
+
+                    // Render markdown without the front matter extension for clarity and for keeping
+                    // the context usage low
+                    MarkdownRenderer renderer = MarkdownRenderer.builder().build();
+                    String contents = renderer.render(node);
 
                     for (PromptArgument arg : arguments) {
                         String placeholder = "{" + arg.name() + "}";
                         Object requestedArg = req.arguments().get(arg.name());
                         String value = requestedArg != null ? requestedArg.toString() : "";
-                        contents = contents.replace(placeholder, value);
+                        if (!value.isEmpty()) {
+                            contents = contents.replace(placeholder, value);
+                        }
                     }
 
                     return List.of(new PromptMessage(Role.ASSISTANT, new TextContent(contents)));
