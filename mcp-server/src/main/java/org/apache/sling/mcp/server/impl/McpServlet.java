@@ -164,11 +164,14 @@ public class McpServlet extends SlingJakartaAllMethodsServlet {
     @Reference(policy = ReferencePolicy.DYNAMIC, policyOption = GREEDY, cardinality = MULTIPLE)
     protected void bindPrompt(DiscoveredPrompt prompt, Map<String, Object> properties) {
         String promptName = (String) properties.get(DiscoveredPrompt.SERVICE_PROP_NAME);
-        syncServer.addPrompt(new SyncPromptSpecification(new Prompt(promptName, null, List.of()), (c, r) -> {
-            ResourceResolver resourceResolver = (ResourceResolver) c.get("resourceResolver");
-            var messages = prompt.getPromptMessages(resourceResolver);
-            return new McpSchema.GetPromptResult(null, messages);
-        }));
+        String promptTitle = (String) properties.get(DiscoveredPrompt.SERVICE_PROP_TITLE);
+        String promptDescription = (String) properties.get(DiscoveredPrompt.SERVICE_PROP_DESCRIPTION);
+        syncServer.addPrompt(new SyncPromptSpecification(
+                new Prompt(promptName, promptTitle, promptDescription, List.of()), (c, r) -> {
+                    ResourceResolver resourceResolver = (ResourceResolver) c.get("resourceResolver");
+                    var messages = prompt.getPromptMessages(resourceResolver);
+                    return new McpSchema.GetPromptResult(null, messages);
+                }));
     }
 
     protected void unbindPrompt(Map<String, Object> properties) {

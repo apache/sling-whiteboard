@@ -1,3 +1,7 @@
+---
+title: "Troubleshooting guide"
+description: "Guide to troubleshoot common issues with Apache Sling applications"
+---
 # Troubleshooting Guide
 
 ## Overview

@@ -21,7 +21,9 @@ package org.apache.sling.mcp.server.impl.contribs;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -40,6 +42,10 @@ import org.apache.sling.api.resource.observation.ResourceChange;
 import org.apache.sling.api.resource.observation.ResourceChange.ChangeType;
 import org.apache.sling.api.resource.observation.ResourceChangeListener;
 import org.apache.sling.mcp.server.impl.DiscoveredPrompt;
+import org.commonmark.ext.front.matter.YamlFrontMatterExtension;
+import org.commonmark.ext.front.matter.YamlFrontMatterVisitor;
+import org.commonmark.node.Node;
+import org.commonmark.parser.Parser;
 import org.jetbrains.annotations.NotNull;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
@@ -65,7 +71,6 @@ public class RepositoryPromptsRegistrar {
 
                     @Override
                     public void onChange(@NotNull List<ResourceChange> changes) {
-                        changes.forEach(a -> logger.info("Received change {} at {}", a.getType(), a.getPath()));
 
                         try (ResourceResolver resolver = rrf.getAdministrativeResourceResolver(null)) {
                             for (ResourceChange change : changes) {
@@ -125,7 +130,29 @@ public class RepositoryPromptsRegistrar {
 
     private void registerPrompt(BundleContext ctx, String promptName, Resource prompt) {
 
-        Map<String, String> serviceProps = Map.of(DiscoveredPrompt.SERVICE_PROP_NAME, promptName);
+        Map<String, String> serviceProps = new HashMap<>(Map.of(DiscoveredPrompt.SERVICE_PROP_NAME, promptName));
+
+        Parser parser = Parser.builder()
+                .extensions(List.of(YamlFrontMatterExtension.create()))
+                .build();
+        String charset = prompt.getResourceMetadata().getCharacterEncoding();
+        if (charset == null) {
+            charset = StandardCharsets.UTF_8.name();
+        }
+        try (InputStream is = prompt.adaptTo(InputStream.class)) {
+            Node node = parser.parseReader(new InputStreamReader(is, charset));
+            YamlFrontMatterVisitor visitor = new YamlFrontMatterVisitor();
+            node.accept(visitor);
+
+            visitor.getData().getOrDefault("title", List.of()).stream()
+                    .findFirst()
+                    .ifPresent(title -> serviceProps.put(DiscoveredPrompt.SERVICE_PROP_TITLE, title));
+            visitor.getData().getOrDefault("description", List.of()).stream()
+                    .findFirst()
+                    .ifPresent(title -> serviceProps.put(DiscoveredPrompt.SERVICE_PROP_DESCRIPTION, title));
+        } catch (IOException e) {
+            logger.error("Error reading prompt markdown file at {}", prompt.getPath(), e);
+        }
 
         // TODO - discover additional properties from the markdown file (front matter)
 

@@ -31,7 +31,15 @@
     {
         "id": "org.yaml:snakeyaml:2.3",
         "start-order": 25
-    }
+    },
+    {
+        "id": "org.commonmark:commonmark:0.27.0",
+        "start-order": 25
+    },
+    {
+        "id": "org.commonmark:commonmark-ext-yaml-front-matter:0.27.0",
+        "start-order": 25
+    }    
   ],
   "configurations": {
         "org.apache.sling.jcr.base.internal.LoginAdminWhitelist.fragment~mcp-server":{

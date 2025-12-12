@@ -26,6 +26,8 @@ import org.apache.sling.api.resource.ResourceResolver;
 public interface DiscoveredPrompt {
 
     public static final String SERVICE_PROP_NAME = "mcp.prompt.name";
+    public static final String SERVICE_PROP_TITLE = "mcp.prompt.title";
+    public static final String SERVICE_PROP_DESCRIPTION = "mcp.prompt.description";
 
     List<PromptMessage> getPromptMessages(ResourceResolver resolver);
 }
