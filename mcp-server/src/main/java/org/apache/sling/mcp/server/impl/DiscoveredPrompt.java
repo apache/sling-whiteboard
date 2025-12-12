@@ -20,14 +20,16 @@ package org.apache.sling.mcp.server.impl;
 
 import java.util.List;
 
+import io.modelcontextprotocol.common.McpTransportContext;
+import io.modelcontextprotocol.spec.McpSchema.GetPromptRequest;
+import io.modelcontextprotocol.spec.McpSchema.Prompt;
 import io.modelcontextprotocol.spec.McpSchema.PromptMessage;
-import org.apache.sling.api.resource.ResourceResolver;
 
 public interface DiscoveredPrompt {
 
     public static final String SERVICE_PROP_NAME = "mcp.prompt.name";
-    public static final String SERVICE_PROP_TITLE = "mcp.prompt.title";
-    public static final String SERVICE_PROP_DESCRIPTION = "mcp.prompt.description";
 
-    List<PromptMessage> getPromptMessages(ResourceResolver resolver);
+    List<PromptMessage> getPromptMessages(McpTransportContext c, GetPromptRequest r);
+
+    Prompt asPrompt();
 }

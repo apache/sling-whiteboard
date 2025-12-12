@@ -33,7 +33,6 @@ import io.modelcontextprotocol.server.McpStatelessServerFeatures.SyncPromptSpeci
 import io.modelcontextprotocol.server.McpStatelessSyncServer;
 import io.modelcontextprotocol.server.transport.HttpServletStatelessServerTransport;
 import io.modelcontextprotocol.spec.McpSchema;
-import io.modelcontextprotocol.spec.McpSchema.Prompt;
 import io.modelcontextprotocol.spec.McpSchema.ServerCapabilities;
 import jakarta.servlet.Servlet;
 import jakarta.servlet.ServletException;
@@ -41,7 +40,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.sling.api.SlingJakartaHttpServletRequest;
 import org.apache.sling.api.SlingJakartaHttpServletResponse;
-import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.servlets.SlingJakartaAllMethodsServlet;
 import org.apache.sling.servlets.annotations.SlingServletPaths;
 import org.jetbrains.annotations.NotNull;
@@ -163,15 +161,10 @@ public class McpServlet extends SlingJakartaAllMethodsServlet {
 
     @Reference(policy = ReferencePolicy.DYNAMIC, policyOption = GREEDY, cardinality = MULTIPLE)
     protected void bindPrompt(DiscoveredPrompt prompt, Map<String, Object> properties) {
-        String promptName = (String) properties.get(DiscoveredPrompt.SERVICE_PROP_NAME);
-        String promptTitle = (String) properties.get(DiscoveredPrompt.SERVICE_PROP_TITLE);
-        String promptDescription = (String) properties.get(DiscoveredPrompt.SERVICE_PROP_DESCRIPTION);
-        syncServer.addPrompt(new SyncPromptSpecification(
-                new Prompt(promptName, promptTitle, promptDescription, List.of()), (c, r) -> {
-                    ResourceResolver resourceResolver = (ResourceResolver) c.get("resourceResolver");
-                    var messages = prompt.getPromptMessages(resourceResolver);
-                    return new McpSchema.GetPromptResult(null, messages);
-                }));
+        syncServer.addPrompt(new SyncPromptSpecification(prompt.asPrompt(), (c, r) -> {
+            var messages = prompt.getPromptMessages(c, r);
+            return new McpSchema.GetPromptResult(null, messages);
+        }));
     }
 
     protected void unbindPrompt(Map<String, Object> properties) {

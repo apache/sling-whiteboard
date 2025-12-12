@@ -18,12 +18,7 @@
  */
 package org.apache.sling.mcp.server.impl.contribs;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -31,9 +26,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import io.modelcontextprotocol.spec.McpSchema.PromptMessage;
-import io.modelcontextprotocol.spec.McpSchema.Role;
-import io.modelcontextprotocol.spec.McpSchema.TextContent;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -42,10 +34,6 @@ import org.apache.sling.api.resource.observation.ResourceChange;
 import org.apache.sling.api.resource.observation.ResourceChange.ChangeType;
 import org.apache.sling.api.resource.observation.ResourceChangeListener;
 import org.apache.sling.mcp.server.impl.DiscoveredPrompt;
-import org.commonmark.ext.front.matter.YamlFrontMatterExtension;
-import org.commonmark.ext.front.matter.YamlFrontMatterVisitor;
-import org.commonmark.node.Node;
-import org.commonmark.parser.Parser;
 import org.jetbrains.annotations.NotNull;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
@@ -61,6 +49,7 @@ public class RepositoryPromptsRegistrar {
     private static final String PROMPT_LIBS_DIR = "/libs/sling/mcp/prompts";
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private ConcurrentMap<String, ServiceRegistration<DiscoveredPrompt>> registrations = new ConcurrentHashMap<>();
+    private final DiscoveredPromptBuilder promptBuilder = new DiscoveredPromptBuilder();
 
     @Activate
     public RepositoryPromptsRegistrar(@Reference ResourceResolverFactory rrf, BundleContext ctx) throws LoginException {
@@ -128,40 +117,20 @@ public class RepositoryPromptsRegistrar {
         }
     }
 
-    private void registerPrompt(BundleContext ctx, String promptName, Resource prompt) {
+    private void registerPrompt(BundleContext ctx, String promptName, Resource promptResource) {
 
-        Map<String, String> serviceProps = new HashMap<>(Map.of(DiscoveredPrompt.SERVICE_PROP_NAME, promptName));
+        try {
+            DiscoveredPrompt prompt = promptBuilder.buildPrompt(promptResource, promptName);
 
-        Parser parser = Parser.builder()
-                .extensions(List.of(YamlFrontMatterExtension.create()))
-                .build();
-        String charset = prompt.getResourceMetadata().getCharacterEncoding();
-        if (charset == null) {
-            charset = StandardCharsets.UTF_8.name();
-        }
-        try (InputStream is = prompt.adaptTo(InputStream.class)) {
-            Node node = parser.parseReader(new InputStreamReader(is, charset));
-            YamlFrontMatterVisitor visitor = new YamlFrontMatterVisitor();
-            node.accept(visitor);
+            var sr = ctx.registerService(
+                    DiscoveredPrompt.class,
+                    prompt,
+                    new Hashtable<>(Map.of(DiscoveredPrompt.SERVICE_PROP_NAME, promptName)));
 
-            visitor.getData().getOrDefault("title", List.of()).stream()
-                    .findFirst()
-                    .ifPresent(title -> serviceProps.put(DiscoveredPrompt.SERVICE_PROP_TITLE, title));
-            visitor.getData().getOrDefault("description", List.of()).stream()
-                    .findFirst()
-                    .ifPresent(title -> serviceProps.put(DiscoveredPrompt.SERVICE_PROP_DESCRIPTION, title));
+            registrations.put(promptName, sr);
         } catch (IOException e) {
-            logger.error("Error reading prompt markdown file at {}", prompt.getPath(), e);
+            logger.warn("Error registering prompt {} at path {}", promptName, promptResource.getPath(), e);
         }
-
-        // TODO - discover additional properties from the markdown file (front matter)
-
-        var sr = ctx.registerService(
-                DiscoveredPrompt.class,
-                new RepositoryPrompt(prompt.getPath()),
-                new Hashtable<String, String>(serviceProps));
-
-        registrations.put(promptName, sr);
     }
 
     private String getPromptName(String path) {
@@ -176,33 +145,5 @@ public class RepositoryPromptsRegistrar {
 
         // remove .md extension
         return promptName.substring(0, promptName.length() - ".md".length());
-    }
-
-    class RepositoryPrompt implements DiscoveredPrompt {
-        private final String promptPath;
-
-        RepositoryPrompt(String promptPath) {
-            this.promptPath = promptPath;
-        }
-
-        @Override
-        public List<PromptMessage> getPromptMessages(ResourceResolver resolver) {
-
-            try {
-                Resource promptResource = resolver.getResource(promptPath);
-                String encoding = promptResource.getResourceMetadata().getCharacterEncoding();
-                if (encoding == null) {
-                    encoding = StandardCharsets.UTF_8.name();
-                }
-                try (InputStream stream = promptResource.adaptTo(InputStream.class)) {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    stream.transferTo(baos);
-                    String contents = baos.toString(encoding);
-                    return List.of(new PromptMessage(Role.ASSISTANT, new TextContent(contents)));
-                }
-            } catch (IOException e) {
-                return List.of();
-            }
-        }
     }
 }
