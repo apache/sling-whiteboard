@@ -34,7 +34,7 @@ import io.modelcontextprotocol.spec.McpSchema.ReadResourceResult;
 import io.modelcontextprotocol.spec.McpSchema.Resource;
 import io.modelcontextprotocol.spec.McpSchema.ResourceTemplate;
 import io.modelcontextprotocol.spec.McpSchema.TextResourceContents;
-import org.apache.sling.mcp.server.impl.McpServerContribution;
+import org.apache.sling.mcp.server.spi.McpServerContribution;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.wiring.BundleRevision;

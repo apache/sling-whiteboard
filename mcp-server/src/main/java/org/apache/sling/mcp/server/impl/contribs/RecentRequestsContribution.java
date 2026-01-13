@@ -29,7 +29,7 @@ import io.modelcontextprotocol.spec.McpSchema.Resource;
 import io.modelcontextprotocol.spec.McpSchema.TextResourceContents;
 import org.apache.sling.engine.RequestInfo;
 import org.apache.sling.engine.RequestInfoProvider;
-import org.apache.sling.mcp.server.impl.McpServerContribution;
+import org.apache.sling.mcp.server.spi.McpServerContribution;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;

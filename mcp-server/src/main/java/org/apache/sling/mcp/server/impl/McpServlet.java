@@ -41,6 +41,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.sling.api.SlingJakartaHttpServletRequest;
 import org.apache.sling.api.SlingJakartaHttpServletResponse;
 import org.apache.sling.api.servlets.SlingJakartaAllMethodsServlet;
+import org.apache.sling.mcp.server.spi.McpServerContribution;
 import org.apache.sling.servlets.annotations.SlingServletPaths;
 import org.jetbrains.annotations.NotNull;
 import org.osgi.framework.BundleContext;

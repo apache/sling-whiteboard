@@ -28,7 +28,7 @@ import io.modelcontextprotocol.spec.McpSchema.Prompt;
 import io.modelcontextprotocol.spec.McpSchema.PromptArgument;
 import io.modelcontextprotocol.spec.McpSchema.PromptMessage;
 import io.modelcontextprotocol.spec.McpSchema.Role;
-import org.apache.sling.mcp.server.impl.McpServerContribution;
+import org.apache.sling.mcp.server.spi.McpServerContribution;
 import org.osgi.service.component.annotations.Component;
 
 /**

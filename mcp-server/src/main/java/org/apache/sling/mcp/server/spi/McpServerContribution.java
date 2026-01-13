@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.sling.mcp.server.impl;
+package org.apache.sling.mcp.server.spi;
 
 import java.util.Optional;
 
@@ -32,6 +32,12 @@ import io.modelcontextprotocol.server.McpStatelessServerFeatures.SyncToolSpecifi
 // is activated and therefore it does not take into account added/changed/removed contributions
 //
 // Expect this abstraction to change
+/**
+ * Provisional API for registering MCP server contributions
+ *
+ * <p>This abstraction is needed because the contributions themselves are Java records and cannot
+ * be registered as OSGi services directly.</p>
+ */
 public interface McpServerContribution {
 
     default Optional<SyncToolSpecification> getSyncToolSpecification() {

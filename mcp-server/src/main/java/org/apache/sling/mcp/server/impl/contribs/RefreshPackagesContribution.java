@@ -24,7 +24,7 @@ import io.modelcontextprotocol.json.McpJsonMapper;
 import io.modelcontextprotocol.server.McpStatelessServerFeatures.SyncToolSpecification;
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
 import io.modelcontextprotocol.spec.McpSchema.Tool;
-import org.apache.sling.mcp.server.impl.McpServerContribution;
+import org.apache.sling.mcp.server.spi.McpServerContribution;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.wiring.FrameworkWiring;
 import org.osgi.service.component.annotations.Activate;
