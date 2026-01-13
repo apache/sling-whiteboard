@@ -23,7 +23,6 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import io.modelcontextprotocol.common.McpTransportContext;
 import io.modelcontextprotocol.json.McpJsonMapper;
@@ -122,7 +121,7 @@ public class McpServlet extends SlingJakartaAllMethodsServlet {
 
         var completions = contributions.stream()
                 .map(McpServerContribution::getSyncCompletionSpecification)
-                .flatMap(Optional::stream)
+                .flatMap(List::stream)
                 .toList();
 
         syncServer = McpServer.sync(transportProvider)
@@ -141,22 +140,22 @@ public class McpServlet extends SlingJakartaAllMethodsServlet {
 
         contributions.stream()
                 .map(McpServerContribution::getSyncToolSpecification)
-                .flatMap(Optional::stream)
+                .flatMap(List::stream)
                 .forEach(syncTool -> syncServer.addTool(syncTool));
 
         contributions.stream()
                 .map(McpServerContribution::getSyncResourceSpecification)
-                .flatMap(Optional::stream)
+                .flatMap(List::stream)
                 .forEach(syncResource -> syncServer.addResource(syncResource));
 
         contributions.stream()
                 .map(McpServerContribution::getSyncResourceTemplateSpecification)
-                .flatMap(Optional::stream)
+                .flatMap(List::stream)
                 .forEach(syncResource -> syncServer.addResourceTemplate(syncResource));
 
         contributions.stream()
                 .map(McpServerContribution::getSyncPromptSpecification)
-                .flatMap(Optional::stream)
+                .flatMap(List::stream)
                 .forEach(syncPrompt -> syncServer.addPrompt(syncPrompt));
     }
 

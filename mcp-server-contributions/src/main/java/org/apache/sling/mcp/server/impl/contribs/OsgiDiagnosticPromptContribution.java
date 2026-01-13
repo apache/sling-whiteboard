@@ -19,7 +19,6 @@
 package org.apache.sling.mcp.server.impl.contribs;
 
 import java.util.List;
-import java.util.Optional;
 
 import io.modelcontextprotocol.server.McpStatelessServerFeatures.SyncPromptSpecification;
 import io.modelcontextprotocol.spec.McpSchema;
@@ -42,8 +41,8 @@ import org.osgi.service.component.annotations.Component;
 public class OsgiDiagnosticPromptContribution implements McpServerContribution {
 
     @Override
-    public Optional<SyncPromptSpecification> getSyncPromptSpecification() {
-        return Optional.of(new SyncPromptSpecification(
+    public List<SyncPromptSpecification> getSyncPromptSpecification() {
+        return List.of(new SyncPromptSpecification(
                 new Prompt(
                         "diagnose-osgi-issue",
                         "Diagnose OSGi Bundle Issues",

@@ -18,7 +18,7 @@
  */
 package org.apache.sling.mcp.server.spi;
 
-import java.util.Optional;
+import java.util.List;
 
 import io.modelcontextprotocol.server.McpStatelessServerFeatures.SyncCompletionSpecification;
 import io.modelcontextprotocol.server.McpStatelessServerFeatures.SyncPromptSpecification;
@@ -37,26 +37,29 @@ import io.modelcontextprotocol.server.McpStatelessServerFeatures.SyncToolSpecifi
  *
  * <p>This abstraction is needed because the contributions themselves are Java records and cannot
  * be registered as OSGi services directly.</p>
+ *
+ * <p><strong>Note:</strong> This API can change in incompatible ways while the bundle version is &lt; 1.0 . The exported package
+ * version will remain 1.0.0 and will be changed to 1.1.0 once the bundle version becomes 1.0 .</p>
  */
 public interface McpServerContribution {
 
-    default Optional<SyncToolSpecification> getSyncToolSpecification() {
-        return Optional.empty();
+    default List<SyncToolSpecification> getSyncToolSpecification() {
+        return List.of();
     }
 
-    default Optional<SyncResourceSpecification> getSyncResourceSpecification() {
-        return Optional.empty();
+    default List<SyncResourceSpecification> getSyncResourceSpecification() {
+        return List.of();
     }
 
-    default Optional<SyncResourceTemplateSpecification> getSyncResourceTemplateSpecification() {
-        return Optional.empty();
+    default List<SyncResourceTemplateSpecification> getSyncResourceTemplateSpecification() {
+        return List.of();
     }
 
-    default Optional<SyncPromptSpecification> getSyncPromptSpecification() {
-        return Optional.empty();
+    default List<SyncPromptSpecification> getSyncPromptSpecification() {
+        return List.of();
     }
 
-    default Optional<SyncCompletionSpecification> getSyncCompletionSpecification() {
-        return Optional.empty();
+    default List<SyncCompletionSpecification> getSyncCompletionSpecification() {
+        return List.of();
     }
 }

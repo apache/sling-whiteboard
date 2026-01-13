@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import io.modelcontextprotocol.json.McpJsonMapper;
@@ -69,7 +68,7 @@ public class OsgiBundleDiagnosticContribution implements McpServerContribution {
     }
 
     @Override
-    public Optional<SyncToolSpecification> getSyncToolSpecification() {
+    public List<SyncToolSpecification> getSyncToolSpecification() {
 
         var schema = """
                 {
@@ -84,7 +83,7 @@ public class OsgiBundleDiagnosticContribution implements McpServerContribution {
                 }
                 """;
 
-        return Optional.of(new SyncToolSpecification(
+        return List.of(new SyncToolSpecification(
                 Tool.builder()
                         .name("diagnose-osgi-bundle")
                         .description(

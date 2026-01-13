@@ -19,7 +19,6 @@
 package org.apache.sling.mcp.server.impl.contribs;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -51,8 +50,8 @@ public class RecentRequestsContribution implements McpServerContribution {
     }
 
     @Override
-    public Optional<SyncResourceSpecification> getSyncResourceSpecification() {
-        return Optional.of(new SyncResourceSpecification(
+    public List<SyncResourceSpecification> getSyncResourceSpecification() {
+        return List.of(new SyncResourceSpecification(
                 new Resource.Builder()
                         .uri("recent-requests://all")
                         .description(

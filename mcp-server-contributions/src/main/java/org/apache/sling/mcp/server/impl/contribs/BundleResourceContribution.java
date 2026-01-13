@@ -57,9 +57,9 @@ public class BundleResourceContribution implements McpServerContribution {
     }
 
     @Override
-    public Optional<SyncResourceSpecification> getSyncResourceSpecification() {
+    public List<SyncResourceSpecification> getSyncResourceSpecification() {
 
-        return Optional.of(new McpStatelessServerFeatures.SyncResourceSpecification(
+        return List.of(new McpStatelessServerFeatures.SyncResourceSpecification(
                 new Resource.Builder()
                         .name("bundles")
                         .uri(URI_BUNDLES_ALL)
@@ -78,8 +78,8 @@ public class BundleResourceContribution implements McpServerContribution {
     }
 
     @Override
-    public Optional<SyncResourceTemplateSpecification> getSyncResourceTemplateSpecification() {
-        return Optional.of(new McpStatelessServerFeatures.SyncResourceTemplateSpecification(
+    public List<SyncResourceTemplateSpecification> getSyncResourceTemplateSpecification() {
+        return List.of(new McpStatelessServerFeatures.SyncResourceTemplateSpecification(
                 new ResourceTemplate.Builder()
                         .uriTemplate(RESOURCE_TEMPLATE_BUNDLES_STATE_PATTERN)
                         .name("bundles")
@@ -108,9 +108,9 @@ public class BundleResourceContribution implements McpServerContribution {
     }
 
     @Override
-    public Optional<SyncCompletionSpecification> getSyncCompletionSpecification() {
+    public List<SyncCompletionSpecification> getSyncCompletionSpecification() {
 
-        return Optional.of(new McpStatelessServerFeatures.SyncCompletionSpecification(
+        return List.of(new McpStatelessServerFeatures.SyncCompletionSpecification(
                 new McpSchema.ResourceReference("ref/resource", RESOURCE_TEMPLATE_BUNDLES_STATE_PATTERN),
                 (context, request) -> {
 

@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -60,7 +59,7 @@ public class LogToolContribution implements McpServerContribution {
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
     @Override
-    public Optional<SyncToolSpecification> getSyncToolSpecification() {
+    public List<SyncToolSpecification> getSyncToolSpecification() {
 
         var schema = """
                 {
@@ -86,7 +85,7 @@ public class LogToolContribution implements McpServerContribution {
                 }
                 """;
 
-        return Optional.of(new SyncToolSpecification(
+        return List.of(new SyncToolSpecification(
                 Tool.builder()
                         .name("aem-logs")
                         .description("Retrieve AEM/OSGi logs with optional filtering. "

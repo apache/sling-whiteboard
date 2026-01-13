@@ -18,7 +18,7 @@
  */
 package org.apache.sling.mcp.server.impl.contribs;
 
-import java.util.Optional;
+import java.util.List;
 
 import io.modelcontextprotocol.json.McpJsonMapper;
 import io.modelcontextprotocol.server.McpStatelessServerFeatures.SyncToolSpecification;
@@ -45,7 +45,7 @@ public class RefreshPackagesContribution implements McpServerContribution {
     }
 
     @Override
-    public Optional<SyncToolSpecification> getSyncToolSpecification() {
+    public List<SyncToolSpecification> getSyncToolSpecification() {
 
         var schema = """
                 {
@@ -55,7 +55,7 @@ public class RefreshPackagesContribution implements McpServerContribution {
                 }
                 """;
 
-        return Optional.of(new SyncToolSpecification(
+        return List.of(new SyncToolSpecification(
                 Tool.builder()
                         .name("refresh-packages")
                         .description("Refresh Packages")

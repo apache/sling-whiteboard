@@ -19,7 +19,6 @@
 package org.apache.sling.mcp.server.impl.contribs;
 
 import java.util.List;
-import java.util.Optional;
 
 import io.modelcontextprotocol.server.McpStatelessServerFeatures;
 import io.modelcontextprotocol.server.McpStatelessServerFeatures.SyncCompletionSpecification;
@@ -37,8 +36,8 @@ import org.osgi.service.component.annotations.Component;
 public class ServletPromptContribution implements McpServerContribution {
 
     @Override
-    public Optional<SyncPromptSpecification> getSyncPromptSpecification() {
-        return Optional.of(new SyncPromptSpecification(
+    public List<SyncPromptSpecification> getSyncPromptSpecification() {
+        return List.of(new SyncPromptSpecification(
                 new Prompt(
                         "new-sling-servlet",
                         "Create new Sling Servlet",
@@ -61,9 +60,9 @@ public class ServletPromptContribution implements McpServerContribution {
     }
 
     @Override
-    public Optional<SyncCompletionSpecification> getSyncCompletionSpecification() {
+    public List<SyncCompletionSpecification> getSyncCompletionSpecification() {
         // supply no completions for various resource types because it's supposed to be specified by the user
-        return Optional.of(new McpStatelessServerFeatures.SyncCompletionSpecification(
+        return List.of(new McpStatelessServerFeatures.SyncCompletionSpecification(
                 new McpSchema.PromptReference("ref/prompt", "new-sling-servlet"), (context, request) -> {
                     return new McpSchema.CompleteResult(new CompleteCompletion(List.of(), 0, false));
                 }));

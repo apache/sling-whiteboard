@@ -21,7 +21,6 @@ package org.apache.sling.mcp.server.impl.contribs;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import io.modelcontextprotocol.server.McpStatelessServerFeatures;
@@ -65,9 +64,9 @@ public class ComponentResourceContribution implements McpServerContribution {
     public ComponentResourceContribution() {}
 
     @Override
-    public Optional<SyncResourceSpecification> getSyncResourceSpecification() {
+    public List<SyncResourceSpecification> getSyncResourceSpecification() {
 
-        return Optional.of(new McpStatelessServerFeatures.SyncResourceSpecification(
+        return List.of(new McpStatelessServerFeatures.SyncResourceSpecification(
                 new Resource.Builder()
                         .name("component")
                         .uri("component://")
@@ -93,8 +92,8 @@ public class ComponentResourceContribution implements McpServerContribution {
     }
 
     @Override
-    public Optional<SyncResourceTemplateSpecification> getSyncResourceTemplateSpecification() {
-        return Optional.of(new McpStatelessServerFeatures.SyncResourceTemplateSpecification(
+    public List<SyncResourceTemplateSpecification> getSyncResourceTemplateSpecification() {
+        return List.of(new McpStatelessServerFeatures.SyncResourceTemplateSpecification(
                 new ResourceTemplate.Builder()
                         .uriTemplate("components://state/{state}")
                         .name("components")
