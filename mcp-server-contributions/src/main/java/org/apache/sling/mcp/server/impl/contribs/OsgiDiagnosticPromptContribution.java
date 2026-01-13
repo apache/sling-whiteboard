@@ -47,7 +47,7 @@ public class OsgiDiagnosticPromptContribution implements McpServerContribution {
                 new Prompt(
                         "diagnose-osgi-issue",
                         "Diagnose OSGi Bundle Issues",
-                        "Helps diagnose why an OSGi bundle or component isn't starting in AEM/Sling. Provides step-by-step troubleshooting guidance.",
+                        "Helps diagnose why an OSGi bundle or component isn't starting. Provides step-by-step troubleshooting guidance.",
                         List.of(new PromptArgument(
                                 "bundle-name",
                                 "Bundle Symbolic Name",
@@ -78,7 +78,7 @@ public class OsgiDiagnosticPromptContribution implements McpServerContribution {
                     .append(bundleName)
                     .append("'\n\n");
         } else {
-            sb.append("I'll help you diagnose OSGi bundle issues in your AEM/Sling environment.\n\n");
+            sb.append("I'll help you diagnose OSGi bundle issues in your environment.\n\n");
             sb.append("## Step 1: Identify Problematic Bundles\n\n");
             sb.append("Use the `diagnose-osgi-bundle` tool without parameters to scan all bundles.\n\n");
         }
