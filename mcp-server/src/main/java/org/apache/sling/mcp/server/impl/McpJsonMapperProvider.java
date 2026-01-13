@@ -27,6 +27,8 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 
+import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
+
 @Component
 public class McpJsonMapperProvider {
 
@@ -34,7 +36,10 @@ public class McpJsonMapperProvider {
 
     @Activate
     public void activate(BundleContext bundleContext) {
-        McpJsonMapper jsonMapper = new JacksonMcpJsonMapper(new ObjectMapper());
+        ObjectMapper objectMapper = new ObjectMapper();
+        // work around https://github.com/modelcontextprotocol/java-sdk/issues/724
+        objectMapper.configure(FAIL_ON_UNKNOWN_PROPERTIES, false);
+        McpJsonMapper jsonMapper = new JacksonMcpJsonMapper(objectMapper);
         serviceRegistration = bundleContext.registerService(McpJsonMapper.class, jsonMapper, null);
     }
 
