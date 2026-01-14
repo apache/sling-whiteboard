@@ -43,7 +43,7 @@ import org.osgi.service.log.LogReaderService;
 import org.osgi.service.log.LogService;
 
 /**
- * MCP Tool that provides access to AEM/OSGi logs with filtering capabilities.
+ * MCP Tool that provides access to logs with filtering capabilities.
  * Allows filtering by regex pattern, log level, and maximum number of entries.
  */
 @Component
@@ -88,7 +88,7 @@ public class LogToolContribution implements McpServerContribution {
         return List.of(new SyncToolSpecification(
                 Tool.builder()
                         .name("aem-logs")
-                        .description("Retrieve AEM/OSGi logs with optional filtering. "
+                        .description("Retrieve logs with optional filtering. "
                                 + "Supports filtering by regex pattern, log level (ERROR, WARN, INFO, DEBUG, TRACE), "
                                 + "and maximum number of entries. Returns most recent logs first.")
                         .inputSchema(jsonMapper, schema)
@@ -225,7 +225,7 @@ public class LogToolContribution implements McpServerContribution {
     private String formatLogs(List<LogEntry> logs, String regexPattern, int minLogLevel, int maxEntries) {
         StringBuilder result = new StringBuilder();
 
-        result.append("=== AEM Log Entries ===\n\n");
+        result.append("=== Log Entries ===\n\n");
         result.append("Filter Settings:\n");
         result.append("  - Log Level: ").append(getLogLevelName(minLogLevel)).append(" and higher severity\n");
         result.append("  - Regex Pattern: ")
