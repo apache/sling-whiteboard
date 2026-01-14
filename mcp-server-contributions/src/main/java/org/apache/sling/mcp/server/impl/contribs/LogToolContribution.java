@@ -87,7 +87,7 @@ public class LogToolContribution implements McpServerContribution {
 
         return List.of(new SyncToolSpecification(
                 Tool.builder()
-                        .name("aem-logs")
+                        .name("logs")
                         .description("Retrieve logs with optional filtering. "
                                 + "Supports filtering by regex pattern, log level (ERROR, WARN, INFO, DEBUG, TRACE), "
                                 + "and maximum number of entries. Returns most recent logs first.")
