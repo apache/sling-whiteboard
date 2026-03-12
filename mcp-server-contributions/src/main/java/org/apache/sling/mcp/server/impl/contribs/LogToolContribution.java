@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import io.modelcontextprotocol.json.McpJsonMapper;
+import io.modelcontextprotocol.json.McpJsonMapperSupplier;
 import io.modelcontextprotocol.server.McpStatelessServerFeatures.SyncToolSpecification;
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
 import io.modelcontextprotocol.spec.McpSchema.Tool;
@@ -53,7 +53,7 @@ public class LogToolContribution implements McpServerContribution {
     private LogReaderService logReaderService;
 
     @Reference
-    private McpJsonMapper jsonMapper;
+    private McpJsonMapperSupplier jsonMapper;
 
     private static final int DEFAULT_MAX_LOGS = 200;
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
@@ -91,7 +91,7 @@ public class LogToolContribution implements McpServerContribution {
                         .description("Retrieve logs with optional filtering. "
                                 + "Supports filtering by regex pattern, log level (ERROR, WARN, INFO, DEBUG, TRACE), "
                                 + "and maximum number of entries. Returns most recent logs first.")
-                        .inputSchema(jsonMapper, schema)
+                        .inputSchema(jsonMapper.get(), schema)
                         .build(),
                 (exchange, request) -> {
                     String regexPattern = (String) request.arguments().get("regex");

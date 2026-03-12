@@ -20,7 +20,7 @@ package org.apache.sling.mcp.server.impl.contribs;
 
 import java.util.List;
 
-import io.modelcontextprotocol.json.McpJsonMapper;
+import io.modelcontextprotocol.json.McpJsonMapperSupplier;
 import io.modelcontextprotocol.server.McpStatelessServerFeatures.SyncToolSpecification;
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
 import io.modelcontextprotocol.spec.McpSchema.Tool;
@@ -35,7 +35,7 @@ import org.osgi.service.component.annotations.Reference;
 public class RefreshPackagesContribution implements McpServerContribution {
 
     @Reference
-    private McpJsonMapper jsonMapper;
+    private McpJsonMapperSupplier jsonMapperSupplier;
 
     private final BundleContext ctx;
 
@@ -59,7 +59,7 @@ public class RefreshPackagesContribution implements McpServerContribution {
                 Tool.builder()
                         .name("refresh-packages")
                         .description("Refresh Packages")
-                        .inputSchema(jsonMapper, schema)
+                        .inputSchema(jsonMapperSupplier.get(), schema)
                         .build(),
                 (exchange, arguments) -> {
                     FrameworkWiring fw = ctx.getBundle(0).adapt(FrameworkWiring.class);

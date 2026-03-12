@@ -24,7 +24,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import io.modelcontextprotocol.json.McpJsonMapper;
+import io.modelcontextprotocol.json.McpJsonMapperSupplier;
 import io.modelcontextprotocol.server.McpStatelessServerFeatures.SyncToolSpecification;
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
 import io.modelcontextprotocol.spec.McpSchema.Tool;
@@ -55,7 +55,7 @@ import org.osgi.service.component.runtime.dto.UnsatisfiedReferenceDTO;
 public class OsgiBundleDiagnosticContribution implements McpServerContribution {
 
     @Reference
-    private McpJsonMapper jsonMapper;
+    private McpJsonMapperSupplier jsonMapperSupplier;
 
     @Reference
     private ServiceComponentRuntime scr;
@@ -88,7 +88,7 @@ public class OsgiBundleDiagnosticContribution implements McpServerContribution {
                         .name("diagnose-osgi-bundle")
                         .description(
                                 "Diagnose why an OSGi bundle or component isn't starting. Provides detailed information about unsatisfied dependencies, missing packages, and component configuration issues.")
-                        .inputSchema(jsonMapper, schema)
+                        .inputSchema(jsonMapperSupplier.get(), schema)
                         .build(),
                 (exchange, request) -> {
                     String bundleSymbolicName = (String) request.arguments().get("bundleSymbolicName");
