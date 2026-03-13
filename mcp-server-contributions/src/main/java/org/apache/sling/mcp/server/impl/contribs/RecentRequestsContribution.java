@@ -19,13 +19,15 @@
 package org.apache.sling.mcp.server.impl.contribs;
 
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import io.modelcontextprotocol.server.McpStatelessServerFeatures.SyncResourceSpecification;
-import io.modelcontextprotocol.spec.McpSchema.ReadResourceResult;
-import io.modelcontextprotocol.spec.McpSchema.Resource;
-import io.modelcontextprotocol.spec.McpSchema.TextResourceContents;
+import io.modelcontextprotocol.json.McpJsonMapperSupplier;
+import io.modelcontextprotocol.server.McpStatelessServerFeatures.SyncToolSpecification;
+import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
+import io.modelcontextprotocol.spec.McpSchema.Tool;
 import org.apache.sling.engine.RequestInfo;
 import org.apache.sling.engine.RequestInfoProvider;
 import org.apache.sling.mcp.server.spi.McpServerContribution;
@@ -36,11 +38,14 @@ import org.osgi.service.component.annotations.Reference;
 @Component
 public class RecentRequestsContribution implements McpServerContribution {
 
-    private RequestInfoProvider requestInfoProvider;
+    private final RequestInfoProvider requestInfoProvider;
+    private final McpJsonMapperSupplier jsonMapperSupplier;
 
     @Activate
-    public RecentRequestsContribution(@Reference RequestInfoProvider requestInfoProvider) {
+    public RecentRequestsContribution(
+            @Reference RequestInfoProvider requestInfoProvider, @Reference McpJsonMapperSupplier jsonMapperSupplier) {
         this.requestInfoProvider = requestInfoProvider;
+        this.jsonMapperSupplier = jsonMapperSupplier;
     }
 
     private String describe(RequestInfo ri) {
@@ -50,23 +55,54 @@ public class RecentRequestsContribution implements McpServerContribution {
     }
 
     @Override
-    public List<SyncResourceSpecification> getSyncResourceSpecification() {
-        return List.of(new SyncResourceSpecification(
-                new Resource.Builder()
-                        .uri("recent-requests://all")
+    public List<SyncToolSpecification> getSyncToolSpecification() {
+
+        var schema = """
+                {
+                  "type" : "object",
+                  "id" : "urn:jsonschema:RecentRequestsInput",
+                  "properties" : {
+                    "path" : {
+                      "type" : "string",
+                      "description" : "Optional regex pattern to filter requests by path. If not provided, all recent requests are returned."
+                    }
+                  }
+                }
+                """;
+
+        return List.of(new SyncToolSpecification(
+                Tool.builder()
+                        .name("recent-requests")
                         .description(
-                                "Prints all recent requests ( excluding /bin/mcp ). Contains information about method, path, user id and a verbose log of internal operations, including authentication, resource resolution, script resolution, nested scripts/servlets and filters.")
-                        .name("recent-requests-all")
+                                "Returns all recent requests matching the specified path regex. "
+                                        + "Contains information about method, path, user id and a verbose log of internal operations, "
+                                        + "including authentication, resource resolution, script resolution, nested scripts/servlets and filters.")
+                        .inputSchema(jsonMapperSupplier.get(), schema)
                         .build(),
-                (context, request) -> {
+                (exchange, request) -> {
+                    String pathRegex = (String) request.arguments().get("path");
+
+                    Pattern pattern = null;
+                    if (pathRegex != null && !pathRegex.isEmpty()) {
+                        try {
+                            pattern = Pattern.compile(pathRegex, Pattern.CASE_INSENSITIVE);
+                        } catch (PatternSyntaxException e) {
+                            return CallToolResult.builder()
+                                    .addTextContent("Invalid regex pattern: " + e.getMessage())
+                                    .isError(true)
+                                    .build();
+                        }
+                    }
+
+                    final Pattern finalPattern = pattern;
                     String allRequests = StreamSupport.stream(
                                     requestInfoProvider.getRequestInfos().spliterator(), false)
-                            .filter((ri) -> !ri.getPath().equals("/bin/mcp"))
+                            .filter(ri -> finalPattern == null
+                                    || finalPattern.matcher(ri.getPath()).find())
                             .map(this::describe)
                             .collect(Collectors.joining("\n\n" + "-".repeat(20) + "\n\n"));
 
-                    return new ReadResourceResult(
-                            List.of(new TextResourceContents("recent-requests://all", "text/plain", allRequests)));
+                    return CallToolResult.builder().addTextContent(allRequests).build();
                 }));
     }
 }
