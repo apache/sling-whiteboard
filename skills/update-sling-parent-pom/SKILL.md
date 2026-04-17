@@ -44,6 +44,10 @@ Different parent pom versions require different Java versions. This is listed in
 | 29                 | 8               | None                    |
 | 30                 | 8               | None                    |
 | 31                 | 8               | osgi-annotations        |
+| 32                 | 8               | None                    |
+| 33                 | 8               | None                    |
+| 34                 | 8               | None                    |
+| 35                 | 8,11            | bundle-parent           |
 
 
 ### Additional fixes
@@ -54,6 +58,7 @@ See the following reference files for additional fixes needed to update to a spe
 - osgi-r6: [osgi-r6.md](./reference/osgi-r6.md)
 - servlet-3: [servlet-3.md](./reference/servlet-3.md)
 - osgi-annotations: [osgi-annotations.md](./reference/osgi-annotations.md)
+- bundle-parent: [bundle-parent.md](./reference/bundle-parent.md)
 
 ### Workarounds
 
