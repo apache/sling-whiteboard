@@ -18,6 +18,7 @@ Use when the user asks to upgrade the Sling parent POM version in their project.
 - determine the next available version, typically incrementing by 1. For example, if the version is '22' the next version would be '23'
 - update the parent pom version
 - run a full Maven build with the `clean verify` goals using the Java version required by the new parent pom version.
+    - if the new parent pom version supports multiple Java versions, use the highest supported one. For example, out of 8, 11, and 17, use Java 17.
 - apply additional verification steps as needed if the specific version requires it
 - if workarounds were present before updating the parent pom version, check if they can be removed. If they are needed add them back
 
@@ -31,6 +32,10 @@ Different parent pom versions require different Java versions. This is listed in
 - Java 11: `mvn11`
 - Java 17: `mvn17`
 - Java 21: `mvn21`
+
+The following versions are not supported and must be skipped:
+- 42
+- 50
 
 | Parent POM Version | Java Version(s) | Additional fixes needed |
 |--------------------|-----------------|-------------------------|
@@ -48,6 +53,21 @@ Different parent pom versions require different Java versions. This is listed in
 | 33                 | 8               | None                    |
 | 34                 | 8               | None                    |
 | 35                 | 8,11            | bundle-parent           |
+| 36                 | 8,11            | None                    |
+| 37                 | 8,11            | None                    |
+| 38                 | 8,11            | None                    |
+| 39                 | 8,11            | None                    |
+| 40                 | 8,11            | None                    |
+| 41                 | 8,11            | None                    |
+| 43                 | 8,11            | None                    |
+| 44                 | 8,11            | timestamp               |
+| 45                 | 8,11            | None                    |
+| 46                 | 8,11,17         | mockito-java17          |
+| 47                 | 8,11,17         | None                    |
+| 48                 | 8,11,17         | None                    |
+| 49                 | 8,11,17         | osgi-deps, deps-scope   |
+| 51                 | 8,11,17         | None                    |
+| 52                 | 8,11,17         | None                    |
 
 
 ### Additional fixes
@@ -59,6 +79,10 @@ See the following reference files for additional fixes needed to update to a spe
 - servlet-3: [servlet-3.md](./reference/servlet-3.md)
 - osgi-annotations: [osgi-annotations.md](./reference/osgi-annotations.md)
 - bundle-parent: [bundle-parent.md](./reference/bundle-parent.md)
+- timestamp: [timestamp.md](./reference/timestamp.md)
+- mockito-java17: [mockito-java17.md](./reference/mockito-java17.md)
+- osgi-deps: [osgi-deps.md](./reference/osgi-deps.md)
+- deps-scope: [deps-scope.md](./reference/deps-scope.md)
 
 ### Workarounds
 
