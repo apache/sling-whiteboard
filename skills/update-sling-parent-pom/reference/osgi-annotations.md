@@ -2,6 +2,10 @@
 
 Replace deprecated Apache Felix SCR annotations with the OSGi Declarative Services and OSGi Metatype annotations.
 
+## Preparation
+
+Copy the main jar file from the target directory and store it in the project root for reference during migration. Append `-pre-migration` to the file name before the extension to avoid confusion with the post-migration build.
+
 ## pom.xml
 
 Remove:
@@ -322,3 +326,10 @@ For each migrated component:
 6. Replace simple fixed `@Property` and `@Properties` usage with `@Component(property = ...)`.
 7. Replace configurable `@Property` usage with a typed configuration annotation using `@ObjectClassDefinition`, `@AttributeDefinition`, and `@Designate`.
 8. Update changed `ReferenceCardinality` enum values.
+
+## Validation
+
+- check if the following file existis in the local Maven repository: net/distilledcode/osgi-ds-metatype-diff/0.0.1-SNAPSHOT/osgi-ds-metatype-diff-0.0.1-SNAPSHOT.jar
+- if the file does not exist warn the user that the diff tool was not found so checks may be insufficient
+- if the file exists run the diff tool against the pre-migration jar and the post-migration jar to check for any unexpected changes in the OSGi Declarative Services and OSGi Metatype annotations
+
