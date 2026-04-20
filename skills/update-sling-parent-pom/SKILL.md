@@ -47,7 +47,7 @@ The following versions are not supported and must be skipped:
 | 27                 | 8               | osgi-r6,servlet-3       |
 | 28                 | 8               | None                    |
 | 29                 | 8               | None                    |
-| 30                 | 8               | None                    |
+| 30                 | 8               | readd-scr-annotations   |
 | 31                 | 8               | osgi-annotations        |
 | 32                 | 8               | None                    |
 | 33                 | 8               | None                    |
@@ -81,6 +81,7 @@ See the following reference files for additional fixes needed to update to a spe
 - bundle-parent: [bundle-parent.md](./reference/bundle-parent.md)
 - timestamp: [timestamp.md](./reference/timestamp.md)
 - mockito-java17: [mockito-java17.md](./reference/mockito-java17.md)
+- readd-scr-annotations: [readd-scr-annotations.md](./reference/readd-scr-annotations.md)
 - osgi-deps: [osgi-deps.md](./reference/osgi-deps.md)
 - deps-scope: [deps-scope.md](./reference/deps-scope.md)
 
