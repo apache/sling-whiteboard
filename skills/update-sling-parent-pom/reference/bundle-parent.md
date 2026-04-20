@@ -43,6 +43,22 @@ Provide-Capability:\
     osgi.service;objectClass=org.apache.sling.models.factory.ModelFactory
 ```
 
+Not all instructions can be copied as they are. The folowing exceptions apply:
+
+1. `Embed-Dependency` instructions should be converted to `-includeresource` instructions. Example:
+
+```xml
+<Embed-Dependency>
+    org.apache.felix.utils;inline=org/apache/felix/utils/json/JSONWriter.class
+</Embed-Dependency>
+```
+
+This should be converted to the following in the bnd.bnd file:
+
+```
+includeresource: @org.apache.felix.utils-*.jar!/org/apache/felix/utils/json/JSONWriter.class
+```
+
 If the build fails with a baselining error then add a pom property named `bnd.baseline.skip` with value `true`. This happens for projects that have not yet been released. Example below:
 
 ```
