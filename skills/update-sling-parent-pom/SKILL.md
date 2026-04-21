@@ -74,17 +74,17 @@ The following versions are not supported and must be skipped:
 
 See the following reference files for additional fixes needed to update to a specific parent pom version.
 
-- rat-disable: [rat-disable.md](./reference/rat-disable.md)
-- osgi-r6: [osgi-r6.md](./reference/osgi-r6.md)
-- servlet-3: [servlet-3.md](./reference/servlet-3.md)
-- osgi-annotations: [osgi-annotations.md](./reference/osgi-annotations.md)
-- bundle-parent: [bundle-parent.md](./reference/bundle-parent.md)
-- timestamp: [timestamp.md](./reference/timestamp.md)
-- mockito-java17: [mockito-java17.md](./reference/mockito-java17.md)
-- readd-scr-annotations: [readd-scr-annotations.md](./reference/readd-scr-annotations.md)
-- osgi-deps: [osgi-deps.md](./reference/osgi-deps.md)
-- deps-scope: [deps-scope.md](./reference/deps-scope.md)
+- rat-disable: [rat-disable.md](./references/rat-disable.md)
+- osgi-r6: [osgi-r6.md](./references/osgi-r6.md)
+- servlet-3: [servlet-3.md](./references/servlet-3.md)
+- osgi-annotations: [osgi-annotations.md](./references/osgi-annotations.md)
+- bundle-parent: [bundle-parent.md](./references/bundle-parent.md)
+- timestamp: [timestamp.md](./references/timestamp.md)
+- mockito-java17: [mockito-java17.md](./references/mockito-java17.md)
+- readd-scr-annotations: [readd-scr-annotations.md](./references/readd-scr-annotations.md)
+- osgi-deps: [osgi-deps.md](./references/osgi-deps.md)
+- deps-scope: [deps-scope.md](./references/deps-scope.md)
 
 ### Workarounds
 
-- rat-enable: [rat-enable.md](./reference/rat-enable.md)
+- rat-enable: [rat-enable.md](./references/rat-enable.md)
