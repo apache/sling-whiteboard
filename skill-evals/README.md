@@ -19,6 +19,14 @@ available, or install a managed Python if needed.
 uv sync
 ```
 
+### OpenRouter
+
+```bash
+export OPENROUTER_API_KEY=your-openrouter-api-key
+
+export INSPECT_EVAL_MODEL=openrouter/openai/gpt-oss-120b:free
+```
+
 ### AWS Bedrock
 
 ```bash
