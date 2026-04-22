@@ -1,0 +1,6 @@
+services:
+  default:
+    build:
+      context: .
+    init: true
+    command: tail -f /dev/null

@@ -1,0 +1,21 @@
+[project]
+name = "skill-evals"
+version = "0.1.0"
+description = "Inspect-based evals for Apache Sling agent workflows"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "aioboto3>=13.0.0",
+    "inspect-ai>=0.3.110",
+]
+
+[project.entry-points.inspect_ai]
+skill_evals = "skill_evals._registry"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+package = true
+python-preference = "system"

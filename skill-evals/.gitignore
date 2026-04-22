@@ -1,0 +1,6 @@
+*.pyc
+*.swp
+/logs/
+
+.env
+.sops.yaml
