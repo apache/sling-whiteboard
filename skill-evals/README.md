@@ -37,7 +37,7 @@ export INSPECT_EVAL_MODEL=bedrock/us.anthropic.claude-sonnet-4-5-20250929-v1:0
 ## Execution
 
 ```bash
-uv run inspect eval sling_evals/jcr_js_nodetypes
+uv run inspect eval skill_evals/jcr_js_nodetypes
 ```
 
 You can also specify the desired model from the command line:

@@ -11,8 +11,8 @@ This repository contains [Inspect](https://inspect.aisi.org.uk/)-based evals for
 ## Current layout
 
 - Python project managed with `uv`
-- Inspect tasks live under `src/sling_evals/`
-- task registration is provided by `src/sling_evals/_registry.py`
+- Inspect tasks live under `src/skill_evals/`
+- task registration is provided by `src/skill_evals/_registry.py`
 - task-specific assets live alongside each task package, for example:
   - `task.py`
   - `scorer.py`
