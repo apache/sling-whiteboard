@@ -22,13 +22,12 @@ def _skill_paths() -> list[Path]:
     return sorted(path for path in skills_dir.iterdir() if (path / "SKILL.md").is_file())
 
 
-def _record_to_sample(record: dict) -> Sample:
-    skill_installed = bool(record["skill_installed"])
+def _record_to_sample(record: dict, *, skill_enabled: bool) -> Sample:
     return Sample(
         id=record.get("id"),
         input=record["input"],
         metadata={
-            "skill_installed": skill_installed,
+            "skill_enabled": skill_enabled,
             "git_revision": record["git_revision"],
             "expected_parent_version": record["expected_parent_version"],
         },
@@ -38,10 +37,16 @@ def _record_to_sample(record: dict) -> Sample:
 
 
 @task
-def jcr_js_nodetypes() -> Task:
-    dataset = json_dataset(str(_task_dir() / "dataset.jsonl"), sample_fields=_record_to_sample)
+def jcr_js_nodetypes(skill_enabled: bool = False) -> Task:
+    dataset = json_dataset(
+        str(_task_dir() / "dataset.jsonl"),
+        sample_fields=lambda record: _record_to_sample(
+            record, skill_enabled=skill_enabled
+        ),
+    )
 
     skill_paths = _skill_paths()
+    task_name_suffix = "skills" if skill_enabled else "no skills"
 
     @solver
     def sample_solver():
@@ -50,7 +55,7 @@ def jcr_js_nodetypes() -> Task:
                 bash(timeout=600),
                 text_editor(timeout=600),
             ]
-            if state.metadata and state.metadata.get("skill_installed") and skill_paths:
+            if state.metadata and state.metadata.get("skill_enabled") and skill_paths:
                 tools.append(skill(skill_paths, dir="/workspace/skills"))
 
             agent = react(
@@ -66,10 +71,12 @@ def jcr_js_nodetypes() -> Task:
         return solve
 
     return Task(
+        name=f"jcr_js_nodetypes [{task_name_suffix}]",
         dataset=dataset,
         solver=sample_solver(),
         scorer=parent_pom_update(),
         sandbox=("docker", str(_task_dir() / "compose.yaml")),
+        metadata={"skill_enabled": skill_enabled},
         epochs=5,
         time_limit=600,
     )

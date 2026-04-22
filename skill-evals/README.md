@@ -40,10 +40,26 @@ export INSPECT_EVAL_MODEL=bedrock/us.anthropic.claude-sonnet-4-5-20250929-v1:0
 uv run inspect eval skill_evals/jcr_js_nodetypes
 ```
 
+By default the task runs without skills because `skill_enabled` defaults to `false`.
+
+Enable or disable skills explicitly with a task argument:
+
+```bash
+uv run inspect eval skill_evals/jcr_js_nodetypes -T skill_enabled=true
+uv run inspect eval skill_evals/jcr_js_nodetypes -T skill_enabled=false
+```
+
+You can also set the task argument through Inspect's standard environment variable:
+
+```bash
+export INSPECT_EVAL_TASK_ARGS=skill_enabled=true
+uv run inspect eval skill_evals/jcr_js_nodetypes
+```
+
 You can also specify the desired model from the command line:
 
 ```bash
-uv run inspect eval sling_evals/jcr_js_nodetypes \
+uv run inspect eval skill_evals/jcr_js_nodetypes \
     --model my-model
 ```
 
@@ -58,7 +74,7 @@ Current status:
 
 - The sandbox image includes Maven 3, Java 8, the target repository, and a `mvn8` wrapper.
 - The sample setup script checks out git revision `52cea70b190c8389495a4fa494161eac13416891`, where the parent POM version is `22`.
-- The prompt used for both samples is `update to the next parent pom version`.
+- The prompt used for the sample is `update to the next parent pom version`.
 - A run is considered successful only if:
   - the parent POM version is updated to `23`
   - `mvn clean verify` succeeds

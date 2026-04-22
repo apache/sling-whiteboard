@@ -1,2 +1,1 @@
-{"id":"upgrade-parent-pom-no-skill","input":"update to the next parent pom version","skill_installed":false,"git_revision":"52cea70b190c8389495a4fa494161eac13416891","expected_parent_version":"23"}
-{"id":"upgrade-parent-pom-with-skill","input":"update to the next parent pom version","skill_installed":true,"git_revision":"52cea70b190c8389495a4fa494161eac13416891","expected_parent_version":"23"}
+{"id":"upgrade-parent-pom","input":"update to the next parent pom version","git_revision":"52cea70b190c8389495a4fa494161eac13416891","expected_parent_version":"23"}
