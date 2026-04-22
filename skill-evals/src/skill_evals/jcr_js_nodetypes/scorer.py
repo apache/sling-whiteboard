@@ -10,13 +10,7 @@ POM_PATH = f"{REPO_DIR}/pom.xml"
 PARENT_VERSION_RE = re.compile(r"<parent>.*?<version>([^<]+)</version>", re.DOTALL)
 
 
-@scorer(
-    metrics={
-        "parent_version_correct": [accuracy(), stderr()],
-        "build_passed": [accuracy(), stderr()],
-        "overall": [accuracy(), stderr()],
-    }
-)
+@scorer(metrics=[accuracy(), stderr()])
 def parent_pom_update() -> Scorer:
     async def score(state: TaskState, target) -> Score:
         expected_version = None
@@ -52,17 +46,16 @@ def parent_pom_update() -> Scorer:
             explanation += f"mvn stderr (tail):\n{stderr_tail}\n"
 
         return Score(
-            value={
-                "parent_version_correct": parent_version_correct,
-                "build_passed": build_passed,
-                "overall": overall,
-            },
+            value=overall,
             answer=f"parent_version={actual_version}, build_success={build_result.success}",
             explanation=explanation,
             metadata={
                 "expected_parent_version": expected_version,
                 "actual_parent_version": actual_version,
                 "mvn_returncode": build_result.returncode,
+                "parent_version_correct": parent_version_correct,
+                "build_passed": build_passed,
+                "overall": overall,
             },
         )
 
