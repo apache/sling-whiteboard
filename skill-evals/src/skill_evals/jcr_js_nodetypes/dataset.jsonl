@@ -1,1 +1,2 @@
-{"id":"upgrade-parent-pom","input":"Update to parent pom version {expected_parent_version}","git_revision":"52cea70b190c8389495a4fa494161eac13416891","expected_parent_version":"23"}
+{"id":"upgrade-parent-pom-{expected_parent_version}","input":"Update to parent pom version {expected_parent_version}","git_revision":"52cea70b190c8389495a4fa494161eac13416891","expected_parent_version":"23"}
+{"id":"upgrade-parent-pom-{expected_parent_version}","input":"Update to parent pom version {expected_parent_version}","git_revision":"84554fffb6c46bf48bb1856a6e60852127f57bcd","expected_parent_version":"24"}

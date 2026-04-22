@@ -28,9 +28,12 @@ def _record_to_sample(record: dict, *, skill_enabled: bool) -> Sample:
         "git_revision": record["git_revision"],
         "expected_parent_version": record["expected_parent_version"],
     }
+    sample_id = record.get("id", "upgrade-parent-pom-{expected_parent_version}").format(
+        **metadata
+    )
 
     return Sample(
-        id=record.get("id"),
+        id=sample_id,
         input=record["input"].format(**metadata),
         metadata=metadata,
         files={"/workspace/eval-assets/setup.sh": str(_task_dir() / "setup.sh")},
