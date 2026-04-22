@@ -23,14 +23,16 @@ def _skill_paths() -> list[Path]:
 
 
 def _record_to_sample(record: dict, *, skill_enabled: bool) -> Sample:
+    metadata = {
+        "skill_enabled": skill_enabled,
+        "git_revision": record["git_revision"],
+        "expected_parent_version": record["expected_parent_version"],
+    }
+
     return Sample(
         id=record.get("id"),
-        input=record["input"],
-        metadata={
-            "skill_enabled": skill_enabled,
-            "git_revision": record["git_revision"],
-            "expected_parent_version": record["expected_parent_version"],
-        },
+        input=record["input"].format(**metadata),
+        metadata=metadata,
         files={"/workspace/eval-assets/setup.sh": str(_task_dir() / "setup.sh")},
         setup=f"sh /workspace/eval-assets/setup.sh {record['git_revision']}",
     )
