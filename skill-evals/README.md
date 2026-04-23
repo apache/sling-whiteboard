@@ -79,7 +79,10 @@ uv run inspect view
 ## Comparing Eval Runs
 
 Use the reusable comparison utility to compare two Inspect log files by configuration, score,
-execution time, and token usage.
+execution time, token usage, and computed cost.
+
+Pricing data is cached locally after the first fetch in `.cache/models.dev-api.json` and reused
+across subsequent comparison runs.
 
 ```bash
 uv run skill-evals-compare LOG_A LOG_B
@@ -120,7 +123,8 @@ uv run skill-evals-compare LOG_A LOG_B --headline-score parent_pom_update
 uv run skill-evals-compare LOG_A LOG_B --fail-on-unexpected-diff
 ```
 
-`--samples` adds dataset-entry comparison aggregated across all epochs for each sample id.
+`--samples` adds dataset-entry comparison aggregated across all epochs for each sample id,
+including average token, cost, and execution time estimates per epoch.
 
 If a run contains multiple scores, use `--headline-score` to choose which scorer or score record
 is used for the headline score and stderr rows.
