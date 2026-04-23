@@ -76,6 +76,55 @@ Logs can be inspected afterwards with
 uv run inspect view
 ```
 
+## Comparing Eval Runs
+
+Use the reusable comparison utility to compare two Inspect log files by configuration, score,
+execution time, and token usage.
+
+```bash
+uv run skill-evals-compare LOG_A LOG_B
+```
+
+Supported output formats:
+
+```bash
+uv run skill-evals-compare LOG_A LOG_B --format text
+uv run skill-evals-compare LOG_A LOG_B --format json
+uv run skill-evals-compare LOG_A LOG_B --format markdown
+```
+
+Compare runs that are expected to differ only by `skill_enabled`:
+
+```bash
+uv run skill-evals-compare \
+  "logs/2026-04-23T09-16-03-00-00_jcr-js-nodetypes [skills]_LLH4FxC9xVenX3nFv5fubf.eval" \
+  "logs/2026-04-23T09-35-29-00-00_jcr-js-nodetypes [no skills]_L3rf4MQBPZ5LKYd574wucQ.eval" \
+  --expect-diff skill_enabled
+```
+
+Compare runs that use the same parameters but different models:
+
+```bash
+uv run skill-evals-compare \
+  "logs/2026-04-22T15-52-45-00-00_jcr-js-nodetypes [skills]_SS3oqPNNabLYozQvEQs6U2.eval" \
+  "logs/2026-04-23T09-16-03-00-00_jcr-js-nodetypes [skills]_LLH4FxC9xVenX3nFv5fubf.eval" \
+  --expect-diff model
+```
+
+Useful options:
+
+```bash
+uv run skill-evals-compare LOG_A LOG_B --samples
+uv run skill-evals-compare LOG_A LOG_B --expect-diff model,skill_enabled
+uv run skill-evals-compare LOG_A LOG_B --headline-score parent_pom_update
+uv run skill-evals-compare LOG_A LOG_B --fail-on-unexpected-diff
+```
+
+`--samples` adds dataset-entry comparison aggregated across all epochs for each sample id.
+
+If a run contains multiple scores, use `--headline-score` to choose which scorer or score record
+is used for the headline score and stderr rows.
+
 ## Task Notes
 
 Current status:
