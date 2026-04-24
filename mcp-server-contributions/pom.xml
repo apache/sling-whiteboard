@@ -128,7 +128,7 @@
         <dependency>
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.mcp-server</artifactId>
-            <version>0.1.0</version>
+            <version>0.1.2</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
