@@ -18,29 +18,23 @@
  */
 package org.apache.sling.mcp.server.impl.contribs;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import ch.qos.logback.classic.Level;
 import io.modelcontextprotocol.json.McpJsonMapperSupplier;
 import io.modelcontextprotocol.server.McpStatelessServerFeatures.SyncToolSpecification;
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
 import io.modelcontextprotocol.spec.McpSchema.Tool;
+import org.apache.sling.mcp.server.impl.contribs.internal.LogSnapshot;
+import org.apache.sling.mcp.server.impl.contribs.internal.StructuredLogBufferAppender;
 import org.apache.sling.mcp.server.spi.McpServerContribution;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.Constants;
-import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.log.LogEntry;
-import org.osgi.service.log.LogReaderService;
-import org.osgi.service.log.LogService;
 
 /**
  * MCP Tool that provides access to logs with filtering capabilities.
@@ -50,7 +44,7 @@ import org.osgi.service.log.LogService;
 public class LogToolContribution implements McpServerContribution {
 
     @Reference
-    private LogReaderService logReaderService;
+    private StructuredLogBufferAppender structuredLogBufferAppender;
 
     @Reference
     private McpJsonMapperSupplier jsonMapper;
@@ -105,10 +99,10 @@ public class LogToolContribution implements McpServerContribution {
                         maxEntries = Math.min(maxEntries, 1000); // Cap at 1000
                     }
 
-                    int minLogLevel = LogService.LOG_ERROR;
+                    Level minLogLevel = Level.ERROR;
                     if (logLevelStr != null && !logLevelStr.isEmpty()) {
                         minLogLevel = parseLogLevel(logLevelStr);
-                        if (minLogLevel == -1) {
+                        if (minLogLevel == null) {
                             return CallToolResult.builder()
                                     .addTextContent("Invalid log level: " + logLevelStr
                                             + ". Valid options are: ERROR, WARN, INFO, DEBUG, TRACE")
@@ -130,8 +124,8 @@ public class LogToolContribution implements McpServerContribution {
                         }
                     }
 
-                    // Collect and filter logs
-                    List<LogEntry> filteredLogs = collectLogs(pattern, minLogLevel, maxEntries);
+                    List<LogSnapshot> filteredLogs =
+                            structuredLogBufferAppender.getBuffer().getRecent(pattern, minLogLevel, maxEntries);
 
                     // Format output
                     String result = formatLogs(filteredLogs, regexPattern, minLogLevel, maxEntries);
@@ -140,89 +134,18 @@ public class LogToolContribution implements McpServerContribution {
                 }));
     }
 
-    private List<LogEntry> collectLogs(Pattern pattern, int minLogLevel, int maxEntries) {
-        List<LogEntry> logs = new ArrayList<>();
-
-        @SuppressWarnings("unchecked")
-        Enumeration<LogEntry> logEntries = logReaderService.getLog();
-        while (logEntries.hasMoreElements() && logs.size() < maxEntries) {
-            LogEntry entry = logEntries.nextElement();
-
-            // Filter by log level (lower values = higher severity)
-            if (entry.getLevel() > minLogLevel) {
-                continue;
-            }
-
-            // Filter by regex pattern if provided - search entire log entry
-            if (pattern != null) {
-                String fullLogEntry = buildFullLogEntryText(entry);
-                if (!pattern.matcher(fullLogEntry).find()) {
-                    continue;
-                }
-            }
-
-            logs.add(entry);
-        }
-
-        return logs;
-    }
-
-    private String buildFullLogEntryText(LogEntry entry) {
-        StringBuilder text = new StringBuilder();
-
-        // Add log level
-        text.append(getLogLevelName(entry.getLevel())).append(" ");
-
-        // Add bundle name
-        Bundle bundle = entry.getBundle();
-        if (bundle != null) {
-            text.append(getBundleName(bundle)).append(" ");
-        }
-
-        // Add message
-        String message = entry.getMessage();
-        if (message != null) {
-            text.append(message).append(" ");
-        }
-
-        // Add service reference info
-        ServiceReference<?> serviceRef = entry.getServiceReference();
-        if (serviceRef != null) {
-            String serviceDesc = getServiceDescription(serviceRef);
-            if (serviceDesc != null && !serviceDesc.isEmpty()) {
-                text.append(serviceDesc).append(" ");
-            }
-        }
-
-        // Add exception info
-        Throwable exception = entry.getException();
-        if (exception != null) {
-            text.append(exception.getClass().getName()).append(" ");
-            if (exception.getMessage() != null) {
-                text.append(exception.getMessage()).append(" ");
-            }
-
-            // Add stack trace
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            exception.printStackTrace(pw);
-            text.append(sw.toString());
-        }
-
-        return text.toString();
-    }
-
-    private int parseLogLevel(String levelStr) {
+    private Level parseLogLevel(String levelStr) {
         return switch (levelStr.toUpperCase()) {
-            case "ERROR" -> LogService.LOG_ERROR;
-            case "WARN", "WARNING" -> LogService.LOG_WARNING;
-            case "INFO" -> LogService.LOG_INFO;
-            case "DEBUG" -> LogService.LOG_DEBUG;
-            default -> -1;
+            case "ERROR" -> Level.ERROR;
+            case "WARN", "WARNING" -> Level.WARN;
+            case "INFO" -> Level.INFO;
+            case "DEBUG" -> Level.DEBUG;
+            case "TRACE" -> Level.TRACE;
+            default -> null;
         };
     }
 
-    private String formatLogs(List<LogEntry> logs, String regexPattern, int minLogLevel, int maxEntries) {
+    private String formatLogs(List<LogSnapshot> logs, String regexPattern, Level minLogLevel, int maxEntries) {
         StringBuilder result = new StringBuilder();
 
         result.append("=== Log Entries ===\n\n");
@@ -242,7 +165,7 @@ public class LogToolContribution implements McpServerContribution {
         result.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n");
 
         for (int i = 0; i < logs.size(); i++) {
-            LogEntry entry = logs.get(i);
+            LogSnapshot entry = logs.get(i);
             formatLogEntry(entry, i + 1, result);
 
             if (i < logs.size() - 1) {
@@ -253,49 +176,29 @@ public class LogToolContribution implements McpServerContribution {
         return result.toString();
     }
 
-    private void formatLogEntry(LogEntry entry, int index, StringBuilder result) {
+    private void formatLogEntry(LogSnapshot entry, int index, StringBuilder result) {
         result.append("[").append(index).append("] ");
-        result.append(DATE_FORMAT.format(new Date(entry.getTime())));
-        result.append(" [").append(getLogLevelName(entry.getLevel())).append("] ");
+        result.append(DATE_FORMAT.format(new Date(entry.timeMillis())));
+        result.append(" [").append(getLogLevelName(entry.level())).append("] ");
+        result.append("[")
+                .append(entry.loggerName() != null ? entry.loggerName() : "(unknown logger)")
+                .append("] ");
 
-        // Add bundle information
-        Bundle bundle = entry.getBundle();
-        if (bundle != null) {
-            String bundleName = getBundleName(bundle);
-            result.append("[").append(bundleName).append("] ");
-        }
-
-        // Add message
-        String message = entry.getMessage();
+        String message = entry.formattedMessage();
         result.append(message != null ? message : "(no message)");
         result.append("\n");
 
-        // Add service reference info if available
-        ServiceReference<?> serviceRef = entry.getServiceReference();
-        if (serviceRef != null) {
-            String serviceDesc = getServiceDescription(serviceRef);
-            if (serviceDesc != null && !serviceDesc.isEmpty()) {
-                result.append("    Service: ").append(serviceDesc).append("\n");
-            }
+        if (entry.threadName() != null && !entry.threadName().isEmpty()) {
+            result.append("    Thread: ").append(entry.threadName()).append("\n");
         }
 
-        // Add exception info if available
-        Throwable exception = entry.getException();
-        if (exception != null) {
-            result.append("    Exception: ").append(exception.getClass().getName());
-            if (exception.getMessage() != null) {
-                result.append(": ").append(exception.getMessage());
-            }
-            result.append("\n");
+        if (!entry.mdc().isEmpty()) {
+            result.append("    MDC: ").append(formatMdc(entry.mdc())).append("\n");
+        }
 
-            // Add stack trace (first few lines)
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            exception.printStackTrace(pw);
-            String stackTrace = sw.toString();
-
-            // Limit stack trace to first 10 lines
-            String[] lines = stackTrace.split("\n");
+        String throwableText = entry.throwableText();
+        if (throwableText != null && !throwableText.isEmpty()) {
+            String[] lines = throwableText.split("\n");
             int maxLines = Math.min(lines.length, 10);
             for (int i = 0; i < maxLines; i++) {
                 result.append("      ").append(lines[i]).append("\n");
@@ -306,53 +209,20 @@ public class LogToolContribution implements McpServerContribution {
         }
     }
 
-    private String getBundleName(Bundle bundle) {
-        String name = bundle.getHeaders().get(Constants.BUNDLE_NAME);
-        if (name == null || name.isEmpty()) {
-            name = bundle.getSymbolicName();
+    private String formatMdc(Map<String, String> mdc) {
+        StringBuilder result = new StringBuilder();
+        boolean first = true;
+        for (Map.Entry<String, String> entry : mdc.entrySet()) {
+            if (!first) {
+                result.append(", ");
+            }
+            result.append(entry.getKey()).append('=').append(entry.getValue());
+            first = false;
         }
-        if (name == null || name.isEmpty()) {
-            name = "Bundle#" + bundle.getBundleId();
-        }
-        return name;
+        return result.toString();
     }
 
-    private String getServiceDescription(ServiceReference<?> ref) {
-        if (ref == null) {
-            return null;
-        }
-
-        Object serviceId = ref.getProperty(Constants.SERVICE_ID);
-        Object objectClass = ref.getProperty(Constants.OBJECTCLASS);
-
-        StringBuilder desc = new StringBuilder();
-        if (objectClass instanceof String[]) {
-            String[] classes = (String[]) objectClass;
-            if (classes.length > 0) {
-                desc.append(classes[0]);
-                if (classes.length > 1) {
-                    desc.append(" (").append(classes.length - 1).append(" more interfaces)");
-                }
-            }
-        }
-
-        if (serviceId != null) {
-            if (desc.length() > 0) {
-                desc.append(" ");
-            }
-            desc.append("[id=").append(serviceId).append("]");
-        }
-
-        return desc.toString();
-    }
-
-    private String getLogLevelName(int level) {
-        return switch (level) {
-            case LogService.LOG_ERROR -> "ERROR";
-            case LogService.LOG_WARNING -> "WARN";
-            case LogService.LOG_INFO -> "INFO";
-            case LogService.LOG_DEBUG -> "DEBUG";
-            default -> "LEVEL_" + level;
-        };
+    private String getLogLevelName(Level level) {
+        return level != null ? level.levelStr : "UNKNOWN";
     }
 }
