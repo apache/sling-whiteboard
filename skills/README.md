@@ -5,10 +5,19 @@ A set of [Agent Skills](https://agentskills.io/) for Apache Sling developers and
 Current skills:
 
 - `update-sling-parent-pom`: Updates the parent POM of a Sling project to the next version.
+- `osgi-scr-migrator`: Migrates OSGi-based Java projects from deprecated Felix SCR annotations to official OSGi R6/R7 Component annotations, including Java source and Maven POM updates.
 
 ## Prerequisites
 
 First of all, install and configure a coding assistant that supports Agent Skills.
+
+### Python and Java for OSGi SCR migration
+
+The `osgi-scr-migrator` skill requires:
+
+- `python3` 3.7 or newer
+- Java 17 or newer
+- Maven or Gradle for building and testing the migrated project
 
 ### Invoking Apache Maven with different Java versions
 

@@ -17,6 +17,11 @@ Use when the user asks to upgrade the Sling parent POM version in their project.
 - identify the current version of the Sling parent POM in the user's project
 - determine the next available version, typically incrementing by 1. For example, if the version is '22' the next version would be '23'
 - update the parent pom version
+- run `mvn validate` using the Java version required by the new parent pom version before running a full build
+    - if `mvn validate` fails, fix any POM syntax issues first
+    - if the new parent pom no longer manages some plugin versions, add explicit plugin versions for the affected plugins
+    - if the new parent pom no longer manages some dependency versions, add explicit dependency versions for the affected dependencies
+    - do not continue to `clean verify` until `mvn validate` succeeds
 - run a full Maven build with the `clean verify` goals using the Java version required by the new parent pom version.
     - if the new parent pom version supports multiple Java versions, use the highest supported one. For example, out of 8, 11, and 17, use Java 17.
 - apply additional verification steps as needed if the specific version requires it
