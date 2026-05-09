@@ -357,13 +357,14 @@ class AnnotationMigrator:
             # Look for the field declaration on the next line(s) after the annotation
             for i in range(idx, min(idx + 3, len(self.lines))):
                 field_line = self.lines[i]
-                # Match: private static final String FIELD_NAME = "property.name";
-                field_match = re.search(r'private\s+static\s+final\s+String\s+\w+\s*=\s*"([^"]+)"', field_line)
+                # Match: [private|protected|public] static final String FIELD_NAME = "property.name";
+                field_match = re.search(r'(?:(?:private|protected|public)\s+)?static\s+final\s+String\s+\w+\s*=\s*"([^"]+)"', field_line)
                 if field_match:
                     property_name = field_match.group(1)
                     break
 
         if not property_name:
+            print(f"Warning: Could not extract property name from annotation in {self.file_path}: {annotation}")
             return None
 
         prop = Property(name=property_name)
