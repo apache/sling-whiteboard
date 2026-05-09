@@ -23,7 +23,7 @@ from migrate_annotations import (
 class TestPropertyParsing(unittest.TestCase):
     """Test @Property annotation parsing."""
 
-    def test_simple_string_property(self):
+    def test_simple_string_literal_property(self):
         """Test parsing simple string property."""
         content = '''
 @Property(name = "service.vendor", value = "Apache Software Foundation")
@@ -35,7 +35,22 @@ class TestPropertyParsing(unittest.TestCase):
         self.assertEqual(len(migrator.component_properties), 1)
         prop = migrator.component_properties[0]
         self.assertEqual(prop.name, "service.vendor")
-        self.assertEqual(prop.value, "Apache Software Foundation")
+        self.assertEqual(prop.value, "\"Apache Software Foundation\"")
+        self.assertEqual(prop.type, PropertyType.STRING)
+
+    def test_simple_string_reference_property(self):
+        """Test parsing simple string property."""
+        content = '''
+@Property(name = "service.vendor", value = Constants.SERVICE_VENDOR)
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        migrator._collect_properties()
+
+        self.assertEqual(len(migrator.component_properties), 1)
+        prop = migrator.component_properties[0]
+        self.assertEqual(prop.name, "service.vendor")
+        self.assertEqual(prop.value, "Constants.SERVICE_VENDOR")
         self.assertEqual(prop.type, PropertyType.STRING)
 
     def test_boolean_property(self):
@@ -81,7 +96,7 @@ class TestPropertyParsing(unittest.TestCase):
         prop = migrator.component_properties[0]
         self.assertEqual(prop.name, "paths")
         self.assertEqual(len(prop.values), 3)
-        self.assertEqual(prop.values, ["/path1", "/path2", "/path3"])
+        self.assertEqual(prop.values, ["\"/path1\"", "\"/path2\"", "\"/path3\""])
 
     def test_property_with_label(self):
         """Test parsing property with label and description."""
@@ -105,7 +120,7 @@ class TestPropertyConversion(unittest.TestCase):
 
     def test_simple_property_conversion(self):
         """Test converting simple property to component format."""
-        prop = Property(name="service.vendor", value="Apache Software Foundation")
+        prop = Property(name="service.vendor", value="\"Apache Software Foundation\"")
         result = prop.to_component_property()
 
         self.assertEqual(len(result), 1)
@@ -129,7 +144,7 @@ class TestPropertyConversion(unittest.TestCase):
 
     def test_array_property_conversion(self):
         """Test converting array property."""
-        prop = Property(name="paths", values=["/path1", "/path2"])
+        prop = Property(name="paths", values=["\"/path1\"", "\"/path2\""])
         result = prop.to_component_property()
 
         self.assertEqual(len(result), 2)
@@ -219,6 +234,50 @@ public class MyServlet extends SlingAllMethodsServlet {
         self.assertNotIn('org.apache.felix.scr.annotations.sling.SlingServlet', new_content)
         self.assertIn('org.apache.sling.servlets.annotations.SlingServletResourceTypes', new_content)
 
+    def test_servlet_with_constant_values_for_all_resource_type_elements(self):
+        """Test constants are preserved for resourceTypes/selectors/extensions/methods."""
+        content = '''package com.example;
+
+import org.apache.felix.scr.annotations.sling.SlingServlet;
+
+@SlingServlet(
+    resourceTypes = MyServlet.RESOURCE_TYPE,
+    selectors = {MyServlet.SELECTOR_A, "print"},
+    extensions = {MyServlet.EXT_JSON, "html"},
+    methods = {HttpConstants.METHOD_GET, "POST"}
+)
+public class MyServlet extends SlingAllMethodsServlet {
+}
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        new_content, changed = migrator.migrate()
+
+        self.assertTrue(changed)
+        self.assertIn('@SlingServletResourceTypes', new_content)
+        self.assertIn('resourceTypes = MyServlet.RESOURCE_TYPE', new_content)
+        self.assertIn('selectors = {MyServlet.SELECTOR_A, "print"}', new_content)
+        self.assertIn('extensions = {MyServlet.EXT_JSON, "html"}', new_content)
+        self.assertIn('methods = {HttpConstants.METHOD_GET, "POST"}', new_content)
+
+    def test_path_based_servlet_with_constant_paths(self):
+        """Test constants are preserved for paths attribute."""
+        content = '''package com.example;
+
+import org.apache.felix.scr.annotations.sling.SlingServlet;
+
+@SlingServlet(paths = {MyServlet.PATH_A, "/bin/fallback"})
+public class MyServlet extends SlingAllMethodsServlet {
+}
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        new_content, changed = migrator.migrate()
+
+        self.assertTrue(changed)
+        self.assertIn('@SlingServletPaths(value = {MyServlet.PATH_A, "/bin/fallback"})', new_content)
+        self.assertIn('org.apache.sling.servlets.annotations.SlingServletPaths', new_content)
+
     def test_sling_filter_migration(self):
         """Test migrating Sling filter to Sling Servlets Annotations."""
         content = '''package com.example;
@@ -246,6 +305,55 @@ public class MyFilter implements Filter {
         self.assertIn('pattern = "/content/.*"', new_content)
         self.assertNotIn('org.apache.felix.scr.annotations.sling.SlingFilter', new_content)
         self.assertIn('org.apache.sling.servlets.annotations.SlingServletFilter', new_content)
+        self.assertIn('org.apache.sling.servlets.annotations.SlingServletFilterScope', new_content)
+
+    def test_sling_filter_with_constant_values(self):
+        """Test constants are preserved for SlingFilter attributes."""
+        content = '''package com.example;
+
+import org.apache.felix.scr.annotations.sling.SlingFilter;
+
+@SlingFilter(
+    scope = MyFilter.SCOPE,
+    order = MyFilter.ORDER,
+    pattern = MyFilter.PATTERN
+)
+public class MyFilter implements Filter {
+}
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        new_content, changed = migrator.migrate()
+
+        self.assertTrue(changed)
+        self.assertIn('@SlingServletFilter', new_content)
+        self.assertIn('scope = MyFilter.SCOPE', new_content)
+        self.assertIn('order = MyFilter.ORDER', new_content)
+        self.assertIn('pattern = MyFilter.PATTERN', new_content)
+
+    def test_sling_filter_scope_enum_mapping_with_constants(self):
+        """Test old SlingFilterScope enum constants are mapped to SlingServletFilterScope."""
+        content = '''package com.example;
+
+import org.apache.felix.scr.annotations.sling.SlingFilter;
+import org.apache.felix.scr.annotations.sling.SlingFilterScope;
+
+@SlingFilter(
+    scope = SlingFilterScope.INCLUDE,
+    order = FilterOrder.ORDER,
+    pattern = FilterPatterns.REQUEST
+)
+public class MyFilter implements Filter {
+}
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        new_content, changed = migrator.migrate()
+
+        self.assertTrue(changed)
+        self.assertIn('scope = SlingServletFilterScope.INCLUDE', new_content)
+        self.assertIn('order = FilterOrder.ORDER', new_content)
+        self.assertIn('pattern = FilterPatterns.REQUEST', new_content)
         self.assertIn('org.apache.sling.servlets.annotations.SlingServletFilterScope', new_content)
 
 
