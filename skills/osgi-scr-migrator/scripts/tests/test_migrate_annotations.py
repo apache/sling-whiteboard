@@ -288,6 +288,48 @@ public class MyService {
         self.assertIn('org.osgi.service.component.propertytypes.ServiceVendor', new_content)
         self.assertIn('org.osgi.service.component.propertytypes.ServiceRanking', new_content)
 
+    def test_empty_properties_container_removed(self):
+        """Test that empty @Properties is removed after property migration."""
+        content = '''package com.example;
+
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
+
+@Component
+@Properties({
+    @Property(name = "service.vendor", value = "Apache Software Foundation")
+})
+public class MyService {
+}
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        new_content, changed = migrator.migrate()
+
+        self.assertTrue(changed)
+        self.assertNotIn('@Properties', new_content)
+        self.assertNotIn('@Property', new_content)
+
+    def test_preexisting_empty_properties_removed(self):
+        """Test that pre-existing empty @Properties annotation is cleaned up."""
+        content = '''package com.example;
+
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Properties;
+
+@Component
+@Properties(value = { })
+public class MyService {
+}
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        new_content, changed = migrator.migrate()
+
+        self.assertTrue(changed)
+        self.assertNotIn('@Properties', new_content)
+
 
 class TestReferenceMigration(unittest.TestCase):
     """Test @Reference migration."""

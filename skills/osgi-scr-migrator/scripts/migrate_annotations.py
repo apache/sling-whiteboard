@@ -246,6 +246,7 @@ class AnnotationMigrator:
                 self._generate_metatype_config()
 
             self._update_imports()
+            self._cleanup_empty_properties_annotations()
 
             return '\n'.join(self.lines), self.changes_made
         except Exception as e:
@@ -406,6 +407,7 @@ class AnnotationMigrator:
             'org.apache.felix.scr.annotations.Deactivate': 'org.osgi.service.component.annotations.Deactivate',
             'org.apache.felix.scr.annotations.Modified': 'org.osgi.service.component.annotations.Modified',
             'org.apache.felix.scr.annotations.Property': None,
+            'org.apache.felix.scr.annotations.Properties': None,
             'org.apache.felix.scr.annotations.Reference': 'org.osgi.service.component.annotations.Reference',
             'org.apache.felix.scr.annotations.ReferenceCardinality': 'org.osgi.service.component.annotations.ReferenceCardinality',
             'org.apache.felix.scr.annotations.ReferencePolicy': 'org.osgi.service.component.annotations.ReferencePolicy',
@@ -1066,6 +1068,44 @@ class AnnotationMigrator:
             for new_import in sorted(self.imports_to_add):
                 self.lines.insert(insert_idx, f'import {new_import};')
                 insert_idx += 1
+
+    def _cleanup_empty_properties_annotations(self):
+        """Remove empty Felix SCR @Properties container annotations.
+
+        This cleanup is run after @Property annotations are removed, so containers
+        that become empty do not remain in migrated code.
+        """
+        i = 0
+        while i < len(self.lines):
+            line = self.lines[i]
+
+            if '@Properties' in line and not line.strip().startswith('//'):
+                annotation = line
+                paren_count = line.count('(') - line.count(')')
+                annotation_lines = [i]
+                j = i + 1
+
+                while paren_count > 0 and j < len(self.lines):
+                    annotation += ' ' + self.lines[j].strip()
+                    annotation_lines.append(j)
+                    paren_count += self.lines[j].count('(') - self.lines[j].count(')')
+                    j += 1
+
+                compact = re.sub(r'\s+', '', annotation)
+                empty_forms = {
+                    '@Properties',
+                    '@Properties()',
+                    '@Properties({})',
+                    '@Properties(value={})',
+                }
+
+                if compact in empty_forms:
+                    for idx in reversed(annotation_lines):
+                        del self.lines[idx]
+                    self.changes_made = True
+                    continue
+
+            i += 1
 
 
 def migrate_file(file_path: Path, dry_run: bool = False, stats: MigrationStats = None) -> bool:
