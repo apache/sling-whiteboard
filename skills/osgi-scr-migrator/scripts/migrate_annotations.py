@@ -905,16 +905,19 @@ class AnnotationMigrator:
                 break
 
         if class_idx is None:
+            print(f"Warning: Could not find class declaration for {self.component_name}, skipping metatype generation")
             return
 
         # Find the @Component annotation
         component_idx = None
-        for i in range(class_idx - 1, max(0, class_idx - 20), -1):
+        # must be somewhere between start of file and class declaration, look backwards from class declaration
+        for i in range(class_idx - 1, 0, -1): 
             if '@Component' in self.lines[i]:
                 component_idx = i
                 break
 
         if component_idx is None:
+            print(f"Warning: Could not find @Component annotation for {self.component_name}, skipping metatype generation")
             return
 
         # Add @Designate annotation before @Component
