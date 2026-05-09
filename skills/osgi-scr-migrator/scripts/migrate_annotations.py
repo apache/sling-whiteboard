@@ -41,6 +41,12 @@ class Property:
     description: Optional[str] = None
     is_configurable: bool = False
 
+    def _strip_quotes(self, val: str) -> str:
+        """Strip surrounding quotes from a value if present."""
+        if val.startswith('"') and val.endswith('"'):
+            return val[1:-1]
+        return val
+
     def is_property_type_annotation(self) -> bool:
         """Check if this property should use a Component Property Type annotation.
 
@@ -77,27 +83,64 @@ class Property:
 
         Precondition: is_property_type_annotation() returned True.
         This method should always succeed if the precondition is met.
+        Unquotes literal values before using them in annotations.
         """
+        val = self._strip_quotes(self.value)
+        
         if self.name == 'service.ranking':
-            return f'@ServiceRanking({self.value})'
+            return f'@ServiceRanking({val})'
         elif self.name == 'service.description':
-            return f'@ServiceDescription("{self.value}")'
+            return f'@ServiceDescription("{val}")'
         elif self.name == 'service.vendor':
-            return f'@ServiceVendor("{self.value}")'
+            return f'@ServiceVendor("{val}")'
 
         # Should never reach here if precondition is met
         raise ValueError(f"Unknown property type annotation: {self.name}")
 
     def to_component_property(self) -> List[str]:
-        """Convert to @Component property format."""
+        """Convert to @Component property format.
+        
+        Constant references are formatted as string concatenation: "name="+CONSTANT
+        Literal values (with quotes stripped) are kept unquoted within the property string: "name=value"
+        """
         properties = []
         type_suffix = f":{self.type.value}" if self.type != PropertyType.STRING else ""
 
+        def is_reference(val: str) -> bool:
+            """Return True when the value is not a valid literal for this property type."""
+            val = val.strip()
+
+            if self.type == PropertyType.STRING:
+                return not val.startswith('"')
+
+            if self.type == PropertyType.BOOLEAN:
+                return not bool(re.fullmatch(r'true|false', val))
+
+            if self.type in (PropertyType.INTEGER, PropertyType.LONG):
+                return not bool(re.fullmatch(r'-?\d+[lL]?', val))
+
+            if self.type in (PropertyType.FLOAT, PropertyType.DOUBLE):
+                return not bool(re.fullmatch(r'-?(?:\d+\.\d*|\d*\.\d+|\d+)(?:[fFdD])?', val))
+
+            return True
+
         if self.values:
             for val in self.values:
-                properties.append(f'"{self.name}{type_suffix}={val}"')
+                if is_reference(val):
+                    # Reference - use string concatenation: "name="+CONSTANT
+                    properties.append(f'"{self.name}{type_suffix}="+{val}')
+                else:
+                    # Literal value - strip quotes and keep unquoted within property string
+                    stripped_val = self._strip_quotes(val)
+                    properties.append(f'"{self.name}{type_suffix}={stripped_val}"')
         elif self.value is not None:
-            properties.append(f'"{self.name}{type_suffix}={self.value}"')
+            if is_reference(self.value):
+                # Reference - use string concatenation: "name="+CONSTANT
+                properties.append(f'"{self.name}{type_suffix}="+{self.value}')
+            else:
+                # Literal value - strip quotes and keep unquoted within property string
+                stripped_val = self._strip_quotes(self.value)
+                properties.append(f'"{self.name}{type_suffix}={stripped_val}"')
 
         return properties
 
@@ -338,7 +381,10 @@ class AnnotationMigrator:
 
         # Parse attributes
         name_match = re.search(r'name\s*=\s*"([^"]*)"', annotation)
-        value_match = re.search(r'(?<!bool)(?<!int)(?<!long)(?<!float)(?<!double)value\s*=\s*"([^"]*)"', annotation)
+        value_match = re.search(
+            r'(?<!bool)(?<!int)(?<!long)(?<!float)(?<!double)value\s*=\s*("[^"]*"|[A-Za-z_][A-Za-z0-9_.]*)',
+            annotation
+        )
         values_match = re.search(r'value\s*=\s*\{([^}]+)\}', annotation)
         bool_value_match = re.search(r'boolValue\s*=\s*(true|false)', annotation)
         int_value_match = re.search(r'intValue\s*=\s*(-?\d+)', annotation)
@@ -385,11 +431,13 @@ class AnnotationMigrator:
             prop.type = PropertyType.DOUBLE
             prop.value = double_value_match.group(1)
         elif values_match:
-            # Array of values
+            # Array of values - preserve quotes on string literals
             values_str = values_match.group(1)
-            prop.values = [v.strip().strip('"') for v in values_str.split(',')]
+            prop.values = [v.strip() for v in values_str.split(',')]
         elif value_match:
-            prop.value = value_match.group(1)
+            raw_value = value_match.group(1)
+            # Keep string literals quoted; keep constant references unquoted.
+            prop.value = raw_value
 
         if label_match:
             prop.label = label_match.group(1)
@@ -426,6 +474,25 @@ class AnnotationMigrator:
 
     def _migrate_sling_servlet(self):
         """Migrate @SlingServlet to @Component with Sling Servlets Annotations."""
+        def parse_annotation_values(annotation_text: str, attr_name: str) -> Optional[List[str]]:
+            """Parse a SlingServlet attribute as a list of raw Java values.
+
+            Values are returned exactly as Java expressions (quoted string literal or constant
+            reference), so callers can preserve constants without adding quotes.
+            """
+            array_match = re.search(rf'{attr_name}\s*=\s*\{{([^}}]+)\}}', annotation_text)
+            if array_match:
+                return [v.strip() for v in array_match.group(1).split(',') if v.strip()]
+
+            single_match = re.search(
+                rf'{attr_name}\s*=\s*("[^"]+"|[A-Za-z_][A-Za-z0-9_.]*)',
+                annotation_text
+            )
+            if single_match:
+                return [single_match.group(1).strip()]
+
+            return None
+
         i = 0
         while i < len(self.lines):
             line = self.lines[i]
@@ -448,12 +515,8 @@ class AnnotationMigrator:
                 indent_str = ' ' * indent
 
                 # Determine if path-based or resource-type-based
-                paths_match = re.search(r'paths\s*=\s*\{([^}]+)\}', annotation)
-                path_match = re.search(r'paths\s*=\s*"([^"]+)"', annotation) if not paths_match else None
-                rt_match = re.search(r'resourceTypes\s*=\s*\{([^}]+)\}', annotation)
-                rt_single_match = re.search(r'resourceTypes\s*=\s*"([^"]+)"', annotation) if not rt_match else None
-                # Also match constant references like ActivityManagerImpl.RESOURCE_TYPE
-                rt_constant_match = re.search(r'resourceTypes\s*=\s*([A-Za-z_][A-Za-z0-9_.]*)', annotation) if not (rt_match or rt_single_match) else None
+                path_values = parse_annotation_values(annotation, 'paths')
+                rt_values = parse_annotation_values(annotation, 'resourceTypes')
 
                 new_annotations = []
 
@@ -461,86 +524,29 @@ class AnnotationMigrator:
                 new_annotations.append(f'{indent_str}@Component(service = Servlet.class)')
 
                 # Path-based servlet
-                if paths_match or path_match:
-                    if paths_match:
-                        paths = [p.strip().strip('"') for p in paths_match.group(1).split(',')]
-                        paths_str = ', '.join(f'"{p}"' for p in paths)
+                if path_values:
+                    if len(path_values) == 1:
+                        new_annotations.append(f'{indent_str}@SlingServletPaths(value = {path_values[0]})')
+                    else:
+                        paths_str = ', '.join(path_values)
                         new_annotations.append(f'{indent_str}@SlingServletPaths(value = {{{paths_str}}})')
-                    elif path_match:
-                        new_annotations.append(f'{indent_str}@SlingServletPaths(value = "{path_match.group(1)}")')
 
                 # Resource-type-based servlet
-                elif rt_match or rt_single_match or rt_constant_match:
+                elif rt_values:
                     attrs = []
 
-                    if rt_match:
-                        # Parse array elements, preserving whether they're string literals or constants
-                        raw_rts = [rt.strip() for rt in rt_match.group(1).split(',')]
-                        formatted_rts = []
-                        for rt in raw_rts:
-                            if rt.startswith('"') and rt.endswith('"'):
-                                # String literal - keep as is
-                                formatted_rts.append(rt)
-                            else:
-                                # Constant reference - keep without quotes
-                                formatted_rts.append(rt)
-
-                        if len(formatted_rts) == 1:
-                            # Single element - check if it needs quotes
-                            if formatted_rts[0].startswith('"'):
-                                attrs.append(f'resourceTypes = {formatted_rts[0]}')
-                            else:
-                                attrs.append(f'resourceTypes = {formatted_rts[0]}')
+                    def append_attr(attr_name: str, values: Optional[List[str]]):
+                        if not values:
+                            return
+                        if len(values) == 1:
+                            attrs.append(f'{attr_name} = {values[0]}')
                         else:
-                            rts_str = ', '.join(formatted_rts)
-                            attrs.append(f'resourceTypes = {{{rts_str}}}')
-                    elif rt_single_match:
-                        attrs.append(f'resourceTypes = "{rt_single_match.group(1)}"')
-                    elif rt_constant_match:
-                        # Constant reference - use as-is without quotes
-                        attrs.append(f'resourceTypes = {rt_constant_match.group(1)}')
+                            attrs.append(f'{attr_name} = {{{", ".join(values)}}}')
 
-                    # Selectors
-                    selectors_match = re.search(r'selectors\s*=\s*\{([^}]+)\}', annotation)
-                    selector_match = re.search(r'selectors\s*=\s*"([^"]+)"', annotation) if not selectors_match else None
-
-                    if selectors_match:
-                        sels = [s.strip().strip('"') for s in selectors_match.group(1).split(',')]
-                        if len(sels) == 1:
-                            attrs.append(f'selectors = "{sels[0]}"')
-                        else:
-                            sels_str = ', '.join(f'"{s}"' for s in sels)
-                            attrs.append(f'selectors = {{{sels_str}}}')
-                    elif selector_match:
-                        attrs.append(f'selectors = "{selector_match.group(1)}"')
-
-                    # Extensions
-                    ext_match = re.search(r'extensions\s*=\s*\{([^}]+)\}', annotation)
-                    ext_single_match = re.search(r'extensions\s*=\s*"([^"]+)"', annotation) if not ext_match else None
-
-                    if ext_match:
-                        exts = [e.strip().strip('"') for e in ext_match.group(1).split(',')]
-                        if len(exts) == 1:
-                            attrs.append(f'extensions = "{exts[0]}"')
-                        else:
-                            exts_str = ', '.join(f'"{e}"' for e in exts)
-                            attrs.append(f'extensions = {{{exts_str}}}')
-                    elif ext_single_match:
-                        attrs.append(f'extensions = "{ext_single_match.group(1)}"')
-
-                    # Methods
-                    methods_match = re.search(r'methods\s*=\s*\{([^}]+)\}', annotation)
-                    method_match = re.search(r'methods\s*=\s*"([^"]+)"', annotation) if not methods_match else None
-
-                    if methods_match:
-                        methods = [m.strip().strip('"') for m in methods_match.group(1).split(',')]
-                        if len(methods) == 1:
-                            attrs.append(f'methods = "{methods[0]}"')
-                        else:
-                            methods_str = ', '.join(f'"{m}"' for m in methods)
-                            attrs.append(f'methods = {{{methods_str}}}')
-                    elif method_match:
-                        attrs.append(f'methods = "{method_match.group(1)}"')
+                    append_attr('resourceTypes', rt_values)
+                    append_attr('selectors', parse_annotation_values(annotation, 'selectors'))
+                    append_attr('extensions', parse_annotation_values(annotation, 'extensions'))
+                    append_attr('methods', parse_annotation_values(annotation, 'methods'))
 
                     # Build @SlingServletResourceTypes annotation
                     if len(attrs) == 1:
@@ -564,7 +570,7 @@ class AnnotationMigrator:
                 # Add imports
                 self.imports_to_add.add('org.osgi.service.component.annotations.Component')
                 self.imports_to_add.add('javax.servlet.Servlet')
-                if paths_match or path_match:
+                if path_values:
                     self.imports_to_add.add('org.apache.sling.servlets.annotations.SlingServletPaths')
                 else:
                     self.imports_to_add.add('org.apache.sling.servlets.annotations.SlingServletResourceTypes')
@@ -578,6 +584,14 @@ class AnnotationMigrator:
 
     def _migrate_sling_filter(self):
         """Migrate @SlingFilter to @Component with @SlingServletFilter annotation."""
+        def parse_single_annotation_value(annotation_text: str, attr_name: str) -> Optional[str]:
+            """Parse a SlingFilter single-value attribute as raw Java expression."""
+            match = re.search(
+                rf'{attr_name}\s*=\s*("[^"]+"|-?\d+|[A-Za-z_][A-Za-z0-9_.]*)',
+                annotation_text
+            )
+            return match.group(1).strip() if match else None
+
         i = 0
         while i < len(self.lines):
             line = self.lines[i]
@@ -602,19 +616,21 @@ class AnnotationMigrator:
                 attrs = []
 
                 # Scope
-                scope_match = re.search(r'scope\s*=\s*SlingFilterScope\.(\w+)', annotation)
-                if scope_match:
-                    attrs.append(f'scope = SlingServletFilterScope.{scope_match.group(1)}')
+                scope_value = parse_single_annotation_value(annotation, 'scope')
+                if scope_value:
+                    # Map old enum constants to the new enum class, preserve custom constants as-is.
+                    scope_value = scope_value.replace('SlingFilterScope.', 'SlingServletFilterScope.')
+                    attrs.append(f'scope = {scope_value}')
 
                 # Order (maps to order parameter in @SlingServletFilter)
-                order_match = re.search(r'order\s*=\s*(-?\d+)', annotation)
-                if order_match:
-                    attrs.append(f'order = {order_match.group(1)}')
+                order_value = parse_single_annotation_value(annotation, 'order')
+                if order_value:
+                    attrs.append(f'order = {order_value}')
 
                 # Pattern
-                pattern_match = re.search(r'pattern\s*=\s*"([^"]+)"', annotation)
-                if pattern_match:
-                    attrs.append(f'pattern = "{pattern_match.group(1)}"')
+                pattern_value = parse_single_annotation_value(annotation, 'pattern')
+                if pattern_value:
+                    attrs.append(f'pattern = {pattern_value}')
 
                 # Generate annotations
                 new_annotations = []
@@ -645,7 +661,7 @@ class AnnotationMigrator:
                 self.imports_to_add.add('org.osgi.service.component.annotations.Component')
                 self.imports_to_add.add('javax.servlet.Filter')
                 self.imports_to_add.add('org.apache.sling.servlets.annotations.SlingServletFilter')
-                if scope_match:
+                if scope_value and ('SlingServletFilterScope.' in scope_value):
                     self.imports_to_add.add('org.apache.sling.servlets.annotations.SlingServletFilterScope')
 
                 self.changes_made = True
