@@ -114,6 +114,66 @@ class TestPropertyParsing(unittest.TestCase):
         self.assertEqual(prop.description, "Request timeout in seconds")
         self.assertTrue(prop.is_configurable)
 
+    def test_property_name_derived_from_default_static_final_field(self):
+        """Test deriving property name from package-private static final field."""
+        content = '''
+@Property(value = "Apache Software Foundation")
+static final String SERVICE_VENDOR = "service.vendor";
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        migrator._collect_properties()
+
+        self.assertEqual(len(migrator.component_properties), 1)
+        prop = migrator.component_properties[0]
+        self.assertEqual(prop.name, "service.vendor")
+        self.assertEqual(prop.value, "Apache Software Foundation")
+
+    def test_property_name_derived_from_private_static_final_field(self):
+        """Test deriving property name from private static final field."""
+        content = '''
+@Property(value = "Apache Software Foundation")
+private static final String SERVICE_VENDOR = "service.vendor";
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        migrator._collect_properties()
+
+        self.assertEqual(len(migrator.component_properties), 1)
+        prop = migrator.component_properties[0]
+        self.assertEqual(prop.name, "service.vendor")
+        self.assertEqual(prop.value, "Apache Software Foundation")
+
+    def test_property_name_derived_from_protected_static_final_field(self):
+        """Test deriving property name from protected static final field."""
+        content = '''
+@Property(value = "Apache Software Foundation")
+protected static final String SERVICE_VENDOR = "service.vendor";
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        migrator._collect_properties()
+
+        self.assertEqual(len(migrator.component_properties), 1)
+        prop = migrator.component_properties[0]
+        self.assertEqual(prop.name, "service.vendor")
+        self.assertEqual(prop.value, "Apache Software Foundation")
+
+    def test_property_name_derived_from_public_static_final_field(self):
+        """Test deriving property name from public static final field."""
+        content = '''
+@Property(value = "Apache Software Foundation")
+public static final String SERVICE_VENDOR = "service.vendor";
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        migrator._collect_properties()
+
+        self.assertEqual(len(migrator.component_properties), 1)
+        prop = migrator.component_properties[0]
+        self.assertEqual(prop.name, "service.vendor")
+        self.assertEqual(prop.value, "Apache Software Foundation")
+
 
 class TestPropertyConversion(unittest.TestCase):
     """Test property conversion to OSGi R6/R7 format."""
