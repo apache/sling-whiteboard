@@ -47,6 +47,12 @@ This dependency is optional but recommended.
 
 ## Installation
 
+Using the [GitHub CLI](https://github.com/cli/cli/):
+
+```bash
+    gh skill install apache/sling-whiteboar
+```
+
 Using [npx skills](https://github.com/vercel-labs/skills):
 
 ```bash
