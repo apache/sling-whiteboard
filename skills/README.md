@@ -50,7 +50,7 @@ This dependency is optional but recommended.
 Using the [GitHub CLI](https://github.com/cli/cli/):
 
 ```bash
-    gh skill install apache/sling-whiteboar
+    gh skill install apache/sling-whiteboard
 ```
 
 Using [npx skills](https://github.com/vercel-labs/skills):
