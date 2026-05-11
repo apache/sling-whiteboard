@@ -153,6 +153,21 @@ class TestPropertyConversion(unittest.TestCase):
         self.assertIn('int my_timeout()', result)
         self.assertIn('default 30', result)
 
+    def test_metatype_method_name_escapes(self):
+        """Test all OSGi method-name escape rules for generated config methods."""
+        cases = {
+            "prop.name": "String prop_name()",
+            "prop_name": "String prop__name()",
+            "prop-name": "String prop$_$name()",
+            "prop$name": "String prop$$name()",
+            "a.b_c-d$e": "String a_b__c$_$d$$e()",
+        }
+
+        for prop_name, expected_signature in cases.items():
+            prop = Property(name=prop_name, value="v")
+            result = prop.to_metatype_attribute()
+            self.assertIn(expected_signature, result)
+
 
 class TestSlingServletMigration(unittest.TestCase):
     """Test @SlingServlet migration."""

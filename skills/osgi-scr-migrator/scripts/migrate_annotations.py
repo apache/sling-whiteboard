@@ -113,7 +113,7 @@ class Property:
         if self.description:
             parts.append(f'description = "{self.description}"')
 
-        method_name = self.name.replace('.', '_').replace('-', '_')
+        method_name = self._property_id_to_method_name(self.name)
         java_type = self._get_java_type()
         default_value = self._get_default_value()
 
@@ -121,6 +121,27 @@ class Property:
         attr_annotation = f'@AttributeDefinition({attrs})' if attrs else '@AttributeDefinition'
 
         return f'{indent}{attr_annotation}\n{indent}{java_type} {method_name}(){default_value};'
+
+    @staticmethod
+    def _property_id_to_method_name(property_id: str) -> str:
+        """Map an OSGi property id to a method name using metatype escape rules.
+
+        This is the inverse of the id generation rules from
+        org.osgi.service.metatype.annotations.AttributeDefinition.
+        """
+        escaped = []
+        for ch in property_id:
+            if ch == '.':
+                escaped.append('_')
+            elif ch == '_':
+                escaped.append('__')
+            elif ch == '-':
+                escaped.append('$_$')
+            elif ch == '$':
+                escaped.append('$$')
+            else:
+                escaped.append(ch)
+        return ''.join(escaped)
 
     def _get_java_type(self) -> str:
         """Get Java type for metatype."""
