@@ -777,7 +777,10 @@ class AnnotationMigrator:
         return annotations
 
     def _find_service_class_for_component(self, component_idx: int) -> Optional[str]:
-        """Find the @Service annotation near this @Component."""
+        """Find the @Service annotation and either infer service class from class interfaces or the given value.
+        
+        Checks for explicit @Service annotation.
+        """
         # Look in the next few lines for @Service
         for i in range(component_idx + 1, min(component_idx + 5, len(self.lines))):
             line = self.lines[i]
@@ -786,9 +789,121 @@ class AnnotationMigrator:
                 service_match = re.search(r'@Service\s*\(\s*(?:value\s*=\s*)?([^)]+)\)', line)
                 if service_match:
                     return service_match.group(1).strip()
-                # If no explicit class, return empty to signal service registration
-                return ""
+                # If @Service is present but no class specified, we will infer from interfaces
+                else:
+                    return self._get_transitive_interfaces_from_class(component_idx)
+        
+        # No @Service annotation found don't auto register as service
         return None
+    
+    def _get_transitive_interfaces_from_class(self, component_idx: int) -> Optional[str]:
+        """Extract all transitive interfaces from the class declaration.
+        
+        Looks for the class declaration after the @Component annotation and extracts
+        all interfaces it implements. Also resolves transitive interfaces (interfaces
+        that the declared interfaces extend).
+        
+        Returns:
+            - A single interface name if exactly one interface is found
+            - A list of interfaces formatted as "{ Interface1.class, Interface2.class, ... }"
+            - Empty string "" if interfaces are found but unable to resolve
+            - None if no class declaration or interfaces are found
+        """
+        # Find the class declaration after @Component
+        class_line = None
+        for i in range(component_idx + 1, min(component_idx + 10, len(self.lines))):
+            line = self.lines[i]
+            if re.search(r'(public|private|protected)?\s*(abstract\s+)?class\s+\w+', line):
+                class_line = i
+                break
+        
+        if class_line is None:
+            return None
+        
+        # Extract the class declaration line(s) - may span multiple lines
+        class_decl = self.lines[class_line]
+        paren_count = class_decl.count('(') - class_decl.count(')')
+        j = class_line + 1
+        
+        # Collect until we find opening brace or complete the declaration
+        while j < len(self.lines) and paren_count >= 0 and '{' not in class_decl:
+            class_decl += ' ' + self.lines[j].strip()
+            paren_count += self.lines[j].count('(') - self.lines[j].count(')')
+            j += 1
+        
+        # Extract interfaces from "implements Interface1, Interface2, ..."
+        interfaces_match = re.search(r'implements\s+([^{]+)', class_decl)
+        if not interfaces_match:
+            return None
+        
+        interfaces_str = interfaces_match.group(1).strip()
+        # Split by comma and clean up each interface
+        declared_interfaces = [iface.strip() for iface in interfaces_str.split(',')]
+        
+        if not declared_interfaces:
+            return None
+        
+        # Get all transitive interfaces
+        all_interfaces = set()
+        for iface in declared_interfaces:
+            # Add the direct interface
+            all_interfaces.add(iface)
+            # Get transitive interfaces
+            transitive = self._get_transitive_extends(iface)
+            all_interfaces.update(transitive)
+        
+        # Remove any empty strings
+        all_interfaces.discard('')
+        
+        if not all_interfaces:
+            return None
+        
+        # Format the result
+        if len(all_interfaces) == 1:
+            return list(all_interfaces)[0] + ".class"
+        else:
+            # Sort for consistent output
+            sorted_interfaces = sorted(all_interfaces)
+            interfaces_expr = ', '.join(f'{iface}.class' for iface in sorted_interfaces)
+            return f'{{ {interfaces_expr} }}'
+    
+    def _get_transitive_extends(self, interface_name: str) -> Set[str]:
+        """Find all interfaces that the given interface extends (recursively).
+        
+        Searches the current file for the interface definition and extracts all
+        interfaces it extends, then recursively resolves those.
+        
+        Args:
+            interface_name: The interface name to resolve (may include package prefix)
+        
+        Returns:
+            Set of all transitive parent interfaces
+        """
+        transitive = set()
+        
+        # Handle simple names (just look for "interface InterfaceName")
+        # and qualified names (com.example.InterfaceName - take last part)
+        simple_name = interface_name.split('.')[-1] if '.' in interface_name else interface_name
+        
+        # Search for interface definition in current file
+        for i, line in enumerate(self.lines):
+            # Look for "interface InterfaceName extends ..."
+            pattern = rf'interface\s+{re.escape(simple_name)}\s*(?:extends\s+([^{{]+))?'
+            match = re.search(pattern, line)
+            if match and match.group(1):
+                # Found the extends clause
+                extends_str = match.group(1).strip()
+                # Split by comma to get all parent interfaces
+                parent_interfaces = [iface.strip() for iface in extends_str.split(',')]
+                
+                for parent in parent_interfaces:
+                    if parent:
+                        transitive.add(parent)
+                        # Recursively get transitive interfaces
+                        transitive.update(self._get_transitive_extends(parent))
+                break
+        
+        return transitive
 
     def _transform_component_annotation(self, annotation: str, service_class: Optional[str] = None) -> str:
         """Transform SCR @Component to OSGi R6/R7 format."""
@@ -809,7 +924,8 @@ class AnnotationMigrator:
         if service_class is not None:
             if service_class:
                 attrs.append(f'service = {service_class}')
-            # else: no explicit service class, will auto-register
+        else: 
+            attrs.append('service = {}')
 
         # Add properties (excluding those that will use property type annotations)
         if self.component_properties:

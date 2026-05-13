@@ -442,6 +442,31 @@ public class MyService implements MyInterface {
         self.assertNotIn('@Service', new_content)
         self.assertIn('org.osgi.service.component.annotations.Component', new_content)
 
+    def test_component_implements_interface_without_service_annotation(self):
+        """Test that component without @Service keeps explicit empty service element."""
+        content = '''package com.example;
+
+import org.apache.felix.scr.annotations.Component;
+
+public interface MyInterface {
+    void doSomething();
+}
+
+@Component
+public class MyComponent implements MyInterface {
+    public void doSomething() {
+    }
+}
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        new_content, changed = migrator.migrate()
+
+        self.assertTrue(changed)
+        self.assertIn('@Component(', new_content)
+        self.assertIn('service = {}', new_content)
+        self.assertNotIn('service = MyInterface.class', new_content)
+
     def test_component_with_properties(self):
         """Test component with properties (now uses property type annotations)."""
         content = '''package com.example;
@@ -931,6 +956,257 @@ public class MyService {
         # Should generate metatype config
         self.assertIn('@Designate', new_content)
         self.assertIn('service_ranking()', new_content)
+
+
+class TestTransitiveInterfaceResolution(unittest.TestCase):
+    """Test transitive interface retrieval from class declarations."""
+
+    def test_single_interface_implementation(self):
+        """Test retrieving a single interface from class declaration."""
+        content = '''package com.example;
+
+import org.apache.felix.scr.annotations.Component;
+
+public interface MyService {
+    void doSomething();
+}
+
+@Component
+public class MyServiceImpl implements MyService {
+    public void doSomething() {}
+}
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        # Index of @Component annotation
+        result = migrator._get_transitive_interfaces_from_class(6)
+        
+        self.assertIsNotNone(result)
+        self.assertIn('MyService.class', result)
+
+    def test_multiple_interfaces_implementation(self):
+        """Test retrieving multiple interfaces from class declaration."""
+        content = '''package com.example;
+
+import org.apache.felix.scr.annotations.Component;
+
+public interface Service1 { void method1(); }
+public interface Service2 { void method2(); }
+
+@Component
+public class MultiImpl implements Service1, Service2 {
+    public void method1() {}
+    public void method2() {}
+}
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        result = migrator._get_transitive_interfaces_from_class(6)
+        
+        self.assertIsNotNone(result)
+        # Result should contain both interfaces
+        self.assertIn('Service1', result)
+        self.assertIn('Service2', result)
+        self.assertIn('.class', result)
+
+    def test_transitive_extends_hierarchy(self):
+        """Test retrieving interfaces with transitive extends hierarchy."""
+        content = '''package com.example;
+
+import org.apache.felix.scr.annotations.Component;
+
+public interface BaseService {
+    void base();
+}
+
+public interface ExtendedService extends BaseService {
+    void extended();
+}
+
+@Component
+public class ServiceImpl implements ExtendedService {
+    public void extended() {}
+    public void base() {}
+}
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        result = migrator._get_transitive_interfaces_from_class(9)
+        
+        self.assertIsNotNone(result)
+        # Should include both the direct interface and transitive parent
+        self.assertIn('BaseService', result)
+        self.assertIn('ExtendedService', result)
+
+    def test_complex_transitive_hierarchy(self):
+        """Test complex transitive interface hierarchy (A -> B -> C)."""
+        content = '''package com.example;
+
+import org.apache.felix.scr.annotations.Component;
+
+public interface A { void a(); }
+public interface B extends A { void b(); }
+public interface C extends B { void c(); }
+
+@Component
+public class ComplexImpl implements C {
+    public void c() {}
+    public void b() {}
+    public void a() {}
+}
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        result = migrator._get_transitive_interfaces_from_class(7)
+        
+        self.assertIsNotNone(result)
+        # Should include all three interfaces in the hierarchy
+        self.assertIn('A', result)
+        self.assertIn('B', result)
+        self.assertIn('C', result)
+
+    def test_service_annotation_takes_precedence(self):
+        """Test that explicit @Service annotation takes precedence over class interfaces."""
+        content = '''package com.example;
+
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Service;
+
+public interface MyInterface {
+    void doIt();
+}
+
+@Component
+@Service(ExplicitService.class)
+public class MyImpl implements MyInterface {
+    public void doIt() {}
+}
+
+public interface ExplicitService {
+    void explicit();
+}
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        result = migrator._find_service_class_for_component(8)
+        
+        # @Service annotation should take precedence
+        self.assertEqual(result, 'ExplicitService.class')
+
+    def test_no_interfaces_returns_none(self):
+        """Test that components with no interfaces return None."""
+        content = '''package com.example;
+
+import org.apache.felix.scr.annotations.Component;
+
+@Component
+public class PlainComponent {
+    public void doSomething() {}
+}
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        result = migrator._get_transitive_interfaces_from_class(3)
+        
+        self.assertIsNone(result)
+
+    def test_service_annotation_without_value(self):
+        """Test @Service annotation without explicit class value."""
+        content = '''package com.example;
+
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Service;
+
+public interface MyInterface {
+    void doIt();
+}
+
+@Component
+@Service
+public class MyImpl implements MyInterface {
+    public void doIt() {}
+}
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        result = migrator._find_service_class_for_component(8)
+        
+        # Should return "MyInterface" for @Service without value as the semantics of SCR Service and the service attribute in OSGi R6/R7 @Component are different for empty values.
+        self.assertEqual(result, "MyInterface.class")
+
+    def test_multiline_class_declaration(self):
+        """Test retrieving interfaces from multi-line class declaration."""
+        content = '''package com.example;
+
+import org.apache.felix.scr.annotations.Component;
+
+public interface Service1 { void m1(); }
+public interface Service2 { void m2(); }
+
+@Component
+public class MultilineImpl
+    implements Service1, Service2 {
+    
+    public void m1() {}
+    public void m2() {}
+}
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        result = migrator._get_transitive_interfaces_from_class(7)
+        
+        self.assertIsNotNone(result)
+        self.assertIn('Service1', result)
+        self.assertIn('Service2', result)
+
+    def test_multiple_interface_extends(self):
+        """Test interfaces that extend multiple parent interfaces."""
+        content = '''package com.example;
+
+import org.apache.felix.scr.annotations.Component;
+
+public interface A { void a(); }
+public interface B { void b(); }
+public interface C extends A, B { void c(); }
+
+@Component
+public class MultiExtendImpl implements C {
+    public void c() {}
+    public void a() {}
+    public void b() {}
+}
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        result = migrator._get_transitive_interfaces_from_class(7)
+        
+        self.assertIsNotNone(result)
+        # Should resolve all transitive parents
+        self.assertIn('A', result)
+        self.assertIn('B', result)
+        self.assertIn('C', result)
+
+    def test_fully_qualified_interface_names(self):
+        """Test that interfaces are properly resolved even with package names."""
+        content = '''package com.example.impl;
+
+import org.apache.felix.scr.annotations.Component;
+import com.example.api.MyService;
+import com.example.api.OtherService;
+
+@Component
+public class ServiceImpl implements MyService, OtherService {
+    public void doIt() {}
+}
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        result = migrator._get_transitive_interfaces_from_class(5)
+        
+        self.assertIsNotNone(result)
+        # Should contain the interface names (last part after package)
+        self.assertIn('MyService', result)
+        self.assertIn('OtherService', result)
 
 
 class TestMigrationStats(unittest.TestCase):
