@@ -796,6 +796,10 @@ class AnnotationMigrator:
         immediate = re.search(r'immediate\s*=\s*(true|false)', annotation)
         name = re.search(r'name\s*=\s*"([^"]*)"', annotation)
         factory = re.search(r'factory\s*=\s*"([^"]*)"', annotation)
+        policy = re.search(
+            r'policy\s*=\s*(?:ConfigurationPolicy\.)?([A-Za-z_][A-Za-z0-9_]*)',
+            annotation
+        )
 
         # Build new annotation
         attrs = []
@@ -806,6 +810,18 @@ class AnnotationMigrator:
             attrs.append(f'immediate = {immediate.group(1)}')
         if factory:
             attrs.append(f'factory = "{factory.group(1)}"')
+        if policy:
+            policy_value = policy.group(1).upper()
+            policy_mapping = {
+                'OPTIONAL': 'OPTIONAL',
+                'REQUIRE': 'REQUIRE',
+                'REQUIRED': 'REQUIRE',
+                'IGNORE': 'IGNORE',
+            }
+            mapped_policy = policy_mapping.get(policy_value)
+            if mapped_policy:
+                attrs.append(f'configurationPolicy = ConfigurationPolicy.{mapped_policy}')
+                self.imports_to_add.add('org.osgi.service.component.annotations.ConfigurationPolicy')
         if service_class is not None:
             if service_class:
                 attrs.append(f'service = {service_class}')

@@ -442,6 +442,42 @@ public class MyService implements MyInterface {
         self.assertNotIn('@Service', new_content)
         self.assertIn('org.osgi.service.component.annotations.Component', new_content)
 
+    def test_component_policy_migrates_to_configuration_policy(self):
+        """Test SCR policy attribute migrates to OSGi configurationPolicy."""
+        content = '''package com.example;
+
+import org.apache.felix.scr.annotations.Component;
+
+@Component(policy = ConfigurationPolicy.REQUIRE)
+public class MyService {
+}
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        new_content, changed = migrator.migrate()
+
+        self.assertTrue(changed)
+        self.assertIn('configurationPolicy = ConfigurationPolicy.REQUIRE', new_content)
+        self.assertIn('org.osgi.service.component.annotations.ConfigurationPolicy', new_content)
+
+    def test_component_required_policy_alias_maps_to_require(self):
+        """Test legacy REQUIRED value maps to OSGi REQUIRE."""
+        content = '''package com.example;
+
+import org.apache.felix.scr.annotations.Component;
+
+@Component(policy = ConfigurationPolicy.REQUIRED)
+public class MyService {
+}
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        new_content, changed = migrator.migrate()
+
+        self.assertTrue(changed)
+        self.assertIn('configurationPolicy = ConfigurationPolicy.REQUIRE', new_content)
+        self.assertNotIn('configurationPolicy = ConfigurationPolicy.REQUIRED', new_content)
+
     def test_component_with_properties(self):
         """Test component with properties (now uses property type annotations)."""
         content = '''package com.example;
