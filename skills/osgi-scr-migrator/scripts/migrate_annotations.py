@@ -28,12 +28,16 @@ class PropertyType(Enum):
     LONG = "Long"
     FLOAT = "Float"
     DOUBLE = "Double"
+    CHAR = "Character"
+    SHORT = "Short"
+    BYTE = "Byte"
 
 
 @dataclass
 class Property:
     """Represents a component property."""
     name: str
+    # all string values are stored as raw Java expressions (quoted literals or constant references)
     value: Optional[str] = None
     values: List[str] = field(default_factory=list)
     type: PropertyType = PropertyType.STRING
@@ -57,7 +61,7 @@ class Property:
         4. Property is single-valued (not array)
         """
         # Only single-value, non-configurable properties can use property type annotations
-        if self.is_configurable or self.values:
+        if self.is_configurable or bool(self.values):
             return False
 
         # Must have a value to convert
@@ -122,6 +126,12 @@ class Property:
             if self.type in (PropertyType.FLOAT, PropertyType.DOUBLE):
                 return not bool(re.fullmatch(r'-?(?:\d+\.\d*|\d*\.\d+|\d+)(?:[fFdD])?', val))
 
+            if self.type == PropertyType.CHAR:
+                return not bool(re.fullmatch(r"'([^'\\]|\\.)'"  , val))
+
+            if self.type in (PropertyType.SHORT, PropertyType.BYTE):
+                return not bool(re.fullmatch(r'-?\d+', val))
+
             return True
 
         if self.values:
@@ -152,9 +162,9 @@ class Property:
         """
         parts = []
         if self.label:
-            parts.append(f'name = "{self.label}"')
+            parts.append(f'name = {self.label}')
         if self.description:
-            parts.append(f'description = "{self.description}"')
+            parts.append(f'description = {self.description}')
 
         method_name = self._property_id_to_method_name(self.name)
         java_type = self._get_java_type()
@@ -195,25 +205,25 @@ class Property:
             PropertyType.LONG: "long",
             PropertyType.FLOAT: "float",
             PropertyType.DOUBLE: "double",
+            PropertyType.CHAR: "char",
+            PropertyType.SHORT: "short",
+            PropertyType.BYTE: "byte",
         }
-        if self.values and len(self.values) > 1:
+        if self.values:
             return f"{type_map[self.type]}[]"
         return type_map[self.type]
 
     def _get_default_value(self) -> str:
-        """Get default value expression."""
+        """Get default value expression.
+        
+        Values are stored as raw Java expressions (quoted literals or constant references),
+        so no additional quoting is needed.
+        """
         if self.values:
-            if self.type == PropertyType.STRING:
-                vals = ', '.join(f'"{v}"' for v in self.values)
-                return f' default {{{vals}}}'
-            else:
-                vals = ', '.join(self.values)
-                return f' default {{{vals}}}'
+            vals = ', '.join(self.values)
+            return f' default {{{vals}}}'
         elif self.value is not None:
-            if self.type == PropertyType.STRING:
-                return f' default "{self.value}"'
-            else:
-                return f' default {self.value}'
+            return f' default {self.value}'
         return ''
 
 
@@ -345,12 +355,14 @@ class AnnotationMigrator:
                     self.has_metatype = True
                     self.stats.metatype_configs_generated += 1
 
-                # Extract label and description from @Component
-                label_match = re.search(r'label\s*=\s*"([^"]*)"', annotation)
+                # Extract label and description from @Component.
+                # Match either a quoted string literal (captured with its quotes)
+                # or a bare identifier / qualified constant reference.
+                label_match = re.search(r'label\s*=\s*("[^"]*"|[A-Za-z_$][A-Za-z0-9_$.]*)', annotation)
                 if label_match:
                     self.component_label = label_match.group(1)
 
-                desc_match = re.search(r'description\s*=\s*"([^"]*)"', annotation)
+                desc_match = re.search(r'description\s*=\s*("[^"]*"|[A-Za-z_$][A-Za-z0-9_$.]*)', annotation)
                 if desc_match:
                     self.component_description = desc_match.group(1)
 
@@ -402,25 +414,65 @@ class AnnotationMigrator:
             idx += 1
 
         # Parse attributes
-        name_match = re.search(r'name\s*=\s*"([^"]*)"', annotation)
+        # Match name as either a quoted literal or a constant reference
+        name_match = re.search(r'name\s*=\s*("[^"]*"|[A-Za-z_$][A-Za-z0-9_$.]*)', annotation)
         value_match = re.search(
             r'(?<!bool)(?<!int)(?<!long)(?<!float)(?<!double)value\s*=\s*("[^"]*"|[A-Za-z_][A-Za-z0-9_.]*)',
             annotation
         )
         values_match = re.search(r'value\s*=\s*\{([^}]+)\}', annotation)
         bool_value_match = re.search(r'boolValue\s*=\s*(true|false)', annotation)
+        bool_values_match = re.search(r'boolValue\s*=\s*\{([^}]+)\}', annotation)
         int_value_match = re.search(r'intValue\s*=\s*(-?\d+)', annotation)
+        int_values_match = re.search(r'intValue\s*=\s*\{([^}]+)\}', annotation)
         long_value_match = re.search(r'longValue\s*=\s*(-?\d+)L?', annotation)
+        long_values_match = re.search(r'longValue\s*=\s*\{([^}]+)\}', annotation)
         float_value_match = re.search(r'floatValue\s*=\s*(-?\d+\.?\d*)f?', annotation)
+        float_values_match = re.search(r'floatValue\s*=\s*\{([^}]+)\}', annotation)
         double_value_match = re.search(r'doubleValue\s*=\s*(-?\d+\.?\d*)', annotation)
-        label_match = re.search(r'label\s*=\s*"([^"]*)"', annotation)
-        desc_match = re.search(r'description\s*=\s*"([^"]*)"', annotation)
+        double_values_match = re.search(r'doubleValue\s*=\s*\{([^}]+)\}', annotation)
+        char_value_match = re.search(r"charValue\s*=\s*('[^'\\]'|'\\.')", annotation)
+        char_values_match = re.search(r'charValue\s*=\s*\{([^}]+)\}', annotation)
+        short_value_match = re.search(r'shortValue\s*=\s*(-?\d+)', annotation)
+        short_values_match = re.search(r'shortValue\s*=\s*\{([^}]+)\}', annotation)
+        byte_value_match = re.search(r'byteValue\s*=\s*(-?\d+)', annotation)
+        byte_values_match = re.search(r'byteValue\s*=\s*\{([^}]+)\}', annotation)
+        label_match = re.search(r'label\s*=\s*("[^"]*"|[A-Za-z_$][A-Za-z0-9_$.]*)', annotation)
+        desc_match = re.search(r'description\s*=\s*("[^"]*"|[A-Za-z_$][A-Za-z0-9_$.]*)', annotation)
 
         # If no name attribute, look for the property name in the field declaration
         # Pattern: @Property(...) \n private static final String FIELD_NAME = "property.name";
         property_name = None
+        constant_to_resolve = None
+        
         if name_match:
-            property_name = name_match.group(1)
+            raw_name = name_match.group(1)
+            # Extract literal value if quoted, otherwise it's a constant reference
+            if raw_name.startswith('"') and raw_name.endswith('"'):
+                property_name = raw_name[1:-1]  # Remove quotes from literal
+            else:
+                # Constant reference - extract the simple name to look up
+                # For "PROPERTY_NAME" or "Constants.PROPERTY_NAME", extract the last component
+                constant_to_resolve = raw_name.split('.')[-1]
+
+        # If still no property name, look for the field declaration
+        if not property_name:
+            for i in range(idx, min(idx + 3, len(self.lines))):
+                field_line = self.lines[i]
+                
+                # If we have a specific constant name to resolve, look for that field
+                if constant_to_resolve:
+                    field_match = re.search(
+                        rf'(?:(?:private|protected|public)\s+)?static\s+final\s+String\s+{re.escape(constant_to_resolve)}\s*=\s*"([^"]+)"',
+                        field_line
+                    )
+                else:
+                    # Match any static final String field
+                    field_match = re.search(r'(?:(?:private|protected|public)\s+)?static\s+final\s+String\s+\w+\s*=\s*"([^"]+)"', field_line)
+                
+                if field_match:
+                    property_name = field_match.group(1)
+                    break
         else:
             # Look for the field declaration on the next line(s) after the annotation
             for i in range(idx, min(idx + 3, len(self.lines))):
@@ -438,23 +490,56 @@ class AnnotationMigrator:
         prop = Property(name=property_name)
 
         # Determine type and value
-        if bool_value_match:
+        if bool_values_match:
+            prop.type = PropertyType.BOOLEAN
+            prop.values = [v.strip() for v in bool_values_match.group(1).split(',')]
+        elif bool_value_match:
             prop.type = PropertyType.BOOLEAN
             prop.value = bool_value_match.group(1)
+        elif int_values_match:
+            prop.type = PropertyType.INTEGER
+            prop.values = [v.strip() for v in int_values_match.group(1).split(',')]
         elif int_value_match:
             prop.type = PropertyType.INTEGER
             prop.value = int_value_match.group(1)
+        elif long_values_match:
+            prop.type = PropertyType.LONG
+            prop.values = [v.strip() for v in long_values_match.group(1).split(',')]
         elif long_value_match:
             prop.type = PropertyType.LONG
             prop.value = long_value_match.group(1)
+        elif float_values_match:
+            prop.type = PropertyType.FLOAT
+            prop.values = [v.strip() for v in float_values_match.group(1).split(',')]
         elif float_value_match:
             prop.type = PropertyType.FLOAT
             prop.value = float_value_match.group(1)
+        elif double_values_match:
+            prop.type = PropertyType.DOUBLE
+            prop.values = [v.strip() for v in double_values_match.group(1).split(',')]
         elif double_value_match:
             prop.type = PropertyType.DOUBLE
             prop.value = double_value_match.group(1)
+        elif char_values_match:
+            prop.type = PropertyType.CHAR
+            prop.values = re.findall(r"'[^'\\]'|'\\.'|'\\u[0-9a-fA-F]{4}'", char_values_match.group(0))
+        elif char_value_match:
+            prop.type = PropertyType.CHAR
+            prop.value = char_value_match.group(1)
+        elif short_values_match:
+            prop.type = PropertyType.SHORT
+            prop.values = [v.strip() for v in short_values_match.group(1).split(',')]
+        elif short_value_match:
+            prop.type = PropertyType.SHORT
+            prop.value = short_value_match.group(1)
+        elif byte_values_match:
+            prop.type = PropertyType.BYTE
+            prop.values = [v.strip() for v in byte_values_match.group(1).split(',')]
+        elif byte_value_match:
+            prop.type = PropertyType.BYTE
+            prop.value = byte_value_match.group(1)
         elif values_match:
-            # Array of values - preserve quotes on string literals
+            # Array of string values - preserve quotes on string literals
             values_str = values_match.group(1)
             prop.values = [v.strip() for v in values_str.split(',')]
         elif value_match:
@@ -463,9 +548,9 @@ class AnnotationMigrator:
             prop.value = raw_value
 
         if label_match:
-            prop.label = label_match.group(1)
+            prop.label = label_match.group(1)  # raw Java expression: "literal" or CONSTANT
         if desc_match:
-            prop.description = desc_match.group(1)
+            prop.description = desc_match.group(1)  # raw Java expression: "literal" or CONSTANT
 
         return prop
 
@@ -973,12 +1058,12 @@ class AnnotationMigrator:
         # Generate Config interface with label and description from @Component
         ocd_parts = []
         if self.component_label:
-            ocd_parts.append(f'name = "{self.component_label}"')
+            ocd_parts.append(f'name = {self.component_label}')
         else:
             ocd_parts.append(f'name = "{self.component_name} Configuration"')
 
         if self.component_description:
-            ocd_parts.append(f'description = "{self.component_description}"')
+            ocd_parts.append(f'description = {self.component_description}')
 
         ocd_attrs = ', '.join(ocd_parts)
 

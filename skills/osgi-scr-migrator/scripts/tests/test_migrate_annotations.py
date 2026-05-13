@@ -110,8 +110,8 @@ class TestPropertyParsing(unittest.TestCase):
         self.assertEqual(len(migrator.component_properties), 1)
         prop = migrator.component_properties[0]
         self.assertEqual(prop.name, "timeout")
-        self.assertEqual(prop.label, "Timeout")
-        self.assertEqual(prop.description, "Request timeout in seconds")
+        self.assertEqual(prop.label, '"Timeout"')
+        self.assertEqual(prop.description, '"Request timeout in seconds"')
         self.assertTrue(prop.is_configurable)
 
     def test_property_name_derived_from_default_static_final_field(self):
@@ -127,7 +127,7 @@ static final String SERVICE_VENDOR = "service.vendor";
         self.assertEqual(len(migrator.component_properties), 1)
         prop = migrator.component_properties[0]
         self.assertEqual(prop.name, "service.vendor")
-        self.assertEqual(prop.value, "Apache Software Foundation")
+        self.assertEqual(prop.value, "\"Apache Software Foundation\"")
 
     def test_property_name_derived_from_private_static_final_field(self):
         """Test deriving property name from private static final field."""
@@ -142,7 +142,7 @@ private static final String SERVICE_VENDOR = "service.vendor";
         self.assertEqual(len(migrator.component_properties), 1)
         prop = migrator.component_properties[0]
         self.assertEqual(prop.name, "service.vendor")
-        self.assertEqual(prop.value, "Apache Software Foundation")
+        self.assertEqual(prop.value, "\"Apache Software Foundation\"")
 
     def test_property_name_derived_from_protected_static_final_field(self):
         """Test deriving property name from protected static final field."""
@@ -157,7 +157,7 @@ protected static final String SERVICE_VENDOR = "service.vendor";
         self.assertEqual(len(migrator.component_properties), 1)
         prop = migrator.component_properties[0]
         self.assertEqual(prop.name, "service.vendor")
-        self.assertEqual(prop.value, "Apache Software Foundation")
+        self.assertEqual(prop.value, "\"Apache Software Foundation\"")
 
     def test_property_name_derived_from_public_static_final_field(self):
         """Test deriving property name from public static final field."""
@@ -172,7 +172,308 @@ public static final String SERVICE_VENDOR = "service.vendor";
         self.assertEqual(len(migrator.component_properties), 1)
         prop = migrator.component_properties[0]
         self.assertEqual(prop.name, "service.vendor")
-        self.assertEqual(prop.value, "Apache Software Foundation")
+        self.assertEqual(prop.value, "\"Apache Software Foundation\"")
+
+    def test_property_name_as_simple_constant_reference(self):
+        """Test parsing property name as a simple constant reference."""
+        content = '''
+@Property(name = PROPERTY_NAME, value = "myvalue")
+private static final String PROPERTY_NAME = "my.property";
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        migrator._collect_properties()
+
+        self.assertEqual(len(migrator.component_properties), 1)
+        prop = migrator.component_properties[0]
+        self.assertEqual(prop.name, "my.property")
+        self.assertEqual(prop.value, "\"myvalue\"")
+
+    def test_property_name_as_qualified_constant_reference(self):
+        """Test parsing property name as a qualified constant reference."""
+        content = '''
+@Property(name = Constants.SERVICE_VENDOR, value = "Apache")
+private static final String SERVICE_VENDOR = "service.vendor";
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        migrator._collect_properties()
+
+        self.assertEqual(len(migrator.component_properties), 1)
+        prop = migrator.component_properties[0]
+        self.assertEqual(prop.name, "service.vendor")
+        self.assertEqual(prop.value, "\"Apache\"")
+
+    def test_property_name_as_literal_string(self):
+        """Test parsing property name as a literal quoted string."""
+        content = '''
+@Property(name = "service.vendor", value = "Apache")
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        migrator._collect_properties()
+
+        self.assertEqual(len(migrator.component_properties), 1)
+        prop = migrator.component_properties[0]
+        self.assertEqual(prop.name, "service.vendor")
+        self.assertEqual(prop.value, "\"Apache\"")
+
+    def test_long_property(self):
+        """Test parsing long property."""
+        content = '''
+@Property(name = "cache.ttl", longValue = 86400L)
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        migrator._collect_properties()
+
+        self.assertEqual(len(migrator.component_properties), 1)
+        prop = migrator.component_properties[0]
+        self.assertEqual(prop.name, "cache.ttl")
+        self.assertEqual(prop.value, "86400")
+        self.assertEqual(prop.type, PropertyType.LONG)
+        self.assertFalse(prop.values)
+
+    def test_float_property(self):
+        """Test parsing float property."""
+        content = '''
+@Property(name = "threshold", floatValue = 0.5f)
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        migrator._collect_properties()
+
+        self.assertEqual(len(migrator.component_properties), 1)
+        prop = migrator.component_properties[0]
+        self.assertEqual(prop.name, "threshold")
+        self.assertEqual(prop.value, "0.5")
+        self.assertEqual(prop.type, PropertyType.FLOAT)
+        self.assertFalse(prop.values)
+
+    def test_double_property(self):
+        """Test parsing double property."""
+        content = '''
+@Property(name = "precision", doubleValue = 3.14)
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        migrator._collect_properties()
+
+        self.assertEqual(len(migrator.component_properties), 1)
+        prop = migrator.component_properties[0]
+        self.assertEqual(prop.name, "precision")
+        self.assertEqual(prop.value, "3.14")
+        self.assertEqual(prop.type, PropertyType.DOUBLE)
+        self.assertFalse(prop.values)
+
+    def test_char_property(self):
+        """Test parsing char property."""
+        content = '''
+@Property(name = "separator", charValue = ',')
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        migrator._collect_properties()
+
+        self.assertEqual(len(migrator.component_properties), 1)
+        prop = migrator.component_properties[0]
+        self.assertEqual(prop.name, "separator")
+        self.assertEqual(prop.value, "','")
+        self.assertEqual(prop.type, PropertyType.CHAR)
+        self.assertFalse(prop.values)
+
+    def test_char_property_escape_sequence(self):
+        """Test parsing char property with escape sequence."""
+        content = '''
+@Property(name = "newline", charValue = '\\n')
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        migrator._collect_properties()
+
+        self.assertEqual(len(migrator.component_properties), 1)
+        prop = migrator.component_properties[0]
+        self.assertEqual(prop.name, "newline")
+        self.assertEqual(prop.type, PropertyType.CHAR)
+        self.assertFalse(prop.values)
+
+    def test_short_property(self):
+        """Test parsing short property."""
+        content = '''
+@Property(name = "port", shortValue = 8080)
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        migrator._collect_properties()
+
+        self.assertEqual(len(migrator.component_properties), 1)
+        prop = migrator.component_properties[0]
+        self.assertEqual(prop.name, "port")
+        self.assertEqual(prop.value, "8080")
+        self.assertEqual(prop.type, PropertyType.SHORT)
+        self.assertFalse(prop.values)
+
+    def test_byte_property(self):
+        """Test parsing byte property."""
+        content = '''
+@Property(name = "flags", byteValue = 42)
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        migrator._collect_properties()
+
+        self.assertEqual(len(migrator.component_properties), 1)
+        prop = migrator.component_properties[0]
+        self.assertEqual(prop.name, "flags")
+        self.assertEqual(prop.value, "42")
+        self.assertEqual(prop.type, PropertyType.BYTE)
+        self.assertFalse(prop.values)
+
+    def test_boolean_array_property(self):
+        """Test parsing boolean array property."""
+        content = '''
+@Property(name = "flags", boolValue = {true, false, true})
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        migrator._collect_properties()
+
+        self.assertEqual(len(migrator.component_properties), 1)
+        prop = migrator.component_properties[0]
+        self.assertEqual(prop.name, "flags")
+        self.assertEqual(prop.values, ["true", "false", "true"])
+        self.assertEqual(prop.type, PropertyType.BOOLEAN)
+        self.assertTrue(prop.values)
+
+    def test_integer_array_property(self):
+        """Test parsing integer array property."""
+        content = '''
+@Property(name = "ports", intValue = {80, 443, 8080})
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        migrator._collect_properties()
+
+        self.assertEqual(len(migrator.component_properties), 1)
+        prop = migrator.component_properties[0]
+        self.assertEqual(prop.name, "ports")
+        self.assertEqual(prop.values, ["80", "443", "8080"])
+        self.assertEqual(prop.type, PropertyType.INTEGER)
+        self.assertTrue(prop.values)
+
+    def test_long_array_property(self):
+        """Test parsing long array property."""
+        content = '''
+@Property(name = "timestamps", longValue = {1000L, 2000L, 3000L})
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        migrator._collect_properties()
+
+        self.assertEqual(len(migrator.component_properties), 1)
+        prop = migrator.component_properties[0]
+        self.assertEqual(prop.name, "timestamps")
+        self.assertEqual(prop.values, ["1000L", "2000L", "3000L"])
+        self.assertEqual(prop.type, PropertyType.LONG)
+        self.assertTrue(prop.values)
+
+    def test_float_array_property(self):
+        """Test parsing float array property."""
+        content = '''
+@Property(name = "ratios", floatValue = {0.25f, 0.5f, 0.75f})
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        migrator._collect_properties()
+
+        self.assertEqual(len(migrator.component_properties), 1)
+        prop = migrator.component_properties[0]
+        self.assertEqual(prop.name, "ratios")
+        self.assertEqual(prop.values, ["0.25f", "0.5f", "0.75f"])
+        self.assertEqual(prop.type, PropertyType.FLOAT)
+        self.assertTrue(prop.values)
+
+    def test_double_array_property(self):
+        """Test parsing double array property."""
+        content = '''
+@Property(name = "coefficients", doubleValue = {1.1, 2.2, 3.3})
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        migrator._collect_properties()
+
+        self.assertEqual(len(migrator.component_properties), 1)
+        prop = migrator.component_properties[0]
+        self.assertEqual(prop.name, "coefficients")
+        self.assertEqual(prop.values, ["1.1", "2.2", "3.3"])
+        self.assertEqual(prop.type, PropertyType.DOUBLE)
+        self.assertTrue(prop.values)
+
+    def test_char_array_property(self):
+        """Test parsing char array property."""
+        content = """
+@Property(name = "delimiters", charValue = {',', ';', '|'})
+"""
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        migrator._collect_properties()
+
+        self.assertEqual(len(migrator.component_properties), 1)
+        prop = migrator.component_properties[0]
+        self.assertEqual(prop.name, "delimiters")
+        self.assertEqual(prop.values, ["','", "';'", "'|'"])
+        self.assertEqual(prop.type, PropertyType.CHAR)
+        self.assertTrue(prop.values)
+
+    def test_short_array_property(self):
+        """Test parsing short array property."""
+        content = '''
+@Property(name = "codes", shortValue = {100, 200, 404})
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        migrator._collect_properties()
+
+        self.assertEqual(len(migrator.component_properties), 1)
+        prop = migrator.component_properties[0]
+        self.assertEqual(prop.name, "codes")
+        self.assertEqual(prop.values, ["100", "200", "404"])
+        self.assertEqual(prop.type, PropertyType.SHORT)
+        self.assertTrue(prop.values)
+
+    def test_byte_array_property(self):
+        """Test parsing byte array property."""
+        content = '''
+@Property(name = "mask", byteValue = {0, 1, 127})
+'''
+        stats = MigrationStats()
+        migrator = AnnotationMigrator(content, Path("test.java"), stats)
+        migrator._collect_properties()
+
+        self.assertEqual(len(migrator.component_properties), 1)
+        prop = migrator.component_properties[0]
+        self.assertEqual(prop.name, "mask")
+        self.assertEqual(prop.values, ["0", "1", "127"])
+        self.assertEqual(prop.type, PropertyType.BYTE)
+        self.assertTrue(prop.values)
+
+    def test_single_value_not_array(self):
+        """Test that single-value properties have an empty values list."""
+        for content, expected_type in [
+            ('@Property(name = "a", boolValue = true)', PropertyType.BOOLEAN),
+            ('@Property(name = "a", intValue = 1)', PropertyType.INTEGER),
+            ('@Property(name = "a", longValue = 1L)', PropertyType.LONG),
+            ('@Property(name = "a", floatValue = 1.0f)', PropertyType.FLOAT),
+            ('@Property(name = "a", doubleValue = 1.0)', PropertyType.DOUBLE),
+            ('@Property(name = "a", shortValue = 1)', PropertyType.SHORT),
+            ('@Property(name = "a", byteValue = 1)', PropertyType.BYTE),
+        ]:
+            stats = MigrationStats()
+            migrator = AnnotationMigrator(content, Path("test.java"), stats)
+            migrator._collect_properties()
+            prop = migrator.component_properties[0]
+            self.assertFalse(prop.values, f"Expected empty values for {expected_type}")
+            self.assertEqual(prop.type, expected_type)
 
 
 class TestPropertyConversion(unittest.TestCase):
@@ -217,8 +518,8 @@ class TestPropertyConversion(unittest.TestCase):
             name="my.timeout",
             value="30",
             type=PropertyType.INTEGER,
-            label="Timeout",
-            description="Request timeout"
+            label='"Timeout"',
+            description='"Request timeout"'
         )
         result = prop.to_metatype_attribute()
 
