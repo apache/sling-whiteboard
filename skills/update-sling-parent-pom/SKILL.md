@@ -11,73 +11,38 @@ Use when the user asks to upgrade the Sling parent POM version in their project.
 
 ## Instructions
 
-
-- run a full Maven build with the `clean verify`. Use the Java version required by the current parent pom version. If the build fails  abort execution and inform the user of the root cause. Do not proceeed, otherwise it is impossible to validate the parent pom upgrade.
-- check if any known issues with workarounds exist but to do not remove them
+- record the current Java and Maven environment with `java -version` and `mvn -version`
+- run a baseline `mvn clean verify` if the current checkout is expected to support the current Java version
+    - if the baseline build fails only because the current parent POM or project setup requires an older Java version, document that and continue
+    - assume the unchanged project would pass with its required Java version; do not switch to version-specific Maven wrappers just to prove the baseline unless the user explicitly asks
+    - if the baseline fails for a reason unrelated to the Java version, abort execution and inform the user of the root cause before changing the parent POM
+- check if any known workarounds exist, but do not remove them yet
 - identify the current version of the Sling parent POM in the user's project
-- determine the next available version, typically incrementing by 1. For example, if the version is '22' the next version would be '23'
-- update the parent pom version
-- run `mvn validate` using the Java version required by the new parent pom version before running a full build
+- determine the latest available Sling parent POM version for the applicable parent artifact
+    - target the latest available version, not merely the next increment
+- update the parent POM version
+- run `mvn validate` with the current Java version before running a full build
     - if `mvn validate` fails, fix any POM syntax issues first
-    - if the new parent pom no longer manages some plugin versions, add explicit plugin versions for the affected plugins
-    - if the new parent pom no longer manages some dependency versions, add explicit dependency versions for the affected dependencies
+    - if the new parent POM no longer manages some plugin versions, add explicit plugin versions for the affected plugins
+    - if the new parent POM no longer manages some dependency versions, add explicit dependency versions for the affected dependencies
     - do not continue to `clean verify` until `mvn validate` succeeds
-- run a full Maven build with the `clean verify` goals using the Java version required by the new parent pom version.
-    - if the new parent pom version supports multiple Java versions, use the highest supported one. For example, out of 8, 11, and 17, use Java 17.
+- run a full `mvn clean verify` build with the current Java version
+    - the goal is for the upgraded project to build successfully with the current Java version
+    - if the build fails because Spotless formatting checks were introduced or changed by the new parent POM, run `mvn spotless:apply`, review the resulting formatting changes, and rerun `mvn clean verify`
 - apply additional verification steps as needed if the specific version requires it
-- if workarounds were present before updating the parent pom version, check if they can be removed. If they are needed add them back
+- if workarounds were present before updating the parent POM version, check if they can be removed. If they are needed add them back
 
 Do not touch the git repository state - no staging/unstaging, no commits, no pushes.
 
-### Java versions
+### Unsupported versions
 
-Different parent pom versions require different Java versions. This is listed in the table below. If building with a certain Java version is needed, use the following commands:
-
-- Java 8: `mvn8`
-- Java 11: `mvn11`
-- Java 17: `mvn17`
-- Java 21: `mvn21`
-
-The following versions are not supported and must be skipped:
+The following historical versions are not supported and must be skipped:
 - 42
 - 50
 
-| Parent POM Version | Java Version(s) | Additional fixes needed |
-|--------------------|-----------------|-------------------------|
-| 22                 | 8               | None                    |
-| 23                 | 8               | rat-disable             |
-| 24                 | 8               | None                    |
-| 25                 | 8               | None                    |
-| 26                 | 8               | None                    |
-| 27                 | 8               | osgi-r6,servlet-3       |
-| 28                 | 8               | None                    |
-| 29                 | 8               | None                    |
-| 30                 | 8               | readd-scr-annotations   |
-| 31                 | 8               | osgi-annotations        |
-| 32                 | 8               | None                    |
-| 33                 | 8               | None                    |
-| 34                 | 8               | None                    |
-| 35                 | 8,11            | bundle-parent           |
-| 36                 | 8,11            | None                    |
-| 37                 | 8,11            | None                    |
-| 38                 | 8,11            | None                    |
-| 39                 | 8,11            | None                    |
-| 40                 | 8,11            | None                    |
-| 41                 | 8,11            | None                    |
-| 43                 | 8,11            | None                    |
-| 44                 | 8,11            | timestamp               |
-| 45                 | 8,11            | None                    |
-| 46                 | 8,11,17         | mockito-java17          |
-| 47                 | 8,11,17         | None                    |
-| 48                 | 8,11,17         | None                    |
-| 49                 | 8,11,17         | osgi-deps, deps-scope   |
-| 51                 | 8,11,17         | None                    |
-| 52                 | 8,11,17         | None                    |
-
-
 ### Additional fixes
 
-See the following reference files for additional fixes needed to update to a specific parent pom version.
+Use the following reference files when a matching migration issue or build failure appears.
 
 - rat-disable: [rat-disable.md](./references/rat-disable.md)
 - osgi-r6: [osgi-r6.md](./references/osgi-r6.md)
