@@ -6,6 +6,7 @@ Current skills:
 
 - `update-sling-parent-pom`: Updates the parent POM of a Sling project to the next version.
 - `osgi-scr-migrator`: Migrates OSGi-based Java projects from deprecated Felix SCR annotations to official OSGi R6/R7 Component annotations, including Java source and Maven POM updates.
+- `sling-release`: Releases an Apache Sling module end-to-end using Maven and the `apache/sling-cli` Docker tool (staging, voting, and post-vote finalization).
 
 ## Prerequisites
 
@@ -38,6 +39,14 @@ export JAVA_HOME
 
 mvn "$@"
 ```
+
+### Docker and Maven for releasing
+
+The `sling-release` skill requires:
+
+- Docker, to run the `apache/sling-cli` image for the Nexus/vote/finalize steps
+- Apache Maven, to stage and perform the release from the project being released
+- A configured ASF committer environment (SSH/SVN access, GPG signing key, `settings.xml` with the ASF repository server)
 
 ### Generating diffs for for OSGi components
 
