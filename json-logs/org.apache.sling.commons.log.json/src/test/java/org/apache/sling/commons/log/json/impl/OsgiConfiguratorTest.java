@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.JoranConfigurator;
 
 public class OsgiConfiguratorTest {
 
@@ -43,8 +44,15 @@ public class OsgiConfiguratorTest {
     public final OsgiContext context = new OsgiContext();
 
     @Before
-    public void init() {
+    public void init() throws Exception {
+        // reset and reload the logback.xml test config explicitly: another test class
+        // may have already reset the LoggerContext, wiping out the "console" appender
+        // that this test's rootLogger.getAppender(...) lookup depends on
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        loggerContext.reset();
+        JoranConfigurator configurator = new JoranConfigurator();
+        configurator.setContext(loggerContext);
+        configurator.doConfigure(getClass().getResource("/logback.xml"));
         loggerContext.start();
     }
 

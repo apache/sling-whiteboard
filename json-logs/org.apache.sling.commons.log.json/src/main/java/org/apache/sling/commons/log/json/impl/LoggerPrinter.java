@@ -58,7 +58,8 @@ public class LoggerPrinter extends BasicStatusManager {
     }
 
     private void renderHeader(PrintWriter pw, String header) {
-        pw.println("\n\n" + header + "\n-------------------\n");
+        String nl = System.lineSeparator();
+        pw.println(nl + nl + header + nl + "-------------------" + nl);
     }
 
     private String statusToString(Status status) {
@@ -74,7 +75,7 @@ public class LoggerPrinter extends BasicStatusManager {
      */
     public void printConfiguration(PrintWriter pw) {
 
-        pw.println(HEADLINE + "\n===========================");
+        pw.println(HEADLINE + System.lineSeparator() + "===========================");
 
         renderHeader(pw, "Status");
         this.getCopyOfStatusList().stream().map(this::statusToString).forEach(pw::println);
