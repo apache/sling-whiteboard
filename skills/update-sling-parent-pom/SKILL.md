@@ -21,7 +21,7 @@ Use when the user asks to upgrade the Sling parent POM version in their project.
 - identify the current version of the Sling parent POM in the user's project
 - determine the latest available Sling parent POM version for the applicable parent artifact
     - target the latest available version, not merely the next increment
-- check `https://cwiki.apache.org/confluence/spaces/SLING/pages/` for an official "Update to Parent NN" migration page covering a version between the current and target (search or ask the user; these pages are not sequentially numbered). Follow any steps it documents that are not already covered by this skill's reference files
+- check `https://cwiki.apache.org/confluence/spaces/SLING/pages/284790344/Update+to+Parent+60`for additional instructions. Follow any steps it documents that are not already covered by this skill's reference files
 - update the parent POM version
 - run `mvn validate` with the current Java version before running a full build
     - if `mvn validate` fails, fix any POM syntax issues first
