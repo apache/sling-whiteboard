@@ -95,7 +95,9 @@ public class ModelPersistTest {
 
         BeanWithPathField bean2 = new BeanWithPathField();
         jcrPersist.persist(bean2, rr, false);
-        res = rr.getResource(bean2.path + "/jcr:content");
+        // At one point this was testing if a jcr:content child was created automatically, but that concept was removed
+        // because it was ultimately too confusing to understand what the code was doing when using that feature.
+        res = rr.getResource(bean2.path);
         assertNotNull("Resource not created at expected path", res);
         assertEquals("Expected property not found", bean2.prop1, res.getValueMap().get("prop1", "missing"));
 

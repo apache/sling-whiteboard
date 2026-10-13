@@ -18,10 +18,10 @@
  */
 package org.apache.sling.models.persistor;
 
+import com.drew.lang.annotations.NotNull;
 import javax.jcr.RepositoryException;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.ResourceResolver;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Definition of Model Persistor service
