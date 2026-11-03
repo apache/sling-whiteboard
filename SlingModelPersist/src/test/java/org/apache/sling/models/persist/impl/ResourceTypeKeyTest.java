@@ -41,15 +41,18 @@ public class ResourceTypeKeyTest {
      * Test of fromObject method, of class ResourceTypeKey relying on class annotations
      */
     @Test
-    public void testFromObject() {
+    public void testFromObject() throws IllegalAccessException {
         BeanWithPathField bean = new BeanWithPathField();
         ResourceTypeKey result = ResourceTypeKey.fromObject(bean);
-        assertEquals("test/testBean", result.primaryType);
-        assertEquals("test/testBean/field-path", result.childType);
+        assertEquals("Should be NT UNSTRUCTURED", "nt:unstructured", result.nodeType);
+        assertEquals("test/testBean", result.resourceType);
+        // Child type wasn't making much sense, this was removed in favor of objects creating their own jcr:content children
+        // It was a tough call but ultimately makes it easier to understand what's going on since there are fewer rules to remember.
+        //assertEquals("test/testBean/field-path", result.childType);
     }
 
     @Test
-    public void testFromObjectCache() {
+    public void testFromObjectCache() throws IllegalAccessException {
         BeanWithPathField bean1 = new BeanWithPathField();
         BeanWithPathField bean2 = new BeanWithPathField();
         ResourceTypeKey result1 = ResourceTypeKey.fromObject(bean1);
@@ -58,9 +61,9 @@ public class ResourceTypeKeyTest {
     }
 
     @Test
-    public void testNullObject() {
+    public void testNullObject() throws IllegalAccessException {
         ResourceTypeKey result = ResourceTypeKey.fromObject(null);
         assertNotNull("Should not return null", result);
-        assertEquals("Should be NT UNSTRUCTURED", "nt:unstructured", result.primaryType);
+        assertEquals("Should be NT UNSTRUCTURED", "nt:unstructured", result.nodeType);
     }
 }
