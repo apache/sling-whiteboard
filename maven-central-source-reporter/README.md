@@ -14,3 +14,5 @@ The runnable jar takes a single argument, which is the groupId to match artifact
 The initial run may be slow, as the project downloads and imports the Maven Central index using the [Maven Indexer](https://maven.apache.org/maven-indexer/indexer-reader/index.html). 
 
 After running, the report is placed in `out/results.csv`.
+
+Testing for SLING-13436
